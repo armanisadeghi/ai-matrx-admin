@@ -1,7 +1,7 @@
 // features/flashcards/data/useFlashcardStudy.ts
 //
 // Canonical flashcard STUDY hook — the reusable study flow over a single
-// `education.fc_set`. Loads the deck's ordered cards (`fcService.getSetWithCards`)
+// `education.fc_set`. Loads the deck's ordered cards (`fcService.getDeckWithCards`)
 // plus the current user's per-card mastery (`studyService.getMasteryBulk`), and
 // drives an interactive review: flip, navigate, and self-grade.
 //
@@ -317,7 +317,7 @@ export function useFlashcardStudy(
       let loadedFromCache = false;
       let setRes = offlineFirst
         ? { data: null, error: "offline" as string | null }
-        : await fcService.getSetWithCards(setId);
+        : await fcService.getDeckWithCards(setId);
       if (cancelled) return;
 
       if (!setRes.data && (offlineFirst || isNetworkFailure(setRes.error))) {
@@ -432,7 +432,7 @@ export function useFlashcardStudy(
   // only GROW the progress denominator — never reset it.
   const refreshCards = async (): Promise<void> => {
     if (!setId) return;
-    const res = await fcService.getSetWithCards(setId);
+    const res = await fcService.getDeckWithCards(setId);
     if (!res.data) return;
     const freshAll = res.data.cards;
     const freshById = new Map(freshAll.map((c) => [c.id, c]));

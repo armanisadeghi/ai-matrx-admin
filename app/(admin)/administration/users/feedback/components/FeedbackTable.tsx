@@ -17,6 +17,8 @@ import {
   ImageIcon,
   Lightbulb,
   MinusCircle,
+  Flag,
+  UserPlus,
   UserCheck,
   XCircle,
   Zap,
@@ -76,8 +78,7 @@ import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
-import { runPerRow } from "@/lib/entity-list/standardBulkActions";
-import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 
 const TABLE_ID = "admin-feedback";
 const DONE: FeedbackStatus[] = ["resolved", "closed", "wont_fix", "deferred"];
@@ -413,117 +414,139 @@ export default function FeedbackTable() {
     },
     [load, rows],
   );
-  // BULK TRIAGE — the same verbs the row and the detail dialog already have
-  // (approve into the work queue, defer, close, won't fix), batched. Built-in
-  // verbs are off: feedback is a platform queue, not a favouritable record.
-  const feedbackBulkActions: EntityBulkAction<UserFeedback>[] = [
-    {
-      id: "approve",
-      label: "Approve",
-      icon: CheckCircle2,
-      variant: "default",
-      confirm: (sel) => ({
-        title: `Approve ${sel.count} feedback item${sel.count === 1 ? "" : "s"}?`,
-        description:
-          "Each is added to the end of the work queue, in the order shown. Items already approved are skipped.",
-        confirmLabel: "Approve",
-      }),
-      run: async (sel) => {
-        const base = Math.max(0, ...rows.map((row) => row.work_priority ?? 0));
-        const order = new Map(sel.ids.map((id, index) => [id, index + 1]));
-        return runPerRow(
-          sel,
-          async (id) => {
-            const result = await setAdminDecision(id, "approved", undefined, base + (order.get(id) ?? 1));
-            if (!result.success) throw new Error(result.error ?? "Could not approve");
+  // THE VERBS — one declaration feeds the bulk bar (the bulk twin rule). The row keeps its inline
+  // controls (status select, quick approve); every verb below is also what the bar offers, batched.
+  // Built-in verbs are off: feedback is a platform queue, not a favouritable record.
+  const label40 = (row: UserFeedback) => row.description.slice(0, 40);
+  const items = (n: number) => `${n} feedback item${n === 1 ? "" : "s"}`;
+  const must = async (p: Promise<{ success: boolean; error?: string | undefined }>, fallback: string) => {
+    const result = await p;
+    if (!result.success) throw new Error(result.error ?? fallback);
+  };
+  const setStatusOne = (id: string, status: FeedbackStatus) =>
+    must(
+      ["closed", "resolved", "wont_fix"].includes(status)
+        ? forceCloseFeedback(id, status as "closed" | "resolved" | "wont_fix")
+        : updateFeedback(id, { status }),
+      "Could not change the status",
+    );
+  const { bulkActions: feedbackBulkActions } = defineRowVerbs<UserFeedback>(
+    [
+      {
+        id: "approve", icon: CheckCircle2, label: "Approve",
+        appliesTo: (r) => r.admin_decision !== "approved", unavailableTooltip: "Already approved",
+        onClick: (r) => void approve(r.id),
+        bulk: {
+          done: "Approved",
+          confirm: (t) => ({
+            title: `Approve ${items(t.ids.length)}?`,
+            description: "Each is added to the end of the work queue, in the order shown. Items already approved are skipped.",
+            confirmLabel: "Approve",
+          }),
+          run: async (t) => {
+            const base = Math.max(0, ...rows.map((row) => row.work_priority ?? 0));
+            const order = new Map(t.ids.map((id, index) => [id, index + 1]));
+            const failed: { id: string; reason: string }[] = [];
+            for (const id of t.ids) {
+              try {
+                await must(setAdminDecision(id, "approved", undefined, base + (order.get(id) ?? 1)), "Could not approve");
+              } catch (e) {
+                failed.push({ id, reason: e instanceof Error ? e.message : String(e) });
+              }
+            }
+            return { failed };
           },
-          {
-            done: "Approved",
-            noun: "item",
-            labelOf: (row) => row.description.slice(0, 40),
-            skipReason: (row) => (row.admin_decision === "approved" ? "Already approved" : null),
-          },
-          (row) => row.id,
-        );
+        },
       },
-    },
-    {
-      id: "defer",
-      label: "Defer",
-      icon: MinusCircle,
-      confirm: (sel) => ({
-        title: `Defer ${sel.count} feedback item${sel.count === 1 ? "" : "s"}?`,
-        description: "Each decision becomes Deferred and leaves the work queue.",
-        confirmLabel: "Defer",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
-            const result = await setAdminDecision(id, "deferred");
-            if (!result.success) throw new Error(result.error ?? "Could not defer");
-          },
-          { done: "Deferred", noun: "item", labelOf: (row) => row.description.slice(0, 40) },
-          (row) => row.id,
-        ),
-    },
-    {
-      id: "close",
-      label: "Close",
-      icon: XCircle,
-      variant: "destructive",
-      confirm: (sel) => ({
-        title: `Close ${sel.count} feedback item${sel.count === 1 ? "" : "s"}?`,
-        description:
-          "Each is force-closed whatever its stage. Reopen one from its own status menu.",
-        confirmLabel: "Close",
-        variant: "destructive",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
-            const result = await forceCloseFeedback(id, "closed");
-            if (!result.success) throw new Error(result.error ?? "Could not close");
-          },
-          {
-            done: "Closed",
-            noun: "item",
-            labelOf: (row) => row.description.slice(0, 40),
-            skipReason: (row) => (row.status === "closed" ? "Already closed" : null),
-          },
-          (row) => row.id,
-        ),
-    },
-    {
-      id: "wont-fix",
-      label: "Won't fix",
-      icon: Ban,
-      variant: "destructive",
-      confirm: (sel) => ({
-        title: `Mark ${sel.count} feedback item${sel.count === 1 ? "" : "s"} won't fix?`,
-        description:
-          "Each is force-closed as Won't Fix. Change one back from its own status menu.",
-        confirmLabel: "Won't fix",
-        variant: "destructive",
-      }),
-      run: (sel) =>
-        runPerRow(
-          sel,
-          async (id) => {
-            const result = await forceCloseFeedback(id, "wont_fix");
-            if (!result.success) throw new Error(result.error ?? "Could not update");
-          },
-          {
-            done: "Marked won't fix",
-            noun: "item",
-            labelOf: (row) => row.description.slice(0, 40),
-            skipReason: (row) => (row.status === "wont_fix" ? "Already won't fix" : null),
-          },
-          (row) => row.id,
-        ),
-    },
-  ];
+      {
+        id: "defer", icon: MinusCircle, label: "Defer",
+        onClick: (r) => void must(setAdminDecision(r.id, "deferred"), "Could not defer").then(() => load()),
+        bulk: {
+          done: "Deferred",
+          confirm: (t) => ({
+            title: `Defer ${items(t.ids.length)}?`,
+            description: "Each decision becomes Deferred and leaves the work queue.",
+            confirmLabel: "Defer",
+          }),
+          runOne: (id) => must(setAdminDecision(id, "deferred"), "Could not defer"),
+        },
+      },
+      {
+        id: "set_status", icon: Flag, label: "Set status…",
+        onClick: (r) => open(r),
+        bulk: {
+          done: "Status set",
+          confirm: (t) => ({
+            title: `Set status for ${items(t.ids.length)}?`,
+            description: "Each moves to the status you pick. Closed, Verified and Won't Fix are force-closes.",
+            confirmLabel: "Set status",
+            ask: {
+              kind: "choice",
+              label: "Status",
+              options: statuses.map((item) => ({ value: item.value, label: item.label })),
+              defaultValue: "triaged",
+            },
+          }),
+          runOne: (id, _row, input) => setStatusOne(id, input.value as FeedbackStatus),
+        },
+      },
+      {
+        id: "assign", icon: UserPlus, label: "Assign to…",
+        onClick: (r) => open(r),
+        bulk: {
+          done: "Assigned",
+          confirm: (t) => ({
+            title: `Assign ${items(t.ids.length)}?`,
+            description: "Each goes to the admin you pick. Choose Unassigned to clear it.",
+            confirmLabel: "Assign",
+            ask: {
+              kind: "choice",
+              label: "Assign to",
+              options: [
+                { value: "none", label: "Unassigned" },
+                ...admins.map((item) => ({ value: item.user_id, label: item.display_name || item.email || displayId(item.user_id) })),
+              ],
+              defaultValue: "none",
+            },
+          }),
+          runOne: (id, _row, input) =>
+            must(updateFeedback(id, { assigned_to: input.value === "none" ? null : (input.value ?? null) }), "Could not assign"),
+        },
+      },
+      {
+        id: "close", icon: XCircle, label: "Close", tone: "destructive",
+        appliesTo: (r) => r.status !== "closed", unavailableTooltip: "Already closed",
+        onClick: (r) => void setStatusOne(r.id, "closed").then(() => load()),
+        bulk: {
+          done: "Closed",
+          confirm: (t) => ({
+            title: `Close ${items(t.ids.length)}?`,
+            description: "Each is force-closed whatever its stage. Reopen one from its own status menu.",
+            confirmLabel: "Close",
+            variant: "destructive",
+          }),
+          runOne: (id) => setStatusOne(id, "closed"),
+        },
+      },
+      {
+        id: "wont-fix", icon: Ban, label: "Won't fix", tone: "destructive",
+        appliesTo: (r) => r.status !== "wont_fix", unavailableTooltip: "Already won't fix",
+        onClick: (r) => void setStatusOne(r.id, "wont_fix").then(() => load()),
+        bulk: {
+          done: "Marked won't fix",
+          confirm: (t) => ({
+            title: `Mark ${items(t.ids.length)} won't fix?`,
+            description: "Each is force-closed as Won't Fix. Change one back from its own status menu.",
+            confirmLabel: "Won't fix",
+            variant: "destructive",
+          }),
+          runOne: (id) => setStatusOne(id, "wont_fix"),
+        },
+      },
+      { id: "open", icon: Component, label: "Open feedback", onClick: (r) => open(r), bulk: false, noBulk: "open" },
+    ],
+    { noun: "feedback item", getRowId: (r) => r.id, getRowName: label40 },
+  );
   const bulk = useTableBulkSelection<UserFeedback>({
     noun: "feedback item",
     rows,

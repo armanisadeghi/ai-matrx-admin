@@ -47,6 +47,17 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- 2026-10-21 — CLOSE-TPL. **The Notion keys, the phone toolbar, and the ••• menu's missing rows.** B7: `editor/notion-keys.ts`
+  holds Cmd+Shift+H (last color used, default yellow highlight; every toolbar color pick is remembered through `applyColor`),
+  Cmd+A (block text, then every block), Cmd+/ (opens the ⋮⋮ block menu of the current block via `openBlockMenu`), and Esc
+  selects the current block through `rubber-band.ts` `selectBlocks` (↑/↓ move it, Enter writes again, Backspace/Cmd+D act on
+  it). L3/L4: `editor/mobile-bar.tsx` — on a touch screen a toolbar floats above the keyboard inset while writing (Turn into,
+  Color, indent, outdent, undo, redo, block menu, Done) and a half-second long-press opens the block menu. A13: page history
+  names each saver through `platform._drill_people_names`. A7: ••• gains Import (the sidebar's choices, `useSpacesImport`,
+  landing as sub-pages) and Connections (`page/PageConnections.tsx`, the person's live connections + Add connections).
+  Proof: `editor/__tests__/notion-keys.editor-proof.mts` (red on the old behavior, green now); walk
+  `__tests__/walk/notion-keys-mobile.walk.mjs`.
+
 - 2026-10-19 — DB-BLOCK-CHROME-2. **A database block's first paint is its final height.** (1) The served page hydrated a
   minute late on slow 4G and "Edited 27m ago" read "28m ago": a text hydration mismatch made React redraw the whole served
   page in the browser, and the kept server-drawn hosts were then EMPTY. `readSpacePage` returns `servedAt` and the page's first

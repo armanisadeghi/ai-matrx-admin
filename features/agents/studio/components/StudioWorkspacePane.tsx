@@ -154,14 +154,13 @@ export function useStudioWorkspace(conversationId: string | null) {
   const edit = (change: (w: StudioWorkspace) => StudioWorkspace): Promise<void> => {
     if (!conversationId) return Promise.resolve();
     edits.current += 1;
-    gen.current += 1;
     setWs((w) => (w ? change(w) : w)); // optimistic
     const run = chain.current.then(async () => {
       try {
         const saved = await editWorkspace(conversationId, change);
-        shownVersion.current = { id: conversationId, version: saved.version };
         // Only the LAST queued save's echo is shown: an earlier echo would land on top of newer typing.
-        if (edits.current === 1) setWs(saved.ws);
+        // Its realtime UPDATE then carries the same record (a newer version), which applies harmlessly.
+        if (edits.current === 1) setWs(saved);
       } catch (e) {
         toast.error("That edit did not save", { description: e instanceof Error ? e.message : String(e) });
       } finally {

@@ -1,0 +1,3804 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0586",
+  "version": 1,
+  "title": "Martial Arts School",
+  "description": "Intro lessons to black belt: students, ranks, belt tests, class schedule and dues.",
+  "forWho": "Karate, taekwondo and jiu-jitsu schools",
+  "icon": {
+    "emoji": "🥋"
+  },
+  "cover": {
+    "url": "gallery:wellness-karate-belts",
+    "offsetY": 50
+  },
+  "category": "wellness",
+  "tags": [
+    "martial",
+    "karate",
+    "dojo",
+    "jiujitsu",
+    "taekwondo",
+    "belts"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-martial-arts-school",
+    "catalogueId": "SP0586",
+    "useCase": "The head instructor of Stonebridge Martial Arts uses this to see who is ready to test, which intro lessons turned into students and which classes are full.",
+    "industry": "fitness_beauty_wellness",
+    "vertical": "Martial arts school",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Stonebridge Martial Arts",
+      "describes": "A five-instructor school teaching kids and adult karate plus Brazilian jiu-jitsu to about 180 students, with belt tests every eight weeks.",
+      "address": {
+        "line1": "2280 Kettering Mill Road",
+        "city": "Columbus",
+        "region": "OH",
+        "postalCode": "43215",
+        "country": "US"
+      },
+      "phone": "(614) 555-0190",
+      "website": "stonebridgemartialarts.net",
+      "email": "front.desk@stonebridgemartialarts.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-martial-arts-school",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Renata Okoye-Lund",
+              "role": "Owner and head instructor",
+              "work_email": "renata@stonebridgemartialarts.net",
+              "mobile": "(614) 555-0141",
+              "start_date": "@today-12y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Mateo Szabo",
+              "role": "Instructor",
+              "work_email": "mateo@stonebridgemartialarts.net",
+              "mobile": "(614) 555-0142",
+              "start_date": "@today-6y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Hana Iwasaki-Grant",
+              "role": "Kids program lead",
+              "work_email": "hana@stonebridgemartialarts.net",
+              "mobile": "(614) 555-0143",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Darius Whitfield",
+              "role": "Front desk and enrollment",
+              "work_email": "darius@stonebridgemartialarts.net",
+              "mobile": "(614) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Freya Castellanos",
+              "role": "Assistant instructor",
+              "work_email": "freya@stonebridgemartialarts.net",
+              "mobile": "(614) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "lead_enrolled",
+        "table": "lead",
+        "name": "Mark enrolled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Enrolled"
+          },
+          {
+            "field": "enrolled_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "lead_take",
+        "table": "lead",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "test_passed",
+        "table": "belt_test",
+        "name": "Mark passed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Passed"
+          },
+          {
+            "field": "passed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Martial Arts School assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "student",
+          "describes": "Every enrolled student: program, rank, classes since their last promotion, membership and dues."
+        },
+        {
+          "name": "related_tables",
+          "table": "lead",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many students are registered for the next belt test?",
+        "whyItMatters": "Belts and certificates are ordered from this number.",
+        "expect": {
+          "table": "belt_test",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Registered"
+          },
+          "answer": 4,
+          "unit": "students"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open intro lessons.",
+        "action": {
+          "kind": "open",
+          "surface": "lead_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "lead_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open students.",
+        "action": {
+          "kind": "open",
+          "surface": "student_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "student_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open test candidates.",
+        "action": {
+          "kind": "open",
+          "surface": "belt_test_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "belt_test_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "stonebridgemartialarts.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Kettering Mill Road"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "lead",
+        "name": "Intro lessons",
+        "labelSingular": "Intro lesson",
+        "labelPlural": "Intro lessons",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "door-open",
+        "titleField": "lead_name",
+        "describes": "Families and adults who asked about classes, their free intro lesson and whether they enrolled.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Enrolled"
+            ],
+            "filled": [
+              "enrolled_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Intro lesson",
+            "values": {
+              "status": "Intro booked",
+              "lead_name": "New prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Waiver sent and signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Uniform size guessed and set aside"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Instructor told the student's age and any worries the parent mentioned"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "During"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Greeting, bow-in, three simple techniques, one game"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "One real win the student can show their family"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Talk with the parent or adult student, never at the door in a rush"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Program and schedule that fit them"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up call within two days if they did not enroll"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "lead_name",
+            "label": "Prospect",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Inquiry",
+            "choices": [
+              "Inquiry",
+              "Intro booked",
+              "Intro attended",
+              "Enrolled",
+              "Not now"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Intro booked": "blue",
+              "Intro attended": "violet",
+              "Enrolled": "green",
+              "Not now": "red"
+            },
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Intro booked": "todo",
+              "Intro attended": "in_progress",
+              "Enrolled": "done",
+              "Not now": "done"
+            }
+          },
+          {
+            "key": "program",
+            "label": "Program",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Little Dragons, ages 4 to 6",
+              "Kids karate, ages 7 to 12",
+              "Teen and adult karate",
+              "Brazilian jiu-jitsu"
+            ],
+            "choiceColors": {
+              "Little Dragons, ages 4 to 6": "pink",
+              "Kids karate, ages 7 to 12": "orange",
+              "Teen and adult karate": "blue",
+              "Brazilian jiu-jitsu": "violet"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Heard about us",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Referral from a student",
+              "Walked past",
+              "Web search",
+              "Birthday party",
+              "School flyer"
+            ],
+            "choiceColors": {
+              "Referral from a student": "green",
+              "Walked past": "teal",
+              "Web search": "blue",
+              "Birthday party": "pink",
+              "School flyer": "yellow"
+            }
+          },
+          {
+            "key": "intro_at",
+            "label": "Intro lesson",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "enrolled_on",
+            "label": "Enrolled on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instructor",
+            "label": "Intro instructor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "assigned_to",
+            "label": "Follow-up by",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "enr_btn",
+            "label": "Mark enrolled",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_enrolled"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "lead_take"
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "lead-1",
+            "values": {
+              "lead_name": "Ava Lindqvist, age 7",
+              "status": "Enrolled",
+              "program": "Kids karate, ages 7 to 12",
+              "source": "Referral from a student",
+              "intro_at": "@today-20d 16:30",
+              "enrolled_on": "@today-18d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0101",
+              "email": "lindqvist.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-2",
+            "values": {
+              "lead_name": "Ruben Castellano, adult",
+              "status": "Enrolled",
+              "program": "Brazilian jiu-jitsu",
+              "source": "Web search",
+              "intro_at": "@today-15d 19:00",
+              "enrolled_on": "@today-15d",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0102",
+              "email": "castellano.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-3",
+            "values": {
+              "lead_name": "Noor Haddad, age 5",
+              "status": "Enrolled",
+              "program": "Little Dragons, ages 4 to 6",
+              "source": "Birthday party",
+              "intro_at": "@today-12d 10:00",
+              "enrolled_on": "@today-11d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0103",
+              "email": "haddad.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-4",
+            "values": {
+              "lead_name": "Callum Brightwater, age 9",
+              "status": "Intro attended",
+              "program": "Kids karate, ages 7 to 12",
+              "source": "School flyer",
+              "intro_at": "@today-5d 16:30",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0104",
+              "email": "brightwater.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-5",
+            "values": {
+              "lead_name": "Simone Okafor, adult",
+              "status": "Intro attended",
+              "program": "Teen and adult karate",
+              "source": "Walked past",
+              "intro_at": "@today-3d 18:00",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0105",
+              "email": "okafor.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-6",
+            "values": {
+              "lead_name": "Theo Marsh, age 6",
+              "status": "Not now",
+              "program": "Little Dragons, ages 4 to 6",
+              "source": "Web search",
+              "intro_at": "@today-9d 10:00",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0106",
+              "email": "marsh.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-7",
+            "values": {
+              "lead_name": "Imani Brooks, age 11",
+              "status": "Intro booked",
+              "program": "Kids karate, ages 7 to 12",
+              "source": "Referral from a student",
+              "intro_at": "@today 16:30",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0107",
+              "email": "brooks.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-8",
+            "values": {
+              "lead_name": "Jonas Weller, adult",
+              "status": "Intro booked",
+              "program": "Brazilian jiu-jitsu",
+              "source": "Web search",
+              "intro_at": "@today+1d 19:00",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0108",
+              "email": "weller.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-9",
+            "values": {
+              "lead_name": "Lucia Ferrante, age 4",
+              "status": "Intro booked",
+              "program": "Little Dragons, ages 4 to 6",
+              "source": "Birthday party",
+              "intro_at": "@today+3d 10:00",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0109",
+              "email": "ferrante.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-10",
+            "values": {
+              "lead_name": "Priya Sandoval, age 13",
+              "status": "Intro booked",
+              "program": "Teen and adult karate",
+              "source": "Referral from a student",
+              "intro_at": "@today+5d 18:00",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0110",
+              "email": "sandoval.home@inbox-mail.net"
+            }
+          },
+          {
+            "key": "lead-11",
+            "values": {
+              "lead_name": "Mason Okwuosa, age 8",
+              "status": "Inquiry",
+              "program": "Kids karate, ages 7 to 12",
+              "source": "School flyer",
+              "phone": "(614) 555-0111",
+              "email": "okwuosa.home@inbox-mail.net"
+            }
+          }
+        ],
+        "independentOf": {
+          "instructor": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "intro_at",
+            "enrolled_on"
+          ]
+        ]
+      },
+      {
+        "token": "student",
+        "name": "Students",
+        "labelSingular": "Student",
+        "labelPlural": "Students",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-round",
+        "titleField": "student_name",
+        "describes": "Every enrolled student: program, rank, classes since their last promotion, membership and dues.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "student_name",
+            "label": "Student",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Membership status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Trial month",
+              "Frozen",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "Trial month": "blue",
+              "Frozen": "amber",
+              "Cancelled": "red"
+            },
+            "default": "Active"
+          },
+          {
+            "key": "program",
+            "label": "Program",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Little Dragons, ages 4 to 6",
+              "Kids karate, ages 7 to 12",
+              "Teen and adult karate",
+              "Brazilian jiu-jitsu"
+            ],
+            "choiceColors": {
+              "Little Dragons, ages 4 to 6": "pink",
+              "Kids karate, ages 7 to 12": "orange",
+              "Teen and adult karate": "blue",
+              "Brazilian jiu-jitsu": "violet"
+            }
+          },
+          {
+            "key": "rank",
+            "label": "Rank",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "White",
+              "Yellow",
+              "Orange",
+              "Green",
+              "Blue",
+              "Purple",
+              "Brown",
+              "Black"
+            ],
+            "choiceColors": {
+              "White": "slate",
+              "Yellow": "yellow",
+              "Orange": "orange",
+              "Green": "green",
+              "Blue": "blue",
+              "Purple": "violet",
+              "Brown": "amber",
+              "Black": "red"
+            },
+            "default": "White"
+          },
+          {
+            "key": "stripes",
+            "label": "Stripes on the belt",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "key": "classes_since",
+            "label": "Classes since last promotion",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "ready",
+            "label": "Testing check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Membership status} = \"Active\", IF({Classes since last promotion} >= SWITCH({Rank}, \"White\", 24, \"Yellow\", 30, \"Orange\", 36, \"Green\", 40, \"Blue\", 48, \"Purple\", 60, \"Brown\", 80, 999), \"Eligible to test\", \"Keep training\"), \"\")"
+          },
+          {
+            "key": "membership",
+            "label": "Membership",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Twice a week",
+              "Unlimited",
+              "Family add-on",
+              "Ten-class card"
+            ],
+            "choiceColors": {
+              "Twice a week": "blue",
+              "Unlimited": "violet",
+              "Family add-on": "teal",
+              "Ten-class card": "slate"
+            }
+          },
+          {
+            "key": "monthly_dues",
+            "label": "Monthly dues (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "yearly",
+            "label": "Yearly dues (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Membership status} = \"Active\", {Membership status} = \"Trial month\"), {Monthly dues (USD)} * 12, \"\")"
+          },
+          {
+            "key": "guardian",
+            "label": "Parent or guardian",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "waiver",
+            "label": "Waiver signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "joined_on",
+            "label": "Joined on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "promoted_on",
+            "label": "Last promoted on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "instructor",
+            "label": "Main instructor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "tests_passed",
+            "label": "Belt tests passed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "tests",
+            "pick": "test_name",
+            "agg": "count",
+            "filter": {
+              "status": "Passed"
+            }
+          },
+          {
+            "key": "add_test_btn",
+            "label": "Register for a belt test",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "belt_test",
+              "template": "Belt test entry",
+              "prefill": {
+                "student": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "stud-1",
+            "values": {
+              "student_name": "Maya Chen-Abernathy",
+              "status": "Active",
+              "program": "Kids karate, ages 7 to 12",
+              "rank": "Orange",
+              "stripes": 4,
+              "classes_since": 38,
+              "membership": "Twice a week",
+              "monthly_dues": 149,
+              "guardian": "Lin Chen-Abernathy",
+              "joined_on": "@today-2y",
+              "promoted_on": "@today-60d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0121",
+              "email": "maya.chen-abernathy@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-2",
+            "values": {
+              "student_name": "Elias Brandvold",
+              "status": "Active",
+              "program": "Kids karate, ages 7 to 12",
+              "rank": "Green",
+              "stripes": 2,
+              "classes_since": 22,
+              "membership": "Unlimited",
+              "monthly_dues": 189,
+              "guardian": "Kari Brandvold",
+              "joined_on": "@today-3y",
+              "promoted_on": "@today-60d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0122",
+              "email": "elias.brandvold@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-3",
+            "values": {
+              "student_name": "Sofia Restrepo",
+              "status": "Active",
+              "program": "Teen and adult karate",
+              "rank": "Purple",
+              "stripes": 3,
+              "classes_since": 64,
+              "membership": "Unlimited",
+              "monthly_dues": 189,
+              "joined_on": "@today-4y",
+              "promoted_on": "@today-9m",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0123",
+              "email": "sofia.restrepo@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-4",
+            "values": {
+              "student_name": "Grant Oyelaran",
+              "status": "Active",
+              "program": "Brazilian jiu-jitsu",
+              "rank": "Blue",
+              "stripes": 4,
+              "classes_since": 52,
+              "membership": "Unlimited",
+              "monthly_dues": 169,
+              "joined_on": "@today-3y",
+              "promoted_on": "@today-11m",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0124",
+              "email": "grant.oyelaran@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-5",
+            "values": {
+              "student_name": "Hugo Lindqvist",
+              "status": "Active",
+              "program": "Kids karate, ages 7 to 12",
+              "rank": "Yellow",
+              "stripes": 3,
+              "classes_since": 31,
+              "membership": "Family add-on",
+              "monthly_dues": 99,
+              "guardian": "Astrid Lindqvist",
+              "joined_on": "@today-1y",
+              "promoted_on": "@today-60d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0125",
+              "email": "hugo.lindqvist@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-6",
+            "values": {
+              "student_name": "Ava Lindqvist",
+              "status": "Trial month",
+              "program": "Kids karate, ages 7 to 12",
+              "rank": "White",
+              "stripes": 0,
+              "classes_since": 6,
+              "membership": "Family add-on",
+              "monthly_dues": 99,
+              "guardian": "Astrid Lindqvist",
+              "joined_on": "@today-18d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0126",
+              "email": "ava.lindqvist@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-7",
+            "values": {
+              "student_name": "Noor Haddad",
+              "status": "Trial month",
+              "program": "Little Dragons, ages 4 to 6",
+              "rank": "White",
+              "stripes": 1,
+              "classes_since": 4,
+              "membership": "Twice a week",
+              "monthly_dues": 129,
+              "guardian": "Yusuf Haddad",
+              "joined_on": "@today-11d",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0127",
+              "email": "noor.haddad@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-8",
+            "values": {
+              "student_name": "Ruben Castellano",
+              "status": "Trial month",
+              "program": "Brazilian jiu-jitsu",
+              "rank": "White",
+              "stripes": 0,
+              "classes_since": 7,
+              "membership": "Unlimited",
+              "monthly_dues": 169,
+              "joined_on": "@today-15d",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0128",
+              "email": "ruben.castellano@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-9",
+            "values": {
+              "student_name": "Ines Tamura",
+              "status": "Active",
+              "program": "Little Dragons, ages 4 to 6",
+              "rank": "Yellow",
+              "stripes": 2,
+              "classes_since": 26,
+              "membership": "Twice a week",
+              "monthly_dues": 129,
+              "guardian": "Kenji Tamura",
+              "joined_on": "@today-1y",
+              "promoted_on": "@today-4m",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0129",
+              "email": "ines.tamura@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-10",
+            "values": {
+              "student_name": "Desmond Pryor",
+              "status": "Active",
+              "program": "Teen and adult karate",
+              "rank": "Brown",
+              "stripes": 2,
+              "classes_since": 41,
+              "membership": "Twice a week",
+              "monthly_dues": 149,
+              "joined_on": "@today-6y",
+              "promoted_on": "@today-1y",
+              "instructor": "tm-1",
+              "phone": "(614) 555-0130",
+              "email": "desmond.pryor@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-11",
+            "values": {
+              "student_name": "Clara Moretti",
+              "status": "Active",
+              "program": "Teen and adult karate",
+              "rank": "Green",
+              "stripes": 4,
+              "classes_since": 44,
+              "membership": "Twice a week",
+              "monthly_dues": 149,
+              "joined_on": "@today-2y",
+              "promoted_on": "@today-5m",
+              "instructor": "tm-2",
+              "phone": "(614) 555-0131",
+              "email": "clara.moretti@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-12",
+            "values": {
+              "student_name": "Owen Achterberg",
+              "status": "Frozen",
+              "program": "Kids karate, ages 7 to 12",
+              "rank": "Blue",
+              "stripes": 1,
+              "classes_since": 12,
+              "membership": "Twice a week",
+              "monthly_dues": 149,
+              "guardian": "Leni Achterberg",
+              "joined_on": "@today-3y",
+              "promoted_on": "@today-7m",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0132",
+              "email": "owen.achterberg@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-13",
+            "values": {
+              "student_name": "Talia Whitcombe",
+              "status": "Active",
+              "program": "Brazilian jiu-jitsu",
+              "rank": "Purple",
+              "stripes": 1,
+              "classes_since": 30,
+              "membership": "Unlimited",
+              "monthly_dues": 169,
+              "joined_on": "@today-5y",
+              "promoted_on": "@today-8m",
+              "instructor": "tm-1",
+              "phone": "(614) 555-0133",
+              "email": "talia.whitcombe@inbox-mail.net",
+              "waiver": true
+            }
+          },
+          {
+            "key": "stud-14",
+            "values": {
+              "student_name": "Jasper Holloway",
+              "status": "Cancelled",
+              "program": "Kids karate, ages 7 to 12",
+              "rank": "Orange",
+              "stripes": 1,
+              "classes_since": 8,
+              "membership": "Twice a week",
+              "monthly_dues": 149,
+              "guardian": "Nina Holloway",
+              "joined_on": "@today-1y",
+              "promoted_on": "@today-6m",
+              "instructor": "tm-3",
+              "phone": "(614) 555-0134",
+              "email": "jasper.holloway@inbox-mail.net",
+              "waiver": true
+            }
+          }
+        ],
+        "independentOf": {
+          "instructor": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "joined_on",
+            "promoted_on"
+          ]
+        ]
+      },
+      {
+        "token": "belt_test",
+        "name": "Belt tests",
+        "labelSingular": "Test candidate",
+        "labelPlural": "Test candidates",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "award",
+        "titleField": "test_name",
+        "describes": "Each student's place at a belt test: from which rank to which, the fee, the examiner and the result.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Passed"
+            ],
+            "filled": [
+              "passed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Belt test entry",
+            "values": {
+              "status": "Invited",
+              "test_name": "New test entry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Requirements"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Forms for this rank performed without prompting"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sparring or rolling rounds completed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Terminology and etiquette questions"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Board break, for karate ranks that need one"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Paperwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Testing fee paid"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Certificate printed with the right name and date"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Result"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Examiner's notes for the student and the parents."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "test_name",
+            "label": "Candidate",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Invited",
+            "choices": [
+              "Invited",
+              "Registered",
+              "Passed",
+              "Retest",
+              "Withdrawn"
+            ],
+            "choiceColors": {
+              "Invited": "slate",
+              "Registered": "blue",
+              "Passed": "green",
+              "Retest": "amber",
+              "Withdrawn": "red"
+            },
+            "statusGroups": {
+              "Invited": "todo",
+              "Registered": "todo",
+              "Passed": "done",
+              "Retest": "done",
+              "Withdrawn": "done"
+            }
+          },
+          {
+            "key": "student",
+            "label": "Student",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "student",
+            "relationMax": 1
+          },
+          {
+            "key": "from_rank",
+            "label": "From",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "White",
+              "Yellow",
+              "Orange",
+              "Green",
+              "Blue",
+              "Purple",
+              "Brown",
+              "Black"
+            ],
+            "choiceColors": {
+              "White": "slate",
+              "Yellow": "yellow",
+              "Orange": "orange",
+              "Green": "green",
+              "Blue": "blue",
+              "Purple": "violet",
+              "Brown": "amber",
+              "Black": "red"
+            }
+          },
+          {
+            "key": "to_rank",
+            "label": "To",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "White",
+              "Yellow",
+              "Orange",
+              "Green",
+              "Blue",
+              "Purple",
+              "Brown",
+              "Black"
+            ],
+            "choiceColors": {
+              "White": "slate",
+              "Yellow": "yellow",
+              "Orange": "orange",
+              "Green": "green",
+              "Blue": "blue",
+              "Purple": "violet",
+              "Brown": "amber",
+              "Black": "red"
+            }
+          },
+          {
+            "key": "test_on",
+            "label": "Test date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "passed_on",
+            "label": "Passed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "fee",
+            "label": "Testing fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "fee_paid",
+            "label": "Fee paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "examiner",
+            "label": "Examiner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "notes",
+            "label": "Examiner notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pass_btn",
+            "label": "Mark passed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "test_passed"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "test-1",
+            "values": {
+              "test_name": "Maya Chen-Abernathy, yellow to orange",
+              "status": "Passed",
+              "student": "stud-1",
+              "from_rank": "Yellow",
+              "to_rank": "Orange",
+              "test_on": "@today-60d",
+              "passed_on": "@today-60d",
+              "fee": 65,
+              "fee_paid": true,
+              "examiner": "tm-1",
+              "notes": "Strong kata, keep the stances low"
+            }
+          },
+          {
+            "key": "test-2",
+            "values": {
+              "test_name": "Elias Brandvold, orange to green",
+              "status": "Passed",
+              "student": "stud-2",
+              "from_rank": "Orange",
+              "to_rank": "Green",
+              "test_on": "@today-60d",
+              "passed_on": "@today-60d",
+              "fee": 65,
+              "fee_paid": true,
+              "examiner": "tm-1",
+              "notes": "Good spirit in sparring"
+            }
+          },
+          {
+            "key": "test-3",
+            "values": {
+              "test_name": "Hugo Lindqvist, white to yellow",
+              "status": "Passed",
+              "student": "stud-5",
+              "from_rank": "White",
+              "to_rank": "Yellow",
+              "test_on": "@today-60d",
+              "passed_on": "@today-60d",
+              "fee": 65,
+              "fee_paid": true,
+              "examiner": "tm-1"
+            }
+          },
+          {
+            "key": "test-4",
+            "values": {
+              "test_name": "Clara Moretti, green to blue, first attempt",
+              "status": "Retest",
+              "student": "stud-11",
+              "from_rank": "Green",
+              "to_rank": "Blue",
+              "test_on": "@today-60d",
+              "fee": 75,
+              "fee_paid": true,
+              "examiner": "tm-1",
+              "notes": "Forgot the second half of the form; retest next cycle"
+            }
+          },
+          {
+            "key": "test-5",
+            "values": {
+              "test_name": "Maya Chen-Abernathy, orange to green",
+              "status": "Registered",
+              "student": "stud-1",
+              "from_rank": "Orange",
+              "to_rank": "Green",
+              "test_on": "@today+12d",
+              "fee": 65,
+              "fee_paid": true,
+              "examiner": "tm-1"
+            }
+          },
+          {
+            "key": "test-6",
+            "values": {
+              "test_name": "Hugo Lindqvist, yellow to orange",
+              "status": "Registered",
+              "student": "stud-5",
+              "from_rank": "Yellow",
+              "to_rank": "Orange",
+              "test_on": "@today+12d",
+              "fee": 65,
+              "fee_paid": false,
+              "examiner": "tm-1"
+            }
+          },
+          {
+            "key": "test-7",
+            "values": {
+              "test_name": "Sofia Restrepo, purple to brown",
+              "status": "Registered",
+              "student": "stud-3",
+              "from_rank": "Purple",
+              "to_rank": "Brown",
+              "test_on": "@today+12d",
+              "fee": 95,
+              "fee_paid": true,
+              "examiner": "tm-1"
+            }
+          },
+          {
+            "key": "test-8",
+            "values": {
+              "test_name": "Grant Oyelaran, blue to purple",
+              "status": "Invited",
+              "student": "stud-4",
+              "from_rank": "Blue",
+              "to_rank": "Purple",
+              "test_on": "@today+26d",
+              "fee": 120,
+              "fee_paid": false,
+              "examiner": "tm-1"
+            }
+          },
+          {
+            "key": "test-9",
+            "values": {
+              "test_name": "Clara Moretti, green to blue",
+              "status": "Registered",
+              "student": "stud-11",
+              "from_rank": "Green",
+              "to_rank": "Blue",
+              "test_on": "@today+12d",
+              "fee": 75,
+              "fee_paid": false,
+              "examiner": "tm-1"
+            }
+          },
+          {
+            "key": "test-10",
+            "values": {
+              "test_name": "Jasper Holloway, orange to green",
+              "status": "Withdrawn",
+              "student": "stud-14",
+              "from_rank": "Orange",
+              "to_rank": "Green",
+              "test_on": "@today+12d",
+              "fee": 65,
+              "fee_paid": false,
+              "examiner": "tm-1"
+            }
+          }
+        ],
+        "independentOf": {
+          "student": "Either record can be created or change status before the other.",
+          "examiner": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The test date is the event; passed on is stamped when the examiner signs the result, the same day or after a retest."
+      },
+      {
+        "token": "class",
+        "name": "Class schedule",
+        "labelSingular": "Class",
+        "labelPlural": "Classes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "class_name",
+        "describes": "The weekly timetable: who teaches each class, how many fit on the mat and how full it runs.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "class_name",
+            "label": "Class",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "program",
+            "label": "Program",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Little Dragons, ages 4 to 6",
+              "Kids karate, ages 7 to 12",
+              "Teen and adult karate",
+              "Brazilian jiu-jitsu"
+            ],
+            "choiceColors": {
+              "Little Dragons, ages 4 to 6": "pink",
+              "Kids karate, ages 7 to 12": "orange",
+              "Teen and adult karate": "blue",
+              "Brazilian jiu-jitsu": "violet"
+            }
+          },
+          {
+            "key": "days",
+            "label": "Days",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monday and Wednesday",
+              "Tuesday and Thursday",
+              "Friday",
+              "Saturday"
+            ],
+            "choiceColors": {
+              "Monday and Wednesday": "blue",
+              "Tuesday and Thursday": "violet",
+              "Friday": "orange",
+              "Saturday": "green"
+            }
+          },
+          {
+            "key": "instructor",
+            "label": "Instructor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "capacity",
+            "label": "Mat capacity",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "avg_attendance",
+            "label": "Average attendance",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "fill",
+            "label": "Fill (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Mat capacity} > 0, ROUND({Average attendance} / {Mat capacity} * 100, 0), \"\")"
+          },
+          {
+            "key": "room_check",
+            "label": "Room check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Average attendance} >= {Mat capacity} * 0.9, \"Add a class\", IF({Average attendance} < {Mat capacity} * 0.4, \"Low turnout\", \"Healthy\"))"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "clas-1",
+            "values": {
+              "class_name": "Little Dragons, 4:00 pm",
+              "program": "Little Dragons, ages 4 to 6",
+              "days": "Monday and Wednesday",
+              "instructor": "tm-3",
+              "capacity": 14,
+              "avg_attendance": 12
+            }
+          },
+          {
+            "key": "clas-2",
+            "values": {
+              "class_name": "Little Dragons, Saturday 9:00 am",
+              "program": "Little Dragons, ages 4 to 6",
+              "days": "Saturday",
+              "instructor": "tm-5",
+              "capacity": 14,
+              "avg_attendance": 13
+            }
+          },
+          {
+            "key": "clas-3",
+            "values": {
+              "class_name": "Kids karate beginners, 4:45 pm",
+              "program": "Kids karate, ages 7 to 12",
+              "days": "Monday and Wednesday",
+              "instructor": "tm-3",
+              "capacity": 22,
+              "avg_attendance": 20
+            }
+          },
+          {
+            "key": "clas-4",
+            "values": {
+              "class_name": "Kids karate intermediate, 5:30 pm",
+              "program": "Kids karate, ages 7 to 12",
+              "days": "Tuesday and Thursday",
+              "instructor": "tm-3",
+              "capacity": 22,
+              "avg_attendance": 17
+            }
+          },
+          {
+            "key": "clas-5",
+            "values": {
+              "class_name": "Teen and adult karate, 6:30 pm",
+              "program": "Teen and adult karate",
+              "days": "Monday and Wednesday",
+              "instructor": "tm-2",
+              "capacity": 24,
+              "avg_attendance": 15
+            }
+          },
+          {
+            "key": "clas-6",
+            "values": {
+              "class_name": "Adult karate, Friday 6:00 pm",
+              "program": "Teen and adult karate",
+              "days": "Friday",
+              "instructor": "tm-1",
+              "capacity": 24,
+              "avg_attendance": 8
+            }
+          },
+          {
+            "key": "clas-7",
+            "values": {
+              "class_name": "Jiu-jitsu fundamentals, 7:15 pm",
+              "program": "Brazilian jiu-jitsu",
+              "days": "Tuesday and Thursday",
+              "instructor": "tm-2",
+              "capacity": 20,
+              "avg_attendance": 16
+            }
+          },
+          {
+            "key": "clas-8",
+            "values": {
+              "class_name": "Jiu-jitsu open mat, Saturday 11:00 am",
+              "program": "Brazilian jiu-jitsu",
+              "days": "Saturday",
+              "instructor": "tm-1",
+              "capacity": 20,
+              "avg_attendance": 11
+            }
+          }
+        ],
+        "independentOf": {
+          "instructor": "Either record can be created or change status before the other."
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "The instructor who teaches the intro.",
+        "fromTable": "lead",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "intros_taught"
+      },
+      {
+        "describes": "The instructor who tracks this student's progress.",
+        "fromTable": "student",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "students"
+      },
+      {
+        "describes": "Each entry is for one student.",
+        "fromTable": "belt_test",
+        "fromField": "student",
+        "toTable": "student",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tests"
+      },
+      {
+        "describes": "The senior instructor who runs the test.",
+        "fromTable": "belt_test",
+        "fromField": "examiner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "tests_examined"
+      },
+      {
+        "describes": "One lead instructor per class.",
+        "fromTable": "class",
+        "fromField": "instructor",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "classes_taught"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_lead",
+        "name": "All intro lessons",
+        "table": "lead",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "lead_board",
+        "name": "Intro lessons board",
+        "table": "lead",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "lead_cal",
+        "name": "Intro lessons calendar",
+        "table": "lead",
+        "kind": "calendar",
+        "dateField": "intro_at",
+        "allDay": true
+      },
+      {
+        "token": "lead_week",
+        "name": "Intros this week",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "intro_at": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "lead_next7",
+        "name": "Next 7 days",
+        "table": "lead",
+        "kind": "grid",
+        "within": {
+          "intro_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Intro booked"
+        }
+      },
+      {
+        "token": "lead_follow",
+        "name": "Attended, not enrolled",
+        "table": "lead",
+        "kind": "grid",
+        "filters": {
+          "status": "Intro attended"
+        }
+      },
+      {
+        "token": "lead_mine",
+        "name": "My follow-ups",
+        "table": "lead",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_student",
+        "name": "All students",
+        "table": "student",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "student_board",
+        "name": "Students board",
+        "table": "student",
+        "kind": "kanban",
+        "groupBy": "rank"
+      },
+      {
+        "token": "student_frozen",
+        "name": "Frozen memberships",
+        "table": "student",
+        "kind": "grid",
+        "filters": {
+          "status": "Frozen"
+        }
+      },
+      {
+        "token": "all_belt_test",
+        "name": "All test candidates",
+        "table": "belt_test",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "belt_test_board",
+        "name": "Test candidates board",
+        "table": "belt_test",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "belt_test_cal",
+        "name": "Test candidates calendar",
+        "table": "belt_test",
+        "kind": "calendar",
+        "dateField": "test_on",
+        "allDay": true
+      },
+      {
+        "token": "belt_test_upcoming",
+        "name": "Next 30 days",
+        "table": "belt_test",
+        "kind": "grid",
+        "within": {
+          "test_on": {
+            "relative": "next_days",
+            "n": 30
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Invited",
+            "Registered"
+          ]
+        }
+      },
+      {
+        "token": "belt_test_unpaid",
+        "name": "Fee not paid",
+        "table": "belt_test",
+        "kind": "grid",
+        "filters": {
+          "status": "Registered",
+          "fee_paid": false
+        }
+      },
+      {
+        "token": "all_class",
+        "name": "All classes",
+        "table": "class",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "class_board",
+        "name": "Classes board",
+        "table": "class",
+        "kind": "kanban",
+        "groupBy": "program"
+      }
+    ],
+    "forms": [
+      {
+        "token": "intro_request",
+        "name": "Book a free intro lesson",
+        "describes": "How a family or adult asks for a first lesson.",
+        "audience": "staff",
+        "table": "lead",
+        "fields": [
+          {
+            "fieldKey": "lead_name",
+            "ask": "Student's name and age?",
+            "required": true
+          },
+          {
+            "fieldKey": "program",
+            "ask": "Which program interests you?"
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "source",
+            "ask": "How did you hear about us?"
+          }
+        ],
+        "submitLabel": "Request a lesson",
+        "confirmation": "Thanks. The front desk will call to book a time."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "martial-arts-school",
+      "parent": null,
+      "title": "Martial Arts School",
+      "icon": {
+        "emoji": "🥋"
+      },
+      "cover": {
+        "url": "gallery:wellness-karate-belts",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "New families start in Intro lessons; enrolled students live in Students with their rank and dues. Belt tests runs every testing cycle, and the Class schedule shows which classes are full. Start on the Dashboard."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:belt-testing"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:intro-to-student"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Intro lessons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Families and adults who asked about classes, their free intro lesson and whether they enrolled."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "lead_board"
+            },
+            "inline": true,
+            "title": "Intro lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "lead-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "source",
+                  "enrolled_on",
+                  "phone",
+                  "email",
+                  "instructor",
+                  "assigned_to",
+                  "enr_btn",
+                  "take_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "lead-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "intro_at",
+                "hiddenFields": [
+                  "status",
+                  "source",
+                  "enrolled_on",
+                  "phone",
+                  "email",
+                  "instructor",
+                  "assigned_to",
+                  "enr_btn",
+                  "take_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "lead-t",
+                "name": "All intro lessons",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "lead-week",
+                "name": "Intros this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "intro_at": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "lead-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "intro_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Intro booked"
+                }
+              },
+              {
+                "id": "lead-follow",
+                "name": "Attended, not enrolled",
+                "layout": "list",
+                "icon": "PhoneCall",
+                "filters": {
+                  "status": "Intro attended"
+                }
+              },
+              {
+                "id": "lead-mine",
+                "name": "My follow-ups",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "lead-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Students"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every enrolled student: program, rank, classes since their last promotion, membership and dues."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "student",
+              "view": "student_board"
+            },
+            "inline": true,
+            "title": "Students",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "stud-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "rank",
+                "hiddenFields": [
+                  "stripes",
+                  "classes_since",
+                  "ready",
+                  "membership",
+                  "yearly",
+                  "guardian",
+                  "phone",
+                  "email",
+                  "waiver",
+                  "joined_on",
+                  "promoted_on",
+                  "instructor",
+                  "tests_passed",
+                  "add_test_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stud-t",
+                "name": "All students",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "stud-frozen",
+                "name": "Frozen memberships",
+                "layout": "list",
+                "icon": "PauseCircle",
+                "filters": {
+                  "status": "Frozen"
+                }
+              }
+            ],
+            "activeViewId": "stud-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Belt tests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each student's place at a belt test: from which rank to which, the fee, the examiner and the result."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "belt_test",
+              "view": "belt_test_board"
+            },
+            "inline": true,
+            "title": "Belt tests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "belt-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "student",
+                  "from_rank",
+                  "passed_on",
+                  "fee_paid",
+                  "examiner",
+                  "notes",
+                  "pass_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "belt-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "test_on",
+                "hiddenFields": [
+                  "status",
+                  "student",
+                  "from_rank",
+                  "passed_on",
+                  "fee_paid",
+                  "examiner",
+                  "notes",
+                  "pass_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "belt-t",
+                "name": "All test candidates",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "belt-upcoming",
+                "name": "Next 30 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "test_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Registered"
+                  ]
+                }
+              },
+              {
+                "id": "belt-unpaid",
+                "name": "Fee not paid",
+                "layout": "list",
+                "icon": "Receipt",
+                "filters": {
+                  "status": "Registered",
+                  "fee_paid": false
+                }
+              }
+            ],
+            "activeViewId": "belt-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Class schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The weekly timetable: who teaches each class, how many fit on the mat and how full it runs."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "class",
+              "view": "class_board"
+            },
+            "inline": true,
+            "title": "Class schedule",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "clas-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "program",
+                "hiddenFields": [
+                  "capacity",
+                  "avg_attendance",
+                  "fill",
+                  "room_check",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "clas-t",
+                "name": "All classes",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "clas-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "martial-arts-school",
+      "title": "Start here: how the school runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Intro lessons is the front door. Students is everyone on the mat, with their rank and dues. Belt tests holds every entry at every test. Class schedule is the weekly timetable."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The front desk"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every call or walk-in becomes an Intro lesson at "
+            },
+            {
+              "text": "Inquiry",
+              "bold": true
+            },
+            {
+              "text": "; book the free lesson and move it to "
+            },
+            {
+              "text": "Intro booked",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the lesson, the instructor talks with the family and the desk moves it to "
+            },
+            {
+              "text": "Intro attended",
+              "bold": true
+            },
+            {
+              "text": ". If they join, press "
+            },
+            {
+              "text": "Mark enrolled",
+              "bold": true
+            },
+            {
+              "text": " and add them to Students on a trial month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Attended, not enrolled",
+              "bold": true
+            },
+            {
+              "text": " is the call list. Ring within two days; most families who join decide in that call."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Instructors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update "
+            },
+            {
+              "text": "Classes since last promotion",
+              "bold": true
+            },
+            {
+              "text": " after each class, or once a week from the sign-in sheet."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Testing check",
+              "bold": true
+            },
+            {
+              "text": " turns to Eligible to test once a student has the classes for their rank. Invite them with "
+            },
+            {
+              "text": "Register for a belt test",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stripes go on the belt between ranks: one for each part of the curriculum learned."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The owner, monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Read the Room check on the Class schedule. A class that runs at 90% of its mat space needs a second time slot; one under 40% should be merged."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Dues and frozen memberships sit on each student; the owner reviews them on the first of the month."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "martial-arts-school",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Today's and this week's intro lessons, families to call back, who is registered for the next test and whose fee is unpaid."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "student",
+                      "view": "all_student"
+                    },
+                    "inline": true,
+                    "title": "Students",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-students-by-rank",
+                        "name": "Students by rank",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "rank",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-students-by-rank"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "student",
+                      "view": "all_student"
+                    },
+                    "inline": true,
+                    "title": "Students",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-dues-by-program",
+                        "name": "Dues by program",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "program",
+                          "op": "sum",
+                          "field": "monthly_dues"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-dues-by-program"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lead",
+                      "view": "all_lead"
+                    },
+                    "inline": true,
+                    "title": "Intro lessons",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-intros-by-source",
+                        "name": "Intros by source",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "source",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-intros-by-source"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Intros this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "all_lead"
+            },
+            "inline": true,
+            "title": "Intro lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-this-week-s-intros",
+                "name": "This week's intros",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "intro_at": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-this-week-s-intros"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Call back: attended, not enrolled"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "all_lead"
+            },
+            "inline": true,
+            "title": "Intro lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-follow-up-calls",
+                "name": "Follow-up calls",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Intro attended"
+                }
+              }
+            ],
+            "activeViewId": "l-follow-up-calls"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My follow-ups"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lead",
+              "view": "all_lead"
+            },
+            "inline": true,
+            "title": "Intro lessons",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Next belt test"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "belt_test",
+              "view": "all_belt_test"
+            },
+            "inline": true,
+            "title": "Belt tests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-test-entries",
+                "name": "Test entries",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "test_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Invited",
+                    "Registered"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-test-entries"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Testing fee not paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "belt_test",
+              "view": "all_belt_test"
+            },
+            "inline": true,
+            "title": "Belt tests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-unpaid-fees",
+                "name": "Unpaid fees",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Registered",
+                  "fee_paid": false
+                }
+              }
+            ],
+            "activeViewId": "l-unpaid-fees"
+          }
+        }
+      ]
+    },
+    {
+      "key": "belt-testing",
+      "parent": "martial-arts-school",
+      "title": "Running a belt test",
+      "icon": {
+        "emoji": "🥇"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A belt test is the school's biggest night: families come, students are nervous, and every promotion is a promise that the rank means something. Run it the same way every cycle."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Eight weeks out: who is eligible"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filter Students by "
+            },
+            {
+              "text": "Testing check",
+              "bold": true
+            },
+            {
+              "text": ". A student is eligible when their classes since the last promotion reach the number their rank needs:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Current rank"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Classes needed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usual time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "White"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "24"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3 months"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Yellow"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 months"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Orange"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "36"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 to 5 months"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Green"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "40"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5 months"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Blue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "48"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "6 months"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Purple"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "8 months"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brown"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "80"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "a year or more"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Classes alone are not enough. The instructor also confirms the student knows the forms and techniques for the next rank. Invite only students who will pass; a failed test is hard on a child and harder on trust."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Four weeks out: register"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Register for a belt test",
+              "bold": true
+            },
+            {
+              "text": " on each eligible student. The entry opens with the requirements checklist."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move entries from Invited to Registered when the family says yes, and tick "
+            },
+            {
+              "text": "Fee paid",
+              "bold": true
+            },
+            {
+              "text": " when the testing fee comes in. The dashboard lists every unpaid fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Order belts and print certificates for every registered student."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Seat families before bow-in. Run groups from youngest to oldest so the little ones go home on time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The examiner writes a short note for every student, good or bad, in "
+            },
+            {
+              "text": "Examiner notes",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark passed",
+              "bold": true
+            },
+            {
+              "text": " for each student who passed. It stamps the date. Then change the student's rank, set stripes back to zero, set the classes count back to zero and fill in Last promoted on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A student who misses one part gets "
+            },
+            {
+              "text": "Retest",
+              "bold": true
+            },
+            {
+              "text": ", not a fail. Tell them exactly what to fix, and test them on that part at the next cycle. Clara's entry shows how: she retests the form, and is registered again."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Post a photo of the new ranks, with permission. Families who see progress stay; promotions are when most memberships renew."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "intro-to-student",
+      "parent": "martial-arts-school",
+      "title": "Turning an intro lesson into a student",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most people who walk into a school for a free lesson decide within a week whether to join. The intro lesson is the school's whole sales process, so it is run by an instructor, never improvised."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the lesson"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the waiver with the booking text, so nobody fills in forms while the child waits."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the instructor the student's age and anything the parent mentioned: shy, energetic, being bullied, needs focus. That is the reason they came."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lesson itself"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Thirty minutes, one-to-one or in a small group. Bow in, teach three simple techniques, play one game, and finish with something the student can show their family at home. For adults, finish with a drill that makes them sweat a little and laugh a little."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The talk afterwards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sit down with the parent or adult student, away from the door."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask what they noticed. Connect it to the reason they came."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Recommend one program and one schedule, not a menu. Twice a week is right for most beginners."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer the trial month. If they say yes, press "
+            },
+            {
+              "text": "Mark enrolled",
+              "bold": true
+            },
+            {
+              "text": "; it stamps the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When they say not yet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move the row to "
+            },
+            {
+              "text": "Intro attended",
+              "bold": true
+            },
+            {
+              "text": " and assign the follow-up to yourself. Call within two days. Ask what would make it work: a different class time, a sibling discount, a friend joining too. If the answer is no, mark it "
+            },
+            {
+              "text": "Not now",
+              "bold": true
+            },
+            {
+              "text": " and leave a note; many families come back in the autumn."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where students come from"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Source"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it tells you"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Referral from a student"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Your best source; thank the family who referred"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Birthday party"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Parties fill Little Dragons; run one a month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Walked past"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The window and the sign are working"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Web search"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep the website's schedule current"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at the Intros by source chart each month and put the next month's effort where families are actually coming from."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

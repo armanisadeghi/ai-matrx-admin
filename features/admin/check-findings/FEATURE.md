@@ -121,6 +121,7 @@ adapter). Registered in `features/admin/constants/admin-categories.ts` (Reportin
 
 ## Change Log
 
+- 2026-10-21 — Mark OK has a bulk twin: tick findings, one shared reason, each committed through the same `markFindingOk` door; ineligible rows are skipped and named.
 - 2026-09-30 — `__summary__` is no longer "check broken": it is a check that judged and failed without an item list (`unitemizedFailure`, header "N failing without an item list", row action "fix what it names"). "Check broken" now means only `__check__` / `__malformed__` — the check crashed, timed out, did not measure, or printed unreadable items (`model.test.ts`).
 
 - 2026-10-03 — checks run on live as `admin@admin.com`; the clone checks leg is retired, so the "read the nightly copy" header line and the `copy_stale` skip below describe a retired leg.

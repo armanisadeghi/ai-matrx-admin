@@ -256,9 +256,34 @@ export const selectNoteOrganizationIds = createSelector(
 export const selectDeletedNotesList = createSelector(
   [selectNotesMap],
   (notes): NoteRecord[] => {
-    deletedListCache = stableNoteList(deletedListCache, Object.values(notes).filter((n) => !!n.deleted_at));
+    // Most recently deleted first, so the page order the Trash reads in is the order it shows.
+    deletedListCache = stableNoteList(
+      deletedListCache,
+      Object.values(notes)
+        .filter((n) => !!n.deleted_at)
+        .sort((a, b) => (b.deleted_at ?? "").localeCompare(a.deleted_at ?? "") || a.id.localeCompare(b.id)),
+    );
     return deletedListCache;
   },
+);
+
+/**
+ * How many notes are in the Trash — the SERVER total read with the last Trash
+ * page, moved by every delete/restore the store has seen since. Null until the
+ * Trash has been read (the caller falls back to what it holds, never a guess).
+ */
+export const selectNotesTrashCount = createSelector(
+  [selectNotesState, selectDeletedNotesList],
+  (slice, deleted): number | null => {
+    if (slice.trashTotal === null || slice.trashTotal === undefined) return null;
+    return Math.max(deleted.length, slice.trashTotal + (deleted.length - (slice.trashStoreCountAtFetch ?? 0)));
+  },
+);
+
+/** Trashed notes the server holds that the store has not loaded yet (0 when all are here). */
+export const selectNotesTrashRemaining = createSelector(
+  [selectNotesTrashCount, selectDeletedNotesList],
+  (count, deleted): number => (count === null ? 0 : Math.max(0, count - deleted.length)),
 );
 
 /** Notes shared WITH the current user (from `get_notes_shared_with_me`),

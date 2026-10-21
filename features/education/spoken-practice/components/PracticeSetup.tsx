@@ -76,7 +76,7 @@ export function PracticeSetup({
     void (async () => {
       const { fcService } =
         await import("@/features/flashcards/data/fcService");
-      const res = await fcService.listSets();
+      const res = await fcService.listDecks();
       if (alive && res.data) setDecks(res.data);
     })();
     return () => {

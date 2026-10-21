@@ -106,7 +106,7 @@ export function useAssessmentGeneration(config: KindConfig) {
         sourceKind = "deck";
         sourceId = src.deck.id;
         sourceTitle = src.deck.name;
-        const setRes = await fcService.getSetWithCards(src.deck.id);
+        const setRes = await fcService.getDeckWithCards(src.deck.id);
         const cards = setRes.data?.cards ?? [];
         if (cards.length === 0)
           return { status: "failed", error: "That deck has no cards to build from." };

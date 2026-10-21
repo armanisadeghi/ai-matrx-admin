@@ -17,6 +17,9 @@ import {
   type KindKitReadEmptyProps,
   type KindKitReadStaleNoticeProps,
   type KindImageProps,
+  type KindVideoProps,
+  type KindAudioProps,
+  type KindEmbedProps,
 } from "@ai-matrx/content-ir/kind-kit";
 
 function AppCopyButtons(props: KindKitCopyProps) {
@@ -40,4 +43,26 @@ function AppImage(props: KindImageProps) {
   return createElement(AppKindImage, props);
 }
 
-setKindKitHost({ CopyButtons: AppCopyButtons, ReadEmpty: AppReadEmpty, ReadStaleNotice: AppReadStaleNotice, Image: AppImage });
+/** A shape's video / audio / embed: the canonical players (the frame bundle aliases the module to its frame twin). */
+function AppVideo(props: KindVideoProps) {
+  const { AppKindVideo } = require("@/features/content-ir/react/kind-media/AppKindMedia") as typeof import("@/features/content-ir/react/kind-media/AppKindMedia");
+  return createElement(AppKindVideo, props);
+}
+function AppAudio(props: KindAudioProps) {
+  const { AppKindAudio } = require("@/features/content-ir/react/kind-media/AppKindMedia") as typeof import("@/features/content-ir/react/kind-media/AppKindMedia");
+  return createElement(AppKindAudio, props);
+}
+function AppEmbed(props: KindEmbedProps) {
+  const { AppKindEmbed } = require("@/features/content-ir/react/kind-media/AppKindMedia") as typeof import("@/features/content-ir/react/kind-media/AppKindMedia");
+  return createElement(AppKindEmbed, props);
+}
+
+setKindKitHost({
+  CopyButtons: AppCopyButtons,
+  ReadEmpty: AppReadEmpty,
+  ReadStaleNotice: AppReadStaleNotice,
+  Image: AppImage,
+  Video: AppVideo,
+  Audio: AppAudio,
+  Embed: AppEmbed,
+});

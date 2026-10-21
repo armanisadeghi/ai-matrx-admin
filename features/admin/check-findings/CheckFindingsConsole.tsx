@@ -58,6 +58,8 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type { MatrxColumnDef, MatrxDataTableLocalDrillConfig } from "@ai-matrx/design-system/data-table/types";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { formatCount, formatDurationMs, formatRelativeTime } from "@ai-matrx/kit/format";
@@ -662,6 +664,50 @@ function CheckDetail({
   // can only refuse after the admin typed a reason.
   const acceptable = hasAccept(acceptInfoFor(repo, row?.check.stable_id ?? null, frontendAccept, aidreamAccept));
 
+  // Mark OK is the item's one decision. The State cell keeps its per-row button (one reason, one
+  // dialog); this declaration is its bulk twin: ONE shared reason for every ticked finding.
+  const markable = (item: CheckItem): string | null => {
+    if (!acceptable) return "This check has no accept command";
+    if (item.state !== "open" && item.state !== "handed_off") return "Not open";
+    if (item.item_key === SUMMARY_ITEM_KEY || isReservedKey(item.item_key)) return "Fix the check itself";
+    const view = pendingAcceptView(item.state, item.pending_accept, run?.started_at ?? null, now);
+    return view.kind === "landing" || view.kind === "committing" ? "Already being marked OK" : null;
+  };
+  const { bulkActions } = defineRowVerbs<CheckItem>(
+    [
+      {
+        id: "mark_ok", icon: CheckCircle2, label: "Mark OK",
+        appliesTo: (item) => markable(item) === null,
+        unavailableTooltip: "Cannot be marked OK",
+        onClick: onAccept,
+        bulk: {
+          done: "Marked OK",
+          skipReason: markable,
+          confirm: (t) => ({
+            title: `Mark ${t.ids.length} ${t.ids.length === 1 ? "finding" : "findings"} OK?`,
+            description: "Each is committed to the check's allowlist on main with the same reason.",
+            confirmLabel: "Mark OK",
+            reason: { placeholder: "Why these are fine (recorded with each accept)" },
+          }),
+          runOne: async (id, _row, input) => {
+            const outcome = await markFindingOk(id, (input.reason ?? "").trim());
+            if (!outcome.ok) throw new Error(outcome.message);
+          },
+        },
+      },
+    ],
+    { noun: "finding", getRowId: (item) => item.id, getRowName: (item) => item.title ?? item.item_key },
+  );
+  const bulk = useTableBulkSelection<CheckItem>({
+    noun: "finding",
+    rows: items.status === "ready" ? items.data : [],
+    getRowId: (item) => item.id,
+    getRowName: (item) => item.title ?? item.item_key,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: onRetry,
+  });
+
   const columns: MatrxColumnDef<CheckItem>[] = [
     {
       id: "unit",
@@ -958,6 +1004,7 @@ function CheckDetail({
             data={data}
             columns={columns}
             getRowId={(item) => item.id}
+            selection={bulk.selection}
             isLoading={items.status === "loading"}
             stickyHeader
             density="condensed"

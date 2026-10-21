@@ -31,7 +31,7 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       filePath: "app/(core)/education/flashcards/page.tsx",
       status: "Live",
       notes: [
-        "Reads fcService.listSets() (RLS-filtered)",
+        "Reads fcService.listDecks() (RLS-filtered)",
         "Create deck opens the one creation page below",
       ],
     },
@@ -219,11 +219,11 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       name: "FlashcardsHome",
       filePath: "features/flashcards/components/home/FlashcardsHome.tsx",
       description:
-        "List-first home: loads listSets(), renders set cards with Study affordances + disabled New-set.",
+        "List-first home: loads listDecks(), renders set cards with Study affordances + disabled New-set.",
       tier: "internal",
     },
     {
-      name: "SetDetailView",
+      name: "DeckDetailView",
       filePath: "features/flashcards/components/set-detail/SetDetailView.tsx",
       description:
         "Set detail: header + card-peek grid (detail-presence badges) + Study button + back.",
@@ -258,21 +258,21 @@ export const flashcardsAdminMap: FeatureAdminMap = {
       tier: "internal",
     },
     {
-      name: "EditSetView",
+      name: "EditDeckView",
       filePath: "features/flashcards/components/editor/EditSetView.tsx",
       description:
         "The deck authoring surface: rename set, inline per-card edit, add card (basic/cloze/matching kind menu). F1: debounced autosave with a status indicator (no manual save), a version-history/restore entry point, per-card mastery pills, and the trust footer (verify-against-source) on generated cards. Writes via fcService.",
       tier: "internal",
     },
     {
-      name: "SetVersionHistoryDialog",
+      name: "DeckVersionHistoryDialog",
       filePath: "features/flashcards/components/editor/SetVersionHistoryDialog.tsx",
       description:
         "F1: never-lose-work version restore — lists the deck's platform row-versions (get_version_history) and restores any prior version (restore_version, append-only). Opened from the editor's History button.",
       tier: "internal",
     },
     {
-      name: "EnhanceSetDialog",
+      name: "EnhanceDeckDialog",
       filePath: "features/flashcards/components/set-detail/EnhanceSetDialog.tsx",
       description:
         '"Make this deeper": per-card enrich (fc_enrich_card → detail layers) + deepen (fc_expand_card → atomic sub-cards) with a depth tier (recall/applied/exam), preview-then-persist. Opened from the set-detail Enhance button (owner/editor only).',

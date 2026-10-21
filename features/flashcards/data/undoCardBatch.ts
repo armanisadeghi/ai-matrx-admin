@@ -30,7 +30,7 @@ export async function undoCardBatch(
   setId: string,
   batchId: string,
 ): Promise<{ removed: number; error: string | null }> {
-  const current = await fcService.getSetWithCards(setId);
+  const current = await fcService.getDeckWithCards(setId);
   if (!current.data) return { removed: 0, error: current.error ?? "The deck could not be read." };
   const mine = cardsInBatch(current.data.cards, batchId);
   let removed = 0;

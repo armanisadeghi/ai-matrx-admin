@@ -49,7 +49,7 @@ import {
 import { ConfigurableMarkdownContent } from "@ai-matrx/rich-content/display/chat-markdown/ConfigurableMarkdownContent";
 import { useAutosave } from "@ai-matrx/kit/autosave";
 import { AutosaveIndicator } from "@/components/AutosaveIndicator";
-import { SetVersionHistoryDialog } from "./SetVersionHistoryDialog";
+import { DeckVersionHistoryDialog } from "./SetVersionHistoryDialog";
 import { studyService } from "@/features/education/study/service/studyService";
 import type { ItemMasteryRow } from "@/features/education/study/types";
 import { MasteryTierPill } from "@/features/education/study/components/MasteryDisplay";
@@ -68,7 +68,7 @@ import { masteryTier } from "@/features/education/study/utils/masteryFsrs";
 import { fcService } from "../../data/fcService";
 import type {
   NewCardInput,
-  SetWithCards,
+  DeckWithCards,
   CardWithDetails,
 } from "../../data/types";
 import { DeckRowAccess } from "../sharing/DeckRowAccess";
@@ -106,9 +106,9 @@ interface HeaderFields {
 }
 
 
-export function EditSetView({ setId }: { setId: string }) {
+export function EditDeckView({ setId }: { setId: string }) {
   const router = useRouter();
-  const [data, setData] = useState<SetWithCards | null>(null);
+  const [data, setData] = useState<DeckWithCards | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -141,7 +141,7 @@ export function EditSetView({ setId }: { setId: string }) {
   // details are never lost to a missed manual save.
   const headerAutosave = useAutosave<HeaderFields>({
     save: async (h) => {
-      const res = await fcService.updateSet(setId, {
+      const res = await fcService.updateDeck(setId, {
         name: h.name.trim() || "Untitled deck",
         description: h.description.trim() || null,
         topic: h.topic.trim() || null,
@@ -158,7 +158,7 @@ export function EditSetView({ setId }: { setId: string }) {
     let cancelled = false;
     void (async () => {
       setLoading(true);
-      const res = await fcService.getSetWithCards(setId);
+      const res = await fcService.getDeckWithCards(setId);
       if (cancelled) return;
       if (!res.data) {
         setError(res.error ?? recordUnavailableMessage("flashcard deck", "unknown"));
@@ -599,7 +599,7 @@ export function EditSetView({ setId }: { setId: string }) {
       />
 
       {/* Never-lose-work: platform version history + restore for this deck. */}
-      <SetVersionHistoryDialog
+      <DeckVersionHistoryDialog
         open={historyOpen}
         onOpenChange={setHistoryOpen}
         setId={setId}

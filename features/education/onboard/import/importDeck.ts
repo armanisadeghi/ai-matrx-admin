@@ -4,12 +4,12 @@
 // from Quizlet / CSV / TSV / plain paste / Matrx-JSON lands as a NATIVE deck,
 // verbatim, no generation. Reuses the flashcards parser (`parseImportText`) for
 // delimited text and the portable-JSON round-trip parser; persists via the ONE
-// deck writer, `fcService.createSetWithCards`. Anki `.apkg` has its own module
+// deck writer, `fcService.createDeckWithCards`. Anki `.apkg` has its own module
 // (`importAnki.ts`) because it needs zip+SQLite decoding.
 //
 // IC-11 (education-platform INTEGRATION_MAP): `persistImportedDeck` is THE one
 // import entry. Every IMPORT source — file, paste, Anki, extension capture —
-// lands through it, never `createSetWithCards` direct. (AI *generation* flows
+// lands through it, never `createDeckWithCards` direct. (AI *generation* flows
 // like CreateFromTopic/CreateFromSource are not imports; they may call the one
 // row writer themselves.)
 
@@ -64,7 +64,7 @@ export async function persistImportedDeck(input: ImportedDeckInput): Promise<Imp
   if (cards.length === 0) {
     throw new Error("No cards found to import.");
   }
-  const res = await fcService.createSetWithCards(
+  const res = await fcService.createDeckWithCards(
     {
       name,
       description: input.description ?? null,

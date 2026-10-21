@@ -41,7 +41,7 @@ it.each(Object.entries(PLACE_BY_FILE))("%s names its own restore control", (path
 });
 
 it("no confirm hand-writes a restore place beside the shared sentence", () => {
-  // flashcardSetList's bulk confirm said "from Trash or the Archived filter" in its own words.
+  // flashcardDeckList's bulk confirm said "from Trash or the Archived filter" in its own words.
   for (const path of Object.keys(PLACE_BY_FILE)) {
     expect(source(path)).not.toMatch(/restore (it|them) from Trash or/);
   }

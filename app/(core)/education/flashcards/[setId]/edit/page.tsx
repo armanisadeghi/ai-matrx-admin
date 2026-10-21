@@ -1,7 +1,7 @@
 // record-view: none — an editor or builder (edit) for a record; the record's own page carries the section
 // /education/flashcards/[setId]/edit — authoring surface (view↔edit split).
 // Server shell: resolves async params, then renders the client editor island.
-// EditSetView is a "use client" leaf (inline card editing, set rename, add card)
+// EditDeckView is a "use client" leaf (inline card editing, set rename, add card)
 // — importing it here forms the client boundary (Next.js code-splits it).
 //
 // Gating (P7): EDIT-gated via requireAccess — a view-only sharee is redirected to
@@ -10,7 +10,7 @@
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { requireAccess } from "@/utils/permissions/requireAccess";
-import { EditSetView } from "@/features/flashcards/components/editor/EditSetView";
+import { EditDeckView } from "@/features/flashcards/components/editor/EditSetView";
 
 export const metadata: Metadata = toolMetadata("flashcards");
 
@@ -25,5 +25,5 @@ export default async function FlashcardEditPage({
   await requireAccess("fc_set", setId, "edit", {
     redirectTo: `/education/flashcards/${setId}`,
   });
-  return <EditSetView setId={setId} />;
+  return <EditDeckView setId={setId} />;
 }

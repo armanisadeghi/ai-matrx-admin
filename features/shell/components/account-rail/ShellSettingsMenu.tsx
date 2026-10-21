@@ -47,7 +47,7 @@ import {
   USER_MENU_PANEL_CLASS,
 } from "@/features/shell/components/header/header-right-menu/menuItemClass";
 import { RailMenuHeader, RAIL_MENU_DIVIDER } from "./RailMenuHeader";
-import { SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, Switch, Tile } from "@ai-matrx/design-system/controls";
 import { selectHoldsShellLayout, selectShellStandardView } from "@/features/shell/shell-layout/useResolvedShellLayout";
 import { shellStandardViewChanged } from "@/features/shell/shell-layout/shellLayoutSlice";
 import { setShellStandardViewCookie } from "@/features/shell/shell-layout/ShellLayoutSync";
@@ -171,7 +171,11 @@ function SettingsMenuList({ onDone }: { onDone: () => void }) {
   );
 }
 
-export function ShellSettingsMenu({ variant = "rail" }: { variant?: "rail" | "drawer" }) {
+/**
+ * `rail` (AppShell's account rail), `drawer` (the phone navigation drawer) or `frame` (the new app
+ * frame's sidebar footer: a design-system row, no `.shell-*` class, no shell checkbox to close).
+ */
+export function ShellSettingsMenu({ variant = "rail" }: { variant?: "rail" | "drawer" | "frame" }) {
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
   const done = () => {
@@ -180,7 +184,18 @@ export function ShellSettingsMenu({ variant = "rail" }: { variant?: "rail" | "dr
   };
 
   const trigger: ReactNode =
-    variant === "rail" ? (
+    variant === "frame" ? (
+      <Tile
+        dense
+        variant="quiet"
+        className="w-full"
+        aria-label="Settings"
+        title="Settings"
+        icon={<Settings aria-hidden="true" />}
+        end={<ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true" />}
+        data-shell-settings-menu="frame"
+      />
+    ) : variant === "rail" ? (
       <button
         type="button"
         title="Settings"
@@ -242,7 +257,12 @@ export function ShellSettingsMenu({ variant = "rail" }: { variant?: "rail" | "dr
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent side={variant === "rail" ? "right" : "top"} align="end" sideOffset={8} className={USER_MENU_PANEL_CLASS}>
+      <PopoverContent
+        side={variant === "rail" ? "right" : "top"}
+        align={variant === "frame" ? "start" : "end"}
+        sideOffset={8}
+        className={USER_MENU_PANEL_CLASS}
+      >
         <SettingsMenuList onDone={done} />
       </PopoverContent>
     </Popover>

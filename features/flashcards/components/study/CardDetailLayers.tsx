@@ -21,7 +21,7 @@
 // Deliberately NOT the registered `card_enrichment` kind component: that kind
 // renders an agent PROPOSAL payload through the DB-routed dynamic renderer
 // (`KindInstanceRender`, a three-state resolve with its own card chrome), which
-// is right inside EnhanceSetDialog's preview and wrong for an always-mounted,
+// is right inside EnhanceDeckDialog's preview and wrong for an always-mounted,
 // collapsed-by-default strip under a flashcard on a phone. What we render here
 // are STORED `fc_detail` rows, not a proposal. The kind component keeps its one
 // job; this keeps its one job.

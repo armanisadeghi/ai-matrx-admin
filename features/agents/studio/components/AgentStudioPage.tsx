@@ -28,16 +28,20 @@
  * `shellChatHostedElsewhere`), so the three panes are the whole width.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, FlaskConical, RotateCcw } from "lucide-react";
 import { Button, EmptyState, SegmentedControl, StageSteps, Tabs } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";
-import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
+import { useCanvasWorkspaceConversation } from "@ai-matrx/chat/canvas/workspace/useCanvasWorkspaceConversation";
+import { smartExecute } from "@ai-matrx/chat/agents/redux/execution-system/thunks/smart-execute.thunk";
+import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
+import { useMeasure } from "@ai-matrx/kit/hooks";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import {
+  extractFlatText,
   selectLatestAnswerText,
   selectLatestAssistantMessageId,
   selectConversationMessages,
@@ -49,11 +53,11 @@ import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/se
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
-import { STUDIO_PANE_MIN_PX, STUDIO_SIDE_MIN_PX, studioLayoutFor } from "../studio-layout";
+import { studioGrid, studioLayoutFor, studioSlot, type StudioLayout } from "../studio-layout";
 import { studioStage } from "../studio-stage";
-import { useMeasuredWidth } from "../use-width";
 import { useStudioUnsavedEdits } from "../unsaved-edits";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { studioScope } from "@/features/surfaces/manifests/agent-studio.manifest";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
 import { getFactoryBuild } from "@/features/agents/factory/service";
 import { KEPT_OUTCOMES, type FactoryBuildState } from "@/features/agents/factory/types";
@@ -89,6 +93,7 @@ import { useStudioBuilderFeed } from "../studio-builder-feed";
 import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import { StudioStart, keepStudioDraft } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
+import type { CSSProperties } from "react";
 import { StudioControls, type ControlsTab } from "./StudioControls";
 import { StudioTurnModel } from "./StudioTurnModel";
 import { PaneBar, PaneLabel } from "./PaneBar";
@@ -152,7 +157,8 @@ export function AgentStudioPage() {
       />
     );
   }
-  return <StudioWorkspace key={state.mode} state={state} go={go} />;
+  // No key: a mode, an agent arriving or a resize never remounts the workspace (its hooks restart in place).
+  return <StudioWorkspace state={state} go={go} />;
 }
 
 function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<StudioState>) => void }) {
@@ -162,18 +168,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const isMobile = useIsMobile();
   // The layout follows the workspace's OWN width, not the window's: Watch AI or the Builder panel
   // opening beside the Studio takes half a 1440 screen, and three panes must never squeeze into it.
-  const { ref: bodyRef, width: bodyWidth } = useMeasuredWidth<HTMLDivElement>();
-  const layout = bodyWidth === null ? null : studioLayoutFor(bodyWidth);
+  const [bodyRef, { width: bodyWidth }] = useMeasure<HTMLDivElement>();
+  // Before the first measure the layout is the device's guess; a correction only re-styles the slots.
+  const layout: StudioLayout = bodyWidth === null ? (isMobile ? "tabs" : "three") : studioLayoutFor(bodyWidth);
   const mode = studioMode(state.mode)!;
   const { mandate, error: doerError } = useMandate(ASSISTANT_MANDATE);
   useDeclaredSurfaceMandates(STUDIO_DISCLOSURE);
   const assistantReady = Boolean(mandate);
-  const { launchMandate } = useAgentLauncher();
 
   const [build, setBuild] = useState<FactoryBuildState | null>(null);
-  const [runKey, setRunKey] = useState(0);
-  const [runConversation, setRunConversation] = useState<string | null>(null);
-  /** Mode 1's "Run again": the last run's own inputs, re-sent on a fresh conversation. */
+  /** "Run again" / a picked case: the inputs the NEXT fresh run launches with (null = the first run's own seed). */
   const [rerunSeed, setRerunSeed] = useState<{ variables: Record<string, string>; userInput: string; autoRun?: boolean } | null>(null);
   const [phase, setPhase] = useState<MakePhase>({ kind: "idle" });
   /** Phone tabs open on the most useful pane: the agent and its run once there is an agent, else the assistant. */
@@ -188,18 +192,20 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const showAgent = () => {
     if (layout === "tabs") setPaneTab("agent");
   };
-  /** The assistant's open conversation, kept out of the URL until the person sends something. */
-  const [openChat, setOpenChat] = useState<string | null>(null);
-  const openChatSent = useAppSelector((s) => (openChat ? selectOrderedMessageIds(openChat)(s).length > 0 : false));
-  useEffect(() => {
-    if (openChat && openChatSent && openChat !== state.chatId) go({ chatId: openChat });
-  }, [openChat, openChatSent, state.chatId, go]);
   const hasAnswer = useAppSelector((s) => (state.chatId ? selectLatestAnswerText(state.chatId)(s).trim().length > 0 : false));
   const agentName = useAppSelector((s) => (state.agentId ? selectAgentById(s, state.agentId)?.name : undefined));
 
   // The agent the build kept: load it into the builder record (settings, save path, write targets).
+  const [agentRefused, setAgentRefused] = useState<{ id: string; error: unknown } | null>(null);
   useEffect(() => {
-    if (state.agentId) void dispatch(fetchFullAgent(state.agentId));
+    const id = state.agentId;
+    if (!id) return;
+    void dispatch(fetchFullAgent(id))
+      .unwrap()
+      .then(
+        () => setAgentRefused(null),
+        (error: unknown) => setAgentRefused({ id, error }),
+      );
   }, [state.agentId, dispatch]);
 
   // The build's own record holds the original request + approved answer (mode 2).
@@ -258,7 +264,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         }
         setSampleFor(id);
       },
-      () => live && setSampleFor(id),
+      (e: unknown) => {
+        if (!live) return;
+        toast.error("Its test cases did not load", { description: e instanceof Error ? e.message : String(e) });
+        setSampleFor(id);
+      },
     );
     return () => {
       live = false;
@@ -272,6 +282,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   // waits until that run is in the URL (or the agent has none), so it never starts a fresh run on
   // top of the one it is about to open.
   const [improveSettled, setImproveSettled] = useState(false);
+  const [improveLatest, setImproveLatest] = useState<string | null>(null);
   const improveReady = mode.id !== "improve" || Boolean(state.runId) || improveSettled;
   const plannedFor = useRef<string | null>(null);
   useEffect(() => {
@@ -282,14 +293,68 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       try {
         const runs = await fetchCandidateRuns(agentId, { limit: 15 });
         const plan = planImprove(runs);
-        if (plan.latest && !state.runId) go({ runId: plan.latest.conversationId });
-        else setImproveSettled(true);
+        if (plan.latest && !state.runId) setImproveLatest(plan.latest.conversationId);
+        setImproveSettled(true);
       } catch (e) {
         toast.error("Its recent runs did not load", { description: e instanceof Error ? e.message : String(e) });
         setImproveSettled(true);
       }
     })();
   }, [mode.id, state.agentId, state.runId, go]);
+
+  // ── the two conversations: the platform's canvas hook, twice (Lane 2G launch + param) ──
+  /** The assistant: its own key per mode (a new mode starts a new chat in place), named at `?chat=`. */
+  const assistantKey = `${ASSISTANT_SURFACE}:${mode.id}`;
+  const assistant = useCanvasWorkspaceConversation(assistantKey, {
+    enabled: assistantReady,
+    start: state.chatId ? { kind: "open", conversationId: state.chatId } : { kind: "new" },
+    launch: { mandateKey: ASSISTANT_MANDATE, sourceFeature: "agent-studio", surfaceName: STUDIO_SURFACE_NAME },
+    address: { link: null, open: true, hostedElsewhere: false, param: "chat" },
+  });
+  /**
+   * The person's EXACT words for the flip: the first message she sent the assistant (never the build's
+   * paraphrase, which dropped "under 300 characters" on 2026-10-21).
+   */
+  const firstTyped = useAppSelector((s) => {
+    if (mode.id !== "do-with-me" || !state.chatId) return "";
+    const first = (selectConversationMessages(state.chatId)(s) as StudioMessageRecord[]).find((m) => m.role === "user");
+    return first ? extractFlatText(first as never).trim() : "";
+  });
+  const flipSeed = caseSeed ? { ...caseSeed, userInput: firstTyped || caseSeed.userInput } : null;
+  /** The agent's run: keyed by the agent (its arrival restarts the hook in place), named at `?run=`. */
+  const runSurfaceKey = state.agentId ? tryKey(state.agentId) : "agent-studio:run:none";
+  const launchSeed: { variables: Record<string, string>; userInput: string; autoRun?: boolean } | null =
+    rerunSeed ?? flipSeed ?? sampleSeed;
+  const launchRuns = launchSeed ? launchSeed.autoRun !== false : false;
+  const run = useCanvasWorkspaceConversation(runSurfaceKey, {
+    enabled: Boolean(state.agentId) && !agentRefused && improveReady && sampleReady,
+    start: state.runId
+      ? { kind: "open", conversationId: state.runId, agentId: state.agentId ?? null }
+      : state.agentId
+        ? { kind: "agent", agentId: state.agentId }
+        : { kind: "new" },
+    launch: {
+      mandateKey: ASSISTANT_MANDATE, // never used: this hook only opens and launches the agent itself
+      sourceFeature: "agent-studio",
+      config: { displayMode: "direct", allowChat: true, autoRun: launchRuns, showVariablePanel: true },
+      ...(launchSeed
+        ? {
+            runtime: {
+              ...(Object.keys(launchSeed.variables).length > 0 ? { variables: launchSeed.variables } : {}),
+              ...(launchSeed.userInput ? { userInput: launchSeed.userInput } : {}),
+            },
+          }
+        : {}),
+      initiation: launchRuns && rerunSeed ? "user" : "auto",
+    },
+    address: { link: null, open: true, hostedElsewhere: false, param: "run" },
+  });
+  const runConversation = run.conversationId;
+  // Improve: the latest real run opens in place (read only), never a fresh paid one.
+  useEffect(() => {
+    if (improveLatest) run.openExisting(improveLatest, state.agentId ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per latest run found
+  }, [improveLatest]);
 
   /** "Save as test case" on the run on screen: an eval test case (kind='test_case'), its answer approved. */
   const [savingCase, setSavingCase] = useState(false);
@@ -384,24 +449,22 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   );
 
   /**
-   * One turn into the assistant's conversation (feedback from the controls), through the mandate.
-   * Never drops the text: with no chat yet it goes into the conversation the assistant pane already
-   * has open (its first send puts it in the URL), or starts one. True only once the turn started.
+   * One turn into the assistant's OPEN conversation (feedback from the controls) through the composer's
+   * own send path (`smartExecute`); the page's values ride it through the host-values channel. What the
+   * person had typed in the assistant's box is put back after the send. True only once the turn started.
    */
   const sendToAssistant = async (text: string): Promise<boolean> => {
-    const conversationId = state.chatId ?? openChat ?? undefined;
+    const conversationId = assistant.conversationId;
+    if (!conversationId) {
+      toast.error("The assistant is still opening", { description: "Send it again in a moment" });
+      return false;
+    }
+    const typed = store.getState().instanceUserInput?.byConversationId?.[conversationId]?.text ?? "";
     try {
-      const launched = await launchMandate(ASSISTANT_MANDATE, {
-        initiation: "user",
-        ...(conversationId ? { conversationId } : {}),
-        surfaceKey: ASSISTANT_SURFACE,
-        sourceFeature: "agent-studio",
-        config: { displayMode: "direct", autoRun: true, allowChat: true },
-        runtime: { userInput: text, surfaceName: STUDIO_SURFACE_NAME },
-      });
-      const started = conversationId ?? launched.conversationId;
-      if (!started) throw new Error("The assistant did not open a conversation");
-      if (started !== state.chatId) go({ chatId: started });
+      dispatch(setUserInputText({ conversationId, text }));
+      const sent = dispatch(smartExecute({ conversationId, surfaceKey: assistantKey }));
+      if (typed) dispatch(setUserInputText({ conversationId, text: typed }));
+      await sent.unwrap();
       return true;
     } catch (e) {
       toast.error("The assistant did not get your message", { description: e instanceof Error ? e.message : String(e) });
@@ -498,29 +561,42 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     if (s.agent_id && s.outcome && KEPT_OUTCOMES.has(s.outcome)) go({ agentId: s.agent_id });
   };
 
-  /** Fresh every time: a NEW conversation on the same inputs (the case's own, or the last run's). */
+  /**
+   * The top Run button. Nothing ran yet → it SENDS what is filled in on the run on screen (the typed
+   * input is never thrown away); after a run → a NEW conversation on the same inputs, fresh every time.
+   */
   const runAgain = () => {
-    // The first Run of a test whose inputs were filled from its sample runs those inputs now.
-    if (!hasRun && sampleSeed && !caseSeed) setRerunSeed({ ...sampleSeed, autoRun: true });
-    else if (!caseSeed && runConversation) {
+    const agentId = state.agentId;
+    if (!agentId) return;
+    if (!hasRun && runConversation) {
+      void dispatch(smartExecute({ conversationId: runConversation, surfaceKey: runSurfaceKey }))
+        .unwrap()
+        .catch((e: unknown) =>
+          toast.error("The run did not start", { description: e instanceof Error ? e.message : String(e) }),
+        );
+      return;
+    }
+    if (runConversation) {
       const s = store.getState();
       const values = selectOwnSubmittedFirstTurnValues(runConversation)(s) as Record<string, unknown> | undefined;
       const messages = selectConversationMessages(runConversation)(s) as StudioMessageRecord[];
-      setRerunSeed(rerunSeedFrom(values, messages));
+      const again = rerunSeedFrom(values, messages);
+      setRerunSeed(again ? { ...again, autoRun: true } : null);
     }
-    setRunKey((k) => k + 1);
+    run.startWith(agentId);
   };
 
   /** A saved test case, run fresh in the center. */
   const runCase = (sample: TestCaseRow) => {
+    if (!state.agentId) return;
     const variables: Record<string, string> = {};
     if (sample.variables && typeof sample.variables === "object" && !Array.isArray(sample.variables)) {
       for (const [k, v] of Object.entries(sample.variables)) {
         if (v !== null && v !== undefined && v !== "") variables[k] = typeof v === "string" ? v : JSON.stringify(v);
       }
     }
-    setRerunSeed({ variables, userInput: sampleInputText(sample) });
-    setRunKey((k) => k + 1);
+    setRerunSeed({ variables, userInput: sampleInputText(sample), autoRun: true });
+    run.startWith(state.agentId);
     showAgent();
   };
 
@@ -530,17 +606,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   ) : !assistantReady ? (
     <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Getting your assistant ready" />
   ) : (
-    <StudioRun
-      mandateKey={ASSISTANT_MANDATE}
-      mandateDoes={ASSISTANT_DOES}
-      surfaceName={STUDIO_SURFACE_NAME}
-      conversationId={state.chatId}
-      surfaceKey={ASSISTANT_SURFACE}
-      onConversation={(id) => {
-        // Opening the Studio creates nothing: the chat goes into the URL on the first send.
-        if (id !== state.chatId) setOpenChat(id);
-      }}
-    />
+    <StudioRun conversation={assistant.conversation} surfaceKey={assistantKey} operation="Open the Studio assistant" />
   );
 
   let center: React.ReactNode;
@@ -575,37 +641,24 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         }
       />
     );
+  } else if (state.agentId && agentRefused?.id === state.agentId) {
+    center = <AccessGate token="agent" id={state.agentId} error={agentRefused.error} fallbackHref={studioHref({})} fallbackLabel="Agent Studio" />;
   } else if (state.agentId && (!improveReady || !sampleReady)) {
     center = <EmptyState icon={<AGENT_ICON className="h-5 w-5" />} title="Opening its latest run" />;
   } else if (state.agentId) {
-    // A picked case (Cases tab) or "Run again" wins over the case the build started from.
-    const seed = runKey > 0 && rerunSeed ? rerunSeed : (caseSeed ?? rerunSeed ?? sampleSeed);
-    const run = (
-      <StudioRun
-        agentId={state.agentId}
-        conversationId={state.runId}
-        surfaceKey={tryKey(state.agentId)}
-        seed={seed}
-        showVariables
-        runKey={runKey}
-        turnModelBar={!studioCase?.approved}
-        onConversation={(id) => {
-          setRunConversation(id);
-          // The run lives in the URL: a reload reopens it instead of starting (and paying for) a new one.
-          if (id !== state.runId) go({ runId: id });
-        }}
-      />
+    const runPane = (
+      <StudioRun conversation={run.conversation} surfaceKey={runSurfaceKey} turnModelBar={!studioCase?.approved} operation="Run the agent" />
     );
     center = studioCase?.approved ? (
       <StudioCompare
-        run={run}
+        run={runPane}
         original={studioCase.approved}
         originalLabel={mode.id === "from-examples" ? "Your example" : "Approved"}
         phone={isMobile}
         toolbar={runConversation ? <StudioTurnModel conversationId={runConversation} /> : null}
       />
     ) : (
-      run
+      runPane
     );
   } else if (state.buildId) {
     center = (
@@ -696,6 +749,14 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     runOpen: Boolean(shownRun),
   });
   const compactHeader = layout !== "three";
+  /** What a chat that FOLLOWS this page sees (never the page's own two conversations). */
+  const surfaceValues = {
+    studio_mode: mode.id,
+    studio_phase: making ? "making" : state.agentId ? "improving" : state.buildId ? "building" : "doing",
+    studio_agent: state.agentId ? { id: state.agentId, name: agentName ?? null } : undefined,
+    studio_build: state.buildId ? { id: state.buildId, outcome: build?.outcome ?? null } : undefined,
+    studio_run: shownRun ? { conversation_id: shownRun, has_run: hasRun } : undefined,
+  };
 
   const header = (
     // Three columns: who/where | the stage steps, centered on the page | the actions. A name that
@@ -714,18 +775,13 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         {!compactHeader && <span className="min-w-0 truncate text-xs text-muted-foreground">{agentName ?? mode.title}</span>}
         <PlanBackLink state={state} />
       </div>
-      {/* Drawn once the workspace is measured, so its labels never re-flow after the first paint. */}
-      {layout === null ? (
-        <span />
-      ) : (
-        <StageSteps
-          aria-label="Where you are"
-          steps={stage.steps}
-          current={stage.current}
-          labels={compactHeader ? "current" : "all"}
-          data-testid="studio-stage"
-        />
-      )}
+      <StageSteps
+        aria-label="Where you are"
+        steps={stage.steps}
+        current={stage.current}
+        labels={compactHeader ? "current" : "all"}
+        data-testid="studio-stage"
+      />
       <div className="flex min-w-0 items-center justify-end gap-2">
         {mode.id === "do-with-me" && !state.buildId && (
           <Button
@@ -767,118 +823,97 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     </div>
   );
 
-  const sideIsControls = side === "controls";
-  const body =
-    layout === null ? null : layout === "tabs" ? (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 border-b border-border px-2">
-          <Tabs
-            value={paneTab}
-            onValueChange={(v) => setPaneTab(v as typeof paneTab)}
-            data={[
-              { value: "assistant", label: "Assistant" },
-              { value: "agent", label: "Agent" },
-              { value: "controls", label: rightName },
-            ]}
-            aria-label="Studio panes"
-          />
-        </div>
-        <div className="min-h-0 flex-1">
-          <div className={paneTab === "assistant" ? "h-full" : "hidden"}>{left}</div>
-          <div className={paneTab === "agent" ? "h-full" : "hidden"}>{centerPane}</div>
-          <div className={paneTab === "controls" ? "h-full" : "hidden"}>{right}</div>
-        </div>
+  // ── ONE pane tree; the layout only re-styles its slots (no pane ever remounts on a resize) ──
+  const slot = (pane: "switch" | "assistant" | "agent" | "controls"): { style: CSSProperties; shown: boolean } =>
+    studioSlot(layout, pane, { side, tab: paneTab });
+  const paneProps = (pane: "switch" | "assistant" | "agent" | "controls") => {
+    const { style, shown } = slot(pane);
+    return { style, hidden: !shown, "data-studio-pane": pane, "data-assist-dock-avoid": true, className: "min-h-0 min-w-0 overflow-hidden" };
+  };
+  const body = (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className={layout === "tabs" ? "shrink-0 border-b border-border px-2" : "hidden"}>
+        <Tabs
+          value={paneTab}
+          onValueChange={(v) => setPaneTab(v as typeof paneTab)}
+          data={[
+            { value: "assistant", label: "Assistant" },
+            { value: "agent", label: "Agent" },
+            { value: "controls", label: rightName },
+          ]}
+          aria-label="Studio panes"
+        />
       </div>
-    ) : layout === "two" ? (
-      <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-        <ResizablePanel defaultSize="42%" minSize={`${STUDIO_SIDE_MIN_PX}px`}>
-          <div className="flex h-full min-h-0 flex-col" data-testid="studio-pane-side" data-assist-dock-avoid>
-            <PaneBar>
-              <SegmentedControl
-                aria-label="Beside your agent"
-                value={side}
-                onValueChange={(v) => setSide(v as typeof side)}
-                data={[
-                  { value: "assistant", label: "Assistant" },
-                  { value: "controls", label: rightName },
-                ]}
-              />
-            </PaneBar>
-            <div className={sideIsControls ? "hidden" : "min-h-0 flex-1"} data-testid="studio-pane-assistant">
-              {left}
-            </div>
-            <div className={sideIsControls ? "min-h-0 flex-1" : "hidden"} data-testid="studio-pane-controls">
-              {right}
-            </div>
-          </div>
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize="58%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
-          <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{centerPane}</div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    ) : (
-      <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
-        <ResizablePanel defaultSize="27%" minSize={`${STUDIO_PANE_MIN_PX.assistant}px`}>
-          <div className="h-full min-h-0" data-testid="studio-pane-assistant" data-assist-dock-avoid>{assistantPane}</div>
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize="46%" minSize={`${STUDIO_PANE_MIN_PX.agent}px`}>
-          <div className="h-full min-h-0" data-testid="studio-pane-agent" data-assist-dock-avoid>{centerPane}</div>
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel defaultSize="27%" minSize={`${STUDIO_PANE_MIN_PX.controls}px`}>
-          <div className="h-full min-h-0" data-testid="studio-pane-controls" data-assist-dock-avoid>{right}</div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    );
-
-  const page = (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]" data-testid="agent-studio">
-      {header}
-      <div ref={bodyRef} className="flex min-h-0 flex-1 flex-col" data-studio-layout={layout ?? "measuring"}>
-        {body}
+      <div className="grid min-h-0 flex-1 divide-x divide-border" style={studioGrid(layout)} data-testid="studio-panes">
+        <div {...paneProps("switch")}>
+          <PaneBar>
+            <SegmentedControl
+              aria-label="Beside your agent"
+              value={side}
+              onValueChange={(v) => setSide(v as typeof side)}
+              data={[
+                { value: "assistant", label: "Assistant" },
+                { value: "controls", label: rightName },
+              ]}
+            />
+          </PaneBar>
+        </div>
+        <div {...paneProps("assistant")} data-testid="studio-pane-assistant">
+          {layout === "two" ? <div className="h-full min-h-0">{left}</div> : assistantPane}
+        </div>
+        <div {...paneProps("agent")} data-testid="studio-pane-agent">
+          {centerPane}
+        </div>
+        <div {...paneProps("controls")} data-testid="studio-pane-controls">
+          {right}
+        </div>
       </div>
     </div>
   );
-  return state.agentId ? <BuilderSurface agentId={state.agentId}>{page}</BuilderSurface> : <StudioSurface>{page}</StudioSurface>;
-}
 
-/**
- * The Studio's own surface before an agent exists: the run's `client.surface` is `matrx-user/agent-studio`, so the server
- * resolves that surface's default tools (`studio_workspace`) for the assistant instead of the route's guess.
- */
-function StudioSurface({ children }: { children: React.ReactNode }) {
-  const getScope = useCallback(() => ({}), []);
   return (
-    <SurfaceRuntimeProvider surfaceName={STUDIO_SURFACE_NAME} getScope={getScope}>
-      {children}
-    </SurfaceRuntimeProvider>
+    <StudioSurfaceRoot agentId={state.agentId ?? null} assistantId={assistant.conversationId} runId={runConversation} values={surfaceValues}>
+      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]" data-testid="agent-studio">
+        {header}
+        <div ref={bodyRef} className="flex min-h-0 flex-1 flex-col" data-studio-layout={layout}>
+          {body}
+        </div>
+      </div>
+    </StudioSurfaceRoot>
   );
 }
 
 /**
- * The Agent Builder's surface around the whole page once the agent exists: the assistant on the
- * left follows the page (THE PAGE-FOLLOW RULE) and can stage edits through the builder's write
- * targets; the center's runs are the page's own conversations and never receive it.
+ * ONE stable surface root for the whole page: its props change when an agent arrives (the Agent Builder's
+ * surface, scope and write targets; its client tools), the element never does. Both of the page's own
+ * conversations (the assistant, the agent's run) are marked own: they never receive the page.
  */
-function BuilderSurface({ agentId, children }: { agentId: string; children: React.ReactNode }) {
-  const getScope = useAgentBuilderPageScope(agentId);
-  const getWriteHandlers = useAgentBuilderWriteHandlers(agentId);
-  const store = useAppStore();
-  const isOwnConversation = (id: string) => {
-    const focus = store.getState().conversationFocus?.bySurface[tryKey(agentId)];
-    return focus?.input === id || focus?.display === id;
-  };
+function StudioSurfaceRoot({
+  agentId,
+  assistantId,
+  runId,
+  values,
+  children,
+}: {
+  agentId: string | null;
+  assistantId: string | null;
+  runId: string | null;
+  values: Parameters<typeof studioScope>[0];
+  children: React.ReactNode;
+}) {
+  const builderScope = useAgentBuilderPageScope(agentId ?? undefined);
+  const builderWrites = useAgentBuilderWriteHandlers(agentId ?? "");
+  const getScope = async () => ({ ...(agentId ? await builderScope() : {}), ...studioScope(values) });
+  const isOwnConversation = (id: string) => id === assistantId || id === runId;
   return (
     <SurfaceRuntimeProvider
-      surfaceName={AGENT_BUILDER_CONTEXT_MENU_PROPS.surfaceName}
+      surfaceName={agentId ? AGENT_BUILDER_CONTEXT_MENU_PROPS.surfaceName : STUDIO_SURFACE_NAME}
       getScope={getScope}
-      isEditable
-      getWriteHandlers={getWriteHandlers}
+      isEditable={Boolean(agentId)}
+      getWriteHandlers={agentId ? builderWrites : undefined}
       isOwnConversation={isOwnConversation}
     >
-      <AgentBuilderClientTools agentId={agentId} />
+      {agentId ? <AgentBuilderClientTools agentId={agentId} /> : null}
       {children}
     </SurfaceRuntimeProvider>
   );

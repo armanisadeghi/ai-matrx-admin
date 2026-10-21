@@ -33,7 +33,7 @@ export type ReviewResult = GradeResult;
 // Insert types
 // ============================================================================
 
-export interface FlashcardSetInsert {
+export interface FlashcardDeckInsert {
   conversation_id?: string;
   message_id?: string;
   title?: string;

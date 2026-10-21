@@ -6,7 +6,7 @@
 // It also used to stamp every trashed row's `created_by` with the VIEWER,
 // which under organization scope claimed colleagues' deleted notes as theirs.
 
-import { fetchDeletedNotes } from "./thunks";
+import { fetchDeletedNotes, TRASH_PAGE_SIZE } from "./thunks";
 import { supabase } from "@/utils/supabase/client";
 
 jest.mock("@/utils/supabase/client", () => ({
@@ -22,18 +22,20 @@ jest.mock("@/lib/list-scope", () => ({
   defaultListFilter: jest.fn(async () => ({ ownerOnly: false, apply: (q: unknown) => q })),
 }));
 
-function trashQuery(rows: unknown[]) {
+function trashQuery(rows: unknown[], count: number | null = rows.length) {
   const chain = {
     from: jest.fn(),
     select: jest.fn(),
     eq: jest.fn(),
     not: jest.fn(),
-    order: jest.fn(async () => ({ data: rows, error: null })),
+    order: jest.fn(),
+    range: jest.fn(async () => ({ data: rows, error: null, count })),
   };
   chain.from.mockReturnValue(chain);
   chain.select.mockReturnValue(chain);
   chain.eq.mockReturnValue(chain);
   chain.not.mockReturnValue(chain);
+  chain.order.mockReturnValue(chain);
   return chain;
 }
 
@@ -71,5 +73,33 @@ describe("fetchDeletedNotes hydration", () => {
     expect(payload.upserts.every((u) => u.fetchStatus === "list")).toBe(true);
     // The ROW's owner, never the viewer's id.
     expect(payload.upserts[1].note.created_by).toBe("colleague-9");
+  });
+
+  // 2026-10-21: admin@admin.com held 726 trashed notes and the bin was one unpaged
+  // read — past 1,000 the list and its count would both have been silently short.
+  it("reads a PAGE with the server's exact total, and the next page starts after what the store holds", async () => {
+    const page = Array.from({ length: 200 }, (_, i) => ({ id: `n-${i}`, created_by: "user-1", deleted_at: "2026-09-14T00:00:00Z" }));
+    const chain = trashQuery(page, 1450);
+    jest.mocked(supabase.schema).mockReturnValue(chain as never);
+    const dispatch = jest.fn((action) => action);
+
+    const first = await fetchDeletedNotes()(dispatch, () => ({ userAuth: { id: "user-1" } }) as never, undefined);
+    expect(chain.select).toHaveBeenCalledWith(expect.any(String), { count: "exact" });
+    expect(chain.range).toHaveBeenLastCalledWith(0, TRASH_PAGE_SIZE - 1);
+    expect(first.payload).toEqual({ total: 1450, received: 200 });
+
+    const held = Object.fromEntries(page.map((n) => [n.id, n]));
+    await fetchDeletedNotes({ more: true })(
+      dispatch,
+      () => ({ userAuth: { id: "user-1" }, notes: { notes: held } }) as never,
+      undefined,
+    );
+    expect(chain.range).toHaveBeenLastCalledWith(200, 200 + TRASH_PAGE_SIZE - 1);
+  });
+
+  it("refuses a page that came back without a total rather than counting its rows", async () => {
+    jest.mocked(supabase.schema).mockReturnValue(trashQuery([{ id: "a", deleted_at: "x" }], null) as never);
+    const result = await fetchDeletedNotes()(jest.fn((a) => a), () => ({ userAuth: { id: "user-1" } }) as never, undefined);
+    expect(result.type).toBe("notes/fetchDeletedNotes/rejected");
   });
 });

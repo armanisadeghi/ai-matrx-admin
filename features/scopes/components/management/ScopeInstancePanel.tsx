@@ -244,18 +244,6 @@ function ScopeTreeItem({
   return (
     <div>
       <div
-        role="treeitem"
-        aria-expanded={hasChildren ? expanded : undefined}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.target !== e.currentTarget || !hasChildren) return;
-          if (e.key === "ArrowRight") setExpanded(true);
-          if (e.key === "ArrowLeft") setExpanded(false);
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setExpanded(!expanded);
-          }
-        }}
         className={cn(
           "flex h-7 items-center gap-1 pr-2 rounded-md hover:bg-muted/60 transition-colors group",
         )}
@@ -265,15 +253,18 @@ function ScopeTreeItem({
           expandable={hasChildren}
           expanded={expanded}
           onToggle={() => setExpanded(!expanded)}
+          label={node.name}
         />
 
-        {hasChildren ? (
-          <TreeFolderIcon open={expanded} />
-        ) : (
-          createElement(iconName ? resolveIcon(iconName) : FileText, {
+        {iconName ? (
+          createElement(resolveIcon(iconName), {
             className: "h-4 w-4 shrink-0",
             style: { color: color || undefined },
           })
+        ) : hasChildren ? (
+          <TreeFolderIcon open={expanded} />
+        ) : (
+          <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
 
         <div className="flex-1 min-w-0">

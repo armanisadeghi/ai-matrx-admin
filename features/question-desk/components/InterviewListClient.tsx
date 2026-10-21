@@ -33,6 +33,8 @@ import {
   type MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table";
 import { toast } from "@/lib/toast";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { cn } from "@/lib/utils";
 import { listInterviews, setInterviewArchived } from "../data/interviews";
 import type { InterviewListRow } from "../types";
@@ -82,21 +84,59 @@ export function InterviewListClient() {
     };
   }, [archived, reloadToken]);
 
-  const toggleArchive = useCallback(
-    async (row: InterviewListRow) => {
-      const next = row.archived_at === null;
-      try {
-        await setInterviewArchived(row.id, next);
-        toast.success(next ? "Interview archived." : "Interview restored.");
-        setReloadToken((token) => token + 1);
-      } catch (writeError) {
-        toast.error(
-          writeError instanceof Error ? writeError.message : String(writeError),
-        );
-      }
-    },
-    [],
+  // Archive and Unarchive are ONE declaration: the row icon and the bulk bar come from it.
+  // A selected interview the verb does not fit is skipped and named, never hidden.
+  const reload = useCallback(() => setReloadToken((token) => token + 1), []);
+  const setArchivedOne = (archivedNow: boolean) => (id: string) => setInterviewArchived(id, archivedNow);
+  const { rowActionDefs, bulkActions } = defineRowVerbs<InterviewListRow>(
+    [
+      {
+        id: "archive", icon: Archive, label: "Archive",
+        appliesTo: (row) => row.archived_at === null, unavailableTooltip: "Already archived",
+        onClick: (row) =>
+          void setInterviewArchived(row.id, true).then(
+            () => {
+              toast.success("Interview archived.");
+              reload();
+            },
+            (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
+          ),
+        bulk: {
+          done: "Archived",
+          removesRows: archived === "active",
+          confirm: (t) => ({
+            title: `Archive ${t.ids.length} ${t.ids.length === 1 ? "interview" : "interviews"}?`,
+            description: "They leave the default list; switch the archive filter to see them. Unarchive any time.",
+            confirmLabel: "Archive",
+          }),
+          runOne: setArchivedOne(true),
+        },
+      },
+      {
+        id: "unarchive", icon: ArchiveRestore, label: "Unarchive",
+        appliesTo: (row) => row.archived_at !== null, unavailableTooltip: "Not archived",
+        onClick: (row) =>
+          void setInterviewArchived(row.id, false).then(
+            () => {
+              toast.success("Interview restored.");
+              reload();
+            },
+            (e: unknown) => toast.error(e instanceof Error ? e.message : String(e)),
+          ),
+        bulk: { done: "Restored", removesRows: archived === "archived", runOne: setArchivedOne(false) },
+      },
+    ],
+    { noun: "interview", getRowId: (row) => row.id, getRowName: (row) => row.title },
   );
+  const bulk = useTableBulkSelection<InterviewListRow>({
+    noun: "interview",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.title,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: reload,
+  });
 
   const columns: MatrxColumnDef<InterviewListRow>[] = [
     {
@@ -222,23 +262,9 @@ export function InterviewListClient() {
       <MatrxDataTable<InterviewListRow>
         data={rows}
         isLoading={loading}
-        columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
-          <button
-            type="button"
-            title={row.archived_at ? "Restore this interview" : "Archive this interview"}
-            onClick={(event) => {
-              event.stopPropagation();
-              void toggleArchive(row);
-            }}
-            className="rounded p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-          >
-            {row.archived_at ? (
-              <ArchiveRestore className="size-3.5" aria-hidden />
-            ) : (
-              <Archive className="size-3.5" aria-hidden />
-            )}
-          </button>
-        ) }]}
+        columns={columns}
+        rowActionDefs={rowActionDefs}
+        selection={bulk.selection}
         getRowId={(row) => row.id}
         pageSize={25}
         pageSizeOptions={[10, 25, 50, 100]}

@@ -57,6 +57,7 @@ describe("recipientDeliveryFor: cursors are positions in the room", () => {
   it("each route is named by its stored value", () => {
     expect(deliveredViaLabel("host_wake")).toBe("Matrx 2");
     expect(deliveredViaLabel("claude_cloud")).toBe("Claude cloud");
+    expect(deliveredViaLabel("desktop_cloud")).toBe("Claude cloud via Mac");
     expect(deliveredViaLabel("cursor_cloud")).toBe("Cursor cloud");
     expect(deliveredViaLabel("own")).toBeNull();
   });

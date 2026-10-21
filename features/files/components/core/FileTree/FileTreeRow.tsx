@@ -122,6 +122,7 @@ function FileTreeRowImpl(
         <TreeDisclosure
           expandable
           expanded={row.expanded}
+          focusable={false}
           onToggle={() => {
             if (!row.empty) onChevronClick();
           }}

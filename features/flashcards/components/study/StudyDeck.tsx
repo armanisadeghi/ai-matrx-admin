@@ -151,9 +151,9 @@ import {
 // One-at-a-time on user action — the enhance dialog (its agents, preview flow,
 // entitlement chrome) loads only when the learner actually asks to improve a
 // card (in-gate lazy, per the code-splitting rules).
-const EnhanceSetDialog = lazy(() =>
+const EnhanceDeckDialog = lazy(() =>
   import("../set-detail/EnhanceSetDialog").then((m) => ({
-    default: m.EnhanceSetDialog,
+    default: m.EnhanceDeckDialog,
   })),
 );
 
@@ -242,7 +242,7 @@ export interface StudyDeckProps {
   sessionId?: string | null;
   /**
    * The set the cards belong to. Enables the per-card "Improve this card"
-   * affordance (enrich / deepen via EnhanceSetDialog) — omit on cross-set
+   * affordance (enrich / deepen via EnhanceDeckDialog) — omit on cross-set
    * drivers (due review, weak-area drill), where a single owning set doesn't
    * exist and the affordance hides.
    */
@@ -373,7 +373,7 @@ export function StudyDeck(props: StudyDeckProps) {
     answerWithSetting === "term" ? "term" : "definition";
 
   // "Edit card" — only for someone who can edit the owning deck (the same
-  // gate SetDetailView uses); cross-set drivers pass no setId and never offer it.
+  // gate DeckDetailView uses); cross-set drivers pass no setId and never offer it.
   const access = useAccess(setId ? "fc_set" : undefined, setId ?? undefined);
   const canEditDeck =
     Boolean(setId) &&
@@ -1412,7 +1412,7 @@ export function StudyDeck(props: StudyDeckProps) {
         {/* Same canonical enhance flow as desktop — mounted on first open. */}
         {setId && current && enhanceOpen && (
           <Suspense fallback={null}>
-            <EnhanceSetDialog
+            <EnhanceDeckDialog
               open={enhanceOpen}
               onOpenChange={setEnhanceOpen}
               setId={setId}
@@ -1634,7 +1634,7 @@ export function StudyDeck(props: StudyDeckProps) {
           are one implementation. Mounted only after the first open. */}
       {setId && current && enhanceOpen && (
         <Suspense fallback={null}>
-          <EnhanceSetDialog
+          <EnhanceDeckDialog
             open={enhanceOpen}
             onOpenChange={setEnhanceOpen}
             setId={setId}

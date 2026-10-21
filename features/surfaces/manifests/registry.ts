@@ -152,7 +152,7 @@ import { messageTemplateManifest } from "./message-template.manifest";
 import { educationTutorManifest } from "./education-tutor.manifest";
 import { educationTutorHistoryManifest } from "./education-tutor-history.manifest";
 import { educationFlashcardsManifest } from "./education-flashcards.manifest";
-import { educationFlashcardSetManifest } from "./education-flashcard-set.manifest";
+import { educationFlashcardDeckManifest } from "./education-flashcard-set.manifest";
 import { educationFlashcardEditorManifest } from "./education-flashcard-editor.manifest";
 import { educationFlashcardStudyManifest } from "./education-flashcard-study.manifest";
 import { educationFastfireManifest } from "./education-fastfire.manifest";
@@ -459,7 +459,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   educationTutorManifest,
   educationTutorHistoryManifest,
   educationFlashcardsManifest,
-  educationFlashcardSetManifest,
+  educationFlashcardDeckManifest,
   educationFlashcardEditorManifest,
   educationFlashcardStudyManifest,
   educationFastfireManifest,

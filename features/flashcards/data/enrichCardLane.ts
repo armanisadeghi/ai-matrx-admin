@@ -9,7 +9,7 @@
 //   • "Enrich every card" on deck detail (the batch),
 //
 // so a layer written by the batch and a layer written on the card are the same
-// rows, written the same way. The preview-first path (EnhanceSetDialog, where
+// rows, written the same way. The preview-first path (EnhanceDeckDialog, where
 // the learner confirms before anything is written) keeps its own save step on
 // purpose: it is a different product promise, not a different persistence path.
 

@@ -36,7 +36,7 @@ jest.mock("@/lib/toast", () => ({
 }));
 jest.mock("@/features/flashcards/data/fcService", () => ({
   fcService: {
-    getSetWithCards: async () => ({
+    getDeckWithCards: async () => ({
       data: { set: { id: SET, name: "Capitals" }, cards: CARDS },
       error: null,
     }),

@@ -68,7 +68,7 @@ const HELPER_SPEECH_STYLE = {
 export async function getHelperAudioReadiness(
   setId: string,
 ): Promise<{ ready: number; total: number }> {
-  const res = await fcService.getSetWithCards(setId);
+  const res = await fcService.getDeckWithCards(setId);
   // A failed read is thrown, never reported as "0 of 0 ready" — the setup
   // screen would otherwise look unprepared and invite a paid re-run.
   if (res.error) throw new Error(res.error);
@@ -109,7 +109,7 @@ function writeHelperText(
     const existing = card.details.map((d) => ({ kind: d.kind, text: d.text }));
     const result = await runHeadlessAgentJson(dispatch, getState, {
       mandateKey: FC_MANDATES.enrichCard,
-      // The proven enrich posture (EnhanceSetDialog) — the fastfire surface
+      // The proven enrich posture (EnhanceDeckDialog) — the fastfire surface
       // identity broke the launch (2026-08-21 live test), and this IS the
       // enrich lane, just batch-driven.
       surfaceKey: "flashcards-enrich-card",
@@ -152,7 +152,7 @@ function writeHelperText(
 }
 
 /** The set a helper-audio batch is preparing (fact for the TTS offer). */
-interface HelperSetRun {
+interface HelperDeckRun {
   setId: string;
   setName?: string | null;
 }
@@ -161,7 +161,7 @@ interface HelperSetRun {
 function renderHelperAudio(
   card: CardWithDetails,
   text: string,
-  setRun?: HelperSetRun,
+  setRun?: HelperDeckRun,
 ) {
   const cardId = card.id;
   return async (
@@ -228,7 +228,7 @@ function renderHelperAudio(
 export function generateHelperAudio(
   card: CardWithDetails,
   onUnusable?: (sentence: string) => void,
-  setRun?: HelperSetRun,
+  setRun?: HelperDeckRun,
 ) {
   return async (dispatch: AppDispatch): Promise<string | null> => {
     const { withAudio, textOnly } = findHelper(card);
@@ -263,7 +263,7 @@ export function generateHelperAudio(
  * ones concurrently. Returns cardId → audio file_id for the whole deck.
  * On-demand only — call from a Prepare affordance, never at creation.
  */
-export function ensureHelperAudioForSet(
+export function ensureHelperAudioForDeck(
   setId: string,
   onProgress?: (done: number, total: number) => void,
   /**
@@ -276,7 +276,7 @@ export function ensureHelperAudioForSet(
 ) {
   return async (dispatch: AppDispatch): Promise<Record<string, string>> => {
     const result: Record<string, string> = {};
-    const setRes = await fcService.getSetWithCards(setId);
+    const setRes = await fcService.getDeckWithCards(setId);
     if (!setRes.data) return result;
     const cards = setRes.data.cards;
     const total = cards.length;

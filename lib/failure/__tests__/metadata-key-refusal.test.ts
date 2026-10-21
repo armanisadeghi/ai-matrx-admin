@@ -8,13 +8,13 @@
  * was not registered in `platform.metadata_reserved_keys`. The database was
  * loud (SQLSTATE 42501, an operator's paragraph); the client was not:
  * `describeFailure` passed the paragraph through with NO remedy, `fcService`
- * prefixed it with a method name (`mergeSetMetadata: matrx_validation_gate: …`),
+ * prefixed it with a method name (`mergeDeckMetadata: matrx_validation_gate: …`),
  * and `GenerateCardsDialog` discarded the result entirely (`void …`).
  *
  * ## The SUT and what is real
  *
  * `describeFailure` / `metadataKeyRefusal` in `lib/failure/transport.ts` (no
- * stub), and `fcService.mergeSetMetadata` through the REAL `mergeJsonColumn`
+ * stub), and `fcService.mergeDeckMetadata` through the REAL `mergeJsonColumn`
  * with only the supabase client faked. The error is the exact shape the live
  * guard raised on 2026-09-29 (verified by a rolled-back authenticated UPDATE
  * of an unregistered key on education.fc_set).
@@ -24,7 +24,7 @@
  * Against the pre-fix `transport.ts` (scratch copy), `metadataKeyRefusal` does
  * not exist and `describeFailure` returns the raw paragraph with `remedy: ""`;
  * against the pre-fix `fcService.ts`, the returned error starts with
- * `mergeSetMetadata: matrx_validation_gate` and names no remedy.
+ * `mergeDeckMetadata: matrx_validation_gate` and names no remedy.
  */
 
 jest.mock("@/utils/supabase/client", () => ({
@@ -60,7 +60,7 @@ describe("the metadata gate's refusal is recognized on every table", () => {
     expect(metadataKeyRefusal(gateRefusal(key, table))).toEqual({ key, table });
     // A caller's own prefix does not hide it.
     expect(
-      metadataKeyRefusal(new Error(`mergeSetMetadata: ${gateRefusal(key, table).message}`)),
+      metadataKeyRefusal(new Error(`mergeDeckMetadata: ${gateRefusal(key, table).message}`)),
     ).toEqual({ key, table });
   });
 
@@ -86,7 +86,7 @@ describe("the metadata gate's refusal is recognized on every table", () => {
   });
 });
 
-describe("fcService.mergeSetMetadata surfaces the refusal to its caller", () => {
+describe("fcService.mergeDeckMetadata surfaces the refusal to its caller", () => {
   afterEach(() => jest.clearAllMocks());
 
   it("returns the sentence and remedy, never the operator paragraph", async () => {
@@ -108,7 +108,7 @@ describe("fcService.mergeSetMetadata surfaces the refusal to its caller", () => 
     });
     (supabase.schema as jest.Mock).mockReturnValue({ from: () => q });
 
-    const res = await fcService.mergeSetMetadata("set-1", (current) => ({
+    const res = await fcService.mergeDeckMetadata("set-1", (current) => ({
       ...current,
       source_set: { __kind: "source_set", sources: [] },
     }));
@@ -116,6 +116,6 @@ describe("fcService.mergeSetMetadata surfaces the refusal to its caller", () => 
     expect(res.data).toBeNull();
     expect(res.error).toContain('"source_set"');
     expect(res.error).toContain("platform.metadata_reserved_keys");
-    expect(res.error).not.toMatch(/^mergeSetMetadata: matrx_validation_gate/);
+    expect(res.error).not.toMatch(/^mergeDeckMetadata: matrx_validation_gate/);
   });
 });

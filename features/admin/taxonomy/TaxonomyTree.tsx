@@ -76,6 +76,7 @@ function TreeRow({
           expandable={hasChildren}
           expanded={open}
           onToggle={() => setOpen((v) => !v)}
+          label={node.name}
         />
         {node.level === "subfeature" ? (
           <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />

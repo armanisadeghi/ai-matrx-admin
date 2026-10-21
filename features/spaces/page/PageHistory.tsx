@@ -133,7 +133,7 @@ export function PageHistory({
                 >
                   <span className="flex flex-1 flex-col text-left">
                     <span>{new Date(r.savedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
-                    <span className="type-secondary text-muted-foreground">{r.savedBy && r.savedBy === me ? "You" : "A member"}</span>
+                    <span className="type-secondary text-muted-foreground">{r.savedBy && r.savedBy === me ? "You" : r.savedByName || "A collaborator"}</span>
                   </span>
                   {i === 0 ? <span className="type-secondary text-muted-foreground">Current</span> : null}
                 </div>

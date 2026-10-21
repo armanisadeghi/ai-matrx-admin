@@ -99,7 +99,7 @@ export async function downloadDeckOffline(
     };
   }
 
-  const setRes = await fcService.getSetWithCards(setId);
+  const setRes = await fcService.getDeckWithCards(setId);
   if (!setRes.data) {
     return {
       ok: false,

@@ -22,7 +22,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BrainCircuit, Loader2 } from "lucide-react";
+import { ArrowUpCircle, BrainCircuit, Loader2, Trash2 } from "lucide-react";
 import { Button as ControlButton, Select } from "@ai-matrx/design-system/controls";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { useListSearchParams } from "@/lib/entity-list/useListSearchParams";
@@ -33,7 +33,9 @@ import {
   adminMandateRecordHref,
 } from "@/features/mandates/admin-routes";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
-import type { EntityBulkAction } from "@/lib/entity-list/selection";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { softDeleteMandate } from "@/features/mandates/admin/service";
+import { removeMandate } from "./listConfig";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAccessToken,
@@ -170,100 +172,125 @@ export function MandateAdminListPage({
     }
   }
 
-  // ── Batch work over the selection — the old console's "Review as batch"
-  // and "Advance selected", carried over by import. ────────────────────────
-  const bulkActions: EntityBulkAction<MandateAdminRow>[] = [
-    {
-      id: "review-batch",
-      label: "Review as batch",
-      icon: BrainCircuit,
-      variant: "outline",
-      run: ({ rows }) => {
-        const workflowOnly = rows.filter(
-          (row) => !row.defaultVerdict && !row.agentId && row.workflowVerdicts.length > 0,
-        ).length;
-        const agentIds = [
-          ...new Set(
-            rows
-              .map((row) => row.defaultVerdict?.agent_id ?? row.agentId)
-              .filter((id): id is string => Boolean(id)),
-          ),
-        ];
-        if (agentIds.length === 0) {
-          return {
-            message:
-              workflowOnly > 0
-                ? "The batch panel reviews agent pins. Workflow pins are graded in the Grade column — use Advance selected to move them."
-                : "None of the selected mandates has a graded pin to review.",
-            keepSelection: true,
-          };
+  // ── Batch work over the selection — "Review as batch", "Advance selected" and Remove, ONE
+  // declaration each (the bulk twin rule). A selected mandate a verb does not fit (no pin to
+  // review, nothing to advance) is SKIPPED AND NAMED by the shell, never filtered out of the
+  // selection. ─────────────────────────────────────────────────────────────────────────────
+  const agentIdOf = (row: MandateAdminRow) => row.defaultVerdict?.agent_id ?? row.agentId ?? null;
+  const advanceableOf = (row: MandateAdminRow) => ({
+    verdicts: row.defaultVerdict && batchEligibilityOf(row.defaultVerdict).batchable ? [row.defaultVerdict] : [],
+    // Workflow parity: every workflow-held rung that can move to its newest published version.
+    // THE ADMIN SEAT: no pin is "mine" here — a person's own pin is theirs to advance, the admin's included.
+    workflowVerdicts: row.workflowVerdicts.filter((v): v is WorkflowImpactVerdict => workflowAdvanceEligibility(v).batchable),
+  });
+  const reviewRows = (rows: MandateAdminRow[]) => {
+    const agentIds = [...new Set(rows.map(agentIdOf).filter((id): id is string => Boolean(id)))];
+    if (agentIds.length === 0) {
+      toast.info("The batch panel reviews agent pins. Workflow pins are graded in the Grade column; use Advance selected to move them.");
+      return;
+    }
+    openImpactBatchWindow({
+      agentIds,
+      mode: "post_batch",
+      batchLabel: "Mandate list",
+      sourceSentence: `${rows.length} mandate${rows.length === 1 ? "" : "s"} selected on the mandate list`,
+      preselectedRungIds: rows
+        .map((row) => row.defaultVerdict)
+        .filter((v): v is ImpactVerdict => v !== null)
+        .map((v) => rungIdentityOf(v.apply_token)),
+      surfaceName: "administration-mandates",
+    });
+  };
+  const advanceRows = async (rows: MandateAdminRow[]) => {
+    const verdicts = rows.flatMap((row) => advanceableOf(row).verdicts);
+    const workflowVerdicts = rows.flatMap((row) => advanceableOf(row).workflowVerdicts);
+    let ran = false;
+    // `advance` opens its own confirm naming what moves (useImpactAdvance); null = canceled.
+    if (verdicts.length > 0) {
+      ran = (await writes.advance(verdicts, `Mandate list: ${rows.length} selected`)) !== null;
+    }
+    if (workflowVerdicts.length > 0) {
+      const results = await advanceWorkflowPins(dispatch, workflowVerdicts);
+      if (results) {
+        ran = true;
+        const moved = results.filter((r) => r.moved).length;
+        const refused = results.filter((r) => !r.moved);
+        if (moved > 0) {
+          toast.success(`Moved ${moved} workflow pin${moved === 1 ? "" : "s"} to the newest published version.`);
+          invalidateMandateAdminList(true);
         }
-        openImpactBatchWindow({
-          agentIds,
-          mode: "post_batch",
-          batchLabel: "Mandate list",
-          sourceSentence: `${rows.length} mandate${rows.length === 1 ? "" : "s"} selected on the mandate list`,
-          preselectedRungIds: rows
-            .map((row) => row.defaultVerdict)
-            .filter((v): v is ImpactVerdict => v !== null)
-            .map((v) => rungIdentityOf(v.apply_token)),
-          surfaceName: "administration-mandates",
-        });
-        return { keepSelection: true };
+        // Each row's own sentence, on its mandate's record toast.
+        const refOf = (key: string) => {
+          const row = rows.find((candidate) => candidate.mandateKey === key);
+          return { type: "mandate", id: row?.id ?? key, title: key };
+        };
+        for (const row of refused) {
+          recordToast.error(refOf(row.verdict.mandate_key), row.sentence ?? "Not moved.");
+        }
+        for (const row of results.filter((r) => r.moved && r.sentence)) {
+          recordToast.info(refOf(row.verdict.mandate_key), row.sentence as string);
+        }
+      }
+    }
+    return ran;
+  };
+  const { bulkActions } = defineRowVerbs<MandateAdminRow>(
+    [
+      {
+        id: "review-batch", icon: BrainCircuit, label: "Review as batch",
+        appliesTo: (row) => agentIdOf(row) !== null, unavailableTooltip: "No agent pin to review",
+        onClick: (row) => reviewRows([row]),
+        bulk: {
+          variant: "outline",
+          done: "Opened for review",
+          run: async (t) => {
+            reviewRows(t.rows);
+            return {};
+          },
+        },
       },
-    },
-    {
-      id: "advance",
-      label: "Advance selected",
-      run: async ({ rows }) => {
-        const verdicts = rows
-          .map((row) => row.defaultVerdict)
-          .filter((v): v is ImpactVerdict => v !== null && batchEligibilityOf(v).batchable);
-        // Workflow parity: every workflow-held rung of the selection that can
-        // move to its newest published version (default and bindings alike).
-        const workflowVerdicts = rows
-          .flatMap((row) => row.workflowVerdicts)
-          .filter(
-            // THE ADMIN SEAT: no pin is "mine" here — a person's own pin is
-            // theirs to advance, the signed-in admin's included.
-            (v): v is WorkflowImpactVerdict => workflowAdvanceEligibility(v).batchable,
-          );
-        if (verdicts.length === 0 && workflowVerdicts.length === 0) {
-          return {
-            message: "None of the selected mandates can advance: each is already current, blocked, or a person's own pin.",
-            keepSelection: true,
-          };
-        }
-        // `advance` opens its own confirm naming what moves (useImpactAdvance).
-        if (verdicts.length > 0) {
-          await writes.advance(verdicts, `Mandate list: ${rows.length} selected`);
-        }
-        if (workflowVerdicts.length > 0) {
-          const results = await advanceWorkflowPins(dispatch, workflowVerdicts);
-          if (results) {
-            const moved = results.filter((r) => r.moved).length;
-            const refused = results.filter((r) => !r.moved);
-            if (moved > 0) {
-              toast.success(`Moved ${moved} workflow pin${moved === 1 ? "" : "s"} to the newest published version.`);
-              invalidateMandateAdminList(true);
-            }
-            // Each row's own sentence, on its mandate's record toast.
-            const refOf = (key: string) => {
-              const row = rows.find((candidate) => candidate.mandateKey === key);
-              return { type: "mandate", id: row?.id ?? key, title: key };
+      {
+        id: "advance", icon: ArrowUpCircle, label: "Advance selected",
+        appliesTo: (row) => advanceableOf(row).verdicts.length + advanceableOf(row).workflowVerdicts.length > 0,
+        unavailableTooltip: "Already current, blocked, or a person's own pin",
+        onClick: (row) => void advanceRows([row]),
+        bulk: {
+          done: "Advanced",
+          run: async (t) => {
+            // undefined = the person canceled the confirm; nothing ran, so no "Advanced" line.
+            return (await advanceRows(t.rows)) ? {} : undefined;
+          },
+        },
+      },
+      {
+        id: "remove", icon: Trash2, label: "Remove", tone: "destructive",
+        onClick: (row) => void removeMandate(row),
+        bulk: {
+          done: "Removed",
+          removesRows: true,
+          confirm: (t) => ({
+            title: `Remove ${t.ids.length} ${t.ids.length === 1 ? "mandate" : "mandates"}?`,
+            description:
+              "Lists, pickers and calls stop finding each one, and its customizations stop applying. An admin can restore them.",
+            confirmLabel: "Remove",
+            variant: "destructive",
+          }),
+          run: async (t) => {
+            const settled = await Promise.allSettled(t.ids.map((id) => softDeleteMandate(id)));
+            invalidateMandateAdminList();
+            return {
+              failed: settled.flatMap((r, i) =>
+                r.status === "rejected"
+                  ? [{ id: t.ids[i], reason: r.reason instanceof Error ? r.reason.message : String(r.reason) }]
+                  : [],
+              ),
             };
-            for (const row of refused) {
-              recordToast.error(refOf(row.verdict.mandate_key), row.sentence ?? "Not moved.");
-            }
-            for (const row of results.filter((r) => r.moved && r.sentence)) {
-              recordToast.info(refOf(row.verdict.mandate_key), row.sentence as string);
-            }
-          }
-        }
-        return { keepSelection: false };
+          },
+        },
       },
-    },
-  ];
+    ],
+    { noun: "mandate", getRowId: (row) => row.id, getRowName: (row) => row.name || row.mandateKey },
+  );
 
   // 🚨 READING NEVER WAITS ON AN ORGANIZATION (review 2026-09-25; access is
   // personal). The list itself is one database read that needs no workspace;
@@ -357,11 +384,6 @@ export function MandateAdminListPage({
           bulkActions: support ? [] : bulkActions,
           bulkSelection: support ? undefined : {
             noun: "mandate",
-            // Only a mandate with a pin (agent or workflow) has a rung to act on.
-            isRowSelectable: (row) =>
-              row.defaultVerdict !== null ||
-              Boolean(row.agentId) ||
-              row.workflowVerdicts.length > 0,
           },
         }}
         // admin-support-only: /administration/intelligence/mandates/support

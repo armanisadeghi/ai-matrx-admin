@@ -8,7 +8,9 @@ const source = readFileSync(join(__dirname, "../components/KitGenerateRunner.tsx
 
 describe("KitGenerateRun and the card-limit knob", () => {
   it("awaits the knob read instead of refusing while a hook is still loading", () => {
-    expect(source).not.toMatch(/useMaxCardsPerRun/);
+    // The module path is still `useMaxCardsPerRun` (it exports both the hook and `readMaxCardsPerRun`), so the
+    // break is a CALL of the hook, never the import path — the bare-name regex shipped red on its first run (0d435ed9a6).
+    expect(source).not.toMatch(/\buseMaxCardsPerRun\s*\(/);
     expect(source).not.toMatch(/still loading/);
     expect(source).toMatch(/await readMaxCardsPerRun\(\)/);
   });

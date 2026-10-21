@@ -42,6 +42,8 @@ const read = (file: string) => readFileSync(path.join(REPO, file), "utf8");
 describe("the header right set", () => {
   const header = read("features/shell/components/header/Header.tsx");
   const set = read("features/shell/components/header/HeaderControlSet.tsx");
+  // The five controls themselves: one module every host renders (AppShell's set, the app frame).
+  const controls = read("features/shell/components/header/headerControls.tsx");
 
   it("mounts Search, Intelligence, Messages, Notifications and Canvas in that order, unconditionally", () => {
     const order = [
@@ -51,20 +53,21 @@ describe("the header right set", () => {
       "<InboxHeaderButton",
       "<CanvasToggle",
     ];
+    expect(set).toContain("<ShellHeaderButtons controls={headerControls(isAuthenticated)} />");
     let last = -1;
     for (const control of order) {
-      const at = set.indexOf(control);
+      const at = controls.indexOf(control);
       expect(at).toBeGreaterThan(last);
       last = at;
-      const line = set.split("\n").find((candidate) => candidate.includes(control));
+      const line = controls.split("\n").find((candidate) => candidate.includes(control));
       expect(line).toBeDefined();
       expect(line).not.toMatch(/&&\s*</);
     }
   });
 
   it("the Canvas control is the package's CanvasToggle, never a host twin", () => {
-    expect(set).toMatch(/import\s*\{[^}]*\bCanvasToggle\b[^}]*\}\s*from\s*"@ai-matrx\/canvas\/react"/);
-    for (const text of [header, set]) {
+    expect(controls).toMatch(/import\s*\{[^}]*\bCanvasToggle\b[^}]*\}\s*from\s*"@ai-matrx\/canvas\/react"/);
+    for (const text of [header, set, controls]) {
       expect(text).not.toContain("CanvasShellHeaderToggle");
       expect(text).not.toContain("CanvasPanePutAwayToggle");
     }
@@ -89,6 +92,13 @@ describe("the header right set", () => {
       expect(text).not.toContain("<InboxHeaderButton");
       expect(text).not.toContain("<SurfaceAgentsHeaderButton");
     }
+  });
+
+  it("the app frame's right group renders the SAME five (canvas excluded: the frame owns its toggle)", () => {
+    const frame = read("features/shell/frame-host/FrameChrome.tsx");
+    expect(frame).toMatch(/\.\.\.headerControls\(isAuthenticated\),\s*canvas: null/);
+    expect(frame).not.toContain("<CommandBarHeaderButton");
+    expect(frame).not.toContain("<InboxHeaderButton");
   });
 
   it("builds nothing else into the header — the organization lives in the account rail", () => {

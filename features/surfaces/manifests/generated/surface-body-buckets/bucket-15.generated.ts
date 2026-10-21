@@ -12,7 +12,7 @@ export { marketingBrandStrategyManifest as s96 } from "../../marketing-brand-str
 export { marketingBrandClaimsManifest as s100 } from "../../marketing-brand-claims.manifest";
 export { contentPlanListManifest as s108 } from "../../content-plan-list.manifest";
 export { educationNotesManifest as s123 } from "../../education-notes.manifest";
-export { educationFlashcardSetManifest as s130 } from "../../education-flashcard-set.manifest";
+export { educationFlashcardDeckManifest as s130 } from "../../education-flashcard-set.manifest";
 export { connectionsSkillsManifest as s163 } from "../../connections-skills.manifest";
 export { fileManifest as s174 } from "../../file.manifest";
 export { imageViewerManifest as s175 } from "../../image-viewer.manifest";

@@ -1,6 +1,6 @@
 "use client";
 
-// illustrateSetRun — the client half of the per-SET flashcard image lane.
+// illustrateDeckRun — the client half of the per-SET flashcard image lane.
 //
 // Server door: aidream `POST /education/images/source-set` (streaming NDJSON).
 // The batch is ~30-60s PER CARD, so the door streams a typed PLAN event (every
@@ -256,7 +256,7 @@ export function reduceIllustrateRun(
  * floating window can render both the live progress and the review pass from
  * one source of truth.
  */
-export function useIllustrateSetRun() {
+export function useIllustrateDeckRun() {
   const dispatch = useAppDispatch();
   const [run, setRun] = useState<IllustrateRunState>(IDLE_RUN);
   // Stop aborts the stream: aidream's source-set cancels on disconnect, and the

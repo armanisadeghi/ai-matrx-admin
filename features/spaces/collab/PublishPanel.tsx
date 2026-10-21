@@ -7,7 +7,7 @@
 // Unpublish. Every choice is one door call (publish/publish-doors.ts); the database decides who may.
 
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
-import { ArrowUpRight, Copy, Globe } from "lucide-react";
+import { ArrowUpRight, Code, Copy, Globe } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { copyToClipboard } from "@/lib/clipboard/copy";
@@ -22,6 +22,7 @@ import {
   type PublishChange,
   type PublishState,
 } from "../publish/publish-doors";
+import { spaceEmbedSnippet } from "../publish/embed-snippet";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -60,7 +61,14 @@ function Section({ children }: { children: ReactNode }) {
   );
 }
 
-export function PublishPanel({ spaceId }: { spaceId: string }) {
+export function PublishPanel({
+  spaceId,
+  title = null,
+}: {
+  spaceId: string;
+  /** The page's title, so the embed snippet names the frame. */
+  title?: string | null;
+}) {
   const [state, setState] = useState<PublishState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -196,6 +204,27 @@ export function PublishPanel({ spaceId }: { spaceId: string }) {
           onChange={(on) => void change({ allowDuplicate: on })}
           testId="publish-duplicate"
         />
+      </Section>
+      <Section>
+        <div className="flex min-h-8 items-center justify-between gap-3 px-1 text-sm">
+          <span className="flex items-center gap-2">
+            <Code size={15} />
+            Embed on a website
+          </span>
+          <Button
+            variant="outline"
+            icon={<Copy size={15} />}
+            onClick={() =>
+              void copyToClipboard(
+                spaceEmbedSnippet(url, title),
+                "Copied embed code",
+              )
+            }
+            data-testid="publish-embed-copy"
+          >
+            Copy code
+          </Button>
+        </div>
       </Section>
       <Section>
         <span className="px-1 text-xs font-medium text-muted-foreground">

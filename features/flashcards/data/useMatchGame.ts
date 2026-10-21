@@ -222,7 +222,7 @@ export function useMatchGame(
       setElapsedMs(0);
       setCompleted(false);
 
-      const setRes = await fcService.getSetWithCards(setId);
+      const setRes = await fcService.getDeckWithCards(setId);
       if (cancelled) return;
       if (!setRes.data) {
         setSet(null);

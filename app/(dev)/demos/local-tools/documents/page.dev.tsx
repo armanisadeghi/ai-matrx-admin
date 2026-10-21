@@ -12,7 +12,6 @@ import {
   Edit3,
   FilePlus,
   FileText,
-  Folder,
   FolderPlus,
   GitBranch,
   HardDrive,

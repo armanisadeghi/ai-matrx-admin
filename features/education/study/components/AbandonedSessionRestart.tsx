@@ -39,7 +39,7 @@ export function AbandonedSessionRestart({
     if (!setId) return undefined;
     let cancelled = false;
     void (async () => {
-      const res = await fcService.getSet(setId);
+      const res = await fcService.getDeck(setId);
       if (cancelled || !res.data) return;
       setSetName(res.data.name);
     })();

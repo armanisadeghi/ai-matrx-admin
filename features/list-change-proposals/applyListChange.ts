@@ -300,7 +300,7 @@ const flashcardDeckStore: ListStore<
   Extract<ListChangeTarget, { kind: "flashcard_deck" }>
 > = {
   async read(target) {
-    const res = await fcService.getSetWithCards(target.setId);
+    const res = await fcService.getDeckWithCards(target.setId);
     if (!res.data) {
       return { status: "refused", detail: res.error ?? "This deck could not be read." };
     }

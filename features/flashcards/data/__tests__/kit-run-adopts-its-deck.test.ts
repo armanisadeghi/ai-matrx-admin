@@ -21,7 +21,7 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 
 import { supabase } from "@/utils/supabase/client";
 import { fcService } from "../fcService";
-import type { FcSetRow, SetWithCards } from "../types";
+import type { FcSetRow, DeckWithCards } from "../types";
 
 const KEY = "kit-1:1000|deck:abc:3:10";
 const CARDS = [
@@ -43,12 +43,12 @@ afterEach(() => jest.restoreAllMocks());
 describe("a resumed kit run adopts the deck it already made", () => {
   it("returns the existing deck and creates nothing", async () => {
     const chain = fcSetReturning([made]);
-    jest.spyOn(fcService, "getSetWithCards").mockResolvedValue({
-      data: { set: made, cards: [{ id: "c1" }, { id: "c2" }] } as unknown as SetWithCards,
+    jest.spyOn(fcService, "getDeckWithCards").mockResolvedValue({
+      data: { set: made, cards: [{ id: "c1" }, { id: "c2" }] } as unknown as DeckWithCards,
       error: null,
     });
-    const create = jest.spyOn(fcService, "createSetWithCards");
-    const res = await fcService.createGeneratedSetForConversation(null, { name: "Biology" }, CARDS, { runKey: KEY });
+    const create = jest.spyOn(fcService, "createDeckWithCards");
+    const res = await fcService.createGeneratedDeckForConversation(null, { name: "Biology" }, CARDS, { runKey: KEY });
     expect(res.data?.set.id).toBe("set-made");
     expect(create).not.toHaveBeenCalled();
     expect(chain.eq).toHaveBeenCalledWith("metadata->>run_key", KEY);
@@ -56,27 +56,27 @@ describe("a resumed kit run adopts the deck it already made", () => {
 
   it("finishes a deck whose create stopped halfway", async () => {
     fcSetReturning([made]);
-    jest.spyOn(fcService, "getSetWithCards").mockResolvedValue({
-      data: { set: made, cards: [{ id: "c1", version: 1 }] } as unknown as SetWithCards,
+    jest.spyOn(fcService, "getDeckWithCards").mockResolvedValue({
+      data: { set: made, cards: [{ id: "c1", version: 1 }] } as unknown as DeckWithCards,
       error: null,
     });
-    const cont = jest.spyOn(fcService, "continueGeneratedSet").mockResolvedValue({
-      data: { set: made, cards: [] } as unknown as SetWithCards,
+    const cont = jest.spyOn(fcService, "continueGeneratedDeck").mockResolvedValue({
+      data: { set: made, cards: [] } as unknown as DeckWithCards,
       error: null,
     });
-    const create = jest.spyOn(fcService, "createSetWithCards");
-    await fcService.createGeneratedSetForConversation(null, { name: "Biology" }, CARDS, { runKey: KEY });
+    const create = jest.spyOn(fcService, "createDeckWithCards");
+    await fcService.createGeneratedDeckForConversation(null, { name: "Biology" }, CARDS, { runKey: KEY });
     expect(cont).toHaveBeenCalledTimes(1);
     expect(create).not.toHaveBeenCalled();
   });
 
   it("first time: creates the deck stamped with the run key", async () => {
     fcSetReturning([]);
-    const create = jest.spyOn(fcService, "createSetWithCards").mockResolvedValue({
-      data: { set: made, cards: [] } as unknown as SetWithCards,
+    const create = jest.spyOn(fcService, "createDeckWithCards").mockResolvedValue({
+      data: { set: made, cards: [] } as unknown as DeckWithCards,
       error: null,
     });
-    await fcService.createGeneratedSetForConversation(null, { name: "Biology" }, CARDS, { runKey: KEY });
+    await fcService.createGeneratedDeckForConversation(null, { name: "Biology" }, CARDS, { runKey: KEY });
     expect(create.mock.calls[0][0].metadata).toMatchObject({ run_key: KEY, generation: "surface_save" });
   });
 });

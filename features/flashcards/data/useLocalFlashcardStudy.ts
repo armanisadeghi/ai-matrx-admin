@@ -7,7 +7,7 @@
 // study spine. Studying is never gated: no account, no session, no writes.
 //
 // Why a second driver and not a flag on useFlashcardStudy: that hook's every
-// step is a per-user server call (getSetWithCards under RLS, getMasteryBulk,
+// step is a per-user server call (getDeckWithCards under RLS, getMasteryBulk,
 // createSession, recordAttempt filed under the CARD's organization). A visitor
 // on a public page owns none of that, and a signed-in visitor's attempts would
 // be filed into the deck owner's organization — so everyone on the public lanes

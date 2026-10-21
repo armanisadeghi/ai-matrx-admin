@@ -31,6 +31,8 @@ export function deliveredViaLabel(via: string | null): string | null {
       return "Matrx 2";
     case "claude_cloud":
       return "Claude cloud";
+    case "desktop_cloud":
+      return "Claude cloud via Mac";
     case "cursor_cloud":
       return "Cursor cloud";
     case "agent_injection":

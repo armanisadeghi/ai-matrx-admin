@@ -28,7 +28,7 @@ type SetResult = {
   data: { set: typeof SET; cards: typeof CARDS } | null;
   error: string | null;
 };
-const getSetWithCards = jest.fn<Promise<SetResult>, []>(async () => ({
+const getDeckWithCards = jest.fn<Promise<SetResult>, []>(async () => ({
   data: { set: SET, cards: CARDS },
   error: null,
 }));
@@ -46,7 +46,7 @@ const listDue = jest.fn(async () => ({
 }));
 
 jest.mock("../fcService", () => ({
-  fcService: { getSetWithCards: () => getSetWithCards() },
+  fcService: { getDeckWithCards: () => getDeckWithCards() },
 }));
 jest.mock("@/features/education/study/service/studyService", () => ({
   studyService: {
@@ -70,11 +70,11 @@ describe("offline deck download", () => {
     const res = await downloadDeckOffline(ALICE, SET.id);
     expect(res).toEqual({ ok: true, cardCount: 2, error: null });
 
-    getSetWithCards.mockClear();
+    getDeckWithCards.mockClear();
     const snapshot = await readOfflineDeck(ALICE, SET.id);
 
     // The read path is the whole point: it must not touch the network.
-    expect(getSetWithCards).not.toHaveBeenCalled();
+    expect(getDeckWithCards).not.toHaveBeenCalled();
     expect(snapshot).not.toBeNull();
     expect(snapshot!.set.name).toBe("Cardiac pharmacology");
     expect(snapshot!.cards.map((c) => c.id)).toEqual(["card-1", "card-2"]);
@@ -112,7 +112,7 @@ describe("offline deck download", () => {
   });
 
   it("surfaces a failed deck fetch rather than storing a hollow download", async () => {
-    getSetWithCards.mockResolvedValueOnce({ data: null, error: "not found" });
+    getDeckWithCards.mockResolvedValueOnce({ data: null, error: "not found" });
     const res = await downloadDeckOffline(ALICE, "set-missing");
     expect(res.ok).toBe(false);
     expect(res.error).toBe("not found");

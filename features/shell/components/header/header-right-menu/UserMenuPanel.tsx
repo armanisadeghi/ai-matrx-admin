@@ -55,6 +55,12 @@ function useAdminGroupPreload(enabled: boolean) {
 interface UserMenuPanelProps {
   userData: UserData;
   menuCheckboxId?: string;
+  /**
+   * The host's popover already draws the menu's box (`USER_MENU_PANEL_CLASS` on its content — the
+   * app frame's account menu): the panel draws none of its own. Default false (AppShell's CSS
+   * panel needs the box).
+   */
+  bare?: boolean;
 }
 
 /**
@@ -65,13 +71,14 @@ interface UserMenuPanelProps {
 export default function UserMenuPanel({
   userData,
   menuCheckboxId = "shell-user-menu",
+  bare = false,
 }: UserMenuPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   useResetMenuGroupsOnOpen(panelRef, menuCheckboxId);
   useAdminGroupPreload(Boolean(userData.isAdmin));
 
   return (
-    <div ref={panelRef} className={USER_MENU_PANEL_CLASS}>
+    <div ref={panelRef} className={bare ? undefined : USER_MENU_PANEL_CLASS}>
       <UserProfileHeader userData={userData} />
 
       {divider}

@@ -19,7 +19,7 @@
 // version" holds the run, visibly, until those Sources are ready.
 //
 // Replaced: CreateFromTopic (/new), CreateFromSource (/new/from-source) and
-// ImportSetView (/new/import) — both old routes redirect here.
+// ImportDeckView (/new/import) — both old routes redirect here.
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
@@ -83,7 +83,7 @@ import { useFlashcardMandates } from "../../data/mandate-disclosure";
 import { fcService } from "../../data/fcService";
 import {
   generatedDeckName,
-  generatedSetFromEnvelope,
+  generatedDeckFromEnvelope,
 } from "../../data/generated-set-from-envelope";
 import { useGenerateCards } from "../../data/useGenerateCards";
 import {
@@ -434,13 +434,13 @@ export function CreateDeckPage({
     setPhase("saving");
     // The envelope that drove the live preview is the persistence source.
     const fromEnvelope = envelopeRef.current
-      ? generatedSetFromEnvelope(envelopeRef.current)
+      ? generatedDeckFromEnvelope(envelopeRef.current)
       : null;
     const result =
       fromEnvelope && fromEnvelope.cards.length > 0 ? fromEnvelope : extracted;
     await saving();
     // Single-writer contract (D-WP3): adopt the stream's own set or create one.
-    const saved = await fcService.createGeneratedSetForConversation(
+    const saved = await fcService.createGeneratedDeckForConversation(
       extracted.conversationId,
       {
         name: generatedDeckName({

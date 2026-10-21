@@ -53,6 +53,7 @@ import { SYNCED_CLIP } from "./synced-block";
 import { SuggestionCard, suggestMode } from "./suggest";
 import { selectBlocks, useRubberBand } from "./rubber-band";
 import { applyLastColor, openBlockMenu, pageBlockIds, selectAllStep } from "./notion-keys";
+import { MobileBlockBar, useLongPressBlockMenu } from "./mobile-bar";
 import { CalloutIconHost } from "./callout-block";
 import { dateChoices } from "./date-mention";
 import { spacesSchema, type SpacesEditor } from "./schema";
@@ -277,6 +278,7 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
   }, [editor, onReady]);
 
   useRubberBand(editor, editable);
+  useLongPressBlockMenu(editor, editable);
 
   // THE ONE SELECTION TOOLBAR (components/selection-toolbar) serves this editor: Copy first (the common pair),
   // then these registered actions — the inline styles, Ask AI and Comment. BlockNote's own formatting bubble is
@@ -517,6 +519,7 @@ export function SpaceEditor({ spaceId, initialBlocks, editable, onChange, slash,
     {pasted ? <PasteUrlMenu editor={editor} pasted={pasted} onClose={() => setPasted(null)} /> : null}
     {editable ? <MediaPickerHost /> : null}
     {editable ? <AppletPickerHost /> : null}
+    {editable ? <MobileBlockBar editor={editor} /> : null}
     <SuggestionCard getView={() => editor.prosemirrorView ?? null} canResolve={editable} />
     </div>
     </PageOfBlocksProvider>

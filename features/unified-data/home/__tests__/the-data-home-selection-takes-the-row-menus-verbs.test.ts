@@ -5,6 +5,12 @@
 const warning = jest.fn();
 jest.mock("@/lib/toast", () => ({ toast: { warning: (...a: unknown[]) => warning(...a), success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
+jest.mock("@/features/trash/service", () => ({ archiveRecord: jest.fn(), restoreFromTrash: jest.fn() }));
+jest.mock("@/features/knowledge/hub/tags/tagApi", () => ({ fileUnderTag: jest.fn() }));
+jest.mock("@/features/knowledge/hub/tags/tagPickerOpener", () => ({ pickTag: jest.fn() }));
+jest.mock("@/features/scopes/homes/homePickerOpener", () => ({ pickHome: jest.fn() }));
+jest.mock("@/features/scopes/homes/setHome", () => ({ setHome: jest.fn(), resolveHomeScopeId: jest.fn() }));
+jest.mock("@/features/sharing/bulk/shareWithPeopleOpener", () => ({ shareWithPeople: jest.fn() }));
 
 import { dataHomeBulkActions, archiveSkip, restoreSkip } from "../dataHomeBulkActions";
 import type { DataHomeRow } from "../dataHomeRows";

@@ -15,7 +15,7 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 // agent round-trip, so the same primitive serves from-topic, from-source, and
 // future quiz flows.
 //
-// NOTE: the content-ir envelope (generatedSetFromEnvelope) is now the PRIMARY
+// NOTE: the content-ir envelope (generatedDeckFromEnvelope) is now the PRIMARY
 // persistence source in CreateFromTopic; this hook's extraction result is the
 // transition fallback and the resolution trigger / timeout mechanism.
 //
@@ -32,13 +32,13 @@ import type { NewCardInput } from "./types";
  * the `flashcard_set` kind `{ title, cards[] }`; `title` is the deck's name
  * (persistence consumers read it as such).
  */
-export interface GeneratedCardSet {
+export interface GeneratedCardDeck {
   title: string;
   cards: NewCardInput[];
   /**
    * The headless run's conversation id — the run's IDENTITY for the
    * single-writer dedupe contract (D-WP3). Persistence callers MUST pass it
-   * to `fcService.createGeneratedSetForConversation` so the surface save and
+   * to `fcService.createGeneratedDeckForConversation` so the surface save and
    * the chat-materialization adapter converge on ONE fc_set.
    */
   conversationId: string | null;
@@ -104,7 +104,7 @@ export interface GenerateCardsResult {
     mandateKey: AnyMandateKey,
     vars: GenerateCardsVariables | GenerateFromSourceVariables,
     opts: GenerateCardsRunOptions,
-  ) => Promise<GeneratedCardSet>;
+  ) => Promise<GeneratedCardDeck>;
   isGenerating: boolean;
   error: string | null;
   /**
@@ -131,12 +131,12 @@ const EXTRACTION_TIMEOUT_MS = 240_000;
 const POLL_INTERVAL_MS = 250;
 
 /**
- * Coerce the extracted object into a GeneratedCardSet via THE ONE card reader
+ * Coerce the extracted object into a GeneratedCardDeck via THE ONE card reader
  * (`coerce-card.ts`). Accepts the canonical `flashcard_set` kind
  * `{ title, cards[] }` and the drift shapes (bare array / `flashcards` key).
  * Throws (caught by the caller) only when no cards can be recovered at all.
  */
-function coerceGeneratedSet(value: unknown): Omit<GeneratedCardSet, "conversationId"> {
+function coerceGeneratedDeck(value: unknown): Omit<GeneratedCardDeck, "conversationId"> {
   if (!Array.isArray(value) && (!value || typeof value !== "object")) {
     throw new Error("Agent did not return a JSON object");
   }
@@ -154,9 +154,9 @@ export function useGenerateCards(): GenerateCardsResult {
     mandateKey: AnyMandateKey,
     vars: GenerateCardsVariables | GenerateFromSourceVariables,
     opts: GenerateCardsRunOptions,
-  ): Promise<GeneratedCardSet> {
+  ): Promise<GeneratedCardDeck> {
     const fromSource = isFromSourceVars(vars);
-    return run<GeneratedCardSet>({ initiation: opts.initiation,
+    return run<GeneratedCardDeck>({ initiation: opts.initiation,
       mandateKey,
       surfaceKey: fromSource
         ? "flashcards-create-from-source"
@@ -189,7 +189,7 @@ export function useGenerateCards(): GenerateCardsResult {
             user_request:
               foldDepthIntoRequest(vars.depth, vars.user_request) ?? "",
           },
-      // The caller saves the deck itself (createGeneratedSetForConversation);
+      // The caller saves the deck itself (createGeneratedDeckForConversation);
       // the conversation is surface-owned so neither the stream's commit nor
       // a reload's reconcile materializes a twin deck (a check-then-create
       // race both writers could lose, seen live 2026-09-28 on
@@ -204,7 +204,7 @@ export function useGenerateCards(): GenerateCardsResult {
         timeout: "Timed out waiting for the flashcard agent to respond",
       },
       coerce: (value, result) => ({
-        ...coerceGeneratedSet(value),
+        ...coerceGeneratedDeck(value),
         conversationId: result.conversationId ?? null,
       }),
     });

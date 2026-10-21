@@ -143,7 +143,7 @@ async function run(
   // conversation-scoped dedupe path and exactly ONE fc_set exists. A segmented
   // run is background by construction (no render block to race), so it creates
   // the deck directly.
-  const created = await fcService.createGeneratedSetForConversation(
+  const created = await fcService.createGeneratedDeckForConversation(
     covered.conversationId,
     {
       name: setName,

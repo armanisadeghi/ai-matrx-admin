@@ -18,7 +18,7 @@ export type DeckVisibilityValue = FcSetRow["visibility"];
 export async function renameDeck(id: string, name: string): Promise<FcSetRow> {
   const clean = name.trim();
   if (!clean) throw new Error("A deck needs a name.");
-  const res = await fcService.updateSet(id, { name: clean });
+  const res = await fcService.updateDeck(id, { name: clean });
   if (res.error || !res.data) throw new Error(res.error ?? "The new name was not saved.");
   return res.data;
 }
@@ -27,7 +27,7 @@ export async function setDeckVisibility(
   id: string,
   visibility: DeckVisibilityValue,
 ): Promise<FcSetRow> {
-  const res = await fcService.updateSetVisibility(id, visibility);
+  const res = await fcService.updateDeckVisibility(id, visibility);
   if (res.error || !res.data)
     throw new Error(res.error ?? "Who can see this deck was not changed.");
   return res.data;

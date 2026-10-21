@@ -32,7 +32,7 @@ export interface PublicFlashcard {
 }
 
 /** `get_public_flashcard_set` → `{ success, set, cards }`. */
-export interface PublicFlashcardSetPayload {
+export interface PublicFlashcardDeckPayload {
   success?: boolean;
   set?: Record<string, unknown>;
   cards?: PublicFlashcard[];

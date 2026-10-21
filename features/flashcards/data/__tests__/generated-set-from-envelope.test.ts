@@ -1,7 +1,7 @@
 /**
  * The typed save path: one content-ir parse drives BOTH the live preview and
- * persistence. These tests prove generatedSetFromEnvelope maps a canonical
- * flashcard_set envelope to the persistable GeneratedCardSet — including the
+ * persistence. These tests prove generatedDeckFromEnvelope maps a canonical
+ * flashcard_set envelope to the persistable GeneratedCardDeck — including the
  * kind `title` read and zero-loss residue recovery (data
  * the active schema didn't declare still reaches the persisted cards).
  */
@@ -14,7 +14,7 @@ import {
 } from "@ai-matrx/content-ir";
 import {
   generatedDeckName,
-  generatedSetFromEnvelope,
+  generatedDeckFromEnvelope,
 } from "../generated-set-from-envelope";
 
 function envelopeFor(source: string, schemas?: Record<string, KindSchema>) {
@@ -24,8 +24,8 @@ function envelopeFor(source: string, schemas?: Record<string, KindSchema>) {
   });
 }
 
-describe("generatedSetFromEnvelope", () => {
-  it("maps the NEW shape ({ title, multi-kind cards }) to a GeneratedCardSet", () => {
+describe("generatedDeckFromEnvelope", () => {
+  it("maps the NEW shape ({ title, multi-kind cards }) to a GeneratedCardDeck", () => {
     const envelope = envelopeFor(
       JSON.stringify({
         title: "Mixed Deck",
@@ -54,7 +54,7 @@ describe("generatedSetFromEnvelope", () => {
       }),
     );
 
-    const set = generatedSetFromEnvelope(envelope);
+    const set = generatedDeckFromEnvelope(envelope);
     expect(set).not.toBeNull();
     expect(set?.title).toBe("Mixed Deck");
     expect(set?.cards).toHaveLength(3);
@@ -89,10 +89,10 @@ describe("generatedSetFromEnvelope", () => {
     expect(envelope.root.kind).toBe("flashcard_set");
     expect(envelope.root.status).toBe("complete");
 
-    const set = generatedSetFromEnvelope(envelope);
+    const set = generatedDeckFromEnvelope(envelope);
     expect(set?.cards).toHaveLength(1);
     expect(set?.cards[0]).toMatchObject({ front: "Q?", back: "A" });
-    // The set title is the kind's `title` only (2026-08-22) — "" here.
+    // The deck title is the kind's `title` only (2026-08-22) — "" here.
     expect(set?.title).toBe("");
 
     // CreateDeckPage saves under generatedDeckName(...) — exactly this call.
@@ -137,7 +137,7 @@ describe("generatedSetFromEnvelope", () => {
     expect(envelope.root.kind).toBe("flashcard_set");
     expect(envelope.root.status).toBe("complete");
     expect(envelope.root.kindState).toBe("raw");
-    expect(generatedSetFromEnvelope(envelope)).toBeNull();
+    expect(generatedDeckFromEnvelope(envelope)).toBeNull();
   });
 
   it("recovers residue extras — fields the active schema did not declare still persist", () => {
@@ -187,7 +187,7 @@ describe("generatedSetFromEnvelope", () => {
       envelope.nodeIndex?.["cards.0"]?.residue?.extra,
     ).toEqual({ topic: "residue-only", difficulty: "hard" });
 
-    const set = generatedSetFromEnvelope(envelope);
+    const set = generatedDeckFromEnvelope(envelope);
     expect(set?.title).toBe("Residue Deck");
     expect(set?.cards[0]).toEqual({
       front: "Q?",
@@ -208,7 +208,7 @@ describe("generatedSetFromEnvelope", () => {
         ],
       }),
     );
-    expect(generatedSetFromEnvelope(envelope)?.cards).toHaveLength(1);
+    expect(generatedDeckFromEnvelope(envelope)?.cards).toHaveLength(1);
   });
 
   it("carries the P0 TrustEnvelope + source lineage through to the persisted cards", () => {
@@ -248,7 +248,7 @@ describe("generatedSetFromEnvelope", () => {
       }),
     );
 
-    const set = generatedSetFromEnvelope(envelope);
+    const set = generatedDeckFromEnvelope(envelope);
     const card = set?.cards[0];
     expect(card?.trust?.confidence).toBe("grounded");
     expect(card?.trust?.groundedIn).toBe("Cell Biology");
@@ -271,12 +271,12 @@ describe("generatedSetFromEnvelope", () => {
       JSON.stringify({ __kind: "quiz_set", title: "Nope", questions: [] }),
       { schemas: kindRegistry.snapshotSchemas() },
     );
-    expect(generatedSetFromEnvelope(envelope)).toBeNull();
+    expect(generatedDeckFromEnvelope(envelope)).toBeNull();
   });
 
   it("returns null when the region did not complete cleanly", () => {
     const envelope = envelopeFor('{"title": "Cut off", "cards": [');
     expect(envelope.root.status).toBe("error");
-    expect(generatedSetFromEnvelope(envelope)).toBeNull();
+    expect(generatedDeckFromEnvelope(envelope)).toBeNull();
   });
 });

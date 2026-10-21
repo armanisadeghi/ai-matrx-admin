@@ -65,7 +65,7 @@ export async function verifyGeneratedDeck(
   store: AppStore,
   onProgress?: (completed: number, total: number) => void,
 ): Promise<DeckVerificationResult> {
-  const loaded = await fcService.getSetWithCards(setId);
+  const loaded = await fcService.getDeckWithCards(setId);
   if (loaded.error || !loaded.data) {
     throw new Error(loaded.error ?? "The generated deck could not be loaded.");
   }

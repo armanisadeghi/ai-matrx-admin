@@ -32,7 +32,11 @@ import { setUserAuth } from "@/lib/redux/slices/userAuthSlice";
 import { setOrganization } from "@/lib/redux/slices/appContextSlice";
 import { closeAllOverlays } from "@ai-matrx/summon/open";
 import { AppProviders } from "./app-providers";
-import { SurfaceActivity, createSurfaceCapture } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+  SurfaceActivity,
+  createSurfaceCapture,
+  type SurfaceRegistry,
+} from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { FocusHostContext, BoardCameraStoreContext } from "../../engine/react";
 import { BoardCameraStore } from "../../engine/camera-store";
 import type { NodeSource } from "../../board/document";
@@ -89,6 +93,8 @@ export interface TileHandle {
   /** Overlays/windows opened since mount (each transition to open). */
   opened: () => string[];
   unmount: () => void;
+  /** The tile's surface capture (what the board's agent tools read), kept across hide, show and remount. */
+  capture: SurfaceRegistry;
 }
 
 /** The saved tile (outside React, like the board document): survives a remount. */
@@ -199,6 +205,7 @@ export async function mountTile(
   return {
     container,
     store,
+    capture,
     source: () => tile.get().source,
     opened: () => [...opened],
     async hide() {

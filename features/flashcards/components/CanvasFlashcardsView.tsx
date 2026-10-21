@@ -33,7 +33,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import Link from "next/link";
-import { flashcardSetHref } from "../routes";
+import { flashcardDeckHref } from "../routes";
 import { Button } from "@ai-matrx/design-system";
 import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -254,7 +254,7 @@ export function CanvasFlashcardsView({
           onClose={() => setDeckOpen(false)}
           toolsPanel={
             <Button asChild variant="outline" size="sm" className="w-full">
-              <Link href={flashcardSetHref({ id: linkedSetId })}>
+              <Link href={flashcardDeckHref({ id: linkedSetId })}>
                 <Library className="h-4 w-4" />
                 Open in Flashcards
               </Link>
@@ -324,7 +324,7 @@ export function CanvasFlashcardsView({
             className="h-7 px-2 text-xs"
           >
             <Link
-              href={flashcardSetHref({ id: linkedSetId })}
+              href={flashcardDeckHref({ id: linkedSetId })}
               aria-label="Open in Flashcards"
               title="Open in Flashcards"
             >

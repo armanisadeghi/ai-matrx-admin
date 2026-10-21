@@ -8,10 +8,10 @@
 // on the view; its refusal is shown as the sentence it sent.
 
 import { useCallback, useEffect, useState } from "react";
-import { Check, Copy, Link2, Loader2, Lock } from "lucide-react";
+import { Check, Copy, CopyX, Link2, Loader2, Lock } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 
-import { listViewLinks, makeViewLink, protectViewLink, turnOffViewLink, viewLinkUrl, type ViewLink, type ViewLinkProtection } from "./viewLinkService";
+import { listViewLinks, makeViewLink, protectViewLink, setViewLinkCopy, turnOffViewLink, viewLinkUrl, type ViewLink, type ViewLinkProtection } from "./viewLinkService";
 
 export interface ViewLinkPanelProps {
   viewId: string;
@@ -82,6 +82,18 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
     }
     setPassword("");
     if (change.expiresAt === null) setEndDate("");
+    await load();
+  }
+
+  async function switchCopy(link: ViewLink) {
+    setBusy(true);
+    setError(null);
+    const done = await setViewLinkCopy(link.id, !link.restrictCopy);
+    setBusy(false);
+    if (!done.ok) {
+      setError(done.error);
+      return;
+    }
     await load();
   }
 
@@ -158,6 +170,18 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
               <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => openOptions(link)} data-view-link-options="">
                 <Lock className="mr-1 h-3 w-3" />
                 {link.hasPassword ? "Password on" : "Password"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[11px]"
+                disabled={busy}
+                aria-pressed={link.restrictCopy}
+                onClick={() => void switchCopy(link)}
+                data-view-link-restrict-copy={link.restrictCopy ? "on" : "off"}
+              >
+                <CopyX className="mr-1 h-3 w-3" />
+                {link.restrictCopy ? "Copying off" : "Stop copying"}
               </Button>
             </div>
             {optionsFor === link.id ? (

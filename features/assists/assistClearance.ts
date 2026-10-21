@@ -28,10 +28,13 @@
 //     is read once per pass and the scan is rect arithmetic, hit-testing only a rect-free candidate.
 //   - The pass runs once per 150 ms quiet period, skips while a table is mid-fill (`aria-busy`,
 //     the table's own end signal) and ignores changes inside the dock itself.
+//   - It never runs while the page is moving (a pointer held, a wheel or scroll under way:
+//     `lib/layout/page-motion.ts`); a long pass mid-drag delayed Board frames by up to 500 ms.
 
 import { useEffect } from "react";
 
 import { TRANSIENT_OVERLAY_SELECTOR } from "@/lib/layout/floating-chrome";
+import { pageInMotion, watchPageMotion } from "@/lib/layout/page-motion";
 
 const DOCK_SELECTOR = "[data-assists-dock]";
 /**
@@ -681,6 +684,7 @@ function measure(name: string, start: number) {
 export function useAssistClearance(active: boolean): void {
   useEffect(() => {
     if (!active || typeof window === "undefined") return undefined;
+    watchPageMotion();
     let frame = 0;
     let settle: ReturnType<typeof setTimeout> | null = null;
     let fillSince = 0;
@@ -730,6 +734,12 @@ export function useAssistClearance(active: boolean): void {
         }
       }
       fillSince = 0;
+      // Never mid-gesture: a drag, a pan or a scroll still under way waits for the page to rest
+      // (`lib/layout/page-motion.ts`; a pass mid-drag was a 100–500 ms frame on the Board).
+      if (pageInMotion()) {
+        scheduleSettled();
+        return;
+      }
       const t0 = performance.now();
       const placement = applyAssistDockLift();
       watchSlot();

@@ -2,7 +2,7 @@
 //
 // The detail view for a single flashcard deck: header (name, topic, card count)
 // + a grid of cards (front/back peek + detail-presence badges) + a "Study"
-// affordance into the focused study surface. Loads via fcService.getSetWithCards
+// affordance into the focused study surface. Loads via fcService.getDeckWithCards
 // (ordered cards + their fc_detail rows). Graceful loading / empty / not-found.
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
@@ -99,7 +99,7 @@ import { flashcardsPrinterLazy as flashcardsPrinter } from "@ai-matrx/print/flas
 import { notifyPrintOutcome } from "@/lib/print/print-outcome-toast";
 import { PrintOptionsDialog, usePrintOptions } from "@ai-matrx/print/react";
 import { FlashcardFaceImage } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
-import type { SetWithCards, CardWithDetails } from "../../data/types";
+import type { DeckWithCards, CardWithDetails } from "../../data/types";
 import {
   asCardKind,
   CARD_KIND,
@@ -129,7 +129,7 @@ import {
   deckAudioCoverage,
   type DeckAudioRunSignals,
 } from "./AudioOverviewSection";
-import { EnhanceSetDialog } from "./EnhanceSetDialog";
+import { EnhanceDeckDialog } from "./EnhanceSetDialog";
 import { useFlashcardMandates } from "../../data/mandate-disclosure";
 // BUNDLE-LEAK GUARD (F9): these two float as draggable WindowPanels, and a
 // STATIC import of either would drag summon's WindowPanel
@@ -138,8 +138,8 @@ import { useFlashcardMandates } from "../../data/mandate-disclosure";
 // They open one-at-a-time on explicit user action, so each gets its own
 // ssr:false edge (the AgentPeekButton pattern; code-splitting rule 3 allows
 // per-item splits for user-triggered windows).
-const IllustrateSetWindow = dynamic(
-  () => import("./IllustrateSetWindow").then((m) => m.IllustrateSetWindow),
+const IllustrateDeckWindow = dynamic(
+  () => import("./IllustrateSetWindow").then((m) => m.IllustrateDeckWindow),
   { ssr: false },
 );
 const BulkEnrichWindow = dynamic(
@@ -162,7 +162,7 @@ import { MADE_DECK_DRAFT_ID, readMadeDeck } from "../../data/madeDeckMarker";
 import { refreshStoreRead } from "@/lib/redux/slices/storeReadsSlice";
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import {
-  useIllustrateSetRun,
+  useIllustrateDeckRun,
   type IllustrateCardState,
 } from "./illustrateSetRun";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
@@ -197,7 +197,7 @@ import {
 import { buildDeckWriteHandlers } from "../editor/deckWriteHandlers";
 import { deckSurfaceCards, deckSurfaceDetails } from "./deckSurfaceValues";
 import {
-  createEducationFlashcardSetScope,
+  createEducationFlashcardDeckScope,
   type FlashcardSetSurfaceMastery,
 } from "@/features/surfaces/manifests/education-flashcard-set.manifest";
 import { masteryTier } from "@/features/education/study/utils/masteryFsrs";
@@ -651,7 +651,7 @@ function CardPeek({
   );
 }
 
-export function SetDetailView({
+export function DeckDetailView({
   setId,
   initialName = null,
   embedded = false,
@@ -719,8 +719,8 @@ export function SetDetailView({
   const dispatchRead = useDispatchThunk();
   const deckKey = `education.fc_set:${setId}`;
   const masteryKey = `education.fc_set_mastery:${setId}`;
-  const readDeck = async (): Promise<SetWithCards> => {
-    const res = await fcService.getSetWithCards(setId);
+  const readDeck = async (): Promise<DeckWithCards> => {
+    const res = await fcService.getDeckWithCards(setId);
     if (!res.data) throw new Error(res.error ?? recordUnavailableMessage("deck", "unknown"));
     return res.data;
   };
@@ -733,7 +733,7 @@ export function SetDetailView({
     for (const m of mRes.data ?? []) seed[m.item_id] = m;
     return seed;
   };
-  const deckRead = useStoreRead<SetWithCards>(deckKey, readDeck);
+  const deckRead = useStoreRead<DeckWithCards>(deckKey, readDeck);
   // The deck is the primary payload; never hold the entire page behind the secondary mastery
   // enrichment (a slow mastery read once left mobile learners on skeletons).
   const masteryRead = useStoreRead<Record<string, ItemMasteryRow>>(
@@ -743,7 +743,7 @@ export function SetDetailView({
   );
   // A failed re-read of a deck that was already shown is the failure the page reports, as before.
   const error = deckRead.isError ? (deckRead.error ?? recordUnavailableMessage("deck", "unknown")) : null;
-  const data: SetWithCards | null = deckRead.isError ? null : (deckRead.data ?? null);
+  const data: DeckWithCards | null = deckRead.isError ? null : (deckRead.data ?? null);
   const loading = !deckRead.hasData && !deckRead.isError;
   const currentName = data?.set.name ?? null;
   // The open set, by id, on every turn of the page guide: the server reads the cards, what the deck was made
@@ -760,8 +760,8 @@ export function SetDetailView({
     : masteryRead.isError
       ? "unavailable"
       : "pending";
-  const setData = (update: (prev: SetWithCards | null) => SetWithCards | null) =>
-    deckRead.setData((prev) => update(prev ?? null) ?? (prev as SetWithCards));
+  const setData = (update: (prev: DeckWithCards | null) => DeckWithCards | null) =>
+    deckRead.setData((prev) => update(prev ?? null) ?? (prev as DeckWithCards));
   const reload = () => {
     void (async () => {
       const fresh = await dispatchRead(refreshStoreRead(deckKey, readDeck));
@@ -839,7 +839,7 @@ export function SetDetailView({
     stop: stopIllustrate,
     setReview,
     reset: resetIllustrate,
-  } = useIllustrateSetRun();
+  } = useIllustrateDeckRun();
   const [illustrateOpen, setIllustrateOpen] = useState(false);
   const openCardWindow = useOpenFlashcardItemWindow();
 
@@ -1102,7 +1102,7 @@ export function SetDetailView({
   // an empty bag even though the deck was visibly loaded.
   const buildScope = () => {
     const loaded = !!data && !error;
-    return createEducationFlashcardSetScope({
+    return createEducationFlashcardDeckScope({
       set_loaded: loaded,
       set_id: setId,
       ...(error ? { load_error: error } : {}),
@@ -1865,7 +1865,7 @@ export function SetDetailView({
             {/* Per-set image run — live progress, then the review pass.
                 Floats beside the deck so the page never shifts. */}
             {illustrateOpen && (
-              <IllustrateSetWindow
+              <IllustrateDeckWindow
                 run={illustrateRun}
                 setName={data.set.name}
                 onClose={() => {
@@ -2186,7 +2186,7 @@ export function SetDetailView({
                 never a modal list of the whole deck to scroll and pick from.
                 The deck-level action is "Enrich all cards" above. */}
             {enhanceCard && (
-              <EnhanceSetDialog
+              <EnhanceDeckDialog
                 open={enhanceCard !== null}
                 onOpenChange={(next) => {
                   if (!next) setEnhanceCard(null);

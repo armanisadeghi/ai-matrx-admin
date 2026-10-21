@@ -10,6 +10,7 @@ import { INVOICE_PDF_DEMO } from "./demos/invoice-pdf";
 import { WAREHOUSE_3D_DEMO } from "./demos/warehouse-3d";
 import { MEDIA_PLAYERS_DEMO } from "./demos/media-players";
 import { READER_LOCALE_DEMO } from "./demos/reader-locale";
+import { FILES_AND_EXPORTS_DEMO } from "./demos/files-and-exports";
 
 /**
  * Every playground demo, in page order. Each source follows the shape-authoring rulebook —
@@ -27,4 +28,5 @@ export const PLAYGROUND_DEMOS: readonly PlaygroundDemo[] = [
   WAREHOUSE_3D_DEMO,
   MEDIA_PLAYERS_DEMO,
   READER_LOCALE_DEMO,
+  FILES_AND_EXPORTS_DEMO,
 ];

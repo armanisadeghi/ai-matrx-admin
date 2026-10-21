@@ -55,8 +55,18 @@ const SKIP_SELECTOR = [
   "button", "input", "textarea", "select", "[role=tab]", "[role=menuitem]",
   "[aria-hidden='true']", ".sr-only", ".katex",
   "[data-footnote-ref]", "[data-footnote-backref]", "#footnote-label",
-  "script", "style",
+  "script", "style", "noscript", "template", "[hidden]",
 ].join(",");
+
+/**
+ * True when `node` is text a person could have written: not inside chrome, controls, hidden text or
+ * a `<style>`/`<script>`. THE ONE definition of "meaningful text" — the projection maps only these,
+ * and a selection's edges are judged only by these (`textRangeOf`, review 6 H1).
+ */
+export function isContentText(node: Text): boolean {
+  const parent = node.parentElement;
+  return Boolean(parent && node.data && !parent.closest(SKIP_SELECTOR));
+}
 
 /** A run with no letters or digits (a stray "#", "·", "?") may only match right at the cursor. */
 const PUNCTUATION_ONLY = /^[^\p{L}\p{N}]+$/u;
@@ -74,11 +84,7 @@ export function collectTextNodes(root: Node): Text[] {
   const doc = root.ownerDocument ?? (root as Document);
   const walker = doc.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */, {
     acceptNode(node) {
-      const parent = (node as Text).parentElement;
-      if (!parent) return 2; // FILTER_REJECT
-      if (parent.closest(SKIP_SELECTOR)) return 2;
-      if (!(node as Text).data) return 2;
-      return 1; // FILTER_ACCEPT
+      return isContentText(node as Text) ? 1 /* FILTER_ACCEPT */ : 2 /* FILTER_REJECT */;
     },
   });
   let n = walker.nextNode();

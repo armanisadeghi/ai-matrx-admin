@@ -50,6 +50,7 @@ export function MapTopicTreeList({ mapId }: { mapId: string }) {
             <TreeDisclosure
               expandable={row.hasChildren}
               expanded={row.expanded}
+              label={row.name}
               onToggle={() => dispatch(toggleExpanded({ mapId, slug: row.slug }))}
             />
             {row.hasChildren ? (
@@ -61,7 +62,6 @@ export function MapTopicTreeList({ mapId }: { mapId: string }) {
               type="button"
               className="min-w-0 flex-1 truncate text-left"
               aria-current={row.selected ? "true" : undefined}
-              aria-expanded={row.hasChildren ? row.expanded : undefined}
               onDoubleClick={
                 row.hasChildren
                   ? () => dispatch(toggleExpanded({ mapId, slug: row.slug }))

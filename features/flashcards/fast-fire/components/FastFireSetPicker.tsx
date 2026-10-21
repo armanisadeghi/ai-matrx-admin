@@ -25,14 +25,14 @@ import {
 import { cn } from "@/lib/utils";
 import type { FcSetRow } from "@/features/flashcards/data/types";
 
-type SetSort = "name" | "date";
+type DeckSort = "name" | "date";
 
-const SORT_OPTIONS: { id: SetSort; label: string }[] = [
+const SORT_OPTIONS: { id: DeckSort; label: string }[] = [
   { id: "name", label: "Name" },
   { id: "date", label: "Date" },
 ];
 
-function matchesSetQuery(set: FcSetRow, q: string): boolean {
+function matchesDeckQuery(set: FcSetRow, q: string): boolean {
   if (!q) return true;
   const haystack = [set.name, set.topic, set.lesson, set.description]
     .filter(Boolean)
@@ -41,7 +41,7 @@ function matchesSetQuery(set: FcSetRow, q: string): boolean {
   return haystack.includes(q);
 }
 
-function sortSets(sets: FcSetRow[], sort: SetSort): FcSetRow[] {
+function sortDecks(sets: FcSetRow[], sort: DeckSort): FcSetRow[] {
   const copy = [...sets];
   if (sort === "name") {
     copy.sort((a, b) => a.name.localeCompare(b.name));
@@ -51,7 +51,7 @@ function sortSets(sets: FcSetRow[], sort: SetSort): FcSetRow[] {
   return copy;
 }
 
-function formatSetDate(iso: string | null | undefined): string {
+function formatDeckDate(iso: string | null | undefined): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
@@ -62,7 +62,7 @@ function formatSetDate(iso: string | null | undefined): string {
   });
 }
 
-export function FastFireSetPicker({
+export function FastFireDeckPicker({
   id,
   sets,
   value,
@@ -79,14 +79,14 @@ export function FastFireSetPicker({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<SetSort>("date");
+  const [sort, setSort] = useState<DeckSort>("date");
 
   const selected = sets.find((s) => s.id === value) ?? null;
 
   const visibleSets = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const filtered = q ? sets.filter((s) => matchesSetQuery(s, q)) : sets;
-    return sortSets(filtered, sort);
+    const filtered = q ? sets.filter((s) => matchesDeckQuery(s, q)) : sets;
+    return sortDecks(filtered, sort);
   }, [sets, search, sort]);
 
   return (
@@ -162,7 +162,7 @@ export function FastFireSetPicker({
                 ]
                   .filter(Boolean)
                   .join(" ");
-                const dateLabel = formatSetDate(set.updated_at);
+                const dateLabel = formatDeckDate(set.updated_at);
                 return (
                   <CommandItem
                     key={set.id}

@@ -86,7 +86,7 @@ export function GenerateCardsDialog({
             onConversationCreated: (cid) => {
               // Never discarded: a refused link is said, with its remedy.
               void fcService
-                .mergeSetMetadata(setId, (current) => ({
+                .mergeDeckMetadata(setId, (current) => ({
                   ...current,
                   source_system: "cx_conversation",
                   source_id: cid,

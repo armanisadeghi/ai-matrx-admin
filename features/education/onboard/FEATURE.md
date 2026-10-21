@@ -40,7 +40,7 @@ Source input ─SourceSet─▶ POST /sources/resolve ─useIngest─▶ { text,
   (`edu_export_study_data` / `edu_delete_study_data` / `edu_restore_study_data`).
 - Import: Quizlet/CSV/TSV, Matrx JSON, pasted pairs, Anki `.apkg` (review history seeded into FSRS
   through the ONE RPC `edu_import_review_history`). **`persistImportedDeck` (`import/importDeck.ts`)
-  is THE one import entry (IC-11)** — never `createSetWithCards` directly. zstd `collection.anki21b`
+  is THE one import entry (IC-11)** — never `createDeckWithCards` directly. zstd `collection.anki21b`
   is refused with re-export instructions.
 - `sql.js` (WASM) and jszip load ONLY by dynamic import from `ImportDeckPanel`; a static chain hangs
   the page build (`code-splitting` skill).

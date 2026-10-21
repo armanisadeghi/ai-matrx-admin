@@ -24,6 +24,10 @@ import { runShortcutAction } from "./handlers/run-shortcut";
 import { saveItemStateAction } from "./handlers/save-item-state";
 import { openFileAction, shareFileAction } from "./handlers/open-file";
 import { openUrlAction } from "./handlers/open-url";
+import { loadMediaAction, playEmbedAction } from "./handlers/media";
+import { fetchImageAction } from "./handlers/fetch-image";
+import { downloadAction } from "./handlers/download";
+import { printAction } from "./handlers/print";
 
 export const KIND_ACTIONS_PROVIDER_ID = "content-ir.kind-actions";
 
@@ -37,6 +41,11 @@ export const KIND_ACTIONS: readonly KindActionDefinition[] = [
   openFileAction,
   shareFileAction,
   openUrlAction,
+  loadMediaAction,
+  playEmbedAction,
+  fetchImageAction,
+  downloadAction,
+  printAction,
 ];
 
 /** The registry id of the action a component names by `key`. */

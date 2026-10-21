@@ -152,7 +152,7 @@ export function useWeakAreaDrill(
       let testCardIds: string[] | null = null;
       if (deckIdsKey) {
         const decks = await Promise.all(
-          deckIdsKey.split(",").map((id) => fcService.getSetWithCards(id)),
+          deckIdsKey.split(",").map((id) => fcService.getDeckWithCards(id)),
         );
         if (cancelled) return;
         const failed = decks.find((d) => !d.data);
@@ -169,7 +169,7 @@ export function useWeakAreaDrill(
           new Date(),
         );
       } else if (deckId) {
-        const deckRes = await fcService.getSetWithCards(deckId);
+        const deckRes = await fcService.getDeckWithCards(deckId);
         if (cancelled) return;
         if (!deckRes.data) {
           setError(deckRes.error ?? "This deck couldn't be loaded.");

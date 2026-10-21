@@ -17,7 +17,9 @@ jest.mock("next/navigation", () => jest.requireActual("./remount-safety/next-nav
 
 import { BOARD_ITEM_TYPES } from "../items/catalog";
 import { pageSource } from "../items/page-items";
-import { expectRemountSafe, runCycle, typeInto } from "./remount-safety/harness";
+import { expectRemountSafe, runCycle, settle, typeInto } from "./remount-safety/harness";
+import { createSurfaceCapture, type SurfaceRegistry } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { FRAMED_SURFACE_BRIDGE_KEY, installFramedSurfaceBridge } from "../embed/framed-surface-bridge";
 import { installBrowserGaps } from "./remount-safety/browser-gaps";
 import { remountType } from "./remount-safety/cases";
 
@@ -100,12 +102,57 @@ remountType(
   (r) => expectRemountSafe(r, WEB, []),
 );
 
+/**
+ * The framed page as a browser runs it: its own window registry with its surface, the bridge on its
+ * window, and postMessage carrying the sender's origin and window (jsdom's carries neither). Booted
+ * once per iframe — a remount is a new iframe, so the page loads (and announces itself) again.
+ */
+function bootFramedPage(tile: { container: Element }): void {
+  const frame = tile.container.querySelector("iframe");
+  const win = frame?.contentWindow;
+  if (!win || (win as unknown as Record<string, unknown>)[FRAMED_SURFACE_BRIDGE_KEY]) return;
+  const post = (target: Window, sender: Window) => {
+    target.postMessage = ((data: unknown) => {
+      setTimeout(() => {
+        const Ctor = (target as unknown as { MessageEvent: typeof MessageEvent }).MessageEvent;
+        target.dispatchEvent(new Ctor("message", { data, origin: sender.location.origin, source: sender }));
+      });
+    }) as Window["postMessage"];
+  };
+  post(window, win);
+  post(win, window);
+  const pageRegistry = createSurfaceCapture();
+  pageRegistry.register({ surfaceName: "matrx-user/meeting", getScope: () => ({ meeting_title: "Weekly sync" }) }, 1);
+  installFramedSurfaceBridge(win, pageRegistry);
+}
+
+/** What the board's agent reads of the Page tile: the framed page's surface and a live value of it. */
+async function framedSurfaceOf(tile: { container: Element; capture: SurfaceRegistry }) {
+  bootFramedPage(tile);
+  await settle(100);
+  const runtime = tile.capture.primary();
+  return { surface: runtime?.surfaceName ?? null, title: runtime ? (await runtime.getScope()).meeting_title : null };
+}
+
 remountType(
   "page",
   () =>
     runCycle(type("page"), pageSource("/meetings"), {
       title: "Meetings",
-      kept: (tile) => ({ src: tile.container.querySelector("iframe")?.getAttribute("src"), saved: tile.source() }),
+      act: async (tile) => {
+        bootFramedPage(tile);
+        await settle(100);
+      },
+      kept: async (tile) => ({
+        src: tile.container.querySelector("iframe")?.getAttribute("src"),
+        saved: tile.source(),
+        framed: await framedSurfaceOf(tile),
+      }),
     }),
-  (r) => expectRemountSafe(r, { src: "/meetings", saved: pageSource("/meetings") }, []),
+  (r) =>
+    expectRemountSafe(
+      r,
+      { src: "/meetings", saved: pageSource("/meetings"), framed: { surface: "matrx-user/meeting", title: "Weekly sync" } },
+      [],
+    ),
 );

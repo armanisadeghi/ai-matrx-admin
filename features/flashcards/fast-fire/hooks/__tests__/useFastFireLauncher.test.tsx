@@ -21,7 +21,7 @@ jest.mock("@/lib/redux/hooks", () => ({
 
 jest.mock("@/features/flashcards/data/fcService", () => ({
   fcService: {
-    getSetWithCards: async () => ({
+    getDeckWithCards: async () => ({
       data: {
         set: { id: "set-fastfire", name: "FastFire Test Deck" },
         cards: [

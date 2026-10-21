@@ -1,0 +1,437 @@
+{
+  "/d/[renderId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/libraries/[id]": {
+    "value": "5b03d72c-92e2-42f6-866d-df4983c64fe1",
+    "from": "/libraries/5b03d72c-92e2-42f6-866d-df4983c64fe1"
+  },
+  "/o/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/applets/manage/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/education/flashcards/[setId]": {
+    "value": "0a504149-e8a9-4507-ad7b-631ac314be77",
+    "from": "/education/flashcards/0a504149-e8a9-4507-ad7b-631ac314be77"
+  },
+  "/education/media/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/education/quizzes/[id]": {
+    "value": "29ad0a87-04ca-482e-b779-6a8202e448a8",
+    "from": "/education/quizzes/29ad0a87-04ca-482e-b779-6a8202e448a8"
+  },
+  "/education/practice-tests/[id]": {
+    "value": "d6ecf1f6-625f-44c0-b22d-0211ebc45578",
+    "from": "/education/practice-tests/d6ecf1f6-625f-44c0-b22d-0211ebc45578"
+  },
+  "/hr/tasks/[instanceId]": {
+    "value": "0fc4b622-c5c4-47eb-b76d-7e6d8b3bbed0",
+    "from": "/hr/tasks/0fc4b622-c5c4-47eb-b76d-7e6d8b3bbed0?org=2643e470-b275-47f3-95f3-ae275ad3ca47&step=f4aac7fb-6f63-459e-99a4-ed17d52d175d&notice=505df1b4-7a3a-4603-aa15-423b786355c5"
+  },
+  "/intelligence/go/[...slug]": {
+    "skipped": "parent list answered 404"
+  },
+  "/knowledge/sources/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/knowledge/transcripts/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/knowledge/viewer/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/changes/[changeId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/growth-loop/[loopRunId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/pages/[pageId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/properties/[propertyId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/screenshots/[screenshotId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/topical-maps/[mapId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/snapshots/[snapshotId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/masterwork/vision-interview/[sessionId]": {
+    "value": "b4e3d737-8d44-4609-aa6c-8c27ca2f1173",
+    "from": "/masterwork/vision-interview/b4e3d737-8d44-4609-aa6c-8c27ca2f1173"
+  },
+  "/rag/viewer/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/research/tags/[tagId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/scopes/s/[scopeId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/shapes/id/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/research/topics/[topicId]": {
+    "value": "719c2408-8cd8-4681-875a-25b374c5b31b",
+    "from": "/research/topics/719c2408-8cd8-4681-875a-25b374c5b31b"
+  },
+  "/teams/id/[teamId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/shapes/instances/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/education/game/play/[roomId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/hr/leave/balances/[employmentId]": {
+    "value": "9c0b1d0c-a3d2-4ea1-b66b-0c45e5b0027a",
+    "from": "/hr/leave/balances/9c0b1d0c-a3d2-4ea1-b66b-0c45e5b0027a/5e6a0d1c-0000-4a5b-9c00-11115e6a0d1c?org_filter=2643e470-b275-47f3-95f3-ae275ad3ca47"
+  },
+  "/marketing/ai-visibility/runs/[runId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/topical-maps/topics/[topicId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/podcast/studio/run/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/podcast/studio/show/[showId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/tools/product-capture/item/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/hr/leave/balances/[employmentId]/[policyId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/tools/youtube/videos/[videoId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/discovery/youtube/videos/[videoId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/brands/smart-add/enrich/[brandId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/brands/smart-add/validate/[brandId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/chat/[conversationId]": {
+    "value": "951e123b-e9d0-42f9-9589-b23697849254",
+    "from": "/chat/951e123b-e9d0-42f9-9589-b23697849254",
+    "ownership": "no-lane-list"
+  },
+  "/board/[id]": {
+    "value": "10c28c2c-65b3-40ba-816e-b3d9b266b700",
+    "from": "/board/10c28c2c-65b3-40ba-816e-b3d9b266b700",
+    "ownership": "no-lane-list"
+  },
+  "/cms/[siteId]": {
+    "value": "051710f2-9802-4826-b690-8312bf5977b8",
+    "from": "/cms/051710f2-9802-4826-b690-8312bf5977b8",
+    "ownership": "no-lane-list"
+  },
+  "/artifacts/[id]": {
+    "value": "239ab697-62f3-42cd-b46c-f4e8f862a883",
+    "from": "/artifacts/239ab697-62f3-42cd-b46c-f4e8f862a883",
+    "ownership": "no-lane-list"
+  },
+  "/crm/[partyId]": {
+    "value": "d3beb319-44c7-4d57-a46e-b6d23663b566",
+    "from": "/crm/d3beb319-44c7-4d57-a46e-b6d23663b566",
+    "ownership": "no-lane-list"
+  },
+  "/agents/[id]": {
+    "value": "a2525cd3-5cd7-41e3-a0d5-14a9507285d1",
+    "from": "/agents/a2525cd3-5cd7-41e3-a0d5-14a9507285d1",
+    "ownership": "no-lane-list"
+  },
+  "/devices/[deviceId]": {
+    "value": "05ccf02a-5fa0-4b88-8cbb-8ae480fd82ec",
+    "from": "/devices/05ccf02a-5fa0-4b88-8cbb-8ae480fd82ec",
+    "ownership": "no-lane-list"
+  },
+  "/documents/[id]": {
+    "value": "fd2c799b-8e0c-4e4d-afbc-1d6337a14a34",
+    "from": "/documents/fd2c799b-8e0c-4e4d-afbc-1d6337a14a34",
+    "ownership": "no-lane-list"
+  },
+  "/data/[tableId]": {
+    "skipped": "Mine lane is empty"
+  },
+  "/esign/[envelopeId]": {
+    "value": "20f36c5b-9307-45ec-877b-04fbfc53ae82",
+    "from": "/esign/20f36c5b-9307-45ec-877b-04fbfc53ae82",
+    "ownership": "no-lane-list"
+  },
+  "/intelligence/[feature]": {
+    "value": "billing",
+    "from": "/intelligence/billing",
+    "ownership": "no-lane-list"
+  },
+  "/launchpad/[key]": {
+    "value": "my-launchpad",
+    "from": "/launchpad/my-launchpad",
+    "ownership": "no-lane-list"
+  },
+  "/maps/[id]": {
+    "value": "36d52ba4-3265-468b-a3c4-536049efe22c",
+    "from": "/maps/36d52ba4-3265-468b-a3c4-536049efe22c",
+    "ownership": "no-lane-list"
+  },
+  "/marketing/[brandId]": {
+    "value": "1c71e366-143c-4692-8e9a-1b59bdfe114a",
+    "from": "/marketing/1c71e366-143c-4692-8e9a-1b59bdfe114a",
+    "ownership": "no-lane-list"
+  },
+  "/organizations/[orgId]": {
+    "value": "c19a81b7-f65f-4c01-b04c-00f97f8b7e4d",
+    "from": "/organizations/c19a81b7-f65f-4c01-b04c-00f97f8b7e4d",
+    "ownership": "no-lane-list"
+  },
+  "/podcast/[slug]": {
+    "value": "matrx-mix-podcast",
+    "from": "/podcast/matrx-mix-podcast",
+    "ownership": "no-lane-list"
+  },
+  "/pick-lists/[id]": {
+    "value": "9f9241bc-7046-479a-a883-2133ef03cba8",
+    "from": "/pick-lists/9f9241bc-7046-479a-a883-2133ef03cba8",
+    "ownership": "no-lane-list"
+  },
+  "/presentations/[id]": {
+    "value": "e45f7ed8-cb6f-46ad-aed4-9d9be3e648f3",
+    "from": "/presentations/e45f7ed8-cb6f-46ad-aed4-9d9be3e648f3",
+    "ownership": "no-lane-list"
+  },
+  "/schedules/[id]": {
+    "value": "9ca7d6b5-446f-4cca-8fcd-bf0d1b10bdb6",
+    "from": "/schedules/9ca7d6b5-446f-4cca-8fcd-bf0d1b10bdb6",
+    "ownership": "no-lane-list"
+  },
+  "/spaces/[spaceId]": {
+    "value": "ba289103-9ef2-433a-ae94-0cd9a963ae29",
+    "from": "/spaces/ba289103-9ef2-433a-ae94-0cd9a963ae29",
+    "ownership": "no-lane-list"
+  },
+  "/user-settings/[[...path]]": {
+    "value": "integrations",
+    "from": "/user-settings/integrations",
+    "ownership": "no-lane-list"
+  },
+  "/war-room/[id]": {
+    "value": "b69a805f-4fef-4fea-9d3c-4b99e39a1d82",
+    "from": "/war-room/b69a805f-4fef-4fea-9d3c-4b99e39a1d82",
+    "ownership": "no-lane-list"
+  },
+  "/workbooks/[id]": {
+    "value": "1abcc95d-8eff-4619-af44-4860fa6059d7",
+    "from": "/workbooks/1abcc95d-8eff-4619-af44-4860fa6059d7",
+    "ownership": "no-lane-list"
+  },
+  "/workflows/[id]": {
+    "value": "c35f8cc4-c942-4249-9a34-68ae41c9ca53",
+    "from": "/workflows/c35f8cc4-c942-4249-9a34-68ae41c9ca53",
+    "ownership": "no-lane-list"
+  },
+  "/agents/orchestras/[conductorId]": {
+    "value": "0359c9e3-583f-4acf-9ef6-fdbda14952cb",
+    "from": "/agents/orchestras/0359c9e3-583f-4acf-9ef6-fdbda14952cb",
+    "ownership": "no-lane-list"
+  },
+  "/agents/prompt-blocks/[id]": {
+    "value": "b5c0cecc-0d30-4c1e-9f74-a03bc13f065e",
+    "from": "/agents/prompt-blocks/b5c0cecc-0d30-4c1e-9f74-a03bc13f065e",
+    "ownership": "no-lane-list"
+  },
+  "/agents/templates/[id]": {
+    "value": "b06689e3-c651-443a-9059-7e11160d91b4",
+    "from": "/agents/templates/b06689e3-c651-443a-9059-7e11160d91b4",
+    "ownership": "no-lane-list"
+  },
+  "/cms/html-pages/[pageId]": {
+    "value": "db2c3893-36e8-4953-8e0e-e25256b062b2",
+    "from": "/cms/html-pages/db2c3893-36e8-4953-8e0e-e25256b062b2",
+    "ownership": "no-lane-list"
+  },
+  "/commerce/labels/[batchId]": {
+    "value": "3fa77d29-c86c-4dfa-8ba5-ce0f04e2de35",
+    "from": "/commerce/labels/3fa77d29-c86c-4dfa-8ba5-ce0f04e2de35",
+    "ownership": "no-lane-list"
+  },
+  "/crm/sending-identities/[identityId]": {
+    "value": "d7259aad-32d0-4250-b9b8-f3b87e760208",
+    "from": "/crm/sending-identities/d7259aad-32d0-4250-b9b8-f3b87e760208",
+    "ownership": "no-lane-list"
+  },
+  "/crm/outreach-lists/[listId]": {
+    "value": "692da43f-451d-469a-93f8-f61766adfa94",
+    "from": "/crm/outreach-lists/692da43f-451d-469a-93f8-f61766adfa94",
+    "ownership": "no-lane-list"
+  },
+  "/data/bases/[homeId]": {
+    "value": "d0977bca-19ea-4d59-b582-a2eae0d9ef58",
+    "from": "/data/bases/d0977bca-19ea-4d59-b582-a2eae0d9ef58",
+    "ownership": "no-lane-list"
+  },
+  "/education/audio-study/[id]": {
+    "value": "d08595ba-1a08-44b4-94d9-be4da772a077",
+    "from": "/education/audio-study/d08595ba-1a08-44b4-94d9-be4da772a077",
+    "ownership": "no-lane-list"
+  },
+  "/education/classes/[classId]": {
+    "value": "agent-test-chemistry",
+    "from": "/education/classes/agent-test-chemistry",
+    "ownership": "no-lane-list"
+  },
+  "/education/exam-prep/[slug]": {
+    "value": "mcat",
+    "from": "/education/exam-prep/mcat",
+    "ownership": "no-lane-list"
+  },
+  "/data/pages/[pageId]": {
+    "value": "024b4b4f-724e-4fbe-97e3-a29e3884244b",
+    "from": "/data/pages/024b4b4f-724e-4fbe-97e3-a29e3884244b",
+    "ownership": "no-lane-list"
+  },
+  "/education/learn/[...slug]": {
+    "value": "exam",
+    "from": "/education/learn/exam/gre-verbal-guide",
+    "ownership": "no-lane-list"
+  },
+  "/education/features/[slug]": {
+    "value": "how-we-stay-honest",
+    "from": "/education/features/how-we-stay-honest",
+    "ownership": "no-lane-list"
+  },
+  "/education/levels/[slug]": {
+    "value": "elementary",
+    "from": "/education/levels/elementary",
+    "ownership": "no-lane-list"
+  },
+  "/education/memory/[id]": {
+    "value": "165ca5b0-13dc-49fe-9804-8c4eb6c0a47f",
+    "from": "/education/memory/165ca5b0-13dc-49fe-9804-8c4eb6c0a47f",
+    "ownership": "no-lane-list"
+  },
+  "/education/study-aids/[slug]": {
+    "value": "flashcards",
+    "from": "/education/study-aids/flashcards",
+    "ownership": "no-lane-list"
+  },
+  "/education/mind-maps/[id]": {
+    "value": "7e583872-20dd-4966-b7a1-95f906a2fc71",
+    "from": "/education/mind-maps/7e583872-20dd-4966-b7a1-95f906a2fc71",
+    "ownership": "no-lane-list"
+  },
+  "/education/summaries/[id]": {
+    "value": "18e662e6-3c9b-45b3-891c-655c196d6f2c",
+    "from": "/education/summaries/18e662e6-3c9b-45b3-891c-655c196d6f2c",
+    "ownership": "no-lane-list"
+  },
+  "/education/subjects/[slug]": {
+    "value": "biology",
+    "from": "/education/subjects/biology",
+    "ownership": "no-lane-list"
+  },
+  "/education/tutor/[conversationId]": {
+    "value": "a9108ead-3f10-450e-82b2-f07a1fd2dd8d",
+    "from": "/education/tutor/a9108ead-3f10-450e-82b2-f07a1fd2dd8d",
+    "ownership": "no-lane-list"
+  },
+  "/esign/templates/[templateId]": {
+    "value": "6a261654-8467-4163-89b9-2659d69bc0a0",
+    "from": "/esign/templates/6a261654-8467-4163-89b9-2659d69bc0a0",
+    "ownership": "no-lane-list"
+  },
+  "/knowledge/library/[id]": {
+    "skipped": "Mine lane is empty"
+  },
+  "/marketing/monitoring/[trackerId]": {
+    "value": "5282ac85-301f-461f-b8c9-d30063853752",
+    "from": "/marketing/monitoring/5282ac85-301f-461f-b8c9-d30063853752",
+    "ownership": "no-lane-list"
+  },
+  "/masterwork/encore/[id]": {
+    "value": "9c12787a-d62e-4141-80fb-f92a088ced16",
+    "from": "/masterwork/encore/9c12787a-d62e-4141-80fb-f92a088ced16",
+    "ownership": "no-lane-list"
+  },
+  "/rag/library/[id]": {
+    "skipped": "Mine lane is empty"
+  },
+  "/workflows/builder/[tableId]": {
+    "value": "triggers",
+    "from": "/workflows/builder/triggers",
+    "ownership": "no-lane-list"
+  },
+  "/workflows/runs/[runId]": {
+    "value": "4dc85491-8724-448e-a6ed-d2afe00ab742",
+    "from": "/workflows/runs/4dc85491-8724-448e-a6ed-d2afe00ab742",
+    "ownership": "no-lane-list"
+  },
+  "/work/conversations/[conversationId]": {
+    "skipped": "Mine lane is empty"
+  },
+  "/agents/[id]/v/[version]": {
+    "skipped": "parent list answered 404"
+  },
+  "/agents/[id]/shortcuts/[shortcutId]": {
+    "value": "a14ae5d0-8860-4c67-b248-fd79da1335fa",
+    "from": "/agents/a2525cd3-5cd7-41e3-a0d5-14a9507285d1/shortcuts/a14ae5d0-8860-4c67-b248-fd79da1335fa",
+    "ownership": "no-lane-list"
+  },
+  "/cms/[siteId]/pages/[pageId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/commerce/intake/assets/[id]": {
+    "value": "1e20a86f-dac3-4ea2-9b7a-153e752bf1ac",
+    "from": "/commerce/intake/assets/1e20a86f-dac3-4ea2-9b7a-153e752bf1ac",
+    "ownership": "no-lane-list"
+  },
+  "/education/flashcards/sessions/[sessionId]": {
+    "skipped": "Mine lane is empty"
+  },
+  "/organizations/[orgId]/resources/[kind]": {
+    "skipped": "parent list answered 404"
+  },
+  "/education/classes/[classId]/tests/[testId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/marketing/[brandId]/socials/post/[postId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/organizations/[orgId]/admin/automations/[kind]": {
+    "skipped": "parent list answered 404"
+  },
+  "/organizations/[orgId]/admin/users/[userId]": {
+    "skipped": "parent list answered 404"
+  },
+  "/organizations/[orgId]/shortcuts/edit/[id]": {
+    "skipped": "parent list answered 404"
+  },
+  "/research/topics/[topicId]/keywords/[keywordId]": {
+    "value": "2684cf17-c2d1-46ab-88bd-38f30b0e2d09",
+    "from": "/research/topics/719c2408-8cd8-4681-875a-25b374c5b31b/keywords/2684cf17-c2d1-46ab-88bd-38f30b0e2d09",
+    "ownership": "no-lane-list"
+  },
+  "/research/topics/[topicId]/sources/[sourceId]": {
+    "value": "4bc15304-59fa-42ec-83db-20cbf8184843",
+    "from": "/research/topics/719c2408-8cd8-4681-875a-25b374c5b31b/sources/4bc15304-59fa-42ec-83db-20cbf8184843",
+    "ownership": "no-lane-list"
+  },
+  "/agents/[id]/shortcuts/old/edit/[shortcutId]": {
+    "skipped": "parent list answered 404"
+  }
+}

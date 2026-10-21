@@ -83,7 +83,7 @@ export interface NewCardInput {
   trust?: TrustEnvelope;
 }
 
-export interface NewSetInput {
+export interface NewDeckInput {
   name: string;
   description?: string | null;
   topic?: string | null;
@@ -101,7 +101,7 @@ export interface CardWithDetails extends FcCardRow {
   details: FcDetailRow[];
 }
 
-export interface SetWithCards {
+export interface DeckWithCards {
   set: FcSetRow;
   cards: CardWithDetails[];
 }

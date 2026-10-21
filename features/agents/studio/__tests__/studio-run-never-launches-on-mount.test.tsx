@@ -19,6 +19,19 @@ import { createRoot } from "react-dom/client";
 const loadWorkspaceRow = jest.fn(async () => ({ version: 1, metadata: {} }));
 const loadWorkspace = jest.fn(async () => ({}));
 const channels: unknown[] = [];
+/** Any direct row read (the pre-5A pane read through the client itself): counted as a read. */
+let fromCalls = 0;
+jest.mock("@/utils/supabase/client", () => {
+  const row = { data: { id: "conv-1", version: 1, metadata: {} }, error: null };
+  const chain: Record<string, unknown> = {};
+  for (const k of ["schema", "select", "eq", "update"]) chain[k] = () => chain;
+  chain.from = () => {
+    fromCalls += 1;
+    return chain;
+  };
+  chain.maybeSingle = async () => row;
+  return { createClient: () => chain };
+});
 jest.mock("@ai-matrx/data/realtime/react", () => ({ useChannel: (spec: unknown) => channels.push(spec) }));
 jest.mock("@ai-matrx/data/realtime", () => ({ defineChannelNamespace: () => ({ topic: (p: { conversationId: string }) => `t:${p.conversationId}` }) }));
 jest.mock("../workspace", () => ({
@@ -45,6 +58,7 @@ describe("guard 1: one pane tree survives an agent arriving and a layout change"
     expect(page).not.toMatch(/key=\{state\.mode\}/);
     expect(page).not.toMatch(/ResizablePanelGroup/);
     expect(page.match(/<StudioSurfaceRoot\b/g) ?? []).toHaveLength(1);
+    expect(page).toMatch(/studioSlot\(layout, pane/);
     for (const pane of ["switch", "assistant", "agent", "controls"]) {
       expect(page.match(new RegExp(`paneProps\\("${pane}"\\)`, "g")) ?? []).toHaveLength(1);
     }
@@ -52,7 +66,7 @@ describe("guard 1: one pane tree survives an agent arriving and a layout change"
 
   it("the same four DOM nodes survive three → two → tabs → three and an agent arriving", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { studioSlot, studioGrid } = require(PAGE) as typeof import("../components/AgentStudioPage");
+    const { studioSlot, studioGrid } = require(process.env.STUDIO_LAYOUT_UNDER_TEST ?? "../studio-layout") as typeof import("../studio-layout");
     type L = "three" | "two" | "tabs";
     const panes = ["switch", "assistant", "agent", "controls"] as const;
     function Tree({ layout, agentId }: { layout: L; agentId: string | null }) {
@@ -87,7 +101,7 @@ describe("guard 2: an idle workspace pane makes 0 reads in 30 s", () => {
     }
     const root = createRoot(document.createElement("div"));
     await act(async () => root.render(<Probe />));
-    const reads = () => loadWorkspaceRow.mock.calls.length + loadWorkspace.mock.calls.length;
+    const reads = () => loadWorkspaceRow.mock.calls.length + loadWorkspace.mock.calls.length + fromCalls;
     const opened = reads();
     expect(opened).toBe(1);
     await act(async () => {

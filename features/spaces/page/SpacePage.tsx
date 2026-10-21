@@ -75,6 +75,7 @@ import { setSuggestAuthor, setSuggestName, setSuggestPage } from "../editor/sugg
 import { isContentEditOnly } from "./content-edit";
 import { StructureProvider } from "./structure";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { useSpacesImport } from "../sidebar/ImportMenu";
 
 type Editable = Pick<SpaceDoc, "title" | "icon" | "cover" | "settings" | "blocks" | "properties">;
 
@@ -208,6 +209,8 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
   const [readyEditor, setReadyEditor] = useState<SpacesEditor | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  // A7 — ••• Import: files become sub-pages of this page (the sidebar's Import makes top-level pages).
+  const pageImport = useSpacesImport(spaceId);
   const [aiTarget, setAiTarget] = useState<AskAiTarget | null>(null);
   // H1 — the comments panel, a thread being started (undefined = none; null anchor = the page), and the
   // page comment being written under the title.
@@ -221,7 +224,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
   const contentRef = useRef<HTMLDivElement | null>(null);
   // The page stacks its columns by its own width: a container query in spaces.css (`spaces-content`), never JS.
   const comments = useSpaceComments(spaceId, doc?.title ?? "");
-  const room = useSpaceRoom(spaceId, comments.reload);
+  const room = useSpaceRoom(spaceId, comments.reload, doc?.organizationId);
   // H5 — what this person may do here: the database decides (get_resource_access); a viewer or
   // commenter never gets editing affordances, never writes, and sees the room read-only.
   const access = useAccess("document", spaceId);
@@ -964,6 +967,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
           onUndo={() => editorRef.current?.undo()}
           onHistory={() => setHistoryOpen(true)}
           onExport={() => setExportOpen(true)}
+          importChoices={editable ? pageImport.choices : undefined}
           onAskAiChange={builder.wired && editable ? () => builder.ask({ spaceId: doc.id, ...pageForAi() }) : undefined}
           isTemplate={spaces.templates.ids ? spaces.templates.ids.includes(doc.id) : null}
           onOpen={() => {
@@ -1126,6 +1130,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
           <FindInPage rootSelector=".spaces-page .spaces-editor" />
           {aiTarget && editorRef.current ? <AskAiMenu editor={editorRef.current} target={aiTarget} page={pageForAi} onClose={() => setAiTarget(null)} /> : null}
           <ExportDialog open={exportOpen} onOpenChange={setExportOpen} spaceId={doc.id} beforeExport={flush} />
+          {editable ? pageImport.inputs : null}
           <PageHistory
             open={historyOpen}
             onOpenChange={setHistoryOpen}

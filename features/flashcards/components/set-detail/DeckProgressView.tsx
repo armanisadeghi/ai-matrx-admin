@@ -62,7 +62,7 @@ import { fcService } from "../../data/fcService";
 import { rankDeckPractice } from "../../data/deckPractice";
 import { studyFaces } from "../../utils/cardVariants";
 import { getCardImages } from "../study/cardImages";
-import type { CardWithDetails, SetWithCards } from "../../data/types";
+import type { CardWithDetails, DeckWithCards } from "../../data/types";
 
 const EDU_BASE = "/education/flashcards";
 /** How many weak cards the list shows; the drill takes up to 20. */
@@ -75,7 +75,7 @@ const scoreChartConfig = {
 } satisfies ChartConfig;
 
 interface DeckProgressData {
-  deck: SetWithCards;
+  deck: DeckWithCards;
   mastery: Record<string, ItemMasteryRow | undefined>;
   sessions: StudySessionRow[];
   attempts: Record<string, SessionAttemptSummary>;
@@ -97,7 +97,7 @@ export function DeckProgressView({ setId }: { setId: string }) {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const deckRes = await fcService.getSetWithCards(setId);
+      const deckRes = await fcService.getDeckWithCards(setId);
       if (cancelled) return;
       if (!deckRes.data) {
         setError(deckRes.error ?? "unavailable");

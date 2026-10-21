@@ -181,7 +181,7 @@ export function useGamePlay(args: UseGamePlayArgs): UseGamePlayResult {
       let effectiveSourceSetId = sourceSetId ?? null;
 
       if (sourceKind === "set" && sourceSetId) {
-        const setRes = await fcService.getSetWithCards(sourceSetId);
+        const setRes = await fcService.getDeckWithCards(sourceSetId);
         if (cancelled) return;
         if (setRes.error || !setRes.data) {
           setError(setRes.error ?? "Failed to load deck");
@@ -214,10 +214,10 @@ export function useGamePlay(args: UseGamePlayArgs): UseGamePlayResult {
         // If there's nothing due yet, fall back to the largest recent set so the
         // arcade is always playable (loud in dev only — expected for new users).
         if (cards.length < 2) {
-          const setsRes = await fcService.listSets();
+          const setsRes = await fcService.listDecks();
           const firstSet = (setsRes.data ?? [])[0];
           if (firstSet) {
-            const swc = await fcService.getSetWithCards(firstSet.id);
+            const swc = await fcService.getDeckWithCards(firstSet.id);
             if (!cancelled && swc.data) {
               effectiveSourceSetId = firstSet.id;
               cards = swc.data.cards;

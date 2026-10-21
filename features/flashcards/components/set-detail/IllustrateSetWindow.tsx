@@ -2,7 +2,7 @@
 
 /**
  * @registry-status: inline-window
- * IllustrateSetWindow — the floating surface for the per-SET image lane.
+ * IllustrateDeckWindow — the floating surface for the per-SET image lane.
  *
  * Two lives, one window (THE FLOATING LAW: a spinner is never the answer, and a
  * live-run block at the top of a page is banned — this floats beside the deck
@@ -19,7 +19,7 @@
  *      RECORDED on the detail row before the soft-delete
  *      (`fcService.reviewCardImage`) so judge accuracy can learn from it.
  *
- * Rendered inline by `SetDetailView` (not a registered overlay): the run state
+ * Rendered inline by `DeckDetailView` (not a registered overlay): the run state
  * and every review callback live in the page. Converting it to a registered
  * window would need its callbacks wrapped in a callback-bus group first (see
  * ImageUploaderWindow).
@@ -232,7 +232,7 @@ function ReviewRow({
   );
 }
 
-export function IllustrateSetWindow({
+export function IllustrateDeckWindow({
   run,
   setName,
   onClose,
@@ -385,4 +385,4 @@ function computeViewportSize(): { width: number; height: number } {
   };
 }
 
-export default IllustrateSetWindow;
+export default IllustrateDeckWindow;

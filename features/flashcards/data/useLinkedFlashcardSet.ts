@@ -16,22 +16,22 @@
 import { useEffect, useRef } from "react";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
-import { flashcardSetHref } from "../routes";
+import { flashcardDeckHref } from "../routes";
 
 export const FC_SET_EXTERNAL_SYSTEM = "fc_set";
 
 const LINK_RETRY_DELAYS_MS = [2_000, 5_000, 12_000];
 
-export interface LinkedFlashcardSet {
+export interface LinkedFlashcardDeck {
   /** The linked education.fc_set id, or null while unlinked / loading. */
   setId: string | null;
   /** The deck page in Flashcards, or null while unlinked. */
   href: string | null;
 }
 
-export function useLinkedFlashcardSet(
+export function useLinkedFlashcardDeck(
   artifactId: string | null | undefined,
-): LinkedFlashcardSet {
+): LinkedFlashcardDeck {
   const materializedId = isMaterializedArtifactId(artifactId)
     ? (artifactId as string)
     : null;
@@ -62,5 +62,5 @@ export function useLinkedFlashcardSet(
     return () => clearTimeout(timer);
   }, [materializedId, loading, row, setId, refetch]);
 
-  return { setId, href: setId ? flashcardSetHref({ id: setId }) : null };
+  return { setId, href: setId ? flashcardDeckHref({ id: setId }) : null };
 }

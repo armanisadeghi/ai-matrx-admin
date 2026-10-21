@@ -202,7 +202,7 @@ export function useQuizStudy(
       setCorrectByIndex({});
       setFallbackAttempted(new Set());
 
-      const setRes = await fcService.getSetWithCards(setId);
+      const setRes = await fcService.getDeckWithCards(setId);
       if (cancelled) return;
       if (!setRes.data) {
         setSet(null);

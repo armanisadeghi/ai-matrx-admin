@@ -36,6 +36,8 @@ import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useFloatingRunWindow } from "@ai-matrx/chat/agents/hooks/useFloatingAgentRun";
 import { triggerShortcut } from "@ai-matrx/chat/agents/utils/trigger-shortcut";
 import { openOverlay } from "@ai-matrx/summon/open";
+import { downloadFile } from "@/features/files/api/files";
+import { rememberFileOrganization } from "@/features/files/api/fileOrganization";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import {
   livePosture,
@@ -58,6 +60,7 @@ import { invokeAction } from "@ai-matrx/alchemy/actions";
 import { useOptionalAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { ensureInvokedProvider } from "./invoked-actions";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { mediaKitCapabilities } from "./media-kit-capabilities";
 
 export type RunKindAction = (
   key: string,
@@ -231,6 +234,7 @@ export function useKindActionRunner(
           return outcome;
         };
         const context: KindActionContext = {
+          ...mediaKitCapabilities,
           launchAgent,
           userId,
           openShortcut,
@@ -239,6 +243,19 @@ export function useKindActionRunner(
           openFile: (fileId) => openFilePreview(fileId),
           openUrl: (url) => {
             openOutbound(url, "_blank", "noopener");
+          },
+          loadMedia: async (fileId, organizationId) => {
+            if (organizationId) rememberFileOrganization(fileId, organizationId);
+            const { blob } = await downloadFile(fileId, { inline: true });
+            return { blob, mime_type: blob.type || null };
+          },
+          playEmbed: (url, title) => {
+            dispatch(
+              openOverlay({
+                overlayId: "browserFrameWindow",
+                data: { initialUrl: url, initialWindowTitle: title },
+              }),
+            );
           },
           shareFile: (fileId, name) =>
             dispatch(

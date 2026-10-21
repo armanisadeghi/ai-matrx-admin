@@ -12,6 +12,7 @@ import { TABLE_ENTITY, TABLE_LAYOUT_SECTION } from "../items/table-tile";
 
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../spaces/templates/packs/design-system-board.pack.json"), "utf8")) as SpaceTemplatePack;
+const STYLE = JSON.parse(readFileSync(join(__dirname, "../../spaces/templates/packs/design-starter-editorial.pack.json"), "utf8")) as SpaceTemplatePack;
 const MADE = Object.fromEntries(["color", "type_style", "spacing", "radius", "shadow", "opacity", "motion", "component"].map((t, i) => [t, { tableId: `00000000-0000-4000-8000-0000000000${String(i + 1).padStart(2, "0")}`, viewIds: {} }]));
 
 describe("planPackBoards", () => {
@@ -49,12 +50,19 @@ describe("planPackBoards", () => {
     expect(plan.chapters).toEqual(top.doc.groups.map((g) => g.id));
   });
 
-  it("opens on a cover: a hero and the principles prose, kept on the tile", () => {
+  it("opens on a cover that starts empty: the words arrive from a style, not the blank pack", () => {
+    // Since v11 (2026-10-21) this pack starts EMPTY: its cover carries no words; "Start from a style" fills it.
+    expect(PACK.board!.startsEmpty).toBe(true);
     const overview = top.doc.nodes.find((x) => x.title === "Design system")!;
-    expect(overview.source).toMatchObject({ kind: "entity", entity: "cover", id: null });
-    const meta = overview.source.kind === "entity" ? overview.source.meta ?? {} : {};
-    expect(meta.hero ?? "").toContain("One look,");
-    for (const h of ["## Principles", "## Using tokens", "## Using components", "## Accessibility"]) expect(meta.markdown ?? "").toContain(h);
+    expect(overview.source).toMatchObject({ kind: "entity", entity: "cover", id: null, meta: { hero: "", markdown: "" } });
+  });
+
+  it("a style's cover keeps its hero and principles prose on the tile", () => {
+    const [styled] = planPackBoards(STYLE.board!, MADE, () => `s-${++n}`);
+    const cover = styled.doc.nodes.find((x) => x.source.kind === "entity" && x.source.entity === "cover")!;
+    const meta = cover.source.kind === "entity" ? cover.source.meta ?? {} : {};
+    expect(String(meta.hero ?? "")).toContain("<style>");
+    for (const h of ["## Principles", "## Starter profile"]) expect(String(meta.markdown ?? "")).toContain(h);
   });
 
   it("makes the Files page as its own board", () => {

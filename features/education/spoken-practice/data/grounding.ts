@@ -25,7 +25,7 @@ export async function buildDeckSource(
   setId: string,
 ): Promise<PracticeSource | null> {
   const { fcService } = await import("@/features/flashcards/data/fcService");
-  const res = await fcService.getSetWithCards(setId);
+  const res = await fcService.getDeckWithCards(setId);
   if (res.error || !res.data || res.data.cards.length === 0) return null;
 
   const { set, cards } = res.data;

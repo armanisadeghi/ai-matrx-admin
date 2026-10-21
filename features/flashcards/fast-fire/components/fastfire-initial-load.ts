@@ -31,7 +31,7 @@ export async function loadFastFireSurface<T>(
 }
 
 /** Abort the real Supabase read when its setup skeleton reaches its limit. */
-export async function loadFastFireSets(
+export async function loadFastFireDecks(
   load: (signal: AbortSignal) => Promise<FcResult<FcSetRow[]>>,
 ): Promise<FcResult<FcSetRow[]>> {
   const controller = new AbortController();

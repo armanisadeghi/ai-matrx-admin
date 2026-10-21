@@ -3,7 +3,7 @@
 // The Flashcards home's agent surface: the scope it emits (built from the
 // state the list already rendered — never a fetch) and the deck write
 // handlers, which save through the same service calls the page's own
-// controls use (fcService.createSet / updateSet, Trash's archive / restore).
+// controls use (fcService.createDeck / updateDeck, Trash's archive / restore).
 // Nothing here holds the whole library: the scope is the page on screen, and
 // a write reads only the decks its value names (fetchOwnDecksFor).
 
@@ -20,7 +20,7 @@ import {
 } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import {
   createEducationFlashcardsScope,
-  type FlashcardSetSummary,
+  type FlashcardDeckSummary,
   type MyDeckSummary,
 } from "@/features/surfaces/manifests/education-flashcards.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
@@ -41,13 +41,13 @@ import {
   setDeckVisibility,
 } from "../../data/deckOperations";
 import { fetchOwnDecksFor } from "../../data/deckListService";
-import type { FlashcardSetListRow } from "./flashcardSetList";
+import type { FlashcardDeckListRow } from "./flashcardSetList";
 
-type Controller = EntityListSurfaceController<FlashcardSetListRow>;
+type Controller = EntityListSurfaceController<FlashcardDeckListRow>;
 
 const DECK_LIST_MAX_ROWS = 25;
 
-function toSetSummary(set: FlashcardSetListRow): FlashcardSetSummary {
+function toDeckSummary(set: FlashcardDeckListRow): FlashcardDeckSummary {
   return {
     id: set.id,
     name: set.name,
@@ -115,7 +115,7 @@ export function buildDeckScope(input: {
     ...(loaded
       ? {
           set_count: list.total,
-          visible_sets: list.rows.map(toSetSummary),
+          visible_sets: list.rows.map(toDeckSummary),
           visible_set_ids: list.rows.map((s) => s.id),
           deck_list: buildDeckListBundle(list, folderName),
           my_decks: list.rows
@@ -197,7 +197,7 @@ export function buildDeckWriteHandlers(input: {
       create: {
         parse: (value) => parseCreateDecksValue(value, current),
         run: async (fields) => {
-          const res = await fcService.createSet(fields);
+          const res = await fcService.createDeck(fields);
           if (res.error || !res.data) throw new Error(res.error ?? "not saved");
           afterWrite();
           return { id: res.data.id, name: res.data.name };
@@ -212,7 +212,7 @@ export function buildDeckWriteHandlers(input: {
             await restoreFromTrash("fc_set", plan.id);
           let name = plan.patch.name ?? plan.previousName;
           if (Object.keys(plan.patch).length > 0) {
-            const res = await fcService.updateSet(plan.id, plan.patch);
+            const res = await fcService.updateDeck(plan.id, plan.patch);
             if (res.error || !res.data)
               throw new Error(res.error ?? "not saved");
             name = res.data.name;

@@ -218,7 +218,7 @@ async function isSameDeck(
 ): Promise<boolean> {
   const mine = new Set(cards.map((c) => normalizeFront(c.front)).filter(Boolean));
   if (mine.size === 0) return false;
-  const saved = await fcService.getSetWithCards(setId);
+  const saved = await fcService.getDeckWithCards(setId);
   if (!saved.data) {
     console.warn(
       "[FLASHCARDS_CANONICAL_ADAPTER] could not read the surface-saved deck to compare; creating this set its own deck:",
@@ -280,7 +280,7 @@ export const FLASHCARDS_CANONICAL_ADAPTER: ArtifactPersistenceAdapter<Flashcards
       // surface's deck (2026-09-30).
       if (info.source.system === "cx_message" && info.conversationId) {
         const surfaceSaved =
-          await fcService.findSurfaceSavedSetForConversation(
+          await fcService.findSurfaceSavedDeckForConversation(
             info.conversationId,
           );
         const surfaceSetId = surfaceSaved.data?.id;
@@ -348,7 +348,7 @@ export const FLASHCARDS_CANONICAL_ADAPTER: ArtifactPersistenceAdapter<Flashcards
       // 4) Create the canonical set + cards + member edges. Source identity is
       //    the dedupe key; source_message_id kept for chat rows so older
       //    readers/queries keep working.
-      const res = await fcService.createSetWithCards(
+      const res = await fcService.createDeckWithCards(
         {
           name: deckName.name,
           metadata: {
@@ -373,7 +373,7 @@ export const FLASHCARDS_CANONICAL_ADAPTER: ArtifactPersistenceAdapter<Flashcards
       );
       if (!res.data) {
         console.error(
-          "[FLASHCARDS_CANONICAL_ADAPTER] createSetWithCards failed:",
+          "[FLASHCARDS_CANONICAL_ADAPTER] createDeckWithCards failed:",
           res.error,
         );
         return; // caller falls back to GENERIC_ADAPTER
@@ -387,7 +387,7 @@ export const FLASHCARDS_CANONICAL_ADAPTER: ArtifactPersistenceAdapter<Flashcards
     ): Promise<FlashcardsCanonicalState | null> {
       const setId = link?.externalId;
       if (!setId) return null;
-      const res = await fcService.getSetWithCards(setId);
+      const res = await fcService.getDeckWithCards(setId);
       if (!res.data) {
         console.error(
           "[FLASHCARDS_CANONICAL_ADAPTER.loadState]",

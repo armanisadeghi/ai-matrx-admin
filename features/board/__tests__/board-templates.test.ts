@@ -65,7 +65,8 @@ describe("board templates", () => {
   it("Use on a board pack installs through the pack door, with the store", async () => {
     const dispatch = jest.fn();
     await makeBoardFromTemplate("pack:t1", "org", "Design system — Oct 17", undefined, undefined, { dispatch: dispatch as never });
-    expect(makeBoardFromPack).toHaveBeenCalledWith("pack:t1", "org", "Design system — Oct 17", dispatch, undefined);
+    // Default run journal (undefined), and no style template.
+    expect(makeBoardFromPack).toHaveBeenCalledWith("pack:t1", "org", "Design system — Oct 17", dispatch, undefined, undefined, undefined);
     await expect(makeBoardFromTemplate("pack:t1", "org", "x")).rejects.toThrow(/store/);
     expect(duplicateBoard).not.toHaveBeenCalled();
   });

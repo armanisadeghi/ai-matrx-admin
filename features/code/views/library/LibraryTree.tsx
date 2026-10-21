@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ChevronRight,
   FilePlus,
   FolderPlus,
   FolderHeart,
@@ -42,7 +41,6 @@ import {
 import {
   ACTIVE_ROW,
   HOVER_ROW,
-  ROW_HEIGHT,
   TEXT_BODY,
 } from "../../styles/tokens";
 import {
@@ -54,7 +52,7 @@ import { listLibrarySources } from "../../library-sources/registry";
 import { SourceFolderNode } from "./SourceFolderNode";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TREE_ROW_TEXT, TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 const selectRootFiles = makeSelectFilesInFolder(null);
 
@@ -273,7 +271,8 @@ const MyFilesRoot: React.FC<MyFilesRootProps> = ({
           }}
           className={cn(
             "flex items-center gap-1 cursor-pointer rounded-sm",
-            ROW_HEIGHT,
+            "h-7",
+            TREE_ROW_TEXT,
             "max-lg:h-11",
             TEXT_BODY,
             HOVER_ROW,

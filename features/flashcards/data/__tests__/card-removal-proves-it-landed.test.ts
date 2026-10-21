@@ -2,7 +2,7 @@
  * Removing a deck or detail must PROVE the soft-delete landed.
  *
  * A PostgREST `update` that RLS filters to zero rows returns `error: null`.
- * The old `deleteSet` / `softDeleteDetail` / `mergeCards`
+ * The old `deleteDeck` / `softDeleteDetail` / `mergeCards`
  * trusted that, so the deck editor toasted "Card deleted" while the card stayed
  * (2026-09-25). Each path now reads back the rows it wrote and fails loudly on
  * zero. The fake below behaves like PostgREST: the update answers with the rows
@@ -65,7 +65,7 @@ function install(allowed: Set<string>) {
 afterEach(() => jest.clearAllMocks());
 
 describe.each([
-  ["deleteSet", (id: string) => fcService.deleteSet(id), "fc_set"],
+  ["deleteDeck", (id: string) => fcService.deleteDeck(id), "fc_set"],
   ["softDeleteDetail", (id: string) => fcService.softDeleteDetail(id), "fc_detail"],
 ] as const)("%s", (name, run, table) => {
   it("reports success only when the row was actually soft-deleted", async () => {

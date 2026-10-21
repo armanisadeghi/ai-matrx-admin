@@ -119,6 +119,7 @@ links to — is already declared in the admin navigation registry.
 
 ## Change Log
 
+- **2026-10-21** — Resolve (with a proof note) is a row verb and a bulk twin on the error list, through the server `resolveBatch` door.
 - **2026-09-14** — `PlatformOutageBanner`, `outage-mute.ts` and their test
   deleted; outages became a source of `features/admin/attention` (one card with
   the schedule alarms, per-item mute 1h–30d, whole-dock snooze). Knob

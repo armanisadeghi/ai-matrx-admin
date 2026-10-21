@@ -41,7 +41,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /** The platform entity token the version system keys a flashcard deck by. */
 const FC_SET_ENTITY = "fc_set";
 
-export function SetVersionHistoryDialog({
+export function DeckVersionHistoryDialog({
   open,
   onOpenChange,
   setId,

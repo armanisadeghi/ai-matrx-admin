@@ -11,7 +11,7 @@
 // TWO CORRECTIONS THIS FILE CARRIES, both against its own first version:
 //
 //   1. IT IS NOT ALL-OR-NOTHING. Set detail already has full multi-select
-//      (`selectedIds` in SetDetailView). `planBulkEnrich` reads it: an explicit
+//      (`selectedIds` in DeckDetailView). `planBulkEnrich` reads it: an explicit
 //      selection IS the plan — including a card that already has layers, because
 //      a user who picks a card deliberately outranks a skip heuristic. With no
 //      selection the old behavior stands: every card that lacks layers.

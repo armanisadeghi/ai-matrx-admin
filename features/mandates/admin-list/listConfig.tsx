@@ -50,7 +50,7 @@ function copy(text: string, what: string) {
  * Remove a mandate — the old console's Remove, carried over: soft, confirmed,
  * and the confirm names what a person actually loses and what survives.
  */
-async function removeMandate(row: MandateAdminRow): Promise<void> {
+export async function removeMandate(row: MandateAdminRow): Promise<void> {
   const ok = await confirm({
     title: `Remove "${row.name}"?`,
     description:

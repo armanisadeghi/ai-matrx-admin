@@ -18,7 +18,7 @@ describe("a record tile follows the record's name", () => {
 
   it("the deck body hears the deck's name from the page's own store read", () => {
     const edu = read("items/education-items.tsx");
-    expect(edu).toMatch(/<SetDetailView[^>]*onNameKnown=\{follow\}/);
+    expect(edu).toMatch(/<DeckDetailView[^>]*onNameKnown=\{follow\}/);
     expect(read("../flashcards/components/set-detail/SetDetailView.tsx")).toMatch(/onNameKnown\?\.\(currentName\)|onNameKnown\?\.\(/);
   });
 

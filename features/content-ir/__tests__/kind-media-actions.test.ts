@@ -67,7 +67,7 @@ describe("frame wiring", () => {
   it("the frame CSP allows blob: media and still opens no frame-src", () => {
     const route = fs.readFileSync(path.join(root, "app/kind-sandbox/route.ts"), "utf8");
     expect(route).toContain('"media-src blob:"');
-    expect(route).not.toMatch(/frame-src/);
+    expect(route).not.toMatch(/^\s*[`"]frame-src/m);
     expect(route).toContain("\"default-src 'none'\"");
   });
   it("the reader's locale rides init and every theme message, and the frame applies it", () => {

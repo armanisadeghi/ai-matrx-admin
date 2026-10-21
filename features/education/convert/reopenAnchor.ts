@@ -61,7 +61,7 @@ export async function reopenAnchor(
   }
 
   if (token === "fc_set") {
-    const res = await fcService.getSetWithCards(sourceId);
+    const res = await fcService.getDeckWithCards(sourceId);
     if (res.error || !res.data || res.data.cards.length === 0) {
       throw new Error(unreadable("deck"));
     }

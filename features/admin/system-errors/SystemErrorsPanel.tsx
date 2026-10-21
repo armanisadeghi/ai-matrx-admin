@@ -18,6 +18,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { CheckCircle2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ProTextarea } from "@/components/official/ProTextarea";
+import { toast } from "@/lib/toast";
+import { resolveBatch } from "@ai-matrx/api/architecture";
+import { serverApi } from "@/lib/api/server-api";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import type {
   MatrxColumnDef,
   MatrxDataTableQueryState,
@@ -213,6 +221,60 @@ function SystemErrorsList() {
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
   }, [rows]);
+
+  // Resolve is the one verb: it marks an error resolved WITH a proof note (the server door is
+  // `resolveBatch`, which takes ids). One declaration feeds the row icon and the bulk bar.
+  const resolveIds = async (ids: string[], note: string) => {
+    const out = await resolveBatch(serverApi, { body: { ids, resolution_note: note, initiation: "user" } });
+    if (out.resolved_count < ids.length) {
+      const missed = ids.length - out.resolved_count;
+      throw new Error(`${missed} of ${ids.length} were already resolved or not found`);
+    }
+  };
+  const [resolveRow, setResolveRow] = useState<SystemErrorRow | null>(null);
+  const [resolveNote, setResolveNote] = useState("");
+  const [resolving, setResolving] = useState(false);
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SystemErrorRow>(
+    [
+      {
+        id: "resolve", icon: CheckCircle2, label: "Resolve", tone: "success",
+        appliesTo: (row) => !row.resolved_at, unavailableTooltip: "Already resolved",
+        // A single row asks the same question the bar does: its fix, in a note.
+        onClick: (row) => {
+          setResolveNote("");
+          setResolveRow(row);
+        },
+        bulk: {
+          done: "Resolved",
+          confirm: (t) => ({
+            title: `Resolve ${t.ids.length} system ${t.ids.length === 1 ? "error" : "errors"}?`,
+            description: "Marks each resolved for everyone, with the note below as the proof.",
+            confirmLabel: "Resolve",
+            reason: { placeholder: "What fixed it? (recorded with each error)" },
+          }),
+          run: async (t, input) => {
+            try {
+              await resolveIds(t.ids, input.reason ?? "");
+              return {};
+            } catch (e) {
+              const reason = e instanceof Error ? e.message : String(e);
+              return { failed: t.ids.map((id) => ({ id, reason })) };
+            }
+          },
+        },
+      },
+    ],
+    { noun: "system error", getRowId: (row) => row.id, getRowName: (row) => row.error_type || row.kind || row.id },
+  );
+  const bulk = useTableBulkSelection<SystemErrorRow>({
+    noun: "system error",
+    rows,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.error_type || row.kind || row.id,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => setSourceRevision((revision) => revision + 1),
+  });
 
   const columns = useMemo(
     (): MatrxColumnDef<SystemErrorRow>[] => [
@@ -478,6 +540,8 @@ function SystemErrorsList() {
           data={rows}
           columns={columns}
           getRowId={(row) => row.id}
+          rowActionDefs={rowActionDefs}
+          selection={bulk.selection}
           isLoading={isLoading}
           isFetching={isFetching}
           pageSize={50}
@@ -559,6 +623,32 @@ function SystemErrorsList() {
           }}
         />
       </div>
+      <ConfirmDialog
+        open={!!resolveRow}
+        onOpenChange={(o) => !o && setResolveRow(null)}
+        title="Resolve this system error"
+        description="Marks it resolved for everyone, with your note as the proof."
+        confirmLabel="Resolve"
+        busy={resolving}
+        onConfirm={async () => {
+          if (!resolveRow || !resolveNote.trim()) {
+            toast.error("Say what fixed it");
+            return;
+          }
+          setResolving(true);
+          try {
+            await resolveIds([resolveRow.id], resolveNote.trim());
+            toast.success("Resolved");
+            setResolveRow(null);
+            setSourceRevision((revision) => revision + 1);
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : String(e));
+          } finally {
+            setResolving(false);
+          }
+        }}
+        content={<ProTextarea value={resolveNote} onChange={(e) => setResolveNote(e.target.value)} placeholder="What fixed it?" surfaceName="system-error-resolve" />}
+      />
     </div>
   );
 }

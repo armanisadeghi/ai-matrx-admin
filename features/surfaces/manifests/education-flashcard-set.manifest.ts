@@ -129,7 +129,7 @@ const surfaceSpecific: SurfaceValue[] = [
   },
 ];
 
-export const educationFlashcardSetManifest: SurfaceManifest = {
+export const educationFlashcardDeckManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-flashcard-set",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
@@ -183,7 +183,7 @@ export interface FlashcardSetSurfaceMastery {
   lapses: number;
 }
 
-export function createEducationFlashcardSetScope(values: {
+export function createEducationFlashcardDeckScope(values: {
   set_loaded: boolean;
   set_id: string;
   selection?: string;

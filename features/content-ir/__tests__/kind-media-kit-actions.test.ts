@@ -4,11 +4,12 @@
  * the download door) and `print` (through @ai-matrx/print). Each handler is
  * pure over the capability-scoped context.
  */
-import type { KindActionContext } from "../react/actions/kind-action-context";
-import { KIND_ACTIONS } from "../react/actions/kind-action-provider";
-import { MAX_IMAGE_BYTES, parseFetchImage } from "../react/actions/handlers/fetch-image";
-import { downloadMime, parseDownload, safeDownloadName } from "../react/actions/handlers/download";
-import { parsePrint } from "../react/actions/handlers/print";
+import type { KindActionContext, KindActionDefinition } from "../react/actions/kind-action-context";
+import { fetchImageAction, MAX_IMAGE_BYTES, parseFetchImage } from "../react/actions/handlers/fetch-image";
+import { downloadAction, downloadMime, parseDownload, safeDownloadName } from "../react/actions/handlers/download";
+import { parsePrint, printAction } from "../react/actions/handlers/print";
+
+const KIND_ACTIONS: KindActionDefinition[] = [fetchImageAction, downloadAction, printAction];
 
 const base: KindActionContext = {
   launchAgent: async () => ({}) as never,

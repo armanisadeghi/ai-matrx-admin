@@ -1,6 +1,6 @@
 import {
   FASTFIRE_INITIAL_LOAD_TIMEOUT_MS,
-  loadFastFireSets,
+  loadFastFireDecks,
   loadFastFireSurface,
 } from "./fastfire-initial-load";
 
@@ -34,7 +34,7 @@ describe("FastFire initial load boundaries", () => {
           );
         }),
     );
-    const result = loadFastFireSets(readSets);
+    const result = loadFastFireDecks(readSets);
 
     await jest.advanceTimersByTimeAsync(FASTFIRE_INITIAL_LOAD_TIMEOUT_MS);
 
@@ -49,7 +49,7 @@ describe("FastFire initial load boundaries", () => {
       "ready",
     );
     await expect(
-      loadFastFireSets(async () => ({ data: [], error: null })),
+      loadFastFireDecks(async () => ({ data: [], error: null })),
     ).resolves.toEqual({ data: [], error: null });
 
     await jest.advanceTimersByTimeAsync(FASTFIRE_INITIAL_LOAD_TIMEOUT_MS);

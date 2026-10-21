@@ -25,7 +25,7 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 
 import { supabase } from "@/utils/supabase/client";
 import { fcService } from "../fcService";
-import type { FcSetRow, SetWithCards } from "../types";
+import type { FcSetRow, DeckWithCards } from "../types";
 
 const FIRST = "conv-first";
 const RETRY = "conv-retry";
@@ -59,25 +59,25 @@ describe("Try again after a reload continues the stopped run's deck", () => {
   it("replaces the orphan's cards, names it, restamps it — and creates no second deck", async () => {
     const chain = fcSetReturning([orphan]);
     jest
-      .spyOn(fcService, "findChatGeneratedSetForConversation")
+      .spyOn(fcService, "findChatGeneratedDeckForConversation")
       .mockResolvedValue({ data: null, error: null });
-    jest.spyOn(fcService, "getSetWithCards").mockResolvedValue({
+    jest.spyOn(fcService, "getDeckWithCards").mockResolvedValue({
       data: {
         set: orphan,
         cards: [
           { id: "old-1", version: 1, front: "half", back: "done" },
           { id: "old-2", version: 3, front: "half", back: "two" },
         ],
-      } as unknown as SetWithCards,
+      } as unknown as DeckWithCards,
       error: null,
     });
     const deleteCard = jest.spyOn(fcService, "deleteCard").mockResolvedValue({ data: null, error: null });
     const addCards = jest.spyOn(fcService, "addCards").mockResolvedValue({ data: [], error: null });
-    const updateSet = jest.spyOn(fcService, "updateSet").mockResolvedValue({ data: orphan, error: null });
-    const merge = jest.spyOn(fcService, "mergeSetMetadata").mockResolvedValue({ data: null, error: null });
-    const createSetWithCards = jest.spyOn(fcService, "createSetWithCards");
+    const updateDeck = jest.spyOn(fcService, "updateDeck").mockResolvedValue({ data: orphan, error: null });
+    const merge = jest.spyOn(fcService, "mergeDeckMetadata").mockResolvedValue({ data: null, error: null });
+    const createDeckWithCards = jest.spyOn(fcService, "createDeckWithCards");
 
-    const res = await fcService.createGeneratedSetForConversation(
+    const res = await fcService.createGeneratedDeckForConversation(
       RETRY,
       { name: "Volcanology", topic: "Volcanology", difficulty: "medium", orgId: "org-1" },
       [{ front: "Q", back: "A" }],
@@ -85,7 +85,7 @@ describe("Try again after a reload continues the stopped run's deck", () => {
     );
 
     expect(res.data?.set.id).toBe("set-orphan");
-    expect(createSetWithCards).not.toHaveBeenCalled();
+    expect(createDeckWithCards).not.toHaveBeenCalled();
     // Looked the earlier attempt up by its conversation.
     expect(chain.in).toHaveBeenCalledWith("metadata->>conversation_id", [FIRST]);
     // The half-made cards are archived, the retry's cards are the deck's cards.
@@ -94,7 +94,7 @@ describe("Try again after a reload continues the stopped run's deck", () => {
       ["old-2", 3],
     ]);
     expect(addCards).toHaveBeenCalledWith("set-orphan", [{ front: "Q", back: "A" }], { orgId: "org-1" });
-    expect(updateSet).toHaveBeenCalledWith("set-orphan", {
+    expect(updateDeck).toHaveBeenCalledWith("set-orphan", {
       name: "Volcanology",
       topic: "Volcanology",
       difficulty: "medium",
@@ -113,19 +113,19 @@ describe("Try again after a reload continues the stopped run's deck", () => {
   it("with no deck left by the stopped run, saves as before (one stamped create)", async () => {
     fcSetReturning([]);
     jest
-      .spyOn(fcService, "findChatGeneratedSetForConversation")
+      .spyOn(fcService, "findChatGeneratedDeckForConversation")
       .mockResolvedValue({ data: null, error: null });
-    const createSetWithCards = jest.spyOn(fcService, "createSetWithCards").mockResolvedValue({
-      data: { set: { ...orphan, id: "set-new" }, cards: [] } as unknown as SetWithCards,
+    const createDeckWithCards = jest.spyOn(fcService, "createDeckWithCards").mockResolvedValue({
+      data: { set: { ...orphan, id: "set-new" }, cards: [] } as unknown as DeckWithCards,
       error: null,
     });
-    const res = await fcService.createGeneratedSetForConversation(
+    const res = await fcService.createGeneratedDeckForConversation(
       RETRY,
       { name: "Volcanology" },
       [{ front: "Q", back: "A" }],
       { continues: [FIRST] },
     );
     expect(res.data?.set.id).toBe("set-new");
-    expect(createSetWithCards).toHaveBeenCalledTimes(1);
+    expect(createDeckWithCards).toHaveBeenCalledTimes(1);
   });
 });

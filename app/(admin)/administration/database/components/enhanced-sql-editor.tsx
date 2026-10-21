@@ -445,7 +445,7 @@ export const EnhancedSQLEditor = ({
                         →
                       </span>
                       <Input mono
-                        className="font-mono"
+                        className="flex-1 font-mono"
                         data-identifier
                         placeholder="Replace with (e.g., my_table)"
                         value={pair.replace}
@@ -456,7 +456,6 @@ export const EnhancedSQLEditor = ({
                             e.target.value,
                           )
                         }
-                        className="flex-1"
                       />
                     </div>
                     <Button

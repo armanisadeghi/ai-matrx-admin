@@ -25,13 +25,13 @@ jest.mock("@/utils/supabase/getServerAuth", () => ({
 }));
 
 jest.mock("@/features/flashcards/components/set-detail/SetDetailView", () => ({
-  SetDetailView: (props: unknown) => {
+  DeckDetailView: (props: unknown) => {
     detailViewMock(props);
     return null;
   },
 }));
 
-import FlashcardSetPage from "./page";
+import FlashcardDeckPage from "./page";
 
 describe("flashcard deck detail auth boundary", () => {
   beforeEach(() => {
@@ -45,7 +45,7 @@ describe("flashcard deck detail auth boundary", () => {
     getServerAuthMock.mockResolvedValue(SIGNED_OUT);
 
     await expect(
-      FlashcardSetPage({ params: Promise.resolve({ setId: "set-123" }) }),
+      FlashcardDeckPage({ params: Promise.resolve({ setId: "set-123" }) }),
     ).rejects.toThrow(
       "NEXT_REDIRECT:/login?redirectTo=%2Feducation%2Fflashcards%2Fset-123",
     );
@@ -55,7 +55,7 @@ describe("flashcard deck detail auth boundary", () => {
   it("renders the client detail island for an authenticated request", async () => {
     getServerAuthMock.mockResolvedValue(SIGNED_IN);
 
-    const result = await FlashcardSetPage({
+    const result = await FlashcardDeckPage({
       params: Promise.resolve({ setId: "set-123" }),
     });
 
@@ -67,7 +67,7 @@ describe("flashcard deck detail auth boundary", () => {
     getServerAuthMock.mockResolvedValue(UNVERIFIED);
 
     await expect(
-      FlashcardSetPage({ params: Promise.resolve({ setId: "set-123" }) }),
+      FlashcardDeckPage({ params: Promise.resolve({ setId: "set-123" }) }),
     ).rejects.toThrow(
       "NEXT_REDIRECT:/auth/verifying?next=%2Feducation%2Fflashcards%2Fset-123",
     );

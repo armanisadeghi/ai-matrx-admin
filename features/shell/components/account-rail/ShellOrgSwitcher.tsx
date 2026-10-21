@@ -7,7 +7,8 @@
  * The active organization is always on screen: its own icon, or its
  * abbreviation, in the sidebar's account rail directly above the person
  * (`variant="rail"`), and the same control in the phone's navigation drawer
- * (`variant="drawer"`).
+ * (`variant="drawer"`), and the new app frame's sidebar footer (`variant="frame"`, a design-system
+ * row with no `.shell-*` class, so it needs neither shell.css nor `.shell-root`).
  * It replaced three copies: the header's "Choose organization" chip, the
  * avatar menu's Organization group, and the canvas nav's hand-built drop-up.
  *
@@ -40,6 +41,7 @@ import { useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { ArrowRightLeft, Building2, ChevronRight } from "lucide-react";
 import { SelectChevron } from "@ai-matrx/design-system";
+import { Tile } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { chooseActiveOrganization } from "@/lib/redux/thunks/activeOrgBootstrap";
@@ -50,7 +52,7 @@ import { RailMenuHeader, RAIL_MENU_DIVIDER } from "./RailMenuHeader";
 import { MENU_ITEM_CLASS, USER_MENU_PANEL_CLASS } from "@/features/shell/components/header/header-right-menu/menuItemClass";
 import { usePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
 
-type Variant = "rail" | "drawer";
+type Variant = "rail" | "drawer" | "frame";
 
 export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
   useLoadMark("Org switcher");
@@ -207,7 +209,18 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
   );
 
   const trigger =
-    variant === "rail" ? (
+    variant === "frame" ? (
+      <Tile
+        dense
+        variant="quiet"
+        className="w-full"
+        aria-label={description}
+        title={labelNode}
+        icon={mark}
+        end={<ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true" />}
+        data-shell-org-switcher="frame"
+      />
+    ) : variant === "rail" ? (
       <button
         type="button"
         aria-label={description}
@@ -235,6 +248,13 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
   // Belonging to none: there is nothing to pick, so the control IS the door —
   // one click to /organizations, never a menu in between.
   if (noOrganization) {
+    if (variant === "frame") {
+      return (
+        <Tile asChild dense variant="quiet" className="w-full" title={labelNode} icon={mark}>
+          <AppLink href="/organizations" prefetch={false} aria-label={description} data-shell-org-switcher="frame" />
+        </Tile>
+      );
+    }
     return (
       <AppLink
         href="/organizations"
@@ -255,7 +275,7 @@ export function ShellOrgSwitcher({ variant = "rail" }: { variant?: Variant }) {
       open={open}
       onOpenChange={setOpen}
       side={variant === "rail" ? "right" : "top"}
-      align="end"
+      align={variant === "frame" ? "start" : "end"}
       header={header}
       trigger={trigger}
       // The account rail's one menu look (owner, 2026-10-01: "make all 3 identical").

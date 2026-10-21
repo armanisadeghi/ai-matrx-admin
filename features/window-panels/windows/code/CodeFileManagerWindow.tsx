@@ -27,6 +27,8 @@ import {
 } from "@/components/official/topic-tree/geometry";
 import React, { useCallback, useMemo, useState } from "react";
 import {
+  Folder,
+  FolderOpen,
   FolderPlus,
   FilePlus,
   Search,
@@ -628,6 +630,7 @@ function FolderTree({
               <TreeDisclosure
                 expandable={hasKids}
                 expanded={expanded}
+                label={node.name}
                 onToggle={() => onToggleExpand(node.id as string)}
               />
               {isRoot ? (

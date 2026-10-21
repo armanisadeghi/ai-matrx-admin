@@ -26,7 +26,7 @@ import { AddMoreCardsButton, originToDraft } from "@/features/flashcards/compone
 import { AddMoreQuestionsButton } from "@/features/education/assessment/components/AddMoreQuestionsButton";
 import type { GeneratedArtifact } from "@/features/education/convert/lineage";
 import type { AssessmentWithItems } from "@/features/education/assessment/data/types";
-import type { SetWithCards } from "@/features/flashcards/data/types";
+import type { DeckWithCards } from "@/features/flashcards/data/types";
 import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
 import type { KitSource } from "../kitScope";
 import { OUTLINE_LABEL, type OutlineSection } from "../outline/types";
@@ -263,7 +263,7 @@ export function KitMemberAddMore({
   onAdded: () => void;
 }) {
   const [loading, setLoading] = useState(false);
-  const [deck, setDeck] = useState<SetWithCards | null>(null);
+  const [deck, setDeck] = useState<DeckWithCards | null>(null);
   const [quiz, setQuiz] = useState<AssessmentWithItems | null>(null);
   const drafts = kitSourceDrafts(sources);
 
@@ -297,7 +297,7 @@ export function KitMemberAddMore({
     setLoading(true);
     try {
       if (artifact.artifactType === "fc_set") {
-        const res = await fcService.getSetWithCards(artifact.artifactId);
+        const res = await fcService.getDeckWithCards(artifact.artifactId);
         if (!res.data) throw new Error("This deck could not be opened.");
         setDeck(res.data);
       } else {

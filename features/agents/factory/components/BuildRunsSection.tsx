@@ -25,13 +25,13 @@ export function BuildRunsSection() {
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(() => {
-    listBuildRuns().then(
-      (rows) => {
+    listBuildRuns()
+      .then((rows) => {
         setItems(rows.map(listItemFromRun));
         setError(null);
-      },
-      (e: unknown) => setError(e instanceof Error ? e.message : "Could not load the workflow builds"),
-    );
+      })
+      // A row that cannot be drawn is an error the person sees, never a skeleton that stays forever.
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : "Could not load the workflow builds"));
   }, []);
   useEffect(() => {
     reload();

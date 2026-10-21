@@ -6,7 +6,7 @@
  * for ~21 s and crashed the tab (2026-10-02). Every highlight rule this
  * repository writes must be scoped to the element it paints in.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { paintCss, paintScopeClass } from "../useSidecarPaint";
 
@@ -41,11 +41,23 @@ describe("highlight rules are scoped to the content they paint", () => {
   it("no source file writes a page-wide ::highlight rule", () => {
     const files: string[] = [];
     const walk = (dir: string) => {
-      for (const name of readdirSync(dir)) {
+      // Dirent types, not a stat per entry: in the shared checkout another
+      // session can delete a file between listing and stat (ENOENT, 2026-10-21).
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const name = entry.name;
         if (name === "node_modules" || name.startsWith(".") || name === "__tests__") continue;
         const p = join(dir, name);
-        if (statSync(p).isDirectory()) walk(p);
-        else if (/\.(tsx?|css)$/.test(name)) files.push(p);
+        if (entry.isDirectory()) walk(p);
+        else if (entry.isFile() && /\.(tsx?|css)$/.test(name)) files.push(p);
+      }
+    };
+    // A file removed after the walk listed it is no longer source; skip it.
+    const readIfPresent = (f: string): string => {
+      try {
+        return readFileSync(f, "utf8");
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code === "ENOENT") return "";
+        throw e;
       }
     };
     for (const d of ["app", "components", "features", "lib", "styles"]) walk(join(ROOT, d));
@@ -53,7 +65,7 @@ describe("highlight rules are scoped to the content they paint", () => {
       // Comments out (they explain the rule); then a "::highlight(" that opens
       // a selector — at the start of a line, a template or string, or after a
       // rule's closing brace — has no originating selector: page-wide.
-      const src = readFileSync(f, "utf8")
+      const src = readIfPresent(f)
         .replace(/\/\*[\s\S]*?\*\//g, "")
         .replace(/^\s*\/\/.*$/gm, "")
         // A template interpolation (`${scope}`) is a selector part, not a rule's end.

@@ -29,10 +29,20 @@ import { readdirSync } from "node:fs";
 import {
   AppFrame,
   canvasWidthFor,
-  companionOpenKey,
   formFor,
+  frameAppearanceAttributes,
   type AppFrameProps,
 } from "../AppFrame";
+import {
+  FRAME_COMPANION_OPEN_COOKIE,
+  FRAME_COMPANION_OPEN_KEEP,
+  FRAME_SIDEBAR_WIDTH_COOKIE,
+  frameCompanionOpenFor,
+  frameGeometryFromCookies,
+  nextFrameCompanionOpen,
+  readFrameCookie,
+} from "../geometry";
+import { HeaderToolButtons } from "../SheetHeader";
 import type { CanvasProps, CompanionProps } from "../types";
 import { PRODUCTS, PRODUCT_FAMILIES } from "../products";
 import type { FrameVariant } from "../types";
@@ -54,6 +64,14 @@ const chat = PRODUCTS.find((p) => p.id === "chat")!;
 let host: HTMLElement;
 let root: Root;
 
+/** The frame remembers geometry in cookies (geometry.ts): start each case with none. */
+function clearCookies() {
+  for (const part of document.cookie.split("; ")) {
+    const name = part.split("=")[0];
+    if (name) document.cookie = `${name}=; path=/; max-age=0`;
+  }
+}
+
 function base(overrides: Partial<AppFrameProps> = {}): AppFrameProps {
   return {
     products: PRODUCTS,
@@ -66,7 +84,8 @@ function base(overrides: Partial<AppFrameProps> = {}): AppFrameProps {
       { id: "c-1", label: "Quarterly plan" },
     ],
     actions: [{ id: "copy", label: "Copy link", onSelect: () => {} }],
-    headerTools: [{ id: "search", label: "Search", icon: Search, phone: "show" }],
+    headerTools: <HeaderToolButtons tools={[{ id: "search", label: "Search", icon: Search }]} />,
+    phoneTools: [{ id: "search", label: "Search", icon: Search, phone: "show" }],
     variant: "record",
     children: <p>Body</p>,
     ...overrides,
@@ -274,7 +293,7 @@ describe("the widths", () => {
 
 describe("the side chat loads only when engaged", () => {
   it("its loader is not called on render, is called once on the first open, never again", async () => {
-    localStorage.clear();
+    clearCookies();
     const loader = jest.fn(() => Promise.resolve({ default: TestCompanion }));
     mount(base({ form: "desktop", loadCompanion: loader }));
     await flush();
@@ -291,7 +310,7 @@ describe("the side chat loads only when engaged", () => {
   });
 
   it("the ask bar is a plain input: sending opens the side chat and delivers the text", async () => {
-    localStorage.clear();
+    clearCookies();
     const loader = jest.fn(() => Promise.resolve({ default: TestCompanion }));
     mount(base({ form: "desktop", askBar: true, loadCompanion: loader }));
     await flush();
@@ -310,12 +329,12 @@ describe("the side chat loads only when engaged", () => {
   });
 
   it("is closed by default, remembered per page, and a link wins until the person acts", async () => {
-    localStorage.clear();
+    clearCookies();
     mount(base({ form: "desktop", pageKey: "a" }));
     await flush();
     expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
     act(() => sideChatDoor().click());
-    expect(localStorage.getItem(companionOpenKey("a"))).toBe("open");
+    expect(frameCompanionOpenFor(readFrameCookie(FRAME_COMPANION_OPEN_COOKIE), "a")).toBe(true);
     act(() => root.unmount());
     mount(base({ form: "desktop", pageKey: "b" }));
     await flush();
@@ -451,7 +470,13 @@ describe("ours vs the page's", () => {
     expect(frame().getAttribute("data-header-edge")).toBe("fade");
     expect(q("header")!.classList.contains("mf-top-edge")).toBe(true);
     const css = readFileSync(join(__dirname, "..", "frame.css"), "utf8");
-    expect(css).toMatch(/\[data-header-edge="fade"\] \.mf-scroll-top \{\s*padding-top: var\(--matrx-frame-fade-h\)/);
+    // The fade takes no layout height: no padding on scroll areas, an 8px overlay with a negative
+    // margin, shown only once the area scrolls.
+    expect(css).not.toMatch(/\.mf-scroll-top \{[^}]*padding-top/);
+    expect(css).toMatch(/--matrx-frame-fade-h: 8px/);
+    const fade = css.slice(css.indexOf('.mf-scroll-top::before'));
+    expect(fade).toMatch(/margin-bottom: calc\(-1 \* var\(--matrx-frame-fade-h\)\)/);
+    expect(fade).toMatch(/opacity: 0;[\s\S]*animation-timeline: scroll\(nearest block\)/);
   });
 });
 
@@ -585,7 +610,7 @@ describe("the sidebar resizes (owner, 2026-10-21)", () => {
   });
 
   it("244 by default; drag widens it within 200–400, remembered on this device, no motion while dragging", async () => {
-    localStorage.clear();
+    clearCookies();
     mount(base({ form: "desktop" }));
     await flush();
     expect(sidebarBox().style.width).toBe("244px");
@@ -598,11 +623,11 @@ describe("the sidebar resizes (owner, 2026-10-21)", () => {
     expect(sidebarBox().style.width).toBe("400px");
     act(() => pointer(h, "pointerup", 900));
     expect(frame().hasAttribute("data-dragging")).toBe(false);
-    expect(localStorage.getItem("matrx-frame:sidebar-width")).toBe("400");
+    expect(readFrameCookie(FRAME_SIDEBAR_WIDTH_COOKIE)).toBe("400");
   });
 
   it("dragging past the minimum snaps it shut and keeps the remembered width", async () => {
-    localStorage.clear();
+    clearCookies();
     mount(base({ form: "desktop" }));
     await flush();
     const h = handle();
@@ -611,11 +636,11 @@ describe("the sidebar resizes (owner, 2026-10-21)", () => {
     act(() => pointer(h, "pointerup", 60));
     expect(sidebarBox().style.width).toBe("0px");
     expect(sidebarBox().hasAttribute("inert")).toBe(true);
-    expect(localStorage.getItem("matrx-frame:sidebar-width")).toBeNull();
+    expect(readFrameCookie(FRAME_SIDEBAR_WIDTH_COOKIE)).toBeNull();
   });
 
   it("the arrow keys resize it too", async () => {
-    localStorage.clear();
+    clearCookies();
     mount(base({ form: "desktop" }));
     await flush();
     act(() => {
@@ -637,3 +662,102 @@ describe("space around and sidebar color (owner's comparisons, 2026-10-21)", () 
     expect(css.indexOf('[data-sidebar-color="same"]')).toBeGreaterThan(css.indexOf(".dark [data-matrx-frame],"));
   });
 });
+
+describe("chrome slots (ROLLOUT-PLAN blocking change #1)", () => {
+  it("headerTools is the host's own node, before the frame's side chat and canvas toggles", () => {
+    mount(base({ form: "desktop", headerTools: <button type="button" data-testid="host-tool">Host</button> }));
+    const group = q('header [data-mf-region="header-tools"]')!;
+    expect(group).not.toBeNull();
+    const order = [...group.querySelectorAll("button")].map((b) => b.getAttribute("data-testid") ?? b.getAttribute("aria-label"));
+    expect(order).toEqual(["host-tool", "Side chat", "Canvas"]);
+  });
+
+  it("on a phone the node is not drawn: phoneTools 'show' stay, the rest are '…' items", async () => {
+    mount(
+      base({
+        form: "phone",
+        headerTools: <button type="button" data-testid="host-tool">Host</button>,
+        phoneTools: [
+          { id: "search", label: "Search", icon: Search, phone: "show" },
+          { id: "bell", label: "Notifications", icon: Search },
+        ],
+      }),
+    );
+    expect(q('[data-testid="host-tool"]')).toBeNull();
+    expect(q('header [aria-label="Search"]')).not.toBeNull();
+    expect(q('header [aria-label="Notifications"]')).toBeNull();
+  });
+
+  it("sidebarFooter sits under the menu in the inline sidebar and in the phone drawer", () => {
+    const footer = <span data-testid="account">Account</span>;
+    mount(base({ form: "desktop", sidebarFooter: footer }));
+    const inline = q('[data-mf-region="sidebar"] [data-mf-region="sidebar-footer"]');
+    expect(inline?.querySelector('[data-testid="account"]')).not.toBeNull();
+    act(() => root.unmount());
+    mount(base({ form: "phone", sidebarFooter: footer }));
+    expect(q('[data-mf-region="drawer"] [data-mf-region="sidebar-footer"] [data-testid="account"]')).not.toBeNull();
+  });
+
+  it("appearance stamps AppShell's attributes: data-shell-look and the design system's accent + tokens", () => {
+    mount(base({ form: "desktop", appearance: { look: "meet-matrx", accent: "#7c3aed" } }));
+    expect(frame().getAttribute("data-shell-look")).toBe("meet-matrx");
+    expect(frame().getAttribute("data-matrx-accent")).toBe("custom");
+    expect(frame().style.getPropertyValue("--matrx-accent-primary")).not.toBe("");
+    act(() => root.unmount());
+    mount(base({ form: "desktop" }));
+    expect(frame().hasAttribute("data-shell-look")).toBe(false);
+    expect(frame().hasAttribute("data-matrx-accent")).toBe(false);
+    expect(frameAppearanceAttributes({ accent: "blue" }).attrs["data-matrx-accent"]).toBe("blue");
+  });
+});
+
+describe("geometry the server can read (ROLLOUT-PLAN Attack #4)", () => {
+  it("initialGeometry paints the remembered widths and this page's side chat in the first render", () => {
+    clearCookies();
+    mount(
+      base({
+        form: "desktop",
+        pageKey: "p",
+        initialGeometry: { sidebarWidth: 320, companionWidth: 500, companionOpen: true },
+      }),
+    );
+    // No effect has run: this is what the server rendered.
+    expect(sidebarBoxAt().style.width).toBe("320px");
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("true");
+    expect(q<HTMLElement>('[data-mf-region="side-chat"]')!.style.width).toBe("500px");
+  });
+
+  it("one cookie keeps the most recent pages' side chat choices, bounded", () => {
+    let value: string | null = null;
+    for (let i = 0; i < FRAME_COMPANION_OPEN_KEEP + 5; i++) value = nextFrameCompanionOpen(value, `page-${i}`, i % 2 === 0);
+    expect(JSON.parse(value!)).toHaveLength(FRAME_COMPANION_OPEN_KEEP);
+    expect(frameCompanionOpenFor(value, `page-${FRAME_COMPANION_OPEN_KEEP + 4}`)).toBe(true);
+    expect(frameCompanionOpenFor(value, "page-0")).toBeNull();
+    expect(frameCompanionOpenFor("not json", "x")).toBeNull();
+    // A reader that hands the raw (encoded) header value still parses.
+    expect(frameCompanionOpenFor(encodeURIComponent(nextFrameCompanionOpen(null, "a", true)), "a")).toBe(true);
+  });
+
+  it("the server reader turns the cookie header into initialGeometry", () => {
+    const jar: Record<string, string> = {
+      "matrx-frame:sidebar-width": "300",
+      "matrx-frame:side-chat-width": "garbage",
+      "matrx-frame:side-chat-open": nextFrameCompanionOpen(null, "crm", true),
+    };
+    expect(frameGeometryFromCookies((n) => jar[n], "crm")).toEqual({
+      sidebarWidth: 300,
+      companionWidth: null,
+      companionOpen: true,
+    });
+    expect(frameGeometryFromCookies((n) => jar[n], undefined).companionOpen).toBeNull();
+  });
+
+  it("the frame never writes geometry to localStorage", () => {
+    const src = readFileSync(join(__dirname, "..", "AppFrame.tsx"), "utf8");
+    expect(src).not.toMatch(/localStorage/);
+  });
+});
+
+function sidebarBoxAt() {
+  return q<HTMLElement>('[data-mf-region="sidebar"]')!;
+}

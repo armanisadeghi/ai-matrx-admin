@@ -595,6 +595,7 @@ function TreeRow({
         <TreeDisclosure
           expandable={row.hasChildren && !isHome}
           expanded={!collapsed}
+          label={row.node.label}
           onToggle={onToggle}
         />
       </span>

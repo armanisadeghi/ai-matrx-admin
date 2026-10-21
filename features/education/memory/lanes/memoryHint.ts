@@ -30,7 +30,7 @@ export interface MemoryHintContext {
   /**
    * The card this aid belongs to. With it, the aid is persisted as an
    * `fc_detail` layer on arrival (D151) — the same durable slot the sibling
-   * EnhanceSetDialog writes its generated layers to — so advancing the card
+   * EnhanceDeckDialog writes its generated layers to — so advancing the card
    * stops destroying it, and it comes back with the card forever after.
    */
   cardId?: string | null;

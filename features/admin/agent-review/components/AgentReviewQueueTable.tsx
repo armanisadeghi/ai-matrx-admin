@@ -5,7 +5,7 @@ import { StaleDataNotice } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
 import AppLink from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ExternalLink, Link2, RefreshCw } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Link2, MessageSquareWarning, RefreshCw, RotateCcw, Archive, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
@@ -41,7 +41,10 @@ import { matchesTableSearch } from "@ai-matrx/design-system/data-table/filter-en
 import { useShare } from "@/features/sharing/hooks/useShare";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectDisplayName, selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { recordHumanReviewAction } from "@/features/admin/agent-review/service";
 import {
   ReviewCount,
   reviewCountLabel,
@@ -94,6 +97,7 @@ function reviewRowContent(
 export default function AgentReviewQueueTable() {
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
+  const reviewerName = useAppSelector(selectDisplayName);
   const [view, setView] = useUrlState(
     "view",
     enumUrlCodec(["inbox", "all"] as const, "inbox"),
@@ -362,6 +366,81 @@ export default function AgentReviewQueueTable() {
    */
   const widened = searching && !narrowToStep;
   const visibleRows = widened ? activeRows : browseRows;
+
+  // ── The verbs: ONE declaration feeds the row icons and the bulk bar (the bulk twin rule). ──
+  const humanMove = (status: ReviewStatus, content: string) => async (_id: string, row: ReviewQueueRow | undefined) => {
+    if (!row || !userId) throw new Error("Not signed in");
+    await recordHumanReviewAction({ row, userId, actorLabel: reviewerName, content, status });
+  };
+  const readyOnly = (r: ReviewQueueRow) => (r.status === "ready_for_human" ? null : "Not ready for you");
+  const { rowActionDefs, bulkActions } = defineRowVerbs<ReviewQueueRow>(
+    [
+      {
+        id: "approve", icon: Check, label: "Approve", tone: "success",
+        appliesTo: (r) => r.status === "ready_for_human", unavailableTooltip: "Not ready for you",
+        onClick: (r) => void humanMove("approved", "")(r.id, r).then(() => refresh()).catch((e) => toast.error(e instanceof Error ? e.message : "Approve failed")),
+        bulk: {
+          done: "Approved",
+          skipReason: readyOnly,
+          confirm: (t) => ({ title: `Approve ${t.ids.length} review ${t.ids.length === 1 ? "item" : "items"}?`, description: "Each agent is told it is approved and completes its follow-through.", confirmLabel: "Approve" }),
+          runOne: (id, row) => humanMove("approved", "")(id, row),
+        },
+      },
+      {
+        id: "request_changes", icon: MessageSquareWarning, label: "Request changes",
+        appliesTo: (r) => r.status === "ready_for_human", unavailableTooltip: "Not ready for you",
+        onClick: (r) => router.push(reviewItemPath(r.id)),
+        bulk: {
+          done: "Changes requested",
+          skipReason: readyOnly,
+          confirm: (t) => ({
+            title: `Request changes on ${t.ids.length} review ${t.ids.length === 1 ? "item" : "items"}?`,
+            description: "The same note is sent to each agent.",
+            confirmLabel: "Request changes",
+            reason: { placeholder: "What should change?" },
+          }),
+          runOne: (id, row, input) => humanMove("human_changes_requested", input.reason ?? "")(id, row),
+        },
+      },
+      {
+        id: "rerun", icon: RotateCcw, label: "Run agent review again",
+        appliesTo: (r) => r.status !== "archived", unavailableTooltip: "Already archived",
+        onClick: (r) => void humanMove("submitted", "Run the agent review again from the beginning.")(r.id, r).then(() => refresh()).catch((e) => toast.error(e instanceof Error ? e.message : "Re-run failed")),
+        bulk: {
+          label: "Run agent review again",
+          done: "Sent back to agent review",
+          confirm: (t) => ({
+            title: `Run agent review again on ${t.ids.length} ${t.ids.length === 1 ? "item" : "items"}?`,
+            description: "Each goes back to the start of agent review.",
+            confirmLabel: "Run again",
+            reason: { placeholder: "Note for the agents (optional)", optional: true },
+          }),
+          runOne: (id, row, input) => humanMove("submitted", input.reason || "Run the agent review again from the beginning.")(id, row),
+        },
+      },
+      {
+        id: "archive", icon: Archive, label: "Archive completed review",
+        appliesTo: (r) => r.status === "approved", unavailableTooltip: "Only approved reviews archive",
+        onClick: (r) => void humanMove("archived", "")(r.id, r).then(() => refresh()).catch((e) => toast.error(e instanceof Error ? e.message : "Archive failed")),
+        bulk: {
+          done: "Archived",
+          confirm: (t) => ({ title: `Archive ${t.ids.length} completed ${t.ids.length === 1 ? "review" : "reviews"}?`, description: "They leave the queue.", confirmLabel: "Archive" }),
+          runOne: (id, row) => humanMove("archived", "")(id, row),
+        },
+      },
+      { id: "open", icon: ArrowRight, label: "Open review item", onClick: (r) => router.push(reviewItemPath(r.id)), bulk: false, noBulk: "open" },
+      { id: "approve_raise", icon: Flag, label: "Approve and raise", appliesTo: (r) => r.status === "ready_for_human", onClick: (r) => router.push(reviewItemPath(r.id)), bulk: false, noBulk: "single" },
+    ],
+    { noun: "review item", getRowId: (r) => r.id, getRowName: (r) => r.title || r.id },
+  );
+  const bulk = useTableBulkSelection<ReviewQueueRow>({
+    noun: "review item",
+    rows: visibleRows,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.title || r.id,
+    actions: bulkActions,
+    onRefresh: () => void refresh(),
+  });
 
   const browseIds = new Set(
     browseRows
@@ -681,6 +760,8 @@ export default function AgentReviewQueueTable() {
                 data={visibleRows}
                 columns={columns}
                 getRowId={(row) => row.id}
+                rowActionDefs={rowActionDefs}
+                selection={bulk.selection}
                 isLoading={loading}
                 query={{
                   mode: "controlled-local",

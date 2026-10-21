@@ -1229,6 +1229,7 @@ function parseNestedUser(
     email: o.email,
     displayName: typeof o.displayName === "string" ? o.displayName : undefined,
     avatarUrl: typeof o.avatarUrl === "string" ? o.avatarUrl : undefined,
+    isGuest: o.isGuest === true,
   };
 }
 

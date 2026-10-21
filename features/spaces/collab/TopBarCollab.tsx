@@ -35,10 +35,12 @@ export function PresenceAvatars({ viewers, me }: { viewers: SpaceViewer[]; me: s
           key={v.userId}
           className="spaces-presence-avatar"
           style={{ boxShadow: `0 0 0 2px var(--spaces-page-bg), 0 0 0 3.5px ${personColor(v.userId)}` }}
-          title={v.userId === me ? `${v.name} (you)` : v.name}
+          title={`${v.name}${v.userId === me ? " (you)" : ""}${v.guest ? " · Guest" : ""}`}
           data-viewer={v.userId}
+          data-guest-marker={v.guest ? "" : undefined}
         >
           <PersonAvatar name={v.name} url={v.avatarUrl} size={24} />
+          {v.guest ? <span className="spaces-presence-guest">Guest</span> : null}
         </span>
       ))}
       {rest.length ? (
@@ -83,7 +85,7 @@ export function ShareMenu({ spaceId, title, onCopyLink }: { spaceId: string; tit
             ]}
           />
           {tab === "publish" ? (
-            <PublishPanel spaceId={spaceId} />
+            <PublishPanel spaceId={spaceId} title={title} />
           ) : (
           <div className="grid gap-1.5">
             <Button variant="primary" className="w-full" onClick={invite}>

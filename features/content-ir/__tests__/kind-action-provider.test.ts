@@ -61,6 +61,9 @@ describe("kind actions on the one action registry", () => {
       "open_file",
       "share_file",
       "open_url",
+      "fetch_image",
+      "download",
+      "print",
     ]);
     expect(kindActionProvider.id).toBe(KIND_ACTIONS_PROVIDER_ID);
     expect(kindActionProvider.declaredIds?.()).toEqual([
@@ -72,6 +75,9 @@ describe("kind actions on the one action registry", () => {
       "kind.open_file",
       "kind.share_file",
       "kind.open_url",
+      "kind.fetch_image",
+      "kind.download",
+      "kind.print",
     ]);
     for (const def of KIND_ACTIONS) {
       expect(def.label.trim()).not.toBe("");

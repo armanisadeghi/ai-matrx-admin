@@ -262,7 +262,7 @@ const sameName = (a: string, b: string) =>
 
 /** A deck the person can see, by id or exact name. */
 async function resolveDeck(where: string, ref: string): Promise<{ id: string; name: string }> {
-  const res = await fcService.listSets();
+  const res = await fcService.listDecks();
   if (res.error) throw new Error(`${where}: the person's decks could not be read (${res.error}).`);
   const decks = res.data ?? [];
   const hit = isUuidShape(ref) ? decks.find((d) => d.id === ref) : decks.filter((d) => sameName(d.name, ref));

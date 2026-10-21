@@ -291,7 +291,7 @@ function TreeRow({
         >
           <RowLink id={space.id} title={space.title} />
           {/* The disclosure slot sits on the row's own pressable layer (the row link fills the row beneath). */}
-          <TreeDisclosure expandable expanded={isOpen} onToggle={() => toggle(space.id)} className="relative z-[2] pointer-events-auto" />
+          <TreeDisclosure expandable expanded={isOpen} onToggle={() => toggle(space.id)} focusable={false} className="relative z-[2] pointer-events-auto" />
           <span className="pointer-events-none relative z-[1] flex h-4 w-4 shrink-0 items-center justify-center">
             <SpaceIcon media={space.icon} size={16} />
           </span>

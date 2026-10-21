@@ -1,12 +1,12 @@
 // record-view: fc_set
 // /education/flashcards/[setId] — deck detail (header + card grid + Study).
 // Server shell: resolves async params, then renders the client detail island.
-// SetDetailView is a "use client" leaf — importing it here forms the client
+// DeckDetailView is a "use client" leaf — importing it here forms the client
 // boundary (Next.js code-splits it); it loads the deck via supabase-js / RLS.
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { toolMetadata } from "@/features/education/route-helpers";
-import { SetDetailView } from "@/features/flashcards/components/set-detail/SetDetailView";
+import { DeckDetailView } from "@/features/flashcards/components/set-detail/SetDetailView";
 import { loginHref } from "@/utils/auth/auth-destination";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import { createClient } from "@/utils/supabase/server";
@@ -37,17 +37,17 @@ async function readDeckName(setId: string): Promise<string | null> {
 
 export const metadata: Metadata = toolMetadata("flashcards");
 
-interface FlashcardSetPageProps {
+interface FlashcardDeckPageProps {
   params: Promise<{ setId: string }>;
 }
 
-export default async function FlashcardSetPage({
+export default async function FlashcardDeckPage({
   params,
-}: FlashcardSetPageProps) {
+}: FlashcardDeckPageProps) {
   const { setId } = await params;
   const destination = `/education/flashcards/${setId}`;
   const { isAuthenticated } = await getSessionVerdict();
   if (!isAuthenticated) redirect(loginHref(destination));
   const initialName = await readDeckName(setId);
-  return <SetDetailView setId={setId} initialName={initialName} />;
+  return <DeckDetailView setId={setId} initialName={initialName} />;
 }

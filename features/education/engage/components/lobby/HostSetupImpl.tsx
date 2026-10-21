@@ -63,7 +63,7 @@ export function HostSetupImpl({
   const roomSize = useEntitlement("education.game_room_size");
   const setsRead = useRead(
     async () => {
-      const res = await fcService.listSets();
+      const res = await fcService.listDecks();
       if (res.error) throw res.error;
       return res.data ?? [];
     },

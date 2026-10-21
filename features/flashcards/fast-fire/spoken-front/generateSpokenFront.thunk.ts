@@ -40,7 +40,7 @@ export const SPOKEN_FRONT_TTS_MANDATE = MANDATE_KEYS.flashcards__spoken_front_tt
 export async function getSpokenFrontReadiness(
   setId: string,
 ): Promise<{ ready: number; total: number }> {
-  const res = await fcService.getSetWithCards(setId);
+  const res = await fcService.getDeckWithCards(setId);
   // A failed read is thrown, never reported as "0 of 0 ready" — the setup
   // screen would otherwise look unprepared and invite a paid re-run.
   if (res.error) throw new Error(res.error);
@@ -61,7 +61,7 @@ interface SpokenFrontCard {
 
 /** The deck run this card is being narrated in — present only when the caller
  *  really walks a deck (then `index`/`total` are the card's true position). */
-interface SpokenFrontSetRun {
+interface SpokenFrontDeckRun {
   setId: string;
   setName?: string | null;
 }
@@ -110,7 +110,7 @@ export function generateSpokenFront(
   card: SpokenFrontCard,
   index: number,
   total: number,
-  setRun?: SpokenFrontSetRun,
+  setRun?: SpokenFrontDeckRun,
 ) {
   return async (
     dispatch: AppDispatch,
@@ -210,13 +210,13 @@ export function generateSpokenFront(
  * (existing + newly generated). `onProgress(done, total)` fires as each resolves.
  * On-demand only — call this when the learner enables/starts a spoken drill.
  */
-export function ensureSpokenFrontsForSet(
+export function ensureSpokenFrontsForDeck(
   setId: string,
   onProgress?: (done: number, total: number) => void,
 ) {
   return async (dispatch: AppDispatch): Promise<Record<string, string>> => {
     const result: Record<string, string> = {};
-    const setRes = await fcService.getSetWithCards(setId);
+    const setRes = await fcService.getDeckWithCards(setId);
     if (!setRes.data) return result;
     const cards = setRes.data.cards;
     const total = cards.length;

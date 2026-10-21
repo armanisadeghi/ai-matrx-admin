@@ -16,6 +16,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Maximize2, Menu, Minimize2, Shapes, Webhook } from "lucide-react";
 import { PortalContainerProvider } from "@ai-matrx/design-system";
+import { accentAttributes } from "@ai-matrx/design-system/accents";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import { AppGrid } from "./AppGrid";
@@ -33,6 +34,17 @@ import { SheetFooter } from "./SheetFooter";
 import { SheetHeader, SidebarRestore } from "./SheetHeader";
 import type { FrameFavorite } from "./SheetHeader";
 import { sideChatAddressFor, sideChatOpenFromAddress } from "./sideChatAddress";
+import {
+  FRAME_COMPANION_OPEN_COOKIE,
+  FRAME_COMPANION_WIDTH_COOKIE,
+  FRAME_SIDEBAR_WIDTH_COOKIE,
+  frameCompanionOpenFor,
+  nextFrameCompanionOpen,
+  parseFrameWidth,
+  readFrameCookie,
+  writeFrameCookie,
+} from "./geometry";
+import type { FrameInitialGeometry } from "./geometry";
 import { useModalPanel } from "./useModalPanel";
 import type {
   CanvasProps,
@@ -93,10 +105,6 @@ export const SIDE_CHAT_DOOR: "header" = "header";
  */
 export type FrameHeaderEdge = "hairline" | "fade";
 
-/** Where this device remembers the side chat's width. */
-export const COMPANION_WIDTH_KEY = "matrx-frame:companion-width";
-/** Where this device remembers the sidebar's width. */
-export const SIDEBAR_WIDTH_KEY = "matrx-frame:sidebar-width";
 
 /** The product sidebar (owner, 2026-10-21): resizable 200–400, 244 by default; 80px past the minimum snaps it shut. */
 export const FRAME_SIDEBAR_MIN_PX = 200;
@@ -112,8 +120,31 @@ export const FRAME_SIDEBAR_SNAP_PX = 80;
  */
 export type FrameSpace = "inset" | "flush";
 export type FrameSidebarColor = "contrast" | "same";
-/** Where this device remembers, per page, whether the person left the side chat open. */
-export const companionOpenKey = (pageKey: string) => `matrx-frame:side-chat-open:${pageKey}`;
+
+/**
+ * The host's look and accent, stamped on the frame root exactly as AppShell stamps `.shell-root`:
+ * `data-shell-look` (absent for the standard look) and the design system's `data-matrx-accent`
+ * + its light/dark tokens. `accent` is a curated accent id or a `#rrggbb` color.
+ */
+export interface FrameAppearance {
+  look?: string | null;
+  accent?: string | null;
+}
+
+/** The root's attributes and style for an appearance (exported for the parity test). */
+export function frameAppearanceAttributes(appearance: FrameAppearance | undefined): {
+  attrs: Record<string, string>;
+  style: Record<string, string> | undefined;
+} {
+  const accent = appearance?.accent;
+  const { style, ...accentAttrs } = accentAttributes(
+    accent ? (accent.startsWith("#") ? { hex: accent } : { id: accent }) : null,
+  );
+  const attrs: Record<string, string> = {};
+  for (const [name, value] of Object.entries(accentAttrs)) if (typeof value === "string") attrs[name] = value;
+  if (appearance?.look) attrs["data-shell-look"] = appearance.look;
+  return { attrs, style: style as Record<string, string> | undefined };
+}
 
 /**
  * Everything a page may hand the frame — DATA only. The frame owns every region's geometry
@@ -135,10 +166,26 @@ export interface AppFrameProps {
   favorite?: FrameFavorite;
   /** The "…" items — always shown. See `defaultPageActions`. */
   actions: readonly FrameAction[];
-  /** The right-side header tools (search, notifications, account); see `placeholderHeaderTools`. */
-  headerTools?: readonly FrameHeaderTool[];
+  /**
+   * The header's right group (search, intelligence, messages, notifications …) — the HOST's own
+   * components, rendered as given before the frame's side chat and canvas toggles. Desktop,
+   * wide and medium forms.
+   */
+  headerTools?: ReactNode;
+  /**
+   * The same tools on a phone, as data: `phone: "show"` stay in the header, the rest become
+   * items in the "…" menu (see `placeholderHeaderTools`).
+   */
+  phoneTools?: readonly FrameHeaderTool[];
   /** Phone: where back goes. Without it, a nested page shows the menu button. */
   onBack?: () => void;
+  /**
+   * The bottom of the product sidebar (and of the phone drawer): the host's settings,
+   * organization and person controls — always visible, never scrolled away.
+   */
+  sidebarFooter?: ReactNode;
+  /** The person's look and accent (see FrameAppearance). */
+  appearance?: FrameAppearance;
   // ── the tabs row (only when given) ──
   tabs?: {
     items: readonly FrameTab[];
@@ -179,13 +226,19 @@ export interface AppFrameProps {
   form?: FrameForm;
   sidebarOpen?: boolean;
   onSidebarOpenChange?: (open: boolean) => void;
+  /**
+   * The remembered widths and this page's side chat choice, read by the host's server from the
+   * frame's cookies (`geometry.ts`), so the first paint is already right. Without it the frame
+   * reads the cookies after mount.
+   */
+  initialGeometry?: FrameInitialGeometry;
   /** PLAYGROUND A/B ONLY (see FrameHeaderEdge); default `fade`. */
   headerEdge?: FrameHeaderEdge;
   /** PLAYGROUND BAKE-OFF ONLY: the app grid's look (see FrameGridLook); default `A`. */
   gridLook?: FrameGridLook;
-  /** PLAYGROUND A/B ONLY (see FrameSpace); default `inset`. */
+  /** PLAYGROUND A/B ONLY (see FrameSpace); default `flush` (owner, 2026-10-21). */
   space?: FrameSpace;
-  /** PLAYGROUND A/B ONLY (see FrameSidebarColor); default `contrast`. */
+  /** PLAYGROUND A/B ONLY (see FrameSidebarColor); default `same` (owner, 2026-10-21). */
   sidebarColor?: FrameSidebarColor;
 }
 
@@ -241,35 +294,24 @@ function useControllable(value: boolean | undefined, onChange: ((v: boolean) => 
   return [current, set] as const;
 }
 
-function readStorage(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    // Storage refused (private mode): nothing is remembered, the defaults apply.
-    return null;
-  }
-}
-function writeStorage(key: string, value: string) {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    // Not remembered on this device; the choice still applies for this visit.
-  }
-}
-
-/** The side chat's remembered width (this device), read after mount so SSR and the first paint agree. */
-function useRememberedWidth(key: string) {
-  const [stored, setStored] = useState<number | null>(null);
+/**
+ * A remembered width (cookie, this browser). The host's server read (`initial`) paints it in the
+ * first frame; without one it is read after mount, so SSR and the first paint still agree.
+ */
+function useRememberedWidth(cookie: string, initial: number | null | undefined) {
+  const [stored, setStored] = useState<number | null>(initial ?? null);
+  const serverRead = initial !== undefined;
   useEffect(() => {
+    if (serverRead) return;
     const frame = window.requestAnimationFrame(() => {
-      const n = Number(readStorage(key) ?? NaN);
-      if (Number.isFinite(n) && n > 0) setStored(n);
+      const n = parseFrameWidth(readFrameCookie(cookie));
+      if (n !== null) setStored(n);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [key]);
+  }, [cookie, serverRead]);
   function remember(width: number) {
     setStored(width);
-    writeStorage(key, String(width));
+    writeFrameCookie(cookie, String(Math.round(width)));
   }
   return { stored, setStored, remember };
 }
@@ -280,33 +322,45 @@ function useRememberedWidth(key: string) {
  */
 function useCompanionOpen(
   pageKey: string | undefined,
+  initialOpen: boolean | null | undefined,
   onChange?: (open: boolean) => void,
   onAddress?: (search: string) => void,
 ) {
   const [state, setState] = useState<{ pageKey?: string; remembered: boolean; acted: boolean; link: boolean | null }>({
     pageKey,
-    remembered: false,
+    // The host's server read of this page's cookie: the first paint already shows the choice.
+    remembered: initialOpen === true,
     acted: false,
     link: null,
   });
+  // The page the host's server read was for: its choice is already in state, not re-read.
+  const [serverPageKey] = useState(initialOpen !== undefined ? pageKey : undefined);
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       setState((previous) => {
         if (previous.pageKey === pageKey && previous.acted) return previous;
+        const fromServer = serverPageKey !== undefined && serverPageKey === pageKey && previous.pageKey === pageKey;
         return {
           pageKey,
-          remembered: pageKey ? readStorage(companionOpenKey(pageKey)) === "open" : false,
+          remembered: fromServer
+            ? previous.remembered
+            : pageKey ? frameCompanionOpenFor(readFrameCookie(FRAME_COMPANION_OPEN_COOKIE), pageKey) === true : false,
           acted: false,
           link: sideChatOpenFromAddress(window.location.search),
         };
       });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [pageKey]);
+  }, [pageKey, serverPageKey]);
   const open = !state.acted && state.link !== null ? state.link : state.remembered;
   function set(next: boolean) {
     setState({ pageKey, remembered: next, acted: true, link: state.link });
-    if (pageKey) writeStorage(companionOpenKey(pageKey), next ? "open" : "closed");
+    if (pageKey) {
+      writeFrameCookie(
+        FRAME_COMPANION_OPEN_COOKIE,
+        nextFrameCompanionOpen(readFrameCookie(FRAME_COMPANION_OPEN_COOKIE), pageKey, next),
+      );
+    }
     onChange?.(next);
     const search = window.location.search;
     const address = sideChatAddressFor(search, next);
@@ -335,6 +389,8 @@ export function AppFrame(props: AppFrameProps) {
     favorite,
     actions,
     headerTools,
+    phoneTools,
+    sidebarFooter,
     onBack,
     tabs,
     variant,
@@ -351,8 +407,10 @@ export function AppFrame(props: AppFrameProps) {
   const [sheetWidth, setSheetElement] = useMeasuredWidth();
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [sidebarOpen, setSidebarOpen] = useControllable(props.sidebarOpen, props.onSidebarOpenChange, true);
+  const geometry = props.initialGeometry;
   const [companionOpen, setCompanionOpen] = useCompanionOpen(
     props.pageKey,
+    geometry?.companionOpen,
     props.onCompanionOpenChange,
     props.onSideChatAddress,
   );
@@ -363,8 +421,9 @@ export function AppFrame(props: AppFrameProps) {
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [seed, setSeed] = useState<CompanionSeed | undefined>(undefined);
   const [dragging, setDragging] = useState(false);
-  const width = useRememberedWidth(COMPANION_WIDTH_KEY);
-  const sidebarWidth = useRememberedWidth(SIDEBAR_WIDTH_KEY);
+  const width = useRememberedWidth(FRAME_COMPANION_WIDTH_COOKIE, geometry?.companionWidth);
+  const sidebarWidth = useRememberedWidth(FRAME_SIDEBAR_WIDTH_COOKIE, geometry?.sidebarWidth);
+  const appearance = frameAppearanceAttributes(props.appearance);
   const sidebarW = Math.min(
     FRAME_SIDEBAR_MAX_PX,
     Math.max(FRAME_SIDEBAR_MIN_PX, sidebarWidth.stored ?? FRAME_SIDEBAR_DEFAULT_PX),
@@ -566,9 +625,11 @@ export function AppFrame(props: AppFrameProps) {
       data-variant={variant}
       data-dragging={dragging ? "" : undefined}
       data-header-edge={headerEdge}
-      data-space={props.space ?? "inset"}
-      data-sidebar-color={props.sidebarColor ?? "contrast"}
+      data-space={props.space ?? "flush"}
+      data-sidebar-color={props.sidebarColor ?? "same"}
       data-sidebar-shown={showSidebar ? "" : undefined}
+      {...appearance.attrs}
+      style={appearance.style}
       className="relative flex h-full w-full min-w-0 overflow-hidden"
     >
       <PortalContainerProvider container={root}>
@@ -590,6 +651,7 @@ export function AppFrame(props: AppFrameProps) {
                   onSelectItem={onSelectMenuItem}
                   onHide={() => setSidebarOpen(false)}
                   hideLabel="Hide sidebar"
+                  footer={sidebarFooter}
                 />
               </div>
             </div>
@@ -631,6 +693,7 @@ export function AppFrame(props: AppFrameProps) {
                 actions={actions}
                 phoneActions={phoneActions}
                 tools={headerTools}
+                phoneTools={phoneTools}
                 canvasToggle={{ open: canvasOpen, onToggle: () => toggleCanvas() }}
                 sideChatToggle={SIDE_CHAT_DOOR === "header" ? sideChatToggle : undefined}
                 topEdge={!tabs}
@@ -810,6 +873,7 @@ export function AppFrame(props: AppFrameProps) {
                 }}
                 onHide={closeDrawer}
                 hideLabel="Close menu"
+                footer={sidebarFooter}
               />
             </div>
           </div>

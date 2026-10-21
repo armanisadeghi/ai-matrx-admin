@@ -22,7 +22,6 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpToLine,
-  ChevronRight,
   FolderInput,
   GripVertical,
   MoreHorizontal,
@@ -215,19 +214,7 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
         >
           <GripVertical className="h-4 w-4" aria-hidden />
         </span>
-        {hasChildren ? (
-          <button
-            type="button"
-            aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
-            aria-expanded={open}
-            className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
-            onClick={() => onToggle(node.id)}
-          >
-            <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-90")} />
-          </button>
-        ) : (
-          <TreeDisclosure expandable={false} />
-        )}
+        <TreeDisclosure expandable={hasChildren} expanded={open} onToggle={() => onToggle(node.id)} label={label} />
         <IconPicker value={icon} onChange={(next) => onChange(updateNode(all, node.id, { icon: next }))} />
         {renaming ? (
           // ui-exception: a menu row's name is a short raw label, not prose

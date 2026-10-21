@@ -31,8 +31,8 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import { flashcardsPrinterLazy as flashcardsPrinter } from "@ai-matrx/print/flashcards-lazy";
 import { usePrintOptions } from "@ai-matrx/print/react";
-import { useLinkedFlashcardSet } from "@/features/flashcards/data/useLinkedFlashcardSet";
-import { flashcardSetHref } from "@/features/flashcards/routes";
+import { useLinkedFlashcardDeck } from "@/features/flashcards/data/useLinkedFlashcardSet";
+import { flashcardDeckHref } from "@/features/flashcards/routes";
 import { parseFlashcards } from "./flashcard-parser";
 import { SHOW_DEV_CONTROLS } from "@/lib/dev/devControls";
 import {
@@ -87,7 +87,7 @@ export function useFlashcardsSet({
   } = useOpenArtifactInCanvas();
   // The canonical deck this chat set was saved as (null until linked). An
   // "Open in canvas" that persists the link late reports it directly.
-  const { href: linkedDeckHref } = useLinkedFlashcardSet(artifactId);
+  const { href: linkedDeckHref } = useLinkedFlashcardDeck(artifactId);
   // "Save deck": the same canonical deck the canvas makes (education.fc_set + cards), without
   // opening the canvas — one click from an answer to a deck that is studied, scheduled and kept.
   const [savingDeck, setSavingDeck] = useState(false);
@@ -97,7 +97,7 @@ export function useFlashcardsSet({
   );
   const deckHref =
     linkedDeckHref ??
-    (deckResult?.externalId ? flashcardSetHref({ id: deckResult.externalId }) : null);
+    (deckResult?.externalId ? flashcardDeckHref({ id: deckResult.externalId }) : null);
 
   const { flashcards, isComplete } = useMemo(
     () =>

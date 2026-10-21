@@ -1,7 +1,7 @@
 // features/flashcards/components/set-detail/DeckCardViews.tsx
 //
 // The deck page's ways of looking at its cards, beside the card search:
-//   Overview — the compact tiles (CardPeek, in SetDetailView; selection lives there)
+//   Overview — the compact tiles (CardPeek, in DeckDetailView; selection lives there)
 //   Fronts   — the real flashcards, front up; tap one to flip it
 //   Backs    — the same flashcards, back up
 //   List     — question | answer rows, quickest to scan

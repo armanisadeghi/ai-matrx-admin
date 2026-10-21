@@ -6,7 +6,7 @@ import { PUBLIC_LANE_TYPES, publicLaneSelect } from "@/utils/permissions/publicL
 // read it).
 import type {
   PublicFlashcard,
-  PublicFlashcardSetPayload,
+  PublicFlashcardDeckPayload,
 } from "@/features/flashcards/data/publicDeck";
 import {
   readSharedRecord,
@@ -76,7 +76,7 @@ export async function loadPublicResource(
   // Flashcard decks: rich anon read (set + ordered cards) via SECURITY DEFINER RPC.
   if (entry.resourceType === "fc_set") {
     const { data } = await supabase.rpc("get_public_flashcard_set", { p_set_id: id });
-    const r = data as PublicFlashcardSetPayload | null;
+    const r = data as PublicFlashcardDeckPayload | null;
     if (!r?.success || !r.set) return null;
     return {
       resourceType: "fc_set",

@@ -55,24 +55,24 @@ import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
 import {
   flashcardFastFireHref,
-  flashcardSetHref,
+  flashcardDeckHref,
   flashcardStudyHref,
-  type FlashcardSetListRow,
+  type FlashcardDeckListRow,
 } from "./flashcardSetList";
 
-export function useFlashcardSetRowActions(
-  list: EntityListController<FlashcardSetListRow>,
-): EntityRowActionsResult<FlashcardSetListRow> {
+export function useFlashcardDeckRowActions(
+  list: EntityListController<FlashcardDeckListRow>,
+): EntityRowActionsResult<FlashcardDeckListRow> {
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
   const [pendingArchive, setPendingArchive] =
-    useState<FlashcardSetListRow | null>(null);
+    useState<FlashcardDeckListRow | null>(null);
   const [busy, setBusy] = useState(false);
-  const [renaming, setRenaming] = useState<FlashcardSetListRow | null>(null);
-  const [filing, setFiling] = useState<FlashcardSetListRow | null>(null);
-  const [sharing, setSharing] = useState<FlashcardSetListRow | null>(null);
+  const [renaming, setRenaming] = useState<FlashcardDeckListRow | null>(null);
+  const [filing, setFiling] = useState<FlashcardDeckListRow | null>(null);
+  const [sharing, setSharing] = useState<FlashcardDeckListRow | null>(null);
 
-  const duplicate = async (row: FlashcardSetListRow) => {
+  const duplicate = async (row: FlashcardDeckListRow) => {
     const taken = new Set(
       list.rows
         .filter((r) => r.created_by === userId && !r.archived)
@@ -113,7 +113,7 @@ export function useFlashcardSetRowActions(
   };
 
 
-  const restore = async (row: FlashcardSetListRow) => {
+  const restore = async (row: FlashcardDeckListRow) => {
     try {
       await restoreFromTrash("fc_set", row.id);
     } catch (e) {
@@ -126,8 +126,8 @@ export function useFlashcardSetRowActions(
     toast.success(`Restored "${row.name}"`);
   };
 
-  const menuFor = (row: FlashcardSetListRow) => (): ItemMenuConfig => {
-    const href = flashcardSetHref(row);
+  const menuFor = (row: FlashcardDeckListRow) => (): ItemMenuConfig => {
+    const href = flashcardDeckHref(row);
     const open: ItemMenuEntry[] = [
       { id: "open", label: "Open", icon: Eye, kind: "link", href },
       {
@@ -355,7 +355,7 @@ export function useFlashcardSetRowActions(
   return {
     actions: {
       menuFor,
-      onOpenRow: (row) => router.push(flashcardSetHref(row)),
+      onOpenRow: (row) => router.push(flashcardDeckHref(row)),
     },
     modals,
   };

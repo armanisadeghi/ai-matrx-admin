@@ -124,10 +124,16 @@ describe("cost on a busy board", () => {
   it("a snap over 400 nearby tiles stays well under a frame", () => {
     const others = Array.from({ length: 400 }, (_, i) => ({ x: (i % 20) * 260, y: Math.floor(i / 20) * 180, w: 200, h: 120 }));
     const opts = { z: 1, smartGuides: true, grid: false, bypass: false };
-    snapMove({ x: 1003, y: 403, w: 200, h: 120 }, others, opts); // warm
-    const t0 = performance.now();
-    for (let i = 0; i < 100; i++) snapMove({ x: 1003 + i, y: 403, w: 200, h: 120 }, others, opts);
-    const per = (performance.now() - t0) / 100;
-    expect(per).toBeLessThan(4);
+    // Warm-up, then the MEDIAN of 11 batches: one batch stalled by a busy machine (other jest
+    // workers, a build) cannot fail the budget; a real regression slows every batch and still does.
+    for (let i = 0; i < 20; i++) snapMove({ x: 1003 + i, y: 403, w: 200, h: 120 }, others, opts);
+    const batches: number[] = [];
+    for (let b = 0; b < 11; b++) {
+      const t0 = performance.now();
+      for (let i = 0; i < 20; i++) snapMove({ x: 1003 + i, y: 403, w: 200, h: 120 }, others, opts);
+      batches.push((performance.now() - t0) / 20);
+    }
+    const median = [...batches].sort((a, b) => a - b)[Math.floor(batches.length / 2)];
+    expect(median).toBeLessThan(4);
   });
 });

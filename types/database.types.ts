@@ -48667,6 +48667,10 @@ export type Database = {
         Args: { p_reason: string; p_table_id: string }
         Returns: Json
       }
+      set_view_share_link_copy: {
+        Args: { p_link_id: string; p_restrict: boolean }
+        Returns: Json
+      }
       set_view_share_link_protection: {
         Args: {
           p_change_expiry?: boolean
@@ -49029,6 +49033,14 @@ export type Database = {
       table_add_rung: {
         Args: { p_organization_id: string; p_table_id: string }
         Returns: Database["public"]["Enums"]["permission_level"]
+      }
+      table_agent_writable_set: {
+        Args: {
+          p_agent_writable: boolean
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: Json
       }
       table_archive: {
         Args: {
@@ -49768,6 +49780,7 @@ export type Database = {
           last_used_at: string
           made_by_me: boolean
           permission_level: string
+          restrict_copy: boolean
           token: string
           use_count: number
         }[]
@@ -49869,6 +49882,10 @@ export type Database = {
           table_id: string
           why: string
         }[]
+      }
+      who_could_see_on: {
+        Args: { p_at: string; p_record_id: string }
+        Returns: Json
       }
       whole_value_ceiling: {
         Args: { p_organization_id: string }
@@ -89117,6 +89134,10 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_member_of: {
+        Args: { p_org: string; p_user: string }
+        Returns: boolean
+      }
       is_my_organization: {
         Args: { p_organization_id: string }
         Returns: boolean
@@ -111434,6 +111455,10 @@ export type Database = {
       share_target_in_closed_org: {
         Args: { p_resource_id: string; p_resource_type: string }
         Returns: boolean
+      }
+      share_target_org: {
+        Args: { p_resource_id: string; p_resource_type: string }
+        Returns: string
       }
       share_tool_is_withheld: {
         Args: { p_tool_name: string }

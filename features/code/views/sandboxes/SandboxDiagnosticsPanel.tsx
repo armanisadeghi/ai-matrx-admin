@@ -58,12 +58,8 @@ import {
   AlertCircle,
   Activity,
   RotateCcw,
-  ChevronRight,
-  ChevronDown,
   MinusCircle,
   File as FileIcon,
-  Folder as FolderIcon,
-  FolderOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";

@@ -500,7 +500,7 @@ const EDUCATION_ADMIN_MAP: FeatureAdminMap = {
       status: "Live",
       notes: [
         "classId param accepts a scope id OR slug (selectScopeBySlugOrId semantics)",
-        "Tagging from an artifact: <ClassPicker entityType entityId /> (thin EntityScopeTagger wrapper locked to the Class scope type) — wired into flashcard SetDetailView",
+        "Tagging from an artifact: <ClassPicker entityType entityId /> (thin EntityScopeTagger wrapper locked to the Class scope type) — wired into flashcard DeckDetailView",
       ],
     },
     {

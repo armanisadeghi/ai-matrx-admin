@@ -34,6 +34,7 @@ const LIVE = has("--live");
 const IDLE_MIN = Number(flag("--idle-min", "10"));
 const KEEP = has("--keep");
 const TRACE = has("--trace");
+const PROFILE = has("--profile"); // CPU profile per gesture phase; top self-time functions go in the JSON
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
 const OUT = flag("--out", join("tmp", "board-scale-bench", `${LIVE ? "live" : "preview"}-${stamp}.json`));
 
@@ -158,7 +159,7 @@ if (LIVE) {
   origin = new URL(open).origin;
   const p = await ctx.newPage();
   await p.goto(open, { waitUntil: "domcontentloaded" });
-  await p.waitForURL(/\/board/, { timeout: 900000 });
+  await p.waitForURL((u) => u.pathname.startsWith("/board"), { timeout: 900000 }); // the dev-login URL itself carries next=/board
   await p.close();
   TOKEN = sessionFromCookies(await ctx.cookies())?.access_token;
 }
@@ -244,9 +245,31 @@ try {
   const longIn = async (phase) => (await page.evaluate(() => window.__long)).filter((l) => l.phase === phase).map((l) => l.ms);
   async function sample(phase, fn) {
     await setPhase(phase);
+    if (PROFILE) {
+      await cdp.send("Profiler.enable");
+      await cdp.send("Profiler.setSamplingInterval", { interval: 200 });
+      await cdp.send("Profiler.start");
+    }
     await page.evaluate(() => window.__startFrames());
     await fn();
     const f = await page.evaluate(() => window.__stopFrames());
+    if (PROFILE) {
+      const { profile } = await cdp.send("Profiler.stop");
+      const dt = {};
+      const byId = new Map(profile.nodes.map((n) => [n.id, n]));
+      for (let i = 0; i < profile.samples.length; i++) dt[profile.samples[i]] = (dt[profile.samples[i]] ?? 0) + (profile.timeDeltas[i] ?? 0);
+      const self = {};
+      for (const [id, us] of Object.entries(dt)) {
+        const cf = byId.get(Number(id))?.callFrame;
+        if (!cf) continue;
+        const k = `${cf.functionName || "(anon)"} ${cf.url.split("/").pop().split("?")[0]}:${cf.lineNumber + 1}`;
+        self[k] = (self[k] ?? 0) + us;
+      }
+      results.profiles ??= {};
+      results.profiles[phase] = Object.entries(self).sort((a, b) => b[1] - a[1]).slice(0, 40).map(([k, us]) => [k, Math.round(us / 1000)]);
+      mkdirSync(dirname(OUT), { recursive: true });
+      writeFileSync(OUT.replace(/\.json$/, `.${phase}.cpuprofile`), JSON.stringify(profile));
+    }
     await setPhase("idle");
     const long = await longIn(phase);
     results.phases[phase] = { ...stats(f.slice(1)), longTasks: long.length, longestTaskMs: long.length ? Math.max(...long) : 0 };
@@ -331,7 +354,6 @@ try {
     });
   } else results.phases.resize = { error: "no resize handle found" };
   await page.keyboard.press("Escape");
-  await page.mouse.click(1400, 880, { button: "middle" }).catch(() => {});
   await page.waitForTimeout(800);
 
   // Zoom: ctrl+wheel in and back out (stays above the overview zoom so bodies stay real).
@@ -363,6 +385,7 @@ try {
     await open();
     await page.waitForFunction(() => window.__menu.t1 > 0, null, { timeout: 30000 }).catch(() => {});
     const m = await page.evaluate(() => window.__menu);
+    if (!m.t1) await page.screenshot({ path: OUT.replace(/\.json$/, `.${phase}-fail.png`) }).catch(() => {});
     await setPhase("idle");
     const long = await longIn(phase);
     results.phases[phase] = { openMs: m.t1 ? Math.round(m.t1 - m.t0) : null, longestTaskMs: long.length ? Math.max(...long) : 0 };
@@ -370,8 +393,22 @@ try {
     await page.keyboard.press("Escape");
     await page.waitForTimeout(600);
   }
-  b = await tileBox("bench-chat-2");
-  await timeMenu("contextMenu", () => page.mouse.click(b.x + 80, b.y + 12, { button: "right" }), "[role=menu]");
+  // Back to the opening view, then right-click the header of a tile that is really under the pointer there.
+  await page.keyboard.press("Escape");
+  await page.evaluate((c) => (location.hash = `cam=${c.x},${c.y},${c.z}`), CAM0);
+  await page.waitForTimeout(1500);
+  const header = await page.evaluate(() => {
+    for (const el of document.querySelectorAll("[data-board-tile]")) {
+      const r = el.getBoundingClientRect();
+      const x = r.left + 60, y = r.top + 10;
+      if (x < 450 || x > 1300 || y < 120 || y > 800) continue; // clear of the toolbar, side panels and the minimap
+      if (el.contains(document.elementFromPoint(x, y))) return { x, y, id: el.getAttribute("data-board-tile") };
+    }
+    return null;
+  });
+  results.contextMenuTile = header?.id ?? null;
+  if (header) await timeMenu("contextMenu", () => page.mouse.click(header.x, header.y, { button: "right" }), "[role=menu]");
+  else results.phases.contextMenu = { error: "no tile header under the pointer" };
   await timeMenu("addMenu", () => page.locator('[role=toolbar][aria-label="Board tools"] button').first().click(), "[cmdk-item],[role=menu]");
 
   // Optional diagnostic trace of one pan.

@@ -50,7 +50,7 @@ export async function resolveDeckAudioSource(
   setId: string,
   opts: { adaptive: boolean },
 ): Promise<ResolveResult> {
-  const res = await fcService.getSetWithCards(setId);
+  const res = await fcService.getDeckWithCards(setId);
   if (res.error || !res.data) {
     // Zero rows is deleted / denied / stale id — never assert one.
     return {

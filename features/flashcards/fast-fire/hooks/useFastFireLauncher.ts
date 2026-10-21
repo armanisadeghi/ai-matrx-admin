@@ -9,7 +9,7 @@
 // `startContinuousCapture` acquires ONE warm stream via the mic singleton, and
 // nothing in the drill ever stops/re-acquires it mid-session.
 //
-// Sources cards from a REAL fc_set (hard-requirement #7): `getSetWithCards`,
+// Sources cards from a REAL fc_set (hard-requirement #7): `getDeckWithCards`,
 // trimmed to the chosen limit — never the old hardcoded `historyFlashcards`.
 
 "use client";
@@ -95,7 +95,7 @@ export function useFastFireLauncher(
     setStartError(null);
     try {
       // 1. Load the real set + ordered cards.
-      const res = await fcService.getSetWithCards(config.setId);
+      const res = await fcService.getDeckWithCards(config.setId);
       if (!res.data) {
         const msg = res.error ?? "Could not load the deck.";
         setStartError(msg);

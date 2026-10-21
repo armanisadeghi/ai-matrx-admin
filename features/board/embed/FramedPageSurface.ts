@@ -12,34 +12,30 @@
  * page's own surface name and manifest, so the agent gets the same values,
  * targets and tools as on that page.
  *
- * While the page is gone (asleep, unloaded, navigating, not booted yet) its
- * values read as NOT LOADED (`not_loaded_yet`), never a copy kept from before,
- * and its actions refuse with nothing changed. A page whose surface is not
- * known yet registers nothing until it says.
+ * Registered only while the page is connected. While it is gone (asleep,
+ * unloaded, navigating, still booting) the tile has no live surface:
+ * `board_open_item` waits for the page to come back and otherwise says it did
+ * not mount, and `board_items` lists the tile with its dated last-known
+ * basics. Nothing the page said before is ever answered as current.
  */
 
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import {
   useSurfaceClientTools,
   useSurfaceRuntimeRegistration,
   type SurfaceClientToolHandlers,
+  type SurfaceWriteHandlerEntry,
   type SurfaceWriteHandlers,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { getAllManifests } from "@ai-matrx/chat/surfaces/runtime/registry";
-import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
-import { SURFACE_NOT_LOADED_KEY } from "../tools/item-surfaces";
 import {
   connectFramedSurface,
   lastFramedSurface,
   pathMatchesPattern,
   rememberFramedSurface,
+  type FramedSurfaceBridge,
   type FramedSurfaceConnection,
 } from "./framed-surface-bridge";
-
-/** How long a read waits for a page that is still booting before it answers "not loaded". */
-export const FRAME_CONNECT_WAIT_MS = 3000;
-
-const NOT_LOADED: SurfaceScopePayload = { [SURFACE_NOT_LOADED_KEY]: true } as SurfaceScopePayload;
 
 /** The surface a page path is expected to publish: what it last published here, else its manifest's `urlPattern`. */
 export function expectedPageSurface(path: string): string | null {
@@ -50,31 +46,6 @@ export function expectedPageSurface(path: string): string | null {
   return matches.length === 1 ? matches[0].surfaceName : null;
 }
 
-/** The current connection, and a way to wait (bounded) for one. */
-function createConnectionHolder() {
-  let current: FramedSurfaceConnection | null = null;
-  const waiters = new Set<() => void>();
-  return {
-    get: () => current,
-    set(next: FramedSurfaceConnection | null) {
-      current = next;
-      if (next) for (const wake of [...waiters]) wake();
-    },
-    wait(timeoutMs: number): Promise<FramedSurfaceConnection | null> {
-      if (current) return Promise.resolve(current);
-      return new Promise((resolve) => {
-        const wake = () => {
-          clearTimeout(timer);
-          waiters.delete(wake);
-          resolve(current);
-        };
-        const timer = setTimeout(wake, timeoutMs);
-        waiters.add(wake);
-      });
-    },
-  };
-}
-
 function gone(what: string): Error {
   return new Error(`The page in this tile is not loaded right now, so ${what}. Bring the tile into view and try again.`);
 }
@@ -83,32 +54,37 @@ function gone(what: string): Error {
  * Follow `frame` (the Page tile's iframe, null while it is not rendered) and
  * register its page's surface as this tile's. `path` is the tile's address.
  */
-export function useFramedPageSurface(frame: HTMLIFrameElement | null, path: string): void {
-  const [holder] = useState(createConnectionHolder);
+export function FramedPageSurface({ frame, path }: { frame: HTMLIFrameElement | null; path: string }) {
   const [connection, setConnection] = useState<FramedSurfaceConnection | null>(null);
+  // The connection as of now, for a handler called between renders (a page that just left).
+  const [current] = useState(() => ({ value: null as FramedSurfaceConnection | null }));
 
   useEffect(() => {
     if (!frame) return;
     const disconnect = connectFramedSurface(frame, (next) => {
-      holder.set(next);
+      current.value = next;
       if (next?.snapshot) rememberFramedSurface(path, next.snapshot.surface);
       setConnection(next);
     });
     return () => {
       disconnect();
-      holder.set(null);
+      current.value = null;
       setConnection(null);
     };
-  }, [frame, path, holder]);
+  }, [frame, path, current]);
 
   const snapshot = connection?.snapshot ?? null;
-  // A page that has said nothing yet keeps the name it is expected to publish, so a read waits for it.
-  const surfaceName = connection ? (snapshot?.surface ?? null) : expectedPageSurface(path);
+  const surfaceName = snapshot?.surface ?? null;
 
   /** The bridge, only while the page still shows `surfaceName`. */
-  const live = () => {
-    const now = holder.get();
+  const live = (): FramedSurfaceBridge | null => {
+    const now = current.value;
     return now && now.snapshot?.surface === surfaceName ? now.bridge : null;
+  };
+  const bridge = (what: string): FramedSurfaceBridge => {
+    const b = live();
+    if (!b) throw gone(what);
+    return b;
   };
 
   const writeHandlers = (): SurfaceWriteHandlers => {
@@ -116,17 +92,15 @@ export function useFramedPageSurface(frame: HTMLIFrameElement | null, path: stri
     const name = surfaceName;
     const out: SurfaceWriteHandlers = {};
     for (const target of snapshot.writeTargets) {
-      const bridge = () => {
-        const b = live();
-        if (!b) throw gone("nothing was changed");
-        return b;
-      };
-      out[target.name] = {
-        validate: (value, context) => bridge().validateWrite(name, target.name, value, context),
-        apply: (value, context) => bridge().applyWrite(name, target.name, value, context),
+      const entry: SurfaceWriteHandlerEntry = {
+        validate: (value, context) => bridge("nothing was changed").validateWrite(name, target.name, value, context),
+        apply: (value, context) => bridge("nothing was changed").applyWrite(name, target.name, value, context),
         cost: (value) => live()?.writeCost(name, target.name, value) ?? null,
-        ...(target.readCurrent ? { readCurrent: (context) => bridge().readCurrent(name, target.name, context) } : {}),
       };
+      if (target.readCurrent) {
+        entry.readCurrent = (context) => bridge("nothing was read").readCurrent(name, target.name, context);
+      }
+      out[target.name] = entry;
     }
     return out;
   };
@@ -135,31 +109,38 @@ export function useFramedPageSurface(frame: HTMLIFrameElement | null, path: stri
     surfaceName
       ? {
           surfaceName,
-          getScope: async () => {
-            const now = await holder.wait(FRAME_CONNECT_WAIT_MS);
-            if (!now || now.snapshot?.surface !== surfaceName) return NOT_LOADED;
-            try {
-              return (await now.bridge.readScope(surfaceName)) ?? NOT_LOADED;
-            } catch (error) {
-              console.error(`[board] the page tile's ${surfaceName} values could not be read`, error);
-              return NOT_LOADED;
-            }
-          },
+          // Read live from the page every time; a page that left between renders answers nothing.
+          getScope: async () => (await live()?.readScope(surfaceName)) ?? {},
           getWriteHandlers: writeHandlers,
         }
       : null,
   );
 
-  const tools: SurfaceClientToolHandlers = {};
+  const tools = surfaceName ? (snapshot?.clientTools ?? []) : [];
+  // Keyed by the tool set: a handler set is read when it registers, so a new set mounts fresh.
+  return createElement(FramedPageTools, { key: `${surfaceName ?? ""}|${tools.join("|")}`, surfaceName, tools, live });
+}
+
+function FramedPageTools({
+  surfaceName,
+  tools,
+  live,
+}: {
+  surfaceName: string | null;
+  tools: readonly string[];
+  live: () => FramedSurfaceBridge | null;
+}) {
+  const handlers: SurfaceClientToolHandlers = {};
   const costs: Record<string, (input: unknown) => Promise<string | null>> = {};
-  for (const tool of surfaceName ? (snapshot?.clientTools ?? []) : []) {
+  for (const tool of tools) {
     const name = surfaceName as string;
-    tools[tool] = async (input, call) => {
+    handlers[tool] = async (input, call) => {
       const bridge = live();
       if (!bridge) throw gone("nothing ran");
       return bridge.runTool(name, tool, input, call);
     };
     costs[tool] = async (input) => (await live()?.toolCost(name, tool, input)) ?? null;
   }
-  useSurfaceClientTools(surfaceName, tools, { costs });
+  useSurfaceClientTools(tools.length > 0 ? surfaceName : null, handlers, { costs });
+  return null;
 }

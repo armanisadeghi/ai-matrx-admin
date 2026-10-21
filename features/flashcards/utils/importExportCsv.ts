@@ -143,7 +143,7 @@ export function parsedRowsToCardInputs(
 }
 
 /** Build a downloadable CSV string (`front,back` header + one row per card). */
-export function buildSetCsv(cards: Pick<CardWithDetails, "front" | "back">[]): string {
+export function buildDeckCsv(cards: Pick<CardWithDetails, "front" | "back">[]): string {
   // This CSV is a product import/export format; preserve exact card text on re-import.
   return toDelimitedText(["front", "back"], cards.map((c) => [c.front, c.back]), {
     spreadsheetSafe: false,
@@ -151,8 +151,8 @@ export function buildSetCsv(cards: Pick<CardWithDetails, "front" | "back">[]): s
 }
 
 /** Trigger a browser download of the deck's cards as CSV. Client-only. */
-export function downloadSetCsv(set: FcSetRow, cards: Pick<CardWithDetails, "front" | "back">[]): void {
-  const csv = buildSetCsv(cards);
+export function downloadDeckCsv(set: FcSetRow, cards: Pick<CardWithDetails, "front" | "back">[]): void {
+  const csv = buildDeckCsv(cards);
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const safeName = set.name.trim().replace(/[^\w\- ]+/g, "").replace(/\s+/g, "_") || "flashcard_set";
   downloadFile(`${safeName}.csv`, blob, blob.type);

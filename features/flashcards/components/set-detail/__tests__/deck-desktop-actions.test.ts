@@ -1,7 +1,7 @@
 // The deck page's desktop action bar keeps Progress (formerly "History") as
 // its own button. It was folded into the Study menu twice (2026-09-27,
 // 2026-09-28) and an independent production check (verify-6, 2026-10-01)
-// reported it gone. This reads the desktop bar out of SetDetailView and fails
+// reported it gone. This reads the desktop bar out of DeckDetailView and fails
 // when Progress is missing from it or sits inside a dropdown menu.
 
 import { readFileSync } from "node:fs";

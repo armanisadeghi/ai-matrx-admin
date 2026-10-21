@@ -4,11 +4,11 @@
  * Education on a board: a Flashcard deck and a Study kit (the "study set" — one piece of material
  * and everything made from it). Each Body is the feature's own page component, never a copy:
  *
- * - **Flashcard deck** — `SetDetailView`, the component `/education/flashcards/[setId]` renders:
+ * - **Flashcard deck** — `DeckDetailView`, the component `/education/flashcards/[setId]` renders:
  *   the card grid, Study / Fast Fire / Edit / Add more cards, Deck tools, audio, export, card
  *   views and progress. `embedded` only drops the shell header and the shell-header offset and
  *   keeps the card view in the tile instead of the address bar. Its agent surface
- *   `matrx-user/education-flashcard-set` is registered by `SetDetailView` itself. Start new is
+ *   `matrx-user/education-flashcard-set` is registered by `DeckDetailView` itself. Start new is
  *   `CreateDeckPage` (`/education/flashcards/new`: Sources, Style and details, Make the deck), the
  *   deck is made when the person presses Make; the tile then becomes that deck (`onMade`).
  * - **Study kit** — `KitHub` (`/education/kits/[sourceId]`), its `matrx-user/education-kits`
@@ -23,7 +23,7 @@
 import { useEffect, useState } from "react";
 import { Layers, NotebookTabs } from "lucide-react";
 import { readOf } from "@ai-matrx/design-system";
-import { SetDetailView } from "@/features/flashcards/components/set-detail/SetDetailView";
+import { DeckDetailView } from "@/features/flashcards/components/set-detail/SetDetailView";
 import { CreateDeckPage } from "@/features/flashcards/components/create/CreateDeckPage";
 import { fetchDeckPage, type DeckListRow } from "@/features/flashcards/data/deckListService";
 import { KitHub } from "@/features/education/kits/components/KitHub";
@@ -112,7 +112,7 @@ function DeckBody(props: ItemBodyProps) {
   const id = deckIdOf(props.source);
   const follow = useFollowName(props.source, props.title, props.onSource);
   return id ? (
-    <SetDetailView key={id} setId={id} initialName={props.title} embedded onNameKnown={follow} />
+    <DeckDetailView key={id} setId={id} initialName={props.title} embedded onNameKnown={follow} />
   ) : (
     <DeckDraftBody title={props.title} onSource={props.onSource} />
   );

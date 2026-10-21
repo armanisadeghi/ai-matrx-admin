@@ -14,7 +14,7 @@
  *     (its primary runtime), its scope, its write handlers and client tools.
  *   board side — `connectFramedSurface(iframe, onChange)` hears READY (and BYE
  *     when the page unloads), reads the bridge object DIRECTLY (same origin),
- *     and reports the framed surface; `useFramedPageSurface` registers it as
+ *     and reports the framed surface; `FramedPageSurface` registers it as
  *     the tile's surface (into the tile's capture, and globally while the tile
  *     is live) — one registration in the ONE surface system, no second registry.
  *

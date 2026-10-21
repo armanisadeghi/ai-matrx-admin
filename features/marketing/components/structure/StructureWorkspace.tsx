@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  ChevronDown,
   ChevronRight,
   ExternalLink,
   FileText,
@@ -180,6 +179,7 @@ function TreeRow({
       <TreeDisclosure
         expandable={node.childCount > 0}
         expanded={expanded}
+        label={isRoot ? "Home page" : node.segment}
         onToggle={onToggle}
       />
       {node.childCount > 0 ? (

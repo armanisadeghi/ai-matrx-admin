@@ -3,7 +3,8 @@
 // every other path on that host is a 404 (never the app). Plan: common-docs/systems/data/custom-data/CUSTOM-DOMAINS.md
 // No imports: proxy.ts runs this on every matched request.
 
-export type DomainTargetKind = "form" | "booking" | "portal";
+/** "space": a Spaces page published to the web (content.space_public_view), served at /site/<id>. */
+export type DomainTargetKind = "form" | "booking" | "portal" | "space";
 
 export interface DomainRoute {
   path_prefix: string;
@@ -55,6 +56,8 @@ function basePath(route: DomainRoute, organizationId: string): string {
       return `/b/${route.target_id}`;
     case "portal":
       return `/portal/${organizationId}`;
+    case "space":
+      return `/site/${route.target_id}`;
   }
 }
 
@@ -149,13 +152,16 @@ const SIGN_IN_PATHS = ["/login", "/forgot-password", "/reset-password", "/check-
 /**
  * Paths a mapped custom host serves AS-IS (no rewrite), beside its routes:
  * - the sign-in pages, when the domain maps a portal (a signed-out portal visitor signs in here);
- * - /b/manage/<ref> (the "change or cancel" link of a booking), when the domain maps a booking page.
+ * - /b/manage/<ref> (the "change or cancel" link of a booking), when the domain maps a booking page;
+ * - /site/<link> (a published page's sub-page links), when the domain maps a Spaces page. Only pages on
+ *   the web answer there (content.space_public_view); anything else is that page's own not-found.
  */
 export function passthroughOnCustomHost(pathname: string, domain: ResolvedDomain): boolean {
   const path = pathname.replace(/\/+$/, "") || "/";
   const kinds = new Set(domain.routes.map((route) => route.target_kind));
   if (kinds.has("portal") && SIGN_IN_PATHS.some((p) => path === p || path.startsWith(`${p}/`))) return true;
   if (kinds.has("booking") && path.startsWith("/b/manage/")) return true;
+  if (kinds.has("space") && /^\/site\/[^/]+$/.test(path)) return true;
   return false;
 }
 

@@ -37,6 +37,7 @@
  *   @/features/google-workspace/export/sendToGoogle → FrameSendToGoogle
  *   @/components/matrx/buttons/markdown-copy-html → FrameCopyHtml (plain-text copy, no KaTeX)
  *   @/lib/scoped-config/sessionKnob           → FrameSessionKnob  (knobs answer "no answer yet")
+ *   @ai-matrx/kit/download                    → FrameDownload (relayed to the host's `download` action)
  * They are aliases rather than database migrations, so the live component
  * bodies are migrated to the frame-safe implementations without a row
  * changing — including the five that import MarkdownStream.
@@ -114,6 +115,12 @@ const ALIAS: Record<string, string> = {
   "@ai-matrx/print/document": resolve(
     __dirname,
     "runtime/FramePrintDocument.ts",
+  ),
+  // Downloads (the copy menu's Export, the kit): the frame has no
+  // allow-downloads, so each one is relayed to the host's `download` action.
+  "@ai-matrx/kit/download": resolve(
+    __dirname,
+    "runtime/FrameDownload.ts",
   ),
   "@/components/agent-copy/useAlchemyDisclosure": resolve(
     __dirname,

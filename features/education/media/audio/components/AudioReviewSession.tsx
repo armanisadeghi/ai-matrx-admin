@@ -129,7 +129,7 @@ export function AudioReviewSession({
 
   useEffect(() => {
     fcService
-      .listSets()
+      .listDecks()
       .then((res) => {
         if (res.data) setDecks(res.data);
         setDecksError(res.error ?? null);
@@ -156,7 +156,7 @@ export function AudioReviewSession({
       toast.error("Pick a deck to review");
       return;
     }
-    const res = await fcService.getSetWithCards(deckId);
+    const res = await fcService.getDeckWithCards(deckId);
     if (res.error || !res.data || res.data.cards.length === 0) {
       toast.error(res.error ?? "That deck has no cards");
       return;

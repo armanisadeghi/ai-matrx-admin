@@ -53,7 +53,7 @@ function FixGiveawayCardsButton({ setId }: { setId: string }) {
   });
 
   async function start() {
-    const deck = await fcService.getSetWithCards(setId);
+    const deck = await fcService.getDeckWithCards(setId);
     if (!deck.data) {
       toast.error("Couldn't read this deck", {
         description: deck.error ?? undefined,

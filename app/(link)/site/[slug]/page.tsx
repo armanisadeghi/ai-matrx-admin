@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { isEmbedQuery } from "@/features/spaces/publish/embed-snippet";
 import { PublicSpace } from "@/features/spaces/public/PublicSpace";
 import {
   publicCoverImage,
@@ -68,10 +69,14 @@ export async function generateMetadata({
 
 export default async function PublishedSpacePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  // EMBED MODE (`?embed=1`, J3): the same page inside somebody else's website (Share > Publish > Embed).
+  const embedded = isEmbedQuery((await searchParams)["embed"]);
   const key = decodeURIComponent(slug);
   const view = await loadView(key);
   if (!view) {
@@ -89,5 +94,5 @@ export default async function PublishedSpacePage({
     }
     notFound();
   }
-  return <PublicSpace view={view} />;
+  return <PublicSpace view={view} embedded={embedded} />;
 }

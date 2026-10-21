@@ -40,10 +40,10 @@ import type {
   FcCardRow,
   FcDetailRow,
   FcDetailInsert,
-  NewSetInput,
+  NewDeckInput,
   NewCardInput,
   CardWithDetails,
-  SetWithCards,
+  DeckWithCards,
 } from "./types";
 
 const EDU = () => supabase.schema("education");
@@ -56,7 +56,7 @@ interface CardJsonRow {
   dynamic_content?: Json | null;
 }
 
-interface SetMetadataRow {
+interface DeckMetadataRow {
   id: string;
   version: number;
   metadata?: Json | null;
@@ -156,7 +156,7 @@ async function archiveInsertedCards(
 
 export const fcService = {
   // ─── SETS ───────────────────────────────────────────────────────────────
-  async createSet(input: NewSetInput): Promise<FcResult<FcSetRow>> {
+  async createDeck(input: NewDeckInput): Promise<FcResult<FcSetRow>> {
     try {
       const orgId = await resolveOrgId(input.orgId);
       const { data, error } = await EDU()
@@ -176,14 +176,14 @@ export const fcService = {
         })
         .select("*")
         .single();
-      if (error) return fail("createSet", error);
+      if (error) return fail("createDeck", error);
       return { data: withDisplayTitle(data as FcSetRow, "name"), error: null };
     } catch (e) {
-      return fail("createSet", e);
+      return fail("createDeck", e);
     }
   },
 
-  async updateSet(
+  async updateDeck(
     setId: string,
     patch: Partial<
       Pick<FcSetRow, "name" | "description" | "topic" | "lesson" | "difficulty">
@@ -200,10 +200,10 @@ export const fcService = {
           .select("*"),
         { action: "update", noun: "set" },
       );
-      if (error) return fail("updateSet", error);
+      if (error) return fail("updateDeck", error);
       return { data: withDisplayTitle(data as FcSetRow, "name"), error: null };
     } catch (e) {
-      return fail("updateSet", e);
+      return fail("updateDeck", e);
     }
   },
 
@@ -211,7 +211,7 @@ export const fcService = {
    * Save a deck's row controls — "Shown to" and "Published to the web" — from the RowAccessControl
    * menu (access ladder Words table). The one writer for a deck's row controls.
    */
-  async updateSetRowAccess(
+  async updateDeckRowAccess(
     setId: string,
     change: RowAccessChange,
   ): Promise<FcResult<FcSetRow>> {
@@ -225,18 +225,18 @@ export const fcService = {
           .select("*"),
         { action: "update", noun: "set" },
       );
-      if (error) return fail("updateSetRowAccess", error);
+      if (error) return fail("updateDeckRowAccess", error);
       return { data: withDisplayTitle(data as FcSetRow, "name"), error: null };
     } catch (e) {
-      return fail("updateSetRowAccess", e);
+      return fail("updateDeckRowAccess", e);
     }
   },
 
   /**
    * The agent write target's path (update_decks, whose contract still names the old row column
-   * until its surface manifest converts). Screens use updateSetRowAccess.
+   * until its surface manifest converts). Screens use updateDeckRowAccess.
    */
-  async updateSetVisibility(
+  async updateDeckVisibility(
     setId: string,
     visibility: FcSetRow["visibility"],
   ): Promise<FcResult<FcSetRow>> {
@@ -249,10 +249,10 @@ export const fcService = {
           .select("*"),
         { action: "update", noun: "set" },
       );
-      if (error) return fail("updateSetVisibility", error);
+      if (error) return fail("updateDeckVisibility", error);
       return { data: withDisplayTitle(data as FcSetRow, "name"), error: null };
     } catch (e) {
-      return fail("updateSetVisibility", e);
+      return fail("updateDeckVisibility", e);
     }
   },
 
@@ -262,19 +262,19 @@ export const fcService = {
    * shares this column with folders/import metadata, so a blind spread/write
    * is not safe.
    */
-  async mergeSetMetadata(
+  async mergeDeckMetadata(
     setId: string,
     merge: (current: JsonObject) => JsonObject,
   ): Promise<FcResult<null>> {
     const SELECT = "id, version, metadata";
-    const result = await mergeJsonColumn<SetMetadataRow>({
+    const result = await mergeJsonColumn<DeckMetadataRow>({
       fetchCurrent: () =>
         EDU()
           .from("fc_set")
           .select(SELECT)
           .eq("id", setId)
           .is("deleted_at", null)
-          .maybeSingle<SetMetadataRow>(),
+          .maybeSingle<DeckMetadataRow>(),
       readColumn: (row) => row.metadata ?? null,
       merge,
       applyUpdate: ({ value, expectedVersion, nextVersion }) =>
@@ -284,13 +284,13 @@ export const fcService = {
           .eq("id", setId)
           .eq("version", expectedVersion)
           .select(SELECT)
-          .maybeSingle<SetMetadataRow>(),
+          .maybeSingle<DeckMetadataRow>(),
     });
     if (result.status === "saved") return { data: null, error: null };
     if (result.status === "error")
-      return fail("mergeSetMetadata", result.error);
+      return fail("mergeDeckMetadata", result.error);
     return fail(
-      "mergeSetMetadata",
+      "mergeDeckMetadata",
       result.status === "not_found"
         ? "That deck is no longer available"
         : "Another edit kept winning — the deck metadata was not updated",
@@ -298,8 +298,8 @@ export const fcService = {
   },
 
   /** Soft-delete a deck (RLS/ownership-gated by the update itself). */
-  async deleteSet(setId: string): Promise<FcResult<null>> {
-    return softDeleteOne("fc_set", setId, "deleteSet", "set");
+  async deleteDeck(setId: string): Promise<FcResult<null>> {
+    return softDeleteOne("fc_set", setId, "deleteDeck", "set");
   },
 
   /**
@@ -307,7 +307,7 @@ export const fcService = {
    * the normal (live-only) reads do not return. Null when the person cannot
    * see it at all.
    */
-  async getSetIncludingArchived(
+  async getDeckIncludingArchived(
     setId: string,
   ): Promise<FcResult<{ name: string; archived: boolean } | null>> {
     try {
@@ -316,7 +316,7 @@ export const fcService = {
         .select("name, deleted_at")
         .eq("id", setId)
         .maybeSingle();
-      if (error) return fail("getSetIncludingArchived", error);
+      if (error) return fail("getDeckIncludingArchived", error);
       return {
         data: data
           ? { name: displayTitle(data.name), archived: data.deleted_at !== null }
@@ -324,11 +324,11 @@ export const fcService = {
         error: null,
       };
     } catch (e) {
-      return fail("getSetIncludingArchived", e);
+      return fail("getDeckIncludingArchived", e);
     }
   },
 
-  async getSet(setId: string): Promise<FcResult<FcSetRow>> {
+  async getDeck(setId: string): Promise<FcResult<FcSetRow>> {
     try {
       // maybeSingle (not single): an RLS-hidden or missing row returns no row
       // with NO error, so we surface a clear not-found message instead of the
@@ -339,7 +339,7 @@ export const fcService = {
         .eq("id", setId)
         .is("deleted_at", null)
         .maybeSingle();
-      if (error) return fail("getSet", error);
+      if (error) return fail("getDeck", error);
       if (!data)
         return {
           data: null,
@@ -353,7 +353,7 @@ export const fcService = {
         };
       return { data: withDisplayTitle(data as FcSetRow, "name"), error: null };
     } catch (e) {
-      return fail("getSet", e);
+      return fail("getDeck", e);
     }
   },
 
@@ -366,7 +366,7 @@ export const fcService = {
    * into explicit Mine/Org/Shared tabs is a UX change, not a bug fix; when
    * that lands, wire `applyListScope` here instead of this comment.
    */
-  async listSets(
+  async listDecks(
     options: { signal?: AbortSignal } = {},
   ): Promise<FcResult<FcSetRow[]>> {
     try {
@@ -378,7 +378,7 @@ export const fcService = {
       const { data, error } = options.signal
         ? await query.abortSignal(options.signal)
         : await query;
-      if (error) return fail("listSets", error);
+      if (error) return fail("listDecks", error);
       return {
         data: ((data ?? []) as FcSetRow[]).map((r) =>
           withDisplayTitle(r, "name"),
@@ -386,12 +386,12 @@ export const fcService = {
         error: null,
       };
     } catch (e) {
-      return fail("listSets", e);
+      return fail("listDecks", e);
     }
   },
 
   /** Resolve set names for session history rows (batch, RLS-filtered). */
-  async getSetNamesByIds(
+  async getDeckNamesByIds(
     setIds: string[],
   ): Promise<FcResult<Record<string, string>>> {
     const unique = [...new Set(setIds.filter(Boolean))];
@@ -402,12 +402,12 @@ export const fcService = {
         .select("id, name")
         .in("id", unique)
         .is("deleted_at", null);
-      if (error) return fail("getSetNamesByIds", error);
+      if (error) return fail("getDeckNamesByIds", error);
       const map: Record<string, string> = {};
       for (const row of data ?? []) map[row.id] = displayTitle(row.name);
       return { data: map, error: null };
     } catch (e) {
-      return fail("getSetNamesByIds", e);
+      return fail("getDeckNamesByIds", e);
     }
   },
 
@@ -530,18 +530,18 @@ export const fcService = {
   },
 
   /** Create a deck and its cards in one call (the from-topic / from-chat shape). */
-  async createSetWithCards(
-    input: NewSetInput,
+  async createDeckWithCards(
+    input: NewDeckInput,
     cards: NewCardInput[],
-  ): Promise<FcResult<SetWithCards>> {
-    const setRes = await this.createSet(input);
+  ): Promise<FcResult<DeckWithCards>> {
+    const setRes = await this.createDeck(input);
     if (!setRes.data) return { data: null, error: setRes.error };
     const set = setRes.data;
     const cardsRes = await this.addCards(set.id, cards, {
       orgId: set.organization_id,
     });
     if (cardsRes.error) return { data: null, error: cardsRes.error };
-    return this.getSetWithCards(set.id);
+    return this.getDeckWithCards(set.id);
   },
 
   // ─── Single-writer contract for agent-generated decks (D-WP3) ────────────
@@ -552,7 +552,7 @@ export const fcService = {
   // deck. The contract that keeps them to ONE fc_set row:
   //   • every headless generation runs in its own fresh conversation, so the
   //     conversation id IS the run's identity;
-  //   • a surface save goes through `createGeneratedSetForConversation`, which
+  //   • a surface save goes through `createGeneratedDeckForConversation`, which
   //     ADOPTS the adapter's deck if the adapter won the race (updates
   //     name/topic/difficulty on it) and otherwise creates the deck stamped
   //     `metadata.source_system="cx_conversation"` / `source_id=<cid>`;
@@ -566,7 +566,7 @@ export const fcService = {
    * The set the chat-materialization adapter created for this conversation's
    * render block, if it won the race (adopt target for a surface save).
    */
-  async findChatGeneratedSetForConversation(
+  async findChatGeneratedDeckForConversation(
     conversationId: string,
   ): Promise<FcResult<FcSetRow | null>> {
     try {
@@ -578,13 +578,13 @@ export const fcService = {
         .is("deleted_at", null)
         .limit(1)
         .maybeSingle();
-      if (error) return fail("findChatGeneratedSetForConversation", error);
+      if (error) return fail("findChatGeneratedDeckForConversation", error);
       return {
         data: data ? withDisplayTitle(data as FcSetRow, "name") : null,
         error: null,
       };
     } catch (e) {
-      return fail("findChatGeneratedSetForConversation", e);
+      return fail("findChatGeneratedDeckForConversation", e);
     }
   },
 
@@ -593,7 +593,7 @@ export const fcService = {
    * (dedupe target for the materialization adapter — link, don't create).
    */
   /** The live deck a block saved under this (system, id) key, or null. One deck per source. */
-  async findSetBySource(system: string, id: string): Promise<FcResult<FcSetRow | null>> {
+  async findDeckBySource(system: string, id: string): Promise<FcResult<FcSetRow | null>> {
     try {
       const { data, error } = await EDU()
         .from("fc_set")
@@ -604,14 +604,14 @@ export const fcService = {
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
-      if (error) return fail("findSetBySource", error);
+      if (error) return fail("findDeckBySource", error);
       return { data: data ? withDisplayTitle(data as FcSetRow, "name") : null, error: null };
     } catch (e) {
-      return fail("findSetBySource", e);
+      return fail("findDeckBySource", e);
     }
   },
 
-  async findSurfaceSavedSetForConversation(
+  async findSurfaceSavedDeckForConversation(
     conversationId: string,
   ): Promise<FcResult<FcSetRow | null>> {
     try {
@@ -623,13 +623,13 @@ export const fcService = {
         .is("deleted_at", null)
         .limit(1)
         .maybeSingle();
-      if (error) return fail("findSurfaceSavedSetForConversation", error);
+      if (error) return fail("findSurfaceSavedDeckForConversation", error);
       return {
         data: data ? withDisplayTitle(data as FcSetRow, "name") : null,
         error: null,
       };
     } catch (e) {
-      return fail("findSurfaceSavedSetForConversation", e);
+      return fail("findSurfaceSavedDeckForConversation", e);
     }
   },
 
@@ -638,7 +638,7 @@ export const fcService = {
    * writer (the chat adapter or a surface save) — the deck an interrupted
    * attempt of a run left behind.
    */
-  async findGeneratedSetForConversations(
+  async findGeneratedDeckForConversations(
     conversationIds: readonly string[],
   ): Promise<FcResult<FcSetRow | null>> {
     if (conversationIds.length === 0) return { data: null, error: null };
@@ -650,11 +650,11 @@ export const fcService = {
         .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(1);
-      if (error) return fail("findGeneratedSetForConversations", error);
+      if (error) return fail("findGeneratedDeckForConversations", error);
       const row = (data ?? [])[0] as FcSetRow | undefined;
       return { data: row ? withDisplayTitle(row, "name") : null, error: null };
     } catch (e) {
-      return fail("findGeneratedSetForConversations", e);
+      return fail("findGeneratedDeckForConversations", e);
     }
   },
 
@@ -665,14 +665,14 @@ export const fcService = {
    * finds it) plus `continued_from`. A twin the adapter made for THIS
    * attempt's conversation is archived — one run, one deck.
    */
-  async continueGeneratedSet(
+  async continueGeneratedDeck(
     earlier: FcSetRow,
     conversationId: string | null,
     continues: readonly string[],
-    input: NewSetInput,
+    input: NewDeckInput,
     cards: NewCardInput[],
-  ): Promise<FcResult<SetWithCards>> {
-    const current = await this.getSetWithCards(earlier.id);
+  ): Promise<FcResult<DeckWithCards>> {
+    const current = await this.getDeckWithCards(earlier.id);
     if (!current.data) return { data: null, error: current.error };
     for (const card of current.data.cards) {
       const archived = await this.deleteCard(card.id, card.version);
@@ -682,14 +682,14 @@ export const fcService = {
       orgId: earlier.organization_id,
     });
     if (added.error) return { data: null, error: added.error };
-    const updated = await this.updateSet(earlier.id, {
+    const updated = await this.updateDeck(earlier.id, {
       name: input.name,
       topic: input.topic ?? null,
       difficulty: input.difficulty ?? null,
       ...(input.description !== undefined ? { description: input.description } : {}),
     });
     if (!updated.data) return { data: null, error: updated.error };
-    const stamped = await this.mergeSetMetadata(earlier.id, (meta) => ({
+    const stamped = await this.mergeDeckMetadata(earlier.id, (meta) => ({
       ...meta,
       ...(conversationId
         ? {
@@ -703,16 +703,16 @@ export const fcService = {
     }));
     if (stamped.error) return { data: null, error: stamped.error };
     if (conversationId) {
-      const twin = await this.findChatGeneratedSetForConversation(conversationId);
+      const twin = await this.findChatGeneratedDeckForConversation(conversationId);
       if (twin.data && twin.data.id !== earlier.id) {
         console.warn(
-          "[fcService.continueGeneratedSet] archiving this attempt's twin deck; the run continues its earlier deck:",
+          "[fcService.continueGeneratedDeck] archiving this attempt's twin deck; the run continues its earlier deck:",
           { twin: twin.data.id, deck: earlier.id },
         );
-        await this.deleteSet(twin.data.id);
+        await this.deleteDeck(twin.data.id);
       }
     }
-    return this.getSetWithCards(earlier.id);
+    return this.getDeckWithCards(earlier.id);
   },
 
   /**
@@ -723,23 +723,23 @@ export const fcService = {
    * the deck stamped with the run's conversation identity so the adapter's
    * dedupe finds it and links instead of double-creating.
    */
-  async createGeneratedSetForConversation(
+  async createGeneratedDeckForConversation(
     conversationId: string | null,
-    input: NewSetInput,
+    input: NewDeckInput,
     cards: NewCardInput[],
     opts: { continues?: readonly string[]; runKey?: string | null } = {},
-  ): Promise<FcResult<SetWithCards>> {
+  ): Promise<FcResult<DeckWithCards>> {
     // A SEGMENTED KIT RUN HAS NO ONE CONVERSATION, so its identity is the plan's
     // run key. A deck this run already made (the tab died after the create, before
     // the kit edge) is THIS run's deck: adopt it — complete as is, or its cards
     // replaced when the create stopped halfway — never a second deck, never an
     // orphan beside the kit.
     if (opts.runKey) {
-      const earlier = await this.findGeneratedSetByRunKey(opts.runKey);
+      const earlier = await this.findGeneratedDeckByRunKey(opts.runKey);
       if (earlier.data) {
-        const have = await this.getSetWithCards(earlier.data.id);
+        const have = await this.getDeckWithCards(earlier.data.id);
         if (have.data && have.data.cards.length >= cards.length) return have;
-        return this.continueGeneratedSet(earlier.data, conversationId, [], input, cards);
+        return this.continueGeneratedDeck(earlier.data, conversationId, [], input, cards);
       }
     }
     // ONE RUN, ONE DECK. A retry of a run that stopped with its page passes
@@ -748,16 +748,16 @@ export const fcService = {
     // is continued — never left behind as an orphan beside a second deck.
     const continues = (opts.continues ?? []).filter((id) => id && id !== conversationId);
     if (continues.length > 0) {
-      const earlier = await this.findGeneratedSetForConversations(continues);
+      const earlier = await this.findGeneratedDeckForConversations(continues);
       if (earlier.data) {
-        return this.continueGeneratedSet(earlier.data, conversationId, continues, input, cards);
+        return this.continueGeneratedDeck(earlier.data, conversationId, continues, input, cards);
       }
     }
     if (conversationId) {
       const twin =
-        await this.findChatGeneratedSetForConversation(conversationId);
+        await this.findChatGeneratedDeckForConversation(conversationId);
       if (twin.data) {
-        const updated = await this.updateSet(twin.data.id, {
+        const updated = await this.updateDeck(twin.data.id, {
           name: input.name,
           topic: input.topic ?? null,
           difficulty: input.difficulty ?? null,
@@ -766,10 +766,10 @@ export const fcService = {
             : {}),
         });
         if (!updated.data) return { data: null, error: updated.error };
-        return this.getSetWithCards(twin.data.id);
+        return this.getDeckWithCards(twin.data.id);
       }
     }
-    return this.createSetWithCards(
+    return this.createDeckWithCards(
       {
         ...input,
         metadata: {
@@ -790,7 +790,7 @@ export const fcService = {
   },
 
   /** The deck a segmented kit run already created, found by its plan's run key. */
-  async findGeneratedSetByRunKey(runKey: string): Promise<FcResult<FcSetRow | null>> {
+  async findGeneratedDeckByRunKey(runKey: string): Promise<FcResult<FcSetRow | null>> {
     try {
       const { data, error } = await EDU()
         .from("fc_set")
@@ -799,11 +799,11 @@ export const fcService = {
         .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(1);
-      if (error) return fail("findGeneratedSetByRunKey", error);
+      if (error) return fail("findGeneratedDeckByRunKey", error);
       const row = (data ?? [])[0] as FcSetRow | undefined;
       return { data: row ? withDisplayTitle(row, "name") : null, error: null };
     } catch (e) {
-      return fail("findGeneratedSetByRunKey", e);
+      return fail("findGeneratedDeckByRunKey", e);
     }
   },
 
@@ -873,9 +873,9 @@ export const fcService = {
   },
 
   // ─── READ: a deck with its ordered cards + details ────────────────────────
-  async getSetWithCards(setId: string): Promise<FcResult<SetWithCards>> {
+  async getDeckWithCards(setId: string): Promise<FcResult<DeckWithCards>> {
     try {
-      const setRes = await this.getSet(setId);
+      const setRes = await this.getDeck(setId);
       if (!setRes.data) return { data: null, error: setRes.error };
 
       // Membership edges (cards → this deck), ordered by position. VISIBILITY-AWARE
@@ -889,7 +889,7 @@ export const fcService = {
         [setId],
       );
       if (!edgesRes.ok)
-        return fail("getSetWithCards", "failed to load membership edges");
+        return fail("getDeckWithCards", "failed to load membership edges");
       const members = edgesRes.data.edges
         .filter(
           (e) => e.sourceType === "fc_card" && e.role === EDGE_ROLE.member,
@@ -916,7 +916,7 @@ export const fcService = {
         .select("*")
         .in("id", cardIds)
         .is("deleted_at", null);
-      if (cardErr) return fail("getSetWithCards", cardErr);
+      if (cardErr) return fail("getDeckWithCards", cardErr);
 
       const { data: detailRows, error: detErr } = await EDU()
         .from("fc_detail")
@@ -924,7 +924,7 @@ export const fcService = {
         .in("card_id", cardIds)
         .is("deleted_at", null)
         .order("position", { ascending: true });
-      if (detErr) return fail("getSetWithCards", detErr);
+      if (detErr) return fail("getDeckWithCards", detErr);
 
       const detailsByCard = new Map<string, FcDetailRow[]>();
       for (const d of (detailRows ?? []) as FcDetailRow[]) {
@@ -947,7 +947,7 @@ export const fcService = {
 
       return { data: { set: setRes.data, cards }, error: null };
     } catch (e) {
-      return fail("getSetWithCards", e);
+      return fail("getDeckWithCards", e);
     }
   },
 

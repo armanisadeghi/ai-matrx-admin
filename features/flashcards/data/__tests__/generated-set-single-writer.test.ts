@@ -7,11 +7,11 @@
  * keeps them to ONE education.fc_set row, keyed by the headless run's
  * conversation id:
  *
- *   1. Surface save, adapter already won  → ADOPT the adapter's set (update
+ *   1. Surface save, adapter already won  → ADOPT the adapter's deck (update
  *      name/topic/difficulty), never create a second one.
- *   2. Surface save, no adapter set yet   → create ONE set stamped
+ *   2. Surface save, no adapter deck yet   → create ONE deck stamped
  *      metadata.source_system="cx_conversation" / source_id=<cid>.
- *   3. Adapter, surface already saved     → LINK to the surface's set,
+ *   3. Adapter, surface already saved     → LINK to the surface's deck,
  *      never create a twin.
  */
 
@@ -28,7 +28,7 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 import { supabase } from "@/utils/supabase/client";
 import { fcService } from "../fcService";
 import { FLASHCARDS_CANONICAL_ADAPTER } from "@/features/canvas/artifact-types/persistence/flashcards-canonical-adapter";
-import type { FcSetRow, SetWithCards } from "../types";
+import type { FcSetRow, DeckWithCards } from "../types";
 
 const CID = "conv-123";
 
@@ -79,55 +79,55 @@ function tablesReturning(rowsByTable: Record<string, unknown[]>) {
 
 afterEach(() => jest.restoreAllMocks());
 
-describe("fcService.createGeneratedSetForConversation (surface save)", () => {
-  it("adopts the adapter's set when the adapter won the race — no second create", async () => {
+describe("fcService.createGeneratedDeckForConversation (surface save)", () => {
+  it("adopts the adapter's deck when the adapter won the race — no second create", async () => {
     jest
-      .spyOn(fcService, "findChatGeneratedSetForConversation")
+      .spyOn(fcService, "findChatGeneratedDeckForConversation")
       .mockResolvedValue({ data: adapterSet, error: null });
-    const updateSet = jest
-      .spyOn(fcService, "updateSet")
+    const updateDeck = jest
+      .spyOn(fcService, "updateDeck")
       .mockResolvedValue({ data: adapterSet, error: null });
-    jest.spyOn(fcService, "getSetWithCards").mockResolvedValue({
-      data: { set: adapterSet, cards: [] } as unknown as SetWithCards,
+    jest.spyOn(fcService, "getDeckWithCards").mockResolvedValue({
+      data: { set: adapterSet, cards: [] } as unknown as DeckWithCards,
       error: null,
     });
-    const createSetWithCards = jest.spyOn(fcService, "createSetWithCards");
+    const createDeckWithCards = jest.spyOn(fcService, "createDeckWithCards");
 
-    const res = await fcService.createGeneratedSetForConversation(
+    const res = await fcService.createGeneratedDeckForConversation(
       CID,
       { name: "Volcanology", topic: "Volcanology", difficulty: "medium" },
       [{ front: "Q", back: "A" }],
     );
 
     expect(res.data?.set.id).toBe("set-adapter");
-    expect(createSetWithCards).not.toHaveBeenCalled();
-    expect(updateSet).toHaveBeenCalledWith("set-adapter", {
+    expect(createDeckWithCards).not.toHaveBeenCalled();
+    expect(updateDeck).toHaveBeenCalledWith("set-adapter", {
       name: "Volcanology",
       topic: "Volcanology",
       difficulty: "medium",
     });
   });
 
-  it("creates ONE set stamped with the run's cx_conversation identity when no adapter set exists", async () => {
+  it("creates ONE deck stamped with the run's cx_conversation identity when no adapter deck exists", async () => {
     jest
-      .spyOn(fcService, "findChatGeneratedSetForConversation")
+      .spyOn(fcService, "findChatGeneratedDeckForConversation")
       .mockResolvedValue({ data: null, error: null });
-    const createSetWithCards = jest
-      .spyOn(fcService, "createSetWithCards")
+    const createDeckWithCards = jest
+      .spyOn(fcService, "createDeckWithCards")
       .mockResolvedValue({
-        data: { set: surfaceSet, cards: [] } as unknown as SetWithCards,
+        data: { set: surfaceSet, cards: [] } as unknown as DeckWithCards,
         error: null,
       });
 
-    const res = await fcService.createGeneratedSetForConversation(
+    const res = await fcService.createGeneratedDeckForConversation(
       CID,
       { name: "Volcanology", topic: "Volcanology", difficulty: "medium" },
       [{ front: "Q", back: "A" }],
     );
 
     expect(res.data?.set.id).toBe("set-surface");
-    expect(createSetWithCards).toHaveBeenCalledTimes(1);
-    const input = createSetWithCards.mock.calls[0][0];
+    expect(createDeckWithCards).toHaveBeenCalledTimes(1);
+    const input = createDeckWithCards.mock.calls[0][0];
     expect(input.metadata).toMatchObject({
       source_system: "cx_conversation",
       source_id: CID,
@@ -137,46 +137,46 @@ describe("fcService.createGeneratedSetForConversation (surface save)", () => {
   });
 
   it("falls through to a plain stamped create when the run has no conversation id", async () => {
-    const find = jest.spyOn(fcService, "findChatGeneratedSetForConversation");
-    const createSetWithCards = jest
-      .spyOn(fcService, "createSetWithCards")
+    const find = jest.spyOn(fcService, "findChatGeneratedDeckForConversation");
+    const createDeckWithCards = jest
+      .spyOn(fcService, "createDeckWithCards")
       .mockResolvedValue({
-        data: { set: surfaceSet, cards: [] } as unknown as SetWithCards,
+        data: { set: surfaceSet, cards: [] } as unknown as DeckWithCards,
         error: null,
       });
 
-    await fcService.createGeneratedSetForConversation(
+    await fcService.createGeneratedDeckForConversation(
       null,
       { name: "Deck" },
       [],
     );
 
     expect(find).not.toHaveBeenCalled();
-    const input = createSetWithCards.mock.calls[0][0];
+    const input = createDeckWithCards.mock.calls[0][0];
     expect(input.metadata).toMatchObject({ generation: "surface_save" });
     expect(input.metadata).not.toHaveProperty("source_system");
   });
 });
 
 describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize (chat materialization)", () => {
-  it("links to the surface-saved set for the conversation instead of creating a twin", async () => {
+  it("links to the surface-saved deck for the conversation instead of creating a twin", async () => {
     // The adapter's two direct source-dedupe queries (by source_id, then the
     // legacy source_message_id fallback) find nothing.
     (supabase.schema as jest.Mock).mockImplementation(
       tablesReturning({ fc_set: [], canvas_items: [] }),
     );
     jest
-      .spyOn(fcService, "findSurfaceSavedSetForConversation")
+      .spyOn(fcService, "findSurfaceSavedDeckForConversation")
       .mockResolvedValue({ data: surfaceSet, error: null });
     // The surface saved the SAME cards (both writers persist one envelope).
-    jest.spyOn(fcService, "getSetWithCards").mockResolvedValue({
+    jest.spyOn(fcService, "getDeckWithCards").mockResolvedValue({
       data: {
         set: surfaceSet,
         cards: [{ front: "Q", back: "A" }],
-      } as unknown as SetWithCards,
+      } as unknown as DeckWithCards,
       error: null,
     });
-    const createSetWithCards = jest.spyOn(fcService, "createSetWithCards");
+    const createDeckWithCards = jest.spyOn(fcService, "createDeckWithCards");
 
     const link = await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.({
       artifactId: "art-1",
@@ -192,24 +192,24 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize (chat materialization)", ()
     } as never);
 
     expect(link).toEqual({ externalSystem: "fc_set", externalId: "set-surface" });
-    expect(createSetWithCards).not.toHaveBeenCalled();
+    expect(createDeckWithCards).not.toHaveBeenCalled();
   });
 
-  it("gives a LATER, different set in the surface's conversation its own deck (2026-09-30: mitosis linked to the WWI surface deck)", async () => {
+  it("gives a LATER, different deck in the surface's conversation its own deck (2026-09-30: mitosis linked to the WWI surface deck)", async () => {
     (supabase.schema as jest.Mock).mockImplementation(
       tablesReturning({ fc_set: [], canvas_items: [] }),
     );
     jest
-      .spyOn(fcService, "findSurfaceSavedSetForConversation")
+      .spyOn(fcService, "findSurfaceSavedDeckForConversation")
       .mockResolvedValue({ data: surfaceSet, error: null });
-    jest.spyOn(fcService, "getSetWithCards").mockResolvedValue({
+    jest.spyOn(fcService, "getDeckWithCards").mockResolvedValue({
       data: {
         set: surfaceSet,
         cards: [
           { front: "What does M-A-I-N stand for?", back: "Militarism…" },
           { front: "What was the Triple Entente?", back: "France, Russia, UK" },
         ],
-      } as unknown as SetWithCards,
+      } as unknown as DeckWithCards,
       error: null,
     });
     const created = {
@@ -218,10 +218,10 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize (chat materialization)", ()
       organization_id: "org-1",
       metadata: {},
     } as unknown as FcSetRow;
-    const createSetWithCards = jest
-      .spyOn(fcService, "createSetWithCards")
+    const createDeckWithCards = jest
+      .spyOn(fcService, "createDeckWithCards")
       .mockResolvedValue({
-        data: { set: created, cards: [] } as unknown as SetWithCards,
+        data: { set: created, cards: [] } as unknown as DeckWithCards,
         error: null,
       });
 
@@ -243,7 +243,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize (chat materialization)", ()
     } as never);
 
     expect(link).toEqual({ externalSystem: "fc_set", externalId: "set-mitosis" });
-    expect(createSetWithCards).toHaveBeenCalledTimes(1);
+    expect(createDeckWithCards).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -269,13 +269,13 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
   } as unknown as FcSetRow;
 
   function mockCreate() {
-    return jest.spyOn(fcService, "createSetWithCards").mockResolvedValue({
-      data: { set: created, cards: [] } as unknown as SetWithCards,
+    return jest.spyOn(fcService, "createDeckWithCards").mockResolvedValue({
+      data: { set: created, cards: [] } as unknown as DeckWithCards,
       error: null,
     });
   }
 
-  it("gives the second set in a message its own deck instead of the first set's", async () => {
+  it("gives the second deck in a message its own deck instead of the first set's", async () => {
     (supabase.schema as jest.Mock).mockImplementation(
       tablesReturning({
         fc_set: [
@@ -284,7 +284,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
         canvas_items: [],
       }),
     );
-    const createSetWithCards = mockCreate();
+    const createDeckWithCards = mockCreate();
 
     const link = await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.({
       ...baseInfo,
@@ -293,8 +293,8 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
     } as never);
 
     expect(link).toEqual({ externalSystem: "fc_set", externalId: "set-new" });
-    expect(createSetWithCards).toHaveBeenCalledTimes(1);
-    expect(createSetWithCards.mock.calls[0][0].metadata).toMatchObject({
+    expect(createDeckWithCards).toHaveBeenCalledTimes(1);
+    expect(createDeckWithCards.mock.calls[0][0].metadata).toMatchObject({
       source_id: "msg-7",
       source_index: 2,
     });
@@ -310,7 +310,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
         canvas_items: [],
       }),
     );
-    const createSetWithCards = mockCreate();
+    const createDeckWithCards = mockCreate();
 
     const link = await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.({
       ...baseInfo,
@@ -319,7 +319,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
     } as never);
 
     expect(link).toEqual({ externalSystem: "fc_set", externalId: "set-second" });
-    expect(createSetWithCards).not.toHaveBeenCalled();
+    expect(createDeckWithCards).not.toHaveBeenCalled();
   });
 
   it("never hands a pre-index deck that another artifact already links to a second artifact", async () => {
@@ -329,7 +329,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
         canvas_items: [{ id: "art-1", external_id: "set-legacy" }],
       }),
     );
-    const createSetWithCards = mockCreate();
+    const createDeckWithCards = mockCreate();
 
     const link = await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.({
       ...baseInfo,
@@ -338,7 +338,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
     } as never);
 
     expect(link).toEqual({ externalSystem: "fc_set", externalId: "set-new" });
-    expect(createSetWithCards).toHaveBeenCalledTimes(1);
+    expect(createDeckWithCards).toHaveBeenCalledTimes(1);
   });
 
   it("still reuses an unclaimed pre-index deck (reconcile stays idempotent)", async () => {
@@ -348,7 +348,7 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
         canvas_items: [],
       }),
     );
-    const createSetWithCards = mockCreate();
+    const createDeckWithCards = mockCreate();
 
     const link = await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.({
       ...baseInfo,
@@ -357,6 +357,6 @@ describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — several sets in one mes
     } as never);
 
     expect(link).toEqual({ externalSystem: "fc_set", externalId: "set-legacy" });
-    expect(createSetWithCards).not.toHaveBeenCalled();
+    expect(createDeckWithCards).not.toHaveBeenCalled();
   });
 });

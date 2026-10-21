@@ -44,6 +44,8 @@ export interface PublishedViewOpen {
   board_hide_empty?: boolean;
   /** Only on a password-protected link opened with its password: the fingerprint the signed unlock cookie carries. */
   unlock?: string;
+  /** A share link whose maker stopped copying (custom.set_view_share_link_copy): no selection, copy, cut or drag. */
+  restrict_copy?: boolean;
 }
 
 export interface PublishedViewArchived {

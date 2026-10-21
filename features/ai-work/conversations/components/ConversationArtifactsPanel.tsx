@@ -355,7 +355,7 @@ function FolderRow({
           className="flex h-7 w-full items-center gap-1 pr-2 text-left hover:bg-accent"
           style={treeIndentStyle(depth)}
         >
-          <TreeDisclosure expandable expanded={open} onToggle={() => onToggle(key)} />
+          <TreeDisclosure expandable expanded={open} />
           <TreeFolderIcon open={open} />
           <span className="type-body min-w-0 flex-1 truncate font-medium text-foreground">
             {folder.name}

@@ -145,7 +145,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
   // Deck list (lazy — only when the deck mode is chosen).
   const loadDecks = async () => {
     if (decks) return;
-    const res = await fcService.listSets();
+    const res = await fcService.listDecks();
     // A failed read is said, never "You have no decks yet" (RC-B12).
     if (res.error) {
       setDecksError(res.error);

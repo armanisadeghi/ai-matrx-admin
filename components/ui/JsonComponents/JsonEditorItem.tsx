@@ -146,7 +146,7 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
                 className="flex items-center gap-1 min-h-7 hover:bg-muted/50 rounded-sm"
                 style={treeIndentStyle(depth)}
             >
-                <TreeDisclosure expandable={isObject} expanded={isExpanded} onToggle={onToggle} />
+                <TreeDisclosure expandable={isObject} expanded={isExpanded} label={keyName} onToggle={onToggle} />
                 {isObject ? (
                     Array.isArray(value)
                         ? <Brackets className="h-4 w-4 shrink-0 text-muted-foreground"/>
@@ -247,13 +247,11 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
                         transition={{duration: 0.2}}
                     >
                         {Object.entries(asJsonObject()).map(([k, v], i) => (
-                            <JsonEditorItem
+                            <NestedJsonEditorItem
                                 key={k}
                                 keyName={k}
                                 value={v ?? null}
                                 depth={depth + 1}
-                                isExpanded={false}
-                                onToggle={() => {}}
                                 onEdit={(newKey, newValue) => handleNestedEdit(k, newKey, newValue)}
                                 onAdd={(newKey, newValue, index) => handleNestedAdd(k, newKey, newValue, index)}
                                 onDelete={() => handleNestedDelete(k)}
@@ -268,6 +266,12 @@ const JsonEditorItem: React.FC<JsonEditorItemProps> = ({
             )}
         </div>
     );
+};
+
+/** A nested node owns its own open/closed state, so its chevron really works. */
+const NestedJsonEditorItem: React.FC<Omit<JsonEditorItemProps, "isExpanded" | "onToggle">> = (props) => {
+    const [open, setOpen] = useState(false);
+    return <JsonEditorItem {...props} isExpanded={open} onToggle={() => setOpen((v) => !v)} />;
 };
 
 export default JsonEditorItem;

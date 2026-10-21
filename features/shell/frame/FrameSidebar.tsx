@@ -4,7 +4,7 @@
 // name on top, then only this product's menu. It sits on the app canvas with
 // no border. The top row is the header's height and offset, so the product
 // name lines up with the sheet's breadcrumbs. Every row is a real link.
-import type { MouseEvent } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { ExternalLink, PanelLeftClose } from "lucide-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
@@ -20,6 +20,8 @@ export interface FrameSidebarProps {
   /** Desktop: collapse the sidebar. Drawer: close it. */
   onHide: () => void;
   hideLabel: string;
+  /** The host's controls pinned under the menu (settings, organization, the person). */
+  footer?: ReactNode;
 }
 
 /** A plain left click goes to the host's handler; modified clicks keep the browser's link behaviour. */
@@ -34,6 +36,7 @@ export function FrameSidebar({
   onSelectItem,
   onHide,
   hideLabel,
+  footer,
 }: FrameSidebarProps) {
   return (
     <nav aria-label={`${product.name} menu`} className="flex h-full min-h-0 flex-col">
@@ -102,6 +105,11 @@ export function FrameSidebar({
           </div>
         ))}
       </div>
+      {footer ? (
+        <div data-mf-region="sidebar-footer" className="flex shrink-0 flex-col gap-px px-2 pt-1 pb-2">
+          {footer}
+        </div>
+      ) : null}
     </nav>
   );
 }

@@ -1,15 +1,15 @@
 // features/flashcards/components/editor/deckWriteHandlers.ts
 //
 // THE DECK'S AGENT WRITES — one set of handlers for the deck's surface targets, shared by every
-// page that lets a person change the deck: the deck page / Board tile (`SetDetailView`,
-// surface `matrx-user/education-flashcard-set`) and the Edit page (`EditSetView`, surface
+// page that lets a person change the deck: the deck page / Board tile (`DeckDetailView`,
+// surface `matrx-user/education-flashcard-set`) and the Edit page (`EditDeckView`, surface
 // `matrx-user/education-flashcard-editor`). The targets are declared on both manifests with the
 // same names. Every handler goes through the SAME fcService call the person's own controls use —
 // never a parallel write path — and throws on a bad shape or a failed save so the seam can hand
 // the agent a real error. The host reacts to what landed through the `on…` callbacks.
 
 import { fcService } from "../../data/fcService";
-import type { NewCardInput, SetWithCards } from "../../data/types";
+import type { NewCardInput, DeckWithCards } from "../../data/types";
 import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   asCardKind,
@@ -18,13 +18,13 @@ import {
 } from "../../utils/cardVariants";
 import { parseMatchingCardUpdate, parseNewMatchingCard } from "./flashcardEditorAgentWrites";
 
-type SavedSet = NonNullable<Awaited<ReturnType<typeof fcService.updateSet>>["data"]>;
+type SavedSet = NonNullable<Awaited<ReturnType<typeof fcService.updateDeck>>["data"]>;
 type SavedCard = NonNullable<Awaited<ReturnType<typeof fcService.updateCard>>["data"]>;
 
 export interface DeckWriteContext {
   setId: string;
   /** The deck as the page shows it now (null while it has not loaded). */
-  getData: () => SetWithCards | null;
+  getData: () => DeckWithCards | null;
   /** The name / topic / description as the page shows them now (fields a write omits keep these). */
   currentSetFields: () => { name: string; topic: string; description: string };
   /** The deck's own row was saved (the service returned it). */
@@ -99,7 +99,7 @@ export function buildDeckWriteHandlers(ctx: DeckWriteContext): SurfaceWriteHandl
         topic: topic ?? current.topic,
         description: description ?? current.description,
       };
-      const res = await fcService.updateSet(ctx.setId, {
+      const res = await fcService.updateDeck(ctx.setId, {
         name: next.name.trim() || "Untitled deck",
         description: next.description.trim() || null,
         topic: next.topic.trim() || null,

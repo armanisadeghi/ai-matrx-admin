@@ -50,6 +50,7 @@ import {
 } from "@/features/ai-work/lib/ownPlan";
 import {
   cloudRowFor,
+  macCourierEmails,
   normalEmail,
   signedInAsSomeoneElse,
   type CloudAccountRow,
@@ -89,6 +90,20 @@ async function readCloudAccounts(): Promise<CloudAccountRow[]> {
       slot: typeof slot === "string" ? slot : null,
     };
   });
+}
+
+/** The person's computers' agent-mail desktop couriers (`app_instances.metadata`), as emails a live Mac delivers through. */
+async function readMacCouriers(): Promise<Set<string>> {
+  const supabase = createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await getClaimsUser(supabase);
+  if (authError) throw operationFailed("load which Macs deliver to your cloud sessions", authError);
+  if (!user?.id) return new Set();
+  const { data, error } = await supabase.from("app_instances").select("metadata").eq("user_id", user.id).is("deleted_at", null);
+  if (error) throw operationFailed("load which Macs deliver to your cloud sessions", error);
+  return macCourierEmails(data.map((r) => r.metadata), Date.now());
 }
 
 /** After a Stop: wait until the cap no longer refuses (the box has really stopped). */
@@ -140,6 +155,8 @@ interface Running {
 
 export interface ClaudeCloudDelivery {
   rows: CloudAccountRow[] | null;
+  /** Emails of the accounts a live Mac (Matrx 2's desktop courier) delivers through right now. */
+  macEmails: ReadonlySet<string>;
   loadError: string | null;
   reload: () => void;
   running: Running | null;
@@ -160,6 +177,7 @@ export interface ClaudeCloudDelivery {
 
 export function useClaudeCloudDelivery(): ClaudeCloudDelivery {
   const [rows, setRows] = useState<CloudAccountRow[] | null>(null);
+  const [macEmails, setMacEmails] = useState<ReadonlySet<string>>(() => new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [running, setRunning] = useState<Running | null>(null);
   const [failure, setFailure] = useState<{ forEmail: string | null; message: string } | null>(null);
@@ -175,7 +193,10 @@ export function useClaudeCloudDelivery(): ClaudeCloudDelivery {
 
   const load = useCallback(
     () =>
-      readCloudAccounts().then(
+      // The Mac couriers are a second, independent fact: a failed read leaves them as they were, said in the load error.
+      Promise.all([
+        readMacCouriers().then(setMacEmails, (cause: unknown) => setLoadError(getUserMessage(cause))),
+        readCloudAccounts().then(
         (next) => {
           rowsRef.current = next;
           setLoadError(null);
@@ -186,6 +207,7 @@ export function useClaudeCloudDelivery(): ClaudeCloudDelivery {
           setLoadError(getUserMessage(cause));
         },
       ),
+      ]).then(() => undefined),
     [],
   );
   const reload = useCallback(() => void load(), [load]);
@@ -331,6 +353,7 @@ export function useClaudeCloudDelivery(): ClaudeCloudDelivery {
 
   return {
     rows,
+    macEmails,
     loadError,
     reload,
     running,

@@ -163,6 +163,7 @@ no-unapproved-schedules law.
 
 ## Change log
 
+- 2026-10-21 — The queue table declares Approve, Request changes, Run agent review again and Archive once (`defineRowVerbs`): row icons and a bulk bar with the same verbs; rows a verb does not fit are skipped and named.
 - 2026-09-17 — Added **Approve and raise** to the review workspace: one action
   approves the row through the existing Approve path and files the human's note
   as a new platform feedback item stamped `raised_from_review_row`, ending the

@@ -52,6 +52,7 @@ import type { SandboxBodyPayload } from "@/features/content-ir/sandbox/transform
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import type { ComponentResolution } from "@ai-matrx/content-ir/react";
+import { readDocumentLocale } from "@ai-matrx/content-ir/kind-kit";
 import type { RunKindAction } from "../actions/useKindActionRunner";
 import type {
     KindComponentUiOptions,
@@ -640,6 +641,7 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 // accent). Both cross here, at mount, before first paint.
                 themeTokens: readThemeTokens(document),
                 colorScheme: readColorScheme(document),
+                locale: readDocumentLocale(),
                 // S5b: the reader's window and this component's column, so the
                 // frame lays out the same way the page would have.
                 ...readLayout(),
@@ -677,11 +679,12 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 instanceId,
                 themeTokens: readThemeTokens(document),
                 colorScheme: readColorScheme(document),
+                locale: readDocumentLocale(),
             });
         });
         observer.observe(root, {
             attributes: true,
-            attributeFilter: ["class", "style", "data-theme"],
+            attributeFilter: ["class", "style", "data-theme", "lang", "dir"],
         });
         return () => observer.disconnect();
         // eslint-disable-next-line react-hooks/exhaustive-deps

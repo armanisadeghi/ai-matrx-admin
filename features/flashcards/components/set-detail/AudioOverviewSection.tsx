@@ -3,7 +3,7 @@
 // features/flashcards/components/set-detail/AudioOverviewSection.tsx
 //
 // Phase 7 (Flashcards Competitive Parity Push) — "Generate audio overview"
-// action on SetDetailView. Reuses the generic podcast generator
+// action on DeckDetailView. Reuses the generic podcast generator
 // (usePodcastRun → POST /podcast/generate) rather than the full multi-step
 // Studio UI — the source is already known (this deck), so there's nothing for
 // a picker to pick. Persists ONLY a durable file_id to
@@ -27,8 +27,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { usePodcastRun } from "@/features/podcasts/generator/usePodcastRun";
 import { fileIdFromUserFilesUrl } from "@/lib/media/durability";
 import { SessionAudio } from "@/features/education/study/components/SessionAudio";
-import { ensureSpokenFrontsForSet } from "@/features/flashcards/fast-fire/spoken-front/generateSpokenFront.thunk";
-import { ensureHelperAudioForSet } from "@/features/flashcards/fast-fire/helper-audio/generateHelperAudio.thunk";
+import { ensureSpokenFrontsForDeck } from "@/features/flashcards/fast-fire/spoken-front/generateSpokenFront.thunk";
+import { ensureHelperAudioForDeck } from "@/features/flashcards/fast-fire/helper-audio/generateHelperAudio.thunk";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { buildDeckOverviewRequest } from "../../data/podcastOverview";
 import type { FcSetRow, CardWithDetails } from "../../data/types";
@@ -43,7 +43,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
  */
 const DETAIL_PREP_LANES = {
   spoken_front: {
-    ensure: ensureSpokenFrontsForSet,
+    ensure: ensureSpokenFrontsForDeck,
     icon: Mic,
     noun: "card audio",
     doneLabel: "Card audio ready",
@@ -53,7 +53,7 @@ const DETAIL_PREP_LANES = {
     successToast: "Every card can be heard now",
   },
   helper: {
-    ensure: ensureHelperAudioForSet,
+    ensure: ensureHelperAudioForDeck,
     icon: HelpCircle,
     noun: "instant help",
     doneLabel: "Instant help ready",

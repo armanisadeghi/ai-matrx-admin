@@ -20,7 +20,7 @@
  */
 
 import { useCallback, useState, type ReactNode } from "react";
-import { KeyRound, PanelRightOpen, Type } from "lucide-react";
+import { Copy, KeyRound, PanelRightOpen, Star, Type } from "lucide-react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraSection,
@@ -31,7 +31,9 @@ import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   itemIdAt,
+  rowMenuEntriesAt,
   vaultInventoryScope,
+  type RowMenuEntry,
   type VaultInventory,
 } from "@ai-matrx/vault";
 import { copyToClipboard } from "@/lib/clipboard/copy";
@@ -80,6 +82,9 @@ export function VaultContextMenu({
   // The right-clicked item. STATE, so the extra items label themselves before
   // MenuContent mounts (`resolveContextOnOpen` fires first).
   const [clickedId, setClickedId] = useState<string | null>(null);
+  // The row's own copy entries and star, read from the package (`rowMenuEntriesAt`): the same
+  // entries the row's More menu shows, never a second copy of them here.
+  const [rowEntries, setRowEntries] = useState<readonly RowMenuEntry[]>([]);
   const clicked = clickedId
     ? (inventory.items.find((i) => i.id === clickedId) ?? null)
     : null;
@@ -107,6 +112,16 @@ export function VaultContextMenu({
     label: "Item",
     icon: KeyRound,
     items: [
+      ...rowEntries
+        .filter((e) => e.kind === "copy" || e.kind === "favorite")
+        .map((e, i) => ({
+          kind: "item" as const,
+          id: `vault-row-${e.id ?? i}`,
+          label: e.label,
+          icon: e.kind === "favorite" ? Star : Copy,
+          ...(e.disabled ? { disabled: true } : {}),
+          onSelect: e.onSelect,
+        })),
       {
         kind: "item",
         id: "vault-open",
@@ -145,6 +160,7 @@ export function VaultContextMenu({
         getApplicationScope={getApplicationScope}
         resolveContextOnOpen={(target): ResolvedContextMenuContext | null => {
           setClickedId(itemIdAt(target));
+          setRowEntries(rowMenuEntriesAt(target));
           // Values come from getApplicationScope; null keeps the entity key absent.
           return null;
         }}

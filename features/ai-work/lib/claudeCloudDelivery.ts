@@ -30,6 +30,7 @@ export interface CloudSignInRunning {
 
 export type CloudDeliveryState =
   | { kind: "ready"; row: CloudAccountRow }
+  | { kind: "ready_via_mac"; row: CloudAccountRow | null }
   | { kind: "signed_out"; row: CloudAccountRow }
   | { kind: "needs_sign_in" }
   | { kind: "in_progress"; step: CloudSignInRunning["step"] };
@@ -47,15 +48,40 @@ export function cloudRowFor(email: string | null, rows: readonly CloudAccountRow
   return mine.find((r) => r.status === "connected") ?? mine[0] ?? null;
 }
 
-/** Where cloud delivery stands for one account (by email). */
+/**
+ * The accounts a live Mac delivers through: Matrx 2's desktop courier names itself and the Claude
+ * accounts signed in there on the Mac's own `app_instances.metadata.agent_mail_cloud`
+ * (`{at, fresh_s, accounts:[{key,label}]}`, written by the server each time the Mac checks in).
+ * Live while `at` is inside its `fresh_s`. Returns their emails (labels are emails).
+ */
+export function macCourierEmails(metadatas: ReadonlyArray<unknown>, nowMs: number): Set<string> {
+  const out = new Set<string>();
+  for (const meta of metadatas) {
+    const rec = meta && typeof meta === "object" ? (meta as Record<string, unknown>).agent_mail_cloud : null;
+    if (!rec || typeof rec !== "object") continue;
+    const { at, fresh_s, accounts } = rec as { at?: unknown; fresh_s?: unknown; accounts?: unknown };
+    const atMs = typeof at === "string" ? Date.parse(at) : NaN;
+    const freshMs = typeof fresh_s === "number" ? fresh_s * 1000 : 0;
+    if (!Number.isFinite(atMs) || nowMs - atMs > freshMs) continue;
+    for (const a of Array.isArray(accounts) ? accounts : []) {
+      const email = normalEmail(a && typeof a === "object" ? String((a as { label?: unknown }).label ?? "") : null);
+      if (email) out.add(email);
+    }
+  }
+  return out;
+}
+
+/** Where cloud delivery stands for one account (by email). `viaMac`: emails a live Mac delivers through. */
 export function cloudDeliveryFor(
   email: string | null,
   rows: readonly CloudAccountRow[],
   running: CloudSignInRunning | null,
+  viaMac: ReadonlySet<string> = new Set(),
 ): CloudDeliveryState {
   const key = normalEmail(email);
   if (running && key && normalEmail(running.forEmail) === key) return { kind: "in_progress", step: running.step };
   const row = cloudRowFor(email, rows);
+  if (key && viaMac.has(key)) return { kind: "ready_via_mac", row };
   if (row?.status === "connected") return { kind: "ready", row };
   if (row) return { kind: "signed_out", row };
   return { kind: "needs_sign_in" };
@@ -70,6 +96,8 @@ export function cloudDeliveryWords(state: CloudDeliveryState): {
   switch (state.kind) {
     case "ready":
       return { word: "Ready", tone: "success", order: 0 };
+    case "ready_via_mac":
+      return { word: "Ready (via this Mac)", tone: "success", order: 0 };
     case "in_progress":
       return {
         word:
@@ -93,6 +121,8 @@ export function cloudDeliveryWords(state: CloudDeliveryState): {
 /** The action's label for one account row. */
 export function cloudActionLabel(state: CloudDeliveryState, name: string): string {
   if (state.kind === "ready") return `Messages already reach ${name}'s cloud sessions`;
+  if (state.kind === "ready_via_mac")
+    return state.row?.status === "connected" ? `Messages already reach ${name}'s cloud sessions` : `Also deliver to ${name}'s cloud sessions while the Mac is off (one sign-in)`;
   if (state.kind === "in_progress") return `Signing ${name} in for cloud sessions…`;
   return `Deliver to ${name}'s cloud sessions (one sign-in)`;
 }

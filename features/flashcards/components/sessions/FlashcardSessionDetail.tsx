@@ -19,7 +19,7 @@ async function resolveFlashcardLabels(
 ): Promise<Record<string, ItemLabel>> {
   const setId = data.session.source_set_id;
   if (!setId) return {};
-  const res = await fcService.getSetWithCards(setId);
+  const res = await fcService.getDeckWithCards(setId);
   if (!res.data) return {};
   const map: Record<string, ItemLabel> = {};
   for (const card of res.data.cards) {

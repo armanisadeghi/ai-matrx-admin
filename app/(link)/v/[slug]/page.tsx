@@ -16,6 +16,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
+import { NoCopyRegion } from "@/features/sharing/public-view/NoCopyRegion";
 import { PublicViewBody } from "@/features/sharing/public-view/PublicViewBody";
 import { PublicViewLocked } from "@/features/sharing/public-view/PublicViewLocked";
 import { publishedView, SHARE_TOKEN_SHAPE } from "@/features/sharing/public-view/service";
@@ -62,10 +63,17 @@ export default async function PublishedViewPage({
         <h1 className="text-xl font-medium">{view.title}</h1>
         {view.table ? <p className="text-xs text-muted-foreground">{view.table}</p> : null}
       </header>
-      <PublicViewBody view={view} />
+      {view.restrict_copy ? (
+        <NoCopyRegion>
+          <PublicViewBody view={view} />
+        </NoCopyRegion>
+      ) : (
+        <PublicViewBody view={view} />
+      )}
       {view.truncated ? <p className="text-xs text-muted-foreground">Showing the first {view.count} items.</p> : null}
       <footer className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
         {view.notice || "Nothing was scanned before this was listed."}
+        {view.restrict_copy ? <span className="block" data-public-view-copy-off="">The owner turned off copying for this view.</span> : null}
       </footer>
     </main>
   );

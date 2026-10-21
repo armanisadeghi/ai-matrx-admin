@@ -62,8 +62,10 @@ export interface SheetHeaderProps {
   actions: readonly FrameAction[];
   /** Extra "…" items only the phone form needs (open menu, agent). */
   phoneActions?: readonly FrameAction[];
-  /** The right-side tools (search, notifications, account). */
-  tools?: readonly FrameHeaderTool[];
+  /** The right-side tools — the host's own components (desktop, wide, medium). */
+  tools?: ReactNode;
+  /** The same tools on a phone, as data: `phone: "show"` stay, the rest go into "…". */
+  phoneTools?: readonly FrameHeaderTool[];
   /** The frame's own canvas toggle, last in the right tools group (on a phone it is a "…" item). */
   canvasToggle?: { open: boolean; onToggle: () => void };
   /** The side chat's door, when SIDE_CHAT_DOOR is "header" (after the canvas toggle). */
@@ -115,7 +117,8 @@ export function SheetHeader({
   favorite,
   actions,
   phoneActions,
-  tools = [],
+  tools,
+  phoneTools = [],
   canvasToggle,
   sideChatToggle,
   topEdge,
@@ -135,24 +138,11 @@ export function SheetHeader({
     />
   ) : null;
 
-  const toolButton = (t: FrameHeaderTool) => {
-    const Icon = t.icon;
-    return (
-      <Button
-        key={t.id}
-        variant="quiet"
-        icon={<Icon />}
-        aria-label={t.label}
-        onClick={t.onSelect}
-      />
-    );
-  };
-
   if (form === "phone") {
     const canGoBack = crumbs.length > 1 && onBack;
-    const shown = tools.filter((t) => t.phone === "show");
+    const shown = phoneTools.filter((t) => t.phone === "show");
     // Tools that do not fit a phone header keep working from the "…" menu.
-    const overflow: FrameAction[] = tools
+    const overflow: FrameAction[] = phoneTools
       .filter((t) => t.phone !== "show")
       .map((t) => ({ id: `tool-${t.id}`, label: t.label, icon: t.icon, onSelect: t.onSelect ?? (() => {}) }));
     return (
@@ -169,7 +159,7 @@ export function SheetHeader({
         )}
         <h1 className="type-title min-w-0 flex-1 truncate px-1">{current?.label}</h1>
         {star}
-        {shown.map(toolButton)}
+        <HeaderToolButtons tools={shown} />
         <PageMenu actions={[...(phoneActions ?? []), ...overflow, ...actions]} />
       </header>
     );
@@ -213,9 +203,9 @@ export function SheetHeader({
         <PageMenu actions={actions} />
       </div>
       <div className="min-w-2 flex-1" />
-      {tools.length > 0 || canvasToggle || sideChatToggle ? (
-        <div className="flex shrink-0 items-center gap-0.5">
-          {tools.map(toolButton)}
+      {tools || canvasToggle || sideChatToggle ? (
+        <div data-mf-region="header-tools" className="flex shrink-0 items-center gap-0.5">
+          {tools}
           {sideChatToggle ? (
             <Button
               variant={sideChatToggle.open ? "outline" : "quiet"}
@@ -338,6 +328,18 @@ function CrumbSwitcher({ crumb }: { crumb: FrameCrumb }) {
 
 const SWITCH_CLASS =
   "flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
+
+/** Header tools given as data, drawn as the frame's quiet icon buttons (the phone header, the lab's stand-ins). */
+export function HeaderToolButtons({ tools }: { tools: readonly FrameHeaderTool[] }) {
+  return (
+    <>
+      {tools.map((t) => {
+        const Icon = t.icon;
+        return <Button key={t.id} variant="quiet" icon={<Icon />} aria-label={t.label} onClick={t.onSelect} />;
+      })}
+    </>
+  );
+}
 
 /** Stand-ins for the existing right-side header icons; search stays visible on a phone. */
 export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHeaderTool[] {

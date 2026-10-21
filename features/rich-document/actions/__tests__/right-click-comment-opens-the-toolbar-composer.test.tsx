@@ -367,3 +367,77 @@ it("a chat answer: select → plain → select (the second triple-click runs int
   expect(quoted()).toBe(ANSWER);
   expect(toast.error).not.toHaveBeenCalled();
 });
+
+// ── Review 6, H1: the answer's paragraph is followed by an XML SECTION (live 2026-10-21, chat
+// 758ab522: select → plain → select gave Present, Missing, Missing, Missing). The answer is drawn by
+// the REAL renderer (split → BlockRenderer: prose frames and the shared section container). Once the
+// menu has opened, a triple-click on the paragraph ends at offset 0 of the NEXT section's first
+// line, so the range crosses the empty section's header ("info · empty"), the next header ("info")
+// and the `<style>` a prose frame drew inside the content. None of that is text the person or the
+// model wrote; judged by it, the passage could not be pinned and Comment vanished.
+import { BlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/BlockRenderer";
+import { splitContentIntoBlocksV2 } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/content-splitter-v2";
+
+const PROSE = "Green tea is a calm drink with a mild grassy taste.";
+const SECTIONED = `${PROSE}\n\n<info>\n\n</info>\n\n<info>\ntest\n</info>\n\nBlack tea is stronger.`;
+async function mountSectionedAnswer() {
+  const registry = createActionRegistry({ ports });
+  const blocks = splitContentIntoBlocksV2(SECTIONED);
+  await act(async () => {
+    root.render(
+      <AlchemyActionsProvider ports={ports} registry={registry}>
+        <div data-message-id="m-2">
+          <RecordAnnotations record={{ token: "message", id: "m-2", title: "Chat answer", body: SECTIONED, contentVersion: 1 }}>
+            <div data-message-content="">
+              {blocks.map((block, index) => (
+                <BlockRenderer key={index} block={block as never} index={index} handleOpenEditor={() => {}} />
+              ))}
+            </div>
+          </RecordAnnotations>
+          <div data-footer="">
+            <span tabIndex={0} aria-label="October 21, 2026" title="October 21, 2026">4:32 AM</span>
+          </div>
+        </div>
+        <SelectionToolbarRoot />
+      </AlchemyActionsProvider>,
+    );
+  });
+  for (let i = 0; i < 10 && !document.querySelector("[data-record-annotations]"); i++) await flush();
+  await act(async () => { await new Promise((r) => setTimeout(r, 300)); });
+  await flush(20);
+}
+/** The live triple-click: the paragraph, its end at offset 0 of the next section's first line. */
+function tripleClickIntoNextSection() {
+  const p = [...container.querySelectorAll("[data-message-content] p")].find((x) => x.textContent === PROSE)!;
+  const next = container.querySelector("[data-message-content] [data-xml-section-body] p")!;
+  const r = document.createRange();
+  r.setStart(p.firstChild!, 0);
+  r.setEnd(next, 0);
+  const s = window.getSelection()!;
+  s.removeAllRanges();
+  s.addRange(r);
+  document.dispatchEvent(new Event("selectionchange"));
+}
+
+it("a chat answer whose paragraph is followed by an XML section: select → plain → select … offers Comment on every selected open", async () => {
+  await mountSectionedAnswer();
+  // The real renderer drew the shape the live answer has.
+  expect(container.querySelectorAll("[data-message-content] [data-xml-section-container]").length).toBe(2);
+  const opens: boolean[] = [];
+  let last: RichDocumentActionContext | null = null;
+  for (let i = 0; i < 3; i++) {
+    tripleClickIntoNextSection();
+    last = rightClick();
+    opens.push(Boolean(commentRow().visible?.(last)));
+    opens.push(Boolean(commentRow().visible?.(rightClick())));
+  }
+  expect(opens).toEqual([true, false, true, false, true, false]);
+  await act(async () => {
+    await commentRow().run(last!);
+  });
+  await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+  await flush(20);
+  expect(composer()).not.toBeNull();
+  expect(quoted()).toBe(PROSE);
+  expect(toast.error).not.toHaveBeenCalled();
+});

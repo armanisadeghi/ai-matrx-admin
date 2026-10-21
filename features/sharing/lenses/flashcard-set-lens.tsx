@@ -20,7 +20,7 @@ import { createClient } from "@/utils/supabase/client";
 import { PublicFlashcardDeck } from "@/features/flashcards/components/public/PublicFlashcardDeck";
 import type {
   PublicFlashcard,
-  PublicFlashcardSetPayload,
+  PublicFlashcardDeckPayload,
 } from "@/features/flashcards/data/publicDeck";
 import type { ShareLensProps } from "./registry";
 
@@ -41,7 +41,7 @@ type Load =
   | { state: "ready"; cards: PublicFlashcard[] }
   | { state: "unavailable" };
 
-export function FlashcardSetShareLens({ result }: ShareLensProps) {
+export function FlashcardDeckShareLens({ result }: ShareLensProps) {
   const setId = result.resourceId ?? "";
   const linked = cardsFromChildren(result.children);
   const hasLinked = linked !== null;
@@ -61,8 +61,8 @@ export function FlashcardSetShareLens({ result }: ShareLensProps) {
         p_set_id: setId,
       });
       if (cancelled) return;
-      const payload = data as PublicFlashcardSetPayload | null;
-      if (error) console.error("[FlashcardSetShareLens] get_public_flashcard_set:", error);
+      const payload = data as PublicFlashcardDeckPayload | null;
+      if (error) console.error("[FlashcardDeckShareLens] get_public_flashcard_set:", error);
       setLoad(
         payload?.success && Array.isArray(payload.cards)
           ? { state: "ready", cards: payload.cards }

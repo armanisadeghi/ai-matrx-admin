@@ -1361,7 +1361,7 @@ sal` and an invented id comes back as the handler's error. Handlers in
   card decides where the text lands, so the id rides in the payload), and
   `add_cards` (`{cards:[{front, back?, card_kind?}]}`, the decomposition
   action). Handlers on the provider `EditSetView.tsx` now mounts, all three
-  through the SAME `fcService.updateSet` / `updateCard` / `addCards` the
+  through the SAME `fcService.updateDeck` / `updateCard` / `addCards` the
   learner's own typing autosaves through. **THE reference for "the route the
   prize is on had no surface at all".** The scouting brief pointed at
   `matrx-user/education-flashcards` and its missing `writeTargets`, but every

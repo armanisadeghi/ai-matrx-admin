@@ -10,6 +10,7 @@
 //   mint    `public.create_share_link(...)`             viewer level only
 //   revoke  `custom.revoke_view_share_link(p_link_id)`  its maker, or anyone who may make one
 //   protect `custom.set_view_share_link_protection(...)` a password (stored hashed) and an end date, set or cleared
+//   copy    `custom.set_view_share_link_copy(link, restrict)` stop or allow copying of the data the link shows (CLOSE-SHARE)
 //
 // Doors speak a sentence when they refuse; it is passed on as is.
 
@@ -31,6 +32,8 @@ export interface ViewLink {
   hasPassword: boolean;
   /** ISO moment the link stops opening, or null when it never does. */
   expiresAt: string | null;
+  /** The maker stopped copying: the /v/ page turns off selection, copy, cut and drag. */
+  restrictCopy: boolean;
 }
 
 /** Where the holder of this token opens the view: `/v/<token>`, never the `/r/` alias. */
@@ -55,6 +58,7 @@ export async function listViewLinks(viewId: string): Promise<ViewLink[]> {
     madeByMe: r.made_by_me === true,
     hasPassword: r.has_password === true,
     expiresAt: (r.expires_at as string | null) ?? null,
+    restrictCopy: r.restrict_copy === true,
   }));
 }
 
@@ -80,6 +84,14 @@ export async function protectViewLink(linkId: string, change: ViewLinkProtection
     p_change_expiry: changeExpiry,
     p_expires_at: changeExpiry && change.expiresAt ? change.expiresAt.toISOString() : null,
   });
+  if (error) return { ok: false, error: error.message };
+  const answer = data as { success?: boolean; error?: string } | null;
+  return answer?.success ? { ok: true } : { ok: false, error: answer?.error ?? "The link could not be changed." };
+}
+
+/** Stops (true) or allows (false) copying of the data the link shows; the store's refusal sentence is passed on as is. */
+export async function setViewLinkCopy(linkId: string, restrict: boolean): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { data, error } = await storeDoors(supabase).rpc("set_view_share_link_copy", { p_link_id: linkId, p_restrict: restrict });
   if (error) return { ok: false, error: error.message };
   const answer = data as { success?: boolean; error?: string } | null;
   return answer?.success ? { ok: true } : { ok: false, error: answer?.error ?? "The link could not be changed." };

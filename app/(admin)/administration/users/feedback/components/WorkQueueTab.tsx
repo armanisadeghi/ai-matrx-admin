@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAgentWorkQueue, setAdminDecision } from '@/actions/feedback.actions';
+import { getAgentWorkQueue, setAdminDecision, forceCloseFeedback } from '@/actions/feedback.actions';
+import { defineRowVerbs } from '@/lib/entity-list/rowVerbs';
+import { RowSelectionBar, useRowSelection } from '@/lib/entity-list/RowSelectionBar';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     UserFeedback,
     FeedbackCategory,
@@ -26,6 +29,10 @@ import {
     ListOrdered,
     FileCode,
     Eye,
+    MinusCircle,
+    CheckCircle2,
+    XCircle,
+    Ban,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ReadFailure } from '@ai-matrx/design-system';
@@ -136,6 +143,84 @@ export default function WorkQueueTab() {
         setDetailOpen(true);
     };
 
+
+    // The verbs a person can do to ONE queue item (in its detail dialog) are also the bar's, batched:
+    // one declaration (the bulk twin rule). Reordering and viewing are inherently single.
+    const must = async (p: Promise<{ success: boolean; error?: string | undefined }>, fallback: string) => {
+        const result = await p;
+        if (!result.success) throw new Error(result.error ?? fallback);
+    };
+    const nItems = (n: number) => `${n} feedback item${n === 1 ? '' : 's'}`;
+    const nameOf = (row: UserFeedback) => row.description.slice(0, 40);
+    const { bulkActions } = defineRowVerbs<UserFeedback>(
+        [
+            {
+                id: 'defer', icon: MinusCircle, label: 'Defer',
+                onClick: (r) => handleViewDetails(r),
+                bulk: {
+                    done: 'Deferred',
+                    removesRows: true,
+                    confirm: (t) => ({
+                        title: `Defer ${nItems(t.ids.length)}?`,
+                        description: 'Each decision becomes Deferred and leaves the work queue.',
+                        confirmLabel: 'Defer',
+                    }),
+                    runOne: (id) => must(setAdminDecision(id, 'deferred'), 'Could not defer'),
+                },
+            },
+            {
+                id: 'verify', icon: CheckCircle2, label: 'Resolve',
+                appliesTo: (r) => r.status !== 'resolved', unavailableTooltip: 'Already verified',
+                onClick: (r) => handleViewDetails(r),
+                bulk: {
+                    done: 'Resolved',
+                    removesRows: true,
+                    confirm: (t) => ({
+                        title: `Resolve ${nItems(t.ids.length)}?`,
+                        description: 'Each is force-closed as Verified and leaves the work queue.',
+                        confirmLabel: 'Resolve',
+                    }),
+                    runOne: (id) => must(forceCloseFeedback(id, 'resolved'), 'Could not resolve'),
+                },
+            },
+            {
+                id: 'close', icon: XCircle, label: 'Close', tone: 'destructive',
+                appliesTo: (r) => r.status !== 'closed', unavailableTooltip: 'Already closed',
+                onClick: (r) => handleViewDetails(r),
+                bulk: {
+                    done: 'Closed',
+                    removesRows: true,
+                    confirm: (t) => ({
+                        title: `Close ${nItems(t.ids.length)}?`,
+                        description: 'Each is force-closed whatever its stage.',
+                        confirmLabel: 'Close',
+                        variant: 'destructive',
+                    }),
+                    runOne: (id) => must(forceCloseFeedback(id, 'closed'), 'Could not close'),
+                },
+            },
+            {
+                id: 'wont-fix', icon: Ban, label: "Won't fix", tone: 'destructive',
+                appliesTo: (r) => r.status !== 'wont_fix', unavailableTooltip: "Already won't fix",
+                onClick: (r) => handleViewDetails(r),
+                bulk: {
+                    done: "Marked won't fix",
+                    removesRows: true,
+                    confirm: (t) => ({
+                        title: `Mark ${nItems(t.ids.length)} won't fix?`,
+                        description: "Each is force-closed as Won't Fix.",
+                        confirmLabel: "Won't fix",
+                        variant: 'destructive',
+                    }),
+                    runOne: (id) => must(forceCloseFeedback(id, 'wont_fix'), 'Could not update'),
+                },
+            },
+            { id: 'view', icon: Eye, label: 'View details', onClick: (r) => handleViewDetails(r), bulk: false, noBulk: 'view' },
+        ],
+        { noun: 'feedback item', getRowId: (r) => r.id, getRowName: nameOf },
+    );
+    const queueSelection = useRowSelection(items, (r) => r.id);
+
     if (loading) {
         return (
             <Card className="p-8 flex items-center justify-center">
@@ -237,6 +322,15 @@ export default function WorkQueueTab() {
                     </div>
                 ) : (
                     <div className="space-y-2">
+                        <RowSelectionBar
+                            selection={queueSelection}
+                            idOf={(r) => r.id}
+                            actions={bulkActions}
+                            noun="feedback item"
+                            plural="feedback items"
+                            onRefresh={() => void loadQueue()}
+                            onRemoveRows={() => void loadQueue()}
+                        />
                         {items.map((item, index) => {
                             const complexity = complexityConfig[item.ai_complexity || ''];
                             const statusColors = FEEDBACK_STATUS_COLORS[item.status];
@@ -250,6 +344,12 @@ export default function WorkQueueTab() {
                                     )}
                                     onClick={() => handleViewDetails(item)}
                                 >
+                                    <Checkbox
+                                        checked={queueSelection.has(item.id)}
+                                        aria-label={`Select ${nameOf(item)}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onCheckedChange={() => queueSelection.toggle(item.id)}
+                                    />
                                     {/* Priority Number */}
                                     <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
                                         <Button

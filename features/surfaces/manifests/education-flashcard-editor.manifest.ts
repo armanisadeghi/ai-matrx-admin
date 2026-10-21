@@ -211,7 +211,7 @@ export const flashcardDeckWriteTargets: SurfaceWriteTarget[] = [
     name: "set_details",
     label: "Deck details",
     description:
-      "Set this deck's name, topic, and/or description. Value: { name?: string, topic?: string, description?: string } — provide at least one; omitted fields keep their current value, and an empty string clears `topic`/`description`. Each field is PLAIN TEXT, not JSON and not JSON-encoded — no code fence, no surrounding quotes. Persists immediately through the same fcService.updateSet the learner's own typing autosaves through, and the Set details inputs update in place.",
+      "Set this deck's name, topic, and/or description. Value: { name?: string, topic?: string, description?: string } — provide at least one; omitted fields keep their current value, and an empty string clears `topic`/`description`. Each field is PLAIN TEXT, not JSON and not JSON-encoded — no code fence, no surrounding quotes. Persists immediately through the same fcService.updateDeck the learner's own typing autosaves through, and the Set details inputs update in place.",
     valueType: "object",
     updatesValue: "set_details",
     mode: "entity",

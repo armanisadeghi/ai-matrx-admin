@@ -9,7 +9,7 @@ import {
   toPortableDeck,
 } from "../export/deckFormats";
 import {
-  buildSetCsv,
+  buildDeckCsv,
   parseCsvRecords,
 } from "@/features/flashcards/utils/importExportCsv";
 
@@ -96,7 +96,7 @@ describe("JSON deck round-trip (IC-11)", () => {
 
 describe("CSV round-trip (RFC-4180)", () => {
   it("re-imports our own CSV export exactly, header skipped", () => {
-    const csv = buildSetCsv(CARDS.map((c) => ({ front: c.front, back: c.back })));
+    const csv = buildDeckCsv(CARDS.map((c) => ({ front: c.front, back: c.back })));
     const { rows, skipped } = parseCsvRecords(csv);
     // Card 2 has an empty back — honestly skipped, not guessed.
     expect(rows).toHaveLength(1);

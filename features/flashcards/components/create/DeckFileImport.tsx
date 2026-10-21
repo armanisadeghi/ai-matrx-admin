@@ -10,7 +10,7 @@
 // entry `persistImportedDeck` (IC-11, features/education/onboard/import).
 //
 // Moved here from the old `/education/flashcards/new/import` page
-// (ImportSetView) when that page became one tile of Create deck.
+// (ImportDeckView) when that page became one tile of Create deck.
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";

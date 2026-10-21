@@ -18,7 +18,6 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ChevronRight,
   Grid3x3,
   List,
   Loader2,
@@ -501,19 +500,8 @@ function FolderNode({
                 {isLoadingChildren ? (
                   <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
                 ) : (
-                  // PickerRow is itself a <button>, so the 16px slot is a plain span
-                  // (TreeDisclosure's chevron is a button; nesting is invalid).
-                  <span
-                    aria-hidden="true"
-                    className="flex h-4 w-4 shrink-0 items-center justify-center text-muted-foreground"
-                  >
-                    <ChevronRight
-                      className={cn(
-                        "h-3.5 w-3.5 transition-transform",
-                        open && "rotate-90",
-                      )}
-                    />
-                  </span>
+                  // No onToggle: the row (a <button>) toggles; this is a picture.
+                  <TreeDisclosure expandable expanded={open} />
                 )}
                 <TreeFolderIcon open={open} />
               </span>

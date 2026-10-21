@@ -17,13 +17,13 @@
  *
  * Its surface is the framed page's own: the page hands it to the board over
  * the framed-surface bridge (embed/framed-surface-bridge.ts), and the body
- * registers it as this tile's surface (`useFramedPageSurface`), so the
+ * registers it as this tile's surface (`FramedPageSurface`), so the
  * board's agent reads the page's values and runs its write targets and tools
  * exactly as on the page itself.
  */
 
 import { useState } from "react";
-import { expectedPageSurface, useFramedPageSurface } from "../embed/useFramedPageSurface";
+import { FramedPageSurface, expectedPageSurface } from "../embed/FramedPageSurface";
 import { AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -78,10 +78,10 @@ function PageBody({ source, title, interacting, onSource }: ItemBodyProps) {
   const path = pagePathOf(source);
   // The iframe element, so the page's surface can be followed through it.
   const [frame, setFrame] = useState<HTMLIFrameElement | null>(null);
-  useFramedPageSurface(frame, path ?? "");
   if (!path) return null;
   return (
     <div className="relative h-full overflow-hidden bg-background">
+      <FramedPageSurface frame={frame} path={path} />
       <iframe
         ref={setFrame}
         aria-label={title}

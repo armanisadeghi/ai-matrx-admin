@@ -1,8 +1,4 @@
-import { CanvasToggle } from "@ai-matrx/canvas/react";
-import { SurfaceAgentsHeaderButton } from "@ai-matrx/chat/surfaces/components/chrome/SurfaceAgentsHeaderButton";
-import { InboxHeaderButton } from "@/features/notifications/components/InboxHeaderButton";
-import { MessagesHeaderButton } from "@/features/messaging/components/shell/MessagesHeaderButton";
-import { CommandBarHeaderButton } from "@/features/knowledge/command-bar/OpenCommandBarButtons";
+import { headerControls } from "./headerControls";
 import { HeaderPhoneOverflow } from "./HeaderPhoneOverflow";
 import { ShellHeaderButtons } from "./ShellHeaderButtons";
 
@@ -28,15 +24,7 @@ export function HeaderControlSet({ isAuthenticated }: { isAuthenticated: boolean
         {/* THE LAYOUT orders these and adds the person's own buttons beside them
             (ShellHeaderButtons). Default order — Canvas right-most (owner, 2026-10-04):
             the canvas opens as a column on the right edge, nearest its button. */}
-        <ShellHeaderButtons
-          controls={{
-            search: <CommandBarHeaderButton isAuthenticated={isAuthenticated} />,
-            intelligence: <SurfaceAgentsHeaderButton isAuthenticated={isAuthenticated} />,
-            messages: <MessagesHeaderButton isAuthenticated={isAuthenticated} />,
-            notifications: <InboxHeaderButton isAuthenticated={isAuthenticated} />,
-            canvas: <CanvasToggle variant="transparent" />,
-          }}
-        />
+        <ShellHeaderButtons controls={headerControls(isAuthenticated)} />
       </div>
       <HeaderPhoneOverflow isAuthenticated={isAuthenticated} />
     </>

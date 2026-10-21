@@ -59,7 +59,7 @@ export function useDataOwnership(): UseDataOwnership {
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null); // clear a stale error so a successful reload isn't masked
-    const res = await fcService.listSets();
+    const res = await fcService.listDecks();
     if (res.error) setError(typeof res.error === "string" ? res.error : "Failed to load your decks");
     else setDecks(res.data ?? []);
     setLoading(false);
@@ -71,7 +71,7 @@ export function useDataOwnership(): UseDataOwnership {
 
   const exportDeck = useCallback(
     async (setId: string, format: DeckExportFormat) => {
-      const res = await fcService.getSetWithCards(setId);
+      const res = await fcService.getDeckWithCards(setId);
       if (res.error || !res.data) {
         throw new Error(typeof res.error === "string" ? res.error : "Couldn't load that deck");
       }
@@ -110,7 +110,7 @@ export function useDataOwnership(): UseDataOwnership {
       // silently shipped as a complete backup (RC-B12 r13).
       const partial: string[] = [];
       for (const set of decks) {
-        const res = await fcService.getSetWithCards(set.id);
+        const res = await fcService.getDeckWithCards(set.id);
         if (res.error || !res.data) {
           failed.push(set.name);
           continue;

@@ -26,16 +26,19 @@
  * The build audits the served bytes for all of them and fails.
  */
 import { makeBlobUrlMapper } from "./blob-urls";
+import { setKindLocale } from "@ai-matrx/content-ir/kind-kit";
 import {
     IN_FLIGHT_ACTION_CAPACITY,
     SANDBOX_PROTOCOL_VERSION,
     checkHostMessage,
     type FrameMessage,
     type SandboxInitMessage,
+    type SandboxLocale,
 } from "../protocol";
 import type { SandboxBodyPayload } from "../transform/transform-kind-body";
 import { executeKindBody } from "./execute-kind-body";
 import { installHostActionDispatcher } from "./host-action-relay";
+import { toActionWire } from "./download-wire";
 import { installPointerExit } from "./pointer-exit";
 import { installImageDoor } from "./image-door";
 import { installLinkInterceptor } from "./link-interceptor";
@@ -312,7 +315,7 @@ function startInstance(
                 instanceId,
                 callId,
                 key,
-                input,
+                input: toActionWire(key, input),
             });
         });
     };
@@ -387,6 +390,17 @@ function startInstance(
             return props;
         }
     };
+
+    // The reader's language, time zone and direction: the frame's <html> carries them and
+    // useKindLocale() hands them to the shape (Intl / date-fns format for the reader).
+    const applyLocale = (locale: SandboxLocale | undefined): void => {
+        if (!locale || typeof locale.locale !== "string" || !locale.locale) return;
+        const dir = locale.dir === "rtl" ? "rtl" : "ltr";
+        document.documentElement.lang = locale.locale;
+        document.documentElement.dir = dir;
+        setKindLocale({ locale: locale.locale, timeZone: locale.timeZone || "UTC", dir });
+    };
+    applyLocale(init.locale);
 
     // Saved images arrive as their BYTES; each becomes a frame-local blob: URL.
     const withBlobUrls = makeBlobUrlMapper();
@@ -516,6 +530,7 @@ function startInstance(
                 break;
             case "matrx:sandbox:theme":
                 handle.setTheme(message.themeTokens ?? {}, message.colorScheme);
+                applyLocale(message.locale);
                 // A theme change can change type metrics and therefore height.
                 scheduleSize();
                 break;

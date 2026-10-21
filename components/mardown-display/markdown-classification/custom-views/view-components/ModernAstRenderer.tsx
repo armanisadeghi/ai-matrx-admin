@@ -3,7 +3,7 @@ import combinedProcessor, {
     OutputNode,
     AstNode,
 } from "@/components/mardown-display/markdown-classification/processors/custom/combined-processor";
-import { treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TREE_INDENT_PX } from "@/components/official/topic-tree/geometry";
 
 interface AstRendererProps {
     data: AstNode;
@@ -19,9 +19,9 @@ interface NodeRendererProps {
 }
 
 const NodeRenderer: React.FC<NodeRendererProps> = ({ node, isRoot = false, animated = true }) => {
-    // Document depth is capped at 4 levels, each one tree step.
-    const getDepthStyle = (depth: number) =>
-      depth <= 0 ? undefined : treeIndentStyle(Math.min(depth, 4));
+    // Document depth is capped at 4 levels, each one tree step. A margin, not padding: the box keeps its own shape.
+    const getDepthStyle = (depth: number): React.CSSProperties | undefined =>
+      depth <= 0 ? undefined : { marginLeft: Math.min(depth, 4) * TREE_INDENT_PX };
 
     const getTypeStyles = (type: string) => {
         const baseClasses = animated ? "transition-all duration-200 ease-out" : "";

@@ -10,6 +10,7 @@
 // Sign-in: the password goes to the Supabase auth API from this Mac (session-cookies.mjs); only the session
 // cookies reach the box. The box belongs to admin@admin.com in the fenced org "Safety Net Real Tests" and
 // stops itself 30 minutes after the last command; `stop` deletes it at once.
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -20,7 +21,11 @@ const SAFETY_NET_ORG = "226be635-194d-42dd-87c8-7a9562f70939";
 const IDLE_TTL_SECONDS = 1800;
 const READ_ONLY = new Set(["url", "title", "text", "find", "shot", "launch"]);
 const DEFAULT_CHAT_AGENT = "ccab43ad-05e4-45d6-a49f-8e5605ed66f5"; // Chat Plumbing Test Agent (same as pw.mjs)
-const BOX_DRIVER = "/tmp/rt/pw_cloud_box.py"; // the box's own /tmp: every box of one account shares one home
+// The driver in the box's own /tmp (every box of one account shares one home), named by its content hash: a box
+// that lacks this exact version gets it before the command runs, so a driver change never strands a live run.
+const DRIVER_SRC = fs.readFileSync(new URL("./pw_cloud_box.py", import.meta.url), "utf8");
+const BOX_DRIVER = `/tmp/rt/pw_cloud_box.${createHash("sha256").update(DRIVER_SRC).digest("hex").slice(0, 12)}.py`;
+const DRIVER_MISSING = 97;
 
 const [run, cmd, ...args] = process.argv.slice(2);
 if (!run || !cmd) { console.error("usage: node pw-cloud.mjs <run> <command> [args]"); process.exit(2); }
@@ -54,12 +59,18 @@ async function api(method, p, body, timeoutMs = 60000) {
 
 const readState = () => { try { return JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch { return null; } };
 
+async function putDriver(sandboxId) {
+  const up = await api("POST", `/sandboxes/${sandboxId}/exec`, { command: `mkdir -p /tmp/rt && cat > ${BOX_DRIVER}`, stdin: DRIVER_SRC, timeout: 60 }, 90000);
+  if (up.json?.exit_code !== 0) { console.error(`pw-cloud: could not put the driver on ${sandboxId} (${up.status}): ${up.text.slice(0, 300)}`); process.exit(1); }
+}
+
 async function box(sandboxId, request, timeoutSec = 180) {
-  let r;
+  let r, uploaded = false;
   // A 503 is the orchestrator refusing before the command reaches the box (it answers that while it restarts),
   // so retrying cannot run a command twice.
   for (let attempt = 1; attempt <= 8; attempt++) {
-    r = await api("POST", `/sandboxes/${sandboxId}/exec`, { command: `python3 ${BOX_DRIVER}`, stdin: JSON.stringify(request), timeout: timeoutSec }, (timeoutSec + 30) * 1000);
+    r = await api("POST", `/sandboxes/${sandboxId}/exec`, { command: `test -f ${BOX_DRIVER} || exit ${DRIVER_MISSING}; python3 ${BOX_DRIVER}`, stdin: JSON.stringify(request), timeout: timeoutSec }, (timeoutSec + 30) * 1000);
+    if (r.status === 200 && r.json?.exit_code === DRIVER_MISSING && !uploaded) { await putDriver(sandboxId); uploaded = true; attempt--; continue; }
     // A 502 may come after the command ran, so only a command that changes nothing is retried on it.
     if (r.status !== 503 && !(r.status === 502 && READ_ONLY.has(request.cmd))) break;
     console.error(`pw-cloud: the orchestrator is busy (${r.status}); retrying in 15 s (${attempt}/8)`);
@@ -96,9 +107,6 @@ async function start() {
   if (created.status >= 300 || !created.json?.sandbox_id) { console.error(`pw-cloud: could not create a cloud machine (${created.status}): ${created.text.slice(0, 400)}`); process.exit(1); }
   const id = created.json.sandbox_id;
   fs.writeFileSync(stateFile, JSON.stringify({ sandbox_id: id, created_at: new Date().toISOString() }));
-  const driver = fs.readFileSync(new URL("./pw_cloud_box.py", import.meta.url), "utf8");
-  const up = await api("POST", `/sandboxes/${id}/exec`, { command: `mkdir -p /tmp/rt && cat > ${BOX_DRIVER}`, stdin: driver, timeout: 60 }, 90000);
-  if (up.json?.exit_code !== 0) { console.error(`pw-cloud: could not put the driver on ${id}: ${up.text.slice(0, 400)}`); process.exit(1); }
   const res = await box(id, { cmd: "launch" }, 400);
   if (res.exit_code !== 0) {
     // Never leave a machine behind: each one counts against the account's sandbox ceiling (5).

@@ -17,13 +17,13 @@ import {
   selectActiveTabId,
   selectTabById,
 } from "../../redux/tabsSlice";
-import { HOVER_ROW, ROW_HEIGHT, TEXT_BODY } from "../../styles/tokens";
+import { HOVER_ROW, TEXT_BODY } from "../../styles/tokens";
 import type { LibrarySourceAdapter } from "../../library-sources/types";
 import { useLibrarySource } from "../../hooks/useLibrarySource";
 import { useOpenSourceEntry } from "../../hooks/useOpenSourceEntry";
 import { SourceEntryNode } from "./SourceEntryNode";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
+import { TREE_ROW_TEXT, TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface SourceFolderNodeProps {
   adapter: LibrarySourceAdapter;
@@ -179,7 +179,8 @@ export const SourceFolderNode: React.FC<SourceFolderNodeProps> = ({
           }}
           className={cn(
             "group flex items-center gap-1 cursor-pointer rounded-sm",
-            ROW_HEIGHT,
+            "h-7",
+            TREE_ROW_TEXT,
             "max-lg:h-11",
             TEXT_BODY,
             HOVER_ROW,

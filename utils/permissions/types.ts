@@ -75,6 +75,8 @@ export interface PermissionWithDetails extends Permission {
     email: string;
     displayName?: string;
     avatarUrl?: string;
+    /** Not a member of the thing's organization (the store's answer, `get_resource_permissions`): shown as Guest. */
+    isGuest?: boolean;
   };
   grantedToOrganization?: {
     id: string;

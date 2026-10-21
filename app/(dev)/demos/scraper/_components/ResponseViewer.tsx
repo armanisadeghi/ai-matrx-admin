@@ -140,7 +140,7 @@ function JsonNode({
   if (!isExpandable) {
     return (
       <div
-        className="flex items-center gap-1 min-h-7"
+        className="flex items-start gap-1 min-h-7 py-[5px]"
         style={treeIndentStyle(depth)}
       >
         <TreeDisclosure expandable={false} />

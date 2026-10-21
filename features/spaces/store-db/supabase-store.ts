@@ -48,6 +48,8 @@ export interface SpaceHistoryEntry {
   contentVersion: number;
   savedAt: string;
   savedBy: string | null;
+  /** The saver's name (A13), from the one people-name door; null when the seat may not name them. */
+  savedByName: string | null;
   snapshot: SpaceSnapshot;
 }
 
@@ -411,12 +413,26 @@ export class SupabaseSpacesStore implements SpacesStore {
           .range(from, to),
       { label: "content.space_payload history" },
     );
+    const names = await this.peopleNames([...new Set(rows.map((r) => r.created_by).filter((u): u is string => !!u))]);
     return rows.map((r) => ({
       contentVersion: r.content_version,
       savedAt: r.created_at,
       savedBy: r.created_by,
+      savedByName: (r.created_by && names[r.created_by]) || null,
       snapshot: readSnapshot(r.snapshot),
     }));
+  }
+
+  /** Names for people ids through `platform._drill_people_names` (the seat, people sharing an organization). */
+  private async peopleNames(ids: string[]): Promise<Record<string, string>> {
+    if (!ids.length) return {};
+    const { data, error } = await this.db.schema("platform").rpc("_drill_people_names", { p_ids: ids });
+    if (error) {
+      // The versions still list; their savers show as "A collaborator" and the reason is in the console.
+      console.error("[spaces] page history: the savers' names could not be read", error.message);
+      return {};
+    }
+    return data && typeof data === "object" && !Array.isArray(data) ? (data as Record<string, string>) : {};
   }
 
   /** Sibling edges under a parent, ordered: the slots `move`/`create` place a page between. */

@@ -2,7 +2,7 @@
 //
 // The setup screen (REQUIREMENTS §2.1): pick a real fc_set, seconds-per-card,
 // card count, and live-score vs summary. The deck picker reads real sets from
-// `fcService.listSets` (hard-requirement #7) — no hardcoded deck. "Start" warms
+// `fcService.listDecks` (hard-requirement #7) — no hardcoded deck. "Start" warms
 // the mic + opens the session inside the click gesture (one mic prompt).
 //
 // React Compiler is on: no manual memo.
@@ -57,16 +57,16 @@ import { useFastFireLauncher } from "../hooks/useFastFireLauncher";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
 import {
-  ensureSpokenFrontsForSet,
+  ensureSpokenFrontsForDeck,
   getSpokenFrontReadiness,
 } from "../spoken-front/generateSpokenFront.thunk";
 import {
-  ensureHelperAudioForSet,
+  ensureHelperAudioForDeck,
   getHelperAudioReadiness,
 } from "../helper-audio/generateHelperAudio.thunk";
-import { FastFireSetPicker } from "./FastFireSetPicker";
+import { FastFireDeckPicker } from "./FastFireSetPicker";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
-import { loadFastFireSets } from "./fastfire-initial-load";
+import { loadFastFireDecks } from "./fastfire-initial-load";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 
@@ -113,7 +113,7 @@ export function FastFireSetup() {
     try {
       let total = 0;
       const result = await dispatch(
-        ensureSpokenFrontsForSet(config.setId, (done, t) => {
+        ensureSpokenFrontsForDeck(config.setId, (done, t) => {
           total = t;
           setPrepProgress({ done, total: t });
         }),
@@ -161,7 +161,7 @@ export function FastFireSetup() {
         let total = 0;
         let unusableSentence: string | null = null;
         const result = await dispatch(
-          ensureHelperAudioForSet(
+          ensureHelperAudioForDeck(
             setId,
             (done, t) => {
               total = t;
@@ -243,8 +243,8 @@ export function FastFireSetup() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const res = await loadFastFireSets((signal) =>
-        fcService.listSets({ signal }),
+      const res = await loadFastFireDecks((signal) =>
+        fcService.listDecks({ signal }),
       );
       if (cancelled) return;
       if (res.error) {
@@ -359,7 +359,7 @@ export function FastFireSetup() {
               </div>
             ) : (
               <>
-                <FastFireSetPicker
+                <FastFireDeckPicker
                   id="fastfire-set-picker"
                   sets={sets}
                   value={config.setId}
@@ -803,7 +803,7 @@ function MissingDeckNotice({
   const [restoring, setRestoring] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    void fcService.getSetIncludingArchived(setId).then((res) => {
+    void fcService.getDeckIncludingArchived(setId).then((res) => {
       if (!cancelled) setDeck(res.data);
     });
     return () => {

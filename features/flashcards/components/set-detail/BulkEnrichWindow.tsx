@@ -24,11 +24,11 @@
  *     rounds a failure away.
  *
  * A floating window (not a block at the top of the page) for the same reason
- * `IllustrateSetWindow` is: the deck must not shove around while the learner
+ * `IllustrateDeckWindow` is: the deck must not shove around while the learner
  * reads it. `WindowPanel` renders as a mobile surface below 768px, so the
  * cascade is a single-column feed on a phone.
  *
- * Rendered inline by `SetDetailView` — the run state and its callbacks live in
+ * Rendered inline by `DeckDetailView` — the run state and its callbacks live in
  * the page.
  */
 

@@ -39,6 +39,7 @@ import { AccessSummaryPanel } from "./AccessSummaryPanel";
 import { ShareWithUserTab } from "./tabs/ShareWithUserTab";
 import { OutsideSharePanel } from "@/features/sharing/outside/OutsideSharePanel";
 import { shareWithOutsidePerson } from "@/features/sharing/outside/outsideShareService";
+import { WhoCouldSeeOn } from "./WhoCouldSeeOn";
 import { OrgAvailabilityNote } from "./OrgAvailabilityNote";
 import { WhoCanSeeThis } from "./WhoCanSeeThis";
 import { PublicAccessTab } from "./tabs/PublicAccessTab";
@@ -599,6 +600,7 @@ export function ShareModal({
                     .map((p) => `${p.id}:${p.permissionLevel}`)
                     .join("|")}
                 />
+                {resourceType === "record" && isOwner ? <WhoCouldSeeOn recordId={resourceId} /> : null}
               </TabsContent>
 
               <TabsContent value="secure" className="mt-0">

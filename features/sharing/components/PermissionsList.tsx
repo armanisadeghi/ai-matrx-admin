@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { X, Mail, Building2, Globe, Loader2, Lock } from "lucide-react";
-import { PermissionBadge, PublicBadge } from "./PermissionBadge";
+import { GuestBadge, PermissionBadge, PublicBadge } from "./PermissionBadge";
 import { UserAvatarDisplay } from "@/components/user/UserIdentity";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
@@ -434,6 +434,7 @@ export function PermissionsList({
                   <p className="text-sm font-semibold truncate leading-none">
                     {getPermissionLabel(permission)}
                   </p>
+                  {permission.grantedToUser?.isGuest && !permission.isPublic ? <GuestBadge /> : null}
                   {/* THE DOOR LAW, applied to the ONE grantee kind that has a
                       reachable route today. An org grant names a real record
                       with its id right here, so it opens.

@@ -6,6 +6,7 @@
 import {
   cloudDeliveryFor,
   cloudDeliveryWords,
+  macCourierEmails,
   signedInAsSomeoneElse,
   unmatchedCloudRows,
   type CloudAccountRow,
@@ -41,5 +42,17 @@ describe("claude cloud delivery rules", () => {
     expect(signedInAsSomeoneElse("a@x.com", "A@x.com")).toBeNull();
     expect(signedInAsSomeoneElse("a@x.com", "b@x.com")).toContain("You signed in as b@x.com, not a@x.com");
     expect(signedInAsSomeoneElse(null, "b@x.com")).toBeNull();
+  });
+
+  it("an account a live Mac delivers through reads Ready (via this Mac); a stale Mac record counts for nothing", () => {
+    const now = Date.parse("2026-10-21T12:00:00Z");
+    const mac = (ageS: number) => ({ app: "matrx-2", agent_mail_cloud: { at: new Date(now - ageS * 1000).toISOString(), fresh_s: 180, accounts: [{ key: "k".repeat(64), label: "A@x.com" }] } });
+    const live = macCourierEmails([mac(30), null, { other: 1 }], now);
+    expect([...live]).toEqual(["a@x.com"]);
+    expect(macCourierEmails([mac(400)], now).size).toBe(0);
+    const st = cloudDeliveryFor("a@x.com", [], null, live);
+    expect(st.kind).toBe("ready_via_mac");
+    expect(cloudDeliveryWords(st).word).toBe("Ready (via this Mac)");
+    expect(cloudDeliveryFor("b@x.com", [], null, live).kind).toBe("needs_sign_in");
   });
 });

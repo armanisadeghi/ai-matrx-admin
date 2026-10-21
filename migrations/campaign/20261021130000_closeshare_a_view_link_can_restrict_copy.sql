@@ -1,7 +1,6 @@
 -- chair-step: lane CLOSE-SHARE (CD-SHARE-07, Airtable "Restrict copying data from this view"). REPLACES custom.shared_view_read(text, text, text) by body (same signature) so an open view answers restrict_copy; DROPS and recreates custom.view_share_links(uuid) because its result gains one column, restrict_copy (its door row keys on schema, name and arguments, which do not change); ADDS one door, custom.set_view_share_link_copy(uuid, boolean), declared in platform.client_callable_door. The flag lives in the link row's own platform.share_links.metadata ->> 'restrict_copy'; no table or column is added. Inverse: migrations/inverse/20261021130000_closeshare_a_view_link_can_restrict_copy_down.sql.
 -- lane: close-share
 -- lock: custom,platform
--- target: production
 -- based-on: custom.shared_view_read(text, text, text) 6b812c87966e9a64adb9d41c66fb3190ec5a68d8fbb2bdcd562807933f87d47c
 -- based-on: custom.view_share_links(uuid) 047d0d185e9ca268424b994e8690ecdd842a84b6c53e13360a63990760d340d6
 --

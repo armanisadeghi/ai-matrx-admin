@@ -146,30 +146,42 @@
   transition-timing-function: var(--matrx-motion-ease-panel, ease);
 }
 
-/* THE TOP EDGE (owner A/B, 2026-10-20): the last top band (the header, or the tabs row under it)
-   ends in a hairline or a fade. The fade is a band of the sheet color fading out over the body:
-   content scrolls under it and fades; at rest every scroll area starts below it. */
+/* THE TOP EDGE (owner, 2026-10-20; fade tightened 2026-10-21): the last top band (the header,
+   or the tabs row under it) ends in a hairline or a fade. The fade takes NO layout height: it is
+   an 8px band of the sheet color laid over the top of each scroll area (sticky, with a negative
+   margin), invisible at rest and shown only once the area scrolls (a scroll-driven animation),
+   so the first line sits right under the header and only content scrolling under it fades.
+   A browser without scroll timelines shows no fade, never a covered first line. */
 [data-matrx-frame] {
-  --matrx-frame-fade-h: 14px;
+  --matrx-frame-fade-h: 8px;
 }
 [data-matrx-frame][data-header-edge="hairline"] .mf-top-edge {
   border-bottom: 1px solid hsl(var(--matrx-frame-hairline));
 }
-[data-matrx-frame][data-header-edge="fade"] .mf-top-edge {
-  position: relative;
-  z-index: 2;
+@supports (animation-timeline: scroll()) {
+  [data-matrx-frame][data-header-edge="fade"] .mf-scroll-top::before {
+    content: "";
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: var(--matrx-frame-fade-h);
+    margin-bottom: calc(-1 * var(--matrx-frame-fade-h));
+    pointer-events: none;
+    background: linear-gradient(to bottom, hsl(var(--matrx-frame-sheet)), hsl(var(--matrx-frame-sheet) / 0));
+    opacity: 0;
+    animation: mf-fade-in linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 var(--matrx-frame-fade-h);
+  }
 }
-[data-matrx-frame][data-header-edge="fade"] .mf-top-edge::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 100%;
-  height: var(--matrx-frame-fade-h);
-  pointer-events: none;
-  background: linear-gradient(to bottom, hsl(var(--matrx-frame-sheet)), hsl(var(--matrx-frame-sheet) / 0));
-}
-[data-matrx-frame][data-header-edge="fade"] .mf-scroll-top {
-  padding-top: var(--matrx-frame-fade-h);
+@keyframes mf-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* No motion while dragging (motion standard): a resize follows the pointer exactly. */

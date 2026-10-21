@@ -642,6 +642,8 @@ const initialState: NotesSliceState & NotesSharedReadState & NotesIngestReadStat
   listError: null,
   trashStatus: "idle",
   trashError: null,
+  trashTotal: null,
+  trashStoreCountAtFetch: 0,
   sharedStatus: "idle",
   sharedError: null,
   ingestByNoteId: {},
@@ -1651,10 +1653,17 @@ const notesSlice = createSlice({
       },
     );
     builder.addMatcher(
-      (action) => action.type === "notes/fetchDeletedNotes/fulfilled",
-      (state) => {
+      (action): action is PayloadAction<{ total: number } | undefined> =>
+        action.type === "notes/fetchDeletedNotes/fulfilled",
+      (state, action) => {
         state.trashStatus = "loaded";
         state.trashError = null;
+        // The count beside the Trash is the server's total over the same predicate,
+        // never the number of rows a page brought back (archived-items law).
+        if (action.payload && typeof action.payload.total === "number") {
+          state.trashTotal = action.payload.total;
+          state.trashStoreCountAtFetch = Object.values(state.notes).filter((n) => !!n.deleted_at).length;
+        }
       },
     );
     builder.addMatcher(

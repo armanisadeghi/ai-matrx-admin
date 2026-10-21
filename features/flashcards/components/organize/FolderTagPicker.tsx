@@ -20,7 +20,7 @@ import { EDGE_ROLE } from "@/features/flashcards/data/types";
 const DIMENSION = CATEGORY_DIMENSIONS.flashcardFolder;
 
 /** The deck's currently-attached folder/tag category ids, derived from its edges. */
-export function useSetFolderIds(setId: string | null): {
+export function useDeckFolderIds(setId: string | null): {
   folderIds: string[];
   loading: boolean;
 } {

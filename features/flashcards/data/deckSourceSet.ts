@@ -15,7 +15,7 @@
 // latest top-up — was generated from, and `metadata.source_names` is how each
 // Source was named on its card (the file name, not a document's own title;
 // its real kind). Written through the canonical guarded merge
-// (`fcService.mergeSetMetadata`, which keeps every other key), read back by
+// (`fcService.mergeDeckMetadata`, which keeps every other key), read back by
 // "Add more cards", which puts each Source in the input WITH its parts, form
 // and limit. A deck written before this has no `source_set`; the top-up falls
 // back to its lineage edges and says so.
@@ -108,7 +108,7 @@ export async function saveDeckSourceSet(
   names: Record<string, DeckSourceName>,
 ): Promise<string | null> {
   const patch = deckSourceSetPatch(sourceSet, names);
-  const res = await fcService.mergeSetMetadata(setId, (current) => ({ ...current, ...patch }));
+  const res = await fcService.mergeDeckMetadata(setId, (current) => ({ ...current, ...patch }));
   if (res.error) {
     console.error("[flashcards/deckSourceSet] could not record the deck's Sources:", res.error);
     return res.error;
@@ -118,7 +118,7 @@ export async function saveDeckSourceSet(
 
 /** The deck's saved Sources, read from the deck itself. Null when none were recorded. */
 export async function readDeckSourceDrafts(setId: string): Promise<SourceDraft[] | null> {
-  const res = await fcService.getSet(setId);
+  const res = await fcService.getDeck(setId);
   if (res.error || !res.data) return null;
   return deckDraftsFromMetadata(res.data.metadata);
 }

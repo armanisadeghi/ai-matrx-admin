@@ -791,6 +791,7 @@ export function ContextTree({
                   expandable={!!r.expandable}
                   expanded={open}
                   onToggle={() => doExpand(r)}
+                  focusable={false}
                 />
                 {rowIcon(r, open)}
                 <span

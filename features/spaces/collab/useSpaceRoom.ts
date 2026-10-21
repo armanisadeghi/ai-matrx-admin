@@ -11,6 +11,7 @@ import { defineChannelNamespace, type RealtimeStatus } from "@ai-matrx/data/real
 import { usePresence } from "@ai-matrx/data/realtime/react";
 import { useRef } from "react";
 
+import { selectOrganizationIds } from "@/features/scopes/redux/selectors/tree";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserAvatarUrl, selectUserEmail, selectUserFullName, selectUserId } from "@/lib/redux/selectors/userSelectors";
 
@@ -24,12 +25,15 @@ export type SpaceViewerState = {
   userId: string;
   name: string;
   avatarUrl: string | null;
+  /** Not a member of the page's organization (CLOSE-SHARE): the avatar shows Guest. */
+  guest?: boolean;
 } & Record<string, unknown>;
 
 export interface SpaceViewer {
   userId: string;
   name: string;
   avatarUrl: string | null;
+  guest: boolean;
 }
 
 export interface SpaceRoom {
@@ -39,8 +43,12 @@ export interface SpaceRoom {
   status: RealtimeStatus;
 }
 
-export function useSpaceRoom(spaceId: string, onCommentsChanged: () => void): SpaceRoom {
+export function useSpaceRoom(spaceId: string, onCommentsChanged: () => void, pageOrganizationId?: string | null): SpaceRoom {
   const userId = useAppSelector(selectUserId);
+  // A Guest is someone who is not a member of the page's organization. Each viewer says so for themself from their own
+  // memberships; until those are loaded (an empty list) nobody is called a Guest.
+  const memberOrgs = useAppSelector(selectOrganizationIds);
+  const guest = !!pageOrganizationId && memberOrgs.length > 0 && !memberOrgs.includes(pageOrganizationId);
   const fullName = useAppSelector(selectUserFullName);
   const email = useAppSelector(selectUserEmail);
   const avatarUrl = useAppSelector(selectUserAvatarUrl);
@@ -52,7 +60,7 @@ export function useSpaceRoom(spaceId: string, onCommentsChanged: () => void): Sp
     {
       topic: spacesPage.topic({ spaceId }),
       presence: {
-        state: { userId: userId ?? "", name: fullName || email || "Someone", avatarUrl: avatarUrl ?? null },
+        state: { userId: userId ?? "", name: fullName || email || "Someone", avatarUrl: avatarUrl ?? null, guest },
       },
       spec: {
         postgresChanges: [
@@ -76,7 +84,7 @@ export function useSpaceRoom(spaceId: string, onCommentsChanged: () => void): Sp
   for (const m of members) {
     const s = m.state;
     if (!s?.userId || byUser.has(s.userId)) continue;
-    byUser.set(s.userId, { userId: s.userId, name: s.name || "Someone", avatarUrl: s.avatarUrl ?? null });
+    byUser.set(s.userId, { userId: s.userId, name: s.name || "Someone", avatarUrl: s.avatarUrl ?? null, guest: s.guest === true });
   }
   const viewers = [...byUser.values()].sort((a, b) => (a.userId === userId ? -1 : b.userId === userId ? 1 : a.name.localeCompare(b.name)));
   return { viewers, me: userId, status };

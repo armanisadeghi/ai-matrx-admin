@@ -20,7 +20,7 @@ jest.mock("@/lib/organizations/ensureOrgId", () => ({
 import { supabase } from "@/utils/supabase/client";
 import { fcService } from "../fcService";
 import { FLASHCARDS_CANONICAL_ADAPTER } from "@/features/canvas/artifact-types/persistence/flashcards-canonical-adapter";
-import type { FcSetRow, SetWithCards } from "../types";
+import type { FcSetRow, DeckWithCards } from "../types";
 
 const REQUEST =
   "Make flashcards for all of the polyatomic ions covered in these notes, including all of the ones that are specifically mentioned.";
@@ -76,10 +76,10 @@ function mockCreate() {
     metadata: {},
   } as unknown as FcSetRow;
   jest
-    .spyOn(fcService, "findSurfaceSavedSetForConversation")
+    .spyOn(fcService, "findSurfaceSavedDeckForConversation")
     .mockResolvedValue({ data: null, error: null });
-  return jest.spyOn(fcService, "createSetWithCards").mockResolvedValue({
-    data: { set: created, cards: [] } as unknown as SetWithCards,
+  return jest.spyOn(fcService, "createDeckWithCards").mockResolvedValue({
+    data: { set: created, cards: [] } as unknown as DeckWithCards,
     error: null,
   });
 }
@@ -109,22 +109,22 @@ afterEach(() => jest.restoreAllMocks());
 describe("FLASHCARDS_CANONICAL_ADAPTER.onMaterialize — deck name", () => {
   it('names a placeholder-titled set after the request, not "Flashcards"', async () => {
     chatWithRequest();
-    const createSetWithCards = mockCreate();
+    const createDeckWithCards = mockCreate();
 
     await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.(polyatomicSet("Flashcards"));
 
-    expect(createSetWithCards).toHaveBeenCalledTimes(1);
-    expect(createSetWithCards.mock.calls[0][0].name).toBe("Polyatomic Ions");
+    expect(createDeckWithCards).toHaveBeenCalledTimes(1);
+    expect(createDeckWithCards.mock.calls[0][0].name).toBe("Polyatomic Ions");
   });
 
   it("keeps a real title exactly as written", async () => {
     chatWithRequest();
-    const createSetWithCards = mockCreate();
+    const createDeckWithCards = mockCreate();
 
     await FLASHCARDS_CANONICAL_ADAPTER.onMaterialize?.(
       polyatomicSet("Ions I keep forgetting"),
     );
 
-    expect(createSetWithCards.mock.calls[0][0].name).toBe("Ions I keep forgetting");
+    expect(createDeckWithCards.mock.calls[0][0].name).toBe("Ions I keep forgetting");
   });
 });

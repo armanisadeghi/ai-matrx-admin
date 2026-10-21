@@ -1780,7 +1780,9 @@ tr:hover .spaces-entity-openpill, .spaces-entity-open:focus-visible .spaces-enti
 .dark { --spaces-comment-mark: rgb(255 212 0 / 0.6); --spaces-comment-fill: rgb(255 212 0 / 0.18); }
 .spaces-root ::highlight(spaces-comment) { background-color: var(--spaces-comment-fill); text-decoration: underline; text-decoration-color: var(--spaces-comment-mark); text-decoration-thickness: 2px; }
 .spaces-presence { display: inline-flex; align-items: center; margin-right: 6px; }
-.spaces-presence-avatar { display: inline-flex; margin-left: -6px; border-radius: 9999px; box-shadow: 0 0 0 2px var(--spaces-page-bg); }
+.spaces-presence-avatar { position: relative; display: inline-flex; margin-left: -6px; border-radius: 9999px; box-shadow: 0 0 0 2px var(--spaces-page-bg); }
+/* CLOSE-SHARE: an outside person's avatar carries "Guest" under it, drawn over the bar so nothing moves. */
+.spaces-presence-guest { position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); padding: 0 3px; border-radius: 4px; font-size: 8px; line-height: 11px; background: var(--spaces-page-bg); color: var(--muted-foreground); border: 1px solid var(--border); white-space: nowrap; pointer-events: none; }
 .spaces-presence-avatar:first-child { margin-left: 0; }
 .spaces-presence-more { margin-left: 4px; color: var(--spaces-ink-soft); font-size: 12px; }
 .spaces-mention-person { color: var(--spaces-ink-soft); }

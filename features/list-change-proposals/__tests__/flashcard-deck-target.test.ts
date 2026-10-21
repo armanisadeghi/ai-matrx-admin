@@ -6,7 +6,7 @@
  */
 
 jest.mock("@/features/flashcards/data/fcService", () => ({
-  fcService: { getSetWithCards: jest.fn(), updateCard: jest.fn() },
+  fcService: { getDeckWithCards: jest.fn(), updateCard: jest.fn() },
 }));
 // The other two stores' modules are irrelevant here and pull in the app.
 jest.mock("@/features/data-tables/service", () => ({}));
@@ -51,7 +51,7 @@ const answer = {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  jest.mocked(fcService.getSetWithCards).mockResolvedValue({
+  jest.mocked(fcService.getDeckWithCards).mockResolvedValue({
     data: {
       set: { id: SET, name: "Polyatomic Ion, Oxoanion and more" },
       cards: [{ id: CARD, front: "Borite Ion", back: "BO2 2- (aluminum borite)" }],

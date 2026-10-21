@@ -256,7 +256,7 @@ export interface DeckFromSourcesInput {
   /**
    * A retry of a run that stopped with its page: that run's conversations.
    * The save continues a deck already made for them instead of adding a
-   * second one (`fcService.createGeneratedSetForConversation`).
+   * second one (`fcService.createGeneratedDeckForConversation`).
    */
   continues?: readonly string[];
 }
@@ -584,7 +584,7 @@ export async function generateDeckFromSources({
   await beforeSave?.();
   // Single-writer contract (D-WP3): a single-pass live run's render block may
   // already have materialized a deck — adopt it; a segmented run creates one.
-  const created = await fcService.createGeneratedSetForConversation(
+  const created = await fcService.createGeneratedDeckForConversation(
     covered.conversationId,
     {
       name: setName,

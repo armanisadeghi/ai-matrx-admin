@@ -23,6 +23,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { DynamicIcon } from "@ai-matrx/icons";
 import {
   TREE_ROW_TEXT,
   TreeDisclosure,
@@ -173,8 +174,19 @@ export function CategoryTree({
             expandable={hasChildren}
             expanded={isExpanded}
             onToggle={() => toggleExpand(node.id)}
+            label={node.label}
           />
-          <TreeFolderIcon open={hasChildren && isExpanded} />
+          {node.iconName ? (
+            <DynamicIcon
+              name={node.iconName}
+              color={node.color || "zinc"}
+              size={4}
+              fallbackIcon="SquareMenu"
+              className="h-4 w-4 shrink-0"
+            />
+          ) : (
+            <TreeFolderIcon open={hasChildren && isExpanded} />
+          )}
           <button
             type="button"
             onClick={() => onSelect?.(node)}

@@ -88,6 +88,7 @@ function TopicCell({ row, ctx }: { row: MapTableRow; ctx: MapTableColumnContext 
           <TreeDisclosure
             expandable={row.hasChildren}
             expanded={row.expanded}
+            label={row.name}
             onToggle={() => ctx.onToggleExpand(row.slug)}
           />
           {row.hasChildren ? (

@@ -15,7 +15,7 @@ import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { cn } from "@/lib/utils";
 import { STUDIO_COMPARE_SIDE_BY_SIDE_PX } from "../studio-layout";
-import { useMeasuredWidth } from "../use-width";
+import { useMeasure } from "@ai-matrx/kit/hooks";
 import { PaneBar } from "./PaneBar";
 
 export type CompareView = "both" | "new" | "original";
@@ -53,7 +53,7 @@ function Caption({ children }: { children: React.ReactNode }) {
 }
 
 export function StudioCompare({ run, original, originalLabel, phone = false, toolbar }: StudioCompareProps) {
-  const { ref, width } = useMeasuredWidth<HTMLDivElement>();
+  const [ref, { width }] = useMeasure<HTMLDivElement>();
   const narrow = compareIsNarrow(width, phone);
   const [view, setView] = useState<CompareView>("both");
   const [layout, setLayout] = useState<CompareLayout>("side");

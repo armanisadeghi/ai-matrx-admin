@@ -106,7 +106,7 @@ import { flashcardsPrinterLazy as flashcardsPrinter } from "@ai-matrx/print/flas
 import { notifyPrintOutcome } from "@/lib/print/print-outcome-toast";
 import { PrintOptionsDialog, usePrintOptions } from "@ai-matrx/print/react";
 import { FlashcardFaceImage } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
-import type { SetWithCards, CardWithDetails } from "@/features/flashcards/data/types";
+import type { DeckWithCards, CardWithDetails } from "@/features/flashcards/data/types";
 import {
   asCardKind,
   CARD_KIND,
@@ -134,7 +134,7 @@ import {
   deckAudioCoverage,
   type DeckAudioRunSignals,
 } from "@/features/flashcards/components/set-detail/AudioOverviewSection";
-import { EnhanceSetDialog } from "@/features/flashcards/components/set-detail/EnhanceSetDialog";
+import { EnhanceDeckDialog } from "@/features/flashcards/components/set-detail/EnhanceSetDialog";
 import { useFlashcardMandates } from "@/features/flashcards/data/mandate-disclosure";
 // BUNDLE-LEAK GUARD (F9): these two float as draggable WindowPanels, and a
 // STATIC import of either would drag summon's WindowPanel
@@ -143,8 +143,8 @@ import { useFlashcardMandates } from "@/features/flashcards/data/mandate-disclos
 // They open one-at-a-time on explicit user action, so each gets its own
 // ssr:false edge (the AgentPeekButton pattern; code-splitting rule 3 allows
 // per-item splits for user-triggered windows).
-const IllustrateSetWindow = dynamic(
-  () => import("@/features/flashcards/components/set-detail/IllustrateSetWindow").then((m) => m.IllustrateSetWindow),
+const IllustrateDeckWindow = dynamic(
+  () => import("@/features/flashcards/components/set-detail/IllustrateSetWindow").then((m) => m.IllustrateDeckWindow),
   { ssr: false },
 );
 const BulkEnrichWindow = dynamic(
@@ -163,7 +163,7 @@ import {
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import {
-  useIllustrateSetRun,
+  useIllustrateDeckRun,
   type IllustrateCardState,
 } from "@/features/flashcards/components/set-detail/illustrateSetRun";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
@@ -192,7 +192,7 @@ import {
 } from "@/components/ui/dialog";
 import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
-  createEducationFlashcardSetScope,
+  createEducationFlashcardDeckScope,
   type FlashcardSetSurfaceCard,
   type FlashcardSetSurfaceMastery,
 } from "@/features/surfaces/manifests/education-flashcard-set.manifest";
@@ -647,7 +647,7 @@ export function FlashcardSetSample({
 }) {
   useFlashcardMandates(["enrichCard"]);
   const router = useRouter();
-  const [data, setData] = useState<SetWithCards | null>(null);
+  const [data, setData] = useState<DeckWithCards | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -701,7 +701,7 @@ export function FlashcardSetSample({
     void (async () => {
       setLoading(true);
       setMasteryStatus("pending");
-      const res = await fcService.getSetWithCards(setId);
+      const res = await fcService.getDeckWithCards(setId);
       if (cancelled) return;
       if (!res.data) {
         setError(res.error ?? recordUnavailableMessage("deck", "unknown"));
@@ -780,7 +780,7 @@ export function FlashcardSetSample({
     stop: stopIllustrate,
     setReview,
     reset: resetIllustrate,
-  } = useIllustrateSetRun();
+  } = useIllustrateDeckRun();
   const [illustrateOpen, setIllustrateOpen] = useState(false);
   const openCardWindow = useOpenFlashcardItemWindow();
 
@@ -1034,7 +1034,7 @@ export function FlashcardSetSample({
   // an empty bag even though the deck was visibly loaded.
   const buildScope = () => {
     const loaded = !!data && !error;
-    return createEducationFlashcardSetScope({
+    return createEducationFlashcardDeckScope({
       set_loaded: loaded,
       set_id: setId,
       ...(error ? { load_error: error } : {}),
@@ -1099,7 +1099,7 @@ export function FlashcardSetSample({
   const [siblings, setSiblings] = useState<{ id: string; name: string }[]>([]);
   useEffect(() => {
     const ctl = new AbortController();
-    void fcService.listSets({ signal: ctl.signal }).then((res) => {
+    void fcService.listDecks({ signal: ctl.signal }).then((res) => {
       if (res.data) setSiblings(res.data.slice(0, 50).map((row) => ({ id: row.id, name: row.name })));
     });
     return () => ctl.abort();
@@ -1728,7 +1728,7 @@ export function FlashcardSetSample({
             {/* Per-set image run — live progress, then the review pass.
                 Floats beside the deck so the page never shifts. */}
             {illustrateOpen && (
-              <IllustrateSetWindow
+              <IllustrateDeckWindow
                 run={illustrateRun}
                 setName={data.set.name}
                 onClose={() => {
@@ -2016,7 +2016,7 @@ export function FlashcardSetSample({
                 never a modal list of the whole deck to scroll and pick from.
                 The set-level action is "Enrich all cards" above. */}
             {enhanceCard && (
-              <EnhanceSetDialog
+              <EnhanceDeckDialog
                 open={enhanceCard !== null}
                 onOpenChange={(next) => {
                   if (!next) setEnhanceCard(null);

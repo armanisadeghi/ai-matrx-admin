@@ -101,7 +101,7 @@ No class-E box-in-a-box was found: every non-canvas consumer wraps at most in `h
   not crushed into one line. Do not "fix" that; the defect here is location, not sizing.
 - **Fix:** move editing into `FlashcardItem` (`editable` + `onCardChange`, mirroring
   `PageBriefBlock`'s `editable` + `onBriefChange`), and let the reorder/delete/add chrome stay in
-  `EditSetView` as the set-level owner.
+  `EditDeckView` as the set-level owner.
 - **Effort:** L.
 
 ### 5. `task_list` re-rendered a second time in the import dialog — B/C

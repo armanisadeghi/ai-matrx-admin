@@ -36,8 +36,8 @@ function fakeRun(conversationId: string) {
   });
 }
 
-const run = (live: boolean) =>
-  runAgentExtraction({} as AppDispatch, { getState: () => ({}) } as unknown as AppStore, { initiation: "user",
+const run = (live: boolean, initiation: "user" | "auto" = "user") =>
+  runAgentExtraction({} as AppDispatch, { getState: () => ({}) } as unknown as AppStore, { initiation,
     mandateKey: "flashcards__generate_from_source" as never,
     surfaceKey: "test",
     sourceFeature: "education-flashcards" as never,
@@ -69,11 +69,16 @@ describe("segment runs never materialize", () => {
 
   it("declares a background section run 'auto' so it stays out of the chat sidebar", async () => {
     fakeRun("conv-auto");
-    await run(false);
+    await run(false, "user");
     expect(mocked.mock.calls.at(-1)?.[2].initiation).toBe("auto");
-    fakeRun("conv-person");
-    await run(true);
-    expect(mocked.mock.calls.at(-1)?.[2].initiation).toBeUndefined();
+  });
+
+  // `initiation` became a required caller option (adcd635409): a live run carries the caller's own
+  // word, never a blanket one — a person's click stays "user", a code-fired live run stays "auto".
+  it.each(["user", "auto"] as const)("passes a live run's caller initiation %s through unchanged", async (initiation) => {
+    fakeRun(`conv-live-${initiation}`);
+    await run(true, initiation);
+    expect(mocked.mock.calls.at(-1)?.[2].initiation).toBe(initiation);
   });
 
   it("the launch stamp lands on the conversation record the materializer reads", () => {

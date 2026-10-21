@@ -74,7 +74,7 @@ export function MemoryNew() {
   const [focus, setFocus] = useState("");
 
   useEffect(() => {
-    fcService.listSets().then((res) => {
+    fcService.listDecks().then((res) => {
       if (res.data) setDecks(res.data);
     });
   }, []);

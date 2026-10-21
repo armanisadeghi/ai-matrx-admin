@@ -359,7 +359,7 @@ export interface MyDeckSummary {
 }
 
 /** One entry in `visible_sets`. */
-export interface FlashcardSetSummary {
+export interface FlashcardDeckSummary {
   id: string;
   name: string;
   topic: string | null;
@@ -398,7 +398,7 @@ export function createEducationFlashcardsScope(values: {
   selection?: string;
   context?: Record<string, unknown>;
   set_count?: number;
-  visible_sets?: FlashcardSetSummary[];
+  visible_sets?: FlashcardDeckSummary[];
   visible_set_ids?: string[];
   load_error?: string;
   study_streak_days?: number;

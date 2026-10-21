@@ -828,13 +828,28 @@ export const restoreNote = createAsyncThunk<void, string>(
 // ---------------------------------------------------------------------------
 
 /**
- * Fetch soft-deleted notes for the Trash folder.
- * Only called on demand when the user opens the Trash.
+ * One page of the Trash. PostgREST caps every request at 1000 rows and says
+ * nothing, so the bin is read in pages with `count: "exact"`: the count beside
+ * the Trash is the server's total, and "Load more" reaches the oldest note.
  */
-export const fetchDeletedNotes = createAsyncThunk<void, void>(
+export const TRASH_PAGE_SIZE = 200;
+
+/**
+ * Fetch soft-deleted notes for the Trash folder, one page at a time.
+ * Only called on demand when the user opens the Trash; `{ more: true }` reads
+ * the next page after the trashed notes the store already holds.
+ */
+export const fetchDeletedNotes = createAsyncThunk<
+  { total: number; received: number },
+  { more?: boolean } | void,
+  { state: RootState }
+>(
   "notes/fetchDeletedNotes",
-  async (_, { dispatch, getState }) => {
+  async (arg, { dispatch, getState }) => {
     const userId = getUserId(getState);
+    const from = arg && arg.more
+      ? Object.values(getState().notes.notes).filter((n) => !!n.deleted_at).length
+      : 0;
 
     // The trash list lands where the notes list lands — a bin that hides the organization's
     // deleted notes while the list shows its live ones is two different screens wearing one name.
@@ -844,15 +859,22 @@ export const fetchDeletedNotes = createAsyncThunk<void, void>(
       .from("notes")
       .select(
         "id, created_by, label, home_scope_id, tags, content_preview, updated_at, position, organization_id, shown_to, published_to_web, deleted_at, version",
+        { count: "exact" },
       )
       .not("deleted_at", "is", null);
     trashQuery = listScope.apply(trashQuery);
-    const { data, error } = await trashQuery.order("updated_at", { ascending: false });
+    const { data, error, count } = await trashQuery
+      .order("deleted_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, from + TRASH_PAGE_SIZE - 1);
 
     if (error) throw error;
+    if (typeof count !== "number") {
+      throw new Error("The trash read returned no total, so its count cannot be shown honestly.");
+    }
 
     const notes = await hydrateNoteContextLinks(data ?? []);
-    // ONE dispatch for the whole bin — a per-note loop re-notified every store
+    // ONE dispatch for the whole page — a per-note loop re-notified every store
     // subscriber and re-ran every sorted list selector once per row, the exact
     // O(N^2 log N) freeze shape `fetchNotesList` was fixed for (audit N-22).
     // `created_by` is the ROW's value, never stamped with the viewer: under
@@ -866,6 +888,7 @@ export const fetchDeletedNotes = createAsyncThunk<void, void>(
         })),
       }),
     );
+    return { total: count, received: notes.length };
   },
 );
 

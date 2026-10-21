@@ -21,7 +21,7 @@ export async function saveDeckRowAccess(
   setId: string,
   change: RowAccessChange,
 ): Promise<FcSetRow> {
-  const res = await fcService.updateSetRowAccess(setId, change);
+  const res = await fcService.updateDeckRowAccess(setId, change);
   if (res.error || !res.data) throw new Error(res.error ?? "The deck's settings were not saved.");
   return res.data;
 }

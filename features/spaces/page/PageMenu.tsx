@@ -1,11 +1,12 @@
 "use client";
 
 // features/spaces/page/PageMenu.tsx — the ••• page menu (A7): style, small text, full width, lock,
-// copy link, duplicate, move to, delete (= move to Trash), undo, page history.
+// copy link, duplicate, move to, delete (= move to Trash), undo, page history, import, export, connections.
+// Import and Connections open inside the same panel (a Back row returns), as Notion's sub-menus do.
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
-import { Copy, CornerUpRight, FileUp, History, LayoutTemplate, Link, Lock, MoreHorizontal, MoveHorizontal, PackageX, PenLine, Trash2, Type, Undo2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Copy, CornerUpRight, FileDown, FileUp, Plug, History, LayoutTemplate, Link, Lock, MoreHorizontal, MoveHorizontal, PackageX, PenLine, Trash2, Type, Undo2 } from "lucide-react";
 import { setSuggesting, useSuggesting } from "../editor/suggest";
 import { useState, type ReactNode } from "react";
 
@@ -13,6 +14,8 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 
 import type { SpaceDoc } from "../contract";
 import { formatCount } from "@ai-matrx/kit/format";
+import type { ImportChoice } from "../sidebar/ImportMenu";
+import { PageConnections } from "./PageConnections";
 
 type Settings = SpaceDoc["settings"];
 
@@ -57,6 +60,7 @@ export function PageMenu({
   onUndo,
   onHistory,
   onExport,
+  importChoices,
   onAskAiChange,
   isTemplate,
   onTemplate,
@@ -78,6 +82,8 @@ export function PageMenu({
   onHistory: () => void;
   /** K1 — opens the Export dialog. */
   onExport: () => void;
+  /** K2 / A7 — the Import choices, landing as sub-pages of this page (absent: the person cannot add pages here). */
+  importChoices?: ImportChoice[];
   /** "Ask AI to change this page" — the Space Builder (absent: not wired, or the page cannot be edited). */
   onAskAiChange?: () => void;
   /** I3 — the page carries the template label (null = not known yet). */
@@ -94,6 +100,7 @@ export function PageMenu({
   contentOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"main" | "import" | "connections">("main");
   const suggesting = useSuggesting(suggestPageId ?? null);
   const act = (fn: () => void) => () => {
     setOpen(false);
@@ -104,13 +111,26 @@ export function PageMenu({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) onOpen?.();
+        if (next) {
+          setView("main");
+          onOpen?.();
+        }
       }}
     >
       <PopoverTrigger asChild>
         <Button variant="quiet" icon={<MoreHorizontal size={18} />} aria-label="Page options" />
       </PopoverTrigger>
       <PopoverContent /* sizing: fixed — a fixed-measure panel on purpose; its rows truncate inside the box */ surface="solid" align="end" className="w-[260px] p-1">
+        {view !== "main" ? (
+          <>
+            <Row icon={<ArrowLeft size={16} />} label={view === "import" ? "Import" : "Connections"} onClick={() => setView("main")} />
+            <div className="my-1 border-t border-border" />
+            {view === "import"
+              ? importChoices?.map((c) => <Row key={c.key} icon={c.icon} label={c.label} onClick={act(c.run)} />)
+              : <PageConnections />}
+          </>
+        ) : (
+        <>
         <p className="px-2 pb-1 pt-1.5 type-secondary text-muted-foreground">Style</p>
         <div className="grid grid-cols-3 gap-1 px-1 pb-1">
           {FONTS.map((f) => (
@@ -151,11 +171,15 @@ export function PageMenu({
           onClick={isTemplate === null ? undefined : () => onTemplate(!isTemplate)}
           end={<Switch checked={Boolean(isTemplate)} disabled={isTemplate === null} tabIndex={-1} aria-hidden />}
         />
+        {importChoices?.length ? <Row icon={<FileDown size={16} />} label="Import" onClick={() => setView("import")} end={<ChevronRight size={14} />} /> : null}
         <Row icon={<FileUp size={16} />} label="Export" onClick={act(onExport)} />
+        <Row icon={<Plug size={16} />} label="Connections" onClick={() => setView("connections")} end={<ChevronRight size={14} />} />
         <p className="px-2 pt-2 type-secondary text-muted-foreground" title={`${formatCount(counts.characters)} characters`}>
           Word count: {formatCount(counts.words)} {counts.words === 1 ? "word" : "words"}
         </p>
         <p className="px-2 pb-1.5 pt-0.5 type-secondary text-muted-foreground">{updatedLabel}</p>
+        </>
+        )}
       </PopoverContent>
     </Popover>
   );

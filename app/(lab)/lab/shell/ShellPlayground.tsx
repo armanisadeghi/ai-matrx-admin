@@ -14,7 +14,7 @@ import type { FrameGridLook } from "@/features/shell/frame/AppGrid";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
 import { INTELLIGENCE_PARTS, flowByName, flowForTile } from "@/features/shell/frame/flows";
 import { BigPicture, FlowView } from "./FlowView";
-import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
+import { HeaderToolButtons, defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
 import type { FrameCrumb, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
 import {
   CONTACTS,
@@ -125,13 +125,13 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const loaded = useLoadedModules();
   const [headerEdge, setHeaderEdge] = useState<FrameHeaderEdge>("fade");
   const [gridLook, setGridLook] = useState<FrameGridLook>("A");
-  const [space, setSpace] = useState<FrameSpace>("inset");
+  const [space, setSpace] = useState<FrameSpace>("flush");
   const [bodyMode, setBodyMode] = useState<"flow" | "sample">("flow");
   const [bigPicture, setBigPicture] = useState(false);
   const [focusSection, setFocusSection] = useState<number | null>(
     initialItem?.startsWith("s-") ? Number(initialItem.slice(2)) : null,
   );
-  const [sidebarColor, setSidebarColor] = useState<FrameSidebarColor>("contrast");
+  const [sidebarColor, setSidebarColor] = useState<FrameSidebarColor>("same");
   const [favorites, setFavorites] = useState<string[]>([
     "chat",
     "memory",
@@ -176,6 +176,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
     onOpenInNewTab: say("Open in new tab pressed"),
     onDelete: say("Delete pressed"),
   });
+  // Stand-ins: the real host passes the live header controls (features/shell/frame-host/FrameChrome).
+  const sampleTools = placeholderHeaderTools((id) => setStatus(`${id} pressed (sample)`));
 
   // ── what the page shows, per product × variant ──
   let crumbs: FrameCrumb[];
@@ -499,7 +501,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             crumbs={crumbs}
             favorite={favorite}
             actions={actions}
-            headerTools={placeholderHeaderTools((id) => setStatus(`${id} pressed (sample)`))}
+            headerTools={<HeaderToolButtons tools={sampleTools} />}
+            phoneTools={sampleTools}
             onBack={onBack}
             tabs={tabs}
             variant={frameVariant}

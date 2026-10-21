@@ -88,7 +88,7 @@ const EMPTY_WORK: CardWork = {
   conversationId: null,
 };
 
-export function EnhanceSetDialog({
+export function EnhanceDeckDialog({
   open,
   onOpenChange,
   setId,

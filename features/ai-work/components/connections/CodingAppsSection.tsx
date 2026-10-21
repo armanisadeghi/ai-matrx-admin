@@ -358,8 +358,10 @@ export function AppsTables(p: AppsTablesProps) {
   ];
   const cloudOnly = (a: AppAccount) => a.account_id.startsWith("cloud:");
   const running = cloud?.running ? { forEmail: cloud.running.forEmail, step: cloud.running.step } : null;
-  const cloudOf = (a: AppAccount): CloudDeliveryState | null => (a.app_key === "claude" && cloud ? cloudDeliveryFor(a.email, cloudRows, running) : null);
+  const cloudOf = (a: AppAccount): CloudDeliveryState | null => (a.app_key === "claude" && cloud ? cloudDeliveryFor(a.email, cloudRows, running, cloud.macEmails) : null);
   const signInBusy = Boolean(cloud && (cloud.running || cloud.resuming));
+  // The cloud sandbox delivers for this account (a live Mac may deliver too: "Ready (via this Mac)").
+  const sandboxReady = (st: CloudDeliveryState | null) => st?.kind === "ready" || (st?.kind === "ready_via_mac" && st.row?.status === "connected");
   const deliverWhy = (a: AppAccount, st: CloudDeliveryState | null): string | null =>
     a.app_key !== "claude"
       ? "Cloud sessions are Claude's"
@@ -433,7 +435,7 @@ export function AppsTables(p: AppsTablesProps) {
         icon: Cloud,
         label: dWhy ? `Deliver to cloud sessions (${dWhy})` : st ? cloudActionLabel(st, accountName(a)) : "Deliver to cloud sessions",
         onClick: () => deliver(a),
-        disabled: dWhy !== null || st === null || st.kind === "ready" || st.kind === "in_progress",
+        disabled: dWhy !== null || st === null || sandboxReady(st) || st.kind === "in_progress",
         loading: st?.kind === "in_progress",
       },
       { id: "info", icon: Info, label: `Everything about ${accountName(a)}`, onClick: openDetail },
@@ -573,7 +575,7 @@ export function AppsTables(p: AppsTablesProps) {
           {
             id: "deliver",
             label: `Deliver to ${accountName(a)}'s cloud sessions`,
-            disabledReason: st.kind === "ready" ? "Already delivering" : st.kind === "in_progress" ? "Signing in now" : (dWhy ?? undefined),
+            disabledReason: sandboxReady(st) ? "Already delivering" : st.kind === "in_progress" ? "Signing in now" : (dWhy ?? undefined),
             onSelect: () => deliver(a),
           },
           {
@@ -581,7 +583,7 @@ export function AppsTables(p: AppsTablesProps) {
             label: "Stop delivering to its cloud sessions",
             destructive: true,
             separatorBefore: true,
-            disabledReason: st.kind !== "ready" || !row?.slot ? "Not delivering now" : undefined,
+            disabledReason: !sandboxReady(st) || !row?.slot ? "Not delivering now" : undefined,
             onSelect: () => stopDelivering(a),
           },
         ],
@@ -775,7 +777,17 @@ function AccountDetail({ a, stale, now, cloud = null }: { a: AppAccount; stale: 
       {cloud ? (
         <>
           <Fact label="Cloud sessions" value={cloudDeliveryWords(cloud).word} help="Whether messages reach this account's Claude cloud sessions (claude.ai/code)" />
-          <Fact label="Delivered by" value={cloud.kind === "ready" ? "Your cloud sandbox, signed in as this account (works while your computer is off)" : null} empty="Nothing yet: one sign-in from this row's cloud action" />
+          <Fact
+            label="Delivered by"
+            value={
+              cloud.kind === "ready_via_mac"
+                ? "Your Mac, through this account's Claude sign-in there (while Matrx 2 runs)"
+                : cloud.kind === "ready"
+                  ? "Your cloud sandbox, signed in as this account (works while your computer is off)"
+                  : null
+            }
+            empty="Nothing yet: one sign-in from this row's cloud action"
+          />
         </>
       ) : null}
     </div>

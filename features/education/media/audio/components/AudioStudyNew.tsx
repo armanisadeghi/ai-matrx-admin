@@ -95,7 +95,7 @@ export function AudioStudyNew() {
   const [adaptive, setAdaptive] = useState<boolean>(true);
 
   useEffect(() => {
-    fcService.listSets().then((res) => {
+    fcService.listDecks().then((res) => {
       if (res.data) setDecks(res.data);
     });
   }, []);

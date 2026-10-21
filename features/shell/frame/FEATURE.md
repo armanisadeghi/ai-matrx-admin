@@ -62,6 +62,29 @@ together. Linear is the visual reference. It is built beside the old shell and i
   Solutions, More; each sidebar mirrors the tree's second level. Memory's mark is Lucide
   `Infinity` (never Sparkles; `BrainCircuit` is Intelligence's).
 - `frame.css`: the frame's tokens and its few structural rules.
+- `geometry.ts`: the remembered geometry as COOKIES the host's server reads (sidebar width,
+  side chat width, and the side chat's open/closed choice per page key in ONE bounded cookie,
+  `FRAME_COMPANION_OPEN_KEEP` pages). The host passes the read as `initialGeometry`, so the
+  first paint is right; without it the frame reads the cookies after mount. No localStorage.
+
+## Chrome slots (ROLLOUT-PLAN blocking change #1)
+
+The frame draws no app chrome of its own; the host fills four slots (data or nodes, never style):
+
+| Slot | What the host passes | Phone |
+|---|---|---|
+| `headerTools` | its right-group components (node), drawn before the frame's side chat and canvas toggles | not drawn |
+| `phoneTools` | the same tools as data (`FrameHeaderTool[]`) | `phone: "show"` stay, the rest are "…" items |
+| `sidebarFooter` | settings, organization, the person (node), pinned under the menu | the drawer's foot |
+| `appearance` | `{ look, accent }`, stamped as `data-shell-look` + `data-matrx-accent` and tokens | same |
+
+The side chat and canvas toggles stay the frame's. matrx-frontend's host adapter is
+`features/shell/frame-host/FrameChrome.tsx` (the live HeaderControlSet controls, ShellSettingsMenu,
+ShellOrgSwitcher and UserMenuPanel in their `frame` variants, look/accent from the shell layout
+selectors); `frame-host/frameGeometry.server.ts` reads `initialGeometry`. The lab playground
+cannot show the real chrome: it has no `Providers` (redux store, signed-in session) and mounting
+them would pull the app's client graph into the fast lab build; parity is proven by
+`frame-host/__tests__/frame-chrome.test.tsx` until the (core) switch.
 
 ## Ours and the page's (owner, 2026-10-20)
 
@@ -88,7 +111,7 @@ Every region carries `data-mf-owner="frame"|"page"` (and `data-mf-region`).
   the person first opens it, never on render, and rendered through `React.lazy` in Suspense.
   Once loaded it stays mounted (inert while closed). Resizable 340 to 768px (default 350) by
   dragging its left edge or with the arrow keys; dragging 80px past the minimum snaps it shut;
-  the width is remembered per device (`matrx-frame:companion-width`). Closed by default; the
+  the width is remembered per browser (cookie `matrx-frame:side-chat-width`). Closed by default; the
   person's open or closed choice is remembered per page (`pageKey`). A host reads the
   `side_chat` link with `@ai-matrx/chat`'s `readSideChatLink` and passes `companionLink`: the
   link wins until the person acts. The frame reads that link itself (`sideChatAddress.ts`, no
@@ -123,10 +146,11 @@ Crumbs are data (`FrameCrumb`); the frame renders them.
 
 - **Variants** (`record` | `list` | `workspace` | `light`) change only the body. The header
   (44px), tabs row (40px) and footer (32px) are identical in every variant.
-- **Top edge** (owner A/B, 2026-10-20; `headerEdge`, default `fade`): the last top band (the
-  header, or the tabs row) ends in a hairline, or in a 14px fade the content scrolls under.
-  With the fade every scroll area starts 14px lower, so its first line is never covered. `light` keeps the
-  sheet with a softer edge.
+- **Top edge** (owner, 2026-10-20; tightened 2026-10-21; `headerEdge`, default `fade`): the
+  last top band (the header, or the tabs row) ends in a hairline, or in an 8px fade laid over
+  the top of each scroll area. The fade takes no layout height and shows only once the area
+  scrolls, so the first line sits right under the header at rest.
+- **Defaults** (owner, 2026-10-21): Flush, Same sidebar color, Fade; the switches stay.
 - **Forms**, measured from the frame's own width (`formFor`):
   - `wide` (1600px and wider): inline sidebar; properties, the side chat and the canvas inline
     together, as far as they fit.
@@ -196,6 +220,14 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21 (round 11): defaults Flush + Same + Fade; the fade is 8px, takes no height and
+  appears only on scroll.
+
+- 2026-10-21 (chrome parity): `headerTools` is a node slot (+ `phoneTools` data), new
+  `sidebarFooter` and `appearance` slots, geometry moves from localStorage to server-readable
+  cookies (`geometry.ts`, `initialGeometry`); host adapter `frame-host/FrameChrome.tsx`;
+  `check:shell-eager-graph` blocks AppFrame, products and FrameChrome from the classic eager set.
 
 - 2026-10-21 (round 10): the playground's sidebars come from the product flows; Flow view
   (Map, Journeys, Problems) and Big picture; tests tie every tile to a flow and back.

@@ -306,6 +306,10 @@ export interface NotesSliceState {
   /** The Trash read (fetchDeletedNotes): the bin is "empty" only once it has loaded. */
   trashStatus?: "idle" | "loading" | "loaded" | "error";
   trashError?: string | null;
+  /** The SERVER's total of trashed notes (count: "exact" on the last Trash page read), or null before it. */
+  trashTotal?: number | null;
+  /** How many trashed notes the store held when `trashTotal` was read — the count moves with in-session deletes/restores from there. */
+  trashStoreCountAtFetch?: number;
 
   // ── Instance management (Layer 6) ──────────────────────────
   instances: Record<string, NotesInstance>;

@@ -36,7 +36,7 @@ import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifact
 import { Layers } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { fcService } from "@/features/flashcards/data/fcService";
-import { flashcardSetHref } from "@/features/flashcards/routes";
+import { flashcardDeckHref } from "@/features/flashcards/routes";
 import { makeQuizDeck } from "./quiz-flashcards";
 import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
@@ -532,15 +532,15 @@ const MultipleChoiceQuiz: React.FC<MultipleChoiceQuizProps> = ({
           questions: quizState?.originalQuestions ?? [],
         },
         {
-          find: async (system, id) => fcService.findSetBySource(system, id),
-          create: async (input, cards) => fcService.createSetWithCards(input, cards),
+          find: async (system, id) => fcService.findDeckBySource(system, id),
+          create: async (input, cards) => fcService.createDeckWithCards(input, cards),
         },
       );
       if (!res.ok) {
         toast.error(res.error);
         return;
       }
-      setDeckHref(flashcardSetHref({ id: res.deckId }));
+      setDeckHref(flashcardDeckHref({ id: res.deckId }));
       toast.success(
         res.created
           ? `${res.cardCount} flashcards saved. Click the deck button again to open them.`

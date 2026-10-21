@@ -98,7 +98,7 @@ export function ExamContentPipeline() {
       try {
         const [next, existing] = await Promise.all([
           listLearnerOwnedGroundingSources(user.id),
-          fcService.listSets(),
+          fcService.listDecks(),
         ]);
         if (!cancelled) {
           setSources(next);
@@ -113,7 +113,7 @@ export function ExamContentPipeline() {
                     "education-grounded-content-v1",
                 )
                 .map(
-                  (set) => [set.id, fcService.getSetWithCards(set.id)] as const,
+                  (set) => [set.id, fcService.getDeckWithCards(set.id)] as const,
                 ),
             );
             for (const set of existing.data) {
@@ -281,7 +281,7 @@ export function ExamContentPipeline() {
           },
         });
 
-        const tagged = await fcService.mergeSetMetadata(
+        const tagged = await fcService.mergeDeckMetadata(
           result.artifactId,
           (current) => ({
             ...current,
@@ -372,7 +372,7 @@ export function ExamContentPipeline() {
     if (!draft.setId || draft.status !== "ready") return;
     patchDraft(draft.plan, { status: "verifying", error: undefined });
     try {
-      const visible = await fcService.updateSetVisibility(
+      const visible = await fcService.updateDeckVisibility(
         draft.setId,
         "public",
       );
@@ -381,7 +381,7 @@ export function ExamContentPipeline() {
         draft.setId,
         "Grounded against the recorded official-source passages and passed the automated source-verification mandate. AI-built starter; not human verified.",
       );
-      const tagged = await fcService.mergeSetMetadata(
+      const tagged = await fcService.mergeDeckMetadata(
         draft.setId,
         (current) => ({
           ...current,

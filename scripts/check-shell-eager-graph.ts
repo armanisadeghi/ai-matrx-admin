@@ -93,6 +93,11 @@ export const HEAVY: ReadonlyArray<HeavyEntry> = [
   { match: /^features\/content-ir\/registry\/component-registry\.ts$/, why: "content-ir component registry (the kind stack, ~130 modules) — loads when a kind is shown; shell surfaces draw answers through AnswerTextView / AnswerValueSlot" },
   { match: /^@ai-matrx\/messaging\/dist\/react\.js$/, why: "messaging screens (inbox, thread, composer, react-markdown) — the shell mounts the provider and hooks through @ai-matrx/messaging/react/host" },
   { match: /^@ai-matrx\/design-system\/dist\/data-table\/index\.js$/, why: "design-system data-table index (MatrxDataTable and every grid feature)" },
+  // THE NEW APP FRAME (ROLLOUT-PLAN §1 Guards): it reaches a person only through the one gated
+  // dynamic() edge in features/shell/frame-host; a static import from the classic shell would ship
+  // the whole frame (and its chrome adapter) to every signed-in page.
+  { match: /^features\/shell\/frame\/(AppFrame|products)\.tsx?$/, why: "the new app frame — loads only behind the frame-mode gate, never in the classic shell" },
+  { match: /^features\/shell\/frame-host\/FrameChrome\.tsx$/, why: "the app frame's chrome adapter — loads with the frame, never in the classic shell" },
 ];
 
 /** next.config.js turbopack.resolveAlias, for the production (non-demos) profile. Kept in sync

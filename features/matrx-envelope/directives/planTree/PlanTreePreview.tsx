@@ -83,6 +83,7 @@ function NodeRow({
         <TreeDisclosure
           expandable={hasKids}
           expanded={expanded}
+          label={node.label}
           onToggle={() => setOpen((v) => !v)}
         />
         {hasKids ? (

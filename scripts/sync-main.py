@@ -1025,6 +1025,15 @@ def commit_all():
     files = [x for x in names.split("\0") if x]
     body = sweep_message_body(files)
     rc, out, err = git("commit", "--no-verify", "-q", "-m", LOCAL_MSG, "-m", body, check=False)
+    # Other sessions commit to this shared checkout every few seconds. A commit that read HEAD
+    # and then lost the race ends "cannot lock ref 'HEAD': is at X but expected Y" with nothing
+    # written; retrying re-reads HEAD. Without this retry that single lost race stopped the whole
+    # sync after ~25 minutes of sweep work and no release shipped (ship-all 2026-10-21_09-41-09).
+    for _attempt in range(8):
+        if rc == 0 or "cannot lock ref" not in (out + err):
+            break
+        time.sleep(0.5 + 0.5 * _attempt)
+        rc, out, err = git("commit", "--no-verify", "-q", "-m", LOCAL_MSG, "-m", body, check=False)
     if rc != 0:
         # The shared checkout has concurrent writers. sweep_message_body() reads transcripts for
         # seconds; in that window another session's `git commit --only <its paths>` can commit

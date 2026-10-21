@@ -1,7 +1,7 @@
 /**
  * Remount safety — the education items: flashcard deck and study kit.
  *
- * SUT: each type's `Body` from `items/catalog.ts` (`SetDetailView`, `KitHub`), mounted as the board
+ * SUT: each type's `Body` from `items/catalog.ts` (`DeckDetailView`, `KitHub`), mounted as the board
  * mounts a tile (`remount-safety/harness.tsx`), over the real store and the recording service
  * boundary. The break each case catches is named above it.
  */

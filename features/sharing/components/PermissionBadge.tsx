@@ -140,3 +140,16 @@ export function PermissionLevelDescription({
     <span className="text-xs text-muted-foreground">{descriptions[level]}</span>
   );
 }
+
+/**
+ * GuestBadge — a person who is not a member of the thing's organization (CLOSE-SHARE, Notion's "Guest").
+ * The store decides (`isGuest` from get_resource_permissions; a Space's presence carries its own answer).
+ * One marker for every share list and avatar row.
+ */
+export function GuestBadge() {
+  return (
+    <Badge variant="outline" className="shrink-0 px-1.5 py-0 text-[10px] leading-4 text-muted-foreground" data-guest-marker="">
+      Guest
+    </Badge>
+  );
+}

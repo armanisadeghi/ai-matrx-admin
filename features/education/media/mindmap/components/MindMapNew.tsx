@@ -74,7 +74,7 @@ export function MindMapNew() {
   const [focus, setFocus] = useState("");
 
   useEffect(() => {
-    fcService.listSets().then((res) => {
+    fcService.listDecks().then((res) => {
       if (res.data) setDecks(res.data);
     });
   }, []);
@@ -109,7 +109,7 @@ export function MindMapNew() {
       // the exact card they summarize (clickable node → source card / Ask tutor).
       let deckCards: LinkableCard[] = [];
       if (sourceKind === "deck") {
-        const withCards = await fcService.getSetWithCards(deckId);
+        const withCards = await fcService.getDeckWithCards(deckId);
         deckCards = (withCards.data?.cards ?? []).map((c) => ({
           id: c.id,
           front: c.front,
