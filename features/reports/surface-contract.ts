@@ -63,7 +63,7 @@ export function buildDriftReportScope(args: {
     report_overview: xmlElement("report", { title: "Agent Drift", status: report.status, selected_agent_id: selected, search: table.search },
       report.status === "succeeded" && viewReady ? xmlList("agents", findings, (row) => xmlElement("agent", row), { maxRows: 25 }) : undefined),
     content: report.status === "succeeded" && viewReady
-      ? findings.map((row) => `${row.agent_name}: ${row.breaking} breaking, ${row.silent_breaking} silent, ${row.stale_pins} stale pins`).join("\n") || "No drift detected."
+      ? findings.map((row) => `${row.agent_name}: ${row.breaking} breaking, ${row.silent_breaking} silent, ${row.stale_pins} stale pins`).join("\n") || "No agents match the current report view."
       : `Agent Drift: ${report.status}${report.error ? ` — ${report.error}` : ""}`,
   });
 }
