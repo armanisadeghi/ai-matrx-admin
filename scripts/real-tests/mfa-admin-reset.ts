@@ -31,7 +31,9 @@ async function main() {
  try {
   await db.query(`do $$ begin if not exists(select 1 from pg_roles where rolname='authenticated') then create role authenticated; end if;
    if not exists(select 1 from pg_roles where rolname='anon') then create role anon; end if;
-   if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role; end if; end $$;
+   if not exists(select 1 from pg_roles where rolname='service_role') then create role service_role; end if;
+   if not exists(select 1 from pg_roles where rolname='dashboard_user') then create role dashboard_user; end if;
+   if not exists(select 1 from pg_roles where rolname='svc_seo') then create role svc_seo; end if; end $$;
    create schema if not exists iam; create schema if not exists admin; create schema if not exists platform; create schema if not exists scheduler; create schema if not exists tool;
    create table if not exists admin.support_sessions(auth_session_id uuid primary key,status text,expires_at timestamptz);
    create table if not exists iam.users(id uuid primary key);
@@ -120,7 +122,19 @@ async function main() {
   const assurance=await fresh.mfa.getAuthenticatorAssuranceLevel();check(assurance.data?.currentLevel==='aal1',"legitimate fresh login starts at AAL1 after reset");
   const missing=await fresh.mfa.challenge({factorId:factor.data.id});check(Boolean(missing.error),"removed authenticator cannot elevate a new login");
   const hashes=async()=> (await db.query("select p.proname,pg_get_functiondef(p.oid) as body from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='iam' and p.proname in ('close_account','sign_out_everywhere','remove_mfa_factor') order by 1")).rows.map(r=>({name:r.proname,hash:createHash('sha256').update(r.body).digest('hex')}));
-  const applied=await hashes();await db.query(down);const restored=await hashes();
+  const applied=await hashes();
+  // Reproduce the real at-birth guard's retained direct grants, then execute the correction.
+  await db.query('grant execute on function iam._end_user_sessions(uuid) to dashboard_user,svc_seo');
+  check((await scalar("select has_function_privilege('svc_seo','iam._end_user_sessions(uuid)','execute') as yes")).yes,"retained service grant reproduces the installed ACL defect");
+  const aclUp=await readFile('migrations/campaign/20261021211905_admin_session_helper_owner_only.sql','utf8');
+  const aclDown=await readFile('migrations/inverse/20261021211905_admin_session_helper_owner_only_down.sql','utf8');
+  await db.query(aclUp);
+  check((await scalar("select count(*)::int as n from pg_proc p cross join lateral aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a where p.oid='iam._end_user_sessions(uuid)'::regprocedure and a.grantee<>p.proowner")).n===0,"private helper retains only its owner after real ACL correction");
+  await db.query(aclDown);
+  check((await scalar("select has_function_privilege('dashboard_user','iam._end_user_sessions(uuid)','execute') and has_function_privilege('svc_seo','iam._end_user_sessions(uuid)','execute') as yes")).yes,"ACL inverse restores exactly captured direct grants");
+  await db.query(aclUp);
+  check(JSON.stringify(await hashes())===JSON.stringify(applied),"ACL correction preserves all reviewed wrapper bodies");
+  await db.query(down);const restored=await hashes();
   for(const r of restored) check(r.hash===createHash('sha256').update(await readFile(resolve(baseline!,`${r.name}.sql`),'utf8')).digest('hex'),`inverse restores exact ${r.name} body`);
   await db.query(up);check(JSON.stringify(await hashes())===JSON.stringify(applied),"up/inverse/up returns exact reviewed function bodies");
   console.log(JSON.stringify({checks,provider:'GoTrue v2.197.0',membershipProjection:'owned fixture relation',audit:'actual captured production helper',hostedDataTouched:false}));

@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-21T18:16:35.538Z",
+  "generated_at": "2026-10-21T21:22:48.637Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -355,6 +355,18 @@
       "filename": "20261021190000_closeformula_a_a_formula_value_knows_which_formula_made_it.sql",
       "checksum": "9951c8f42e0236f4cce2e92f87a1451e6c6d95271740532089d685bf2e6e1836",
       "applied_at": "2026-10-21 17:43:49.397923+00"
+    },
+    "migrations/campaign/20261021204916_admin_mfa_reset_revokes_sessions.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021204916_admin_mfa_reset_revokes_sessions.sql",
+      "checksum": "8fceb9972cf048fbc615f0e1623aa2bfefbae739f81b9cbebb732d3b1eda692b",
+      "applied_at": "2026-10-21 21:15:26.557694+00"
+    },
+    "migrations/campaign/20261021211905_admin_session_helper_owner_only.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021211905_admin_session_helper_owner_only.sql",
+      "checksum": "ee7b3f6ad733b75ae538f1a8efc9c4802819517c0dea1ed4b22d9140dce52887",
+      "applied_at": "2026-10-21 21:22:43.970563+00"
     },
     "migrations/campaign/20261021240000_readspeed5_a_the_refresh_door_works_out_values_in_the_compute_lane.sql": {
       "source": "matrx-frontend",

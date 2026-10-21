@@ -224,7 +224,8 @@ async function main() {
     // Native refresh linearizes first: its session UPDATE is held, and reset waits on that exact row.
     {
       const subject = await withFactor(await createPerson());
-      const current = (await subject.auth.getSession()).data.session!;
+      const current = (await subject.auth.getSession()).data.session;
+      assert.ok(current);
       const key = 912_001;
       const release = await hold(key);
       await armSessionUpdate(sessionId(current.access_token), key, "refresh-wins");
@@ -236,9 +237,10 @@ async function main() {
         await release();
         const refreshed = await bounded(refreshing, "refresh winner");
         check(refreshed.ok && Boolean(refreshed.refreshToken), "native refresh commits before the waiting reset");
+        assert.ok(refreshed.refreshToken);
         await bounded(resetting, "reset after refresh");
         check(!(await nativeRefresh(current.refresh_token)).ok, "old refresh token is unusable after the reset");
-        check(!(await nativeRefresh(refreshed.refreshToken!)).ok, "newly issued refresh token is unusable after the reset");
+        check(!(await nativeRefresh(refreshed.refreshToken)).ok, "newly issued refresh token is unusable after the reset");
         await assertRemoved(subject.uid, subject.factorId);
       } catch (error) {
         await release().catch(() => undefined);
@@ -249,7 +251,8 @@ async function main() {
     // Reset linearizes first: the audit barrier proves factor/session deletion already ran.
     {
       const subject = await withFactor(await createPerson());
-      const current = (await subject.auth.getSession()).data.session!;
+      const current = (await subject.auth.getSession()).data.session;
+      assert.ok(current);
       const key = 912_002;
       const release = await hold(key);
       await armAudit(subject.uid, key, "refresh-loses");
@@ -331,7 +334,8 @@ async function main() {
     // The auth.users fence holds a concurrent fresh login until reset commits; it then starts at AAL1.
     {
       const subject = await withFactor(await createPerson());
-      const old = (await subject.auth.getSession()).data.session!;
+      const old = (await subject.auth.getSession()).data.session;
+      assert.ok(old);
       const key = 912_005;
       const release = await hold(key);
       await armAudit(subject.uid, key, "login-after");
@@ -341,7 +345,7 @@ async function main() {
         const fresh = authClient();
         let settled = false;
         const loggingIn = fresh.signInWithPassword({ email: subject.email, password: subject.password }).finally(() => { settled = true; });
-        await waitForProviderLock("users");
+        await waitForProviderLock("sessions");
         check(!settled, "fresh login is blocked by the reset user-row fence");
         await release();
         await bounded(resetting, "reset before fresh login");

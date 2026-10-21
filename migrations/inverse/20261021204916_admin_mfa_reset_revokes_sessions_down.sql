@@ -1,4 +1,3 @@
--- draft: CASA owner; inverse parity rehearsal pending
 -- based-on: iam._end_user_sessions(uuid) 5fc5b4317ea501c50027586e47cd521d7a1312b323bbd255cd5935df15ade23e
 -- based-on: iam.sign_out_everywhere(uuid,text) c004cbcb953246e628c090090c46bb78480c6ff50955237b1615abf3dee859fd
 -- based-on: iam.close_account(uuid,text) 1c10007397f42e7ddeeefb7d1a65e21f146d7126a684326c9a2aa46e4bade13b
