@@ -172,7 +172,9 @@ export function normalizeEvidence(evidence: unknown): EvidenceView[] {
 export function otherMetadata(metadata: unknown): [string, unknown][] {
   if (!isRecord(metadata))
     return metadata == null ? [] : [["metadata", metadata]];
-  return Object.entries(metadata).filter(([k]) => k !== "run");
+  return Object.entries(metadata).filter(
+    ([k]) => k !== "run" && k !== "replaced",
+  );
 }
 
 export type CellRun = {
@@ -391,4 +393,27 @@ export function leftNeedsYou(
       rejection_fingerprint: after.rejection_fingerprint,
     })
   );
+}
+
+/**
+ * The rule an unapproved AGENT draft replaced (`metadata.replaced`, kept by the door) — what
+ * Reject restores. Null when there is nothing to restore (Reject then archives the cell).
+ */
+export function replacedRule(
+  cell: Pick<TranslationCellRow, "source" | "state" | "metadata">,
+): { rule: unknown; source: string | null; at: string | null } | null {
+  if (cell.source !== "agent" || cell.state === "approved") return null;
+  const meta = cell.metadata;
+  const replaced =
+    meta && typeof meta === "object"
+      ? (meta as Record<string, unknown>).replaced
+      : null;
+  if (!replaced || typeof replaced !== "object") return null;
+  const r = replaced as Record<string, unknown>;
+  if (!r.rule || typeof r.rule !== "object") return null;
+  return {
+    rule: r.rule,
+    source: typeof r.source === "string" ? r.source : null,
+    at: typeof r.at === "string" ? r.at : null,
+  };
 }

@@ -23,7 +23,12 @@ export type EvidenceEntry = {
 };
 
 export type CellConflict = {
-  sources?: { name?: string; says?: unknown; confidence?: number | null; rationale?: string | null }[];
+  sources?: {
+    name?: string;
+    says?: unknown;
+    confidence?: number | null;
+    rationale?: string | null;
+  }[];
   at?: string;
 };
 
@@ -45,6 +50,8 @@ export type TranslationCellRow = {
   approved_at: string | null;
   version: number;
   updated_at: string | null;
+  /** run (the agent's chat), replaced (the rule an agent draft overwrote), anything else */
+  metadata?: Record<string, unknown> | null;
 };
 
 /** One `ai.offering_rules_compiled` row (K5) — the one merge. */
@@ -112,5 +119,4 @@ export type TranslationBundle = {
 
 /** What the read answered: the bundle, or "the tables are not on this database". */
 export type TranslationRead =
-  | { status: "ready"; bundle: TranslationBundle }
-  | { status: "absent" };
+  { status: "ready"; bundle: TranslationBundle } | { status: "absent" };

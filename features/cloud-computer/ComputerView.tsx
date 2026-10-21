@@ -43,6 +43,7 @@ import type { CloudComputer } from "./service";
 import { ScaledFrame, type ScaledFrameHandle, type StreamState } from "./ScaledFrame";
 import { liveStream, type HeldStream } from "./liveStream";
 import { CloudFolderNotice } from "./CloudFolderNotice";
+import { AccountSetupPanel } from "./AccountSetupPanel";
 
 const WAITING = "animate-ssr-shimmer-opacity";
 
@@ -407,6 +408,7 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
   return (
     <div className="flex h-full flex-col gap-2 p-2">
       <CloudFolderNotice />
+      <AccountSetupPanel />
       <div className={cn("min-h-0", large ? "flex-1" : "")}>
         <div
           className={cn(

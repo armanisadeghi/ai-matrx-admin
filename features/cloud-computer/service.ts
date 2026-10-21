@@ -144,3 +144,65 @@ export async function getCloudFolderState(): Promise<CloudFolderState> {
 export async function resolveHeldDeletes(holdId: string, action: "delete" | "restore"): Promise<void> {
   await postJson<unknown>("/browser-manager/cloud-computer/files/resolve", { hold_id: holdId, action });
 }
+
+/**
+ * Person-run account setup (aidream `account_setup.py`): the person signs up for
+ * an outside service themselves, on the machine, on a profile kept for that
+ * account. These are the two doors around it — start (open the sign-up page) and
+ * save (put the new login in their vault, bound to that profile). Neither ever
+ * returns what the person typed.
+ */
+export interface AccountSetupRun {
+  runId: string;
+  profileId: string;
+  host: string;
+  navigated: boolean;
+}
+
+export async function startAccountSetup(input: {
+  serviceUrl: string;
+  displayName?: string;
+}): Promise<AccountSetupRun> {
+  const { data } = await postJson<unknown>("/browser-manager/account-setup/start", {
+    service_url: input.serviceUrl,
+    display_name: input.displayName?.trim() || null,
+  });
+  const v = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+  const runId = text(v.run_id);
+  const profileId = text(v.profile_id);
+  if (!runId || !profileId) throw new Error("The sign-up page could not be opened.");
+  return { runId, profileId, host: text(v.host) ?? "", navigated: v.navigated === true };
+}
+
+export interface SavedAccountLogin {
+  credentialItemId: string;
+  boundToProfile: boolean;
+}
+
+export async function saveAccountLogin(input: {
+  runId: string;
+  displayName: string;
+  username: string;
+  password: string;
+}): Promise<SavedAccountLogin> {
+  const { data } = await postJson<unknown>(`/browser-manager/runs/${input.runId}/account-setup/save`, {
+    display_name: input.displayName,
+    username: input.username,
+    password: input.password,
+  });
+  const v = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+  const credentialItemId = text(v.credential_item_id);
+  if (!credentialItemId) throw new Error("The login could not be saved.");
+  return { credentialItemId, boundToProfile: v.bound_to_profile === true };
+}
+
+/** Paste route of the vault's authenticator enrollment (`POST /authenticator/enroll`). */
+export async function saveAccountAuthenticator(input: {
+  credentialItemId: string;
+  key: string;
+}): Promise<void> {
+  await postJson<unknown>("/api/authenticator/enroll", {
+    credential_item_id: input.credentialItemId,
+    enrollment_input: input.key,
+  });
+}

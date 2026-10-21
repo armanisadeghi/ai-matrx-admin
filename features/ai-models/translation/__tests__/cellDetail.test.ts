@@ -8,6 +8,7 @@ import {
   jsonEqual,
   leftNeedsYou,
   proofCurrent,
+  replacedRule,
   normalizeEvidence,
   normalizeTestResult,
   otherMetadata,
@@ -337,5 +338,48 @@ describe("leftNeedsYou — the 'where did it go' notice", () => {
         rejection_fingerprint: "fp",
       }),
     ).toBe(false);
+  });
+});
+
+describe("replacedRule — what Reject restores", () => {
+  const rule = { provider_key: "reasoning.effort" };
+  it("is the rule an unapproved agent draft replaced", () => {
+    const got = replacedRule({
+      source: "agent",
+      state: "proposed",
+      metadata: { replaced: { rule, source: "probe" } },
+    } as never);
+    expect(got?.rule).toEqual(rule);
+    expect(got?.source).toBe("probe");
+  });
+  it("is null for an approved cell, a non-agent cell, or no keepsake", () => {
+    expect(
+      replacedRule({
+        source: "agent",
+        state: "approved",
+        metadata: { replaced: { rule } },
+      } as never),
+    ).toBeNull();
+    expect(
+      replacedRule({
+        source: "probe",
+        state: "proposed",
+        metadata: { replaced: { rule } },
+      } as never),
+    ).toBeNull();
+    expect(
+      replacedRule({
+        source: "agent",
+        state: "proposed",
+        metadata: {},
+      } as never),
+    ).toBeNull();
+    expect(
+      replacedRule({
+        source: "agent",
+        state: "proposed",
+        metadata: null,
+      } as never),
+    ).toBeNull();
   });
 });

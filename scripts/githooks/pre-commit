@@ -62,6 +62,17 @@ if [ -n "$STAGED" ]; then
         exit 1
     fi
 fi
+# CLOSE IN FLOW (Arman, 2026-10-20): a dialog's × is a flex item of its row, never pinned to a corner
+# with absolute/fixed — the design-system's Dialog / Sheet / CommandDialog draw it. Runs only when a
+# .tsx/.jsx is staged and the installed design-system ships the scanner (~2 s, shrink-only baseline).
+CLOSE_IN_FLOW="$ROOT/node_modules/@ai-matrx/design-system/scripts/check-close-in-flow.mjs"
+if [ -f "$CLOSE_IN_FLOW" ] && git diff --cached --name-only --diff-filter=ACMR -- '*.tsx' '*.jsx' | grep -q .; then
+    (cd "$ROOT" && node "$CLOSE_IN_FLOW" --baseline scripts/close-in-flow-baseline.json app components features lib hooks utils providers) || {
+        echo "COMMIT REFUSED: a close control is pinned to a corner (above)." >&2
+        exit 1
+    }
+fi
+
 # ONE SUBJECT, ONE HOME (law 15, 2026-10-18): a new skill names its home (`subject:`), a synced skill
 # copy is never hand-edited, a subject never gets a second home. The guard lives in common-docs beside
 # this repo; a checkout without it skips this job. Only runs when a .md file is staged (~1 s).

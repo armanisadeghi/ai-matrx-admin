@@ -46,6 +46,7 @@
     "check:tool-catalog-readers": "node scripts/check-tool-catalog-readers.mjs",
     "check:tool-catalog-readers:self-test": "node scripts/check-tool-catalog-readers.mjs --self-test",
     "check:outbound-referral": "node node_modules/@ai-matrx/kit/scripts/check-outbound-referral.mjs --baseline scripts/outbound-referral-baseline.json app components features lib hooks utils providers actions config constants types",
+    "check:close-in-flow": "node node_modules/@ai-matrx/design-system/scripts/check-close-in-flow.mjs --baseline scripts/close-in-flow-baseline.json app components features lib hooks utils providers",
     "check:outbound-referral:self-test": "node node_modules/@ai-matrx/kit/scripts/check-outbound-referral.mjs --self-test",
     "check:parse": "node scripts/check-parse.mjs",
     "check:parse:changed": "node scripts/check-parse.mjs --changed",

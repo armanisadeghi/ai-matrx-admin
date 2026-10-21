@@ -46,6 +46,7 @@ import {
   jsonEqual,
   leftNeedsYou,
   proofCurrent,
+  replacedRule,
   isHttpUrl,
   normalizeEvidence,
   otherMetadata,
@@ -465,6 +466,11 @@ export default function CellDetailPanel({
     ? !proven && evidenceProven(detail.evidence)
     : false;
   const run = detail ? readRun(detail.metadata) : null;
+  const replaced = replacedRule({
+    ...cell,
+    metadata: (detail?.metadata ??
+      cell.metadata) as TranslationCellRow["metadata"],
+  });
   const metadataRest = detail ? otherMetadata(detail.metadata) : [];
   const detailError = detailQuery.isError ? (
     <span className="text-destructive">
@@ -512,6 +518,17 @@ export default function CellDetailPanel({
           ))
         }
       />
+      {replaced ? (
+        <PropertyRow
+          label="Rule this draft replaced"
+          help="Reject restores it."
+          value={summarizeRule(replaced.rule as TranslationCellRow["rule"])}
+          expanded={
+            <AnyRow label="Replaced rule as stored" value={replaced.rule} />
+          }
+          defaultOpen
+        />
+      ) : null}
       <PropertyRow
         label="Agent run"
         value={

@@ -12,7 +12,13 @@
  */
 
 import { useState } from "react";
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from "@ai-matrx/design-system";
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Archive, Check } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -25,6 +31,7 @@ import {
 } from "@/features/ai-models/controls/resolveControls";
 import type { ControlRule } from "../../types";
 import { archiveTranslationCell, saveTranslationCell } from "../data";
+import { replacedRule } from "../cellDetail";
 import {
   describeFromNumber,
   describeOff,
@@ -33,6 +40,7 @@ import {
   plainRule,
   plainSetting,
   previewValues,
+  summarizeRule,
   type RuleContext,
   type WireOutcome,
 } from "../model";
@@ -173,7 +181,9 @@ export default function TranslationCellEditor({
   const [confirmNoReach, setConfirmNoReach] = useState(false);
   // A missing rule opens EMPTY, from every entry point: no way of reaching the model is chosen,
   // and nothing can be approved, until the owner picks one.
-  const isMissing = !target.cell && (target.missing === true || target.initialRule === undefined);
+  const isMissing =
+    !target.cell &&
+    (target.missing === true || target.initialRule === undefined);
   const [picked, setPicked] = useState(false);
   const blank = isMissing && !picked;
   const onRuleChange = (next: ControlRule) => {
@@ -187,6 +197,7 @@ export default function TranslationCellEditor({
   const blocking = validateRuleShape(draft);
   const issues = [...blocking, ...validateAutoNoneLaw(draft)];
   const cell = target.cell;
+  const replaced = cell ? replacedRule(cell) : null;
   const alreadyApproved =
     cell?.state === "approved" && !cell.conflict && !cell.rejection_fingerprint;
   const reach = target.covers.length;
@@ -223,8 +234,10 @@ export default function TranslationCellEditor({
     if (!cell) return;
     setBusy(true);
     try {
-      await archiveTranslationCell(cell.id);
-      toast.success("Archived");
+      const { restored } = await archiveTranslationCell(cell.id);
+      toast.success(
+        restored ? "Restored the rule this draft replaced" : "Archived",
+      );
       await dispatch(reloadAiCatalog());
       onChanged();
       onClose();
@@ -286,12 +299,16 @@ export default function TranslationCellEditor({
             <div className="rounded-md border border-dashed border-amber-500/50 bg-amber-500/[0.06] px-2.5 py-2">
               <p className="text-sm font-medium">No rule yet</p>
               {target.today ? (
-                <p className="text-xs text-muted-foreground">Today: {target.today}</p>
+                <p className="text-xs text-muted-foreground">
+                  Today: {target.today}
+                </p>
               ) : null}
             </div>
           ) : (
             <p className="text-sm font-medium">
-              {plainRule(draft, target.settingKey, setting, { consumedBy: target.consumedBy })}
+              {plainRule(draft, target.settingKey, setting, {
+                consumedBy: target.consumedBy,
+              })}
             </p>
           )}
           {blank ? null : (
@@ -376,7 +393,7 @@ export default function TranslationCellEditor({
               disabled={busy}
               onClick={() => setConfirmArchive(true)}
             >
-              Archive
+              {replaced ? "Reject draft" : "Archive"}
             </Button>
           ) : (
             <span />
@@ -428,9 +445,13 @@ export default function TranslationCellEditor({
         <ConfirmDialog
           open={confirmArchive}
           onOpenChange={setConfirmArchive}
-          title="Archive this rule?"
-          description={`${target.fallbackLabel} takes over on the next request.`}
-          confirmLabel="Archive"
+          title={replaced ? "Reject this draft?" : "Archive this rule?"}
+          description={
+            replaced
+              ? `The rule it replaced comes back: ${summarizeRule(replaced.rule as TranslationCellRow["rule"])}.`
+              : `${target.fallbackLabel} takes over on the next request.`
+          }
+          confirmLabel={replaced ? "Reject" : "Archive"}
           variant="destructive"
           busy={busy}
           onConfirm={archive}

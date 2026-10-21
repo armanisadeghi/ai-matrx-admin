@@ -31,10 +31,20 @@ import {
   readTranslationBundle,
   saveTranslationCell,
 } from "@/features/ai-models/translation/data";
-import { cellNeedsYou, summarizeRule } from "@/features/ai-models/translation/model";
-import { sourceLabel, TRANSLATION_GRID_QUERY_KEY } from "@/features/ai-models/translation/cellDetail";
+import {
+  cellNeedsYou,
+  summarizeRule,
+} from "@/features/ai-models/translation/model";
+import {
+  replacedRule,
+  sourceLabel,
+  TRANSLATION_GRID_QUERY_KEY,
+} from "@/features/ai-models/translation/cellDetail";
 import CellDetailPanel from "@/features/ai-models/translation/components/CellDetailPanel";
-import type { TranslationBundle, TranslationCellRow } from "@/features/ai-models/translation/types";
+import type {
+  TranslationBundle,
+  TranslationCellRow,
+} from "@/features/ai-models/translation/types";
 import { extractErrorMessage } from "@/utils/errors";
 import type {
   ApprovalDecisions,
@@ -50,24 +60,44 @@ const GRID_HREF = "/administration/ai/ai-models/translations";
 /** Shared with the grid so a decision here refreshes the grid and the reverse. */
 const GRID_QUERY_KEY = TRANSLATION_GRID_QUERY_KEY;
 
-type TranslationItem = ApprovalItem & { cell: TranslationCellRow; reach: number };
+type TranslationItem = ApprovalItem & {
+  cell: TranslationCellRow;
+  reach: number;
+};
 
-function ownerLabel(bundle: TranslationBundle, cell: TranslationCellRow): string {
+function ownerLabel(
+  bundle: TranslationBundle,
+  cell: TranslationCellRow,
+): string {
   if (cell.layer === "api") {
     const api = bundle.apis.find((a) => a.id === cell.layer_owner_id);
     return api?.display_name || api?.name || "an API";
   }
   if (cell.layer === "profile") {
-    return bundle.profiles.find((p) => p.id === cell.layer_owner_id)?.name ?? "a settings profile";
+    return (
+      bundle.profiles.find((p) => p.id === cell.layer_owner_id)?.name ??
+      "a settings profile"
+    );
   }
-  return bundle.offerings.find((o) => o.id === cell.layer_owner_id)?.model_name ?? "one model";
+  return (
+    bundle.offerings.find((o) => o.id === cell.layer_owner_id)?.model_name ??
+    "one model"
+  );
 }
 
-function toItem(bundle: TranslationBundle, cell: TranslationCellRow): TranslationItem {
+function toItem(
+  bundle: TranslationBundle,
+  cell: TranslationCellRow,
+): TranslationItem {
   const reach = bundle.compiled.filter((r) => r.cell_id === cell.id).length;
   const owner = ownerLabel(bundle, cell);
-  const why = cell.rejection_fingerprint ? "Rejected" : cell.conflict ? "Conflict" : "Proposed";
+  const why = cell.rejection_fingerprint
+    ? "Rejected"
+    : cell.conflict
+      ? "Conflict"
+      : "Proposed";
   const models = reach === 1 ? "1 model" : `${reach} models`;
+  const replaced = replacedRule(cell);
   return {
     key: `${KIND_ID}:${cell.id}`,
     kindId: KIND_ID,
@@ -80,7 +110,9 @@ function toItem(bundle: TranslationBundle, cell: TranslationCellRow): Translatio
     rejectEffect:
       cell.state === "approved"
         ? "Nothing — an approved rule is replaced in the grid, never archived from here."
-        : `Archives this rule; the layer below takes over for ${models}.`,
+        : replaced
+          ? `Restores the rule this draft replaced (${summarizeRule(replaced.rule as TranslationCellRow["rule"])}) for ${models}.`
+          : `Archives this rule; the layer below takes over for ${models}.`,
     proposedBy: sourceLabel(cell.source),
     proposedAt: cell.updated_at,
     // Everything the cell carries — confidence, evidence, the agent's chat, Test now.
@@ -107,7 +139,9 @@ function useSource(): ApprovalSource {
     staleTime: 30_000,
   });
   const bundle = read.data?.status === "ready" ? read.data.bundle : null;
-  const items = bundle ? bundle.cells.filter(cellNeedsYou).map((c) => toItem(bundle, c)) : [];
+  const items = bundle
+    ? bundle.cells.filter(cellNeedsYou).map((c) => toItem(bundle, c))
+    : [];
   return {
     items,
     total: items.length,
@@ -140,7 +174,10 @@ function useDecisions(): ApprovalDecisions {
           });
           outcome.applied += 1;
         } catch (error) {
-          outcome.failures.push({ key: item.key, message: extractErrorMessage(error) });
+          outcome.failures.push({
+            key: item.key,
+            message: extractErrorMessage(error),
+          });
         }
       }
       await settle(outcome.applied);
@@ -152,7 +189,8 @@ function useDecisions(): ApprovalDecisions {
         if (item.cell.state === "approved") {
           outcome.failures.push({
             key: item.key,
-            message: "This rule is approved — replace it in the translation grid.",
+            message:
+              "This rule is approved — replace it in the translation grid.",
           });
           continue;
         }
@@ -160,7 +198,10 @@ function useDecisions(): ApprovalDecisions {
           await archiveTranslationCell(item.cell.id);
           outcome.applied += 1;
         } catch (error) {
-          outcome.failures.push({ key: item.key, message: extractErrorMessage(error) });
+          outcome.failures.push({
+            key: item.key,
+            message: extractErrorMessage(error),
+          });
         }
       }
       await settle(outcome.applied);
@@ -184,7 +225,7 @@ export const settingsTranslationKind: ApprovalKind = {
     reasonPrompt: "Note (optional)",
   },
   reject: {
-    label: "Archive",
+    label: "Reject",
     keepsReason: false,
   },
   useSource,

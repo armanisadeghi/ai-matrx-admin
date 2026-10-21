@@ -47,7 +47,7 @@ export function isAbsentRelationError(error: unknown): boolean {
 // `evidence` is left out of the list read: it is the heaviest column and the
 // screen never draws it.
 const CELL_COLUMNS =
-  "id, layer, layer_owner_id, setting_key, rule, state, confidence, rationale, source, conflict, rejection_fingerprint, approved_by, approved_at, version, updated_at";
+  "id, layer, layer_owner_id, setting_key, rule, state, confidence, rationale, source, conflict, rejection_fingerprint, approved_by, approved_at, version, updated_at, metadata";
 
 const PAGE = 1000;
 
@@ -412,14 +412,24 @@ export async function saveTranslationCell(
 }
 
 /** Archive door (never a delete): the next layer down takes over. */
-export async function archiveTranslationCell(cellId: string): Promise<void> {
-  const { error } = await withAdminFeature(
+/**
+ * Reject / archive one cell. For an unapproved AGENT draft that replaced a rule, the door
+ * restores that rule instead of archiving (`restored: true`); otherwise the cell is archived.
+ */
+export async function archiveTranslationCell(
+  cellId: string,
+): Promise<{ restored: boolean }> {
+  const { data, error } = await withAdminFeature(
     "ai.translation-approvals",
     ai().rpc("archive_translation_cell", {
       p_cell_id: cellId,
     }),
   );
   if (error) throw error;
+  const reply = (typeof data === "string" ? JSON.parse(data) : data) as {
+    restored?: unknown;
+  } | null;
+  return { restored: reply?.restored === true };
 }
 
 /** True only for a signed-in platform admin — the doors' own gate, asked of the database. */
