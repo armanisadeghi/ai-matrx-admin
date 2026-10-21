@@ -173,6 +173,17 @@ export async function updateSession(
     }
   }
 
+  // A MEMBER opening /files is only ever bounced to the browser at /files/all. Doing that in the
+  // page (redirect() after loading.tsx streamed the shell) made Next send a meta-refresh, a full
+  // document reload on every visit, which `pnpm preview:ready /files` rightly called unstable.
+  // The proxy knows the session before any shell streams, so it answers with a plain 307. A guest
+  // or visitor still gets the marketing landing from the page.
+  if (user && !(user as { is_anonymous?: boolean }).is_anonymous && pathname === "/files") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/files/all";
+    return redirectWithSessionCookies(url);
+  }
+
   // Handle MEMBERS on auth pages with no destination to honor — send them to
   // the surface's landing page. A guest stays: they came here to sign up.
   if (bouncesOffAccountEntryPage(pathname, user)) {

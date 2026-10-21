@@ -83,4 +83,17 @@ describe("proxy: a guest is not a member", () => {
     const response = await updateSession(request("/tasks"));
     expect(response.headers.get("location")).toBeNull();
   });
+
+  it("a MEMBER on /files gets a plain 307 to /files/all from the proxy (no in-page redirect)", async () => {
+    signedInAs(MEMBER);
+    const response = await updateSession(request("/files"));
+    expect(response.status).toBe(307);
+    expect(new URL(response.headers.get("location") as string).pathname).toBe("/files/all");
+  });
+
+  it("a GUEST on /files keeps the marketing landing", async () => {
+    signedInAs(GUEST);
+    const response = await updateSession(request("/files"));
+    expect(response.headers.get("location")).toBeNull();
+  });
 });

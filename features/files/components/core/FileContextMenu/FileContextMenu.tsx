@@ -66,13 +66,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { restoreFile as restoreFileThunk } from "@/features/files/redux/thunks";
 import * as Files from "@/features/files/api/files";
 import type { Visibility } from "@/features/files/types";
 import { clearSelection, setActiveFileId } from "@/features/files/redux/slice";
 import {
   selectAllFilesMap,
+  selectFileById,
   selectSelection,
 } from "@/features/files/redux/selectors";
 import {
@@ -111,6 +112,9 @@ export interface FileContextMenuProps {
   extraMenuItems?: ReactNode;
 }
 
+const NO_SELECTION = { selectedIds: [] as string[] } as ReturnType<typeof selectSelection>;
+const NO_FILES = {} as ReturnType<typeof selectAllFilesMap>;
+
 export function FileContextMenu({
   fileId,
   children,
@@ -124,11 +128,17 @@ export function FileContextMenu({
   const dispatch = useAppDispatch();
   const actions = useFileActions(fileId);
   const router = useRouter();
-  const selection = useAppSelector(selectSelection);
-  const filesById = useAppSelector(selectAllFilesMap);
+  const store = useAppStore();
+  // One of these mounts PER ROW. Whole-map / selection subscriptions made every row re-render on
+  // every file change (O(rows²) at boot), so the menu reads them only while it is in use
+  // (open, or its batch dialog is); handlers read the store at call time.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
+  const live = menuOpen || batchConfirmOpen;
+  const selection = useAppSelector((s) => (live ? selectSelection(s) : NO_SELECTION));
+  const filesById = useAppSelector((s) => (live ? selectAllFilesMap(s) : NO_FILES));
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [busy, setBusy] = useState<"download" | "move" | "delete" | null>(null);
@@ -136,7 +146,7 @@ export function FileContextMenu({
   // When the host doesn't supply its own rename handler, fall back to the
   // built-in RenameDialog so renaming works everywhere the menu is mounted.
   const handleRename = onRename ?? (() => setRenameOpen(true));
-  const file = filesById[fileId];
+  const file = useAppSelector((s) => selectFileById(s, fileId));
   const handleMove = useCallback(async () => {
     if (onMove) {
       onMove();
@@ -223,12 +233,12 @@ export function FileContextMenu({
         const url = (res as { payload?: { url?: string } } | undefined)?.payload
           ?.url;
         if (!url) return;
-        downloadUrl(url, filesById[id]?.fileName ?? "");
+        downloadUrl(url, selectAllFilesMap(store.getState())[id]?.fileName ?? "");
       });
     } finally {
       setBusy(null);
     }
-  }, [dispatch, filesById, runBatch]);
+  }, [dispatch, store, runBatch]);
 
   const handleBatchMove = useCallback(async () => {
     const target = await openFolderPicker({
@@ -270,7 +280,7 @@ export function FileContextMenu({
   // PYTHON_TEAM_COMMS as a Phase 12 ask). For now we synthesize the
   // operation client-side: fetch via signed URL → re-upload as " (copy)".
   const handleDuplicate = useCallback(async () => {
-    const file = filesById[fileId];
+    const file = selectAllFilesMap(store.getState())[fileId];
     if (!file) return;
     setBusy("download"); // reuse busy state — same UX (spinner on item)
     try {
@@ -302,7 +312,7 @@ export function FileContextMenu({
     } finally {
       setBusy(null);
     }
-  }, [dispatch, fileId, filesById]);
+  }, [dispatch, fileId, store]);
 
   // "Show versions" / "Show details" route through the preview surface so
   // the user gets the SAME experience whether they came from a chip in a
@@ -484,7 +494,7 @@ export function FileContextMenu({
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger asChild disabled={disabled}>
           {children}
         </DropdownMenuTrigger>
@@ -841,11 +851,9 @@ export function FileContextMenu({
         </AlertDialogContent>
       </AlertDialog>
 
-      <FileInfoDialog
-        fileId={fileId}
-        open={infoOpen}
-        onOpenChange={setInfoOpen}
-      />
+      {infoOpen ? (
+        <FileInfoDialog fileId={fileId} open={infoOpen} onOpenChange={setInfoOpen} />
+      ) : null}
 
       {file && !onRename ? (
         <RenameDialog
@@ -857,7 +865,7 @@ export function FileContextMenu({
         />
       ) : null}
 
-      {file && !isVirtual ? (
+      {file && !isVirtual && contextOpen ? (
         <FileContextDialog
           fileId={fileId}
           fileName={file.fileName}
