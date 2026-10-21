@@ -1,0 +1,4042 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0581",
+  "version": 1,
+  "title": "Independent Record Label",
+  "description": "Releases from demo to street date, artist deals, recoupment and royalty statements.",
+  "forWho": "Independent labels and artist-run imprints",
+  "icon": {
+    "emoji": "💿"
+  },
+  "cover": {
+    "url": "gallery:media-vinyl-records-crate",
+    "offsetY": 50
+  },
+  "category": "media",
+  "tags": [
+    "record",
+    "label",
+    "music",
+    "releases",
+    "royalties",
+    "vinyl"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-independent-record-label",
+    "catalogueId": "SP0581",
+    "useCase": "The head of Low Tide Records uses this to see which releases are late, what each one has cost and which artists have recouped.",
+    "industry": "media_creators",
+    "vertical": "Independent record label",
+    "job": "projects",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Low Tide Records",
+      "describes": "A five-person indie label with seven acts, releasing about a dozen singles, EPs and albums a year on streaming, vinyl and cassette.",
+      "address": {
+        "line1": "212 Alder Mill Way",
+        "city": "Portland",
+        "region": "OR",
+        "postalCode": "97214",
+        "country": "US"
+      },
+      "phone": "(503) 555-0122",
+      "website": "lowtiderecords.net",
+      "email": "hello@lowtiderecords.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-independent-record-label",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Sabine Okafor",
+              "role": "Label head",
+              "work_email": "sabine@lowtiderecords.net",
+              "mobile": "(503) 555-0141",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Jonah Petrakis",
+              "role": "Release manager",
+              "work_email": "jonah@lowtiderecords.net",
+              "mobile": "(503) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Mireille Dubois-Grant",
+              "role": "Publicity and marketing",
+              "work_email": "mireille@lowtiderecords.net",
+              "mobile": "(503) 555-0143",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Tobias Wrenfield",
+              "role": "Royalties and finance",
+              "work_email": "tobias@lowtiderecords.net",
+              "mobile": "(503) 555-0144",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Ada Kowalczyk",
+              "role": "Label assistant",
+              "work_email": "ada@lowtiderecords.net",
+              "mobile": "(503) 555-0145",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "release_out",
+        "table": "release",
+        "name": "Mark released",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Released"
+          },
+          {
+            "field": "released_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "release_take",
+        "table": "release",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cost_paid",
+        "table": "cost",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "statement_paid",
+        "table": "statement",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Independent Record Label assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "release",
+          "describes": "Every single, EP and album from accepted demo to release day, with its catalogue number, budget and first-month numbers."
+        },
+        {
+          "name": "related_tables",
+          "table": "artist",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many releases are in mastering right now?",
+        "whyItMatters": "Mastering slots are booked weeks ahead.",
+        "expect": {
+          "table": "release",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Mastering"
+          },
+          "answer": 1,
+          "unit": "releases"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open releases.",
+        "action": {
+          "kind": "open",
+          "surface": "release_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "release_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open artists.",
+        "action": {
+          "kind": "open",
+          "surface": "artist_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "artist_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open release costs.",
+        "action": {
+          "kind": "open",
+          "surface": "cost_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "cost_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lowtiderecords.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Alder Mill Way"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "artist",
+        "name": "Artists",
+        "labelSingular": "Artist",
+        "labelPlural": "Artists",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "mic",
+        "titleField": "artist_name",
+        "describes": "The roster: each act's deal, advance, what they have earned and whether the advance is paid back.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Artist file",
+            "values": {
+              "roster": "Developing"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "The pitch"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What they sound like in one line, and the three songs that got them signed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Deal terms"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Split and term agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Advance and what is recoupable written down"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Option periods and territory in the contract"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Assets"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Press photos with photographer credit"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Short and long bio"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Streaming profiles claimed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "artist_name",
+            "label": "Artist",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "roster",
+            "label": "Roster status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Signed",
+              "Developing",
+              "Option period",
+              "Off the roster"
+            ],
+            "choiceColors": {
+              "Signed": "green",
+              "Developing": "blue",
+              "Option period": "amber",
+              "Off the roster": "slate"
+            },
+            "default": "Signed"
+          },
+          {
+            "key": "genre",
+            "label": "Genre",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Indie folk",
+              "Indie rock",
+              "Electronic",
+              "Dream pop",
+              "Singer-songwriter",
+              "Post-rock"
+            ],
+            "choiceColors": {
+              "Indie folk": "teal",
+              "Indie rock": "orange",
+              "Electronic": "violet",
+              "Dream pop": "pink",
+              "Singer-songwriter": "yellow",
+              "Post-rock": "blue"
+            }
+          },
+          {
+            "key": "deal",
+            "label": "Deal",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Net profit split",
+              "Licensing deal",
+              "Distribution only",
+              "Single deal"
+            ],
+            "choiceColors": {
+              "Net profit split": "blue",
+              "Licensing deal": "violet",
+              "Distribution only": "teal",
+              "Single deal": "orange"
+            }
+          },
+          {
+            "key": "artist_pct",
+            "label": "Artist share (%)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "advance",
+            "label": "Advance (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "manager",
+            "label": "Manager",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Manager email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "city",
+            "label": "Home city",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "signed_on",
+            "label": "Signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "release_count",
+            "label": "Releases",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "releases",
+            "pick": "release_title",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Shelved"
+                ]
+              }
+            }
+          },
+          {
+            "key": "earned",
+            "label": "Earned to date (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "statements",
+            "pick": "artist_share",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Paid"
+              ]
+            }
+          },
+          {
+            "key": "left_to_recoup",
+            "label": "Left to recoup (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Advance (USD)} > {Earned to date (USD)}, {Advance (USD)} - {Earned to date (USD)}, 0)"
+          },
+          {
+            "key": "recoup",
+            "label": "Recoupment",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Advance (USD)} > 0, IF({Earned to date (USD)} >= {Advance (USD)}, \"Recouped\", \"Unrecouped\"), \"No advance\")"
+          },
+          {
+            "key": "add_release_btn",
+            "label": "New release",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "release",
+              "template": "Release plan",
+              "prefill": {
+                "artist": "@row"
+              }
+            }
+          },
+          {
+            "key": "mail_btn",
+            "label": "Email manager",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "arti-1",
+            "values": {
+              "artist_name": "Marlowe Finch",
+              "roster": "Signed",
+              "genre": "Indie folk",
+              "deal": "Net profit split",
+              "artist_pct": 50,
+              "advance": 8000,
+              "manager": "Dana Oyelaran",
+              "email": "dana.oyelaran@inbox-mail.net",
+              "city": "Portland",
+              "signed_on": "@today-3y"
+            }
+          },
+          {
+            "key": "arti-2",
+            "values": {
+              "artist_name": "The Velvet Understudies",
+              "roster": "Signed",
+              "genre": "Indie rock",
+              "deal": "Net profit split",
+              "artist_pct": 50,
+              "advance": 12000,
+              "manager": "Caspar Lindgren",
+              "email": "caspar.mgmt@inbox-mail.net",
+              "city": "Tacoma",
+              "signed_on": "@today-2y"
+            }
+          },
+          {
+            "key": "arti-3",
+            "values": {
+              "artist_name": "Kaito Brennan",
+              "roster": "Signed",
+              "genre": "Electronic",
+              "deal": "Licensing deal",
+              "artist_pct": 60,
+              "advance": 5000,
+              "manager": "Self-managed",
+              "email": "kaito.brennan@inbox-mail.net",
+              "city": "Seattle",
+              "signed_on": "@today-1y"
+            }
+          },
+          {
+            "key": "arti-4",
+            "values": {
+              "artist_name": "Sunroom Static",
+              "roster": "Developing",
+              "genre": "Dream pop",
+              "deal": "Single deal",
+              "artist_pct": 50,
+              "advance": 0,
+              "manager": "Priya Halloran",
+              "email": "sunroom.static@inbox-mail.net",
+              "city": "Eugene",
+              "signed_on": "@today-4m"
+            }
+          },
+          {
+            "key": "arti-5",
+            "values": {
+              "artist_name": "Ophelia Marsh-Ndiaye",
+              "roster": "Option period",
+              "genre": "Singer-songwriter",
+              "deal": "Net profit split",
+              "artist_pct": 50,
+              "advance": 6000,
+              "manager": "Rafael Duarte",
+              "email": "rafael.duarte@inbox-mail.net",
+              "city": "Olympia",
+              "signed_on": "@today-4y"
+            }
+          },
+          {
+            "key": "arti-6",
+            "values": {
+              "artist_name": "Greywater Choir",
+              "roster": "Signed",
+              "genre": "Post-rock",
+              "deal": "Distribution only",
+              "artist_pct": 85,
+              "advance": 0,
+              "manager": "Hanne Solberg",
+              "email": "greywater.choir@inbox-mail.net",
+              "city": "Bellingham",
+              "signed_on": "@today-2y"
+            }
+          },
+          {
+            "key": "arti-7",
+            "values": {
+              "artist_name": "Lupe and the Lanterns",
+              "roster": "Off the roster",
+              "genre": "Indie rock",
+              "deal": "Net profit split",
+              "artist_pct": 50,
+              "advance": 4000,
+              "manager": "Tomasz Rivera",
+              "email": "lanterns.band@inbox-mail.net",
+              "city": "Boise",
+              "signed_on": "@today-6y"
+            }
+          }
+        ]
+      },
+      {
+        "token": "release",
+        "name": "Releases",
+        "labelSingular": "Release",
+        "labelPlural": "Releases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "disc",
+        "titleField": "release_title",
+        "describes": "Every single, EP and album from accepted demo to release day, with its catalogue number, budget and first-month numbers.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Released"
+            ],
+            "filled": [
+              "released_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Release plan",
+            "values": {
+              "status": "Demo accepted",
+              "release_title": "New release"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Masters"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Final mixes approved by the artist"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Masters for streaming and, if pressing, a separate vinyl master"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Track order and gaps signed off"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Metadata"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Songwriter and publisher splits for every track"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "ISRC per track and UPC for the release"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Explicit flags, genre, language"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Artwork"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Square cover at full size"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vinyl jacket and labels sent to the plant"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Delivery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Delivered to the distributor at least four weeks before release day"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pre-save link live"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pitch sent to editorial playlists"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "release_title",
+            "label": "Release",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Stage",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Demo accepted",
+            "choices": [
+              "Demo accepted",
+              "Mixing",
+              "Mastering",
+              "Artwork and metadata",
+              "Delivered to distributor",
+              "Pitching",
+              "Released",
+              "Shelved"
+            ],
+            "choiceColors": {
+              "Demo accepted": "slate",
+              "Mixing": "blue",
+              "Mastering": "violet",
+              "Artwork and metadata": "amber",
+              "Delivered to distributor": "teal",
+              "Pitching": "orange",
+              "Released": "green",
+              "Shelved": "red"
+            },
+            "statusGroups": {
+              "Demo accepted": "todo",
+              "Mixing": "in_progress",
+              "Mastering": "in_progress",
+              "Artwork and metadata": "in_progress",
+              "Delivered to distributor": "in_progress",
+              "Pitching": "in_progress",
+              "Released": "done",
+              "Shelved": "done"
+            }
+          },
+          {
+            "key": "format",
+            "label": "Format",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Single",
+              "EP",
+              "Album"
+            ],
+            "choiceColors": {
+              "Single": "blue",
+              "EP": "violet",
+              "Album": "orange"
+            },
+            "default": "Single"
+          },
+          {
+            "key": "artist",
+            "label": "Artist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "artist",
+            "relationMax": 1
+          },
+          {
+            "key": "catalog_no",
+            "label": "Catalogue number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "manager",
+            "label": "Release manager",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "upc",
+            "label": "UPC",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "release_on",
+            "label": "Release date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "released_on",
+            "label": "Released on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "tracks",
+            "label": "Tracks",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ]
+          },
+          {
+            "key": "physical",
+            "label": "Physical run",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Digital only",
+              "Vinyl, 300",
+              "Vinyl, 500",
+              "Cassette, 100"
+            ],
+            "choiceColors": {
+              "Digital only": "slate",
+              "Vinyl, 300": "orange",
+              "Vinyl, 500": "yellow",
+              "Cassette, 100": "pink"
+            },
+            "default": "Digital only"
+          },
+          {
+            "key": "budget",
+            "label": "Budget (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "committed",
+            "label": "Committed spend (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "costs",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Approved",
+                "Paid"
+              ]
+            }
+          },
+          {
+            "key": "budget_left",
+            "label": "Budget left (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stage} = \"Shelved\", \"\", {Budget (USD)} - {Committed spend (USD)})"
+          },
+          {
+            "key": "streams_28d",
+            "label": "Streams, first 28 days",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000000
+              }
+            ]
+          },
+          {
+            "key": "playlist_adds",
+            "label": "Editorial and curator playlist adds",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "smartlink",
+            "label": "Smart link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rel_btn",
+            "label": "Mark released",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "release_out"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "release_take"
+            }
+          },
+          {
+            "key": "link_btn",
+            "label": "Open smart link",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "{{smartlink}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rele-1",
+            "values": {
+              "release_title": "Harbor Lights",
+              "status": "Released",
+              "format": "Album",
+              "artist": "arti-1",
+              "manager": "tm-2",
+              "catalog_no": "LT2611",
+              "upc": "860012400241",
+              "release_on": "@today-120d",
+              "released_on": "@today-120d",
+              "tracks": 11,
+              "physical": "Vinyl, 500",
+              "budget": 14000,
+              "streams_28d": 412000,
+              "playlist_adds": 38,
+              "smartlink": "https://listen.lowtiderecords.net/harbor-lights"
+            }
+          },
+          {
+            "key": "rele-2",
+            "values": {
+              "release_title": "Cheap Seats Forever",
+              "status": "Released",
+              "format": "EP",
+              "artist": "arti-2",
+              "manager": "tm-2",
+              "catalog_no": "LT2614",
+              "upc": "860012400272",
+              "release_on": "@today-70d",
+              "released_on": "@today-70d",
+              "tracks": 5,
+              "physical": "Vinyl, 300",
+              "budget": 6500,
+              "streams_28d": 158000,
+              "playlist_adds": 12,
+              "smartlink": "https://listen.lowtiderecords.net/cheap-seats"
+            }
+          },
+          {
+            "key": "rele-3",
+            "values": {
+              "release_title": "Paper Lanterns",
+              "status": "Released",
+              "format": "Single",
+              "artist": "arti-1",
+              "manager": "tm-2",
+              "catalog_no": "LT2618",
+              "upc": "860012400296",
+              "release_on": "@today-40d",
+              "released_on": "@today-40d",
+              "tracks": 1,
+              "physical": "Digital only",
+              "budget": 1800,
+              "streams_28d": 186000,
+              "playlist_adds": 21,
+              "smartlink": "https://listen.lowtiderecords.net/paper-lanterns"
+            }
+          },
+          {
+            "key": "rele-4",
+            "values": {
+              "release_title": "Coldframe",
+              "status": "Released",
+              "format": "Single",
+              "artist": "arti-3",
+              "manager": "tm-2",
+              "catalog_no": "LT2620",
+              "upc": "860012400302",
+              "release_on": "@today-18d",
+              "released_on": "@today-18d",
+              "tracks": 1,
+              "physical": "Digital only",
+              "budget": 1500,
+              "streams_28d": 96000,
+              "playlist_adds": 17,
+              "smartlink": "https://listen.lowtiderecords.net/coldframe"
+            }
+          },
+          {
+            "key": "rele-5",
+            "values": {
+              "release_title": "Lowland Hymns",
+              "status": "Pitching",
+              "format": "Album",
+              "artist": "arti-6",
+              "manager": "tm-3",
+              "catalog_no": "LT2616",
+              "upc": "860012400289",
+              "release_on": "@today",
+              "tracks": 8,
+              "physical": "Vinyl, 300",
+              "budget": 3000,
+              "playlist_adds": 6,
+              "smartlink": "https://listen.lowtiderecords.net/lowland-hymns"
+            }
+          },
+          {
+            "key": "rele-6",
+            "values": {
+              "release_title": "Glasshouse",
+              "status": "Pitching",
+              "format": "Single",
+              "artist": "arti-4",
+              "manager": "tm-2",
+              "catalog_no": "LT2623",
+              "upc": "860012400333",
+              "release_on": "@today+3d",
+              "tracks": 1,
+              "physical": "Digital only",
+              "budget": 1600,
+              "playlist_adds": 2,
+              "smartlink": "https://listen.lowtiderecords.net/glasshouse"
+            }
+          },
+          {
+            "key": "rele-7",
+            "values": {
+              "release_title": "Afterhours Grid",
+              "status": "Delivered to distributor",
+              "format": "EP",
+              "artist": "arti-3",
+              "manager": "tm-2",
+              "catalog_no": "LT2621",
+              "upc": "860012400319",
+              "release_on": "@today+12d",
+              "tracks": 4,
+              "physical": "Cassette, 100",
+              "budget": 4200
+            }
+          },
+          {
+            "key": "rele-8",
+            "values": {
+              "release_title": "Small Hours",
+              "status": "Artwork and metadata",
+              "format": "Single",
+              "artist": "arti-5",
+              "manager": "tm-2",
+              "catalog_no": "LT2627",
+              "release_on": "@today+26d",
+              "tracks": 1,
+              "physical": "Digital only",
+              "budget": 1400
+            }
+          },
+          {
+            "key": "rele-9",
+            "values": {
+              "release_title": "Coldframe (Remixes)",
+              "status": "Artwork and metadata",
+              "format": "EP",
+              "artist": "arti-3",
+              "manager": "tm-2",
+              "catalog_no": "LT2625",
+              "release_on": "@today-4d",
+              "tracks": 4,
+              "physical": "Digital only",
+              "budget": 1200
+            }
+          },
+          {
+            "key": "rele-10",
+            "values": {
+              "release_title": "Night Bus Diaries",
+              "status": "Mastering",
+              "format": "Album",
+              "artist": "arti-2",
+              "manager": "tm-2",
+              "catalog_no": "LT2622",
+              "release_on": "@today+45d",
+              "tracks": 10,
+              "physical": "Vinyl, 500",
+              "budget": 15000
+            }
+          },
+          {
+            "key": "rele-11",
+            "values": {
+              "release_title": "Salt Road",
+              "status": "Mixing",
+              "format": "EP",
+              "artist": "arti-5",
+              "manager": "tm-2",
+              "release_on": "@today+60d",
+              "tracks": 5,
+              "physical": "Vinyl, 300",
+              "budget": 5200
+            }
+          },
+          {
+            "key": "rele-12",
+            "values": {
+              "release_title": "Second Glance",
+              "status": "Demo accepted",
+              "format": "Single",
+              "artist": "arti-4",
+              "manager": "tm-2",
+              "tracks": 1,
+              "physical": "Digital only",
+              "budget": 1500
+            }
+          },
+          {
+            "key": "rele-13",
+            "values": {
+              "release_title": "Ferry Songs",
+              "status": "Shelved",
+              "format": "EP",
+              "artist": "arti-1",
+              "manager": "tm-2",
+              "tracks": 4,
+              "physical": "Digital only",
+              "budget": 3000
+            }
+          }
+        ],
+        "independentOf": {
+          "artist": "Either record can be created or change status before the other.",
+          "manager": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The release date is the plan; the released date is stamped when it actually goes live in stores."
+      },
+      {
+        "token": "cost",
+        "name": "Release costs",
+        "labelSingular": "Release cost",
+        "labelPlural": "Release costs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "cost_name",
+        "describes": "Mastering, pressing, artwork, PR and video, each tied to a release, with what is recoupable from the artist.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "cost_name",
+            "label": "Cost",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Quoted",
+            "choices": [
+              "Quoted",
+              "Approved",
+              "Paid",
+              "Rejected"
+            ],
+            "choiceColors": {
+              "Quoted": "slate",
+              "Approved": "blue",
+              "Paid": "green",
+              "Rejected": "red"
+            },
+            "statusGroups": {
+              "Quoted": "todo",
+              "Approved": "in_progress",
+              "Paid": "done",
+              "Rejected": "done"
+            }
+          },
+          {
+            "key": "release",
+            "label": "Release",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "release",
+            "relationMax": 1
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mastering",
+              "Vinyl pressing",
+              "Artwork",
+              "PR campaign",
+              "Radio plugging",
+              "Music video",
+              "Digital ads"
+            ],
+            "choiceColors": {
+              "Mastering": "violet",
+              "Vinyl pressing": "orange",
+              "Artwork": "pink",
+              "PR campaign": "blue",
+              "Radio plugging": "teal",
+              "Music video": "yellow",
+              "Digital ads": "amber"
+            }
+          },
+          {
+            "key": "vendor",
+            "label": "Vendor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "recoupable",
+            "label": "Recoupable",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "Charged against the artist's royalties under the deal."
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cost_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cost-1",
+            "values": {
+              "cost_name": "Harbor Lights mastering",
+              "status": "Paid",
+              "release": "rele-1",
+              "category": "Mastering",
+              "vendor": "Riverbend Mastering",
+              "amount": 900,
+              "recoupable": true,
+              "paid_on": "@today-150d"
+            }
+          },
+          {
+            "key": "cost-2",
+            "values": {
+              "cost_name": "Harbor Lights 500 vinyl, black",
+              "status": "Paid",
+              "release": "rele-1",
+              "category": "Vinyl pressing",
+              "vendor": "Cascade Pressing Works",
+              "amount": 4600,
+              "recoupable": false,
+              "paid_on": "@today-140d"
+            }
+          },
+          {
+            "key": "cost-3",
+            "values": {
+              "cost_name": "Harbor Lights cover and jacket",
+              "status": "Paid",
+              "release": "rele-1",
+              "category": "Artwork",
+              "vendor": "Ilse Vandenberg Studio",
+              "amount": 1200,
+              "recoupable": true,
+              "paid_on": "@today-150d"
+            }
+          },
+          {
+            "key": "cost-4",
+            "values": {
+              "cost_name": "Harbor Lights press campaign",
+              "status": "Paid",
+              "release": "rele-1",
+              "category": "PR campaign",
+              "vendor": "Northlight Publicity",
+              "amount": 3500,
+              "recoupable": true,
+              "paid_on": "@today-125d"
+            }
+          },
+          {
+            "key": "cost-5",
+            "values": {
+              "cost_name": "Harbor Lights college radio",
+              "status": "Paid",
+              "release": "rele-1",
+              "category": "Radio plugging",
+              "vendor": "Tall Grass Radio Promo",
+              "amount": 2400,
+              "recoupable": true,
+              "paid_on": "@today-118d"
+            }
+          },
+          {
+            "key": "cost-6",
+            "values": {
+              "cost_name": "Cheap Seats 300 vinyl, clear",
+              "status": "Paid",
+              "release": "rele-2",
+              "category": "Vinyl pressing",
+              "vendor": "Cascade Pressing Works",
+              "amount": 3100,
+              "recoupable": false,
+              "paid_on": "@today-95d"
+            }
+          },
+          {
+            "key": "cost-7",
+            "values": {
+              "cost_name": "Cheap Seats press campaign",
+              "status": "Paid",
+              "release": "rele-2",
+              "category": "PR campaign",
+              "vendor": "Northlight Publicity",
+              "amount": 2200,
+              "recoupable": true,
+              "paid_on": "@today-75d"
+            }
+          },
+          {
+            "key": "cost-8",
+            "values": {
+              "cost_name": "Cheap Seats mastering",
+              "status": "Paid",
+              "release": "rele-2",
+              "category": "Mastering",
+              "vendor": "Riverbend Mastering",
+              "amount": 650,
+              "recoupable": true,
+              "paid_on": "@today-100d"
+            }
+          },
+          {
+            "key": "cost-9",
+            "values": {
+              "cost_name": "Paper Lanterns video shoot",
+              "status": "Paid",
+              "release": "rele-3",
+              "category": "Music video",
+              "vendor": "Fogline Films",
+              "amount": 1100,
+              "recoupable": true,
+              "paid_on": "@today-45d"
+            }
+          },
+          {
+            "key": "cost-10",
+            "values": {
+              "cost_name": "Paper Lanterns launch ads",
+              "status": "Paid",
+              "release": "rele-3",
+              "category": "Digital ads",
+              "vendor": "Self-serve ads",
+              "amount": 500,
+              "recoupable": false,
+              "paid_on": "@today-38d"
+            }
+          },
+          {
+            "key": "cost-11",
+            "values": {
+              "cost_name": "Coldframe cover art",
+              "status": "Paid",
+              "release": "rele-4",
+              "category": "Artwork",
+              "vendor": "Ilse Vandenberg Studio",
+              "amount": 350,
+              "recoupable": true,
+              "paid_on": "@today-35d"
+            }
+          },
+          {
+            "key": "cost-12",
+            "values": {
+              "cost_name": "Coldframe launch ads",
+              "status": "Paid",
+              "release": "rele-4",
+              "category": "Digital ads",
+              "vendor": "Self-serve ads",
+              "amount": 800,
+              "recoupable": false,
+              "paid_on": "@today-16d"
+            }
+          },
+          {
+            "key": "cost-13",
+            "values": {
+              "cost_name": "Lowland Hymns 300 vinyl",
+              "status": "Paid",
+              "release": "rele-5",
+              "category": "Vinyl pressing",
+              "vendor": "Cascade Pressing Works",
+              "amount": 2350,
+              "recoupable": false,
+              "paid_on": "@today-30d"
+            }
+          },
+          {
+            "key": "cost-14",
+            "values": {
+              "cost_name": "Glasshouse mastering",
+              "status": "Paid",
+              "release": "rele-6",
+              "category": "Mastering",
+              "vendor": "Riverbend Mastering",
+              "amount": 300,
+              "recoupable": true,
+              "paid_on": "@today-25d"
+            }
+          },
+          {
+            "key": "cost-15",
+            "values": {
+              "cost_name": "Glasshouse lyric video",
+              "status": "Approved",
+              "release": "rele-6",
+              "category": "Music video",
+              "vendor": "Fogline Films",
+              "amount": 900,
+              "recoupable": true
+            }
+          },
+          {
+            "key": "cost-16",
+            "values": {
+              "cost_name": "Afterhours Grid mastering",
+              "status": "Paid",
+              "release": "rele-7",
+              "category": "Mastering",
+              "vendor": "Riverbend Mastering",
+              "amount": 450,
+              "recoupable": true,
+              "paid_on": "@today-20d"
+            }
+          },
+          {
+            "key": "cost-17",
+            "values": {
+              "cost_name": "Afterhours Grid cover art",
+              "status": "Paid",
+              "release": "rele-7",
+              "category": "Artwork",
+              "vendor": "Ilse Vandenberg Studio",
+              "amount": 600,
+              "recoupable": true,
+              "paid_on": "@today-22d"
+            }
+          },
+          {
+            "key": "cost-18",
+            "values": {
+              "cost_name": "Afterhours Grid press campaign",
+              "status": "Approved",
+              "release": "rele-7",
+              "category": "PR campaign",
+              "vendor": "Northlight Publicity",
+              "amount": 1500,
+              "recoupable": true
+            }
+          },
+          {
+            "key": "cost-19",
+            "values": {
+              "cost_name": "Night Bus Diaries mastering",
+              "status": "Approved",
+              "release": "rele-10",
+              "category": "Mastering",
+              "vendor": "Riverbend Mastering",
+              "amount": 1100,
+              "recoupable": true
+            }
+          },
+          {
+            "key": "cost-20",
+            "values": {
+              "cost_name": "Night Bus Diaries 500 vinyl",
+              "status": "Quoted",
+              "release": "rele-10",
+              "category": "Vinyl pressing",
+              "vendor": "Cascade Pressing Works",
+              "amount": 5200,
+              "recoupable": false
+            }
+          },
+          {
+            "key": "cost-21",
+            "values": {
+              "cost_name": "Night Bus Diaries press campaign",
+              "status": "Approved",
+              "release": "rele-10",
+              "category": "PR campaign",
+              "vendor": "Northlight Publicity",
+              "amount": 3800,
+              "recoupable": true
+            }
+          },
+          {
+            "key": "cost-22",
+            "values": {
+              "cost_name": "Second Glance video treatment",
+              "status": "Rejected",
+              "release": "rele-12",
+              "category": "Music video",
+              "vendor": "Fogline Films",
+              "amount": 2400,
+              "recoupable": true
+            }
+          }
+        ],
+        "independentOf": {
+          "release": "Either record can be created or change status before the other."
+        }
+      },
+      {
+        "token": "statement",
+        "name": "Royalty statements",
+        "labelSingular": "Royalty statement",
+        "labelPlural": "Royalty statements",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "file-text",
+        "titleField": "statement_name",
+        "describes": "What each artist earned per accounting period, sent and paid, which pays back their advance.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "statement_name",
+            "label": "Statement",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Draft",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Paid": "green"
+            },
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Paid": "done"
+            }
+          },
+          {
+            "key": "artist",
+            "label": "Artist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "artist",
+            "relationMax": 1
+          },
+          {
+            "key": "period_end",
+            "label": "Period ends",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "receipts",
+            "label": "Net receipts (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "artist_share",
+            "label": "Artist share (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ]
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "statement_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "stmt-1",
+            "values": {
+              "statement_name": "Marlowe Finch, statement 7",
+              "status": "Paid",
+              "artist": "arti-1",
+              "period_end": "@today-100d",
+              "receipts": 7200,
+              "artist_share": 3600,
+              "paid_on": "@today-70d"
+            }
+          },
+          {
+            "key": "stmt-2",
+            "values": {
+              "statement_name": "Marlowe Finch, statement 8",
+              "status": "Sent",
+              "artist": "arti-1",
+              "period_end": "@today-10d",
+              "receipts": 12080,
+              "artist_share": 6040
+            }
+          },
+          {
+            "key": "stmt-3",
+            "values": {
+              "statement_name": "The Velvet Understudies, statement 5",
+              "status": "Paid",
+              "artist": "arti-2",
+              "period_end": "@today-100d",
+              "receipts": 6400,
+              "artist_share": 3200,
+              "paid_on": "@today-71d"
+            }
+          },
+          {
+            "key": "stmt-4",
+            "values": {
+              "statement_name": "The Velvet Understudies, statement 6",
+              "status": "Sent",
+              "artist": "arti-2",
+              "period_end": "@today-10d",
+              "receipts": 7960,
+              "artist_share": 3980
+            }
+          },
+          {
+            "key": "stmt-5",
+            "values": {
+              "statement_name": "Kaito Brennan, statement 3",
+              "status": "Sent",
+              "artist": "arti-3",
+              "period_end": "@today-10d",
+              "receipts": 3583,
+              "artist_share": 2150
+            }
+          },
+          {
+            "key": "stmt-6",
+            "values": {
+              "statement_name": "Ophelia Marsh-Ndiaye, statement 11",
+              "status": "Paid",
+              "artist": "arti-5",
+              "period_end": "@today-100d",
+              "receipts": 6200,
+              "artist_share": 3100,
+              "paid_on": "@today-69d"
+            }
+          },
+          {
+            "key": "stmt-7",
+            "values": {
+              "statement_name": "Ophelia Marsh-Ndiaye, statement 12",
+              "status": "Sent",
+              "artist": "arti-5",
+              "period_end": "@today-10d",
+              "receipts": 7600,
+              "artist_share": 3800
+            }
+          },
+          {
+            "key": "stmt-8",
+            "values": {
+              "statement_name": "Greywater Choir, statement 4",
+              "status": "Draft",
+              "artist": "arti-6",
+              "period_end": "@today-10d",
+              "receipts": 4000,
+              "artist_share": 3400
+            }
+          },
+          {
+            "key": "stmt-9",
+            "values": {
+              "statement_name": "Lupe and the Lanterns, statement 19",
+              "status": "Paid",
+              "artist": "arti-7",
+              "period_end": "@today-190d",
+              "receipts": 6600,
+              "artist_share": 3300,
+              "paid_on": "@today-160d"
+            }
+          },
+          {
+            "key": "stmt-10",
+            "values": {
+              "statement_name": "Lupe and the Lanterns, statement 20",
+              "status": "Paid",
+              "artist": "arti-7",
+              "period_end": "@today-100d",
+              "receipts": 2000,
+              "artist_share": 1000,
+              "paid_on": "@today-72d"
+            }
+          }
+        ],
+        "independentOf": {
+          "artist": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "period_end",
+            "paid_on"
+          ]
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each release belongs to one artist.",
+        "fromTable": "release",
+        "fromField": "artist",
+        "toTable": "artist",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "releases"
+      },
+      {
+        "describes": "Each release has one manager on the label team.",
+        "fromTable": "release",
+        "fromField": "manager",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "releases_managed"
+      },
+      {
+        "describes": "Each cost is spent on one release.",
+        "fromTable": "cost",
+        "fromField": "release",
+        "toTable": "release",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "costs"
+      },
+      {
+        "describes": "Each statement is for one artist.",
+        "fromTable": "statement",
+        "fromField": "artist",
+        "toTable": "artist",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "statements"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_artist",
+        "name": "All artists",
+        "table": "artist",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "artist_board",
+        "name": "Artists board",
+        "table": "artist",
+        "kind": "kanban",
+        "groupBy": "roster"
+      },
+      {
+        "token": "all_release",
+        "name": "All releases",
+        "table": "release",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "release_board",
+        "name": "Releases board",
+        "table": "release",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "release_cal",
+        "name": "Releases calendar",
+        "table": "release",
+        "kind": "calendar",
+        "dateField": "release_on",
+        "allDay": true
+      },
+      {
+        "token": "release_over",
+        "name": "Past release date",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Demo accepted",
+            "Mixing",
+            "Mastering",
+            "Artwork and metadata",
+            "Delivered to distributor",
+            "Pitching"
+          ]
+        }
+      },
+      {
+        "token": "release_week",
+        "name": "Releasing this week",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Demo accepted",
+            "Mixing",
+            "Mastering",
+            "Artwork and metadata",
+            "Delivered to distributor",
+            "Pitching"
+          ]
+        }
+      },
+      {
+        "token": "release_next45",
+        "name": "Next 45 days",
+        "table": "release",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "next_days",
+            "n": 45
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Demo accepted",
+            "Mixing",
+            "Mastering",
+            "Artwork and metadata",
+            "Delivered to distributor",
+            "Pitching"
+          ]
+        }
+      },
+      {
+        "token": "release_mine",
+        "name": "My releases",
+        "table": "release",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_cost",
+        "name": "All release costs",
+        "table": "cost",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "cost_board",
+        "name": "Release costs board",
+        "table": "cost",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "cost_to_pay",
+        "name": "Approved, not paid",
+        "table": "cost",
+        "kind": "grid",
+        "filters": {
+          "status": "Approved"
+        }
+      },
+      {
+        "token": "all_statement",
+        "name": "All royalty statements",
+        "table": "statement",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "statement_board",
+        "name": "Royalty statements board",
+        "table": "statement",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "statement_recent",
+        "name": "Recently closed periods",
+        "table": "statement",
+        "kind": "grid",
+        "within": {
+          "period_end": {
+            "relative": "past_days",
+            "n": 30
+          }
+        }
+      },
+      {
+        "token": "statement_to_send",
+        "name": "Drafts to send",
+        "table": "statement",
+        "kind": "grid",
+        "filters": {
+          "status": "Draft"
+        }
+      }
+    ],
+    "forms": [
+      {
+        "token": "release_add",
+        "name": "Add a release",
+        "describes": "How the team adds a record the label has agreed to put out.",
+        "audience": "staff",
+        "table": "release",
+        "fields": [
+          {
+            "fieldKey": "release_title",
+            "ask": "What is the release called?",
+            "required": true
+          },
+          {
+            "fieldKey": "format",
+            "ask": "Single, EP or album?"
+          },
+          {
+            "fieldKey": "artist",
+            "ask": "Whose record is it?"
+          },
+          {
+            "fieldKey": "release_on",
+            "ask": "Target release date?"
+          }
+        ],
+        "submitLabel": "Add the release",
+        "confirmation": "Added at Demo accepted."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "independent-record-label",
+      "parent": null,
+      "title": "Independent Record Label",
+      "icon": {
+        "emoji": "💿"
+      },
+      "cover": {
+        "url": "gallery:media-vinyl-records-crate",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Releases move left to right on the board from accepted demo to released. Costs belong to a release; statements belong to an artist and pay back the advance. Start on the Dashboard: slipped releases first, then this week's releases, then money."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:release-countdown"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:royalties"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Artists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The roster: each act's deal, advance, what they have earned and whether the advance is paid back."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "artist",
+              "view": "artist_board"
+            },
+            "inline": true,
+            "title": "Artists",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "arti-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "roster",
+                "hiddenFields": [
+                  "artist_pct",
+                  "manager",
+                  "email",
+                  "city",
+                  "signed_on",
+                  "release_count",
+                  "earned",
+                  "left_to_recoup",
+                  "recoup",
+                  "add_release_btn",
+                  "mail_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "arti-t",
+                "name": "All artists",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "arti-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every single, EP and album from accepted demo to release day, with its catalogue number, budget and first-month numbers."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "release_board"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rele-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "catalog_no",
+                  "manager",
+                  "upc",
+                  "released_on",
+                  "tracks",
+                  "physical",
+                  "budget",
+                  "committed",
+                  "budget_left",
+                  "streams_28d",
+                  "playlist_adds",
+                  "smartlink",
+                  "assigned_to",
+                  "rel_btn",
+                  "take_btn",
+                  "link_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "rele-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "release_on",
+                "hiddenFields": [
+                  "status",
+                  "catalog_no",
+                  "manager",
+                  "upc",
+                  "released_on",
+                  "tracks",
+                  "physical",
+                  "budget",
+                  "committed",
+                  "budget_left",
+                  "streams_28d",
+                  "playlist_adds",
+                  "smartlink",
+                  "assigned_to",
+                  "rel_btn",
+                  "take_btn",
+                  "link_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "rele-t",
+                "name": "All releases",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rele-over",
+                "name": "Past release date",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "release_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Demo accepted",
+                    "Mixing",
+                    "Mastering",
+                    "Artwork and metadata",
+                    "Delivered to distributor",
+                    "Pitching"
+                  ]
+                }
+              },
+              {
+                "id": "rele-week",
+                "name": "Releasing this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "release_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Demo accepted",
+                    "Mixing",
+                    "Mastering",
+                    "Artwork and metadata",
+                    "Delivered to distributor",
+                    "Pitching"
+                  ]
+                }
+              },
+              {
+                "id": "rele-next45",
+                "name": "Next 45 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "release_on": {
+                    "relative": "next_days",
+                    "n": 45
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Demo accepted",
+                    "Mixing",
+                    "Mastering",
+                    "Artwork and metadata",
+                    "Delivered to distributor",
+                    "Pitching"
+                  ]
+                }
+              },
+              {
+                "id": "rele-mine",
+                "name": "My releases",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "rele-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Release costs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mastering, pressing, artwork, PR and video, each tied to a release, with what is recoupable from the artist."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cost",
+              "view": "cost_board"
+            },
+            "inline": true,
+            "title": "Release costs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cost-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "vendor",
+                  "recoupable",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "cost-t",
+                "name": "All release costs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cost-to_pay",
+                "name": "Approved, not paid",
+                "layout": "list",
+                "icon": "Receipt",
+                "filters": {
+                  "status": "Approved"
+                }
+              }
+            ],
+            "activeViewId": "cost-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Royalty statements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What each artist earned per accounting period, sent and paid, which pays back their advance."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "statement",
+              "view": "statement_board"
+            },
+            "inline": true,
+            "title": "Royalty statements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "stat-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "receipts",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stat-t",
+                "name": "All royalty statements",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "stat-recent",
+                "name": "Recently closed periods",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "period_end": {
+                    "relative": "past_days",
+                    "n": 30
+                  }
+                }
+              },
+              {
+                "id": "stat-to_send",
+                "name": "Drafts to send",
+                "layout": "list",
+                "icon": "Send",
+                "filters": {
+                  "status": "Draft"
+                }
+              }
+            ],
+            "activeViewId": "stat-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "independent-record-label",
+      "title": "Start here: how the label runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Four tables: Artists (the roster and their deals), Releases (every record in progress), Release costs (what each record cost) and Royalty statements (what each artist earned). This page says who touches what, and when."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A release's life"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A demo the label wants becomes a row in Releases, linked to its artist, at "
+            },
+            {
+              "text": "Demo accepted",
+              "bold": true
+            },
+            {
+              "text": ". The release manager sets a budget the label head has agreed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mixing and Mastering move it along. Every invoice from a studio, pressing plant or publicist goes into Release costs at "
+            },
+            {
+              "text": "Quoted",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Approved",
+              "bold": true
+            },
+            {
+              "text": " once the label head says yes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Artwork and metadata",
+              "bold": true
+            },
+            {
+              "text": " is where most releases stall. The catalogue number, UPC and songwriter splits must be complete before delivery."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Delivered to distributor",
+              "bold": true
+            },
+            {
+              "text": " at least four weeks before the release date, then "
+            },
+            {
+              "text": "Pitching",
+              "bold": true
+            },
+            {
+              "text": " while publicity works the press and playlists."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On release day press "
+            },
+            {
+              "text": "Mark released",
+              "bold": true
+            },
+            {
+              "text": ". At day 28, fill in streams and playlist adds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The money side"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each artist's "
+            },
+            {
+              "text": "Earned to date",
+              "bold": true
+            },
+            {
+              "text": " adds up the artist share on statements that have been sent or paid. Against the advance it gives "
+            },
+            {
+              "text": "Left to recoup",
+              "bold": true
+            },
+            {
+              "text": " and a plain Recouped or Unrecouped label. A recouped artist gets a cheque with every statement; an unrecouped one gets a statement showing the balance coming down."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owns"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Label head"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Signing, budgets, approving costs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Release manager"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Releases from demo to delivery"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Publicity and marketing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pitching, press, ads"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Royalties and finance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Costs paid, statements"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "independent-record-label",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Releases that slipped past their date, what goes out this week, money approved but not yet paid, and statements still in draft."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "release",
+                      "view": "all_release"
+                    },
+                    "inline": true,
+                    "title": "Releases",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-releases-by-stage",
+                        "name": "Releases by stage",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-releases-by-stage"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "cost",
+                      "view": "all_cost"
+                    },
+                    "inline": true,
+                    "title": "Release costs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-spend-by-category",
+                        "name": "Spend by category",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "amount"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-spend-by-category"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "release",
+                      "view": "all_release"
+                    },
+                    "inline": true,
+                    "title": "Releases",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-streams-by-format",
+                        "name": "Streams by format",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "format",
+                          "op": "sum",
+                          "field": "streams_28d"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-streams-by-format"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Past their release date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-slipped-releases",
+                "name": "Slipped releases",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "release_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Demo accepted",
+                    "Mixing",
+                    "Mastering",
+                    "Artwork and metadata",
+                    "Delivered to distributor",
+                    "Pitching"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-slipped-releases"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Out this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-this-week-s-releases",
+                "name": "This week's releases",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "release_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Demo accepted",
+                    "Mixing",
+                    "Mastering",
+                    "Artwork and metadata",
+                    "Delivered to distributor",
+                    "Pitching"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-this-week-s-releases"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Releases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Approved costs to pay"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cost",
+              "view": "all_cost"
+            },
+            "inline": true,
+            "title": "Release costs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-costs-to-pay",
+                "name": "Costs to pay",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Approved"
+                }
+              }
+            ],
+            "activeViewId": "l-costs-to-pay"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statements to send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "statement",
+              "view": "all_statement"
+            },
+            "inline": true,
+            "title": "Royalty statements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-draft-statements",
+                "name": "Draft statements",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Draft"
+                }
+              }
+            ],
+            "activeViewId": "l-draft-statements"
+          }
+        }
+      ]
+    },
+    {
+      "key": "release-countdown",
+      "parent": "independent-record-label",
+      "title": "The eight weeks before release day",
+      "icon": {
+        "emoji": "📅"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Stores and playlist editors need a record long before fans hear it. Work backwards from the release date, and if any step below is late, move the date rather than rush the delivery."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Eight weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Masters approved by the artist, in writing. For vinyl, order a separate vinyl master; streaming masters are too loud for a lacquer cut."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vinyl ordered from the plant. Pressing queues run eight to twelve weeks, so a record without a vinyl slot by now goes out digital first with vinyl later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Publicist booked and the press angle agreed: why this record, why now."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Six weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Catalogue number from the next in the LT sequence (year, then the release number), UPC for the release, an ISRC for every track."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Songwriter and publisher splits confirmed for every track. Missing splits are the most common reason royalties go unpaid later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Square cover art at full size, with no website addresses or prices on it; stores refuse those."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Four weeks out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Deliver audio, art and metadata to the distributor and move the release to "
+            },
+            {
+              "text": "Delivered to distributor",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pre-save smart link live and on the artist's profiles."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Editorial playlist pitch sent through the distributor. Pitches need one unreleased track and at least a week, ideally more."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Release week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the release to "
+            },
+            {
+              "text": "Pitching",
+              "bold": true
+            },
+            {
+              "text": " once press is out. Brief the artist on the release-day posts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "On the day, press "
+            },
+            {
+              "text": "Mark released",
+              "bold": true
+            },
+            {
+              "text": " on the row. The smart link button opens the page fans see."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day 28"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fill in "
+            },
+            {
+              "text": "Streams, first 28 days",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Editorial and curator playlist adds",
+              "bold": true
+            },
+            {
+              "text": ". Compare them with the record's spend:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Release"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Committed spend"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Streams, 28 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Harbor Lights (album)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "12,600 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "412,000"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Paper Lanterns (single)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1,600 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "186,000"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Coldframe (single)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1,150 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "96,000"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A single with a video and a small ad budget often does more per dollar than an album campaign; plan two singles ahead of every album."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "royalties",
+      "parent": "independent-record-label",
+      "title": "Royalty statements and recoupment",
+      "icon": {
+        "emoji": "💰"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Artists judge a label by its statements. Send them on time, every period, even when the number is small and even when the artist is unrecouped."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the split works here"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most of the roster is on a "
+            },
+            {
+              "text": "net profit split",
+              "bold": true
+            },
+            {
+              "text": ": the label takes its recoupable costs back out of net receipts, then splits what is left at the artist share on their row, usually 50%. A "
+            },
+            {
+              "text": "licensing deal",
+              "bold": true
+            },
+            {
+              "text": " pays a higher share because the artist owns the masters. "
+            },
+            {
+              "text": "Distribution only",
+              "bold": true
+            },
+            {
+              "text": " artists get 85%; the label keeps a fee and takes no risk."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each period"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Download the distributor's report and total net receipts per artist after the distributor's fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make a statement row per artist at "
+            },
+            {
+              "text": "Draft",
+              "bold": true
+            },
+            {
+              "text": ", linked to the artist, with the period end date, net receipts and the artist share."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check it against Release costs: only costs ticked "
+            },
+            {
+              "text": "Recoupable",
+              "bold": true
+            },
+            {
+              "text": " come off the artist's side. Pressing is usually the label's own cost."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send it and move the row to "
+            },
+            {
+              "text": "Sent",
+              "bold": true
+            },
+            {
+              "text": ". The artist's "
+            },
+            {
+              "text": "Earned to date",
+              "bold": true
+            },
+            {
+              "text": " counts it from that moment."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When a payment goes out, press "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " on the statement."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recoupment, in plain words"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An advance is paid back from the artist's share, never from their pocket. Until earnings pass the advance, the artist is unrecouped and receives a statement but no cheque."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Artist"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Advance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Earned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Marlowe Finch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "8,000 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "9,640 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Recouped"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The Velvet Understudies"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "12,000 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "7,180 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Unrecouped, 4,820 USD left"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kaito Brennan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5,000 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2,150 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Unrecouped, 2,850 USD left"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never net one artist's costs against another's earnings."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A statement in Draft for more than two weeks after the period ends shows on the Dashboard; clear it before anything else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When an artist leaves the roster, keep paying statements for their releases for as long as the label sells them."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
