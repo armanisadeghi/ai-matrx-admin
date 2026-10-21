@@ -392,6 +392,11 @@ if $STRICT; then
         # sentence under a page title. Baseline scripts/page-top/baseline.json only shrinks.
         "Page top|pnpm check:page-top:strict"
         "Page top — self-test|pnpm check:page-top:self-test"
+        # EVERY FEATURE HAS THE SAME PAGES (Arman, 2026-10-19; common-docs/policies/feature-pages.md rules 1,2,3,5,6):
+        # kind declared in features/shell/constants/feature-pages.ts; front door, /all, /new, record, surfaces.
+        # Baseline scripts/feature-pages/baseline.json only shrinks (stale keys fail too). Advisory like every gate here.
+        "Feature pages|pnpm check:feature-pages"
+        "Feature pages — self-test|pnpm check:feature-pages:self-test"
         # EVERY BOX A PERSON WRITES IN IS ProTextarea / ProInput (Arman, 2026-10-07): a bare Textarea /
         # <textarea> / text Field drops the mic, read-aloud and the page's agents. Raw values carry
         # `ui-exception:`. Baseline scripts/writing-boxes/baseline.json only shrinks.
