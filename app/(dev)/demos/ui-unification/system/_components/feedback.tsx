@@ -73,7 +73,7 @@ export function Feedback() {
   return (
     <Section id="feedback" title="Feedback">
       <Group label="Toast · fire one">
-        <MeasuredBare>
+        <MeasuredBare readout={false}>
           {FIRE.map((f) => (
             <Button variant="outline" key={f.label} onClick={f.run}>
               {f.label}
@@ -105,7 +105,7 @@ export function Feedback() {
           </div>
         </Group>
         <Group label="Dialogs · md width">
-          <MeasuredBare>
+          <MeasuredBare readout={false}>
             <Button variant="outline" onClick={() => setRenameOpen(true)}>
               Rename
             </Button>

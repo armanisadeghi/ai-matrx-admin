@@ -79,7 +79,16 @@ export function Alt({ size = 28, icon = 16, label = 13, fieldRadius = "capsule",
 
 /* Measures each direct child's VISIBLE height (a tap button's pill or a  */
 /* group's capsule, never its invisible box) and the gaps between them.  */
-export function MeasuredBare({ children, className }: { children: ReactNode; className?: string }) {
+export function MeasuredBare({
+  children,
+  className,
+  readout = true,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** The measured height/spacing line under the row — a board tool; a product page passes false. */
+  readout?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [read, setRead] = useState("");
   useEffect(() => {
@@ -119,9 +128,11 @@ export function MeasuredBare({ children, className }: { children: ReactNode; cla
       <ControlRow ref={ref} className={className}>
         {children}
       </ControlRow>
-      <div className={cn("font-mono text-xs", read.includes("✗") ? "text-destructive" : "text-muted-foreground")}>
-        {read || "—"}
-      </div>
+      {readout ? (
+        <div className={cn("font-mono text-xs", read.includes("✗") ? "text-destructive" : "text-muted-foreground")}>
+          {read || "—"}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -131,10 +142,10 @@ export function MeasuredBare({ children, className }: { children: ReactNode; cla
 /* segmented, NO container gap — every piece spaces itself.             */
 /* ------------------------------------------------------------------ */
 
-export function UnifiedToolbar() {
+export function UnifiedToolbar({ readout = true }: { readout?: boolean } = {}) {
   const [scope, setScope] = useState("all");
   return (
-    <MeasuredBare>
+    <MeasuredBare readout={readout}>
       <Button variant="primary">
         <Plus aria-hidden /> New
       </Button>
