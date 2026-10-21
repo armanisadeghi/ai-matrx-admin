@@ -1,0 +1,47 @@
+-- ONE-TIME DATA STEP, ALREADY APPLIED LIVE ON 2026-10-21. DO NOT RE-RUN.
+-- This file is a record, not a migration to execute: every statement that
+-- changes data is commented out.
+--
+-- What it was: after brand_offerings_mint_only_from_positive_signal.sql fixed the
+-- minting code, the existing contaminated rows (minted by the 2026-08-26 cutover
+-- backfill and the 2026-09-14 reconcile rerun, metadata.migrated_from =
+-- 'seo.topic') were FLAGGED, not retired or deleted, by stamping
+-- web.brand_offering.metadata.contamination_review. 147 live rows were stamped
+-- (plus one builder test row, since soft-deleted). The "Needs a look" card in
+-- features/marketing/offerings reads this key and moves a decision to
+-- contamination_review_kept (Yes) or retires the row (No).
+--
+-- Stamped shape (read back from production, exact):
+--   {"reason": "not_offered_ruling",           "certainty": "certain",
+--    "why": "minted by the 2026-08/09 offering cutover from a site valuation that said this brand does NOT offer it",
+--    "fixed_by": "migrations/brand_offerings_mint_only_from_positive_signal.sql", "flagged_on": "2026-10-21"}   -- 5 rows
+--   {"reason": "foreign_tier_placement_only",   "certainty": "needs_person",
+--    "why": "minted by the 2026-08/09 offering cutover only from a system/organization-tier keyword placement nobody at this brand made; confirm or retire",
+--    "fixed_by": "migrations/brand_offerings_mint_only_from_positive_signal.sql", "flagged_on": "2026-10-21"}   -- 142 rows at stamping
+--
+-- Honest note on provenance: the original UPDATE statement text was not kept in
+-- the offering-contamination REPORT or anywhere recoverable; this file records the
+-- stamped result and the live counts instead of inventing the statement. The
+-- stamp itself is idempotent in shape: an UPDATE of the form below, restricted to
+-- rows that do not already carry the key.
+--
+--   UPDATE web.brand_offering
+--   SET metadata = metadata || jsonb_build_object('contamination_review', <shape above>)
+--   WHERE id IN (<rows chosen by the review>) AND NOT (metadata ? 'contamination_review');
+--
+-- Row selection: live (deleted_at is null) cutover rows (metadata.migrated_from =
+-- 'seo.topic'), with no site- or brand-tier placement and no site_topic_value row
+-- behind them (needs_person), or whose only worth row said not_offered (certain).
+--
+-- Follow-up 2026-10-21 (same day): one needs_person row, "Pharmaceuticals and
+-- Supplements" (brand 413de36b, row fd9c50b0-af8a-43bb-b991-a0666d29595d), is an
+-- ancestor of the brand's own positive signal (Arthrex PRP Systems); the fixed
+-- reconcile mints such ancestors itself, so the flag was wrong. The flag was
+-- removed and replaced by metadata.contamination_review_cleared {cleared_on, was, why}.
+-- No other flagged row is an ancestor of a positive signal (recursive check).
+--
+-- Verify the live state:
+--   select metadata->'contamination_review'->>'reason', count(*)
+--   from web.brand_offering where metadata ? 'contamination_review' and deleted_at is null group by 1;
+--   -- expect: not_offered_ruling 5, foreign_tier_placement_only 141
+SELECT 1 WHERE false; -- keeps the file a valid no-op if it is ever fed to a runner
