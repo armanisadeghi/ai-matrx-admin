@@ -10,6 +10,7 @@ import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { toast } from "@/lib/toast";
 import type { NodeSource } from "../board/document";
 import { meetingPartNote, meetingPartOf } from "./meeting-items.logic";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: string): Promise<void> {
   const target = meetingPartOf(source);
@@ -24,7 +25,7 @@ export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: stri
   try {
     const note = await createNote({ label, content, organization_id: meeting?.organizationId ?? (await activeOrg()) });
     toast("Sent to Notes", {
-      action: { label: "Open", onClick: () => window.open(`/notes?active=${encodeURIComponent(note.id)}`, "_blank", "noopener") },
+      action: { label: "Open", onClick: () => openOutbound(`/notes?active=${encodeURIComponent(note.id)}`, "_blank", "noopener") },
     });
   } catch (e) {
     toast.error(e instanceof Error ? e.message : "Could not send to Notes");
