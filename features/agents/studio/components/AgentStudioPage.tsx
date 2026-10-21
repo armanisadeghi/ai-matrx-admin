@@ -484,7 +484,14 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   // Applied-but-unsaved edits to the agent live on the assistant's conversation and come back on reload.
   useStudioUnsavedEdits(state.agentId, state.chatId);
 
-  const { ws, edit } = useStudioWorkspace(state.chatId ?? null);
+  /** The assistant's turn ended (complete/error/paused for a person): the mark the workspace re-reads on. */
+  const assistantTurnEnded = useAppSelector((s) => {
+    if (!state.chatId) return null;
+    const status = selectInstanceStatus(state.chatId)(s);
+    if (status !== "complete" && status !== "error" && status !== "paused") return null;
+    return `${status}:${selectLatestAssistantMessageId(state.chatId)(s) ?? ""}`;
+  });
+  const { ws, edit } = useStudioWorkspace(state.chatId ?? null, assistantTurnEnded);
   useStudioBuilderFeed(state.chatId ?? null, ws);
   const [dropped, setDropped] = useState<ReadonlySet<string>>(new Set());
 
