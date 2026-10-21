@@ -20,6 +20,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { BlockHostProvider } from "@ai-matrx/rich-content/display/block-host";
+import { TooltipProvider } from "@ai-matrx/design-system";
 import { wrapArtifactText } from "@/features/canvas/materialization/artifactWire";
 
 // A saved answer's artifact row is not in the database here: the by-id read misses and the block
@@ -98,7 +99,7 @@ function HostTool() {
 async function draw(source: string, withHost: boolean) {
   const content = <RichContent level="full" imagePolicy="ai" source={source} isStreaming={false} hideCopyButton />;
   await act(async () => {
-    root.render(withHost ? <BlockHostProvider renderActions={() => <HostTool />}>{content}</BlockHostProvider> : content);
+    root.render(<TooltipProvider>{withHost ? <BlockHostProvider renderActions={() => <HostTool />}>{content}</BlockHostProvider> : content}</TooltipProvider>);
   });
   await flush();
 }

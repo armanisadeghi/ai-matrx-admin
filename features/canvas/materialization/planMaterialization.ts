@@ -359,6 +359,7 @@ export function planMaterialization(
             type: sb.type,
             content: sb.content ?? "",
             data: sb.language ? { language: sb.language } : null,
+            metadata: sb.metadata ?? null,
           }),
         );
         continue;

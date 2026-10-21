@@ -1,6 +1,5 @@
 "use client";
 
-import { hasMeaningfulScores } from "./comparisonSummary";
 import { FullScreenPortal } from "../FullScreenPortal";
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
 import { NotebookPen } from "lucide-react";
@@ -30,7 +29,6 @@ import {
   Medal,
   Award,
   Zap,
-  Target,
   Eye,
   EyeOff,
   Crown,
@@ -85,12 +83,6 @@ interface ComparisonTableBlockProps {
   /** Called whenever the user changes persisted interaction state (optional). */
   onStateChange?: (state: ComparisonTableState) => void;
 }
-
-const STAT_ITEMS = [
-  { key: "items", label: "Items", icon: Table },
-  { key: "criteria", label: "Criteria", icon: Target },
-  { key: "avgScore", label: "Avg", icon: BarChart3, suffix: "%" },
-] as const;
 
 const navBtnClass =
   "inline-flex items-center justify-center gap-1 p-1.5 md:px-2 md:py-1.5 rounded-md text-xs font-medium border transition-colors";
@@ -508,23 +500,6 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
 
   const winners = getWinnerIndices();
 
-  const stats = useMemo(
-    () => ({
-      items: comparison.items.length,
-      criteria: comparison.criteria.length,
-      avgScore:
-        comparison.items.length > 0
-          ? Math.round(
-              Object.values(itemScores).reduce((a, b) => a + b, 0) /
-                comparison.items.length,
-            )
-          : 0,
-    }),
-    [comparison.items.length, comparison.criteria.length, itemScores],
-  );
-
-  // The average is drawn only when the scores behind it mean something (R14).
-  const showAvg = hasMeaningfulScores(comparison.criteria);
 
   const getStickyItemCellClass = (
     highlighted: boolean,
@@ -633,29 +608,10 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                   <p className="mb-2 text-xs text-muted-foreground line-clamp-2">{comparison.description}</p>
                 )}
 
-                <div className={`grid gap-1.5 mb-2 ${showAvg ? "grid-cols-3" : "grid-cols-2"}`} data-comparison-summary="">
-                  {STAT_ITEMS.filter((item) => item.key !== "avgScore" || showAvg).map((item) => {
-                    const { key, label, icon: StatIcon } = item;
-                    const suffix = "suffix" in item ? item.suffix : "";
-                    return (
-                      <div
-                        key={key}
-                        className="rounded-md border border-border bg-background/50 px-1.5 py-1.5 text-center"
-                      >
-                        <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                          <StatIcon className="h-3 w-3 flex-shrink-0" />
-                          <span className="min-w-0 truncate text-[10px] font-medium">
-                            {label}
-                          </span>
-                        </div>
-                        <div className="text-sm font-semibold text-foreground tabular-nums">
-                          {stats[key]}
-                          {suffix}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                {/* Two counts of things the block really has, in one quiet line. No average of scores: it answers no question (review 5, G7). */}
+                <p className="mb-2 text-xs text-muted-foreground tabular-nums" data-comparison-summary="">
+                  {comparison.items.length} {comparison.items.length === 1 ? "item" : "items"} · {comparison.criteria.length} {comparison.criteria.length === 1 ? "criterion" : "criteria"}
+                </p>
 
                 <div className="flex flex-col sm:flex-row gap-1.5">
                   <div className="flex-1 relative min-w-0">
