@@ -58,6 +58,11 @@ export interface LoginSeed {
 type IdentityData = Record<string, unknown>;
 
 const str = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v.trim() : null);
+/** A name field: a placeholder ("Unknown", "n/a") is no name at all. */
+const nameStr = (v: unknown): string | null => {
+  const s = str(v);
+  return s && !isPlaceholderName(s) ? s : null;
+};
 
 /** Providers that carry a person's own name and picture, best first; the rest follow in linked order. */
 const PROFILE_ORDER = ["google", "github", "apple", "azure", "linkedin_oidc", "twitter", "facebook"];
@@ -107,9 +112,9 @@ export function loginSeed(user: User, rules: readonly KnownDomainRule[] | null =
     }
     return null;
   };
-  const providerName = first((d) => str(d.full_name) ?? str(d.name));
+  const providerName = first((d) => nameStr(d.full_name) ?? nameStr(d.name));
   const meta = (user.user_metadata ?? {}) as IdentityData;
-  const typedName = str(meta.full_name) ?? str(meta.name);
+  const typedName = nameStr(meta.full_name) ?? nameStr(meta.name);
   const avatarUrl = first((d) => str(d.avatar_url) ?? str(d.picture));
   const google = ids.find((i) => i.provider === "google");
   const claims = (google?.data.custom_claims ?? null) as IdentityData | null;
@@ -136,6 +141,16 @@ export function loginSeed(user: User, rules: readonly KnownDomainRule[] | null =
     freeMail: emailDomain ? isFreeMailDomain(emailDomain, rules) : null,
     roleMailbox,
   };
+}
+
+/**
+ * The one name rule: the provider's name > the name typed at sign-up > a name the email step PROVED on a GitHub
+ * account (`provenProfileName`) > the email's two-word hint > none. `seed.name` already carries the first, second
+ * and last; the proven GitHub name outranks only the email hint.
+ */
+export function resolveName(seed: LoginSeed, provenName: string | null): string | null {
+  if (seed.nameFrom === "provider" || seed.nameFrom === "typed") return seed.name;
+  return provenName ?? seed.name;
 }
 
 /**
