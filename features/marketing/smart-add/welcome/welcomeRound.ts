@@ -83,7 +83,21 @@ export function welcomeFirstRound(seed: LoginSeed, lateName: string | null = nul
     exclude_keys: exclude,
     entry_kind: "person",
     known: knownDecided(map.values(), decisions),
-    ...(name ? { person: { name, affiliations: [], anchors: [], find: true } } : {}),
+    ...(name
+      ? {
+          person: {
+            name,
+            affiliations: [],
+            anchors: [],
+            find: true,
+            // Their own name (the provider's, typed at sign-up, or typed here): always searched, even a common one;
+            // "Which one is you?" narrows it (aidream PersonFacts.typed_own_name). The email's hint is not theirs.
+            ...(seed.name ? (seed.nameFrom !== "email" ? { typed_own_name: true } : {}) : { typed_own_name: true }),
+            // The login's domain (Workspace, or a work email's) only anchors the search, never proves the site.
+            ...(seeds.website ? { domain_hint: seeds.website } : {}),
+          },
+        }
+      : {}),
   };
   return { seeds, name, email, find: Boolean(name), items: [...map.values()], decisions, inputs };
 }

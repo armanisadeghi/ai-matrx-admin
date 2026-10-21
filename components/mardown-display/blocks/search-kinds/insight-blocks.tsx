@@ -299,3 +299,63 @@ export function OpenOnSiteLink({ url, label }: { url: string; label: string }) {
 export function isKindValue(value: unknown, kind: string): boolean {
   return isRecord(value) && value.__kind === kind;
 }
+
+/**
+ * `reverse_image_search_results` — where a picture appears: pages that CONTAIN it first (ordinary web
+ * result cards), then similar pictures (image cards). Composed from the family's own items, so there is
+ * no second look to maintain.
+ */
+export function ReverseImageResultsBlock({ serverData, className }: BlockProps) {
+  const value = kindValue(serverData);
+  const exact = records(value.exact_matches);
+  const visual = records(value.visual_matches);
+  if (exact.length === 0 && visual.length === 0) {
+    return <p className={cn("text-sm text-muted-foreground", className)}>Nothing matching this image turned up.</p>;
+  }
+  return (
+    <div className={cn("space-y-6", className)}>
+      {exact.length > 0 && (
+        <section className="space-y-3" aria-label="Pages with this image">
+          <h3 className="text-sm font-medium text-foreground">Pages with this image</h3>
+          <div className="space-y-3">
+            {exact.map((m, i) => (
+              <SearchKindNested
+                key={text(m.link) ?? i}
+                value={{
+                  __kind: "web_result",
+                  title: text(m.title) ?? text(m.source) ?? text(m.displayed_link) ?? text(m.link),
+                  url: text(m.link),
+                  site_name: text(m.source) ?? text(m.displayed_link),
+                  snippet: text(m.snippet),
+                  thumbnail: text(m.thumbnail),
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+      {visual.length > 0 && (
+        <section className="space-y-3" aria-label="Similar images">
+          <h3 className="text-sm font-medium text-foreground">Similar images</h3>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {visual.map((m, i) => (
+              <SearchKindNested
+                key={text(m.link) ?? i}
+                value={{
+                  __kind: "image_result",
+                  title: text(m.title),
+                  image_url: text(m.image),
+                  thumbnail: text(m.thumbnail),
+                  page_url: text(m.link),
+                  site_name: text(m.source) ?? text(m.displayed_link),
+                  width: num(m.image_width),
+                  height: num(m.image_height),
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}

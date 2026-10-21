@@ -16,20 +16,18 @@
  * `{ value, isComplete }`; every section renders whatever has arrived.
  */
 
-import React from "react";
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import {
-  Search,
-  Newspaper,
-  Film,
-  HelpCircle,
-  MessagesSquare,
-  MapPin,
-  Images,
-} from "lucide-react";
+import { Button } from "@ai-matrx/design-system/controls";
+import { Search, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  entityFitsQuery,
+  isNewsQuery,
+  storyFitsQuery,
   isRecord,
+  placesBesideEntity,
   num,
   readWebSearchCollectionValue,
   records,
@@ -40,6 +38,12 @@ import { SectionHeading } from "./search-kind-shared";
 import { SearchKindNested } from "./SearchKindNested";
 import { searchEngineLabel } from "@/features/search/types";
 
+// The ONE map (Leaflet + OSM tiles), loaded only when a local pack has pins.
+const MapCanvas = dynamic(() => import("../map/MapCanvas"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full animate-pulse bg-muted" />,
+});
+
 interface WebSearchResultsBlockProps {
   serverData?: unknown;
   className?: string;
@@ -49,6 +53,12 @@ interface WebSearchResultsBlockProps {
 function renderable<T extends object>(list: T[], key: string): T[] {
   return list.filter((item) => text((item as Record<string, unknown>)[key]) !== null);
 }
+
+/** Organic results come in Google's runs: the first three, then features, then the rest. */
+const FIRST_RUN = 3;
+const SECOND_RUN = 6;
+/** The local pack opens on three places, Google's count; "More places" shows the rest in place. */
+const LOCAL_PACK_SIZE = 3;
 
 export default function WebSearchResultsBlock({
   serverData,
@@ -62,7 +72,7 @@ export default function WebSearchResultsBlock({
   const altered = text(value.altered_query);
 
   const results = renderable(records(value.results), "title");
-  const news = renderable(records(value.news), "title");
+  const allNews = renderable(records(value.news), "title");
   const videos = renderable(records(value.videos), "title");
   // An image hit may arrive untitled; its identity is the picture itself.
   const images = records(value.images).filter(
@@ -72,72 +82,88 @@ export default function WebSearchResultsBlock({
   const imagesFirst = vertical === "images";
   const faqs = renderable(records(value.faqs), "question");
   const discussions = renderable(records(value.discussions), "title");
-  const places = renderable(records(value.places), "name");
-  const entity = isRecord(value.entity) ? value.entity : null;
+  const rawEntity = isRecord(value.entity) ? value.entity : null;
+  const places = placesBesideEntity(renderable(records(value.places), "name"), rawEntity);
   const aiAnswer = isRecord(value.ai_answer) ? value.ai_answer : null;
   const related = strings(value.related_searches);
 
-  // Web results read best as one left-aligned column (Google's ~650px measure);
-  // the knowledge card takes a right rail when there is room. Every other
-  // result type is a grid and takes the full width.
+  // Web results read as one left-aligned column (Google's 652px measure); the knowledge panel
+  // takes the right rail — and only when the query names it (a site that merely ranked is no panel).
   const webLike = vertical === null || vertical === "web";
+  const entity =
+    rawEntity && (!webLike || entityFitsQuery(text(rawEntity.name), query)) ? rawEntity : null;
   const railEntity = webLike ? entity : null;
+  const newsFirst = webLike && isNewsQuery(query);
+  // Top stories are about what was asked: a provider's general headlines band ("breaking" news on
+  // anything) is dropped from the All page, where Google shows only stories on the query.
+  const news = webLike ? allNews.filter((item) => storyFitsQuery(item, query)) : allNews;
+
+  const topStories = news.length > 0 && (
+    <section>
+      <SectionHeading label={webLike ? "Top stories" : "News"} />
+      <div className="grid grid-cols-2 gap-3 @lg:grid-cols-3">
+        {news.map((item, i) => (
+          <SearchKindNested key={i} value={item} />
+        ))}
+      </div>
+    </section>
+  );
+
+  const organic = (list: Record<string, unknown>[]) =>
+    list.length > 0 && (
+      <div className="space-y-7">
+        {list.map((result, i) => (
+          <SearchKindNested key={i} value={result} />
+        ))}
+      </div>
+    );
 
   const main = (
-    <div className="@container min-w-0 space-y-6">
+    <div className="@container min-w-0 space-y-8">
       {/* An image search leads with its grid. */}
       {imagesFirst && images.length > 0 && <ImagesBand images={images} />}
 
-      {/* AI answer leads, Perplexity-style. */}
+      {/* The AI overview leads, Google's way. */}
       {aiAnswer && <SearchKindNested value={aiAnswer} />}
 
-      {/* Narrow: the knowledge card follows the answer; wide: it sits in the rail. */}
+      {/* Narrow: the knowledge panel follows the overview; wide: it sits in the rail. */}
       {railEntity && (
         <div className="@4xl/serp:hidden">
           <SearchKindNested value={railEntity} />
         </div>
       )}
 
-      {/* Local places */}
-      {places.length > 0 && (
+      {places.length > 0 &&
+        (vertical === "places" ? <PlacesList places={places} /> : <LocalPack places={places} />)}
+
+      {newsFirst && topStories}
+
+      {organic(results.slice(0, FIRST_RUN))}
+
+      {!newsFirst && topStories}
+
+      {/* People also ask — one list of collapsed questions between hairlines. */}
+      {faqs.length > 0 && (
         <section>
-          <SectionHeading icon={MapPin} label="Places" count={places.length} />
-          <div className="grid gap-3 @2xl:grid-cols-2">
-            {places.map((place, i) => (
-              <SearchKindNested key={i} value={place} />
+          <SectionHeading label="People also ask" />
+          <div className="divide-y divide-border border-y border-border">
+            {faqs.map((faq, i) => (
+              <SearchKindNested
+                key={i}
+                value={faq}
+                className="rounded-none border-0 bg-transparent px-0"
+              />
             ))}
           </div>
         </section>
       )}
 
-      {/* The main organic results list */}
-      {results.length > 0 && (
-        <div className="space-y-6">
-          {results.map((result, i) => (
-            <SearchKindNested key={i} value={result} />
-          ))}
-        </div>
-      )}
+      {organic(results.slice(FIRST_RUN, SECOND_RUN))}
 
-      {!imagesFirst && images.length > 0 && <ImagesBand images={images} />}
-
-      {/* News band */}
-      {news.length > 0 && (
-        <section>
-          <SectionHeading icon={Newspaper} label="News" count={news.length} />
-          <div className="grid gap-3 @lg:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-5">
-            {news.map((item, i) => (
-              <SearchKindNested key={i} value={item} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Videos band */}
       {videos.length > 0 && (
         <section>
-          <SectionHeading icon={Film} label="Videos" count={videos.length} />
-          <div className="grid grid-cols-2 gap-3 @3xl:grid-cols-4 @5xl:grid-cols-5">
+          <SectionHeading label="Videos" />
+          <div className="grid grid-cols-2 gap-3 @3xl:grid-cols-3">
             {videos.map((video, i) => (
               <SearchKindNested key={i} value={video} />
             ))}
@@ -145,30 +171,13 @@ export default function WebSearchResultsBlock({
         </section>
       )}
 
-      {/* People also ask — one bordered list of collapsed questions. */}
-      {faqs.length > 0 && (
-        <section>
-          <SectionHeading icon={HelpCircle} label="People also ask" count={faqs.length} />
-          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
-            {faqs.map((faq, i) => (
-              <SearchKindNested
-                key={i}
-                value={faq}
-                className="rounded-none border-0 bg-transparent"
-              />
-            ))}
-          </div>
-        </section>
-      )}
+      {!imagesFirst && images.length > 0 && <ImagesBand images={images} />}
 
-      {/* Discussions */}
+      {organic(results.slice(SECOND_RUN))}
+
       {discussions.length > 0 && (
         <section>
-          <SectionHeading
-            icon={MessagesSquare}
-            label="Discussions"
-            count={discussions.length}
-          />
+          <SectionHeading label="Discussions and forums" />
           <div className="space-y-4">
             {discussions.map((discussion, i) => (
               <SearchKindNested key={i} value={discussion} />
@@ -177,11 +186,11 @@ export default function WebSearchResultsBlock({
         </section>
       )}
 
-      {/* Related searches — each one is a search of its own (new tab). */}
+      {/* People also search for — each one a search of its own (new tab). */}
       {related.length > 0 && (
         <section>
-          <SectionHeading icon={Search} label="Related searches" />
-          <div className="grid gap-2 @md:grid-cols-2">
+          <SectionHeading label="People also search for" />
+          <div className="grid gap-2.5 @md:grid-cols-2">
             {related.map((term, i) => (
               <OutboundLink
                 key={i}
@@ -189,9 +198,9 @@ export default function WebSearchResultsBlock({
                 target="_blank"
                 rel="noopener"
                 title={term}
-                className="flex min-w-0 items-center gap-2.5 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                className="flex h-12 min-w-0 items-center gap-3 rounded-xl bg-muted px-4 text-sm text-foreground transition-colors hover:bg-muted-foreground/15"
               >
-                <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="truncate">{term}</span>
               </OutboundLink>
             ))}
@@ -204,7 +213,7 @@ export default function WebSearchResultsBlock({
   return (
     <div className={cn("@container/serp my-2 space-y-4", className)}>
       {/* Collection header — one quiet line. Hosts that already show the query
-          and engine (the Search Lab) hide it via the data attribute. */}
+          and engine (the search page) hide it via the data attribute. */}
       <div
         data-search-collection-header=""
         className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm"
@@ -226,13 +235,13 @@ export default function WebSearchResultsBlock({
       {altered && (
         <div className="text-sm text-muted-foreground">
           Showing results for{" "}
-          <span className="font-medium text-foreground">{altered}</span>
+          <span className="font-medium italic text-primary">{altered}</span>
         </div>
       )}
 
       {railEntity ? (
-        // Google's measures: a ~42rem results column, a ~22rem panel beside it.
-        <div className="grid gap-6 @4xl/serp:grid-cols-[minmax(0,42rem)_minmax(18rem,22rem)] @4xl/serp:gap-10">
+        // Google's measures: a 652px results column, a ~370px panel beside it.
+        <div className="grid gap-6 @4xl/serp:grid-cols-[minmax(0,652px)_minmax(18rem,372px)] @4xl/serp:gap-[76px]">
           <div className="min-w-0">{main}</div>
           <aside className="hidden min-w-0 self-start @4xl/serp:block">
             <SearchKindNested value={railEntity} />
@@ -240,11 +249,79 @@ export default function WebSearchResultsBlock({
         </div>
       ) : (
         <>
-          {entity && <SearchKindNested value={entity} />}
-          <div className={cn(webLike && "max-w-3xl")}>{main}</div>
+          {!webLike && entity && <SearchKindNested value={entity} />}
+          <div className={cn(webLike && "max-w-[652px]")}>{main}</div>
         </>
       )}
     </div>
+  );
+}
+
+function placeMarkers(places: Record<string, unknown>[]) {
+  return places.flatMap((place) => {
+    const coords = isRecord(place.coordinates) ? place.coordinates : null;
+    const lat = coords ? num(coords.latitude) : null;
+    const lng = coords ? num(coords.longitude) : null;
+    return lat !== null && lng !== null ? [{ lat, lng, label: text(place.name) ?? undefined }] : [];
+  });
+}
+
+/** The Places tab, Google Maps' way: every place in a list, the map beside it (above it on a phone). */
+function PlacesList({ places }: { places: Record<string, unknown>[] }) {
+  const markers = placeMarkers(places);
+  return (
+    <div className="grid gap-4 @3xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      {markers.length > 0 && (
+        <div className="relative z-0 h-56 overflow-hidden rounded-xl border border-border @3xl:sticky @3xl:top-2 @3xl:order-2 @3xl:h-[70vh]">
+          <MapCanvas markers={markers} />
+        </div>
+      )}
+      <div className="divide-y divide-border @3xl:order-1">
+        {places.map((place, i) => (
+          <SearchKindNested key={i} value={place} className="rounded-none border-0 bg-transparent px-0" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Google's local pack: a map with the places pinned, three places under it in one bordered list,
+ * and "More places" opening the rest in place. Every place draws through its ONE component.
+ */
+function LocalPack({ places }: { places: Record<string, unknown>[] }) {
+  const [all, setAll] = useState(false);
+  const shown = all ? places : places.slice(0, LOCAL_PACK_SIZE);
+  // The map pins the places on show, Google's way: "More places" adds theirs.
+  const markers = placeMarkers(shown);
+  return (
+    <section>
+      <SectionHeading label="Places" />
+      <div className="overflow-hidden rounded-xl border border-border">
+        {markers.length > 0 && (
+          <div className="relative z-0 h-48 border-b border-border">
+            <MapCanvas key={markers.length} markers={markers} />
+          </div>
+        )}
+        <div className="divide-y divide-border">
+          {shown.map((place, i) => (
+            <SearchKindNested key={i} value={place} className="rounded-none border-0 bg-transparent" />
+          ))}
+        </div>
+        {places.length > LOCAL_PACK_SIZE && (
+          <div className="flex justify-center border-t border-border py-1.5">
+            <Button
+              variant="quiet"
+              onClick={() => setAll((v) => !v)}
+              aria-expanded={all}
+              icon={<ChevronDown className={cn(all && "rotate-180")} />}
+            >
+              {all ? "Fewer places" : "More places"}
+            </Button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -255,7 +332,7 @@ export default function WebSearchResultsBlock({
 function ImagesBand({ images }: { images: Record<string, unknown>[] }) {
   return (
     <section>
-      <SectionHeading icon={Images} label="Images" count={images.length} />
+      <SectionHeading label="Images" />
       <div className="grid grid-cols-2 gap-3 @lg:grid-cols-3 @3xl:grid-cols-4 @5xl:grid-cols-5">
         {images.map((image, i) => (
           <SearchKindNested key={i} value={image} />

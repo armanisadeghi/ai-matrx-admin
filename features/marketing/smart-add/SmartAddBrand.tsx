@@ -29,7 +29,7 @@ import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
 import type { PersonGroup } from "./welcome/peopleGroups";
 import { PersonPickCards } from "./welcome/PersonPickCards";
 import { welcomeFirstRound, welcomeFirstSeeds } from "./welcome/welcomeRound";
-import { startWelcomeRound } from "./welcome/welcomeRoundStart";
+import { recordWelcomeRound, startWelcomeRound } from "./welcome/welcomeRoundStart";
 import { welcomeVerdict } from "./welcome/welcomeVerdict";
 import { visibleEvidence } from "./visibleEvidence";
 import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
@@ -467,11 +467,16 @@ export function SmartAddBrand({
           ...(fullName ? { full_name: fullName } : {}),
           ...(findYouProvision.current && !find ? { find_you: findYouProvision.current } : {}),
           ...(find ? { find: true } : {}),
+          // The welcome's name is the person's own (typed, or the provider's): searched even when common, and
+          // "Which one is you?" narrows it (aidream PersonFacts.typed_own_name). The email's name hint is not theirs.
+          ...(door === "welcome" && find && welcomeSeed?.nameFrom !== "email" ? { typed_own_name: true } : {}),
           ...(groundedRound ? { grounded: true, ...(anchorRunId.current ? { anchor_run_id: anchorRunId.current } : {}) } : {}),
         }
       : null;
     for (const k of seedKeys(seeds, accountSeedKey)) explored.current.add(k);
     const id = crypto.randomUUID();
+    // Sign-up welcome: this round's index on the session's stable subjects (welcomeSession.roundSubject).
+    const welcomeN = door === "welcome" && loginSeed ? welcomeRoundCount.current++ : null;
     setRounds((r) => [...r, { id, runId: null, seeds, error: null, redo: { woken, firstData, find, email } }]);
     const exclude = [
       ...Object.entries(decisions)
@@ -488,7 +493,7 @@ export function SmartAddBrand({
         dispatch,
         WORKFLOW_KEY,
         {
-          subject: door === "welcome" && loginSeed ? roundSubject(loginSeed.subject, welcomeRoundCount.current++) : `smart_add:${id}`,
+          subject: welcomeN !== null && loginSeed ? roundSubject(loginSeed.subject, welcomeN) : `smart_add:${id}`,
           organizationId,
           sourceFeature: "marketing",
           // `confirmed` = every fact the person confirmed; `woken` = the ones new this round, which wake
@@ -525,6 +530,9 @@ export function SmartAddBrand({
       );
       setRounds((r) => r.map((x) => (x.id === id ? { ...x, runId } : x)));
       if (find) anchorRunId.current = runId;
+      // A later welcome round (a narrowing, a late name, a grounded one) is the found search's latest round: recorded
+      // on the account so the background check reads it and tells them once (live 2026-10-21: it stayed 0).
+      if (welcomeN !== null && welcomeN > 0 && loginSeed && !loginSeed.test) void recordWelcomeRound(welcomeN);
     } catch (error) {
       if (groundedRound) groundedSent.current = false;
       recentStarts.current.delete(startPrint);

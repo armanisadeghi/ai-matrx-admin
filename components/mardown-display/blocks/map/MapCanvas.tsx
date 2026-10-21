@@ -11,7 +11,9 @@
  */
 
 import "leaflet/dist/leaflet.css";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { safeCancelIdleCallback, safeRequestIdleCallback } from "@/utils/browser-compat";
+import { initialMapView } from "./parseMap";
 import L from "leaflet";
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
@@ -109,6 +111,16 @@ export function InvalidateOnResize() {
   return null;
 }
 
+/** The tiles join one idle task after the map itself: Leaflet's set-up and the image grid never share a task. */
+function useTilesReady(): boolean {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const handle = safeRequestIdleCallback(() => setReady(true), { timeout: 300 });
+    return () => safeCancelIdleCallback(handle);
+  }, []);
+  return ready;
+}
+
 /** The one tile layer every map in the app draws (OpenStreetMap, no key; attribution kept per its terms). */
 export function OsmTiles() {
   return (
@@ -132,10 +144,16 @@ export default function MapCanvas({
   zoom?: number;
   focus?: { lat: number; lng: number; seq: number } | null;
 }) {
-  const initialCenter: [number, number] = center ?? (markers[0] ? [markers[0].lat, markers[0].lng] : [20, 0]);
+  // Fixed at mount (Leaflet reads it once); a later change of places refits through FitBounds.
+  const [view] = useState(() => initialMapView(markers, center, zoom));
+  const tilesReady = useTilesReady();
   return (
-    <MapContainer center={initialCenter} zoom={zoom ?? (center ? 11 : 4)} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
-      <OsmTiles />
+    <MapContainer
+      {...("bounds" in view ? { bounds: view.bounds, boundsOptions: { padding: [30, 30] as [number, number] } } : view)}
+      scrollWheelZoom={false}
+      style={{ height: "100%", width: "100%" }}
+    >
+      {tilesReady && <OsmTiles />}
       {markers.map((m, i) => (
         <Marker key={i} position={[m.lat, m.lng]} icon={m.bubble ? bubbleIcon(m.bubble) : PIN}>
           {(m.label || m.description) && (

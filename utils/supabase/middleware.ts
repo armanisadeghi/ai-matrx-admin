@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseNext } from "@/utils/supabase/authCookie";
+import { FRAME_COOKIE, FRAME_COOKIE_MAX_AGE_S, FRAME_ON, frameParam } from "@/features/shell/frame-host/frameMode";
 import { sessionIntegrityNotice } from "@/features/shell/components/sessionIntegrityNotice";
 import {
   captureAuthDestination,
@@ -242,6 +243,17 @@ export async function updateSession(
   // half of the destination (`/administration/users?tab=invites` came back as
   // `/administration/users`).
   session.response.headers.set("x-search-params", request.nextUrl.search);
+  // THE NEW APP FRAME's opt-in (features/shell/frame-host/frameMode.ts): `?frame=new` remembers it,
+  // `?frame=classic` forgets it. The (core) layout reads the same param for THIS request, so the
+  // cookie only has to carry the choice to the next hard load. Nothing in the browser writes it.
+  if (request.nextUrl.searchParams.has("frame")) {
+    const choice = frameParam(request.nextUrl.search);
+    if (choice === FRAME_ON) {
+      session.response.cookies.set(FRAME_COOKIE, FRAME_ON, { path: "/", maxAge: FRAME_COOKIE_MAX_AGE_S, sameSite: "lax", secure: request.nextUrl.protocol === "https:" });
+    } else if (choice) {
+      session.response.cookies.delete(FRAME_COOKIE);
+    }
+  }
   // NOTE: the split-jar header is stamped by @ai-matrx/data/next itself
   // (SPLIT_COOKIE_JAR_HEADER) on every healed response, redirects included —
   // stamping it here only reached the pass-through path.

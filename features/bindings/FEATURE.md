@@ -180,7 +180,7 @@ verbatim — a `logger.warning` is a scream only the server hears.
 
 ## Shared treatment configuration
 
-**Overrides means API model parameters only.** `RunConfigOverrides` edits the selected binding's `config_overrides`; Controls and Advanced are two input modes over the same `instanceModelOverrides` draft. Invalid JSON blocks Save. There is no treatment model editor: `treatment.config.seeds.llm_overrides` has no imperative mandate-launch consumer and must not masquerade as this binding's API overrides.
+**Overrides means API model parameters only.** `@ai-matrx/chat` `ConversationModelSettings` (THE model-settings panel the agent builder renders) edits the selected binding's `config_overrides`; Controls and JSON are two input modes over the same `instanceModelOverrides` draft, and the heading above it (`JOB_OVERRIDE_HEADING`) says where the overrides land. Invalid JSON blocks Save. There is no treatment model editor: `treatment.config.seeds.llm_overrides` has no imperative mandate-launch consumer and must not masquerade as this binding's API overrides.
 
 `BindingOptionsDrawer.section` selects Display Options or Permissions without unmounting the shared treatment draft. It lives above the binding identity key; changing/saving a binding cannot discard it. Treatment preferences belong to the mandate, not the selected user/org binding. Existing-row access is checked with the registered `mandate_treatment` token; absent-row creation remains database-authorized and explicitly labeled. `WidgetPicker`, `SettingsSection` and `AdvancedSection` are the canonical shortcut components; their shared `ShortcutFieldRow`/`ShortcutToggleRow` put the control before inline Source/State metadata, with explanation in `FieldHelp`. Narrow layouts stack identical content. False, default and inactive values remain explicit; dependent gate controls remain visible and disabled when inapplicable.
 
@@ -244,6 +244,7 @@ never become an answer, and absent means the declaration gave none — never inv
 
 ## Change Log
 
+- 2026-10-21 (round 2) — The panel has no header of its own any more, so the binding screen draws `JOB_OVERRIDE_HEADING` (title + where the overrides land, B14) above it; `JOB_OVERRIDE_WORDS` / `JOB_TREATMENT_OVERRIDE_WORDS` lose `heading` / `scopeNote`.
 - 2026-10-21 — The binding's model-settings drawer renders `@ai-matrx/chat` `ConversationModelSettings` (THE model-settings panel the agent builder renders; owner: one settings experience) with `model="override"` and a JSON view, keeping `inheritedSources` (shown in each row's status tooltip), `nullOverrideDefaults` and the per-rung `overrideSource`; `RunConfigOverrides` is deleted.
 - 2026-10-06 — ALC-16: transfer imports moved off the retired `@ai-matrx/alchemy/core` / `@ai-matrx/kit/content-transfer` onto `@ai-matrx/alchemy/operate` (same functions, same bytes).
 - 2026-09-19 — **THE FOURTH ORGANIZATION STATE (R37) in `usePlaceOffers`.** Every place's offer said "No organization is selected … choose one from the organization picker" as soon as `orgBootstrapResolved` went true with no id — which `setOrgBootstrapFailure` also does, so a failed read blamed the person. The hook now reads `useOrganizationRequired().organizationState` and says plainly that the organization could not be checked when that is what happened. Guard: `pnpm check:org-three-states` rule 5.

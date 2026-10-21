@@ -86,6 +86,30 @@ cannot show the real chrome: it has no `Providers` (redux store, signed-in sessi
 them would pull the app's client graph into the fast lab build; parity is proven by
 `frame-host/__tests__/frame-chrome.test.tsx` until the (core) switch.
 
+## The live (core) switch (ROLLOUT-PLAN P1)
+
+- **Who:** `frame-host/frameMode.ts` — `FRAME_ROLLOUT = "admins"` (code constant). Guests and
+  members are always classic. An admin opts in with `?frame=new` (remembered in the `matrx_frame`
+  cookie, which ONLY `utils/supabase/middleware.ts` writes) and out with `?frame=classic`. The
+  server reads the param from `x-search-params`. Kill switch for everyone: knob
+  `shell.new_frame_enabled` (read only when the answer would be "frame"). Toggling is a hard load.
+- **Where:** `app/(core)/layout.tsx` picks `FrameShell` or `AppShell` at its one render.
+  `FrameShell` (server) renders the providers both shells share (`FRAME_SHARED_SHELL_PARTS`,
+  test `frame-shell-parity`), imports `frame.css` + `frame-host/legacy-contracts.css`, and mounts
+  `FrameHostGate` — the ONE `dynamic()` into `FrameHostImpl` (AppFrame + FrameChrome + the route
+  table). `check:shell-eager-graph` blocks all of them from every classic eager set.
+- **Layer 0:** `route-homes.generated.ts` (built by `route-homes.build.ts`, `pnpm frame:route-homes`,
+  drift test `route-homes-generated`) gives each product its entry and a sidebar of real links
+  (from the flows; `[param]` links filled from the current page) and maps every route to its
+  product and row (`routeHomeLookup.ts`). The flows, the TSV and `route-flow.json` never reach
+  the browser.
+- **Layer 2:** the header carries `#frame-header-center` / `#frame-header-right`, first in
+  `HEADER_SLOT_TARGETS`; the derived crumbs are the center's `fallback` and hide when a page's
+  own header content lands (legacy-contracts.css).
+- **Page contract:** the body is a `.shell-main` scroller (runway rules apply as written);
+  `--shell-header-h: 0`, `--header-height` = the frame's chrome. Side chat and canvas show as
+  disabled toggles ("comes … in the next step") until P3.
+
 ## Ours and the page's (owner, 2026-10-20)
 
 A page hands the frame DATA; the frame owns every region's geometry and look. `AppFrameProps`
@@ -237,6 +261,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21 (P1 live switch): admins opt in with `?frame=new`; FrameShell, FrameHostGate,
+  FrameHostImpl, the generated route table, header slots, legacy page contract.
 
 - 2026-10-21 (frame crawl): `scripts/frame-crawl/` records the classic-shell baseline (P0).
 

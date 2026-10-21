@@ -55,11 +55,13 @@ import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 
 export type HeaderSlotName = "center" | "right";
 
-/** Where each slot's content goes. Inside a ChatCanvasWorkspace the shell
- *  header is hidden (canvas chrome) and the workspace header carries it. */
+/** Where each slot's content goes. The new app frame's header slots come FIRST (only one shell
+ *  exists per request, so they are absent on every classic page — features/shell/frame-host).
+ *  Inside a ChatCanvasWorkspace the shell header is hidden (canvas chrome) and the workspace
+ *  header carries it. */
 export const HEADER_SLOT_TARGETS: Record<HeaderSlotName, readonly string[]> = {
-  center: ['[data-page-header-target="workspace"]', "#shell-header-center"],
-  right: ['[data-page-header-right-target="workspace"]', "#shell-header-right"],
+  center: ["#frame-header-center", '[data-page-header-target="workspace"]', "#shell-header-center"],
+  right: ["#frame-header-right", '[data-page-header-right-target="workspace"]', "#shell-header-right"],
 };
 
 export function findHeaderSlot(slot: HeaderSlotName): HTMLElement | null {

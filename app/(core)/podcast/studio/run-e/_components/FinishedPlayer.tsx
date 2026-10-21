@@ -41,8 +41,8 @@ export function FinishedPlayer({ state }: { state: PodcastRunState }) {
     const el = audioRef.current;
     if (!el) return;
     if (el.paused) {
-      void el.play();
       setPlaying(true);
+      el.play().catch(() => setPlaying(false));
     } else {
       el.pause();
       setPlaying(false);

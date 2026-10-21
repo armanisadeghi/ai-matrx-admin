@@ -16,7 +16,13 @@ export function compareDestination(text: string): string {
   return q ? `/compare?q=${encodeURIComponent(q)}` : "/compare";
 }
 
-export function CompareHero({ runRequiresAccount }: { runRequiresAccount: boolean }) {
+/** What the box promises before the click: free runs a visitor has, or that a free account runs it. */
+export function heroNote(runRequiresAccount: boolean, guestFreeRuns: number | null): string | null {
+  if (runRequiresAccount) return "A free account runs it";
+  return guestFreeRuns ? `${guestFreeRuns} free comparisons a day, no account` : null;
+}
+
+export function CompareHero({ runRequiresAccount, guestFreeRuns = null }: { runRequiresAccount: boolean; guestFreeRuns?: number | null }) {
   const router = useRouter();
   const [text, setText] = useState("");
   const dest = compareDestination(text);
@@ -43,6 +49,9 @@ export function CompareHero({ runRequiresAccount }: { runRequiresAccount: boolea
         className="block w-full resize-none bg-transparent px-3 py-2 text-lg text-foreground placeholder:text-muted-foreground focus:outline-none sm:text-xl"
       />
       <div className="flex items-center justify-end gap-3 pt-1">
+        {heroNote(runRequiresAccount, guestFreeRuns) ? (
+          <span className="type-secondary mr-auto pl-3 text-muted-foreground">{heroNote(runRequiresAccount, guestFreeRuns)}</span>
+        ) : null}
         {runRequiresAccount ? (
           <a
             href={`/login?redirectTo=${encodeURIComponent(dest)}`}

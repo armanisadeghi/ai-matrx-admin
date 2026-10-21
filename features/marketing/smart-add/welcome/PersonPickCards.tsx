@@ -8,7 +8,7 @@
  * One person: "Is this you?" with That's me / Not me (Not me opens the same field).
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Check, MapPin, Search, X } from "lucide-react";
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { browserImageUrl } from "@/lib/media/external-image";
@@ -103,6 +103,9 @@ function PersonCard({ person, onPick }: { person: PersonGroup; onPick: (person: 
 /** One field (city or company) that narrows the next round; also the welcome's "nothing found" frame. */
 export function NarrowField({ onNarrow }: { onNarrow: (text: string) => void }) {
   const [text, setText] = useState("");
+  const field = useRef<HTMLInputElement>(null);
+  // "Search again" is never a dead grey control (live 2026-10-21: grey text on a grey fill): pressed with nothing
+  // typed, it puts the cursor in the field instead.
   return (
     <form
       className="flex w-full flex-col gap-2 sm:flex-row sm:items-center"
@@ -110,9 +113,11 @@ export function NarrowField({ onNarrow }: { onNarrow: (text: string) => void }) 
         e.preventDefault();
         const t = text.trim();
         if (t) onNarrow(t);
+        else field.current?.focus();
       }}
     >
       <Field
+        ref={field}
         // ui-exception: a short raw value (a city or a company name) that narrows the next search
         hero
         autoFocus
@@ -123,7 +128,7 @@ export function NarrowField({ onNarrow }: { onNarrow: (text: string) => void }) 
         data-testid="welcome-narrow-field"
         className="min-w-0 flex-1"
       />
-      <Button type="submit" variant="primary" hero icon={<Search aria-hidden />} disabled={!text.trim()} data-testid="welcome-narrow-submit">
+      <Button type="submit" variant="primary" hero icon={<Search aria-hidden />} data-testid="welcome-narrow-submit">
         Search again
       </Button>
     </form>

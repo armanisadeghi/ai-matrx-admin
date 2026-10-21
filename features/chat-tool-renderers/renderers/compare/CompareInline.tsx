@@ -107,8 +107,11 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
   const photo = data.kind === "local_business";
   // The header names where the run stands: Ready to confirm -> Comparing -> Comparison / failed.
   const title = !awaiting ? "Compare" : run.phase === "done" ? "Comparison" : run.phase === "checking" ? "Compare" : compareStageLabel(run.phase);
-  const names = data.found.filter((f) => f.name).map((f) => f.name).join(" vs ");
-  const subtitle = names || data.found.map((f) => f.typed).join(" vs ") || null;
+  // every contender, matched or not yet (a pending one shows what was typed); a finished run names its items
+  const names = run.phase === "done" && run.result
+    ? run.result.items.map((i) => i.name).join(" vs ")
+    : data.found.map((f) => f.name ?? f.typed).filter(Boolean).join(" vs ");
+  const subtitle = names || null;
 
   let body: React.ReactNode;
   if (!awaiting) {

@@ -443,10 +443,12 @@ export function readMissingEvidence(
         str(record, "how_to_get", "how_to_close", "how", "next_step", "detail", "description") ??
         "No path recorded yet — the analysis did not say how to get this.",
       // AI output may still say "client" (the old word for the brand): read it as "brand", never drop it.
+      // brand-word-ok: the alias that maps the old word onto "brand"
       owner: ((o) => (o === "client" ? "brand" : o))(
         oneOf(
           record,
           ["owner", "owner_role", "who", "assignee", "responsible"],
+          // brand-word-ok: accepted only to be mapped to "brand" above
           ["you", "team", "brand", "client", "third_party"] as const,
           "you",
         ),

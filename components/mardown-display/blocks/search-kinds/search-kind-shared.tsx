@@ -128,16 +128,23 @@ export const SearchChip: React.FC<{
 );
 
 /** Section heading inside the collection — one quiet row: icon, label, count. */
+/**
+ * A section title. Without a glyph it speaks in Google's results voice (a plain 20px line — the
+ * search page); with one it is the compact labelled row the other kind families use.
+ */
 export const SectionHeading: React.FC<{
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
   label: string;
   count?: number;
-}> = ({ icon: Icon, label, count }) => (
-  <div className="mb-2.5 flex items-center gap-1.5 text-sm font-medium text-foreground">
-    <Icon className="h-4 w-4 text-muted-foreground" />
-    <span>{label}</span>
-    {typeof count === "number" && count > 0 && (
-      <span className="tabular-nums text-muted-foreground">{count}</span>
-    )}
-  </div>
-);
+}> = ({ icon: Icon, label, count }) =>
+  Icon ? (
+    <div className="mb-2.5 flex items-center gap-1.5 text-sm font-medium text-foreground">
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <span>{label}</span>
+      {typeof count === "number" && count > 0 && (
+        <span className="tabular-nums text-muted-foreground">{count}</span>
+      )}
+    </div>
+  ) : (
+    <h2 className="mb-3 text-xl font-normal leading-7 text-foreground">{label}</h2>
+  );

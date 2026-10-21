@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1578,
+  "routeCount": 1580,
   "routes": [
     {
       "pattern": "/",
@@ -5383,6 +5383,16 @@
       "pattern": "/marketing/brands/[brandId]/[[...rest]]",
       "status": "live",
       "source": "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/all",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/all/page.tsx"
+    },
+    {
+      "pattern": "/marketing/brands/new",
+      "status": "live",
+      "source": "app/(core)/marketing/brands/new/page.tsx"
     },
     {
       "pattern": "/marketing/brands/new-website",

@@ -64,7 +64,7 @@ describe("saved account summaries", () => {
       { identity: "expired@example.com", status: "needs_reauth" },
       { identity: "gone@example.com", status: "revoked" },
       { identity: "old@example.com", status: "disconnected" },
-    ], false, false)).toMatchObject({ saved: true, connected: false, attention: true, available: true, status: "Needs attention", accountSummary: "expired@example.com, gone@example.com, old@example.com" });
+    ], false, false)).toMatchObject({ saved: true, connected: false, attention: true, available: true, status: "Needs attention", accountSummary: "expired@example.com, gone@example.com +1", accounts: ["expired@example.com", "gone@example.com", "old@example.com"] });
   });
 
   it("never turns unknown or unavailable statuses into connected or actionable accounts", () => {

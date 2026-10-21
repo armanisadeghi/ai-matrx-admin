@@ -1590,6 +1590,7 @@ export async function updatePageIntent(
       ? buildStoredSeoMetrics(
           input.desiredMetaTitle ?? "",
           input.desiredMetaDescription ?? "",
+          // brand-word-ok: metrics source — computed in the browser
           "client",
         )
       : null,
@@ -1705,6 +1706,7 @@ export async function updatePageDesiredValues(
                     ? buildStoredSeoMetrics(
                         desiredTitle,
                         desiredDescription,
+                        // brand-word-ok: metrics source — computed in the browser
                         "client",
                       )
                     : null,

@@ -197,3 +197,16 @@ describe("card text", () => {
     expect(sourceLine(lib.sources[2])).toBe("Search by keyword");
   });
 });
+
+describe("ownPrice: a card shows a source's own price, never the flat catalog default", () => {
+  const top = { points_per_usd: 20000, usd_per_record_default: 0.0015 };
+  it("every source at the default has no price of its own", () => {
+    const lib = parseLibrary({ ...top, sources: [{ key: "a", label: "A", group: "G", usd_per_record: 0.0015, points_per_record: 30 }] });
+    expect(lib.sources[0].ownPrice).toBe(false);
+  });
+  it("a source priced differently has its own", () => {
+    const lib = parseLibrary({ ...top, sources: [{ key: "a", label: "A", group: "G", usd_per_record: 0.02, points_per_record: 400 }] });
+    expect(lib.sources[0].ownPrice).toBe(true);
+    expect(lib.sources[0].pointsPerRecord).toBe(400);
+  });
+});

@@ -27,7 +27,7 @@ import { MarkdownTileBody } from "../tiles/MarkdownTileBody";
 import { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 import { CoverStructure } from "./structures";
 import { useBoardTokenTables } from "./board-token-tables";
-import { useOpenDesignBuild } from "../templates/open-design-build";
+import { startDesignBuild } from "../templates/board-start";
 
 export { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 
@@ -206,12 +206,11 @@ export const COVER_ITEMS: BoardItemType[] = [
 /** An empty cover: on a design-system board it invites the AI build (one line, one door); elsewhere it says so. */
 function EmptyCover() {
   const designBoard = useBoardTokenTables().length > 0;
-  const openBuild = useOpenDesignBuild();
   if (!designBoard) return <p className="py-6 text-center text-sm text-muted-foreground">Empty cover</p>;
   return (
     <div data-board-cover-empty="" className="flex flex-col items-center gap-3 py-6">
       <p className="text-sm text-muted-foreground">The AI builds this system for your business.</p>
-      <Button variant="primary" icon={<Wand2 size={16} />} onClick={() => openBuild(null)}>
+      <Button variant="primary" icon={<Wand2 size={16} />} onClick={() => startDesignBuild(null)}>
         Build with AI
       </Button>
     </div>

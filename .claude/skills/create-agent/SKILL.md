@@ -27,6 +27,7 @@ WITH him on small real data → he edits and re-runs. Read
 [`agents-never-author-agents.md`](/policies/agents-never-author-agents.md) before using
 anything below.
 
+- **A page's surface is already a provision.** Its surface values, client tools and a binding or shortcut are complete and valid, run client-side; check the surface manifest and agent-role path before any server reader (only for values the page cannot see). See [agent-provision](/skills/agent-provision/SKILL.md) and `matrx-frontend/features/surfaces/FEATURE.md` (value manifest, agent roles, bindings), `matrx-frontend/features/mandates/FEATURE.md` and [mandates STATE](/systems/intelligence/mandates/STATE.md).
 - **Specificity is the product.** A great agent takes a complex task and makes it easy by
   being highly specific — so specific that small models match the best models on earth.
 - **Duplication is NOT a concern.** Five thousand agents, hundreds nearly identical with

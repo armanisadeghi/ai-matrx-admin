@@ -19,7 +19,7 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { cn } from "@/lib/utils";
 
 import type { CompareField, ComparedItem, ComparisonResult } from "../contract";
-import { barFraction, comparedItems, fieldGroups, isNumeric, headlineOf, verdictOf, whyLine } from "../verdict";
+import { barFraction, comparedItems, fieldGroups, isNumeric, headlineOf, leadsPhrase, verdictOf, whyLine } from "../verdict";
 import { ItemLogo } from "./ItemLogo";
 
 export interface ComparisonViewProps {
@@ -61,7 +61,7 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
               {leader ? (
                 verdict.tie ? <>A tie at the top</>
                   : headline ? <>{headline.lead} <span className="text-muted-foreground">{headline.rest}</span></>
-                  : <>{leader.name} <span className="text-muted-foreground">leads on {verdict.leads} of {verdict.total}</span></>
+                  : <>{leader.name} <span className="text-muted-foreground">{leadsPhrase(verdict)}</span></>
               ) : (
                 <>Nothing to compare yet</>
               )}
@@ -135,7 +135,7 @@ function DetailsTable({ fields, items, label }: { fields: CompareField[]; items:
   return (
     <section className="rounded-xl border border-border bg-card" aria-label={label}>
       {fields.map((f, i) => (
-        <div key={f.key} className={cn("grid gap-3 px-4 py-3 sm:grid-cols-[9rem_1fr]", i > 0 && "border-t border-border")}>
+        <div key={f.key} data-assist-row="" className={cn("grid gap-3 px-4 py-3 sm:grid-cols-[9rem_1fr]", i > 0 && "border-t border-border")}>
           <div className="type-label pt-0.5" title={f.help}>{f.label}</div>
           <div className="grid gap-x-6 gap-y-2" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(12rem, 1fr))` }}>
             {items.map((it) => {
@@ -228,6 +228,7 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
         </div>
       )}
       {!failed && !choosing && pv?.basis ? <SourceLine basis={pv.basis} /> : null}
+      {!failed && !choosing && item.thin_sample ? <div><Badge tone="warning">{item.thin_sample}</Badge></div> : null}
 
       <div className="mt-auto flex items-center gap-3 pt-1">
         {facts ? (

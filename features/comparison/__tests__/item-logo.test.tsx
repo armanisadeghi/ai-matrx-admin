@@ -69,4 +69,15 @@ describe("a logo is raw; dark mode only puts it on a light chip", () => {
     expect(none.querySelector("img")).toBeNull();
     expect(none.textContent).toBe("C");
   });
+  it("a wide wordmark served as a photo is shown whole, never cropped by cover", async () => {
+    const el = await render({ name: "Amazon", logoUrl: "https://x.example/amazon-logo.png", fill: true, size: 64 });
+    const img = el.querySelector("img") as HTMLImageElement;
+    expect(img.className).toContain("object-cover"); // a photo until it proves wide
+    Object.defineProperty(img, "naturalWidth", { value: 400 });
+    Object.defineProperty(img, "naturalHeight", { value: 120 });
+    await act(async () => { img.dispatchEvent(new Event("load")); });
+    const after = el.querySelector("img") as HTMLImageElement;
+    expect(after.className).toContain("object-contain");
+    expect(after.className).not.toContain("object-cover");
+  });
 });

@@ -39,6 +39,8 @@ import type { TestCaseRow } from "@/features/agent-tests/cases";
 import { CaseVersionGrid } from "@/features/agent-tests/components/CaseVersionGrid";
 import { StudioCases } from "./StudioCases";
 import { curatedDebriefModelIds, debriefModelIds } from "../debrief-models";
+import { useDebriefModelFilter } from "../use-debrief-model-filter";
+import { writeVersionNote } from "../version-note-api";
 import { describeVersionNote, studioChangeNote } from "../version-notes";
 import { StudioBattle } from "./StudioBattle";
 import { followServerWork } from "@/features/ai-watch/followed-work";
@@ -189,7 +191,7 @@ export function StudioControls({
   );
 }
 
-/** Saves the Builder's draft as a new version AND writes its change note (the save RPC path sets none). */
+/** Saves the Builder's draft as a new version, then files its change note through the server door (the browser writes no note itself). */
 async function saveWithNote(dispatch: ReturnType<typeof useAppDispatch>, agentId: string, proposalTitle?: string | null) {
   const dirty = await dispatch((_d, getState) => {
     const r = selectAgentById(getState(), agentId);
@@ -200,9 +202,11 @@ async function saveWithNote(dispatch: ReturnType<typeof useAppDispatch>, agentId
   if (!note) return;
   const version = await dispatch((_d, getState) => selectAgentById(getState(), agentId)?.version ?? null);
   if (version == null) return;
-  const { error } = await createClient().schema("agent").from("definition_version")
-    .update({ change_note: note }).eq("agent_id", agentId).eq("version_number", version);
-  if (error) console.warn("[studio] the version note was not written", error.message);
+  try {
+    await writeVersionNote(dispatch, agentId, version, note);
+  } catch (e) {
+    toast.error("The version was saved, but its note was not", { description: e instanceof Error ? e.message : String(e) });
+  }
 }
 
 function SettingsTab({ agentId, onFeedback, onSaved }: { agentId: string; onFeedback: (t: string) => Promise<boolean>; onSaved: () => void }) {
@@ -333,6 +337,8 @@ interface VersionRow {
   version_number: number;
   changed_at: string;
   change_note: string | null;
+  created_by_tier: string | null;
+  created_by_system: string | null;
 }
 
 function VersionsTab({ agentId }: { agentId: string }) {
@@ -349,7 +355,7 @@ function VersionsTab({ agentId }: { agentId: string }) {
     void createClient()
       .schema("agent")
       .from("definition_version")
-      .select("version_number, changed_at, change_note")
+      .select("version_number, changed_at, change_note, created_by_tier, created_by_system")
       .eq("agent_id", agentId)
       .order("version_number", { ascending: false })
       .limit(50)
@@ -373,7 +379,7 @@ function VersionsTab({ agentId }: { agentId: string }) {
           items={rows}
           getKey={(r) => String(r.version_number)}
           title={(r) => `Version ${r.version_number}`}
-          meta={(r) => formatDistanceToNow(new Date(r.changed_at), { addSuffix: true })}
+          meta={(r) => [formatDistanceToNow(new Date(r.changed_at), { addSuffix: true }), r.created_by_system ?? r.created_by_tier].filter(Boolean).join(" · ")}
           subtitle={(r) => describeVersionNote(r.change_note, modelName)}
           href={(r) => `/agents/${agentId}/v/${r.version_number}`}
           size="sm"
@@ -412,12 +418,13 @@ function DebriefTab({
   const records = useModelRecords(selectActiveModels);
   // Only text/chat models still served, from the live catalog (never mock, speech, image or retired ones).
   const { models: catalogModels } = useModelCatalog("user");
-  const debriefIds = debriefModelIds(catalogModels);
+  const filter = useDebriefModelFilter();
+  const debriefIds = debriefModelIds(catalogModels, filter);
   const [pickedModel, setPickedModel] = useState<string | null>(null);
   const [moreModels, setMoreModels] = useState(false);
   const model = pickedModel ?? debrief?.model ?? defaultDebriefModelId(records);
   // The menu opens on the strongest current models; "More models…" is the way out to the full text-model list.
-  const curatedIds = curatedDebriefModelIds(catalogModels);
+  const curatedIds = curatedDebriefModelIds(catalogModels, filter);
   const shortList = curatedIds.length > 0 && model && debriefIds.includes(model) && !curatedIds.includes(model) ? [...curatedIds, model] : curatedIds;
   const menuIds = moreModels || shortList.length === 0 ? debriefIds : shortList;
   // The debrief runs on its own fork: Watch AI and the Builder follow that conversation too.
@@ -483,28 +490,28 @@ function DebriefTab({
         >
           {hasRun ? "Debrief again" : "Debrief the latest answer"}
         </Button>
-        <div className="min-w-0 flex-1" data-testid="studio-debrief-model">
-          <ModelListDropdown
-            aria-label="Debrief model"
-            allowedModelIds={menuIds.length > 0 ? menuIds : undefined}
-            modelOnly
-            inputModalities={[]}
-            outputModalities={["text"]}
-            triggerVariant="settings"
-            value={model}
-            onValueChange={(next: string) => {
-              setPickedModel(next);
-              if (debrief?.status === "choosing") setDebrief(key, { model: next });
-            }}
-            disabled={working}
-          />
-        </div>
         {shortList.length > 0 && debriefIds.length > shortList.length ? (
           <Button variant="quiet" disabled={working} onClick={() => setMoreModels((v) => !v)} data-testid="studio-debrief-more-models">
             {moreModels ? "Fewer models" : "More models…"}
           </Button>
         ) : null}
       </TabHead>
+      <div className="w-full min-w-0" data-testid="studio-debrief-model">
+        <ModelListDropdown
+          aria-label="Debrief model"
+          allowedModelIds={menuIds.length > 0 ? menuIds : undefined}
+          modelOnly
+          inputModalities={[]}
+          outputModalities={["text"]}
+          triggerVariant="settings"
+          value={model}
+          onValueChange={(next: string) => {
+            setPickedModel(next);
+            if (debrief?.status === "choosing") setDebrief(key, { model: next });
+          }}
+          disabled={working}
+        />
+      </div>
       {working ? <Waiting text="Reading the run" /> : null}
       {debrief?.status === "done" && !parsed ? (
         <ResultCard tone="warning">

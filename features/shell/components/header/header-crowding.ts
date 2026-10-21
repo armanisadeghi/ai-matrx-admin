@@ -40,8 +40,12 @@
  * ships this exact function into a real Chromium via `toString()`, so it may
  * reference nothing outside its own body.
  */
-export function installHeaderCrowdingGuard(header: HTMLElement): () => void {
-  const center = header.querySelector<HTMLElement>(".shell-header-center");
+export function installHeaderCrowdingGuard(
+  header: HTMLElement,
+  /** The route's slot inside `header` (the new app frame passes `#frame-header-center`). */
+  centerSelector: string = ".shell-header-center",
+): () => void {
+  const center = header.querySelector<HTMLElement>(centerSelector);
   const right = header.querySelector<HTMLElement>("[data-header-right-set]");
   if (!center) return () => {};
 

@@ -77,6 +77,7 @@ must obey.
 
 ## Change log
 
+- **2026-10-21 (round 2)** — `REPLACE_WORDS` loses `heading` / `scopeNote`: the panel draws no header, and the dialog's own description already says what the overrides cover.
 - **2026-10-21** — `ModelSettingsReviewDialog` renders `@ai-matrx/chat` `ConversationModelSettings` (THE model-settings panel the agent builder renders) with an override model row and a JSON view, in place of the deleted `RunConfigOverrides`.
 - **2026-10-21** — Delete on the seven catalog tables (models, aliases, endpoints, APIs, offerings, providers, settings) is ONE pattern: `components/useAiTableBulk.tsx` declares the row Delete and its bulk twin together; system rows are skipped and named. `ModelRowActions` is gone (`moveModelToTrash` is the one door). Translation `NeedsYouQueue` gained `Skip N` beside `Approve N` and every row is selectable.
 

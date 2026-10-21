@@ -38,12 +38,13 @@ jest.mock("../gmail-read-disclosure", () => ({
 
 const run = jest.fn();
 const runInThisTab = jest.fn();
+const mockLiveRunner = jest.fn(() => ({ run, runInThisTab, ready: true }));
 jest.mock("../google-adapter", () => ({
-  useGoogleConsentRunner: () => ({ run, runInThisTab, ready: true }),
+  useGoogleConsentRunner: () => mockLiveRunner(),
   consentFailureAnswer: () => ({ sentence: "Approval failed.", details: null }),
 }));
 
-import { ConnectorConsentBody } from "../ConnectorConsentDialog";
+import { ConnectorConsentBody, ConnectorConsentRunnerProvider } from "../ConnectorConsentDialog";
 import { ConsentFailureNotice } from "../ConsentFailureNotice";
 import { GOOGLE_CONNECTOR_PROVIDER } from "../provider-config";
 
@@ -142,6 +143,7 @@ afterEach(() => {
   runInThisTab.mockReset();
   mockIsCancelled.mockReset();
   mockIsCancelled.mockReturnValue(false);
+  mockLiveRunner.mockClear();
 });
 
 it("requires two explicit presses and sends YouTube only on the second one", async () => {
@@ -490,4 +492,21 @@ it("contains long diagnostics behind dismissible, bounded details", async () => 
   if (!dismiss) throw new Error("Missing dismiss error button");
   await act(async () => click(dismiss));
   expect(container.querySelector('[role="alert"]')).toBeNull();
+});
+
+it("uses an explicit runner without mounting the live Google adapter", async () => {
+  const injectedRun = jest.fn().mockResolvedValue({ connectionId: broadAccount.id });
+  await act(async () => root.render(
+    <ConnectorConsentRunnerProvider runner={{ run: injectedRun, runInThisTab: jest.fn(), ready: true }}>
+      <ConsentFixture />
+    </ConnectorConsentRunnerProvider>,
+  ));
+  expect(mockLiveRunner).not.toHaveBeenCalled();
+  await act(async () => {
+    click(buttonNamed(provider.dialog.cta));
+    await Promise.resolve();
+  });
+  expect(injectedRun).toHaveBeenCalledTimes(1);
+  expect(run).not.toHaveBeenCalled();
+  expect(injectedRun.mock.calls[0][0].connectionPurpose).not.toBe("youtube_isolated");
 });

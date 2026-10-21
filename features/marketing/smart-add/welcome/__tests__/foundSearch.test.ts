@@ -41,9 +41,22 @@ describe("welcomeFirstRound: the one first round both starters send", () => {
       exclude_keys: ["name:dana reyes", "email:dana.reyes@gmail.com"],
       entry_kind: "person",
       known: { websites: [], accounts: [], names: ["Dana Reyes"], aliases: [], exclusions: [], results: [] },
-      person: { name: "Dana Reyes", affiliations: [], anchors: [], find: true },
+      person: { name: "Dana Reyes", affiliations: [], anchors: [], find: true, typed_own_name: true },
     });
     expect(round?.find).toBe(true);
+  });
+
+  it("only a name they typed or a provider gave is searched as their own; the email's hint is not (live 2026-10-21)", () => {
+    const hint = welcomeFirstRound(loginSeed(user({ meta: { full_name: null } }), RULES));
+    expect(hint?.name).toBe("Dana Reyes");
+    expect((hint?.inputs.person as Record<string, unknown>).typed_own_name).toBeUndefined();
+    const late = welcomeFirstRound(loginSeed(user({ meta: { full_name: null }, email: undefined, email_confirmed_at: undefined }), RULES), "John Smith");
+    expect((late?.inputs.person as Record<string, unknown>).typed_own_name).toBe(true);
+  });
+
+  it("a work email's domain anchors the name search, never as proof", () => {
+    const round = welcomeFirstRound(loginSeed(user({ email: "dana@reyes-roofing.com" }), RULES));
+    expect(round?.inputs.person).toMatchObject({ domain_hint: "reyes-roofing.com", typed_own_name: true });
   });
 
   it("a GitHub login is seeded, confirmed and anchors the name", () => {

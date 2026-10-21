@@ -1,6 +1,7 @@
 // The new app frame — playground (owner model, 2026-10-17). Static samples;
 // components live in features/shell/frame/ and later move to @ai-matrx/shell.
 // Every link in the playground comes back here: ?product=<id>&item=<id>.
+import "@/features/shell/frame/frame.css";
 import { ShellPlayground } from "./ShellPlayground";
 
 export const metadata = { title: "App frame" };

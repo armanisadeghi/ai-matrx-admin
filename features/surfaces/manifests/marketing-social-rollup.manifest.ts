@@ -39,7 +39,7 @@ const surfaceSpecific: SurfaceValue[] = [
   v("view", "Open view", "accounts (Tracked accounts) or outliers (Recent outliers): which table the person has open.", "string", 10, "view", 110, { alwaysAvailable: true }),
   v("account_count", "Tracked accounts", "How many tracked accounts the roll-up lists, across every brand the person can read.", "number", 4, "accounts", 200),
   v("brand_count", "Brands with accounts", "How many distinct brands own at least one listed account (organization-wide accounts are not a brand).", "number", 3, "accounts", 210),
-  v("accounts_by_role", "Accounts by role", "Counts per role: { own, competitor, inspiration, client } (a role with none is 0).", "object", 80, "accounts", 220),
+  v("accounts_by_role", "Accounts by role", "Counts per role: { own, competitor, inspiration } (a role with none is 0).", "object", 80, "accounts", 220),
   v("account_list", "Account list", "The accounts, largest audience first, as one XML bundle: brand, platform, handle, role, followers, whether the account opens a page of ours.", "string", 3000, "accounts", 230),
   v("accounts", "Accounts (full rows)", "Every account as { tracked_account_id, brand_id, brand_name, profile_id, platform, handle, role, followers, last_refreshed_at }.", "array", 6000, "accounts", 240, { autoContext: false }),
   v("outlier_count", "Recent outliers", "How many posts the Recent outliers table lists (last 30 days).", "number", 4, "outliers", 300),

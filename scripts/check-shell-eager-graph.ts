@@ -98,6 +98,8 @@ export const HEAVY: ReadonlyArray<HeavyEntry> = [
   // the whole frame (and its chrome adapter) to every signed-in page.
   { match: /^features\/shell\/frame\/(AppFrame|products)\.tsx?$/, why: "the new app frame — loads only behind the frame-mode gate, never in the classic shell" },
   { match: /^features\/shell\/frame-host\/FrameChrome\.tsx$/, why: "the app frame's chrome adapter — loads with the frame, never in the classic shell" },
+  { match: /^features\/shell\/frame-host\/FrameHostImpl\.tsx$/, why: "the live frame host — reached only through FrameHostGate's dynamic(), never in the classic shell" },
+  { match: /^features\/shell\/frame\/route-homes\.generated\.ts$/, why: "the frame's route table (~8 KB gz) — loads with the frame chunk only" },
 ];
 
 /** next.config.js turbopack.resolveAlias, for the production (non-demos) profile. Kept in sync

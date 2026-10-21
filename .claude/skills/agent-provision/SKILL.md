@@ -11,6 +11,10 @@ description: "The provision for a call site: the exhaustive menu of values that 
 
 # agent-provision — what the call site offers, and proving the agent knew it
 
+## The call site may be a page's surface (Arman, 2026-10-21)
+
+A page's surface values (its `features/surfaces/manifests/*.manifest.ts`) plus a surface binding or a shortcut ARE a complete, valid provision, run client-side. They are first-class, never an afterthought. Before writing any server reader, check the page's manifest (values and client tools) and its mandate/agent-role path; a server reader is only for values the page cannot see. Surface `clientTools` reach the agent automatically. Mechanics: `matrx-frontend/features/surfaces/FEATURE.md` (value manifest, agent roles, bindings), `matrx-frontend/features/mandates/FEATURE.md` and [mandates STATE](/systems/intelligence/mandates/STATE.md).
+
 ## The three things, and why they are three
 
 | | What it is | Who authors it | Named for |

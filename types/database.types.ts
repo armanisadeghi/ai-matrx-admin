@@ -38527,18 +38527,21 @@ export type Database = {
       }
       io_outbox_consumer: {
         Row: {
+          consumed_before: string | null
           consumer: string
           created_at: string
           event_key: string
           starts_at: string
         }
         Insert: {
+          consumed_before?: string | null
           consumer: string
           created_at?: string
           event_key: string
           starts_at?: string
         }
         Update: {
+          consumed_before?: string | null
           consumer?: string
           created_at?: string
           event_key?: string
@@ -42289,6 +42292,10 @@ export type Database = {
           p_table_id: string
         }
         Returns: Json
+      }
+      _io_outbox_advance_mark: {
+        Args: { p_consumer: string; p_event_key: string }
+        Returns: string
       }
       _io_outbox_claim: {
         Args: {
@@ -160502,6 +160509,7 @@ export type Database = {
       }
       definition_overview: {
         Row: {
+          collapse_hash: string | null
           created_at: string
           created_by: string | null
           definition_id: string
@@ -160518,6 +160526,7 @@ export type Database = {
           version: number
         }
         Insert: {
+          collapse_hash?: string | null
           created_at?: string
           created_by?: string | null
           definition_id: string
@@ -160534,6 +160543,7 @@ export type Database = {
           version?: number
         }
         Update: {
+          collapse_hash?: string | null
           created_at?: string
           created_by?: string | null
           definition_id?: string

@@ -7,6 +7,7 @@ import { evidenceFromPayload, type EvidenceItem } from "../../evidence";
 import nicoleLong from "./nicole-long.json";
 import rochelleMoulton from "./rochelle-moulton.json";
 import kehindeWiley from "./kehinde-wiley.json";
+import johannaKlomann from "./johanna-klomann.json";
 
 export interface AnchorFixture {
   searchedName: string;
@@ -24,3 +25,6 @@ export const NICOLE_LONG = load(nicoleLong);
 export const ROCHELLE_MOULTON = load(rochelleMoulton);
 /** "Kehinde Wiley": one person, an account and a site. */
 export const KEHINDE_WILEY = load(kehindeWiley);
+/** "Johanna Klomann": one person found by a narrowed round (name + city, 2026-10-21): a Facebook profile whose intro
+ * line holds her place and work, and her own site; no profile location field at all. */
+export const JOHANNA_KLOMANN = load(johannaKlomann);

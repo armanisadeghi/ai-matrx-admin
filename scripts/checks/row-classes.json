@@ -2525,6 +2525,20 @@
       "reason": "no database access in 1 file(s) reached",
       "evidence": []
     },
+    "marketing-text-calls-a-brand-a-client": {
+      "label": "Marketing text calls a brand a client",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-client-brands",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
+    "brand-not-client-guard-self-test": {
+      "label": "Brand-not-client guard self-test",
+      "class": "repo-only",
+      "cmd": "pnpm check:no-client-brands:self-test",
+      "reason": "no database access in 1 file(s) reached",
+      "evidence": []
+    },
     "price-shown-where-someone-is-doing-not-deciding-law-14": {
       "label": "Price shown where someone is doing, not deciding (law 14)",
       "class": "repo-only",

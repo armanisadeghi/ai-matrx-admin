@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
-/** The app shell's root element — rendered by `AppShell` only. */
-export const APP_SHELL_ROOT_SELECTOR = ".shell-root";
+/** The app shell's root element — `AppShell`'s `.shell-root`, or the new app frame's host root (FrameShell). */
+export const APP_SHELL_ROOT_SELECTOR = ".shell-root, [data-matrx-frame-host]";
 
 /**
  * True when the current route renders inside the signed-in app shell

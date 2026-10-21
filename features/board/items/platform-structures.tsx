@@ -12,7 +12,7 @@ import type { ItemStructureProps } from "./types";
 type S = ComponentType<ItemStructureProps>;
 
 /** A card: a heading bar over a few rows, bordered like the page's cards. */
-function Card({ lines = 3, className }: { lines?: number; className?: string }) {
+function SkeletonCard({ lines = 3, className }: { lines?: number; className?: string }) {
   return (
     <div className={`flex flex-col rounded-lg border border-border bg-card ${className ?? ""}`} style={{ padding: u(12), gap: u(9), borderWidth: u(1) }}>
       <Bar w="38%" h={8} strong />
@@ -39,10 +39,10 @@ export const ScheduleStructure: S = () => (
       </Row>
       <Lines widths={["92%", "60%"]} gap={7} h={7} />
       <div className="grid grid-cols-2" style={{ gap: u(12) }}>
-        <Card lines={4} />
-        <Card lines={3} />
+        <SkeletonCard lines={4} />
+        <SkeletonCard lines={3} />
       </div>
-      <Card lines={4} />
+      <SkeletonCard lines={4} />
     </Pad>
   </div>
 );
@@ -161,9 +161,9 @@ export const SandboxStructure: S = () => (
     <Pad>
       <Bar w="30%" h={6} />
       <div className="grid grid-cols-3" style={{ gap: u(12) }}>
-        <Card lines={2} />
-        <Card lines={2} />
-        <Card lines={2} />
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={2} />
       </div>
       <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-border bg-card" style={{ padding: u(12), gap: u(8), borderWidth: u(1) }}>
         <Row gap={8}>

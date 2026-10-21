@@ -353,7 +353,7 @@ export function parseCreateAccounts(value: unknown): TrackAccountPlan[] {
       const fallback = str(r, "platform");
       if (fallback && !isSocialPlatform(fallback)) throw new Error(`platform ${fallback} is not a social platform this page tracks.`);
       const role = str(r, "role") ?? "competitor";
-      if (!isTrackedRole(role)) throw new Error("role must be own, competitor, inspiration or client.");
+      if (!isTrackedRole(role)) throw new Error("role must be own, competitor or inspiration.");
       const parsed = parseSocialAccount(text, (fallback as SocialPlatform | undefined) ?? null);
       if (parsed.status === "post") throw new Error(`${text} is a link to one post, not an account; save posts from the Swipe file.`);
       if (parsed.status !== "ok") throw new Error(`${text} is not a profile link or handle${fallback ? "" : " (a bare handle needs platform)"}.`);
@@ -391,7 +391,7 @@ export function parseUpdateAccounts<Row extends { rowId: string; handle: string;
       const changed: string[] = [];
       let role: TrackedRole | null = null;
       if (r.role !== undefined) {
-        if (typeof r.role !== "string" || !isTrackedRole(r.role)) throw new Error("role must be own, competitor, inspiration or client.");
+        if (typeof r.role !== "string" || !isTrackedRole(r.role)) throw new Error("role must be own, competitor or inspiration.");
         if (!row.trackedAccountId) throw new Error(`${label} is not tracked yet, so it has no role to change; track it first (tracked: true).`);
         role = r.role;
         changed.push("role");

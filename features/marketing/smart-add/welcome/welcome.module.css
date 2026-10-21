@@ -39,3 +39,8 @@
     transform: none;
   }
 }
+
+/* One Skip on the door: a frame that carries its own (the name and "couldn't find you" frames) hides the door's. */
+.door:has([data-testid="welcome-skip"]) > .doorSkip {
+  display: none;
+}

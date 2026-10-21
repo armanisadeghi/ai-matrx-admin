@@ -63,7 +63,6 @@ export const MEMORY_HUB_SECTIONS: MemoryHubSection[] = [
       { href: "/knowledge/hub", label: "Copy a result for AI", hint: "Open a result, then copy it for an AI", icon: ClipboardCopy },
       { href: "/knowledge/search", label: "Search Lab", hint: "Test a search and see why each hit ranked", icon: FlaskConical },
       { href: "/search", label: "Search", hint: "Search the web and what you keep", icon: Search },
-      { href: "/search/experience", label: "Matrx Search", hint: "Search with sources and follow-ups", icon: Search },
       { href: "/scraper/search", label: "Web search lab", hint: "Try a web search and see the pages", icon: Globe },
       { href: "/knowledge/hub", label: "Check an answer against sources", hint: "Soon: check each claim in an answer", icon: FileCheck2, comingSoonId: "memory.claim-check" },
       { href: "/knowledge/search", label: "Preview how a search is widened", hint: "Soon: see the words a search adds", icon: TextSearch, comingSoonId: "memory.query-expansion" },

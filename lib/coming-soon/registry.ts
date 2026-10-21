@@ -287,7 +287,7 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     label: "Social intelligence",
     owner: "marketing",
     promise:
-      "Track competitor, inspiration and client accounts, find the posts that beat their own baseline, keep a swipe file, and study rival ads. Posting is not part of this.",
+      "Track competitor and inspiration accounts, find the posts that beat their own baseline, keep a swipe file, and study rival ads. Posting is not part of this.",
     stage: "building",
     // The Accounts tab, account detail and post detail are live
     // (features/marketing/social, SI-07a); Outliers and KPIs are live (SI-07b1); Studio is live (SI-07c, a board with the marketing-social preset).

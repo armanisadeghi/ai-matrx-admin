@@ -11,7 +11,8 @@
 // side chat and the canvas (both load only when first engaged); a page hands it
 // DATA only (FEATURE.md § Ours and the page's). Host-agnostic on purpose (props
 // in; design-system, lucide and cn only) so the move into @ai-matrx/shell is a copy.
-import "./frame.css";
+// frame.css is imported by each HOST's server file (FrameShell, the lab page): a client import here would
+// load it late and flash the frame unstyled when its chunk arrives after the HTML.
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Maximize2, Menu, Minimize2, Shapes, Webhook } from "lucide-react";
@@ -221,6 +222,14 @@ export interface AppFrameProps {
   onCompanionOpenChange?: (open: boolean) => void;
   /** The canvas. Without it the frame shows a labelled stand-in. */
   loadCanvas?: FrameModuleLoader<CanvasProps>;
+  /**
+   * The host cannot offer the side chat / canvas yet: its toggle is disabled with this sentence as
+   * its tooltip (and leaves the phone "…" menu) — an honest stand-in, never a dead button.
+   */
+  companionUnavailable?: string;
+  canvasUnavailable?: string;
+  /** The live (core) host: the header carries the page-header slots (SheetHeader `hostSlots`). */
+  hostHeaderSlots?: boolean;
   // ── layout ──
   /** Force a form; by default the frame measures its own width. */
   form?: FrameForm;
@@ -566,7 +575,9 @@ export function AppFrame(props: AppFrameProps) {
       icon: Shapes,
       onSelect: () => toggleCanvas(menuTrigger()),
     },
-  ];
+  ].filter(
+    (a) => !(a.id === "side-chat" && props.companionUnavailable) && !(a.id === "canvas" && props.canvasUnavailable),
+  );
 
   const closeCompanion = () => setCompanionOpen(false);
   const closeCanvas = () => setCanvasOpen(false);
@@ -612,7 +623,7 @@ export function AppFrame(props: AppFrameProps) {
     </div>
   );
 
-  const sideChatToggle = { open: companionShown, onToggle: () => toggleCompanion() };
+  const sideChatToggle = { open: companionShown, onToggle: () => toggleCompanion(), unavailable: props.companionUnavailable };
 
   return (
     <div
@@ -694,7 +705,7 @@ export function AppFrame(props: AppFrameProps) {
                 phoneActions={phoneActions}
                 tools={headerTools}
                 phoneTools={phoneTools}
-                canvasToggle={{ open: canvasOpen, onToggle: () => toggleCanvas() }}
+                canvasToggle={{ open: canvasOpen, onToggle: () => toggleCanvas(), unavailable: props.canvasUnavailable }}
                 sideChatToggle={SIDE_CHAT_DOOR === "header" ? sideChatToggle : undefined}
                 topEdge={!tabs}
                 start={
@@ -707,6 +718,7 @@ export function AppFrame(props: AppFrameProps) {
                 }
                 onOpenDrawer={openDrawer}
                 onBack={onBack}
+                hostSlots={props.hostHeaderSlots}
               />
               {tabs ? (
                 <div

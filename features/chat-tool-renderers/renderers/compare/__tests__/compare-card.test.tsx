@@ -142,6 +142,14 @@ describe("a reload", () => {
     expect(open?.getAttribute("target")).toBe("_blank");
   });
 
+  it("a finished run where nothing could be read names each item and why, never only 'Nothing to compare yet'", async () => {
+    followRun.mockResolvedValue({ ...RESULT, items: RESULT.items.map((i) => ({ ...i, values: {}, error: "We could not read a listing for it." })) });
+    const host = await mount(awaiting);
+    const unread = host.querySelector("[data-compare-unread]");
+    expect(unread?.textContent).toContain("Acme");
+    expect(unread?.textContent).toContain("We could not read a listing for it.");
+  });
+
   it("a failed run says why, in the server's words", async () => {
     followRun.mockRejectedValue(new ComparisonRefusal("usage_limit", "Your points are used up."));
     const host = await mount(awaiting);

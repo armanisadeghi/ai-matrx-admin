@@ -38,11 +38,19 @@ export function scoredFields(result: ComparisonResult): CompareField[] {
 
 export interface Verdict {
   leader: ComparedItem | null;
-  /** Fields the leader is best on, of `total` fields with numbers. */
+  /** Fields the leader REALLY wins (best, and not level with everyone), of `total` fields with numbers. */
   leads: number;
   total: number;
   /** Two or more items share first place on the primary field. */
   tie: boolean;
+  /** Labels of fields every item with a number shares the best of: nobody wins those. */
+  tied: string[];
+}
+
+/** A field every item with a number is best on (a 4.6 for all) separates no one: it is a tie, not a win. */
+export function isLevel(field: CompareField, result: ComparisonResult): boolean {
+  const withNumber = comparedItems(result).filter((i) => numberOf(i.values[field.key]?.value) !== null);
+  return withNumber.length > 1 && withNumber.every((i) => i.values[field.key]?.is_best);
 }
 
 export function verdictOf(result: ComparisonResult): Verdict {
@@ -50,14 +58,20 @@ export function verdictOf(result: ComparisonResult): Verdict {
   const fields = scoredFields(result);
   const leader = items.find((i) => i.rank === 1) ?? null;
   const tie = items.filter((i) => i.rank === 1).length > 1;
-  const leads = leader ? fields.filter((f) => leader.values[f.key]?.is_best).length : 0;
-  return { leader, leads, total: fields.length, tie };
+  const leads = leader ? fields.filter((f) => leader.values[f.key]?.is_best && !isLevel(f, result)).length : 0;
+  return { leader, leads, total: fields.length, tie, tied: fields.filter((f) => isLevel(f, result)).map((f) => f.label.toLowerCase()) };
 }
 
-/** How many of the rankable fields with numbers each compared item is best on. */
+/** How many of the rankable fields with numbers each compared item REALLY wins (level fields count for no one). */
 export function leadCounts(result: ComparisonResult): Map<string, number> {
   const fields = scoredFields(result);
-  return new Map(comparedItems(result).map((i) => [i.item_id, fields.filter((f) => i.values[f.key]?.is_best).length]));
+  return new Map(comparedItems(result).map((i) => [i.item_id, fields.filter((f) => i.values[f.key]?.is_best && !isLevel(f, result)).length]));
+}
+
+/** "leads on 1 of 2 — level on rating": real wins, and what is tied, in one phrase. */
+export function leadsPhrase(v: Verdict): string {
+  const base = `leads on ${v.leads} of ${v.total}`;
+  return v.tied.length ? `${base} — level on ${v.tied.join(" and ")}` : base;
 }
 
 /**
@@ -69,15 +83,21 @@ export function headlineOf(result: ComparisonResult): { lead: string; rest: stri
   const v = verdictOf(result);
   const top = v.leader;
   if (!top || v.tie) return null;
+  if (v.leads === 0) {
+    // nothing separates them: say so instead of crowning someone on a rank alone
+    return { lead: names(comparedItems(result)), rest: `are level on ${v.tied.join(" and ") || "every field"}` };
+  }
   const counts = leadCounts(result);
   const level = comparedItems(result).filter((i) => counts.get(i.item_id) === v.leads);
   if (level.length > 1) {
     const primary = result.fields.find((f) => f.is_primary);
     const ordered = [top, ...level.filter((i) => i.item_id !== top.item_id)];
-    const on = primary ? ` on ${primary.label.toLowerCase()}` : "";
-    return { lead: names(ordered), rest: `each lead ${v.leads} of ${v.total} — ${top.name} ranks first${on}` };
+    // a thin sample can top the raw number yet rank behind: say what the ranking weighs
+    const weighed = primary && !top.values[primary.key]?.is_best ? ", weighted by reviews" : "";
+    const on = primary ? ` on ${primary.label.toLowerCase()}${weighed}` : "";
+    return { lead: names(ordered), rest: `each lead ${v.leads} of ${v.total}${v.tied.length ? ` (level on ${v.tied.join(" and ")})` : ""} — ${top.name} ranks first${on}` };
   }
-  return { lead: top.name, rest: `leads on ${v.leads} of ${v.total}` };
+  return { lead: top.name, rest: leadsPhrase(v) };
 }
 
 function names(list: ComparedItem[]): string {

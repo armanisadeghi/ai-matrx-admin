@@ -79,6 +79,9 @@ export default function AgentAdvancedSettingsWindow({
   const longCache = record.extended_prompt_cache === true;
 
   const setLongCache = (on: boolean) => {
+    // settings === null → the agent record has not hydrated; writing `{}` plus the flag would
+    // drop every real setting on save (the same guard as the builder's settings panel).
+    if (settings === null) return;
     const next: Record<string, unknown> = { ...record };
     if (on) next.extended_prompt_cache = true;
     else delete next.extended_prompt_cache;
@@ -113,6 +116,7 @@ export default function AgentAdvancedSettingsWindow({
             aria-label="Long cache"
             checked={longCache}
             onCheckedChange={setLongCache}
+            disabled={settings === null}
           />
         </SettingRow>
       </RowGroup>

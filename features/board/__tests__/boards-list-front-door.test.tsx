@@ -26,7 +26,21 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectAccessToken: () => "tok",
 }));
 jest.mock("@/components/loaders/ShimmerText", () => ({ ShimmerText: ({ text }: { text: string }) => <span>{text}</span> }));
-jest.mock("@ai-matrx/design-system", () => ({ ErrorNotice: ({ message }: { message: string }) => <div>{message}</div>, TextInputDialog: () => null }));
+// `cn` is imported by packaged chat panels the page graph reaches; the Dialog family is what the design-start dialog draws.
+jest.mock("@ai-matrx/design-system", () => {
+  const box = ({ children }: { children?: unknown }) => <div>{children as never}</div>;
+  return {
+    cn: (...a: unknown[]) => a.filter(Boolean).join(" "),
+    ErrorNotice: ({ message }: { message: string }) => <div>{message}</div>,
+    TextInputDialog: () => null,
+    Dialog: ({ open, children }: { open: boolean; children: unknown }) => (open ? <div>{children as never}</div> : null),
+    DialogContent: box,
+    DialogDescription: box,
+    DialogFooter: box,
+    DialogHeader: box,
+    DialogTitle: ({ children }: { children: unknown }) => <h2>{children as never}</h2>,
+  };
+});
 jest.mock("@/components/ui/button", () => ({ Button: (p: { children: unknown }) => <button>{p.children as string}</button> }));
 jest.mock("@ai-matrx/design-system/controls", () => ({
   Button: (p: { children: unknown }) => <button>{p.children as string}</button>,

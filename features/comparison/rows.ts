@@ -79,7 +79,9 @@ export function withLookup(row: CompareRow, item: LookupItem | undefined): Compa
     return { ...row, state: "found", match: item.match, category: "", candidates: cands, message: null };
   }
   if (item.status === "choose") {
-    return { ...row, state: "choose", match: null, candidates: cands, message: "More than one fits. Pick yours." };
+    // one candidate = a guess the person must confirm before anything is rated
+    return { ...row, state: "choose", match: null, candidates: cands,
+      message: cands.length === 1 ? "Is this the one?" : "More than one fits. Pick yours." };
   }
   return { ...row, state: "not_found", match: null, candidates: [], message: item.message ?? "We could not find that." };
 }

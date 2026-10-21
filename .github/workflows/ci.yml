@@ -241,6 +241,10 @@ jobs:
         run: pnpm check:notice-new-tab
       - name: The notification new-tab guard can still fail
         run: pnpm check:notice-new-tab:self-test
+      - name: Every media play() promise is handled
+        run: pnpm check:media-play-handled
+      - name: The media play() guard can still fail
+        run: pnpm check:media-play-handled:self-test
       - name: Points show only where someone is deciding or investigating (law 14)
         run: pnpm check:cost-display
       - name: The points-placement guard can still fail

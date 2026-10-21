@@ -10,6 +10,7 @@ import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { toast } from "@/lib/toast";
 import type { NodeSource } from "../board/document";
 import { meetingPartNote, meetingPartOf } from "./meeting-items.logic";
+import { publishedMeetingPartText } from "./meeting-part-text";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: string): Promise<void> {
@@ -21,6 +22,7 @@ export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: stri
     meetingId: target.meetingId,
     meetingTitle: meeting?.title ?? tileTitle,
     part: target.part,
+    text: publishedMeetingPartText(target.meetingId, target.part),
   });
   try {
     const note = await createNote({ label, content, organization_id: meeting?.organizationId ?? (await activeOrg()) });

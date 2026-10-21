@@ -146,7 +146,7 @@ Empty means nothing beats the filter, not that the brand has no posts: post_coun
         type: "object",
         properties: {
           platform: { type: "string", description: "A platform id from platform_options, or \"all\"." },
-          role: { type: "string", enum: ["all", "own", "competitor", "inspiration", "client"] },
+          role: { type: "string", enum: ["all", "own", "competitor", "inspiration"] },
           window_days: { type: "number", enum: [7, 30, 90] },
           min_multiple: { type: "number", enum: [2, 3, 5, 10] },
           format: { type: "string", description: "A format that appears in the posts, or \"all\"." },

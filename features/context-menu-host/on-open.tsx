@@ -30,6 +30,8 @@ import { useOpenReferencePicker } from "@/features/overlays/definitions/referenc
 import { useOpenContextAssignment } from "@/features/overlays/definitions/contextAssignment.overlay";
 import { useOpenLinkRecordSheet } from "@/features/overlays/definitions/linkRecordSheet.overlay";
 import { useOpenShareModalWindow } from "@/features/overlays/definitions/shareModalWindow.overlay";
+import { useOpenPromptDebugIndicator } from "@/features/overlays/definitions/promptDebugIndicator.overlay";
+import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 import { useOpenStateViewerOverlay } from "@/features/overlays/definitions/adminStateAnalyzer.overlay";
 import { useOpenSurfaceContextInspector } from "@/features/overlays/definitions/surfaceContextInspector.overlay";
 import { useOpenSurfaceContextWindow } from "@/features/overlays/definitions/surfaceContextWindow.overlay";
@@ -52,6 +54,7 @@ function useAppContextMenuBindings(): ContextMenuHostBindings {
   const linkRecordSheet = useOpenLinkRecordSheet();
   const shareModalWindow = useOpenShareModalWindow();
   const surfaceInspector = useOpenSurfaceContextInspector();
+  const promptDebugIndicator = useOpenPromptDebugIndicator();
   return {
     isAdminDebugger: useAppSelector(selectIsSuperAdminDebugger),
     hasAdminPower: useAppSelector(selectIsSuperAdmin),
@@ -85,6 +88,10 @@ function useAppContextMenuBindings(): ContextMenuHostBindings {
       shareModalWindow(options as Parameters<typeof shareModalWindow>[0]);
     },
     openStateViewer: useOpenStateViewerOverlay(),
+    // Admin debug mode: the engine calls this when a picked shortcut launches (it never calls outside debug mode).
+    openShortcutDebug: (data) => {
+      promptDebugIndicator({ debugData: data as DebugData });
+    },
     openSurfaceInspector: (options) => {
       surfaceInspector(options as Parameters<typeof surfaceInspector>[0]);
     },

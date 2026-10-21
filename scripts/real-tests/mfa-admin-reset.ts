@@ -23,7 +23,7 @@ const inverse = "migrations/inverse/20261021204916_admin_mfa_reset_revokes_sessi
 let checks = 0;
 const check = (condition: unknown, message: string) => { assert.ok(condition, message); checks++; console.log(`PASS ${message}`); };
 const db = new pg.Client({ connectionString: dbTarget.href });
-const clients: AuthClient[] = [];
+const clients: InstanceType<typeof AuthClient>[] = [];
 const client = () => { const a = new AuthClient({ url: authTarget.origin, persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }); clients.push(a); return a; };
 const scalar = async (sql: string, values: unknown[] = []) => (await db.query(sql, values)).rows[0];
 async function main() {

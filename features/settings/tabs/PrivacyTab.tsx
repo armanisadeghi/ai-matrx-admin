@@ -5,7 +5,6 @@ import { ShieldCheck, Lightbulb, DatabaseZap } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
 import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
 import { settingDoorHref } from "../doors/settingDoorTarget";
@@ -81,12 +80,6 @@ export default function PrivacyTab() {
         description="Permissions and background data capture."
         icon={ShieldCheck}
       />
-
-      <SettingsCallout tone="info">
-        Granular telemetry settings aren't implemented yet. This tab surfaces
-        the capture-related preferences that exist today, plus the door onto
-        your data's deletion schedule.
-      </SettingsCallout>
 
       <SettingsSection title="Notifications">
         <SettingsLink

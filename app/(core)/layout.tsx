@@ -20,6 +20,9 @@ import { WEB_DEVICE_ID_COOKIE, parseWebDeviceIdCookie } from "@/lib/scoped-confi
 // `lib/sync/identity::attachStore` (called from StoreProvider) wires the
 // reactive identity source so non-React consumers see the current state.
 import AppShell from "@/features/shell/components/AppShell";
+import FrameShell from "@/features/shell/frame-host/FrameShell";
+import { readFrameMode } from "@/features/shell/frame-host/frameMode.server";
+import type { FrameMode } from "@/features/shell/frame-host/frameMode";
 import { readSidebarExpandedCookie } from "@/features/shell/utils/server-cookies";
 import { pickShellLayoutServer } from "@/features/shell/shell-layout/server";
 import type { UserData } from "@/utils/userDataMapper";
@@ -112,6 +115,8 @@ export default async function AppLayout({
   let coreSeedLanded = false;
   // The usage seed's late answer, streamed when it missed the first-byte deadline.
   let usageStreamed: Promise<unknown> | null = null;
+  // THE NEW APP FRAME (features/shell/frame-host): admins who opted in with `?frame=new`; everyone else classic.
+  let frameMode: FrameMode = "classic";
 
   if (user) {
     // 🚨 THE CORE SET, IN ONE PARALLEL ROUND (first-paint fetch contract, Arman
@@ -162,6 +167,7 @@ export default async function AppLayout({
     ]);
 
     const { isAdmin, level: adminLevel } = adminStatus;
+    frameMode = await readFrameMode({ isAuthenticated, isAdmin });
     enableInternalAnalytics =
       adminLevel === "super_admin" && !pathname.startsWith("/education");
     const accessToken = session?.access_token;
@@ -189,8 +195,9 @@ export default async function AppLayout({
     };
   }
 
+  const Shell = frameMode === "frame" ? FrameShell : AppShell;
   return (
-    <AppShell
+    <Shell
       initialReduxState={initialReduxState}
       userData={userData}
       isAuthenticated={isAuthenticated}
@@ -214,6 +221,6 @@ export default async function AppLayout({
       ) : null}
       {children}
       {enableInternalAnalytics ? <InternalGoogleAnalytics /> : null}
-    </AppShell>
+    </Shell>
   );
 }

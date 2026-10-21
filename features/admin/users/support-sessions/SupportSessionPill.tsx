@@ -14,10 +14,15 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
+import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { performLocalSignOut } from "@/features/shell/auth/useSignOut";
 import {
   SUPPORT_SESSION_ENDED_PATH,
-  SUPPORT_SESSION_EXTEND_MINUTES,
+  SUPPORT_SESSION_KNOBS,
+  knobMinutes,
   clearSupportSessionCookie,
   currentSupportSession,
   endSupportSession,
@@ -51,6 +56,12 @@ export default function SupportSessionPill() {
   const [session, setSession] = useState<CurrentSupportSession | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [busy, setBusy] = useState<"extend" | "end" | null>(null);
+  const userId = useAppSelector(selectUserId);
+  const organizationId = useAppSelector(selectActiveOrganizationId);
+  // Asked only in a support window (a session is showing), never on anyone else's page.
+  const extendMinutes = knobMinutes(
+    useEffectiveKnob(organizationId, userId, SUPPORT_SESSION_KNOBS.extendMinutes, undefined, { enabled: session !== null }),
+  );
 
   // Ask the database on mount and every minute.
   useEffect(() => {
@@ -122,13 +133,14 @@ export default function SupportSessionPill() {
   const extend = async () => {
     setBusy("extend");
     try {
-      const expiresAt = await extendSupportSession(session.id, SUPPORT_SESSION_EXTEND_MINUTES);
+      if (extendMinutes === null) return;
+      const expiresAt = await extendSupportSession(session.id, extendMinutes);
       if (!expiresAt) {
         leaveOnce("expired");
         return;
       }
       setSession({ ...session, expires_at: expiresAt });
-      toast.success(`Added ${SUPPORT_SESSION_EXTEND_MINUTES} minutes`);
+      toast.success(`Added ${extendMinutes} minutes`);
     } catch (error) {
       toast.error(`Could not add time: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
@@ -178,10 +190,10 @@ export default function SupportSessionPill() {
         <Button
           variant="outline"
           icon={busy === "extend" ? <Spinner size="xs" className="text-current" /> : <Plus />}
-          disabled={busy !== null}
+          disabled={busy !== null || extendMinutes === null}
           onClick={() => void extend()}
         >
-          {SUPPORT_SESSION_EXTEND_MINUTES} min
+          {extendMinutes ?? "…"} min
         </Button>
         <Button
           variant="outline"

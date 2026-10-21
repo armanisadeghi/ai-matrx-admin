@@ -50,6 +50,7 @@ export function useSearchRoute({ guest = false }: { guest?: boolean } = {}) {
   });
 
   const inputs = useSearchInputs(form, {
+    guest,
     // A link, handle or image keeps only the box text in the address.
     onSubmitted: (query) =>
       writeAddress(new URLSearchParams(query ? { q: query } : {}).toString()),

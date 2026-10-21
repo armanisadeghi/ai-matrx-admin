@@ -78,7 +78,7 @@ function FallbackHeader() {
       left={
         <ChevronLeftTapButton
           href={marketingRoutes.brands()}
-          ariaLabel="All clients"
+          ariaLabel="All brands"
         />
       }
     />
@@ -172,7 +172,7 @@ export function MarketingSiteLayoutClient({
           }
           onRetry={() => void site.refetch()}
           fallbackHref={marketingRoutes.brands()}
-          fallbackLabel="All clients"
+          fallbackLabel="All brands"
         />
       </>
     );
@@ -192,7 +192,7 @@ export function MarketingSiteLayoutClient({
           error={brand.error}
           onRetry={() => void brand.refetch()}
           fallbackHref={marketingRoutes.brands()}
-          fallbackLabel="All clients"
+          fallbackLabel="All brands"
         />
       </>
     );
@@ -260,7 +260,7 @@ export function MarketingSiteLayoutClient({
           // Switching sibling sites keeps the section you are on, inside the
           // branch you are on — the two registries are separate lists.
           href: !option.brand_id
-            ? // A site with no brand link cannot be addressed in the client
+            ? // A site with no brand link cannot be addressed in the brand
               // tree; the flat door resolves (or refuses) it honestly.
               marketingRoutes.site(null, option.id)
             : branchKind === "reputation"

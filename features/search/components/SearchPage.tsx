@@ -32,7 +32,7 @@ export function SearchPage() {
   return (
     <SurfaceRuntimeProvider surfaceName={SEARCH_SURFACE_NAME} getScope={getScope}>
       <div
-        className="h-full flex flex-col overflow-hidden bg-textured"
+        className="h-full flex flex-col overflow-hidden bg-background"
         style={{ paddingTop: "var(--shell-header-h)" }}
       >
         <SearchExperience form={form} inputs={inputs} surface="search" />

@@ -1,0 +1,51 @@
+/* THE CLASSIC SHELL'S PAGE CONTRACT, KEPT INSIDE THE NEW APP FRAME (ROLLOUT-PLAN §2, Attack #6).
+   ONE file, deleted at cutover (P6) with the classic shell. Every rule is scoped to the frame host
+   root `[data-matrx-frame-host]`, which exists only when the server picked the frame, so the
+   classic shell never sees any of it.
+
+   What (core) pages expect from AppShell, and how the frame gives it:
+   - `.shell-main` as the page's full-height scroll owner, with the page runway after its content
+     and every runway / no-stacking rule in styles/shell.css: the frame body IS a `.shell-main`
+     (FrameHostImpl), so those rules apply as written. The classic pull-up under a transparent
+     header does not: the frame's header sits outside the scroller.
+   - `--shell-header-h` (505 files: sticky offsets under the classic header): 0 — nothing floats
+     over the frame body.
+   - `--header-height` (`h-page`, 567 files): the frame's chrome around the body, so `h-page`
+     fills the body exactly.
+   - the domain panel (`.shell-panel`) open by default, as the classic checkbox does. */
+
+[data-matrx-frame-host] {
+  --shell-header-h: 0px;
+  --shell-header-clearance: 0px;
+  --header-height: calc(var(--matrx-frame-header-h, 44px) + var(--matrx-frame-footer-h, 32px) + 2 * var(--matrx-frame-inset, 0px));
+  height: 100dvh;
+  width: 100%;
+}
+
+[data-matrx-frame-host] [data-matrx-frame][data-form="phone"] {
+  --header-height: calc(var(--matrx-frame-header-h, 44px) + 2 * var(--matrx-frame-inset, 0px));
+}
+
+[data-matrx-frame-host] .shell-main {
+  margin-top: 0;
+  height: 100%;
+  width: 100%;
+  scroll-padding-top: 0;
+}
+
+@media (min-width: 1024px) {
+  [data-matrx-frame-host] .shell-main:has(.shell-panel) {
+    grid-template-columns: var(--shell-panel-w) 1fr;
+  }
+}
+
+/* ONE OCCUPANT PER HEADER SLOT — the twin of styles/shell.css's fallback rule (search
+   "A broad route layout may provide a fallback"): a page's own header hides a route layout's
+   fallback, and ANY page header content hides the frame's derived crumbs (`data-frame-derived`).
+   Before hydration the page's header is a GHOST in <body> laid over the slot (ServerRenderedHeaderSlot),
+   so while any center ghost exists the derived crumbs step aside too. */
+#frame-header-center:has(> [data-page-header-portal="page"]) > [data-page-header-portal="fallback"],
+#frame-header-center:has(> [data-page-header-portal]:not([data-frame-derived])) > [data-frame-derived],
+body:has(> matrx-header-ghost.shell-header-center) #frame-header-center > [data-frame-derived] {
+  display: none;
+}

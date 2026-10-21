@@ -76,6 +76,7 @@ const surfaceSpecific: SurfaceValue[] = [
   {
     name: "audience_noun",
     label: "What this brand calls its audience",
+    // brand-word-ok: the brand's own customers may be called clients
     description:
       "The word the page uses for one persona for this kind of brand (for example customer, client, follower). Use it when writing persona text so it matches the page.",
     valueType: "string",

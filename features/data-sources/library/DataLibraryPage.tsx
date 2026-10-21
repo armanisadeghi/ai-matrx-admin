@@ -218,11 +218,11 @@ function TaskHome({
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 pb-12 pt-5">
       {/* Elevated stage: a plain opening and one search box, over a quiet primary wash. */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 sm:p-8">
+      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-4 sm:p-8">
         <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">What would you like to pull in?</h1>
         <p className="mt-2 max-w-xl text-sm text-muted-foreground">Pick a task — we pull it into a table</p>
         <div className="mt-5 max-w-md">
-          <SearchField value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search reviews, prices, jobs…" aria-label="Search data sources" />
+          <SearchField value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search the library" aria-label="Search data sources" />
         </div>
       </section>
 
@@ -267,7 +267,9 @@ function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => 
   // (points for everyone; the dollar figure only for a viewer who sees dollars).
   const { rate } = useCostDisplay();
   const priceText = usePriceText();
+  // Only a source's OWN price speaks for the task: the catalog-wide default is the same on all of them.
   const cheapest = all.reduce<LibrarySource | null>((best, s) => {
+    if (!s.ownPrice) return best;
     const p = pointsPerRecord(s, rate);
     if (p == null) return best;
     const b = best ? pointsPerRecord(best, rate) : null;

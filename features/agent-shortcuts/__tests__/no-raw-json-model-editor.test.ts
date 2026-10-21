@@ -4,8 +4,8 @@
  * 🚨 Arman, 2026-08-31: *"Users are not expected to enter objects and we
  * should, at no time, force them to do such a thing."* The model and its
  * settings were editable only by typing JSON into a textarea, and the fix wave
- * replaced that with the canonical `ModelListDropdown` + `RunConfigOverrides`
- * composition (`StoredModelOverridesField`).
+ * replaced that with the canonical model settings (`StoredModelOverridesField`,
+ * today THE model-settings panel through `ConversationModelSettings`).
  *
  * IT MISSED A DOOR. The wave fixed the shared `AdvancedSection`, which
  * `ShortcutEditorNext` mounts — but `ShortcutForm`, the modal that is the ONLY

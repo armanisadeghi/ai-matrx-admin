@@ -18,6 +18,7 @@ export function NewsClientContextView({ value }: { value: Record<string, unknown
   const list = (v: unknown) => strings(v).join(", ") || "none";
   return (
     <KindCard
+      // brand-word-ok: the news_client_context kind's name (contract rename tracked separately)
       testId="news-client-context"
       title={`What the judges were told about ${str(company.name) || "the brand"}`}
       subtitle="Frozen at the start of the run; each judgment job receives only its slice."
