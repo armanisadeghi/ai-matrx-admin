@@ -48,47 +48,61 @@ export function treeIndentStyle(depth: number): CSSProperties {
  * The 16px disclosure slot. Renders the chevron when the row can expand and an
  * empty slot of the same width when it cannot — that empty slot is what keeps a
  * leaf aligned under its sibling folders.
+ *
+ * Two shapes, chosen by `onToggle`:
+ * - NO `onToggle`: the ROW toggles (its own click / key handler). The chevron is
+ *   a picture: a span that never eats the click and never adds a tab stop, so it
+ *   is safe inside a `<button>` row.
+ * - WITH `onToggle`: the chevron IS the toggle. It is a real button — focusable,
+ *   announced "Expand / Collapse <label>" with `aria-expanded` — so a keyboard or
+ *   screen-reader user can open the row. Pass `focusable={false}` only inside a
+ *   `role="tree"` that already moves focus and toggles on arrow keys.
+ *   Never put it inside another `<button>` (nested buttons are invalid HTML).
  */
 export function TreeDisclosure({
   expandable,
   expanded,
   onToggle,
   label,
+  focusable = true,
   className,
 }: {
   expandable: boolean;
   expanded?: boolean;
   onToggle?: () => void;
-  /**
-   * Pass when the chevron is the row's ONLY way to expand (no `role="tree"`
-   * keyboard model around it): the button becomes focusable and announces
-   * "Expand <label>" / "Collapse <label>" with `aria-expanded`. Omit inside a
-   * tree that owns the keyboard (TopicTree), where a second tab stop is noise.
-   */
+  /** The row's name, announced as "Expand <label>". */
   label?: string;
+  focusable?: boolean;
   className?: string;
 }) {
   if (!expandable) {
     return <span aria-hidden="true" className={cn("h-4 w-4 shrink-0", className)} />;
   }
-  const accessible = label !== undefined;
+  const chevron = (
+    <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-90")} />
+  );
+  const box = "flex h-4 w-4 shrink-0 items-center justify-center rounded text-muted-foreground";
+  if (!onToggle) {
+    return (
+      <span aria-hidden="true" className={cn(box, className)}>
+        {chevron}
+      </span>
+    );
+  }
   return (
     <button
       type="button"
-      tabIndex={accessible ? undefined : -1}
-      aria-hidden={accessible ? undefined : true}
-      aria-label={accessible ? `${expanded ? "Collapse" : "Expand"} ${label}` : undefined}
-      aria-expanded={accessible ? Boolean(expanded) : undefined}
+      tabIndex={focusable ? undefined : -1}
+      aria-hidden={focusable ? undefined : true}
+      aria-label={focusable ? `${expanded ? "Collapse" : "Expand"}${label ? ` ${label}` : ""}` : undefined}
+      aria-expanded={focusable ? Boolean(expanded) : undefined}
       onClick={(event) => {
         event.stopPropagation();
-        onToggle?.();
+        onToggle();
       }}
-      className={cn(
-        "flex h-4 w-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground",
-        className,
-      )}
+      className={cn(box, "hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring", className)}
     >
-      <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-90")} />
+      {chevron}
     </button>
   );
 }
