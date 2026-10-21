@@ -55,6 +55,17 @@ export function defaultPageActions(handlers: {
   ];
 }
 
+/** A panel toggle; `unavailable` disables it and says why in its tooltip (an honest stand-in). */
+export interface PanelToggle {
+  open: boolean;
+  onToggle: () => void;
+  unavailable?: string;
+}
+
+/** The ids of the frame's header slots (ServerRenderedHeaderSlot's HEADER_SLOT_TARGETS lists them first). */
+export const FRAME_HEADER_CENTER_ID = "frame-header-center";
+export const FRAME_HEADER_RIGHT_ID = "frame-header-right";
+
 export interface SheetHeaderProps {
   form: FrameForm;
   crumbs: readonly FrameCrumb[];
@@ -67,9 +78,16 @@ export interface SheetHeaderProps {
   /** The same tools on a phone, as data: `phone: "show"` stay, the rest go into "…". */
   phoneTools?: readonly FrameHeaderTool[];
   /** The frame's own canvas toggle, last in the right tools group (on a phone it is a "…" item). */
-  canvasToggle?: { open: boolean; onToggle: () => void };
+  canvasToggle?: PanelToggle;
   /** The side chat's door, when SIDE_CHAT_DOOR is "header" (after the canvas toggle). */
-  sideChatToggle?: { open: boolean; onToggle: () => void };
+  sideChatToggle?: PanelToggle;
+  /**
+   * The host's header slots (live (core) frame): the crumbs become the CENTER slot's fallback
+   * (`#frame-header-center`, `data-page-header-portal="fallback"`) and an empty RIGHT slot
+   * (`#frame-header-right`) sits before the tools, so a page's own header content
+   * (PageHeaderPortal / PageHeaderRightPortal) lands in the frame and the crumbs yield to it.
+   */
+  hostSlots?: boolean;
   /** This header is the sheet's last top band (no tabs row): it carries the frame's top edge. */
   topEdge?: boolean;
   /** Desktop with the sidebar hidden: the controls that bring it (and the grid) back. */
@@ -125,6 +143,7 @@ export function SheetHeader({
   start,
   onOpenDrawer,
   onBack,
+  hostSlots,
 }: SheetHeaderProps) {
   const current = crumbs[crumbs.length - 1];
 
@@ -157,21 +176,25 @@ export function SheetHeader({
         ) : (
           <Button variant="quiet" icon={<Menu />} aria-label="Open menu" onClick={onOpenDrawer} />
         )}
-        <h1 className="type-title min-w-0 flex-1 truncate px-1">{current?.label}</h1>
+        {hostSlots ? (
+          <div id={FRAME_HEADER_CENTER_ID} className="flex min-w-0 flex-1 items-center">
+            <h1 data-page-header-portal="fallback" data-frame-derived="" className="type-title min-w-0 flex-1 truncate px-1">
+              {current?.label}
+            </h1>
+          </div>
+        ) : (
+          <h1 className="type-title min-w-0 flex-1 truncate px-1">{current?.label}</h1>
+        )}
         {star}
+        {hostSlots ? <div id={FRAME_HEADER_RIGHT_ID} className="flex shrink-0 items-center" /> : null}
         <HeaderToolButtons tools={shown} />
         <PageMenu actions={[...(phoneActions ?? []), ...overflow, ...actions]} />
       </header>
     );
   }
 
-  return (
-    <header
-      data-mf-owner="frame"
-      data-mf-region="header"
-      className={cn(topEdge && "mf-top-edge", "flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2")}
-    >
-      {start}
+  const derived = (
+    <>
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center pl-1">
         <ol className="flex min-w-0 items-center gap-0.5">
           {crumbs.map((crumb, i) => {
@@ -202,9 +225,28 @@ export function SheetHeader({
         {star}
         <PageMenu actions={actions} />
       </div>
-      <div className="min-w-2 flex-1" />
+    </>
+  );
+
+  return (
+    <header
+      data-mf-owner="frame"
+      data-mf-region="header"
+      className={cn(topEdge && "mf-top-edge", "flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2")}
+    >
+      {start}
+      {hostSlots ? (
+        <div id={FRAME_HEADER_CENTER_ID} className="flex h-full min-w-0 flex-1 items-center">
+          <div data-page-header-portal="fallback" data-frame-derived="" className="flex min-w-0 items-center">
+            {derived}
+          </div>
+        </div>
+      ) : (
+        derived
+      )}
+      {hostSlots ? <div id={FRAME_HEADER_RIGHT_ID} className="flex shrink-0 items-center" /> : <div className="min-w-2 flex-1" />}
       {tools || canvasToggle || sideChatToggle ? (
-        <div data-mf-region="header-tools" className="flex shrink-0 items-center gap-0.5">
+        <div data-mf-region="header-tools" data-matrx-controls="" className="flex shrink-0 items-center gap-0.5">
           {tools}
           {sideChatToggle ? (
             <Button
@@ -212,6 +254,8 @@ export function SheetHeader({
               icon={<Webhook />}
               aria-label="Side chat"
               aria-pressed={sideChatToggle.open}
+              disabled={Boolean(sideChatToggle.unavailable)}
+              title={sideChatToggle.unavailable}
               onClick={sideChatToggle.onToggle}
             />
           ) : null}
@@ -221,6 +265,8 @@ export function SheetHeader({
               icon={<Shapes />}
               aria-label="Canvas"
               aria-pressed={canvasToggle.open}
+              disabled={Boolean(canvasToggle.unavailable)}
+              title={canvasToggle.unavailable}
               onClick={canvasToggle.onToggle}
             />
           ) : null}

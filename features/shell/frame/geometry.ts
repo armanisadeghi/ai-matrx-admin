@@ -17,6 +17,8 @@ export const FRAME_COMPANION_WIDTH_COOKIE = "matrx-frame:side-chat-width";
 export const FRAME_COMPANION_OPEN_COOKIE = "matrx-frame:side-chat-open";
 /** How many pages' side chat choices the one cookie keeps (most recent first). */
 export const FRAME_COMPANION_OPEN_KEEP = 30;
+/** The encoded cookie value stays under this (a browser drops a whole cookie past ~4 KB; keys are unbounded). */
+export const FRAME_COMPANION_OPEN_MAX_BYTES = 1500;
 
 type OpenEntry = [pageKey: string, open: 0 | 1];
 
@@ -43,9 +45,13 @@ export function frameCompanionOpenFor(value: string | undefined | null, pageKey:
 
 /** The cookie's next value after the person chose `open` on `pageKey` (that page moves to the front). */
 export function nextFrameCompanionOpen(value: string | undefined | null, pageKey: string, open: boolean): string {
-  const rest = parseOpenEntries(value).filter((e) => e[0] !== pageKey);
-  const chosen: OpenEntry = [pageKey, open ? 1 : 0];
-  const entries: OpenEntry[] = [chosen, ...rest].slice(0, FRAME_COMPANION_OPEN_KEEP);
+  // Closed is the default, so only OPEN pages are stored; choosing closed just forgets the page.
+  const rest = parseOpenEntries(value).filter((e) => e[0] !== pageKey && e[1] === 1);
+  const entries: OpenEntry[] = (open ? [[pageKey, 1] as OpenEntry, ...rest] : rest).slice(0, FRAME_COMPANION_OPEN_KEEP);
+  // Trim the oldest until the ENCODED value fits (what the browser counts against the cookie cap).
+  while (entries.length > 0 && encodeURIComponent(JSON.stringify(entries)).length > FRAME_COMPANION_OPEN_MAX_BYTES) {
+    entries.pop();
+  }
   return JSON.stringify(entries);
 }
 
@@ -61,7 +67,13 @@ export function readFrameCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const prefix = `${name}=`;
   const hit = document.cookie.split("; ").find((part) => part.startsWith(prefix));
-  return hit ? decodeURIComponent(hit.slice(prefix.length)) : null;
+  if (!hit) return null;
+  try {
+    return decodeURIComponent(hit.slice(prefix.length));
+  } catch {
+    // A corrupt cookie reads as absent (the page falls back to its default), never throws.
+    return null;
+  }
 }
 
 export function writeFrameCookie(name: string, value: string): void {

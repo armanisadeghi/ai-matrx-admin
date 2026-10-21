@@ -731,7 +731,7 @@ describe("geometry the server can read (ROLLOUT-PLAN Attack #4)", () => {
 
   it("one cookie keeps the most recent pages' side chat choices, bounded", () => {
     let value: string | null = null;
-    for (let i = 0; i < FRAME_COMPANION_OPEN_KEEP + 5; i++) value = nextFrameCompanionOpen(value, `page-${i}`, i % 2 === 0);
+    for (let i = 0; i < FRAME_COMPANION_OPEN_KEEP + 5; i++) value = nextFrameCompanionOpen(value, `page-${i}`, true);
     expect(JSON.parse(value!)).toHaveLength(FRAME_COMPANION_OPEN_KEEP);
     expect(frameCompanionOpenFor(value, `page-${FRAME_COMPANION_OPEN_KEEP + 4}`)).toBe(true);
     expect(frameCompanionOpenFor(value, "page-0")).toBeNull();
