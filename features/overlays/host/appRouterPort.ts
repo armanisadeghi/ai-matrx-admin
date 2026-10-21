@@ -3,7 +3,7 @@
  * port is mounted (AppSummonRuntime, after the summon core loads) and from then on forwards to it.
  * Stable identity: nothing that holds the ports ever restarts because the router arrived.
  */
-import { locationRouter, type RouterPort } from "@ai-matrx/summon/open";
+import { locationRouter, type RouterPort } from "@ai-matrx/summon/boot-kit";
 
 let current: RouterPort = locationRouter;
 const listeners = new Set<() => void>();
