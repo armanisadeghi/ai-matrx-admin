@@ -15,6 +15,7 @@ import {
   promoteAgentVersion as promoteVersionThroughDoor,
   type VersionsClient,
 } from "@ai-matrx/agents/versions";
+import type { PromoteVersionResult as RestoreVersionResult } from "@ai-matrx/agents/versions";
 import {
   createAsyncThunk,
 } from "@reduxjs/toolkit";
@@ -36,7 +37,6 @@ import type {
 import type {
   AgentExecutionFull,
   UpdateFromSourceResult,
-  PromoteVersionResult,
   LinkedAgentRef,
   LinkedCounterpartResult,
   LostLinkedSource,
@@ -420,14 +420,15 @@ export const resetAgentToSource = createAsyncThunk<void, string, ThunkApi>(
  * Reloads the live agents row after promotion so state reflects the promoted data.
  */
 export const promoteAgentVersion = createAsyncThunk<
-  PromoteVersionResult,
+  RestoreVersionResult,
   { agentId: string; version: number },
   ThunkApi
 >(
   "agentDefinition/promoteVersion",
   async ({ agentId, version }, { dispatch }) => {
     // THE restore door (@ai-matrx/agents/versions): agx_promote_version; a refusal throws its sentence.
-    const result: PromoteVersionResult = await promoteVersionThroughDoor(
+    // new_version: the version row the restore saved; unchanged: nothing needed saving.
+    const result: RestoreVersionResult = await promoteVersionThroughDoor(
       supabase as unknown as VersionsClient,
       { agentId, version },
     );
