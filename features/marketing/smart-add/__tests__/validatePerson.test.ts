@@ -18,7 +18,7 @@ jest.mock("@/utils/supabase/webDb", () => ({
   },
 }));
 jest.mock("@/features/marketing/data/service", () => ({}));
-jest.mock("@/features/education/kits/systemRuns", () => ({ startSystemRun: jest.fn() }));
+jest.mock("@/lib/workflows/system-runs", () => ({ startSystemRun: jest.fn() }));
 jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: { remove: (...a: unknown[]) => (remove as (...x: unknown[]) => unknown)(...a) } }));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: jest.fn() }));
 jest.mock("../siteOwnershipLive", () => ({ liveSiteClaimDeps: jest.fn() }));

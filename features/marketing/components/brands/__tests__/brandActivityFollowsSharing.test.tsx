@@ -37,7 +37,7 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectIsAdmin: () => f
 jest.mock("@/features/scopes/redux/selectors/tree", () => ({ selectOrganizationIds: () => ["some-other-org"] }));
 jest.mock("@/lib/toast", () => ({ recordToast: jest.fn() }));
 jest.mock("@/utils/errors", () => ({ extractErrorMessage: String }));
-jest.mock("@/features/education/kits/systemRuns", () => ({ lookupSystemRun: jest.fn() }));
+jest.mock("@/lib/workflows/system-runs", () => ({ lookupSystemRun: jest.fn() }));
 jest.mock("@/features/workflow-runtime/run-doors", () => ({ runHref: () => "" }));
 jest.mock("@/features/marketing/crawler/direct-client", () => ({ initializeSite: jest.fn() }));
 jest.mock("@/features/marketing/data/hooks", () => ({

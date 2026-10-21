@@ -92,7 +92,7 @@ jest.mock("@/features/marketing/data/service", () => ({
 }));
 jest.mock("../siteOwnership", () => ({ claimSite: jest.fn(async () => ({ kind: "claimed", site: { id: "site-1" } })) }));
 jest.mock("../siteOwnershipLive", () => ({ liveSiteClaimDeps: {} }));
-jest.mock("@/features/education/kits/systemRuns", () => ({ startSystemRun: jest.fn(async () => ({})) }));
+jest.mock("@/lib/workflows/system-runs", () => ({ startSystemRun: jest.fn(async () => ({})) }));
 jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: { remove: jest.fn(async () => ({ ok: true })), add: jest.fn(async () => ({ ok: true })) } }));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: jest.fn(() => ({ getState: () => ({}) })) }));
 const linked: string[] = [];

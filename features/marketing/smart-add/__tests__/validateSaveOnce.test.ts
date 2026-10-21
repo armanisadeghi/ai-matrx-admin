@@ -50,7 +50,7 @@ jest.mock("@/utils/supabase/webDb", () => ({
   }),
 }));
 jest.mock("@/features/marketing/data/service", () => ({}));
-jest.mock("@/features/education/kits/systemRuns", () => ({ startSystemRun: jest.fn() }));
+jest.mock("@/lib/workflows/system-runs", () => ({ startSystemRun: jest.fn() }));
 jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: {} }));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: jest.fn() }));
 jest.mock("../siteOwnershipLive", () => ({ liveSiteClaimDeps: jest.fn() }));

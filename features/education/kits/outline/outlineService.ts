@@ -7,7 +7,7 @@
 // cited text in `education.study_source_chunk`.
 //
 // - reads: live rows by `kit_scope_id`, ordered by `position`;
-// - start / lookup: the system-workflow lane (`../systemRuns.ts`, subject
+// - start / lookup: the system-workflow lane (`@/lib/workflows/system-runs.ts`, subject
 //   `kit:<id>`) — a double press never pays twice; the page reattaches after
 //   a refresh;
 // - stale: the outline's `metadata.built_by_run_id` names the run that wrote it;
@@ -16,7 +16,7 @@
 
 import { readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
-import { lookupSystemRun, startSystemRun, type SystemRun } from "../systemRuns";
+import { lookupSystemRun, startSystemRun, type SystemRun } from "@/lib/workflows/system-runs";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { Json } from "@/types/database.types";
 import type { KitSource } from "../kitScope";

@@ -3,7 +3,7 @@
 const mockCallApi = jest.fn((arg: unknown) => ({ __callApi: arg }));
 jest.mock("@/lib/api/call-api", () => ({ callApi: (arg: unknown) => mockCallApi(arg) }));
 
-import { lookupOrganizationScope, lookupSystemRun } from "../systemRuns";
+import { lookupOrganizationScope, lookupSystemRun } from "../system-runs";
 import type { AppDispatch } from "@/lib/redux/store";
 
 const BRAND_ORG = "f9cb3e35-2a65-4f2a-8525-088d6551071c";

@@ -1,12 +1,12 @@
-// features/education/kits/systemRuns.ts
+// lib/workflows/system-runs.ts
 //
-// THE study kit's door to aidream's system-workflow lane
-// (`aidream/services/runtime/system_workflows.py`): a code-allow-listed
-// workflow the server runs on the learner's behalf, about one subject
-// (`kit:<id>`). Two workflows use it today — the kit OUTLINE
-// (`education_kit_outline`, `outline/outlineService.ts`) and the kit BUILD
-// (`education_kit_build`, `onboard/kitBuildService.ts`, every output made and
-// saved by the server).
+// THE shared door to aidream's system-workflow lane
+// (`aidream/services/runtime/system_workflows.py`): an allow-listed workflow
+// the server runs on the person's behalf, about one subject (`<kind>:<id>`;
+// a workflow may accept several kinds). Used by the education kit outline and
+// build (`education_kit_outline`, `education_kit_build`), Smart Add, and the
+// Agent Studio build (`agent_build`). Moved here from
+// `features/education/kits/systemRuns.ts` (Agent Studio rebuild, lane 2C).
 //
 // - start: `POST /workflows/system/{key}/runs`; the server answers an ACTIVE
 //   run for the same subject with `mode: "duplicate"` instead of a second one,

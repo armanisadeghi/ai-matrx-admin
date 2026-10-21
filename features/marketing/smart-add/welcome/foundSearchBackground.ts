@@ -28,7 +28,7 @@ import { getJson } from "@/lib/python-client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { fetchKnownDomainRules } from "@/lib/web-domains/service";
 import { liveKnownDomainRules } from "@/lib/web-domains/registry";
-import { lookupSystemRun } from "@/features/education/kits/systemRuns";
+import { lookupSystemRun } from "@/lib/workflows/system-runs";
 import { addWitnesses } from "../found/foundCards";
 import { mergeEvidence, type EvidenceItem, type SocialSeed } from "../evidence";
 import { finishedRound } from "../roundOutput";
