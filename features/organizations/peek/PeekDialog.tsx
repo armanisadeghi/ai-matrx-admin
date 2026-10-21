@@ -35,6 +35,7 @@ import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { usePeekHrefOverride } from "./peekHrefOverride";
 import { PEEK_CONTENT_PROPS, useTransientPeek } from "./useTransientPeek";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 export interface PeekDialogProps {
   open: boolean;
@@ -134,6 +135,7 @@ export function PeekDialog({
               variant="primary"
               onClick={() => {
                 onClose();
+                expectNavigation(resolvedHref); // a window closes before this push: the overlay layer writes no address behind it
                 router.push(resolvedHref);
               }}
             >

@@ -44,6 +44,7 @@ import { uploadAndTranscribeFull } from "../services/audioFallbackUpload";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). THE UNIT LAW: the unit is in the name.
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -140,6 +141,7 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
       );
     }
     onClose();
+    expectNavigation("/agents/all"); // a window closes before this push: the overlay layer writes no address behind it
     router.push("/agents/all");
   };
 

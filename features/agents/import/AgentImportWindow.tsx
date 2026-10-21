@@ -39,6 +39,7 @@ import { ImportQuickFixes } from "./ImportQuickFixes";
 import type { AgentDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -662,6 +663,7 @@ function AgentImportWindowInner({ onClose }: { onClose: () => void }) {
   const handleNavigate = useCallback(() => {
     if (importedAgentId) {
       // agent-link-ok: an imported agent is created as a user agent for the importer
+      expectNavigation(`/agents/${importedAgentId}/build`); // a window closes before this push: the overlay layer writes no address behind it
       router.push(`/agents/${importedAgentId}/build`);
       onClose();
     }
