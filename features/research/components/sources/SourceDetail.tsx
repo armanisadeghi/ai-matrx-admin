@@ -1794,13 +1794,13 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                       <RefreshCw className="h-3 w-3" />
                       Re-read
                     </button>
-                    <button
+                    <Button
+                      variant="outline"
                       onClick={() => setPasteOpen(true)}
-                      className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full matrx-glass-card text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                      icon={<ClipboardPaste />}
                     >
-                      <ClipboardPaste className="h-3 w-3" />
                       Paste
-                    </button>
+                    </Button>
                   </div>
                   <AdvancedReadButton
                     url={typedSource.url}
@@ -1831,13 +1831,13 @@ export default function SourceDetail({ topicId, sourceId }: SourceDetailProps) {
                       <Download className="h-3 w-3" />
                       Read
                     </button>
-                    <button
+                    <Button
+                      variant="outline"
                       onClick={() => setPasteOpen(true)}
-                      className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full matrx-glass-card text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
+                      icon={<ClipboardPaste />}
                     >
-                      <ClipboardPaste className="h-3 w-3" />
                       Paste
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}

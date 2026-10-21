@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
+import { Button } from "@ai-matrx/design-system/controls";
 
 import { updateTopic } from "../../service";
 import type { QuotaVerdict } from "../../keywordQuota";
@@ -118,14 +119,9 @@ export function KeywordQuotaDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <button
-            type="button"
-            onClick={handleAddAnyway}
-            disabled={saving}
-            className="inline-flex items-center justify-center h-8 px-3 rounded-full matrx-glass-card text-xs font-medium text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
-          >
+          <Button variant="outline" onClick={handleAddAnyway} disabled={saving}>
             Add without raising
-          </button>
+          </Button>
           <button
             type="button"
             onClick={handleRaise}

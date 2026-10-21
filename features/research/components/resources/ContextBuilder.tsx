@@ -317,7 +317,7 @@ export default function ContextBuilder() {
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-6xl px-3 sm:px-4 py-3 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
             <ListTree className="h-3.5 w-3.5 text-primary" />
             <span className="type-secondary font-medium text-foreground/80">
               Context Builder

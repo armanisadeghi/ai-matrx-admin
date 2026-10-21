@@ -256,7 +256,7 @@ export default function OutputsStudio() {
   return (
     <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 space-y-6">
-        <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
           <PackageOpen className="h-3.5 w-3.5 text-primary" />
           <span className="type-secondary font-medium text-foreground/80">
             Outputs Studio

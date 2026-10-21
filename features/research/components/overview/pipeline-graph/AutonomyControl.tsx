@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Zap, SlidersHorizontal, Hand, Check, Loader2 } from "lucide-react";
+import { Zap, SlidersHorizontal, Hand, Check, ChevronDown, Loader2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import { updateTopic } from "../../../service";
@@ -80,21 +81,13 @@ export function AutonomyControl({ topicId, value, onSaved }: Props) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "inline-flex items-center gap-1 h-7 rounded-full px-2 text-[11px] font-medium",
-            "matrx-glass-card text-muted-foreground hover:text-foreground transition-colors",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
-          )}
+        <Button
+          variant="outline"
+          icon={pending ? <Loader2 className="animate-spin" /> : <CurrentIcon />}
+          iconEnd={<ChevronDown />}
         >
-          {pending ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <CurrentIcon className="h-3 w-3" />
-          )}
-          <span>{Current.label}</span>
-        </button>
+          {Current.label}
+        </Button>
       </PopoverTrigger>
       <PopoverContent
         sizing="content"

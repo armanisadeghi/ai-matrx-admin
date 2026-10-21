@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 import {
   Search,
@@ -699,7 +700,7 @@ export function PipelineGraph() {
       {/* ── Control strip ──────────────────────────────────────────────── */}
       {/* nowrap + wrap: on a phone the controls move to a second line whole,
           never breaking "Auto" or "Run pipeline" mid-word. */}
-      <div className="flex flex-wrap items-center gap-2 whitespace-nowrap p-1.5 pl-3 rounded-xl matrx-glass-thin-border">
+      <div className="flex flex-wrap items-center gap-2 whitespace-nowrap p-1.5 pl-3 rounded-lg border border-border bg-card">
         {/* status dot */}
         <span
           className={cn(
@@ -740,13 +741,12 @@ export function PipelineGraph() {
         />
         <Tooltip>
           <TooltipTrigger asChild>
-            <button
+            <Button
+              variant="quiet"
               onClick={() => setSettingsOpen(true)}
-              className="inline-flex items-center justify-center h-7 w-7 rounded-full matrx-glass-card text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Topic settings"
-            >
-              <Settings className="h-3 w-3" />
-            </button>
+              icon={<Settings />}
+            />
           </TooltipTrigger>
           <TooltipContent>Quotas, status, project, agents</TooltipContent>
         </Tooltip>
@@ -1427,12 +1427,9 @@ function KeywordForm({
         autoFocus
       />
       <div className="flex justify-end gap-2">
-        <button
-          onClick={onCancel}
-          className="inline-flex items-center h-8 px-4 rounded-full matrx-glass-card text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[44px]"
-        >
+        <Button variant="outline" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
         <button
           onClick={onSubmit}
           disabled={!value.trim() || busy}

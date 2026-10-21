@@ -47,6 +47,7 @@ import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import KeywordOverlapMatrix from "./KeywordOverlapMatrix";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button, ControlRow, Field } from "@ai-matrx/design-system/controls";
 import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import {
   mergeBulkActions,
@@ -465,67 +466,57 @@ export default function KeywordManager() {
         </div>
       )}
 
-      {/* Add keyword — matrx-glass-thin-border toolbar (renders instantly) */}
-      <div className="flex items-center gap-1.5 p-1 rounded-xl matrx-glass-thin-border">
-        <div className="flex-1 flex items-center gap-1.5 min-w-0 h-6 px-2 rounded-full matrx-glass-card">
-          <Search className="h-3 w-3 text-muted-foreground shrink-0" />
-          <input
+      {/* Add keyword toolbar (renders instantly) */}
+      <div className="rounded-lg border border-border bg-card">
+        <ControlRow nowrap>
+          <Field
+            className="flex-1 min-w-0"
+            icon={<Search />}
             value={newKeyword}
             onChange={(e) => setNewKeyword(e.target.value)}
             placeholder="Add a keyword..."
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground placeholder:text-[11px]"
-            style={{ fontSize: "16px" }}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             disabled={adding}
+            end={
+              newKeyword ? (
+                <Button
+                  variant="quiet"
+                  removes
+                  onClick={() => setNewKeyword("")}
+                  aria-label="Clear keyword"
+                  icon={<X />}
+                />
+              ) : undefined
+            }
           />
-          {newKeyword && (
-            <button
-              onClick={() => setNewKeyword("")}
-              className="shrink-0 p-0.5 rounded-full hover:bg-muted/50 transition-colors"
-            >
-              <X className="h-2.5 w-2.5 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-        <button
-          onClick={handleAdd}
-          disabled={adding || !newKeyword.trim()}
-          className={cn(
-            "inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[11px] font-medium transition-all shrink-0",
-            "bg-primary text-primary-foreground hover:bg-primary/90",
-            "disabled:opacity-40 disabled:pointer-events-none",
-          )}
-        >
-          {adding ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <Plus className="h-3 w-3" />
-          )}
-          <span className="hidden sm:inline">Add</span>
-        </button>
-        <button
-          onClick={refresh}
-          className="inline-flex items-center justify-center h-5 w-5 rounded-full matrx-glass-card text-muted-foreground hover:text-foreground transition-colors shrink-0"
-        >
-          <RefreshCw className="h-2.5 w-2.5" />
-        </button>
+          <Button
+            variant="primary"
+            onClick={handleAdd}
+            disabled={adding || !newKeyword.trim()}
+            icon={adding ? <Loader2 className="animate-spin" /> : <Plus />}
+          >
+            <span className="hidden sm:inline">Add</span>
+          </Button>
+          <Button
+            variant="quiet"
+            onClick={refresh}
+            aria-label="Refresh"
+            icon={<RefreshCw />}
+          />
+        </ControlRow>
       </div>
 
       {/* Focused lens — optional goal for the keyword being added. Appears only
           while a keyword is typed so the toolbar stays one quiet row at rest. */}
       {newKeyword.trim() && (
-        <div className="flex items-center gap-1.5 h-7 px-2.5 rounded-xl matrx-glass-card">
-          <Target className="h-3 w-3 text-muted-foreground shrink-0" />
-          <input
-            value={newGoal}
-            onChange={(e) => setNewGoal(e.target.value)}
-            placeholder="What is this search for? e.g. “information about the partner, not the firm” (optional)"
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground placeholder:text-[11px]"
-            style={{ fontSize: "16px" }}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            disabled={adding}
-          />
-        </div>
+        <Field
+          icon={<Target />}
+          value={newGoal}
+          onChange={(e) => setNewGoal(e.target.value)}
+          placeholder="What is this search for? e.g. “information about the partner, not the firm” (optional)"
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          disabled={adding}
+        />
       )}
 
       {/* Overlap read — how well the chosen keywords converge on one goal.

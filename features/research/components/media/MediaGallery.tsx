@@ -644,7 +644,7 @@ function IconsSection({ items, onToggleRelevance }: SectionProps) {
         count={items.length}
         description="Tiny graphics shown at native size (64px or less)"
       />
-      <div className="flex flex-wrap gap-1.5 rounded-xl matrx-glass-card p-2">
+      <div className="flex flex-wrap gap-1.5 rounded-lg border border-border bg-card p-2">
         {items.map((item) => (
           <IconTile
             key={item.id}

@@ -8,6 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@ai-matrx/design-system';
+import { Button } from '@ai-matrx/design-system/controls';
 import {
   Command,
   CommandEmpty,
@@ -65,36 +66,28 @@ export function HierarchyFilterPill({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
           role="combobox"
           aria-expanded={open}
           disabled={disabled || loading}
-          className={cn(
-            'inline-flex items-center gap-1 h-6 px-2 rounded-full text-[11px] font-medium',
-            'transition-all duration-150 outline-none',
-            'disabled:opacity-40 disabled:pointer-events-none',
-            selected
-              ? 'matrx-glass-thin-border text-primary border border-primary/20'
-              : 'matrx-glass-card text-muted-foreground hover:text-foreground',
-            loading && 'animate-pulse',
-            className,
-          )}
+          variant="outline"
+          tone={selected ? 'primary' : undefined}
+          iconEnd={
+            selected ? (
+              <X
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(null);
+                }}
+              />
+            ) : (
+              <ChevronDown />
+            )
+          }
+          className={className}
         >
-          <span className="truncate max-w-[120px]">
-            {selected ? selected.label : allLabel}
-          </span>
-          {selected ? (
-            <X
-              className="h-2.5 w-2.5 shrink-0 opacity-60 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(null);
-              }}
-            />
-          ) : (
-            <ChevronDown className="h-2.5 w-2.5 shrink-0 opacity-40" />
-          )}
-        </button>
+          {selected ? selected.label : allLabel}
+        </Button>
       </PopoverTrigger>
       <PopoverContent sizing="content" className="p-0 rounded-xl border-border/50 shadow-xl" align="start" sideOffset={6}>
         <Command>

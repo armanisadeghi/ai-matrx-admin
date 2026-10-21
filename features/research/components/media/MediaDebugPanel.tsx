@@ -114,7 +114,7 @@ export default function MediaDebugPanel({
         />
       </div>
 
-      <div className="rounded-xl matrx-glass-card border border-border/40 overflow-hidden flex flex-col min-h-[280px] max-h-[calc(100dvh-16rem)]">
+      <div className="rounded-lg border border-border bg-card overflow-hidden flex flex-col min-h-[280px] max-h-[calc(100dvh-16rem)]">
         <div className="px-3 py-2 border-b border-border/40 bg-muted/20 space-y-1">
           <p className="type-meta text-muted-foreground">
             Tiers: icon ≤{ICON_MAX_DIM} · graphic &lt;{GRAPHIC_MAX_DIM} · photo
@@ -138,7 +138,7 @@ export default function MediaDebugPanel({
         </pre>
       </div>
 
-      <details className="rounded-lg matrx-glass-thin-border px-3 py-2">
+      <details className="rounded-lg border border-border bg-card px-3 py-2">
         <summary className="type-meta font-medium text-muted-foreground cursor-pointer">
           Rules reference
         </summary>
@@ -160,7 +160,7 @@ function Stat({
   warn?: boolean;
 }) {
   return (
-    <div className="rounded-lg matrx-glass-thin-border px-2 py-1.5">
+    <div className="rounded-lg border border-border bg-card px-2 py-1.5">
       <p className="text-[9px] text-muted-foreground uppercase tracking-wide">
         {label}
       </p>

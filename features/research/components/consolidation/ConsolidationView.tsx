@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ChevronLeft, RefreshCw, Loader2, AlertCircle, Layers } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@ai-matrx/design-system/controls';
 import { AccessGate } from '@/features/access-gate/components/AccessGate';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchTags, useResearchSynthesis } from '../../hooks/useResearchState';
@@ -114,7 +115,7 @@ export default function ConsolidationView({ topicId, tagId }: ConsolidationViewP
 
     return (
         <div className="p-3 sm:p-4 space-y-3">
-            <div className="flex items-center gap-2 rounded-full matrx-glass-thin-border px-3 py-1.5">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
                 <Link href={`/research/topics/${topicId}/tags`} className="inline-flex items-center gap-0.5 type-meta text-muted-foreground hover:text-foreground transition-colors">
                     <ChevronLeft className="h-3 w-3" />
                     Tags
@@ -126,14 +127,14 @@ export default function ConsolidationView({ topicId, tagId }: ConsolidationViewP
                     </>
                 )}
                 <div className="flex-1" />
-                <button
+                <Button
+                    variant="outline"
                     onClick={handleConsolidate}
                     disabled={consolidating}
-                    className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full matrx-glass-card text-[11px] font-medium text-primary disabled:opacity-50 transition-colors"
+                    icon={consolidating ? <Loader2 className="animate-spin" /> : <RefreshCw />}
                 >
-                    {consolidating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                     <span className="hidden sm:inline">{consolidation ? 'Re-consolidate' : 'Consolidate'}</span>
-                </button>
+                </Button>
             </div>
 
             {/* Live streaming while the consolidation LLM is writing */}

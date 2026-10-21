@@ -11,6 +11,7 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button, ControlRow, SearchField } from "@ai-matrx/design-system/controls";
 import {
   HierarchyFilterPill,
   type FilterOption,
@@ -122,22 +123,22 @@ function FilterDrawerContent({
       {/* Search bar for detail view with many options */}
       {activeFilter && activeFilter.options.length > 6 && (
         <div className="px-4 pb-2">
-          <div className="flex items-center gap-2 h-9 px-3 rounded-lg matrx-glass-card">
-            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search..."
-              className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground"
-              style={{ fontSize: "16px" }}
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="p-1">
-                <X className="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
-            )}
-          </div>
+          <SearchField
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search..."
+            end={
+              searchQuery ? (
+                <Button
+                  variant="quiet"
+                  removes
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
+                  icon={<X />}
+                />
+              ) : undefined
+            }
+          />
         </div>
       )}
 
@@ -287,75 +288,64 @@ export function ResearchFilterBar({
 
   return (
     <>
-      <div
-        className={cn(
-          // Wraps (never clips): at tablet widths the facets + actions need a second line.
-          "flex flex-wrap items-center gap-1.5 p-1 rounded-[1.25rem] matrx-glass-thin-border",
-          className,
-        )}
-      >
-        <span className="type-meta font-medium text-foreground/80 pl-1.5 shrink-0">
-          {title}
-        </span>
-        {count && (
-          <span className="type-meta text-muted-foreground tabular-nums shrink-0">
-            {read ? <UntrustedCount value={count} read={read} label={title} /> : count}
+      <div className={cn("rounded-lg border border-border bg-card", className)}>
+        {/* Wraps (never clips): at tablet widths the facets + actions need a second line. */}
+        <ControlRow>
+          <span className="type-meta font-medium text-foreground/80 pl-1.5 shrink-0">
+            {title}
           </span>
-        )}
+          {count && (
+            <span className="type-meta text-muted-foreground tabular-nums shrink-0">
+              {read ? <UntrustedCount value={count} read={read} label={title} /> : count}
+            </span>
+          )}
 
-        {!isMobile && pills}
+          {!isMobile && pills}
 
-        {hasActiveFilters && !isMobile && (
-          <button
-            onClick={resetAll}
-            className="inline-flex items-center justify-center h-5 w-5 rounded-full matrx-glass-card text-muted-foreground hover:text-foreground transition-colors shrink-0"
-            aria-label="Reset filters"
-          >
-            <RotateCcw className="h-2.5 w-2.5" />
-          </button>
-        )}
+          {hasActiveFilters && !isMobile && (
+            <Button
+              variant="quiet"
+              onClick={resetAll}
+              aria-label="Reset filters"
+              icon={<RotateCcw />}
+            />
+          )}
 
-        {showSearch && (
-          <>
-            <div className="w-px h-4 bg-border/30 mx-0.5 hidden sm:block" />
-            <div className="flex-1 flex items-center gap-1.5 min-w-[9rem] h-6 px-2 rounded-full matrx-glass-card">
-              <Search className="h-3 w-3 text-muted-foreground shrink-0" />
-              <input
-                type="text"
+          {showSearch && (
+            <>
+              <div className="w-px h-4 bg-border/30 mx-0.5 hidden sm:block" />
+              <SearchField
+                className="flex-1 min-w-[9rem]"
                 value={search ?? ""}
                 onChange={(e) => onSearchChange?.(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="flex-1 min-w-0 bg-transparent border-0 outline-none text-foreground placeholder:text-muted-foreground placeholder:text-[11px]"
-                style={{ fontSize: "16px" }}
+                end={
+                  search ? (
+                    <Button
+                      variant="quiet"
+                      removes
+                      onClick={() => onSearchChange?.("")}
+                      aria-label="Clear search"
+                      icon={<X />}
+                    />
+                  ) : undefined
+                }
               />
-              {search && (
-                <button
-                  onClick={() => onSearchChange?.("")}
-                  className="shrink-0 p-0.5 rounded-full hover:bg-muted/50 transition-colors"
-                >
-                  <X className="h-2.5 w-2.5 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-          </>
-        )}
+            </>
+          )}
 
-        {isMobile && filters.length > 0 && (
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className={cn(
-              "inline-flex items-center justify-center h-6 w-6 rounded-full matrx-glass-card transition-colors relative shrink-0",
-              hasActiveFilters ? "text-primary" : "text-muted-foreground",
-            )}
-          >
-            <SlidersHorizontal className="h-3 w-3" />
-            {hasActiveFilters && (
-              <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-primary" />
-            )}
-          </button>
-        )}
+          {isMobile && filters.length > 0 && (
+            <Button
+              variant="quiet"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Filters"
+              icon={<SlidersHorizontal />}
+              badge={hasActiveFilters}
+            />
+          )}
 
-        {trailing}
+          {trailing}
+        </ControlRow>
       </div>
 
       {isMobile && filters.length > 0 && (
