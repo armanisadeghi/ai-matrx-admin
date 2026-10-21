@@ -3,7 +3,7 @@
 // features/mandates/runs/RunTryPanel.tsx — RIGHT side of the Runs tab: the
 // selected run's exact values against a holder picked HERE. The picker is the
 // Binding tab's own `HolderAssignment` (purpose "pick" — nothing is ever
-// saved), model/settings are the Overrides tab's `RunConfigOverrides` over a
+// saved), model/settings are the Overrides tab's `ConversationModelSettings` over a
 // local overrides instance. On pick → `POST /mandates/{key}/placement` →
 // PlacementTable; Run → `POST /ai/mandates/{key}` with `test_holder`, streamed.
 
@@ -29,7 +29,7 @@ import {
   selectSettingsOverridesForApi,
 } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.selectors";
 import { buildInstanceBaseSettings } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/base-settings";
-import { RunConfigOverrides } from "@ai-matrx/chat/agents/components/run-controls/RunConfigOverrides";
+import { ConversationModelSettings } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { isJsonObject, toJsonRecord, type JsonObject, type JsonValue } from "@/types/json";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { PlacementTable } from "./PlacementTable";
@@ -220,10 +220,11 @@ function TryWithRun({
             </Button>
           </div>
           {settingsOpen ? (
-            <RunConfigOverrides
+            <ConversationModelSettings
               conversationId={overridesId}
               words={{ ...JOB_OVERRIDE_WORDS, modelEmptyChoiceLabel: "Agent's model" }}
-              structured
+              model="override"
+              allowJson
             />
           ) : null}
         </div>

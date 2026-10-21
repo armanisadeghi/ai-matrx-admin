@@ -3,7 +3,7 @@
 /**
  * ModelSettingsReviewDialog — review settings before replacing a model.
  *
- * NOTHING NEW IS DESIGNED HERE. The settings body is `RunConfigOverrides`
+ * NOTHING NEW IS DESIGNED HERE. The settings body is `ConversationModelSettings`
  * (`structured`), the same Redux-backed panel the agent builder, shortcut
  * editor, and binding screens mount. Rows come from the replacement model's
  * full registry record; defaults and availability are the model's own.
@@ -40,7 +40,7 @@ import {
   selectInstanceOverrideState,
   selectSettingsOverridesForApi,
 } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.selectors";
-import { RunConfigOverrides } from "@ai-matrx/chat/agents/components/run-controls/RunConfigOverrides";
+import { ConversationModelSettings } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { ReplaceFailureBanner } from "@/components/official/error-detail/ReplaceFailureBanner";
 import type { LLMParams } from "@ai-matrx/chat/agents/types/agent-api-types";
 import { selectAllModels } from "@ai-matrx/agents/models";
@@ -186,9 +186,11 @@ export function ModelSettingsReviewDialog({
 
         <div className="min-h-0 flex-1 overflow-y-auto border-t border-border">
           {open && ready ? (
-            <RunConfigOverrides
+            <ConversationModelSettings
               conversationId={INSTANCE_KEY}
-              structured
+              model="override"
+              allowJson
+              className="px-5 py-3"
               disabled={applying}
               words={REPLACE_WORDS}
               overrideSource="This replacement"

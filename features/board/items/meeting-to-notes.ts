@@ -1,7 +1,7 @@
 /**
  * Send a meeting part up into the person's Notes (the meeting tile's "…" menu).
  * A new note through the notes service, in the meeting's own organization,
- * holding the part's text as the tile shows it, then its reference (`meetingPartNote`).
+ * holding the part's reference (`meetingPartNote`).
  */
 
 import { createNote } from "@/features/notes/service/notesService";
@@ -10,7 +10,6 @@ import { getStoreSingleton } from "@/lib/redux/store-singleton";
 import { toast } from "@/lib/toast";
 import type { NodeSource } from "../board/document";
 import { meetingPartNote, meetingPartOf } from "./meeting-items.logic";
-import { publishedMeetingPartText } from "./meeting-part-text";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: string): Promise<void> {
@@ -22,7 +21,6 @@ export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: stri
     meetingId: target.meetingId,
     meetingTitle: meeting?.title ?? tileTitle,
     part: target.part,
-    text: publishedMeetingPartText(target.meetingId, target.part),
   });
   try {
     const note = await createNote({ label, content, organization_id: meeting?.organizationId ?? (await activeOrg()) });

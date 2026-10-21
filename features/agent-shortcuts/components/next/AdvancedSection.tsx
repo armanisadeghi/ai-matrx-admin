@@ -21,7 +21,7 @@ import IconInputWithValidation from "@/components/official/icons/IconInputWithVa
 import type { AgentShortcut } from "@ai-matrx/chat/agents/redux/agent-shortcuts/types";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { StoredModelOverridesField } from "@ai-matrx/chat/agents/components/run-controls/StoredModelOverridesField";
-import type { RunConfigOverridesWords } from "@ai-matrx/chat/agents/components/run-controls/RunConfigOverrides";
+import type { ConversationSettingsWords } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
@@ -175,7 +175,7 @@ export function AdvancedSection({
    */
   overridesInstanceKey: string;
   /** The overrides panel's own words, in the host's domain. */
-  overridesWords?: Partial<RunConfigOverridesWords>;
+  overridesWords?: Partial<ConversationSettingsWords>;
   /** Heading for the model field. Hosts with a second settings surface on the
    * same screen must name this one distinctly. */
   overridesTitle?: string;
@@ -403,7 +403,7 @@ export function AdvancedSection({
                 />
               )}
               <StoredModelOverridesField
-                structured={Boolean(section)}
+                allowJson={Boolean(section)}
                 instanceKey={`${overridesInstanceKey}-llm`}
                 value={asJsonObject(value.llmOverrides)}
                 onChange={(next) =>

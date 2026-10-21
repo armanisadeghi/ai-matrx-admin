@@ -108,7 +108,7 @@ describe("the OPTIONS drawer never speaks the old system's nouns", () => {
  *
  * The recurrence came in through a path that did not exist when this file was
  * written: `AdvancedSection` grew an `overridesWords` prop carrying a NESTED
- * words object (`RunConfigOverridesWords`), the mandate drawer passes its own,
+ * words object (`ConversationSettingsWords`), the mandate drawer passes its own,
  * and nothing here walked it. Checking that the job words ANSWER the shortcut
  * defaults is necessary but not sufficient — it says nothing about a job word
  * that speaks the old system all by itself.

@@ -32,7 +32,6 @@ export function GuestCompare() {
   useEffect(() => {
     let cancelled = false;
     let unregister: (() => void) | null = null;
-    setError(null);
     ensureGuestSession()
       .then((answer) => {
         if (cancelled) return;
@@ -56,7 +55,7 @@ export function GuestCompare() {
           <div className="mx-auto w-full max-w-3xl space-y-3 px-[var(--matrx-page-gutter,1rem)]">
             <ErrorNotice message={error} />
             <div className="flex gap-2">
-              <Button variant="primary" onClick={() => setAttempt((n) => n + 1)}>Try again</Button>
+              <Button variant="primary" onClick={() => { setError(null); setAttempt((n) => n + 1); }}>Try again</Button>
               <a href="/sign-up?redirectTo=%2Fcompare" className="inline-flex items-center px-3 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
                 Sign up free
               </a>

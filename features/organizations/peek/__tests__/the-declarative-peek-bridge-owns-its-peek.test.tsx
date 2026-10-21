@@ -113,7 +113,7 @@ describe("ResourcePeekHost bridge", () => {
     const onClose = jest.fn();
     mount(<ResourcePeekHost kind="party" id="p2" onClose={onClose} />);
     act(() => void jest.advanceTimersByTime(RESOURCE_PEEK_HOST_WAIT_MS));
-    expect(windowOpen).toHaveBeenCalledWith("/route/party/p2", "_blank", "noopener,noreferrer");
+    expect(windowOpen).toHaveBeenCalledWith("/route/party/p2", "_blank", "noopener");
     expect(onClose).toHaveBeenCalledTimes(1);
     error.mockRestore();
     windowOpen.mockRestore();

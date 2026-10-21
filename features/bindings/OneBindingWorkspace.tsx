@@ -71,7 +71,7 @@ import { useMandateAlchemyTabCapture } from "@/features/mandates/workspace/Manda
 import { normalizeTransferJson } from "@ai-matrx/alchemy/operate";
 import { fetchMandateLadder } from "@/features/mandates/workspace/useMandateLadder";
 import { inheritedModelOverrides, MODEL_OVERRIDE_SOURCE } from "./inherited-model-overrides";
-import { RunConfigOverrides } from "@ai-matrx/chat/agents/components/run-controls/RunConfigOverrides";
+import { ConversationModelSettings } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { isJsonObject, type JsonObject } from "@/types/json";
 import { agentHolderOfBinding } from "@/lib/supabase/mandateStorage";
 import { compareStoredContract } from "@/features/mandates/contract-compare";
@@ -2533,8 +2533,10 @@ function BindingDraft({
                       </div>
                     ) : overridesReady ? (
                       <div className="mt-2 space-y-2">
-                        <RunConfigOverrides
+                        <ConversationModelSettings
                           conversationId={overridesId}
+                          model="override"
+                          allowJson
                           // B14 — the canonical panel, told where it is. Its
                           // default sentence ("this conversation only") is a lie
                           // on a screen that stores a binding.
@@ -2542,7 +2544,6 @@ function BindingDraft({
                           inheritedSources={overrideBaseline.sources}
                           nullOverrideDefaults={overrideBaseline.holderSettings}
                           overrideSource={MODEL_OVERRIDE_SOURCE[rung]}
-                          structured
                           disabled={disabled}
                           onValidationChange={setOverrideValidationError}
                         />

@@ -57,6 +57,7 @@ import { useMessagesToggle } from "@/features/messaging/canvas/messagesKind";
 import { useNotificationsToggle } from "@/features/notifications/canvas/notificationsKind";
 import { openAssistsInbox, useAssistsInboxCount } from "@/features/assists/mobileInbox";
 import { ASSISTS_MANAGER_HREF } from "@/features/assists/constants";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 /** The profile menu's close checkbox inside the frame (AppShell's is `shell-user-menu`). */
 export const FRAME_USER_MENU_ID = "frame-user-menu";
@@ -153,7 +154,7 @@ export function useFramePhoneTools(isAuthenticated: boolean, openAgents: () => v
       icon: shellIconComponents[resolveShellIconName(button.iconName)],
       onSelect: () => {
         if (button.kind === "destination" && !button.tileId) {
-          if (button.external || button.openInNewTab) window.open(button.href, "_blank", "noopener,noreferrer");
+          if (button.external || button.openInNewTab) openOutbound(button.href, "_blank", "noopener");
           else router.push(button.href);
           return;
         }

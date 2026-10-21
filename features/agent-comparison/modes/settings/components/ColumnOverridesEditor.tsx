@@ -21,7 +21,7 @@
  * overrides map and are read identically.
  */
 
-import { isUnsetChoice } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/auto-means-unset";
+import { isUnsetChoice } from "@ai-matrx/agents/settings";
 import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {

@@ -34,15 +34,15 @@ export function PickList({ result, rows, onAdd, onClose }: {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-border bg-card" aria-label="Found">
-      <div className="flex items-start gap-3 border-b border-border p-4">
+      <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-start">
         <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex min-w-0 items-center gap-2">
-            <h2 className="truncate text-lg font-semibold tracking-tight text-foreground">{result.reading.summary || "Found"}</h2>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 className="min-w-0 break-words text-lg font-semibold tracking-tight text-foreground">{result.reading.summary || "Found"}</h2>
             {wanted ? <Badge tone="primary">{`Pick ${wanted}`}</Badge> : null}
             {result.guessed ? <Badge tone="warning">Our guess</Badge> : null}
           </div>
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="type-secondary min-w-0 truncate text-muted-foreground" title={result.disclosure}>{result.disclosure}</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="type-secondary min-w-0 break-words text-muted-foreground">{result.disclosure}</span>
             {result.how.length ? (
               <FieldHelp label="How we picked" triggerLabel="How we picked">
                 <ul className="space-y-1">{result.how.map((h) => <li key={h}>{h}</li>)}</ul>
@@ -53,6 +53,7 @@ export function PickList({ result, rows, onAdd, onClose }: {
             <p key={n} className="type-secondary text-warning-ink">{n}</p>
           ))}
         </div>
+        <div className="flex shrink-0 items-center gap-2">
         {top.length > 1 && room >= 2 ? (
           <Button variant="outline" icon={<Plus className="h-4 w-4" />}
             onClick={() => onAdd(top.slice(0, room).map((i) => ({ match: i.match, category: categoryOf(i.note) })))}>
@@ -60,6 +61,7 @@ export function PickList({ result, rows, onAdd, onClose }: {
           </Button>
         ) : null}
         <Button variant="quiet" aria-label="Close the found list" icon={<X className="h-4 w-4" />} onClick={onClose} />
+        </div>
       </div>
 
       {result.items.length ? (

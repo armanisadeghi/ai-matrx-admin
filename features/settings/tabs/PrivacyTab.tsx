@@ -10,6 +10,12 @@ import { SettingsLink } from "@/components/official/settings/primitives/Settings
 import { settingDoorHref } from "../doors/settingDoorTarget";
 import { useAutoRagPreference } from "@/features/kg-suggestions/hooks/useAutoRagPreference";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
+import { useUniversalSettings } from "../universal/UniversalSettingsContext";
+import { UniversalSettingsRows } from "../universal/UniversalSettingsPane";
+
+// Knob (feature `conversation_context.identity`): whether the server tells the person's agents
+// what they saved about themselves. Organization sets the default, the person's own value wins.
+export const SHARE_PROFILE_KNOB_KEY = "conversation_context.identity.share_profile_with_agents";
 
 /**
  * Privacy-adjacent controls. Not a dedicated slice — points at the fields
@@ -26,6 +32,8 @@ import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
  */
 export default function PrivacyTab() {
   const autoRag = useAutoRagPreference();
+  const settings = useUniversalSettings();
+  const shareProfile = settings.knobByKey(SHARE_PROFILE_KNOB_KEY);
 
   const handleAutoRagChange = (next: boolean) => {
     void autoRag
@@ -72,6 +80,12 @@ export default function PrivacyTab() {
           last
         />
       </SettingsSection>
+
+      {shareProfile && (
+        <SettingsSection title="Your agents">
+          <UniversalSettingsRows knobs={[shareProfile]} hideKey />
+        </SettingsSection>
+      )}
 
       <SettingsSection title="Your data" icon={DatabaseZap}>
         <SettingsLink

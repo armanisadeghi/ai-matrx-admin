@@ -254,7 +254,7 @@ export const JOB_ADVANCED_WORDS: Partial<AdvancedSectionWords> = {
 /**
  * 🚨 THE OVERRIDES PANEL, TOLD WHERE IT IS (VISION-RECONCILIATION B14).
  *
- * `RunConfigOverrides` is the canonical settings-override editor and it is
+ * `ConversationModelSettings` is the canonical settings-override editor and it is
  * mounted here unchanged — but it was mounted with ITS host's words, so a
  * binding screen printed *"Overrides apply to this conversation only"* about a
  * row that is stored and applies to every run of this job, for everybody the

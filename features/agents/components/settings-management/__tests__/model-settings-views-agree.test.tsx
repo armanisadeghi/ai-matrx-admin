@@ -29,7 +29,6 @@ jest.mock("@ai-matrx/agents/models/react", () => ({
   useModelCatalog: () => ({ models: [] }),
   ModelListDropdown: () => null,
 }));
-jest.mock("../ui-gates/UiGatesEditor", () => ({ UiGatesEditor: () => null }));
 jest.mock("../output-schema/OutputSchemaTab", () => ({
   OutputSchemaTab: () => null,
 }));

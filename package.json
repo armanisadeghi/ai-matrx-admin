@@ -308,6 +308,7 @@
     "check:one-peek:strict": "node scripts/one-peek/check-one-peek.mjs --strict",
     "check:one-peek:self-test": "node scripts/one-peek/check-one-peek.mjs --self-test",
     "check:one-id": "node scripts/one-id/check-one-id.mjs",
+    "check:one-settings-row": "node scripts/one-settings-row/check-one-settings-row.mjs && node scripts/one-settings-row/check-one-settings-row.mjs --self-test",
     "check:one-id:strict": "node scripts/one-id/check-one-id.mjs --strict",
     "check:one-id:self-test": "node scripts/one-id/check-one-id.mjs --self-test",
     "check:bulk-parity": "node scripts/bulk-parity/check-bulk-parity.mjs",

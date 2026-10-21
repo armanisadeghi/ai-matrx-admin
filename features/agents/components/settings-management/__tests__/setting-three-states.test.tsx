@@ -44,7 +44,6 @@ jest.mock("@ai-matrx/agents/models/react", () => ({
     </button>
   ),
 }));
-jest.mock("../ui-gates/UiGatesEditor", () => ({ UiGatesEditor: () => null }));
 jest.mock("../output-schema/OutputSchemaTab", () => ({
   OutputSchemaTab: () => null,
 }));
@@ -182,9 +181,7 @@ function rowState(key: string): string | null {
 }
 
 function clickClear(key: string) {
-  const btn = [...row(key).querySelectorAll("button")].find(
-    (b) => b.querySelector(".lucide-trash2, .lucide-trash-2") !== null,
-  );
+  const btn = row(key).querySelector<HTMLButtonElement>("[data-setting-clear]");
   if (!btn) throw new Error(`no clear control on ${key}`);
   act(() => btn.click());
 }
@@ -193,8 +190,21 @@ describe("three setting states — saved JSON says absent / off / value", () => 
   it("value: a level is saved and the row reads as set", () => {
     const store = makeStore({ reasoning_effort: "high" });
     render(store);
+    // The builder renders THE model-settings panel (the chat's rows too).
+    expect(container.querySelector("[data-model-settings-panel]")).not.toBeNull();
     expect(rowState("reasoning_effort")).toBe("set");
     expect(savedSettings(store)).toEqual({ reasoning_effort: "high" });
+  });
+
+  it("an unset row has no input; ticking it saves its starting value", () => {
+    const store = makeStore({ reasoning_effort: "high" });
+    render(store);
+    const tokens = row("max_output_tokens");
+    expect(rowState("max_output_tokens")).toBe("unset");
+    expect(tokens.querySelector("input, textarea")).toBeNull();
+    act(() => tokens.querySelector<HTMLButtonElement>('[role="checkbox"]')!.click());
+    expect(savedSettings(store)).toEqual({ reasoning_effort: "high", max_output_tokens: 1 });
+    expect(rowState("max_output_tokens")).toBe("set");
   });
 
   it("off: an explicit 'none' is saved, shows Off, and is not unset", () => {

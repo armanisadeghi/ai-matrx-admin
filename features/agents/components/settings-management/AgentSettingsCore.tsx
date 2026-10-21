@@ -6,7 +6,6 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import {
   Save,
   AlertTriangle,
-  CircleCheck,
   Eye,
   Trash2,
   WrenchIcon,
@@ -19,15 +18,12 @@ import {
   Braces,
   Loader2,
   Zap,
-  Variable,
-  Unlink,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { SwitchLegacy as Switch } from "@/components/ui/switch";
 import { Button } from "@ai-matrx/design-system";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system";
-import { TextareaLegacy as Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -55,12 +51,13 @@ import {
   selectAgentTools,
   selectAgentOutputSchema,
   selectAgentVariableDefinitions,
+  selectAgentUiGates,
 } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import {
   setAgentControlBinding, setAgentSettings, setAgentField, setAgentTools,
 } from "@/features/agents/redux/agent-builder.slice";
 import { selectAllModels, selectModelFullyLoaded } from "@ai-matrx/agents/models";
-import { getModelRecords, readModelRecords, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
+import { getModelRecords, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { ModelListDropdown, useModelCatalog } from "@ai-matrx/agents/models/react";
 import { withOfferingPin } from "@/features/ai-models/utils/offering-pin";
 import type {
@@ -72,7 +69,6 @@ import { useConfigValidation } from "./validation/useConfigValidation";
 import type { ValidationIssue } from "./validation/types";
 import {
   applyAllFixableIssues,
-  applyFixForIssue,
   canFixIssue,
 } from "./validation/apply-fix";
 import {
@@ -81,33 +77,28 @@ import {
   type ModelChangePlan,
 } from "./reconciliation/analyze";
 import { ModelChangeReconciliation } from "./reconciliation/ModelChangeReconciliation";
-import { SettingControlInput } from "@ai-matrx/agents/settings/react";
-import { isOffValue, withSettingState } from "./setting-state";
-import { isUnsetChoice } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/auto-means-unset";
-import { UiGatesEditor } from "./ui-gates/UiGatesEditor";
+import {
+  ExtraSettingRow,
+  ModelSettingsPanel,
+  SettingRowFrame,
+  SettingRowLabel,
+  SettingsGroupSection,
+} from "@ai-matrx/agents/settings/react";
+import { agentCapabilitiesTarget, agentSettingsTarget } from "./agent-settings-target";
 import { SettingsJsonEditor } from "./json/SettingsJsonEditor";
 import { OutputSchemaTab } from "./output-schema/OutputSchemaTab";
 import { MatrxDirectivesTab } from "./matrx-directives/MatrxDirectivesTab";
 import { validateOutputSchema } from "./output-schema/validateOutputSchema";
-import {
-  buildSettingsRows,
-  type SettingsRow,
-} from "@ai-matrx/chat/agents/redux/agent-settings/settings-catalogue";
+import type { SettingsRow } from "@ai-matrx/agents/settings";
 import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import {
-  bindControlToVariable,
   CONTROL_BINDABLE_KNOB,
   findControlVariable,
-  isControlBindable,
   readControlBindablePolicy,
-  unbindControlVariable,
 } from "@ai-matrx/chat/agents/utils/control-variables";
-import { variableValueToDisplay } from "@ai-matrx/chat/agents/utils/variable-utils";
 import {
   buildSettingsDocument,
-  describeSetting,
   parseSettingsDocument,
-  type SettingView,
 } from "./settings-document";
 import { toast } from "@/lib/toast";
 import {
@@ -122,7 +113,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
-import { Chip } from "@ai-matrx/design-system/controls";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
 // ── Tab type ─────────────────────────────────────────────────────────────────
@@ -140,145 +130,6 @@ type SettingsTab =
 // the architecture. The AgentSettingMediaPicker component is kept as a
 // building block for the user-input side (where the engineer-overridable
 // equivalents will be configured), not used here.
-
-/** A catalog default as the person reads it ("On", "auto", "1024"). */
-function formatModelDefault(value: unknown): string {
-  if (typeof value === "boolean") return value ? "On" : "Off";
-  if (value !== null && typeof value === "object") return JSON.stringify(value);
-  return String(value);
-}
-
-// ── FallbackValueInput ───────────────────────────────────────────────────────
-// Used when the selected model has no control schema for a key but the key
-// still exists in settings. Shape-aware editor (boolean / number / string /
-// JSON) so users can always edit what's there even when we can't validate it.
-interface FallbackValueInputProps {
-  settingKey: string;
-  value: unknown;
-  disabled?: boolean;
-  onChange: (value: unknown) => void;
-}
-
-function FallbackValueInput({
-  settingKey,
-  value,
-  disabled,
-  onChange,
-}: FallbackValueInputProps) {
-  const [draft, setDraft] = useState<string>(() =>
-    value === undefined || value === null
-      ? ""
-      : typeof value === "string"
-        ? value
-        : typeof value === "number" || typeof value === "boolean"
-          ? String(value)
-          : JSON.stringify(value),
-  );
-  const [jsonError, setJsonError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setDraft(
-      value === undefined || value === null
-        ? ""
-        : typeof value === "string"
-          ? value
-          : typeof value === "number" || typeof value === "boolean"
-            ? String(value)
-            : JSON.stringify(value),
-    );
-    setJsonError(null);
-  }, [value]);
-
-  if (typeof value === "boolean") {
-    return (
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id={`fallback-${settingKey}`}
-          checked={value}
-          onCheckedChange={(c) => onChange(c === true)}
-          disabled={disabled}
-          className="cursor-pointer"
-        />
-        <Label
-          htmlFor={`fallback-${settingKey}`}
-          className="text-xs text-muted-foreground cursor-pointer"
-        >
-          {value ? "true" : "false"}
-        </Label>
-      </div>
-    );
-  }
-
-  if (typeof value === "number") {
-    return (
-      <Input
-        type="text"
-        inputMode="decimal"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={(e) => {
-          const n = parseFloat(e.target.value);
-          if (Number.isFinite(n)) onChange(n);
-          else setDraft(String(value));
-        }}
-        disabled={disabled}
-        className="h-7 text-xs"
-      />
-    );
-  }
-
-  if (value !== null && typeof value === "object") {
-    return (
-      <div className="flex flex-col gap-1">
-        <Textarea
-          value={draft}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            try {
-              JSON.parse(e.target.value);
-              setJsonError(null);
-            } catch (err) {
-              setJsonError(err instanceof Error ? err.message : "Invalid JSON");
-            }
-          }}
-          onBlur={(e) => {
-            try {
-              const parsed = JSON.parse(e.target.value);
-              onChange(parsed);
-              setJsonError(null);
-            } catch {
-              // Keep draft; user can fix or revert.
-            }
-          }}
-          disabled={disabled}
-          className="text-xs font-mono"
-          spellCheck={false}
-          style={{ minHeight: 48 }}
-        />
-        {jsonError && (
-          <p className="type-meta text-orange-600 dark:text-orange-400">
-            {jsonError}
-            <ErrorAlchemyMenu error={jsonError} />
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  // string (default)
-  return (
-    <Input
-      type="text"
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      className="h-7 text-xs"
-      placeholder={`Value for ${settingKey}`}
-      style={{ fontSize: "16px" }}
-    />
-  );
-}
 
 // ── HighlightedJson ──────────────────────────────────────────────────────────
 // A read-only syntax-highlighted JSON viewer with a floating copy button.
@@ -1014,26 +865,6 @@ interface AgentSettingsCoreProps {
   onUnappliedEditsChange?: (dirty: boolean) => void;
 }
 
-type ResponseFormat = NonNullable<FeLlmParams["response_format"]>;
-
-/**
- * Build the canonical { type } shape the API expects from a bare selection
- * string. Each branch returns a single-literal object so it matches one member
- * of the ResponseFormat discriminated union. Unknown values yield null (ignored).
- */
-function toResponseFormat(value: string): ResponseFormat | null {
-  switch (value) {
-    case "text":
-      return { type: "text" };
-    case "json_object":
-      return { type: "json_object" };
-    case "json_schema":
-      return { type: "json_schema" };
-    default:
-      return null;
-  }
-}
-
 export function AgentSettingsCore({
   agentId,
   onUnappliedEditsChange,
@@ -1058,6 +889,7 @@ export function AgentSettingsCore({
   const outputSchema = useAppSelector((state) =>
     selectAgentOutputSchema(state, agentId),
   );
+  const uiGates = useAppSelector((state) => selectAgentUiGates(state, agentId));
   const isModelFull = useModelRecords((state) =>
     selectModelFullyLoaded(state, modelId),
   );
@@ -1136,14 +968,6 @@ export function AgentSettingsCore({
   useEffect(() => {
     onUnappliedEditsChange?.(editorDirty);
   }, [editorDirty, onUnappliedEditsChange]);
-
-  // A setting is "set" exactly when the stored settings hold a non-null value
-  // for it — derived on every render, never mirrored into local state (a
-  // mirror could show a checked box over a value nothing stored).
-  const isSettingSet = (key: string): boolean => {
-    const value = (settings as Record<string, unknown> | null)?.[key];
-    return value !== null && value !== undefined;
-  };
 
   const [jsonText, setJsonText] = useState("");
 
@@ -1360,71 +1184,6 @@ export function AgentSettingsCore({
     setPendingModelChange(null);
   };
 
-  // `key` is a runtime-selected keyof FeLlmParams (driven by control.type at
-  // each call site — string/boolean/number/string[] depending on which
-  // branch rendered the control), so `value`'s concrete type can't be tied
-  // to FeLlmParams[K] without narrowing per call site. unknown is the
-  // honest type for this dynamic-key setter (was `any`).
-  // MATRX-EXCEPTION: dynamic per-key settings setter; each render branch supplies the right shape.
-  const handleSettingChange = (key: keyof FeLlmParams, value: unknown) => {
-    if (key === "response_format" && typeof value === "string") {
-      // An agent with an output schema has ONE output contract: the schema.
-      // A response_format saved in settings beside it only drifts from it and
-      // (server-side) is ignored, so never write one — clear any leftover.
-      if (outputSchema != null) {
-        const { response_format: _legacy, ...rest } =
-          currentSettings as Record<string, unknown>;
-        dispatch(
-          setAgentSettings({ id: agentId, settings: rest as LLMParams }),
-        );
-        return;
-      }
-      // Store EXACTLY what the user picked — including "text". Never drop a
-      // selection on the user's behalf. The canonical { type: <value> } shape
-      // matches how json_schema / json_object are stored.
-      const response_format = toResponseFormat(value);
-      if (response_format) {
-        dispatch(
-          setAgentSettings({
-            id: agentId,
-            settings: { ...currentSettings, response_format },
-          }),
-        );
-      }
-      return;
-    }
-
-    // One meaning per state (F-b): a choice that IS "not set" ("auto" effort)
-    // removes the key instead of saving a word equal to unset.
-    if (isUnsetChoice(key, value)) {
-      dispatch(
-        setAgentSettings({
-          id: agentId,
-          settings: withSettingState(
-            currentSettings as Record<string, unknown>,
-            key,
-            "unset",
-            null,
-          ) as LLMParams,
-        }),
-      );
-      return;
-    }
-
-    // No key here silently rewrites a *different* setting. Cross-field
-    // couplings (e.g. include_thoughts ↔ thinking_budget) surface as caution
-    // issues with a one-click fix — they are never auto-applied.
-    dispatch(
-      setAgentSettings({
-        id: agentId,
-        // Same FeLlmParams -> LLMParams cast used at every setAgentSettings
-        // call site in this file (see cleaned/rest/next above) — the FE
-        // superset isn't structurally identical to the backend contract.
-        settings: { ...currentSettings, [key]: value } as LLMParams,
-      }),
-    );
-  };
-
   // NormalizedControls has ~50 individually-optional named fields (plus two
   // Record<string, unknown> escape-hatch fields that are never controls) and
   // no index signature — `key in normalizedControls` proves a runtime key is
@@ -1441,68 +1200,6 @@ export function AgentSettingsCore({
     return normalizedControls[
       key as Exclude<keyof NormalizedControls, "rawControls" | "unmappedControls">
     ];
-  };
-
-  // Checking a box stores the control's starting value; if nothing can be
-  // stored (no control, no usable default) the box stays unchecked rather than
-  // claiming a setting that does not exist.
-  const handleToggleSetting = (key: keyof FeLlmParams, enabled: boolean) => {
-    if (enabled) {
-      const control = getControl(key);
-      if (control) {
-        let defaultValue: unknown = control.default;
-        if (defaultValue === null || defaultValue === undefined) {
-          if (control.type === "number" || control.type === "integer") {
-            defaultValue = control.min ?? 0;
-          } else if (
-            control.type === "string" ||
-            control.type === "string_array"
-          ) {
-            defaultValue = "";
-          } else if (control.type === "boolean") {
-            defaultValue = false;
-          } else if (control.type === "enum" && control.enum?.length) {
-            defaultValue = control.enum[0];
-          } else if (
-            control.type === "array" ||
-            control.type === "object_array"
-          ) {
-            defaultValue = [];
-          }
-        }
-        if (
-          isUnsetChoice(key, defaultValue) &&
-          control.type === "enum" &&
-          control.enum?.length
-        ) {
-          // Checking the box SETS the setting; "auto" would be unset again.
-          defaultValue = control.enum.find((v) => !isUnsetChoice(key, v));
-        }
-        if (key === "response_format" && typeof defaultValue === "string") {
-          // Keep "text" too — store the canonical dict, never drop it.
-          defaultValue =
-            defaultValue === "" ? undefined : { type: defaultValue };
-        }
-        if (defaultValue !== undefined) {
-          dispatch(
-            setAgentSettings({
-              id: agentId,
-              settings: { ...currentSettings, [key]: defaultValue },
-            }),
-          );
-        }
-      }
-    } else {
-      const cleaned = { ...currentSettings };
-      delete (cleaned as Record<string, unknown>)[key];
-      // When disabling tts_voice, also remove the coupled multi_speaker flag
-      if (key === "tts_voice") {
-        delete (cleaned as Record<string, unknown>).multi_speaker;
-      }
-      dispatch(
-        setAgentSettings({ id: agentId, settings: cleaned as LLMParams }),
-      );
-    }
   };
 
   // THE settings document — the one projection Raw Settings renders and Raw
@@ -1533,22 +1230,6 @@ export function AgentSettingsCore({
     void key;
     setJsonText(buildFullSettingsJson());
     setActiveTab("raw");
-  };
-
-  const handleIssueRemove = (key: string) => {
-    const { [key]: _removed, ...rest } = currentSettings as Record<
-      string,
-      unknown
-    >;
-    dispatch(setAgentSettings({ id: agentId, settings: rest as LLMParams }));
-  };
-
-  const handleIssueFix = (key: string) => {
-    // Find the first issue on this key and route through the shared fix helper.
-    const issue = allIssues.find((i) => i.key === key);
-    if (!issue) return;
-    const next = applyFixForIssue(issue, currentSettings, normalizedControls);
-    dispatch(setAgentSettings({ id: agentId, settings: next }));
   };
 
   // ── Bulk IssueTable handlers ─────────────────────────────────────────────
@@ -1583,6 +1264,70 @@ export function AgentSettingsCore({
   // `?? {}` fallback that could mask the pre-hydration null and drop settings.
   const currentSettings: FeLlmParams = settings;
 
+  // Where every row's change lands: this agent (./agent-settings-target.ts). The chat's
+  // "Model and overrides" renders the same panel over its own target.
+  const target = agentSettingsTarget({
+    agentId,
+    dispatch,
+    settings: currentSettings,
+    variableDefinitions,
+    outputSchema,
+    bindablePolicy,
+    issuesByKey: validation.issuesByKey,
+    allIssues,
+    normalizedControls,
+  });
+  const capabilities = agentCapabilitiesTarget(agentId, uiGates, dispatch);
+
+  // tts_voice gets the multi-speaker editor when the model supports it; otherwise (or when
+  // it is a run input) the panel draws its standard row, so it is never hidden.
+  const renderVoiceRow = (row: SettingsRow) => {
+    if (row.key !== "tts_voice") return undefined;
+    const voiceControl = getControl("tts_voice");
+    if (!voiceControl?.enum?.length || findControlVariable(variableDefinitions, "tts_voice")) {
+      return undefined;
+    }
+    const ttsValue = (currentSettings as Record<string, unknown>).tts_voice;
+    const ttsEnabled = ttsValue !== undefined && ttsValue !== null;
+    const multiControl = getControl("multi_speaker");
+    return (
+      <SettingRowFrame
+        rowKey="tts_voice"
+        state={ttsEnabled ? "set" : "unset"}
+        leading={
+          <Checkbox
+            id="setting-agent-tts_voice"
+            checked={ttsEnabled}
+            onCheckedChange={(next) =>
+              next === true ? target.turnOn("tts_voice", voiceControl) : target.clear("tts_voice")
+            }
+          />
+        }
+        label={<SettingRowLabel htmlFor="setting-agent-tts_voice">{row.label}</SettingRowLabel>}
+      >
+        {ttsEnabled ? (
+          <TtsVoiceEditor
+            voiceEnum={voiceControl.enum ?? []}
+            ttsValue={ttsValue}
+            multiSpeakerAllowed={!!multiControl}
+            maxSpeakers={multiControl?.max}
+            isEnabled={ttsEnabled}
+            onSave={(ttsVoice, multi) => {
+              dispatch(
+                setAgentSettings({
+                  id: agentId,
+                  settings: { ...currentSettings, tts_voice: ttsVoice, multi_speaker: multi } as LLMParams,
+                }),
+              );
+            }}
+          />
+        ) : (
+          <span className="flex min-h-7 items-center type-secondary text-muted-foreground">Not set</span>
+        )}
+      </SettingRowFrame>
+    );
+  };
+
 
 
   const handleFixAll = () => {
@@ -1605,491 +1350,6 @@ export function AgentSettingsCore({
   const handleResetAll = () => {
     dispatch(setAgentSettings({ id: agentId, settings: {} as LLMParams }));
   };
-
-  // ── render helpers ────────────────────────────────────────────────────────
-
-  // Renders through the shared SettingControlInput primitive — ONE dense
-  // control renderer for every settings surface (builder, per-run overrides,
-  // model replacement review). Only what the primitive cannot know stays
-  // here: the builder's value defaulting (value ?? control.default ?? min)
-  // and the response_format unwrap — the primitive emits the canonical
-  // `{ type: <value> }` object, while handleSettingChange validates the
-  // plain STRING through toResponseFormat.
-  const renderControlInput = (
-    key: keyof FeLlmParams,
-    control: ControlDefinition,
-    value: unknown,
-    isEnabled: boolean,
-  ) => {
-    const defaulted: unknown =
-      value ??
-      control.default ??
-      (control.type === "number" || control.type === "integer"
-        ? (control.min ?? 0)
-        : "");
-    return (
-      <SettingControlInput
-        settingKey={key as string}
-        control={control}
-        value={defaulted}
-        onChange={(v) => {
-          const unwrapped =
-            key === "response_format" &&
-            typeof v === "object" &&
-            v !== null &&
-            "type" in (v as Record<string, unknown>)
-              ? (v as Record<string, unknown>).type
-              : v;
-          handleSettingChange(key, unwrapped);
-        }}
-        disabled={!isEnabled}
-        id={`setting-control-agent-${key}`}
-      />
-    );
-  };
-
-  // Controls as first-class variables: the literal moves to a variable (the run
-  // input's default) and back. One reducer, one undo step.
-  const handleBindControl = (key: string, control: ControlDefinition) => {
-    const next = bindControlToVariable({
-      key,
-      control,
-      settings: currentSettings as Record<string, unknown>,
-      variableDefinitions,
-    });
-    dispatch(
-      setAgentControlBinding({
-        id: agentId,
-        settings: next.settings as LLMParams,
-        variableDefinitions: next.variableDefinitions,
-      }),
-    );
-  };
-
-  const handleUnbindControl = (
-    key: string,
-    control: ControlDefinition | null,
-  ) => {
-    const next = unbindControlVariable({
-      key,
-      control,
-      settings: currentSettings as Record<string, unknown>,
-      variableDefinitions,
-    });
-    dispatch(
-      setAgentControlBinding({
-        id: agentId,
-        settings: next.settings as LLMParams,
-        variableDefinitions: next.variableDefinitions,
-      }),
-    );
-  };
-
-  const renderBoundControl = (
-    key: string,
-    label: string,
-    control: ControlDefinition | null,
-    variableName: string,
-    defaultValue: unknown,
-  ) => (
-    <div
-      key={key}
-      className="flex items-center gap-2 mb-2 rounded px-1 py-1 hover:bg-muted/20"
-      data-bound-control={key}
-      data-setting-row={key}
-      data-setting-state="bound"
-    >
-      <div className="flex items-center gap-2 pt-0.5 flex-shrink-0">
-        <Checkbox checked disabled aria-label={`${label} is a run input`} />
-        <Label className="text-xs flex-shrink-0 w-36 text-gray-700 dark:text-gray-300">
-          {label}
-        </Label>
-      </div>
-      <div className="flex-1 min-w-0 flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-1.5 py-0.5 type-secondary font-mono text-primary-ink">
-          <Variable className="w-3 h-3" />
-          {`{{${variableName}}}`}
-        </span>
-        <span className="type-meta text-muted-foreground truncate">
-          {variableValueToDisplay(defaultValue) || "model default"}
-        </span>
-      </div>
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-foreground"
-              onClick={() => handleUnbindControl(key, control)}
-              aria-label={`Make ${label} a fixed setting`}
-            >
-              <Unlink className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="type-secondary">
-            Make a fixed setting
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
-
-  const renderControl = (
-    key: keyof FeLlmParams,
-    label: string,
-    control: ControlDefinition | null,
-  ) => {
-    // The same derivation the JSON views use (./settings-document.ts), so a
-    // row can never show a value the Raw tabs do not.
-    const view: SettingView = describeSetting(
-      key,
-      {
-        settings: currentSettings as Record<string, unknown>,
-        variableDefinitions,
-      },
-      control,
-    );
-    if (view.state === "bound") {
-      return renderBoundControl(
-        key,
-        label,
-        control,
-        view.variableName,
-        view.value,
-      );
-    }
-    const canBind = !!control && isControlBindable(key, bindablePolicy);
-    const isEnabled = view.state === "set";
-    const valueRaw = view.state === "set" ? view.value : undefined;
-    // Three states (./setting-state.ts): not set (key absent, row reads
-    // "Not set"), off (an explicit off value saved — the input itself reads
-    // "Off"), or a value. The row carries the state for every reader.
-    const isOff = isEnabled && isOffValue(valueRaw, control);
-    const checkboxId = `setting-agent-${key}`;
-    const keyIssues = validation.issuesByKey[key] ?? [];
-    const hasIssue = keyIssues.length > 0;
-    const hasControl = !!control;
-
-    // Three-state validity (independent of enabled state, so incompatibility
-    // is never hidden):
-    //   invalid  — has validation issue(s)
-    //   unknown  — no control on the current model → not valid for this model
-    //   valid    — control exists and no issues
-    const state: "valid" | "invalid" | "unknown" = hasIssue
-      ? "invalid"
-      : hasControl
-        ? "valid"
-        : "unknown";
-
-    const firstIssue = keyIssues[0];
-    const fixable = !!firstIssue && canFixIssue(firstIssue, normalizedControls);
-
-    const StatusIcon = state === "valid" ? CircleCheck : AlertTriangle;
-    const statusClass =
-      state === "invalid"
-        ? "text-orange-500"
-        : state === "unknown"
-          ? "text-amber-500"
-          : "text-emerald-500";
-    const dotTitle =
-      state === "invalid"
-        ? (firstIssue?.message ?? "Issue detected")
-        : state === "unknown"
-          ? "Unable to confirm — this model has no schema for this setting"
-          : "Valid";
-
-    return (
-      <div
-        key={key}
-        className="flex items-start gap-2 mb-2 rounded px-1 py-1 hover:bg-muted/20"
-        data-setting-row={key}
-        data-setting-state={isOff ? "off" : view.state}
-      >
-        {/* Checkbox + Label */}
-        <div
-          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity pt-1 flex-shrink-0"
-          onClick={() => handleToggleSetting(key, !isEnabled)}
-        >
-          <Checkbox
-            id={checkboxId}
-            checked={isEnabled}
-            onCheckedChange={(checked) =>
-              handleToggleSetting(key, checked as boolean)
-            }
-            className="cursor-pointer"
-          />
-          <Label
-            htmlFor={checkboxId}
-            className={`text-xs flex-shrink-0 w-36 cursor-pointer ${
-              isEnabled
-                ? "text-gray-700 dark:text-gray-300"
-                : "text-gray-400 dark:text-gray-600"
-            }`}
-          >
-            {label}
-          </Label>
-        </div>
-
-        {/* Control input (or fallback). An unset control shows no input and
-            no value — only what the model does when it is left unset. */}
-        <div className="flex-1 min-w-0">
-          {!isEnabled ? (
-            <span className="block pt-1 type-secondary text-muted-foreground">
-              {view.state === "default"
-                ? `Not set \u00b7 Model default: ${formatModelDefault(view.value)}`
-                : "Not set"}
-            </span>
-          ) : control ? (
-            renderControlInput(key, control, valueRaw, isEnabled)
-          ) : (
-            <FallbackValueInput
-              settingKey={key as string}
-              value={valueRaw}
-              disabled={!isEnabled}
-              onChange={(v) => handleSettingChange(key, v)}
-            />
-          )}
-          {hasIssue && isEnabled && (
-            <p className="type-meta text-orange-600 dark:text-orange-400 mt-1 leading-tight">
-              {firstIssue.message}
-            </p>
-          )}
-        </div>
-
-        {/* Per-row actions */}
-        <div className="flex items-center gap-0 shrink-0">
-          <TooltipProvider delayDuration={200}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className={`inline-flex h-6 w-6 items-center justify-center ${statusClass}`}
-                  aria-label={dotTitle}
-                >
-                  <StatusIcon className="h-3.5 w-3.5" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="type-secondary max-w-[260px]">
-                {dotTitle}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          {canBind && control && (
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-primary"
-                    onClick={() => handleBindControl(key, control)}
-                    aria-label={`Make ${label} a run input`}
-                    data-bind-control={key}
-                  >
-                    <Variable className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="type-secondary">
-                  Make a run input
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {fixable && isEnabled && (
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-orange-500"
-                    onClick={() => handleIssueFix(key as string)}
-                  >
-                    <WrenchIcon className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="type-secondary">
-                  Fix automatically
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {isEnabled && (
-            <TooltipProvider delayDuration={200}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                    onClick={() => handleIssueRemove(key as string)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="type-secondary">
-                  Clear to not set
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // A kept setting the current model does not carry natively. The value is
-  // saved exactly as the person set it; the server converts it for this model.
-  // The only action is clearing it back to "not set".
-  const renderTranslatedRow = (key: string, value: unknown) => (
-    <div
-      key={key}
-      className="flex items-center gap-2 mb-2 rounded px-1 py-1 hover:bg-muted/20"
-      data-setting-row={key}
-      data-setting-state="translated"
-    >
-      {/* Aligns with the checkbox column of the rows below. */}
-      <span className="h-4 w-4 shrink-0" aria-hidden />
-      <Label className="text-xs flex-shrink-0 w-36 text-gray-700 dark:text-gray-300">
-        {humanizeIdentifier(key)}
-      </Label>
-      <span className="flex-1 min-w-0 truncate type-secondary font-mono text-foreground/80">
-        {isOffValue(value, null) ? "Off" : formatModelDefault(value)}
-      </span>
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Chip tone="sky" label="Translated" />
-          </TooltipTrigger>
-          <TooltipContent side="top" className="type-secondary max-w-[260px]">
-            Kept as set and sent as this model's closest equivalent
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-muted-foreground hover:text-destructive"
-              onClick={() => handleIssueRemove(key)}
-              aria-label={`Clear ${humanizeIdentifier(key)}`}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="type-secondary">
-            Clear to not set
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
-
-  // tts_voice gets the dedicated multi-speaker editor when the model supports
-  // it; otherwise it degrades to a normal row so it is never hidden.
-  const renderVoiceRow = (row: SettingsRow) => {
-    const voiceControl = getControl("tts_voice");
-    if (
-      !voiceControl ||
-      !voiceControl.enum?.length ||
-      findControlVariable(variableDefinitions, "tts_voice")
-    ) {
-      return renderControl(
-        "tts_voice",
-        row.label,
-        getControl("tts_voice") ?? null,
-      );
-    }
-    const voiceEnum = voiceControl.enum ?? [];
-    const ttsEnabled = isSettingSet("tts_voice");
-    const multiControl = getControl("multi_speaker");
-    const multiAllowed = !!multiControl;
-    const maxSpeakers = multiControl?.max;
-    return (
-      <div
-        className="mb-2"
-        key="tts_voice"
-        data-setting-row="tts_voice"
-        data-setting-state={ttsEnabled ? "set" : "unset"}
-      >
-        <div className="flex items-center gap-3 mb-1">
-          <div
-            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => handleToggleSetting("tts_voice", !ttsEnabled)}
-          >
-            <Checkbox
-              id="setting-agent-tts_voice"
-              checked={ttsEnabled}
-              onCheckedChange={(checked) =>
-                handleToggleSetting("tts_voice", checked as boolean)
-              }
-              className="cursor-pointer"
-            />
-            <Label
-              htmlFor="setting-agent-tts_voice"
-              className={`text-xs flex-shrink-0 w-36 cursor-pointer ${
-                ttsEnabled
-                  ? "text-gray-700 dark:text-gray-300"
-                  : "text-gray-400 dark:text-gray-600"
-              }`}
-            >
-              Voice
-            </Label>
-          </div>
-        </div>
-        <div
-          className={`pl-[calc(1rem+8px+0.75rem)] ${!ttsEnabled ? "opacity-50 pointer-events-none" : ""}`}
-        >
-          <TtsVoiceEditor
-            voiceEnum={voiceEnum}
-            ttsValue={(currentSettings as Record<string, unknown>).tts_voice}
-            multiSpeakerAllowed={multiAllowed}
-            maxSpeakers={maxSpeakers}
-            isEnabled={ttsEnabled}
-            onSave={(ttsVoice, multi) => {
-              dispatch(
-                setAgentSettings({
-                  id: agentId,
-                  settings: {
-                    ...currentSettings,
-                    tts_voice: ttsVoice,
-                    multi_speaker: multi,
-                  } as LLMParams,
-                }),
-              );
-            }}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  const renderSettingRow = (row: SettingsRow) => {
-    if (row.key === "tts_voice") return renderVoiceRow(row);
-    return renderControl(
-      row.key as keyof FeLlmParams,
-      row.label,
-      (row.control as ControlDefinition | null) ?? null,
-    );
-  };
-
-  // Every catalog setting renders, for every model. The model's controls
-  // only decorate each row (supported vs. caution) — they never decide whether
-  // a row appears. See ../aidream/apps/shared/chat/src/agents/redux/agent-settings/settings-catalogue.ts.
-  const settingGroups = buildSettingsRows(
-    // NormalizedControls has no string index signature (typed optional keys
-    // alongside two required `Record<string, any>` escape-hatch fields), so
-    // it has no structural overlap with `Record<string, unknown>`.
-    // buildSettingsRows takes a loose bag-of-controls contract on purpose and
-    // validates each candidate internally (lookupControl checks `"type" in`
-    // before trusting it) — the compiler's two-step cast is the documented,
-    // deliberate contract here.
-    // MATRX-EXCEPTION: buildSettingsRows validates each field at read time; see lookupControl.
-    normalizedControls as unknown as Record<string, unknown> | null,
-    currentSettings as Record<string, unknown>,
-  );
 
   // Gentle (non-blocking) reminder: response_format is json_schema but no
   // usable output schema exists yet. Surfaces a nudge on the Settings tab that
@@ -2176,12 +1436,17 @@ export function AgentSettingsCore({
                 }
               />
             )}
-            {/* Model selector */}
-            <div className="flex items-center gap-2 pb-1 border-b border-border">
-              <Label className="text-xs text-muted-foreground flex-shrink-0 w-36">
-                Model
-              </Label>
-              <div className="flex-1 flex justify-start">
+            {/* THE model-settings panel — the same rows the chat's "Model and
+                overrides" renders; only `target` (this agent) differs. */}
+            <ModelSettingsPanel
+              controls={
+                // MATRX-EXCEPTION: buildSettingsRows validates each field at read time; see lookupControl.
+                normalizedControls as unknown as Record<string, unknown> | null
+              }
+              values={currentSettings as Record<string, unknown>}
+              target={target}
+              idPrefix={`agent-${agentId}`}
+              model={
                 <ModelListDropdown
                   value={modelId}
                   onValueChange={handleModelChange}
@@ -2189,90 +1454,67 @@ export function AgentSettingsCore({
                   pinnedOfferingId={settings?.offering_id}
                   onOfferingPinChange={handleOfferingPinChange}
                 />
-              </div>
-            </div>
-
-            {noControls && !error && (
-              <p className="type-secondary text-muted-foreground">
-                Select a model to see available settings.
-              </p>
-            )}
-
-            {/* Issue table */}
-            {!noControls && warningIssues.length > 0 && (
-              <IssueTable
-                issues={warningIssues}
-                diagnosticPayload={diagnosticPayload}
-                onView={handleIssueView}
-                onRemove={handleIssueRemove}
-                onFixEnum={handleIssueFix}
-                onFixAll={handleFixAll}
-                onRemoveAllUnknown={handleRemoveAllUnknown}
-                onResetAll={handleResetAll}
-                fixableCount={fixableIssues.length}
-                unknownCount={unknownIssues.length}
-              />
-            )}
-
-            {!noControls && translatedIssues.length > 0 && (
-              <div data-translated-settings>
-                <div className="type-secondary font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Translated for this model
-                </div>
-                {translatedIssues.map((issue) =>
-                  renderTranslatedRow(issue.key, issue.value),
-                )}
-              </div>
-            )}
-
-            {/* Gentle, non-blocking reminder: json_schema selected but no
-                usable output schema yet. Whole banner links to the tab. */}
-            {!noControls && showSchemaReminder && (
-              <button
-                type="button"
-                onClick={() => setActiveTab("output-schema")}
-                className="flex w-full items-start gap-2 rounded-md border border-sky-200 dark:border-sky-900 bg-sky-50 dark:bg-sky-950/30 px-3 py-2 text-left text-xs text-sky-800 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-950/50 transition-colors"
-              >
-                <Braces className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                <span className="flex-1 leading-snug">
-                  Response format is{" "}
-                  <code className="font-mono">json_schema</code>, but{" "}
-                  {outputSchema == null
-                    // read-gate-exempt: wording about the local schema value; nothing is read
-                    ? "no output schema is set"
-                    : "the output schema has issues"}
-                  . Open the{" "}
-                  <span className="font-semibold underline">Output Schema</span>{" "}
-                  tab to add one.
-                </span>
-              </button>
-            )}
-
-            {/* Every catalog setting renders for every model. The model's
-                controls only decorate each row (supported vs. caution). A
-                setting unsupported by the model is NEVER hidden — it shows a
-                caution dot, and when it holds a value it also surfaces in the
-                IssueTable above with a one-click fix. */}
-            {settingGroups.map((group) =>
-              group.rows.length === 0 ? null : (
-                <div
-                  key={group.id}
-                  className={group.label ? "border-t pt-2 mt-2" : undefined}
-                >
-                  {group.label && (
-                    <div className="type-secondary font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      {group.label}
-                    </div>
+              }
+              emptyNote={noControls && !error ? "Select a model to see available settings." : undefined}
+              renderRow={renderVoiceRow}
+              capabilities={capabilities}
+              notices={
+                <>
+                  {!noControls && warningIssues.length > 0 && (
+                    <IssueTable
+                      issues={warningIssues}
+                      diagnosticPayload={diagnosticPayload}
+                      onView={handleIssueView}
+                      onRemove={(key) => target.clear(key)}
+                      onFixEnum={(key) => target.fix?.(key)}
+                      onFixAll={handleFixAll}
+                      onRemoveAllUnknown={handleRemoveAllUnknown}
+                      onResetAll={handleResetAll}
+                      fixableCount={fixableIssues.length}
+                      unknownCount={unknownIssues.length}
+                    />
                   )}
-                  {group.rows.map(renderSettingRow)}
-                </div>
-              ),
-            )}
-
-            {/* Frontend input capabilities live in agent.uiGates, never in
-                model settings. They remain editable regardless of model; the
-                server owns provider compatibility conversion. */}
-            <UiGatesEditor agentId={agentId} />
+                  {!noControls && translatedIssues.length > 0 && (
+                    <SettingsGroupSection id="translated" title="Translated for this model">
+                      <div data-translated-settings>
+                        {translatedIssues.map((issue) => (
+                          <ExtraSettingRow
+                            key={issue.key}
+                            rowKey={issue.key}
+                            label={humanizeIdentifier(issue.key)}
+                            value={issue.value}
+                            kind="translated"
+                            onClear={() => target.clear(issue.key)}
+                          />
+                        ))}
+                      </div>
+                    </SettingsGroupSection>
+                  )}
+                  {/* Gentle, non-blocking reminder: json_schema selected but no
+                      usable output schema yet. Whole banner links to the tab. */}
+                  {!noControls && showSchemaReminder && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("output-schema")}
+                      className="my-1 flex w-full items-start gap-2 rounded-md border border-info/40 bg-info/10 px-3 py-2 text-left type-secondary text-info-ink"
+                    >
+                      <Braces className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span className="flex-1 leading-snug">
+                        Response format is{" "}
+                        <code className="font-mono">json_schema</code>, but{" "}
+                        {outputSchema == null
+                          // read-gate-exempt: wording about the local schema value; nothing is read
+                          ? "no output schema is set"
+                          : "the output schema has issues"}
+                        . Open the{" "}
+                        <span className="font-semibold underline">Output Schema</span>{" "}
+                        tab to add one.
+                      </span>
+                    </button>
+                  )}
+                </>
+              }
+            />
           </div>
         )}
 

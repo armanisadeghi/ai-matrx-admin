@@ -77,6 +77,7 @@ must obey.
 
 ## Change log
 
+- **2026-10-21** — `ModelSettingsReviewDialog` renders `@ai-matrx/chat` `ConversationModelSettings` (THE model-settings panel the agent builder renders) with an override model row and a JSON view, in place of the deleted `RunConfigOverrides`.
 - **2026-10-21** — Delete on the seven catalog tables (models, aliases, endpoints, APIs, offerings, providers, settings) is ONE pattern: `components/useAiTableBulk.tsx` declares the row Delete and its bulk twin together; system rows are skipped and named. `ModelRowActions` is gone (`moveModelToTrash` is the one door). Translation `NeedsYouQueue` gained `Skip N` beside `Approve N` and every row is selectable.
 
 - **2026-10-19** — The model catalog table is ONE table: the package `MatrxDataTable` (`look="mac"`, tableId `ai/models`). The hand-built table, its filter bar and the `?tablePreview=canonical` switch are deleted. The switch was never flipped because the 2026-09-15 comparison commit parked it pending Arman's final side-by-side; its filters, URL tab contract, saved views and row actions already matched. Domain pieces kept here: cells, `ModelRowActions` (Trash confirm), AI copy (`copy` config: row + view), tier views, column filter kinds (select/boolean/number) mapped to the tab URL by `utils/canonicalTableQuery.ts`.

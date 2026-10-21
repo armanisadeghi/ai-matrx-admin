@@ -33,7 +33,7 @@ import {
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ServerNotes } from "@/components/official/ServerNotes";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
-import { RunConfigOverrides } from "@ai-matrx/chat/agents/components/run-controls/RunConfigOverrides";
+import { ConversationModelSettings } from "@ai-matrx/chat/agents/components/run-controls/ConversationModelSettings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -140,7 +140,7 @@ interface CandidateDraft {
 }
 
 /** Each comparison's settings ride the CANONICAL overrides layer — the same
- * `instanceModelOverrides` slice + `RunConfigOverrides` editor the chat's
+ * `instanceModelOverrides` slice + `ConversationModelSettings` editor the chat's
  * smart input uses, keyed by this synthetic id. The API selector re-diffs
  * against the agent's base, so a base-equal value never reaches the wire
  * (the backend rejects defaults disguised as overrides). */
@@ -419,7 +419,7 @@ function CandidateEditor({
   const needsVersion = draft.selection === "version";
 
   // Canonical per-comparison settings: this draft's entry in the
-  // instanceModelOverrides slice, edited by the same RunConfigOverrides the
+  // instanceModelOverrides slice, edited by the same ConversationModelSettings the
   // chat uses. Seeded lazily the first time Settings opens.
   const overridesId = benchOverridesId(draft.draftId);
   const overridesReady = useAppSelector((state) =>
@@ -607,7 +607,7 @@ function CandidateEditor({
       {draft.settingsOpen &&
         (overridesReady ? (
           <div className="rounded-md bg-muted/20">
-            <RunConfigOverrides conversationId={overridesId} />
+            <ConversationModelSettings conversationId={overridesId} model="none" className="px-3 pb-3" />
           </div>
         ) : (
           <div className="flex items-center gap-2 p-2 type-secondary text-muted-foreground">
