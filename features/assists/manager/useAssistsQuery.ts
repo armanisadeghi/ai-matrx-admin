@@ -118,7 +118,7 @@ export function useAssistsQuery(
   const statusKey = statuses.join(",");
 
   const query = useMemo(() => {
-    const requestedSort = tableState.sort?.id ?? "created_at";
+    const requestedSort = tableState.sort?.id === "sourceKey" ? "source_key" : tableState.sort?.id ?? "created_at";
     const sortField =
       SORT_FIELDS.find((f) => f === requestedSort) ?? "created_at";
     const band = urgency ? priorityRangeForUrgency(urgency) : null;

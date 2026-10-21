@@ -38,6 +38,9 @@ const groups: SurfaceValueGroup[] = [
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
+  { name: "agent_usage_detail", label: "Selected agent usages", description: "The mounted selected-agent engine: identity, dimension/selection, scan/mandate/history read states, successful scan groups and mandate impact, current dimension rows before table-local filters, and active mutation/dialog state. Absent when no agent detail is mounted. Failed/loading reads omit old scan and impact data.", valueType: "object", alwaysAvailable: false, typicalCharCount: 12000, autoContext: false, group: "report_scope", sortOrder: 280 },
+  { name: "report_table_query", label: "Report view", description: "Current search, sort, column filters and pagination on the report rollup. Absent on the landing.", valueType: "object", alwaysAvailable: false, typicalCharCount: 350, group: "report_scope", sortOrder: 260 },
+  { name: "report_overview", label: "Report overview", description: "Compact XML of the landing catalog, or the current report and up to 25 loaded agent findings. Loading and failed report reads carry status instead of findings.", valueType: "string", alwaysAvailable: false, typicalCharCount: 4000, inlineUpTo: 4500, group: "report_scope", sortOrder: 270 },
   { name: "reports_catalog", label: "Reports catalog", description: "Complete metadata of the reports rendered on the landing: slug, title, description, icon, routes, and live/coming-soon status. Absent on report detail routes.", valueType: "array", alwaysAvailable: false, typicalCharCount: 1500, group: "report_location", sortOrder: 130 },
   { name: "report_count", label: "Report count", description: "Number of reports rendered on the landing, including coming-soon cards. Absent on report detail routes.", valueType: "number", alwaysAvailable: false, typicalCharCount: 3, group: "report_location", sortOrder: 140 },
   {
@@ -99,7 +102,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "report_findings",
     label: "Report findings",
     description:
-      "One entry per row of the open report, as the person sees it. Agent Drift: agent_id, agent_name, current_version, and the counts breaking, silent_breaking, warning, info, stale_pins and usages. Empty on the landing and while the report loads.",
+      "One entry per row of the open report, as the person sees it. Agent Drift: agent_id, agent_name, current_version, and the counts breaking, silent_breaking, warning, info, stale_pins and usages. Absent on the landing and until the current report read succeeds.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 1800,
@@ -148,16 +151,21 @@ export const reportsManifest: SurfaceManifest = {
     "Read-only analyses over platform data.",
   readiness: "partial",
   readinessNote:
-    "The /reports landing emits the complete report catalog and live availability. Per-report drill-in values, the canonical menu after truthful source attribution is registered, outside-helper binding proof and independent certification remain.",
+    "The /reports landing emits the complete report catalog and live availability. Agent Drift publishes successful rollups and current view controls; outside-helper live binding proof and independent certification remain.",
   label: "Reports",
   urlPattern: "/reports",
   intro: `<surface_intro>
 You are in Reports: read-only analyses over platform data. The landing lists every report that exists; a report route shows one of them.
 report_slug is empty on the landing — use available_report_slugs rather than guessing at a report that may not exist. report_is_admin_scope matters: when it is true the numbers are platform-wide, not the user's own, and must not be described as "your" data.
-Reports do not change anything; propose actions elsewhere, not here.
+Use open_report to navigate to a live report. On Agent Drift, set_report_view changes search, sort, pagination or the selected agent; it never changes agent definitions or usage pins. Use these page controls rather than generic tools.
 </surface_intro>`,
+  guide: "features/surfaces/guides/reports.md",
   groups,
   briefValues: ["report_title","report_slug","report_row_count"],
+  writeTargets: [
+    { name: "open_report", label: "Open report", description: "Opens a live report from available_report_slugs. Value is its slug string, e.g. agent-drift. Navigation only; no records change.", valueType: "string", mode: "ui", applyPolicy: "auto", group: "report_location", sortOrder: 100 },
+    { name: "set_report_view", label: "Report view", description: "Changes the open Agent Drift report controls. JSON object with optional selected_agent_id (loaded agent UUID or null), search (string), page (positive integer), page_size (positive integer), sort ({id: agent|usages|breaking|silent|stale, direction: asc|desc} or null). Unknown fields or agents are refused. Only supplied settings change; no agent definitions or usage pins change. Available on Agent Drift only.", valueType: "object", valueKind: "json", updatesValue: "report_table_query", mode: "ui", applyPolicy: "auto", group: "report_scope", sortOrder: 110 },
+  ],
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
 
@@ -170,6 +178,8 @@ export function createReportsScope(values: {
   content?: string;
   selection?: string;
   context?: Record<string, unknown>;
+  report_table_query?: object;
+  report_overview?: string;
   report_slug?: string;
   report_title?: string;
   report_row_count?: number;

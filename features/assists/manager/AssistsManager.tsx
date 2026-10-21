@@ -71,6 +71,10 @@ import {
   humanAssistRow,
   projectAssistRow,
 } from "../format";
+import { z } from "zod";
+import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
+import { xmlElement, xmlList, xmlText } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
+import { assistViewPatch, nextAssistTableState, parseAssistUpdates } from "./surface-writes";
 import { createAssistsScope } from "@/features/surfaces/manifests/assists.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
@@ -116,6 +120,7 @@ const STATUS_TONE: Record<AssistStatus, string> = {
 export function AssistsManager() {
   // The only way back on while quiet: the dock renders nothing then.
   const {
+    ready: assistsPreferencesReady,
     quiet: assistsQuiet,
     quietUntil: assistsQuietUntil,
     resume: resumeAssists,
@@ -175,6 +180,9 @@ export function AssistsManager() {
    * VALUE MAPPING GAP scream.
    */
   const getScope = () => {
+    const readIsCurrent = table.state.search === table.queryState.search;
+    const scopeLoaded = loaded && readIsCurrent;
+    const scopeError = readIsCurrent ? error : null;
     const flags = {
       include_snoozed: includeSnoozed,
       starred_only: starredOnly,
@@ -190,14 +198,17 @@ export function AssistsManager() {
       assist_show_silenced: showSilenced,
       assist_urgency_filter: urgency ?? undefined,
       assist_table_query: table.queryState,
-      assist_load_state: error ? "failed" : loaded ? "ready" : "loading",
-      assist_load_error: error ?? undefined,
+      assist_table_controls: table.state,
+      assist_preferences_ready: assistsPreferencesReady,
+      assist_overview: xmlElement("assists", { tab, urgency, load: scopeError ? "failed" : scopeLoaded ? "ready" : "loading", search: table.state.search, total: scopeLoaded ? total : undefined, quiet: assistsQuiet, ...flags }, scopeLoaded ? xmlList("rows", rows, (row) => xmlElement("assist", { id: row.id, title: row.title, status: row.status, urgency: urgencyFromPriority(row.priority), starred: row.isStarred }, xmlText("body", row.body, { max: 180 })), { maxRows: 25 }) : undefined),
+      assist_load_state: scopeError ? "failed" : scopeLoaded ? "ready" : "loading",
+      assist_load_error: scopeError ?? undefined,
       assist_quiet: assistsQuiet,
       assist_quiet_until: assistsQuietUntil ?? undefined,
       assist_bulk_busy: bulkBusy,
       assist_dismiss_dialog_open: confirmDismissAll,
-      assist_view: { tab, urgency, ...flags, query: table.queryState, quiet: assistsQuiet, quiet_until: assistsQuietUntil },
-      ...(loaded ? {
+      assist_view: { tab, urgency, ...flags, controls: table.state, query: table.queryState, quiet: assistsQuiet, quiet_until: assistsQuietUntil },
+      ...(scopeLoaded ? {
         assist_total_count: total,
         visible_assists_summary: rows.map((row) => ({ id: row.id, title: row.title, urgency: urgencyFromPriority(row.priority), status: row.status, source: row.sourceKey })),
         loaded_assists: rows,
@@ -276,6 +287,7 @@ export function AssistsManager() {
       {
         id: "sourceKind",
         header: "Origin",
+        sortable: false,
         accessorFn: (row) => row.sourceKind,
         filter: "select",
         filterOptions: ASSIST_SOURCE_KIND_OPTIONS,
@@ -286,6 +298,7 @@ export function AssistsManager() {
       {
         id: "surfaceName",
         header: "Surface",
+        sortable: false,
         accessorFn: (row) => row.surfaceName ?? "",
         filter: "text",
         cell: (row) => row.surfaceName ?? "Global",
@@ -418,6 +431,7 @@ export function AssistsManager() {
   const resolveAssistMenuTarget = (
     target: HTMLElement | null,
   ): ResolvedContextMenuContext | null => {
+    if (!loaded || table.state.search !== table.queryState.search) { setMenuRow(null); return null; }
     const id = target?.closest?.("[data-row-id]")?.getAttribute("data-row-id");
     const row = id ? (rows.find((r) => r.id === id) ?? null) : null;
     setMenuRow(row);
@@ -502,7 +516,47 @@ export function AssistsManager() {
   })();
 
   return (
-    <SurfaceRuntimeProvider surfaceName={ASSISTS_SURFACE_NAME} getScope={getScope}>
+    <SurfaceRuntimeProvider surfaceName={ASSISTS_SURFACE_NAME} getScope={getScope} getWriteHandlers={() => ({
+      set_assist_view: {
+        validate: (value) => { assistViewPatch.parse(value); },
+        apply: (value) => {
+          const patch = assistViewPatch.parse(value);
+          if (patch.status_tab !== undefined) setTab(patch.status_tab);
+          if (patch.urgency !== undefined) setUrgency(patch.urgency);
+          if (patch.include_snoozed !== undefined) setIncludeSnoozed(patch.include_snoozed);
+          if (patch.starred_only !== undefined) setStarredOnly(patch.starred_only);
+          if (patch.unseen_only !== undefined) setUnseenOnly(patch.unseen_only);
+          if (patch.show_silenced !== undefined) setShowSilenced(patch.show_silenced);
+          table.onStateChange(nextAssistTableState(table.state, patch));
+          return { summary: "Updated the assist view; matching rows are reloading.", data: patch };
+        },
+      },
+      resume_assists: {
+        validate: (value) => { z.literal(true).parse(value); if (!assistsPreferencesReady) throw new Error("Wait for quiet preferences to load. Nothing was changed."); },
+        apply: (value) => { z.literal(true).parse(value); if (!assistsPreferencesReady) throw new Error("Wait for quiet preferences to load. Nothing was changed."); resumeAssists(); return { summary: "Assists are back on; no assist was executed.", data: { quiet_until: null } }; },
+      },
+      ...collectionWriteHandlers({ plural: "assists", singular: "assist", update: {
+        parse: (value) => parseAssistUpdates(value, rows, loaded && table.state.search === table.queryState.search),
+        nameOf: (plan: ReturnType<typeof parseAssistUpdates>[number]) => plan.title,
+        run: async (plan: ReturnType<typeof parseAssistUpdates>[number]) => {
+          if (plan.starred !== undefined) await setStarred(plan.id, plan.starred);
+          if (plan.status === "pending") await restore(plan.id);
+          if (plan.status === "dismissed") await dismissAll([plan.id]);
+          if (plan.snooze) await snoozeAll([plan.id], plan.snooze);
+          return { id: plan.id, name: plan.title };
+        },
+      } }, (message) => { throw new Error(message); }),
+    })}>
+    <NonEditableContextMenu
+      sourceFeature="assists" menuVersion={3} surfaceName={ASSISTS_SURFACE_NAME}
+      contentSource={{ type: "raw" }} getApplicationScope={getScope}
+      resolveContextOnOpen={resolveAssistMenuTarget}
+      extraSections={[{ id: "assist-view-actions", label: "Inbox", anchor: "after-clipboard", items: [
+        { kind: "item", id: "assist-refresh", label: "Refresh", icon: RefreshCw, disabled: loading, description: loading ? "Waiting for the current read" : undefined, onSelect: refresh },
+        { kind: "item", id: "assist-reset-view", label: "Reset view", icon: RotateCcw, onSelect: () => { setTab("pending"); setUrgency(null); setIncludeSnoozed(false); setStarredOnly(false); setUnseenOnly(false); setShowSilenced(false); table.reset(); } },
+        { kind: "item", id: "assist-resume", label: "Turn assists on", icon: Volume2, disabled: !assistsQuiet || !assistsPreferencesReady, description: !assistsPreferencesReady ? "Waiting for preferences" : !assistsQuiet ? "Assists are already on" : undefined, onSelect: resumeAssists },
+      ] }, ...assistMenuSections]}
+    >
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         {STATUS_TABS.map((entry) => {
@@ -715,16 +769,6 @@ export function AssistsManager() {
       )}
 
       <div className="min-h-0 flex-1 p-2 sm:p-3">
-        <NonEditableContextMenu
-          sourceFeature="admin"
-          menuVersion={2}
-          surfaceName={ASSISTS_SURFACE_NAME}
-          contentSource={{ type: "raw" }}
-          contextData={{ content: "Assists manager" }}
-          getApplicationScope={getScope}
-          resolveContextOnOpen={resolveAssistMenuTarget}
-          extraSections={assistMenuSections}
-        >
         <MatrxDataTable<Assist>
           data={rows}
           columns={columns}
@@ -809,7 +853,6 @@ export function AssistsManager() {
             }),
           }}
         />
-        </NonEditableContextMenu>
       </div>
 
       <ConfirmDialog
@@ -825,6 +868,7 @@ export function AssistsManager() {
         }}
       />
     </div>
+    </NonEditableContextMenu>
     </SurfaceRuntimeProvider>
   );
 }
