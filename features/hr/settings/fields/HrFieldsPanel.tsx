@@ -30,6 +30,9 @@ import { FieldEditor, RefusalLine } from "@/features/data-tables/records-ui-host
 import { FIELD_SENSITIVITY_LABEL, fieldTypeLabel } from "@ai-matrx/records-ui/helpers";
 import { ConfirmDelete } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
@@ -305,10 +308,65 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
   const archivedDefinitions = (lines ?? []).filter((row) => Boolean(row.archived_at));
   const visibleDefinitions = showArchived ? (lines ?? []) : liveDefinitions;
 
-  const rowItems = (row: FieldLine) =>
-    row.archived_at
-      ? { id: "restore", icon: ArchiveRestore, label: "Restore field", onClick: () => void restore(row) }
-      : { id: "archive", icon: Archive, label: "Archive field", onClick: () => setConfirming(row) };
+  // Archive and Restore are declared once: the row action and the bulk bar come from the same
+  // verbs (the custom store's own `fieldRetire` / `fieldRestore`, refusals named per field).
+  const { rowActionDefs, bulkActions } = defineRowVerbs<FieldLine>(
+    [
+      {
+        id: "restore",
+        icon: ArchiveRestore,
+        label: "Restore field",
+        appliesTo: (row) => Boolean(row.archived_at),
+        unavailableTooltip: "Not archived",
+        disabled: (row) => restoring === row.id,
+        onClick: (row) => void restore(row),
+        bulk: {
+          label: "Restore",
+          done: "Restored",
+          runOne: async (_id, row) => {
+            if (!row) throw new Error("not on screen any more");
+            const done = await client.fieldRestore({ field_id: row.id });
+            if (!done.ok) throw new Error(done.error.message);
+          },
+        },
+      },
+      {
+        id: "archive",
+        icon: Archive,
+        label: "Archive field",
+        tone: "destructive",
+        appliesTo: (row) => !row.archived_at,
+        unavailableTooltip: "Already archived",
+        onClick: (row) => setConfirming(row),
+        bulk: {
+          label: "Archive",
+          done: "Archived",
+          confirm: (targets) => ({
+            title: `Archive ${bulkCountLabel(targets.ids.length, "field")}?`,
+            description:
+              "Their values stay readable on every record, and nobody can add new ones. Restore any of them from Archived fields.",
+            confirmLabel: "Archive",
+            variant: "destructive",
+          }),
+          runOne: async (_id, row) => {
+            if (!row) throw new Error("not on screen any more");
+            const done = await client.fieldRetire({ field_id: row.id });
+            if (!done.ok) throw new Error(done.error.message);
+          },
+        },
+      },
+    ],
+    { noun: "field", getRowId: (row) => row.id, getRowName: (row) => row.label },
+  );
+  const bulk = useTableBulkSelection<FieldLine>({
+    noun: "field",
+    rows: visibleDefinitions,
+    getRowId: (row) => row.id,
+    getRowName: (row) => row.label,
+    actions: bulkActions,
+    standardBulkActions: false,
+    onRefresh: () => setReload((n) => n + 1),
+  });
 
   const statusColumn: MatrxColumnDef<FieldLine>[] = showArchived
     ? [
@@ -431,7 +489,8 @@ function HrFieldsTable({ targets }: { targets: { token: string; label: string }[
         getRowId={(row) => row.id}
         pageSize={25}
         toolbar={{ search: true, searchPlaceholder: "Search custom fields" }}
-        rowActions={(row) => [{ ...rowItems(row), disabled: restoring === row.id }]}
+        rowActionDefs={rowActionDefs}
+        selection={bulk.selection}
         contextMenu={{
           sections: (payload) =>
             payload.level === "row" || payload.level === "cell"

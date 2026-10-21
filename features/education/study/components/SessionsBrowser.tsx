@@ -189,7 +189,7 @@ export function SessionsBrowser({
         .filter((id): id is string => !!id);
 
       const [namesRes, attemptsRes] = await Promise.all([
-        fcService.getSetNamesByIds(sourceSetIds),
+        fcService.getDeckNamesByIds(sourceSetIds),
         studyService.getAttemptSummariesForSessions(sessionIds),
       ]);
 

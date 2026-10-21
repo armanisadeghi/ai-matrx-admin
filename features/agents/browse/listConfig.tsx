@@ -9,6 +9,7 @@
 // hook + its modals, and the card / compact-row renderers.
 
 import { Archive, ArchiveRestore } from "lucide-react";
+import type { AppDispatch } from "@/lib/redux/store";
 import { getStore } from "@/lib/redux/store-singleton";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { runPerRow } from "@/lib/entity-list/standardBulkActions";
@@ -169,9 +170,9 @@ function agentArchiveAction(verb: "archive" | "unarchive"): EntityBulkAction<Age
           }
           const store = getStore();
           if (!store) throw new Error("the app is not ready");
-          await store
-            .dispatch(saveAgentField({ agentId: id, field: "isArchived", value: target as never }))
-            .unwrap();
+          await (store.dispatch as AppDispatch)(
+            saveAgentField({ agentId: id, field: "isArchived", value: target as never }),
+          ).unwrap();
         },
         { done: target ? "Archived" : "Unarchived", noun: "agent", labelOf: (row) => row.name },
         (row) => row.id,

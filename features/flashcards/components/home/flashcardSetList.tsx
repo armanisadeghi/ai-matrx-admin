@@ -59,21 +59,21 @@ import {
 import {
   FAST_FIRE_BASE,
   FLASHCARD_SETS_BASE,
-  flashcardSetHref,
+  flashcardDeckHref,
   flashcardStudyHref,
 } from "../../routes";
 
 export {
   FAST_FIRE_BASE,
   FLASHCARD_SETS_BASE,
-  flashcardSetHref,
+  flashcardDeckHref,
   flashcardStudyHref,
 };
 export const flashcardFastFireHref = (row: { id: string }) =>
   `${FAST_FIRE_BASE}?set=${row.id}`;
 
 /** One row of the library: the deck plus what the list needs to file it. */
-export interface FlashcardSetListRow extends DeckListRow {
+export interface FlashcardDeckListRow extends DeckListRow {
   /** True when the deck is archived (`deleted_at` set) — the archive axis. */
   archived: boolean;
 }
@@ -117,7 +117,7 @@ function toDeckQuery(query: EntityListQuery): DeckListQuery {
 }
 
 /** The list service: three server calls, nothing held in the browser. */
-export const flashcardSetListService: EntityListConfig<FlashcardSetListRow>["service"] =
+export const flashcardDeckListService: EntityListConfig<FlashcardDeckListRow>["service"] =
   {
     async fetchPage(query: EntityListQuery, sort: EntityListSort) {
       const page = await fetchDeckPage(toDeckQuery(query), {
@@ -145,7 +145,7 @@ function formatDifficulty(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function StudyCell({ row }: { row: FlashcardSetListRow }) {
+function StudyCell({ row }: { row: FlashcardDeckListRow }) {
   if (row.archived) return <Muted>Archived</Muted>;
   return (
     // The row itself opens the deck; these two are their own doors, so their
@@ -187,9 +187,9 @@ function StudyCell({ row }: { row: FlashcardSetListRow }) {
   );
 }
 
-export function buildFlashcardSetColumns(
+export function buildFlashcardDeckColumns(
   folderName: (id: string) => string,
-): EntityColumnSpec<FlashcardSetListRow>[] {
+): EntityColumnSpec<FlashcardDeckListRow>[] {
   const formatFolder = (value: string) =>
     value === NONE_VALUE ? "No folder" : folderName(value);
   return [
@@ -209,7 +209,7 @@ export function buildFlashcardSetColumns(
         accessorKey: "name",
         header: "Name",
         filter: "text",
-        href: flashcardSetHref,
+        href: flashcardDeckHref,
         entityToken: "fc_set",
         cell: (row) => <TextCell value={row.name} className="font-medium" />,
       },
@@ -358,14 +358,14 @@ export function buildFlashcardSetColumns(
   ];
 }
 
-export function buildFlashcardSetListConfig(input: {
+export function buildFlashcardDeckListConfig(input: {
   userId: string;
-  useRowActions: EntityListConfig<FlashcardSetListRow>["useRowActions"];
+  useRowActions: EntityListConfig<FlashcardDeckListRow>["useRowActions"];
   folderName: (id: string) => string;
   /** The person's folders, for "Add to folder…". Absent: that verb is not offered. */
   folders?: readonly { id: string; name: string }[];
   foldersKey: string;
-}): EntityListConfig<FlashcardSetListRow> {
+}): EntityListConfig<FlashcardDeckListRow> {
   return {
     surfaceKey: "education-flashcard-sets",
     // Where the list OPENS is the landing-tab knob lists.landing_tab/fc_set
@@ -377,9 +377,9 @@ export function buildFlashcardSetListConfig(input: {
     entityLabel: { singular: "deck", plural: "decks" },
     sourceFeature: "education-flashcards",
     scopes: FLASHCARD_SET_SCOPES,
-    service: flashcardSetListService,
+    service: flashcardDeckListService,
     serviceKey: `${input.userId}:${input.foldersKey}`,
-    columns: buildFlashcardSetColumns(input.folderName),
+    columns: buildFlashcardDeckColumns(input.folderName),
     // Page-pass 2026-09-28: Topic, Difficulty and Folders were "—" on almost
     // every row. A column empty (or identical) on every loaded row hides by
     // default; it stays in the column picker, and one a person shows stays.
@@ -398,7 +398,7 @@ export function buildFlashcardSetListConfig(input: {
       title: row.name,
       resourceType: "fc_set",
     }),
-    door: { token: "fc_set", column: "name", hrefFor: flashcardSetHref },
+    door: { token: "fc_set", column: "name", hrefFor: flashcardDeckHref },
     useRowActions: input.useRowActions,
     // Ticking rows (page-pass 2026-09-27): the person — and the agent, through
     // selected_deck_ids — can act on several of their own decks at once.
@@ -471,7 +471,7 @@ export function buildFlashcardSetListConfig(input: {
                   options: (input.folders ?? []).map((f) => ({ value: f.id, label: f.name })),
                 },
               }),
-              run: (selection: EntityBulkSelection<FlashcardSetListRow>, bulkInput?: { value?: string }) =>
+              run: (selection: EntityBulkSelection<FlashcardDeckListRow>, bulkInput?: { value?: string }) =>
                 runPerRow(
                   selection,
                   async (id, row) => {

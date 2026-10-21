@@ -48,10 +48,10 @@ import SuspenseLoader from "@/components/loaders/SuspenseLoader";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import {
   FLASHCARD_SETS_BASE,
-  buildFlashcardSetListConfig,
-  type FlashcardSetListRow,
+  buildFlashcardDeckListConfig,
+  type FlashcardDeckListRow,
 } from "./flashcardSetList";
-import { useFlashcardSetRowActions } from "./useFlashcardSetRowActions";
+import { useFlashcardDeckRowActions } from "./useFlashcardSetRowActions";
 import { buildDeckScope, buildDeckWriteHandlers } from "./deckSurface";
 
 const EDU_BASE = FLASHCARD_SETS_BASE;
@@ -96,9 +96,9 @@ export function FlashcardsHome() {
   const config = useMemo(
     () =>
       userId
-        ? buildFlashcardSetListConfig({
+        ? buildFlashcardDeckListConfig({
             userId,
-            useRowActions: useFlashcardSetRowActions,
+            useRowActions: useFlashcardDeckRowActions,
             folderName: (id) => folderNames.get(id) ?? "Unnamed folder",
             folders: folders.map((f) => ({ id: f.id, name: f.name })),
             foldersKey,
@@ -131,7 +131,7 @@ export function FlashcardsHome() {
     setExportingLibrary(true);
     try {
       // Export is the one job that reads the whole library, on request.
-      const listed = await fcService.listSets();
+      const listed = await fcService.listDecks();
       if (listed.error) {
         toast.error(`Export failed — ${listed.error}`);
         return;
@@ -144,7 +144,7 @@ export function FlashcardsHome() {
       const decks: { set: FcSetRow; cards: CardWithDetails[] }[] = [];
       const failed: string[] = [];
       for (const set of sets) {
-        const res = await fcService.getSetWithCards(set.id);
+        const res = await fcService.getDeckWithCards(set.id);
         if (res.data) decks.push(res.data);
         else failed.push(set.name);
       }
@@ -235,7 +235,7 @@ export function FlashcardsHome() {
     userId
       ? {
           surfaceName: SURFACE_NAME,
-          getScope: (list: EntityListSurfaceController<FlashcardSetListRow>) =>
+          getScope: (list: EntityListSurfaceController<FlashcardDeckListRow>) =>
             buildDeckScope({
               list,
               userId,
@@ -244,7 +244,7 @@ export function FlashcardsHome() {
               streak,
             }),
           getWriteHandlers: (
-            list: EntityListSurfaceController<FlashcardSetListRow>,
+            list: EntityListSurfaceController<FlashcardDeckListRow>,
           ) =>
             buildDeckWriteHandlers({
               list,

@@ -11,10 +11,14 @@ import { useRef, useState, type ReactNode } from "react";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { GraduationCap, Plus, CalendarClock, User, ArchiveRestore } from "lucide-react";
+import { GraduationCap, Plus, CalendarClock, User, ArchiveRestore, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton, ArchivedDisclosure } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
+import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import { useClasses } from "../hooks/useClasses";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -169,6 +173,53 @@ export function ClassesHome() {
       setRestoringId(null);
     }
   }
+  // Archive and Restore are declared once (settings.archived, the hub's own write); the active
+  // list and the Archived list each get the twin that fits, with the other skipped and named.
+  const { bulkActions: classBulkActions } = defineRowVerbs<StudyClass>(
+    [
+      {
+        id: "archive",
+        icon: Archive,
+        label: "Archive",
+        tone: "destructive",
+        onClick: () => {},
+        appliesTo: (cls) => !cls.settings.archived,
+        unavailableTooltip: "Already archived",
+        bulk: {
+          done: "Archived",
+          confirm: (targets) => ({
+            title: `Archive ${bulkCountLabel(targets.ids.length, "class")}?`,
+            description:
+              "They move to Archived classes. Decks, quizzes, notes and media stay; restore any of them at any time.",
+            confirmLabel: "Archive",
+            variant: "destructive",
+          }),
+          runOne: async (id, cls) => {
+            if (!cls) throw new Error("not on screen any more");
+            await updateClass(id, { settings: { ...cls.settings, archived: true } });
+          },
+        },
+      },
+      {
+        id: "restore",
+        icon: ArchiveRestore,
+        label: "Restore",
+        onClick: () => {},
+        appliesTo: (cls) => Boolean(cls.settings.archived),
+        unavailableTooltip: "Not archived",
+        bulk: {
+          done: "Restored",
+          runOne: async (id, cls) => {
+            if (!cls) throw new Error("not on screen any more");
+            await updateClass(id, { settings: { ...cls.settings, archived: false } });
+          },
+        },
+      },
+    ],
+    { noun: "class", getRowId: (c) => c.id, getRowName: (c) => c.name },
+  );
+  const activeSelection = useRowSelection(classes, (c) => c.id);
+  const archivedSelection = useRowSelection(archived, (c) => c.id);
   // The dialog's live values, published by ClassFormDialog on every render —
   // read synchronously by getScope (polled every 400ms; it must never fetch).
   const draftRef = useRef<NewClassDraftScope | null>(null);
@@ -298,13 +349,30 @@ export function ClassesHome() {
           </Button>
         </div>
       ) : (
+        <>
+        <RowSelectionBar
+          selection={activeSelection}
+          idOf={(c) => c.id}
+          actions={classBulkActions.filter((a) => a.id === "archive")}
+          noun="class"
+          plural="classes"
+          onRefresh={() => void refresh()}
+        />
         <ul className="space-y-2">
           {classes.map((cls) => (
-            <li key={cls.id}>
-              <OwnedRow cls={cls} />
+            <li key={cls.id} className="flex items-center gap-2">
+              <Checkbox
+                checked={activeSelection.has(cls.id)}
+                onCheckedChange={() => activeSelection.toggle(cls.id)}
+                aria-label={`Select ${cls.name}`}
+              />
+              <div className="min-w-0 flex-1">
+                <OwnedRow cls={cls} />
+              </div>
             </li>
           ))}
         </ul>
+        </>
       )}
 
       {/* Archived classes — hidden by default, restorable in one click
@@ -316,12 +384,25 @@ export function ClassesHome() {
           open={showArchived}
           onOpenChange={setShowArchived}
         >
+          <RowSelectionBar
+            selection={archivedSelection}
+            idOf={(c) => c.id}
+            actions={classBulkActions.filter((a) => a.id === "restore")}
+            noun="class"
+            plural="classes"
+            onRefresh={() => void refresh()}
+          />
           <ul className="space-y-2">
             {archived.map((cls) => (
               <li
                 key={cls.id}
                 className="flex w-full items-center gap-3 rounded-lg border border-border bg-card p-3"
               >
+                <Checkbox
+                  checked={archivedSelection.has(cls.id)}
+                  onCheckedChange={() => archivedSelection.toggle(cls.id)}
+                  aria-label={`Select ${cls.name}`}
+                />
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
                   <GraduationCap className="h-5 w-5" />
                 </span>
