@@ -146,7 +146,8 @@ export function followerChange(accounts: readonly AccountRow[], snapshots: reado
     if (!first || !last || last.t - Math.max(first.t, start) < MIN_SPAN_DAYS * DAY_MS) continue;
     net += last.v - first.v;
     base += first.v;
-    spanMs = Math.max(spanMs, last.t - Math.max(first.t, start));
+    // Readings from before the window cover all of it; readings that began inside it cover from there to now.
+    spanMs = Math.max(spanMs, first.t <= start ? days * DAY_MS : now - first.t);
   }
   if (!spanMs) return null;
   return { net, fraction: base > 0 ? net / base : null, spanDays: Math.min(days, Math.round(spanMs / DAY_MS)) };

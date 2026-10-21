@@ -97,7 +97,7 @@ describe("accounts overview", () => {
       { profile_id: "p1", observed_at: ago(1), follower_count: 1100 },
     ];
     expect(followerChange(rows, snaps, 30, NOW)).toEqual({ net: 100, fraction: 0.1, spanDays: 30 });
-    expect(followerChange(rows, snaps.slice(1), 30, NOW)).toEqual({ net: 50, fraction: 50 / 1050, spanDays: 8 });
+    expect(followerChange(rows, snaps.slice(1), 30, NOW)).toEqual({ net: 50, fraction: 50 / 1050, spanDays: 9 });
     expect(followerChange(rows, snaps.slice(2), 30, NOW)).toBeNull();
   });
 
