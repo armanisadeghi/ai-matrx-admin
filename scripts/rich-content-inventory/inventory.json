@@ -4332,7 +4332,7 @@
   "overlay contentEditorWorkspaceWindow (Content Workspace)",
   "overlay contextAssignment",
   "overlay contextItemsWindow (Context Items)",
-  "overlay contextSwitcherWindow (Context Switcher)",
+  "overlay contextSwitcherWindow (Scope Switcher)",
   "overlay convertToShapeWindow (Convert JSON to Shape)",
   "overlay copySubsetWindow",
   "overlay createProjectWindow (Create Project)",

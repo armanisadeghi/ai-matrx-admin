@@ -183,7 +183,7 @@ export const NAV_WINDOW_PANEL_ACTIONS: Record<
   },
   "open-context-switcher-panel": {
     tileId: "tile.context-switcher",
-    label: "Context Switcher Window",
+    label: "Scope Switcher Window",
     iconName: NAV_WINDOW_PANEL_ICON,
     href: "/scopes",
   },

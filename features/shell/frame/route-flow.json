@@ -37283,7 +37283,7 @@
    "treeNode": "Productivity › Data › Scopes & context",
    "howFound": "menu: Data › Scopes",
    "menuLabels": [
-    "Menu › Data › Context Switcher Window",
+    "Menu › Data › Scope Switcher Window",
     "Menu › Data › Scopes"
    ],
    "title": null,
@@ -93163,7 +93163,7 @@
    "to": "/scopes",
    "kind": "menu",
    "confidence": "exact",
-   "via": "Menu › Data › Context Switcher Window"
+   "via": "Menu › Data › Scope Switcher Window"
   },
   {
    "from": "menu:data",
