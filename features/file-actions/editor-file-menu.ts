@@ -17,7 +17,6 @@ import {
   FilePlus2,
   Globe,
   Languages,
-  Settings,
   ShieldAlert,
   Tag,
 } from "lucide-react";
