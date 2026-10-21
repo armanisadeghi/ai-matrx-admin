@@ -88,7 +88,7 @@ export function AgentDriftReport({
 
     if (isMobile) {
       return (
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div data-surface-value="report_findings" className="min-h-0 flex-1 overflow-y-auto">
           {status === "loading" ? (
             <ReportSkeleton />
           ) : (
@@ -112,7 +112,7 @@ export function AgentDriftReport({
 
     return (
       <div className="flex min-h-0 flex-1">
-        <div className="w-1/2 min-w-[360px] overflow-y-auto border-r border-border">
+        <div data-surface-value="report_findings" className="w-1/2 min-w-[360px] overflow-y-auto border-r border-border">
           {status === "loading" ? (
             <ReportSkeleton />
           ) : (
@@ -131,7 +131,7 @@ export function AgentDriftReport({
             />
           )}
         </div>
-        <div className="min-w-0 flex-1">
+        <div data-surface-value="agent_usage_detail" className="min-w-0 flex-1">
           {selected ? (
             <AgentUsagesEngine key={selected} agentId={selected} mode={mode} surfaceName={mode === "user" ? "matrx-user/reports" : undefined} />
           ) : (

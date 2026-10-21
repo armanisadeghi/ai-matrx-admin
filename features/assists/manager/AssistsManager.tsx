@@ -559,7 +559,7 @@ export function AssistsManager() {
       ] }, ...assistMenuSections]}
     >
     <div className="flex h-full flex-col overflow-hidden">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
+      <div data-surface-value="assist_view" className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
         {STATUS_TABS.map((entry) => {
           const count = entry.statuses.reduce(
             (sum, status) => sum + stats[status],
@@ -697,7 +697,7 @@ export function AssistsManager() {
       </div>
 
       {showSilenced && (
-        <div className="border-b border-border bg-muted/20 px-3 py-2">
+        <div data-surface-value="source_suppressions" className="border-b border-border bg-muted/20 px-3 py-2">
           <div className="mb-1.5 flex items-center gap-2">
             <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
             <h2 className="text-xs font-semibold text-foreground">
@@ -763,13 +763,13 @@ export function AssistsManager() {
       )}
 
       {error && (
-        <p className="border-b border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive-ink">
+        <p data-surface-value="assist_load_error" className="border-b border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive-ink">
           {error}
           <ErrorAlchemyMenu error={error} />
         </p>
       )}
 
-      <div className="min-h-0 flex-1 p-2 sm:p-3">
+      <div data-surface-value="loaded_assists" className="min-h-0 flex-1 p-2 sm:p-3">
         <MatrxDataTable<Assist>
           data={resultsReady ? rows : []}
           columns={columns}
