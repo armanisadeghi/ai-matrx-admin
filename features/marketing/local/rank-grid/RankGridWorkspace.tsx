@@ -9,7 +9,9 @@
 //      (`max_cost_usd` at a fraction of a cent) returns a stored search; only a
 //      click buys a new one, at the price the live tool definition states.
 //   2. Preview — `rank_grid preview=true`: free, the grid's points on the map,
-//      the storefront the tool matched, and what a run would cost.
+//      the storefront the tool matched, and what a run would cost — as a badge in
+//      the preview row (the confirm step), never on the Run grid button: a 3x3
+//      under the org threshold runs with no approve-spend dialog (law 14).
 //   3. Run — `rank_grid` with `center_confirmed` through `useToolAction`; a 5x5
 //      always asks, in the approve-spend dialog. Points under 24 hours old are
 //      reused free by the tool; "Reused from <date>" says when.
