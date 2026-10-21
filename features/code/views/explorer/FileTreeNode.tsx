@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ChevronRight,
   Pencil,
   Trash2,
   Copy as CopyIcon,
@@ -30,12 +29,13 @@ import type { FilesystemNode } from "../../types";
 import { FileIcon } from "../../styles/file-icon";
 import { extractErrorMessage } from "@/utils/errors";
 import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { ACTIVE_ROW, HOVER_ROW, TEXT_BODY } from "../../styles/tokens";
 import {
-  ACTIVE_ROW,
-  HOVER_ROW,
-  ROW_HEIGHT,
-  TEXT_BODY,
-} from "../../styles/tokens";
+  TreeDisclosure,
+  TreeFolderIcon,
+  TREE_ROW_HEIGHT,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { useDirectoryVersion, useInvalidateDirectory } from "./FileTreeWatcher";
 import { Button } from "@/components/ui/button";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
@@ -426,8 +426,8 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
     pendingCreate,
   ]);
 
-  const indentStyle = { paddingLeft: 8 + depth * 12 };
-  const childIndentStyle = { paddingLeft: 8 + (depth + 1) * 12 };
+  const indentStyle = treeIndentStyle(depth);
+  const childIndentStyle = treeIndentStyle(depth + 1);
 
   const menuItems: ContextMenuExtraItem[] = [
     {
@@ -560,7 +560,6 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
           onDrop={(e) => void handleDrop(e)}
           className={cn(
             "flex items-center gap-1 text-[13px]",
-            ROW_HEIGHT,
             "max-lg:h-11",
             TEXT_BODY,
             !renaming && HOVER_ROW,
@@ -570,20 +569,14 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
             !renaming && "cursor-pointer rounded-sm",
             renaming && "rounded-sm bg-card outline outline-1 outline-blue-400",
           )}
-          style={indentStyle}
+          style={{ ...indentStyle, minHeight: TREE_ROW_HEIGHT.compact }}
         >
+          <TreeDisclosure expandable={isDir} expanded={expanded} />
           {isDir ? (
-            <ChevronRight
-              size={12}
-              className={cn(
-                "shrink-0 text-neutral-500 transition-transform",
-                expanded && "rotate-90",
-              )}
-            />
+            <TreeFolderIcon open={expanded} />
           ) : (
-            <span className="inline-block w-3" />
+            <FileIcon name={node.name} kind={node.kind} size={16} />
           )}
-          <FileIcon name={node.name} kind={node.kind} expanded={expanded} />
           {renaming ? (
             <input
               ref={renameInputRef}
@@ -634,12 +627,12 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
           className="flex items-center gap-1 text-[13px]"
           style={childIndentStyle}
         >
-          <span className="inline-block w-3" />
-          <FileIcon
-            name={createValue}
-            kind={pendingCreate.kind === "directory" ? "directory" : "file"}
-            expanded={false}
-          />
+          <TreeDisclosure expandable={false} />
+          {pendingCreate.kind === "directory" ? (
+            <TreeFolderIcon />
+          ) : (
+            <FileIcon name={createValue} kind="file" size={16} />
+          )}
           <input
             ref={createInputRef}
             type="text"
