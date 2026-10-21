@@ -10,6 +10,7 @@ export default function MemoryCapturePage() {
       icon={Inbox}
       promiseKey="memory.capture"
       doorsHeading="Works today"
+      parent={{ label: "Memory", href: "/memory" }}
       doors={[
         { href: "/files/all", label: "Upload files", hint: "Add files to your Drive", icon: Upload },
         { href: "/connected-sources", label: "Connected apps", hint: "Google Drive, Notion, Office and more", icon: Cable },

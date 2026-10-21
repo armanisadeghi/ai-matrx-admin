@@ -178,9 +178,7 @@ export default function MemoryManager() {
       <div className="flex items-start gap-2">
         <Brain className="h-4 w-4 text-primary mt-0.5 shrink-0" />
         <p className="text-xs text-muted-foreground">
-          Cross-project notes your agents read and write. They follow you into
-          every sandbox and persist across sessions. Edits sync back when a
-          sandbox shuts down.
+          Notes your agents read and write, in every sandbox.
         </p>
       </div>
 
@@ -214,8 +212,7 @@ export default function MemoryManager() {
               />
             ) : entries.length === 0 && !creatingNew ? (
               <p className="px-2 py-3 text-xs text-muted-foreground">
-                No memory yet. Create a file like{" "}
-                <code className="text-foreground">preferences.md</code>.
+                No memory yet. Add your first note.
               </p>
             ) : (
               entries.map((e) => (

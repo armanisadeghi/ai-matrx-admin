@@ -1,23 +1,11 @@
-"use client";
+// /memory/my-memory — your memory files (users.user_memory). A guest gets the Knowledge
+// landing, like /memory: the table answers a signed-out request with "permission denied".
+import KnowledgeLanding from "@/features/auth/components/module-landing/landings/KnowledgeLanding";
+import { MyMemoryPage } from "@/features/memory/pages/MyMemoryPage";
+import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 
-// /memory/my-memory — your memory files (users.user_memory), the same MemoryManager the
-// Settings › AI › Memory tab renders; Settings keeps its tab.
-import { Suspense } from "react";
-import { Settings } from "lucide-react";
-import { RegionSkeleton } from "@ai-matrx/design-system/controls";
-import MemoryManager from "@/features/memory/components/MemoryManager";
-import { MemoryPageFrame } from "@/features/memory/pages/MemoryPageFrame";
-
-export default function MemoryMyMemoryRoute() {
-  return (
-    <MemoryPageFrame
-      name="My memory"
-      wide
-      actions={[{ label: "Memory settings", icon: Settings, href: "/user-settings/ai/memory", showLabel: true }]}
-    >
-      <Suspense fallback={<RegionSkeleton shape="rows" count={6} />}>
-        <MemoryManager />
-      </Suspense>
-    </MemoryPageFrame>
-  );
+export default async function MemoryMyMemoryRoute() {
+  const { isAuthenticated } = await getSessionVerdict();
+  if (!isAuthenticated) return <KnowledgeLanding />;
+  return <MyMemoryPage />;
 }

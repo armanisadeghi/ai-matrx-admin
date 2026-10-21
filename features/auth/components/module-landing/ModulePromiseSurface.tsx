@@ -19,6 +19,7 @@
 import type { LucideIcon } from "lucide-react";
 
 import PageHeader from "@/features/shell/components/header/PageHeader";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { STAGE_LINE } from "@ai-matrx/kit/coming-soon";
 import { COMING_SOON } from "@/lib/coming-soon/registry";
 
@@ -32,25 +33,32 @@ export function ModulePromiseSurface({
   promiseKey,
   doorsHeading,
   doors,
+  parent,
 }: {
   title: string;
   icon: LucideIcon;
   promiseKey: keyof typeof COMING_SOON;
   doorsHeading: string;
   doors: ModulePromiseDoor[];
+  /** The module this page sits in: gives the header a back arrow and a crumb. */
+  parent?: { label: string; href: string };
 }) {
   const promise = COMING_SOON[promiseKey];
   const stageLine = STAGE_LINE[promise.stage] ?? "";
 
   return (
     <>
-      <PageHeader>
-        <div className="flex w-full min-w-0 items-center">
-          <h1 className="truncate text-sm font-medium text-foreground">
-            {title}
-          </h1>
-        </div>
-      </PageHeader>
+      {parent ? (
+        <RecordPageHeader backHref={parent.href} parents={[parent]} record={{ name: title }} />
+      ) : (
+        <PageHeader>
+          <div className="flex w-full min-w-0 items-center">
+            <h1 className="truncate text-sm font-medium text-foreground">
+              {title}
+            </h1>
+          </div>
+        </PageHeader>
+      )}
       <div className="min-h-full w-full bg-textured pt-[var(--shell-header-h)] pb-safe">
         <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
           <section

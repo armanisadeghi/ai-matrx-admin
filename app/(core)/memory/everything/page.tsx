@@ -10,6 +10,7 @@ export default function MemoryEverythingPage() {
       icon={FolderOpen}
       promiseKey="memory.everything"
       doorsHeading="Works today"
+      parent={{ label: "Memory", href: "/memory" }}
       doors={[
         { href: "/files/all", label: "All files", hint: "Everything in your Drive", icon: FolderOpen },
         { href: "/knowledge/hub", label: "Knowledge hub", hint: "Search and sort everything you keep", icon: Search },

@@ -10,6 +10,7 @@ export default function MemoryTopicsPage() {
       icon={Tags}
       promiseKey="memory.topics"
       doorsHeading="Works today"
+      parent={{ label: "Memory", href: "/memory" }}
       doors={[
         { href: "/research", label: "Research topics", hint: "Every topic you research", icon: BookOpen },
         { href: "/research/topics/new", label: "New research topic", hint: "Start researching a topic", icon: Plus },
