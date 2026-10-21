@@ -32,8 +32,9 @@ describe("the first test of an agent", () => {
 });
 
 describe("Studio chat hides the sent chip through the chat package's host option", () => {
-  it("registers hostSuppliesContext for every conversation it shows", () => {
-    expect(read("../components/StudioRun.tsx")).toContain("hostSuppliesContext: true");
+  it("registers hostSuppliesContext for every conversation it shows (the page's host-values call)", () => {
+    expect(read("../components/AgentStudioPage.tsx")).toMatch(/everyTurn:\s*true,\s*hostSuppliesContext:\s*true/);
+    expect(read("../components/StudioRun.tsx")).not.toContain("registerConversationHooks");
   });
 });
 

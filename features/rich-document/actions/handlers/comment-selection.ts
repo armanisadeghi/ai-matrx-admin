@@ -23,59 +23,27 @@ function annotationHostIn(host: Record<string, unknown> | undefined): Annotation
   return half?.kind === "annotation" ? half : null;
 }
 
-/** The live selection, when it sits where a comment can be pinned; else null. */
-export function commentableSelection(): Range | null {
-  if (typeof window === "undefined") return null;
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0 || sel.isCollapsed || !sel.toString().trim()) return null;
-  const range = sel.getRangeAt(0);
-  const pinnable = zonesContaining(range.commonAncestorContainer).some((zone) => {
+/** True when a comment can be pinned to `range`: it sits in an annotation zone that maps it. */
+export function canPinComment(range: Range): boolean {
+  return zonesContaining(range.commonAncestorContainer).some((zone) => {
     const host = annotationHostIn(zone.contribution.host);
-    return Boolean(host && host.capture({ silent: true }));
-  });
-  return pinnable ? range : null;
-}
-
-// The last passage a comment could be pinned to. A right-click on live collapses the browser
-// selection before the menu draws (the menu keeps its own copy and puts it back on close), so the
-// row is decided from this: matched against the selection the menu captured (`applicationScope`),
-// or, when the menu's context is from an earlier open, by the collapse being THIS right-click's
-// (no collapse seen since the passage was taken, or one a moment ago).
-let remembered: { range: Range; text: string; at: number } | null = null;
-let collapsedAt = 0;
-const REMEMBER_MS = 60_000;
-const THIS_CLICK_MS = 1_500;
-
-function rememberSelection(): void {
-  const range = commentableSelection();
-  if (range) remembered = { range: range.cloneRange(), text: range.toString().trim(), at: Date.now() };
-}
-
-if (typeof document !== "undefined") {
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  document.addEventListener("selectionchange", () => {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) collapsedAt = Date.now();
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(rememberSelection, 120);
+    return Boolean(host && host.capture({ silent: true, range }));
   });
 }
 
-/** The passage this menu opened on, when a comment can be pinned to it; else null. */
+/**
+ * The passage THIS open of the menu captured, when a comment can be pinned to it; else null.
+ * Decided from `ctx.openSelection` (what the menu captured at this right-click), never from the
+ * live selection or a passage kept since an earlier open: after the first open on an answer a
+ * right-click collapses the live selection before the menu draws (live 2026-10-21), and a kept
+ * passage showed Comment on a later open with nothing selected.
+ */
 function passageFor(ctx: RichDocumentActionContext): Range | null {
-  const live = commentableSelection();
-  if (live) return live.cloneRange();
-  if (!remembered || Date.now() - remembered.at > REMEMBER_MS) return null;
-  // A re-render moves a live range (removed nodes collapse it onto their parent): the passage is gone.
-  const kept = remembered.range;
-  if (!kept.startContainer.isConnected || kept.collapsed || kept.toString().trim() !== remembered.text) return null;
-  const collapsedByThisClick = collapsedAt <= remembered.at || Date.now() - collapsedAt < THIS_CLICK_MS;
-  if (collapsedByThisClick) return remembered.range;
-  // Or the menu captured this very passage (its copy may be the selection written back as markdown).
-  const captured = String(ctx.applicationScope?.selection ?? "").trim();
-  if (!captured) return null;
-  const words = (t: string) => t.replace(/[*_`#>[\]()-]/g, " ").replace(/\s+/g, " ").trim();
-  return words(captured).includes(words(remembered.text)) || words(remembered.text).includes(words(captured)) ? remembered.range : null;
+  const open = ctx.openSelection;
+  if (!open?.range || !open.text.trim()) return null;
+  const range = open.range;
+  if (range.collapsed || !range.startContainer.isConnected) return null;
+  return canPinComment(range) ? range : null;
 }
 
 registerActionIfAbsent({

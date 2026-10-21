@@ -210,16 +210,49 @@ const commentRow = () => {
 const composer = () => toolbar()?.querySelector<HTMLTextAreaElement>("[data-selection-panel] textarea[aria-label^='Comment']") ?? null;
 const quoted = () => toolbar()?.querySelector("[data-selection-panel] blockquote")?.textContent ?? null;
 
-const withScope = (selection: string) => ({ ...ctx, applicationScope: { selection } }) as unknown as RichDocumentActionContext;
+/**
+ * The context the menu engine hands a row for ONE open (useContextMenuActions): the selection this
+ * right-click captured (`openSelection`, a copy of its range) and the same words in the scope.
+ */
+const openOn = (range: Range | null) =>
+  ({
+    ...ctx,
+    applicationScope: { selection: range ? range.toString() : "" },
+    openSelection: range && range.toString().trim() ? { text: range.toString(), range: range.cloneRange() } : null,
+  }) as unknown as RichDocumentActionContext;
+const liveRange = () => {
+  const s = window.getSelection();
+  return s && s.rangeCount > 0 && !s.isCollapsed ? s.getRangeAt(0) : null;
+};
+/** Select `word` and announce it, without waiting (a person who right-clicks at once). */
+function selectNow(word: string) {
+  const p = [...container.querySelectorAll("p")].find((x) => x.textContent?.includes(word))!;
+  const t = p.firstChild as Text;
+  const at = t.textContent!.indexOf(word);
+  const r = document.createRange();
+  r.setStart(t, at);
+  r.setEnd(t, at + word.length);
+  const s = window.getSelection()!;
+  s.removeAllRanges();
+  s.addRange(r);
+  document.dispatchEvent(new Event("selectionchange"));
+}
+/** A right-click: the menu captures the selection, then the browser collapses it (live after the first open). */
+function rightClick(): RichDocumentActionContext {
+  const open = openOn(liveRange());
+  window.getSelection()?.removeAllRanges();
+  document.dispatchEvent(new Event("selectionchange"));
+  return open;
+}
 
 it("over a selection where comments are on, the row shows and opens the toolbar's own comment composer", async () => {
   await mount();
   await selectWord("statistical", { pointer: false });
-  // The menu opens over the selection: the row is offered.
-  expect(commentRow().visible?.(withScope("statistical"))).toBe(true);
+  const open = openOn(liveRange());
+  expect(commentRow().visible?.(open)).toBe(true);
   expect(typeof commentRow().label === "string" ? commentRow().label : "").toBe("Comment");
   await act(async () => {
-    await commentRow().run(withScope("statistical"));
+    await commentRow().run(open);
   });
   await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
   await flush(20);
@@ -230,15 +263,20 @@ it("over a selection where comments are on, the row shows and opens the toolbar'
   expect(toast.error).not.toHaveBeenCalled();
 });
 
-it("live, the right-click collapses the browser selection first: the row still shows, and a stale selection does not", async () => {
+it("the live sequence: open with nothing selected, select, right-click (it collapses the selection), then open with nothing again", async () => {
   await mount();
-  await selectWord("statistical", { pointer: false });
-  // The right-click collapses the selection; the menu's context may be from an earlier open (no selection in it).
-  window.getSelection()?.removeAllRanges();
-  expect(commentRow().visible?.(withScope(""))).toBe(true);
-  expect(commentRow().visible?.(withScope("statistical"))).toBe(true);
+  // Open 1: nothing selected.
+  expect(commentRow().visible?.(rightClick())).toBe(false);
+  // Open 2: select and right-click at once; the right-click collapses the live selection.
+  selectNow("statistical");
+  const second = rightClick();
+  expect(window.getSelection()?.isCollapsed ?? true).toBe(true);
+  expect(commentRow().visible?.(second)).toBe(true);
+  // Open 3: nothing selected; nothing is kept from open 2.
+  expect(commentRow().visible?.(rightClick())).toBe(false);
+  // Choosing Comment on open 2 still pins open 2's passage.
   await act(async () => {
-    await commentRow().run(withScope(""));
+    await commentRow().run(second);
   });
   await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
   await flush(20);
@@ -246,24 +284,10 @@ it("live, the right-click collapses the browser selection first: the row still s
   expect(quoted()).toBe("statistical");
 });
 
-it("a selection the person clicked away from long ago is not offered", async () => {
-  await mount();
-  await selectWord("statistical", { pointer: false });
-  window.getSelection()?.removeAllRanges();
-  document.dispatchEvent(new Event("selectionchange"));
-  const now = Date.now();
-  const spy = jest.spyOn(Date, "now").mockReturnValue(now + 5_000);
-  try {
-    expect(commentRow().visible?.(withScope(""))).toBe(false);
-  } finally {
-    spy.mockRestore();
-  }
-});
-
 it("outside an area where comments are on the row is absent", async () => {
   await mount(false, true);
-  expect(commentRow().visible?.(withScope(""))).toBe(false);
+  expect(commentRow().visible?.(openOn(null))).toBe(false);
   await selectWord("comments here", { pointer: false });
   expect(window.getSelection()?.toString()).toBe("comments here");
-  expect(commentRow().visible?.(withScope("comments here"))).toBe(false);
+  expect(commentRow().visible?.(openOn(liveRange()))).toBe(false);
 });
