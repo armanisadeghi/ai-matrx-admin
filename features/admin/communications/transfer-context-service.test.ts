@@ -1,6 +1,6 @@
 import { contextFixture } from "./__tests__/transfer-context-fixture";
 import { projectTransferContexts } from "./transfer-context";
-import type { TransferContextEvent } from "./transfer-context";
+import type { TransferContextEvent } from "@/lib/communications/voice/transfer-conversation-binding";
 import { loadTransferContexts } from "./transfer-context-service";
 jest.mock("@/utils/supabase/client", () => ({
   createClient: () => mockClient,

@@ -1,9 +1,20 @@
 /** @jest-environment node */
 import twilio from "twilio";
 import { POST } from "./route";
+import { readTransferWorkSummary } from "@/lib/communications/voice/transfer-work-summary";
+jest.mock("@/lib/communications/voice/transfer-work-summary", () => ({
+  readTransferWorkSummary: jest.fn(),
+}));
+jest.mock("@/utils/supabase/adminClient", () => ({
+  createAdminClient: () => ({ fixture: true }),
+}));
 const original = process.env.TWILIO_AUTH_TOKEN;
 const token = "receiver-brief-fixture";
-function request(query: string, forged = false) {
+function request(
+  query: string,
+  forged = false,
+  extra: Record<string, string> = {},
+) {
   const url =
     "https://www.aimatrx.com/api/webhooks/twilio/voice/transfer-brief" + query;
   const params = {
@@ -11,6 +22,7 @@ function request(query: string, forged = false) {
     From: "+19497027626",
     To: "+19498072145",
     Summary: "private",
+    ...extra,
   };
   return new Request(url, {
     method: "POST",
@@ -24,6 +36,7 @@ function request(query: string, forged = false) {
   });
 }
 beforeEach(() => {
+  jest.mocked(readTransferWorkSummary).mockReset();
   process.env.TWILIO_AUTH_TOKEN = token;
 });
 afterAll(() => {
@@ -54,4 +67,53 @@ test("signature covers query counts", async () => {
   expect(
     (await POST(request("?agentRequests=3&interruptions=1", true))).status,
   ).toBe(403);
+});
+
+const parentIdentity = {
+  AccountSid: "AC" + "1".repeat(32),
+  ParentCallSid: "CA" + "2".repeat(32),
+};
+test("signed parent identity selects saved work, never the child call or URL data", async () => {
+  jest
+    .mocked(readTransferWorkSummary)
+    .mockResolvedValue({
+      requests: 3,
+      completed: 1,
+      failed: 1,
+      unfinished: 1,
+      toolCalls: 3,
+    });
+  const response = await POST(
+    request("?summary=private", false, parentIdentity),
+  );
+  const xml = await response.text();
+  expect(readTransferWorkSummary).toHaveBeenCalledWith(
+    expect.anything(),
+    parentIdentity.AccountSid,
+    parentIdentity.ParentCallSid,
+  );
+  expect(xml).toContain(
+    "1 completed agent requests, 1 failed, and 1 not confirmed complete",
+  );
+  expect(xml).toContain("3 tool call attempts");
+  expect(xml).not.toMatch(/private|<Hangup|<Dial/);
+});
+test("a child SID never substitutes for an absent parent", async () => {
+  await POST(
+    request("", false, {
+      AccountSid: parentIdentity.AccountSid,
+      CallSid: parentIdentity.ParentCallSid,
+    }),
+  );
+  expect(readTransferWorkSummary).not.toHaveBeenCalled();
+});
+test("unavailable saved work preserves the receiver bridge introduction", async () => {
+  jest
+    .mocked(readTransferWorkSummary)
+    .mockRejectedValue(Error("private database detail"));
+  const response = await POST(request("", false, parentIdentity));
+  const xml = await response.text();
+  expect(response.status).toBe(200);
+  expect(xml).toContain("Connecting you now");
+  expect(xml).not.toMatch(/private|Saved work|<Hangup|<Dial/);
 });
