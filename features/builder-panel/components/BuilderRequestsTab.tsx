@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * Requests — every request in the flow, in order: the page's own calls (client → server) and every
@@ -257,7 +258,7 @@ export function BuilderRequestsTab({
           {selected ? (
             <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
-                <span className="font-mono">{selected.kind}</span>
+                <span className="font-mono">{humanizeIdentifier(selected.kind)}</span>
                 {selected.nodeId ? <span className="font-mono">step {stepLabels[selected.nodeId] ?? selected.nodeId}</span> : null}
                 {selected.runId ? <span className="truncate font-mono">run {selected.runId}</span> : null}
                 {selected.error ? <span className="text-destructive">{selected.error}</span> : null}

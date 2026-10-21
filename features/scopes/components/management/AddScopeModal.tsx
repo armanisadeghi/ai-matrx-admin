@@ -430,7 +430,7 @@ export function AddScopeModal({
                   id={variableKeyId}
                   value={variableKeyInput}
                   onChange={(e) => setVariableKeyInput(e.target.value)}
-                  className="flex-1"
+                  className="font-mono flex-1"
                   data-identifier
                   placeholder="e.g. budget_code"
                   onKeyDown={(e) => {

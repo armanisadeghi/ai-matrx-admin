@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * Database-defined converters: list, edit, create, and check against the sample page.
@@ -308,7 +309,7 @@ const columns: MatrxColumnDef<ConverterDefinitionRow>[] = [
       <div className="min-w-0">
         <div className="truncate text-xs font-medium">{r.label}</div>
         <div className="truncate font-mono text-xs text-muted-foreground">
-          {r.slug}
+          {humanizeIdentifier(r.slug)}
         </div>
       </div>
     ),

@@ -598,7 +598,7 @@ function EntityFilter({
         ))}
         {col?.choices?.length ? (
           <div className="flex flex-col p-1">
-            <span className="px-1 pb-1 type-secondary text-muted-foreground">{col.name} is any of</span>
+            <span className="px-1 pb-1 type-secondary text-muted-foreground">{col.name.trim()} is any of</span>
             {col.choices.map((choice) => {
               const now = filters[col.api_name];
               const list = Array.isArray(now) ? now : typeof now === "string" ? [now] : [];
@@ -619,7 +619,7 @@ function EntityFilter({
           </div>
         ) : col ? (
           <div className="flex flex-col gap-2 p-1">
-            <span className="type-secondary text-muted-foreground">{col.name} is</span>
+            <span className="type-secondary text-muted-foreground">{col.name.trim()} is</span>
             <Input
               autoFocus
               value={value}

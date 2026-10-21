@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /** The selected entry: what it is, where it came from, when — and the value exactly as published,
  *  in the canonical JSON component. A derived entry names the raw source it came from. */
@@ -28,7 +29,7 @@ export function BuilderEntryDetail({
       <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-3 py-1.5">
         <h2 className="min-w-0 truncate text-sm font-semibold">{entry.label}</h2>
         <Badge>{BUILDER_GROUP_LABELS[entry.group] ?? entry.group}</Badge>
-        {entry.kind ? <Badge tone="info">{entry.kind}</Badge> : null}
+        {entry.kind ? <Badge tone="info">{humanizeIdentifier(entry.kind)}</Badge> : null}
         {certainty !== null ? <Badge tone={certainty >= 70 ? "success" : "warning"}>{certainty}% sure</Badge> : null}
         <span className="text-[11px] text-muted-foreground" title={new Date(shownAt).toLocaleString()}>
           {formatRelativeTime(shownAt)}
@@ -69,7 +70,7 @@ export function BuilderEntryDetail({
         ) : null}
       </div>
       <div className="flex min-h-0 flex-1 flex-col p-2">
-        <BuilderJson data={shown} label={entry.key} location={`Data · ${entry.label}`} className="h-full" />
+        <BuilderJson data={shown} label={humanizeIdentifier(entry.key)} location={`Data · ${entry.label}`} className="h-full" />
       </div>
     </div>
   );

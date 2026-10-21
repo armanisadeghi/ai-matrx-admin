@@ -196,6 +196,8 @@ export function PromptBlockEditor({ blockId }: { blockId: string | "new" }) {
                 disabled={!isNew}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => isNew && !label && setLabel(name)}
+                className="font-mono"
+                data-identifier
                 placeholder="research_rules"
               />
               {nameError && <span className="text-destructive">{nameError}</span>}

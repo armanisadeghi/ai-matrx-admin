@@ -1757,7 +1757,7 @@ function JsonRecordEditor({
           onKeyDown={(e) => {
             if (e.key === "Enter") addKey();
           }}
-          className="max-w-[240px]" mono
+          className="font-mono max-w-[240px]" mono
           data-identifier
           placeholder="tool_name"
           disabled={busy}

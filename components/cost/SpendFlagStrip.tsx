@@ -67,7 +67,7 @@ const SLOT: Record<SpendFlagSlot, { icon: Glyph; label: string }> = {
   run_over_limit: { icon: Banknote, label: "A run > $1" },
   avg_turns_over_limit: { icon: Layers, label: "Avg turns > 5" },
   max_turns_over_limit: { icon: InfinityIcon, label: "Max turns > 20" },
-  huge_context: { icon: Weight, label: "Huge context" },
+  huge_context: { icon: Weight, label: "Huge input" },
   premium_short_output: { icon: Scissors, label: "Premium with short replies" },
   test_account: { icon: UserCog, label: "Billed to admin/test account" },
   runs_as_person: { icon: User, label: "Runs as a person" },

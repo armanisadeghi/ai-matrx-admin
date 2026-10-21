@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * An organization's own value for each curated System context item (lane L3b). Each row shows the
@@ -81,7 +82,7 @@ function Row({
     <li className="grid grid-cols-[minmax(0,12rem)_minmax(0,1fr)_minmax(0,1.4fr)] items-center gap-3 border-b border-border py-2 last:border-b-0">
       <div className="min-w-0">
         <div className="truncate text-sm font-medium">{row.displayName}</div>
-        <div className="truncate font-mono text-xs text-muted-foreground">{row.key}</div>
+        <div className="truncate font-mono text-xs text-muted-foreground">{humanizeIdentifier(row.key)}</div>
       </div>
       <div className="truncate text-sm text-muted-foreground" title={show(row.defaultValue)}>
         {show(row.defaultValue)}

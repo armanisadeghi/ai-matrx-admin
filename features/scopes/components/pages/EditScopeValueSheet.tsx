@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
 import { useState, useEffect, useId } from "react";
@@ -170,7 +171,7 @@ export function EditScopeValueSheet({
         <form className="space-y-5" onSubmit={handleSave}>
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge variant="secondary" className="text-[10px] capitalize">
-              {field.kind}
+              {humanizeIdentifier(field.kind)}
             </Badge>
             {row.value?.version != null && (
               <Badge variant="outline" className="text-[10px]">

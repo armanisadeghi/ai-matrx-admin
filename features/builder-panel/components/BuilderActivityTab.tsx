@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /** Activity — what was done, in order: each request, each step, gates, provision captures; with
  *  time and cost, each opening its raw record. One search and a kind filter narrow long runs. */
@@ -93,7 +94,7 @@ export function BuilderActivityTab({
                 className="flex w-full min-w-0 items-center gap-2 border-b border-border px-3 py-1 text-left hover:bg-accent/60"
               >
                 <span className="w-14 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">{clock(r.at)}</span>
-                <Badge tone={KIND_TONE[r.kind] ?? "neutral"}>{r.kind}</Badge>
+                <Badge tone={KIND_TONE[r.kind] ?? "neutral"}>{humanizeIdentifier(r.kind)}</Badge>
                 <span className="min-w-0 flex-1 truncate text-xs">
                   <BuilderHighlight text={r.title} query={query} />
                 </span>

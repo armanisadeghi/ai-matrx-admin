@@ -187,7 +187,7 @@ export function SurfaceEvidencePage() {
         data={[
           { value: "runs", label: "Runs", count: runs.length },
           { value: "tools", label: "Tools" },
-          { value: "fetched", label: "Fetched context" },
+          { value: "fetched", label: "Fetched context values" },
         ]}
       />
 
@@ -251,7 +251,7 @@ export function SurfaceEvidencePage() {
               density="condensed"
               pageSize={100}
               defaultSort={{ id: "count", direction: "desc" }}
-              toolbar={{ title: "Fetched context", search: true }}
+              toolbar={{ title: "Fetched context values", search: true }}
               drill={{ local: true, source, levels: { target: { breakouts: ["agent"], show: ["count", "sum_count", "sum_failures"] } } }}
               emptyState={{ title: "Nothing fetched by tool", description: "Every run used only what it was handed." }}
             />

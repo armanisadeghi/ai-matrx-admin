@@ -2388,6 +2388,7 @@ function CustomProviderRow({
             id={`${prefix}-key`}
             value={value.key}
             data-identifier
+            className="font-mono"
             placeholder="bing_webmaster"
             spellCheck={false}
             onChange={(event) =>

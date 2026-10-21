@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * ModelViewPanel — the exact request the model's provider would receive.
@@ -475,7 +476,7 @@ function ToolsSection({ tools, sources }: { tools: RequestTool[]; sources: Recor
             onClick={() => setOpen((o) => ({ ...o, [i]: !o[i] }))}
           >
             {open[i] ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
-            <span className="min-w-0 flex-1 truncate">{tool.name}</span>
+            <span className="min-w-0 flex-1 truncate">{humanizeIdentifier(tool.name)}</span>
             {sources[tool.name] ? (
               <Badge tone={sources[tool.name] === "unrecorded" ? "warning" : "neutral"}>{sources[tool.name]}</Badge>
             ) : null}

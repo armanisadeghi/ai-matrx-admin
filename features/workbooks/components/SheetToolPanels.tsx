@@ -235,22 +235,22 @@ function FilterViewsPanel({ api, filterViews, onFilterViews, editable }: SheetTo
         <Empty>No saved views yet.</Empty>
       ) : (
         <ul className="grid grid-cols-[minmax(0,1fr)] gap-1">
-          {filterViews.map((v) => (
-            <li key={v.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm" data-filter-view="">
-              <span className="min-w-0 flex-1 truncate">{v.name}</span>
+          {filterViews.map((view) => (
+            <li key={view.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm" data-filter-view="">
+              <span className="min-w-0 flex-1 truncate">{view.name}</span>
               <span className="flex shrink-0 gap-1">
                 <Button
                   variant="outline"
                   onClick={() => {
                     const target = api?.getActiveWorkbook()?.getActiveSheet();
-                    if (!target || target.getSheetId() !== v.sheetId) toast.error("Open the sheet this view was saved on first");
-                    else if (!applyFilterView(target, v)) toast.error("The view could not be applied");
+                    if (!target || target.getSheetId() !== view.sheetId) toast.error("Open the sheet this view was saved on first");
+                    else if (!applyFilterView(target, view)) toast.error("The view could not be applied");
                   }}
                 >
                   Apply
                 </Button>
                 {editable && (
-                  <Button variant="quiet" onClick={() => onFilterViews(filterViews.filter((x) => x.id !== v.id))}>
+                  <Button variant="quiet" onClick={() => onFilterViews(filterViews.filter((x) => x.id !== view.id))}>
                     Delete
                   </Button>
                 )}

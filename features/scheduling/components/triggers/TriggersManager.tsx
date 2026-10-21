@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * THE Triggers manager — every workflow trigger (schedule, event, webhook) that
@@ -280,7 +281,7 @@ export function TriggersManager({
       accessorFn: (t) => t.overview.kind,
       filter: "select",
       width: 90,
-      cell: (t) => <span className="text-xs">{t.overview.kind}</span>,
+      cell: (t) => <span className="text-xs">{humanizeIdentifier(t.overview.kind)}</span>,
     },
     {
       id: "cadence",

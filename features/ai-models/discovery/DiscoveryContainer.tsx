@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 // features/ai-models/discovery/DiscoveryContainer.tsx
 //
@@ -698,7 +699,7 @@ function PromotedPanel({
         return (
           <div key={v.id} className="space-y-1 text-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-foreground">{v.key}</span>
+              <span className="font-medium text-foreground">{humanizeIdentifier(v.key)}</span>
               <Badge variant="outline">{v.review_state}</Badge>
               <Badge variant={v.tested_on_current_runtime ? "default" : "secondary"}>{testedLabel(v)}</Badge>
               {v.is_default ? <Badge variant="outline">Default</Badge> : null}

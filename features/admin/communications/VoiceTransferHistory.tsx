@@ -91,7 +91,7 @@ export function VoiceTransferHistory() {
                   </Link>
                 ) : (
                   <span className="text-sm text-muted-foreground">
-                    Context unavailable
+                    Conversation unavailable
                   </span>
                 )}
                 <VoiceTransferReceipt

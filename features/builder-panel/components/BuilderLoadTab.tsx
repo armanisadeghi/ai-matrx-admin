@@ -1,4 +1,5 @@
 "use client";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 /**
  * Page load — every database call this page made, grouped by what it read, with WHEN it left
@@ -119,7 +120,7 @@ export function BuilderLoadTab() {
         </ol>
         {open ? (
           <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2">
-            <span className="font-mono text-xs">{open.key}</span>
+            <span className="font-mono text-xs">{humanizeIdentifier(open.key)}</span>
             {open.calls.map((call) => (
               <div key={call.seq} className="flex flex-col gap-0.5 border-b border-border pb-1.5">
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
