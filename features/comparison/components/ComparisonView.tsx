@@ -231,9 +231,9 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
 
       <div className="mt-auto flex items-center gap-3 pt-1">
         {facts ? (
-          <a href={facts} target="_blank" rel="noopener" className="type-secondary inline-flex items-center gap-1 text-primary hover:underline">
+          <OutboundLink href={facts} className="type-secondary inline-flex items-center gap-1 text-primary hover:underline">
             <Table2 className="h-3.5 w-3.5" aria-hidden /> Facts
-          </a>
+          </OutboundLink>
         ) : null}
         {item.source_url ? (
           <OutboundLink href={item.source_url} className="type-secondary inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline">

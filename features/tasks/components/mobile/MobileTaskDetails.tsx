@@ -20,6 +20,7 @@ import {
   toggleTaskCompleteThunk,
   deleteTaskThunk,
   createSubtaskThunk,
+  saveTaskFieldNowThunk,
 } from "@/features/tasks/redux/thunks";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";
 import { Button } from "@/components/ui/button";
@@ -350,17 +351,21 @@ export default function MobileTaskDetails({
       setDescription(value);
       setIsDirty(true);
     },
-    task_status: (value: unknown) => {
+    task_status: async (value: unknown) => {
       if (!isTaskStatus(value)) {
         throw new Error(
           `task_status expects one of: ${TASK_STATUSES.join(" | ")}.`,
         );
       }
+      // Approved status / priority / due date save straight to the record
+      // (same thunk as the desktop editor); the form shows the saved value.
+      await dispatch(
+        saveTaskFieldNowThunk({ taskId: task.id, patch: { status: value } }),
+      ).unwrap();
       surfaceDraftRef.current.status = value;
       setStatus(value);
-      setIsDirty(true);
     },
-    task_priority: (value: unknown) => {
+    task_priority: async (value: unknown) => {
       if (
         value !== null &&
         value !== "low" &&
@@ -371,11 +376,13 @@ export default function MobileTaskDetails({
           "task_priority expects low | medium | high, or null to clear.",
         );
       }
+      await dispatch(
+        saveTaskFieldNowThunk({ taskId: task.id, patch: { priority: value } }),
+      ).unwrap();
       surfaceDraftRef.current.priority = value;
       setPriority(value);
-      setIsDirty(true);
     },
-    task_due_date: (value: unknown) => {
+    task_due_date: async (value: unknown) => {
       if (
         value !== null &&
         (typeof value !== "string" || !isValidDateOnly(value))
@@ -384,9 +391,11 @@ export default function MobileTaskDetails({
           "task_due_date expects a YYYY-MM-DD string, or null to clear.",
         );
       }
+      await dispatch(
+        saveTaskFieldNowThunk({ taskId: task.id, patch: { due_date: value } }),
+      ).unwrap();
       surfaceDraftRef.current.dueDate = value ?? "";
       setDueDate(value ?? "");
-      setIsDirty(true);
     },
     task_labels: (value: unknown) => {
       if (!Array.isArray(value) || !value.every(isTaskLabel)) {

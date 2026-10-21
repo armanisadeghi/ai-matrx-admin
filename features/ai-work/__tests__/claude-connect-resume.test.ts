@@ -1,5 +1,4 @@
 import {
-  CONNECT_TIMEOUT_MS,
   parsePendingConnect,
   resumeStep,
 } from "@/features/ai-work/lib/claudeConnectFlow";
@@ -23,7 +22,7 @@ describe("resuming a Claude sign-in after a reload", () => {
     expect(resumeStep(pending, status({ state: "starting" }), NOW)).toEqual({ kind: "keep_starting" });
   });
   it("an old or ended sign-in is forgotten", () => {
-    const old = { slot: "primary", startedAt: NOW - CONNECT_TIMEOUT_MS - 1 };
+    const old = { slot: "primary", startedAt: NOW - 360_001, waitMs: 360_000 };
     expect(resumeStep(old, status({ state: "starting" }), NOW)).toEqual({ kind: "forget" });
     expect(resumeStep(pending, status({ state: "signed_in_not_plan" }), NOW)).toEqual({ kind: "forget" });
   });

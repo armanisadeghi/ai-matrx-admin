@@ -20,6 +20,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { cn } from "@/lib/utils";
 import { HUGGING_FACE_ICON_URL, HUGGING_FACE_TOKENS_URL } from "./service";
 import { useHuggingFaceConnection } from "./useHuggingFaceConnection";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function HuggingFaceConnectionCard({
   compact = false,
@@ -131,14 +132,12 @@ export function HuggingFaceConnectionCard({
               {hf.busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Save
             </Button>
-            <a
+            <OutboundLink
               href={HUGGING_FACE_TOKENS_URL}
-              target="_blank"
-              rel="noreferrer"
               className="inline-flex items-center gap-1 self-center text-xs text-muted-foreground hover:text-foreground"
             >
               Get a token <ExternalLink className="h-3 w-3" />
-            </a>
+            </OutboundLink>
           </form>
         ) : null}
 

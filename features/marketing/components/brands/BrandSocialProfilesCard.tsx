@@ -210,15 +210,12 @@ export function BrandSocialProfilesCard({
             busyRow === r.id && progress ? (
               <span className="truncate text-xs text-primary">{progress}</span>
             ) : handleValue ? (
-              <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
-                <span className="shrink-0">{platformLabel(r.platform)} ·</span>
+              <span className="flex min-w-0 items-center whitespace-nowrap text-xs text-muted-foreground">
                 <span className="min-w-0 truncate">{handleValue}</span>
               </span>
-            ) : (
-              <span className="truncate text-xs text-muted-foreground">
-                {[platformLabel(r.platform), r.handle || null].filter(Boolean).join(" · ")}
-              </span>
-            );
+            ) : r.handle ? (
+              <span className="truncate text-xs text-muted-foreground">{r.handle}</span>
+            ) : null;
           const text = (
             <span className="flex min-w-0 flex-col leading-tight">
               {nameLine}
@@ -262,9 +259,10 @@ export function BrandSocialProfilesCard({
         id: "platform",
         label: "Platform",
         header: "Platform",
+        width: 96,
         accessorFn: (r) => platformLabel(r.platform),
-        hidden: true, // the platform name already sits under the account name; the column stays for filtering
         filter: "select",
+        cell: (r) => <span className="whitespace-nowrap text-xs">{platformLabel(r.platform)}</span>,
       },
       {
         id: "tracking",
@@ -279,13 +277,7 @@ export function BrandSocialProfilesCard({
           if (r.tracking === "Tracked") return <Badge tone="success">Tracked</Badge>;
           if (r.tracking === "Not tracked") {
             if (!canEdit) return <span className="text-muted-foreground">—</span>;
-            const a = r.account;
-            const read = a && (a.followers !== null || a.postsTracked > 0);
-            return (
-              <span title={read ? "Read once when the brand was set up. Track it to keep these numbers current." : undefined}>
-                <Badge tone="warning">Not tracked</Badge>
-              </span>
-            );
+            return <Badge tone="warning">Not tracked</Badge>;
           }
           const title =
             r.tracking === "Not supported"

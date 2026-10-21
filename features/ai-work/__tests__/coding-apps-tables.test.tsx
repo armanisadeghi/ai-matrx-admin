@@ -218,12 +218,13 @@ describe("Claude cloud delivery on the account rows", () => {
   });
 
   it("a running sign-in is shown on its own row and names the account, step and time", () => {
-    const c = cloud({ running: { forEmail: "b@example.com", slot: "s", startedAt: Date.now() - 65_000, step: "starting", phase: "app", phaseDetail: null, link: null } });
+    const c = cloud({ running: { forEmail: "b@example.com", slot: "s", startedAt: Date.now() - 65_000, step: "starting", phase: "app", phaseDetail: null, link: null, timing: { expectedSeconds: 240, waitSeconds: 360 } } });
     render(<AppsTables {...props({ cloud: c })} />);
     expect(rowOf("b@example.com")?.textContent).toContain("Signing in");
     const panel = host.querySelector("[data-cloud-sign-in=starting]")!;
     expect(panel.textContent).toContain("Connecting b@example.com for cloud sessions");
-    expect(panel.textContent).toContain("Step 2 of 3");
+    expect(panel.textContent).toContain("Sandbox is up; its app is starting");
+    expect(panel.textContent).not.toMatch(/Step \d of/);
     expect(panel.textContent).toContain("up to about 4 minutes");
   });
 });

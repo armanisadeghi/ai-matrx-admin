@@ -59,7 +59,7 @@ import { designMarkdown } from "./designed-database";
 import { FieldList, MenuRow, SidePeek, ViewerSaveBar, ViewerSortButton, ViewTab, filtersDiffer, shownFilters, shownSorts, type FilterChoice, type SortChoice, NewButton } from "./menu-parts";
 import { ChartView, choicesOfField } from "./ChartView";
 import { DEFAULT_CHART } from "./first-reads";
-import { blockQuestion, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
+import { LOAD_LIMITS, blockPageSize, blockQuestion, effectiveHidden, kindOf, viewSpec, type ViewWithSummaries } from "./view-spec";
 import { primeOwningRow, useOwningRow } from "./owning-row";
 import { newRowData, readRowTemplates, setDefaultRowTemplate, startNewRow, startTemplatePage, templateFor, type NewRowPick, type RowTemplateChoice } from "./row-templates";
 import type { RowPageDb } from "../embed/row-page";
@@ -556,6 +556,7 @@ function DatabaseBody({
         view={spec}
         chooser={false}
         embedded
+        {...(blockPageSize(view) ? { pageSize: blockPageSize(view) } : {})}
         titleField={titleField ?? null}
         // A table's row is a "record" (canonical vocabulary); "New page" stays on the Spaces-native entity database.
         newRowLabel={editable ? "New record" : undefined}
@@ -875,7 +876,7 @@ function ViewSettings({
   const designer = useDatabaseDesigner();
   const client = useRecordsClient();
   const table = useTable(tableId);
-  const [page, setPage] = useState<"main" | "layout" | "group" | "x" | "yfield" | "props" | "newprop">("main");
+  const [page, setPage] = useState<"main" | "layout" | "group" | "subgroup" | "limit" | "x" | "yfield" | "props" | "newprop">("main");
   const chart = { ...DEFAULT_CHART, ...view.chart };
   const setChart = (p: Partial<ChartSettings>) => onView({ chart: { ...chart, ...p } });
   const label = (key?: string | null) => (key ? (fields.find((f) => f.key === key)?.label ?? key) : "None");
@@ -914,6 +915,8 @@ function ViewSettings({
             <MenuRow icon={<Table2 size={15} />} label="Layout" end={<span className="type-secondary text-muted-foreground">{LAYOUTS.find((l) => l.id === view.layout)?.label}</span>} onClick={() => editable && setPage("layout")} />
             <MenuRow icon={<List size={15} />} label="Properties" end={<span className="text-xs text-muted-foreground">{fields.length - effectiveHidden(view, fields).filter((k) => fields.some((f) => f.key === k)).length} shown</span>} onClick={() => setPage("props")} />
             {view.layout === "kanban" ? <MenuRow icon={<Kanban size={15} />} label="Group" end={<span className="type-secondary text-muted-foreground">{label(view.groupField)}</span>} onClick={() => editable && setPage("group")} /> : null}
+            {view.layout === "kanban" ? <MenuRow icon={<Kanban size={15} />} label="Sub-group" end={<span className="type-secondary text-muted-foreground">{label(view.subGroupField)}</span>} onClick={() => editable && setPage("subgroup")} /> : null}
+            {view.layout !== "chart" && (view.layout as string) !== "form" ? <MenuRow icon={<List size={15} />} label="Load limit" end={<span className="type-secondary text-muted-foreground">{blockPageSize(view) ? `${blockPageSize(view)} rows` : "Default"}</span>} onClick={() => editable && setPage("limit")} /> : null}
             {view.layout === "chart" ? (
               <>
                 <div className="px-2 pt-2 pb-1 type-secondary text-muted-foreground">Chart type</div>
@@ -1004,6 +1007,15 @@ function ViewSettings({
         ) : null}
         {page === "newprop" ? <NewPropertyPanel tableId={tableId} takenKeys={fields.map((f) => f.key)} onDone={() => setPage("props")} /> : null}
         {page === "group" ? <FieldList fields={fields} value={view.groupField} onPick={(k) => (onView({ groupField: k }), setPage("main"))} /> : null}
+        {page === "subgroup" ? (
+          <>
+            <MenuRow label="None" active={!view.subGroupField} onClick={() => (onView({ subGroupField: null }), setPage("main"))} />
+            <FieldList fields={fields.filter((f) => f.key !== view.groupField)} value={view.subGroupField} onPick={(k) => (onView({ subGroupField: k }), setPage("main"))} />
+          </>
+        ) : null}
+        {page === "limit"
+          ? LOAD_LIMITS.map((n) => <MenuRow key={n} label={`${n} rows`} active={blockPageSize(view) === n} onClick={() => (onView({ loadLimit: n }), setPage("main"))} />)
+          : null}
         {page === "x" ? <FieldList fields={fields} value={chart.groupBy} onPick={(k) => (setChart({ groupBy: k }), setPage("main"))} /> : null}
         {page === "yfield" ? (
           <FieldList fields={fields} value={chart.field} filter={(f) => ["number", "currency", "percent", "rating", "integer"].includes(kindOf(f))} onPick={(k) => (setChart({ field: k }), setPage("main"))} />

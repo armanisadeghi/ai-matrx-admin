@@ -399,6 +399,21 @@ const slice = createSlice({
     clearTaskEdit(state, action: PayloadAction<string>) {
       delete state.taskEdits[action.payload];
     },
+    /**
+     * Drop only these fields from a task's draft (a field just saved straight
+     * to the record). Untouched when none of them is staged, so no selector
+     * over `taskEdits` sees a new reference.
+     */
+    dropTaskEditFields(
+      state,
+      action: PayloadAction<{ taskId: string; fields: (keyof TaskEditDraft)[] }>,
+    ) {
+      const { taskId, fields } = action.payload;
+      const current = state.taskEdits[taskId];
+      if (!current || !fields.some((f) => f in current)) return;
+      for (const f of fields) delete current[f];
+      if (Object.keys(current).length === 0) delete state.taskEdits[taskId];
+    },
     clearAllTaskEdits(state) {
       state.taskEdits = {};
     },
@@ -485,6 +500,7 @@ export const {
   setSelectedTaskId,
   patchTaskEdit,
   clearTaskEdit,
+  dropTaskEditFields,
   clearAllTaskEdits,
   setLastCreatedTaskId,
   setPendingSource,

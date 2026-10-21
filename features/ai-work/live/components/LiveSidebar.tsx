@@ -65,19 +65,61 @@ function SectionHeader({
   );
 }
 
-/** Shown only while a held list is out of its live order: one press adopts it. */
-function SortAction({ pending, onSort }: { pending: boolean; onSort: () => void }) {
-  if (!pending) return null;
+/**
+ * Every held list's Sort. Usable only while the list is out of its live order; its space is
+ * always reserved (an invisible, unfocusable twin) so its arrival never shifts the header, and
+ * its arrival is announced to screen readers. What it sorts by is on the control, not a tooltip.
+ */
+function SortAction({ pending, onSort, list, by }: { pending: boolean; onSort: () => void; list: string; by: string }) {
   return (
-    <Button
-      type="button"
-      variant="link"
-      onClick={onSort}
-      title="Order by latest activity"
-      className="h-auto px-0 text-xs normal-case tracking-normal"
-    >
-      Sort
-    </Button>
+    <>
+      <Button
+        type="button"
+        variant="link"
+        onClick={onSort}
+        disabled={!pending}
+        tabIndex={pending ? undefined : -1}
+        aria-hidden={pending ? undefined : true}
+        aria-label={`Sort ${list} by ${by}`}
+        data-sort-action={list}
+        className={cn("h-auto shrink-0 px-0 text-xs normal-case tracking-normal", !pending && "invisible")}
+      >
+        Sort by {by}
+      </Button>
+      <span role="status" className="sr-only">
+        {pending ? `${list}: newer activity. Sort by ${by} is available.` : ""}
+      </span>
+    </>
+  );
+}
+
+/** A collapsible group's header: the toggle and the group's Sort side by side (never nested). */
+function CollapsibleHeader({
+  label,
+  count,
+  open,
+  onToggle,
+  action,
+}: {
+  label: string;
+  count: React.ReactNode;
+  open: boolean;
+  onToggle: () => void;
+  action: React.ReactNode;
+}) {
+  return (
+    <div className="flex h-8 items-center gap-2 pr-3 pt-2">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex min-w-0 flex-1 items-center gap-1 pl-3 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
+      >
+        <ChevronRight className={cn("size-3 transition-transform", open && "rotate-90")} />
+        {label} <span className="tabular-nums">{count}</span>
+      </button>
+      {action}
+    </div>
   );
 }
 
@@ -273,22 +315,27 @@ export function LiveSidebar({
   // the person presses Sort.
   const activeOrder = useStableOrder(liveActive, (s) => s.address, q);
   const active = activeOrder.items;
-  const ended = useStableOrder(
+  // A list cut at "Show more" never takes a new row in below the cut: it lands inside the window.
+  const endedOrder = useStableOrder(
     visible.filter((s) => s.presence === "ended"),
     (s) => s.address,
     q,
-  ).items;
+    showEnded ? endedLimit : 0,
+  );
+  const ended = endedOrder.items;
   const busy = active.filter((s) => s.presence === "busy").length;
   const matchedRooms = rooms.filter((r) => match(r.displayName));
   // The same split the hub's summary counts (presence.splitRooms): the numbers add up.
   const split = splitRooms(matchedRooms);
-  const roomOrder = useStableOrder(split.listed, (r) => r.conversation.id, q);
+  const roomOrder = useStableOrder(split.listed, (r) => r.conversation.id, q, roomLimit);
   const shownRooms = roomOrder.items;
-  const reviewRooms = useStableOrder(split.review, (r) => r.conversation.id, q).items;
-  const agentMembers = useStableOrder(
+  const reviewOrder = useStableOrder(split.review, (r) => r.conversation.id, q);
+  const reviewRooms = reviewOrder.items;
+  const agentOrder = useStableOrder(
     members.filter((m) => m.member_kind === "agent_conversation"),
     (m) => m.id,
-  ).items;
+  );
+  const agentMembers = agentOrder.items;
   const membersOf = (s: LiveSession) => members.filter((m) => s.bindingIds.includes(m.member_id));
   const roomMemberCount = (id: string) =>
     members.filter((m) => m.conversation_id === id && m.member_kind === "coding_session").length;
@@ -318,7 +365,7 @@ export function LiveSidebar({
           action={
             <>
               {busy > 0 && <span className="normal-case tracking-normal text-success-ink">{busy} busy</span>}
-              <SortAction pending={activeOrder.pending} onSort={activeOrder.resort} />
+              <SortAction pending={activeOrder.pending} onSort={activeOrder.resort} list="Sessions" by="activity" />
             </>
           }
         />
@@ -357,15 +404,13 @@ export function LiveSidebar({
 
         {ended.length > 0 && (
           <>
-            <button
-              type="button"
-              onClick={() => setShowEnded((v) => !v)}
-              aria-expanded={showEnded}
-              className="flex h-8 w-full items-center gap-1 px-3 pt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
-            >
-              <ChevronRight className={cn("size-3 transition-transform", showEnded && "rotate-90")} />
-              Ended <span className="tabular-nums">{ended.length}</span>
-            </button>
+            <CollapsibleHeader
+              label="Ended"
+              count={ended.length}
+              open={showEnded}
+              onToggle={() => setShowEnded((v) => !v)}
+              action={<SortAction pending={showEnded && endedOrder.pending} onSort={endedOrder.resort} list="Ended" by="last seen" />}
+            />
             {showEnded &&
               ended.slice(0, endedLimit).map((s) => (
                 <SessionRow
@@ -392,7 +437,7 @@ export function LiveSidebar({
         <SectionHeader
           label="Rooms"
           count={loaded ? `${shownRooms.length}${roomsComplete ? "" : "+"}` : undefined}
-          action={<SortAction pending={roomOrder.pending} onSort={roomOrder.resort} />}
+          action={<SortAction pending={roomOrder.pending} onSort={roomOrder.resort} list="Rooms" by="latest" />}
         />
         {!loaded ? (
           <div className="mx-2.5 my-1 h-9 animate-pulse rounded-md bg-muted/60" />
@@ -422,19 +467,13 @@ export function LiveSidebar({
         )}
         {reviewRooms.length > 0 && (
           <>
-            <button
-              type="button"
-              onClick={() => setShowReview((v) => !v)}
-              aria-expanded={showReview}
-              className="flex h-8 w-full items-center gap-1 px-3 pt-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
-            >
-              <ChevronRight className={cn("size-3 transition-transform", showReview && "rotate-90")} />
-              Review rooms{" "}
-              <span className="tabular-nums">
-                {reviewRooms.length}
-                {roomsComplete ? "" : "+"}
-              </span>
-            </button>
+            <CollapsibleHeader
+              label="Review rooms"
+              count={`${reviewRooms.length}${roomsComplete ? "" : "+"}`}
+              open={showReview}
+              onToggle={() => setShowReview((v) => !v)}
+              action={<SortAction pending={showReview && reviewOrder.pending} onSort={reviewOrder.resort} list="Review rooms" by="latest" />}
+            />
             {showReview &&
               reviewRooms.map((r) => (
                 <RoomRow
@@ -448,7 +487,11 @@ export function LiveSidebar({
           </>
         )}
 
-        <SectionHeader label="Manager agents" count={loaded ? agentMembers.length : undefined} />
+        <SectionHeader
+          label="Manager agents"
+          count={loaded ? agentMembers.length : undefined}
+          action={<SortAction pending={agentOrder.pending} onSort={agentOrder.resort} list="Manager agents" by="added" />}
+        />
         {!loaded ? (
           <div className="mx-2.5 my-1 h-9 animate-pulse rounded-md bg-muted/60" />
         ) : agentMembers.length === 0 ? (

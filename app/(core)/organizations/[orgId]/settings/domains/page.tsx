@@ -23,6 +23,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "@/lib/toast";
 import type { DnsRecord, DomainStatus } from "@/lib/custom-domains/dns-records";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Same throttle as the edge re-check (lib/custom-domains/recheck.ts). */
 const RECHECK_MS = 120_000;
@@ -300,15 +301,13 @@ function DomainCard({
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="truncate font-mono text-sm font-semibold text-foreground">{domain.host}</h2>
           {live ? (
-            <a
+            <OutboundLink
               href={`https://${domain.host}`}
-              target="_blank"
-              rel="noreferrer"
               className="text-muted-foreground hover:text-foreground"
               aria-label="Open the domain"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            </OutboundLink>
           ) : null}
         </div>
         <Badge tone={status.tone}>{status.label}</Badge>

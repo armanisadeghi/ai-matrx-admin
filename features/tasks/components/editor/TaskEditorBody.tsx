@@ -48,6 +48,7 @@ import {
   deleteTaskThunk,
   createSubtaskThunk,
   saveTaskEditsThunk,
+  saveTaskFieldNowThunk,
 } from "@/features/tasks/redux/thunks";
 import { TASK_LABEL_OPTIONS } from "@/features/tasks/services/taskService";
 import type { TaskLabel } from "@/features/tasks/services/taskService";
@@ -97,6 +98,7 @@ import { useTaskEditorControllerCtx } from "./TaskEditorControllerContext";
 import { PropertyRow } from "./editorPrimitives";
 import { LinkedRecordsSection } from "@/features/scopes/components/linked-records/LinkedRecordsSection";
 import { insertBlockAtLine } from "@/utils/text-insertion";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const TASKS_SURFACE_NAME = "matrx-user/tasks";
 
@@ -328,8 +330,8 @@ export function TaskEditorBody({
   // Write half of the tasks surface (manifest `writeTargets`): every handler
   // validates its input and THROWS on a bad shape — the writeback seam
   // converts throws to safe error envelopes. Draft targets stage through the
-  // same `patch` the user's own typing uses; entity targets run the canonical
-  // thunks. Fresh closures per call (getWriteHandlers contract).
+  // same `patch` the user's own typing uses; entity targets (status, priority,
+  // due date, subtasks, save) run the canonical thunks. Fresh closures per call (getWriteHandlers contract).
   const getSurfaceWriteHandlers = () => ({
     task_title: (value: unknown) => {
       if (typeof value !== "string" || !value.trim())
@@ -349,7 +351,13 @@ export function TaskEditorBody({
         throw new Error(
           `task_status expects one of: ${TASK_STATUSES.join(" | ")}.`,
         );
-      patch("status", value as (typeof TASK_STATUSES)[number]);
+      // Approved status / priority / due date save straight to the record.
+      return dispatch(
+        saveTaskFieldNowThunk({
+          taskId,
+          patch: { status: value as (typeof TASK_STATUSES)[number] },
+        }),
+      ).unwrap();
     },
     task_priority: (value: unknown) => {
       if (
@@ -361,7 +369,9 @@ export function TaskEditorBody({
         throw new Error(
           "task_priority expects low | medium | high, or null to clear.",
         );
-      patch("priority", value);
+      return dispatch(
+        saveTaskFieldNowThunk({ taskId, patch: { priority: value } }),
+      ).unwrap();
     },
     task_due_date: (value: unknown) => {
       if (
@@ -371,7 +381,9 @@ export function TaskEditorBody({
         throw new Error(
           "task_due_date expects a YYYY-MM-DD string, or null to clear.",
         );
-      patch("due_date", value);
+      return dispatch(
+        saveTaskFieldNowThunk({ taskId, patch: { due_date: value } }),
+      ).unwrap();
     },
     task_labels: (value: unknown) => {
       const allowed = TASK_LABEL_OPTIONS.map((o) => o.value as string);
@@ -801,15 +813,13 @@ export function TaskEditorBody({
                       compact={compact}
                       last={!task.parent_task_id}
                     >
-                      <a
+                      <OutboundLink
                         href={`/projects/${encodeURIComponent(project.id)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="truncate text-xs font-medium text-foreground transition-colors hover:text-primary"
                         title={project.name}
                       >
                         {project.name}
-                      </a>
+                      </OutboundLink>
                     </PropertyRow>
                   )}
                   {task.parent_task_id && (

@@ -16,6 +16,7 @@ import { IntroStage, type IntroGroup, type IntroLinkProps } from "@ai-matrx/desi
 import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES } from "@ai-matrx/icons/domain";
 import AppLink from "@/components/navigation/AppLink";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const MEET_MATRX_PATH = "/meet-matrx";
 
@@ -69,9 +70,9 @@ export const MEET_MATRX_GROUPS: IntroGroup[] = [
 /** The stage's link: the app's router link in place, a new tab for another app. Shared with the launchpad widget. */
 export function meetMatrxLink({ item, href, className, style, children: body, ...rest }: IntroLinkProps) {
   return item.external ? (
-    <a href={href} className={className} style={style} target="_blank" rel="noopener noreferrer" data-intro-item={rest["data-intro-item"]}>
+    <OutboundLink href={href} className={className} style={style} data-intro-item={rest["data-intro-item"]}>
       {body}
-    </a>
+    </OutboundLink>
   ) : (
     <AppLink href={href} className={className} style={style} data-intro-item={rest["data-intro-item"]}>
       {body}

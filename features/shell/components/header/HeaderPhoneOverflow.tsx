@@ -79,6 +79,7 @@ import {
   pushPhonePageActionsHost,
   usePhonePageActions,
 } from "./phone-page-actions";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 type View = "menu" | "agents";
 
@@ -216,7 +217,7 @@ function CustomHeaderRows({ onDone }: { onDone: () => void }) {
             onClick={() => {
               onDone();
               if (button.kind === "destination" && !button.tileId) {
-                if (button.external || button.openInNewTab) window.open(button.href, "_blank", "noopener,noreferrer");
+                if (button.external || button.openInNewTab) openOutbound(button.href, "_blank", "noopener");
                 else router.push(button.href);
                 return;
               }

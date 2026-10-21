@@ -1,8 +1,5 @@
 {
   "rule": "shrink-only: raw outbound links outside @ai-matrx/kit/outbound",
-  "total": 3,
-  "files": {
-    "features/marketing/smart-add/SmartAddBrand.tsx": 2,
-    "features/marketing/smart-add/SmartAddExtras.tsx": 1
-  }
+  "total": 0,
+  "files": {}
 }

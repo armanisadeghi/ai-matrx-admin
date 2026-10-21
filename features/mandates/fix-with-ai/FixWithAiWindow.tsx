@@ -23,6 +23,7 @@ import {
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { approveFix, draftFix, latestRunOf, type FixApproved, type FixDraft } from "./service";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export interface FixWithAiTarget {
   mandateKey: string;
@@ -207,7 +208,7 @@ export default function FixWithAiWindow({
               Draft again
             </DropdownMenuItem>
             {agentHref(draft?.agent_id) ? (
-              <DropdownMenuItem onSelect={() => window.open(agentHref(draft?.agent_id) ?? "", "_blank", "noopener")}>
+              <DropdownMenuItem onSelect={() => openOutbound(agentHref(draft?.agent_id) ?? "", "_blank", "noopener")}>
                 Edit the agent myself
               </DropdownMenuItem>
             ) : null}

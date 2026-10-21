@@ -26,6 +26,7 @@ import {
   type SystemRun,
   type Truth,
 } from "../model";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 interface ResultRow {
   key: string;
@@ -101,10 +102,10 @@ export function BenchResultsTable({
       filter: "text",
       width: 360,
       cell: (r) => (
-        <a href={r.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 min-w-0 hover:underline">
+        <OutboundLink href={r.url} className="inline-flex items-center gap-1.5 min-w-0 hover:underline">
           <span className="truncate">{r.title}</span>
           <SquareArrowOutUpRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
-        </a>
+        </OutboundLink>
       ),
     },
     { id: "host", header: "Site", accessorFn: (r) => r.host, filter: "select", width: 180 },

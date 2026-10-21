@@ -57,6 +57,10 @@ export interface SpaceDbView {
   /** Lucide icon name drawn on the view tab. */
   icon?: string;
   groupField?: string | null;
+  /** Notion's board "Sub-group": a second property the board is cut by (records-ui swimlanes). Board only. */
+  subGroupField?: string | null;
+  /** Notion's "Load limit": how many rows the view reads at first (one of `LOAD_LIMITS`); absent = the grid's default. */
+  loadLimit?: number | null;
   dateField?: string | null;
   sorts?: Array<{ field: string; direction: "asc" | "desc" }>;
   /** Field key → value: a scalar is "is", a list is "is any of" (the store's own filter shape). */

@@ -13,19 +13,13 @@ try {
   await shot("w1-bookings-grid");
   const body = await text();
   say("grid text", body.slice(body.indexOf("Spring order") - 200, body.indexOf("Spring order") + 400));
-  // 02: the Client cell of "Summer order": open its picker and type part of a title
-  const row = page.locator('[role="row"]').filter({ hasText: "Summer order" }).first();
-  const cells = await row.locator('[role="gridcell"]').allInnerTexts();
-  say("summer cells", cells);
-  const pick = row.getByRole("button", { name: /Pick for Client/ }).first();
-  if (await pick.count()) { await pick.click(); } else { await row.locator('[role="gridcell"]').nth(2).dblclick(); }
-  await page.waitForTimeout(3000);
-  await page.keyboard.type("Harb", { delay: 80 });
-  await page.waitForTimeout(2500);
-  await shot("w1-picker-harb");
-  const opts = await page.evaluate(() => [...document.querySelectorAll("[data-relation-candidate]")].map((e) => e.textContent?.trim()));
-  say("02 options for 'Harb'", opts);
-  await page.keyboard.press("Escape");
+  await page.waitForTimeout(6000);
+  const html = await page.evaluate(() => {
+    const el = [...document.querySelectorAll("*")].find((e) => e.childElementCount === 0 && e.textContent?.trim() === "Summer order");
+    let r = el; for (let i = 0; i < 6 && r; i++) r = r.parentElement;
+    return r ? r.outerHTML.replace(/class="[^"]*"/g, "").slice(0, 4000) : "none";
+  });
+  say("row html", html);
 } catch (e) { say("ERR", String(e).slice(0, 300)); await shot("w1-err"); }
 say("console errors", errs.slice(0, 5));
 await browser.close();

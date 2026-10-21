@@ -24,6 +24,7 @@ import {
   type AccountSetupRun,
   type SavedAccountLogin,
 } from "./service";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type Step = "closed" | "address" | "typing" | "key" | "done";
 
@@ -189,9 +190,9 @@ export function AccountSetupPanel() {
               {busy ? "Saving…" : "Save key"}
             </Button>
             {keyNeedsPassword ? (
-              <a className="text-xs underline" href="/vault/authenticator" target="_blank" rel="noreferrer">
+              <OutboundLink className="text-xs underline" href="/vault/authenticator">
                 Add it in your Vault
-              </a>
+              </OutboundLink>
             ) : null}
             <Button variant="quiet" onClick={() => setStep("done")}>
               No key

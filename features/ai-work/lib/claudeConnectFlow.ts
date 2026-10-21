@@ -24,7 +24,47 @@ export type ConnectReadiness = {
   reason?: string | null;
   /** The box's own ledger status ("creating", "starting", "running", "ready"), when it has one. */
   box_status?: string | null;
+  /** The platform's start timing knobs (seconds); see {@link startTimingOf}. */
+  cold_start_expected_seconds?: number | null;
+  ready_wait_seconds?: number | null;
 };
+
+/**
+ * How long a cold sandbox is expected to take and how long the platform waits for it, as the
+ * SERVER says (knobs `coding_session_bridge.hosted_box_cold_start_expected_seconds` and
+ * `.hosted_box_ready_wait_seconds`, returned with every starting and readiness answer). The
+ * screen's deadline and its "how long" words come from these; there are no client constants.
+ */
+export type StartTiming = { expectedSeconds: number; waitSeconds: number };
+
+export function startTimingOf(answer: object | null | undefined): StartTiming | null {
+  // Server fields newer than the generated OwnPlanStatus type: read by name.
+  const rec = (answer ?? {}) as { cold_start_expected_seconds?: unknown; ready_wait_seconds?: unknown };
+  const expected = rec.cold_start_expected_seconds;
+  const wait = rec.ready_wait_seconds;
+  if (typeof expected !== "number" || typeof wait !== "number" || expected <= 0 || wait <= 0) return null;
+  return { expectedSeconds: expected, waitSeconds: wait };
+}
+
+/** `240` -> "4 minutes", rounded up (the server builds its sentences the same way). */
+export function minutesWords(seconds: number): string {
+  const minutes = Math.max(1, Math.ceil(seconds / 60));
+  return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+}
+
+/** What the screen says to expect while the sandbox starts (the measured knob). */
+export function coldStartWords(timing: StartTiming): string {
+  return `A cold start takes up to about ${minutesWords(timing.expectedSeconds)}.`;
+}
+
+/** The honest timeout, naming the deadline the server set. */
+export function sandboxTimeoutMessage(timing: StartTiming): string {
+  return `Your cloud sandbox did not finish starting within ${minutesWords(timing.waitSeconds)}. Try again; if it fails twice, the sandbox service is having trouble.`;
+}
+
+/** The server answered without its start timing: said, never papered over with a guess. */
+export const NO_TIMING_MESSAGE =
+  "AI Matrx did not say how long your cloud sandbox may take to start, so this screen cannot wait for it honestly. Reload the page and try again.";
 
 /**
  * Where a Connect stands, so the screen can say what is happening instead of
@@ -41,11 +81,15 @@ export function phaseOf(verdict: ConnectReadiness): ConnectPhase {
   return verdict.box_status && BOX_UP.has(verdict.box_status) ? "app" : "sandbox";
 }
 
-/** The plain words for a phase, numbered so the person sees how far along it is. */
+/**
+ * The plain words for a phase: only what the server reported. The readiness door tells the box
+ * being created/started apart from the box up with its app not answering yet, and from ready;
+ * it reports no count of steps, so none is shown.
+ */
 export function phaseWords(phase: ConnectPhase): string {
-  if (phase === "sandbox") return "Step 1 of 3: starting your cloud sandbox";
-  if (phase === "app") return "Step 2 of 3: sandbox is up, its app is starting";
-  return "Step 3 of 3: asking Claude for the sign-in link";
+  if (phase === "sandbox") return "Starting your cloud sandbox";
+  if (phase === "app") return "Sandbox is up; its app is starting";
+  return "Asking Claude for the sign-in link";
 }
 
 export type ConnectOutcome =
@@ -69,21 +113,13 @@ export type ConnectDeps = {
   sleep: (ms: number, signal: AbortSignal) => Promise<void>;
   now: () => number;
   signal: AbortSignal;
-  timeoutMs?: number;
   callTimeoutMs?: number;
   /** Told each time the flow learns it moved to another phase (with the server's own sentence). */
   onPhase?: (phase: ConnectPhase, detail: string | null) => void;
+  /** Told once, when the server first says how long the sandbox may take. */
+  onTiming?: (timing: StartTiming) => void;
 };
 
-/**
- * The longest a Connect waits for the link. A cold sandbox is slow: on
- * 2026-10-21 Arman's box took 3 min 42 s from create to ready, past the old
- * 3-minute cut, so the flow gave up on a box that was about to answer. Six
- * minutes covers a real cold start with room to spare.
- */
-export const CONNECT_TIMEOUT_MS = 360_000;
-/** What the screen says to expect while the sandbox starts (measured, not hoped). */
-export const COLD_START_EXPECTATION = "A cold start takes up to about 4 minutes.";
 /** One request's longest wait. The server answers every connect call at once. */
 export const CONNECT_CALL_TIMEOUT_MS = 25_000;
 /** Consecutive unreachable answers before the flow says so instead of waiting. */
@@ -91,8 +127,6 @@ export const OFFLINE_AFTER = 3;
 const FIRST_DELAY_MS = 1_500;
 const MAX_DELAY_MS = 6_000;
 
-export const SANDBOX_TIMEOUT_MESSAGE =
-  "Your cloud sandbox did not finish starting within 6 minutes. Try again; if it fails twice, the sandbox service is having trouble.";
 export const OFFLINE_MESSAGE =
   "Could not reach AI Matrx. Check your connection, then try again.";
 
@@ -128,7 +162,21 @@ function bounded<T>(call: () => Promise<T>, ms: number, signal: AbortSignal): Pr
 }
 
 export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcome> {
-  const deadline = deps.now() + (deps.timeoutMs ?? CONNECT_TIMEOUT_MS);
+  const began = deps.now();
+  // The deadline is the server's ready wait, known from its first starting or readiness answer.
+  // Until then only each call's own bound applies (the first answers come within seconds).
+  let timing: StartTiming | null = null;
+  let deadline = Number.POSITIVE_INFINITY;
+  const learn = (answer: object) => {
+    if (timing) return;
+    const t = startTimingOf(answer);
+    if (!t) return;
+    timing = t;
+    deadline = began + t.waitSeconds * 1000;
+    deps.onTiming?.(t);
+  };
+  const timedOut = (): ConnectOutcome => ({ kind: "timeout", message: timing ? sandboxTimeoutMessage(timing) : NO_TIMING_MESSAGE });
+  const giveUp = (): string => (timing ? sandboxTimeoutMessage(timing) : NO_TIMING_MESSAGE);
   const callMs = deps.callTimeoutMs ?? CONNECT_CALL_TIMEOUT_MS;
   const cancelled = (): boolean => deps.signal.aborted;
   const budget = () => Math.min(callMs, deadline - deps.now());
@@ -161,6 +209,7 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
       unreachable = 0;
       if (status.signed_in) return { kind: "signed_in", status };
       if (status.sign_in_url) return { kind: "awaiting", status };
+      learn(status);
       lastReason = status.detail ?? null;
       if (phase === null) moveTo("sandbox", lastReason);
       return null;
@@ -174,9 +223,7 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
 
   let delay = FIRST_DELAY_MS;
   while (!cancelled()) {
-    if (deps.now() >= deadline) {
-      return { kind: "timeout", message: SANDBOX_TIMEOUT_MESSAGE };
-    }
+    if (deps.now() >= deadline) return timedOut();
     await deps.sleep(Math.min(delay, Math.max(deadline - deps.now(), 0)), deps.signal);
     if (cancelled()) break;
     if (deps.now() >= deadline) continue;
@@ -191,9 +238,12 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
       if (settled) return settled;
       continue;
     }
+    learn(verdict);
     if (verdict.state === "unavailable") {
-      return { kind: "failed", message: verdict.reason || lastReason || SANDBOX_TIMEOUT_MESSAGE };
+      return { kind: "failed", message: verdict.reason || lastReason || giveUp() };
     }
+    // Still starting and the server never said how long it may take: say so instead of waiting blind.
+    if (!timing && verdict.state !== "ready") return { kind: "failed", message: NO_TIMING_MESSAGE };
     moveTo(phaseOf(verdict), verdict.reason ?? null);
     if (verdict.state !== "ready") continue;
 
@@ -203,7 +253,7 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
     const next = await attempt();
     if (next) return next;
     if (readyStarts >= 2) {
-      return { kind: "failed", message: lastReason || SANDBOX_TIMEOUT_MESSAGE };
+      return { kind: "failed", message: lastReason || giveUp() };
     }
   }
   return { kind: "cancelled" };
@@ -339,6 +389,8 @@ export type PendingConnect = {
   startedAt: number;
   /** The account row it was started from (its email), so the reload shows the same row busy. */
   forEmail?: string | null;
+  /** The server's ready wait (ms) once known, so a reload knows when the sign-in is too old. */
+  waitMs?: number;
 };
 
 export const PENDING_CONNECT_KEY = "matrx:claude-connect-pending";
@@ -352,8 +404,13 @@ export function parsePendingConnect(raw: string | null): PendingConnect | null {
     if (typeof slot !== "string" || !slot || typeof startedAt !== "number" || !Number.isFinite(startedAt)) {
       return null;
     }
-    const forEmail = (value as Record<string, unknown>).forEmail;
-    return typeof forEmail === "string" && forEmail ? { slot, startedAt, forEmail } : { slot, startedAt };
+    const { forEmail, waitMs } = value as Record<string, unknown>;
+    return {
+      slot,
+      startedAt,
+      ...(typeof forEmail === "string" && forEmail ? { forEmail } : {}),
+      ...(typeof waitMs === "number" && Number.isFinite(waitMs) && waitMs > 0 ? { waitMs } : {}),
+    };
   } catch {
     return null;
   }
@@ -370,17 +427,13 @@ export type ResumeStep =
   | { kind: "forget" };
 
 /** Where a remembered sign-in stands, from the server's own status answer. */
-export function resumeStep(
-  pending: PendingConnect,
-  status: OwnPlanStatus,
-  nowMs: number,
-  timeoutMs = CONNECT_TIMEOUT_MS,
-): ResumeStep {
+export function resumeStep(pending: PendingConnect, status: OwnPlanStatus, nowMs: number): ResumeStep {
   if (status.signed_in) return { kind: "signed_in" };
   if (status.sign_in_url && (status.state === "awaiting_code" || isRedeeming(status))) {
     return { kind: "awaiting", status };
   }
-  const young = nowMs - pending.startedAt < timeoutMs;
+  // Unknown wait: keep starting, and the resumed flow learns the server's deadline from its answers.
+  const young = pending.waitMs === undefined || nowMs - pending.startedAt < pending.waitMs;
   if (young && (status.state === "starting" || status.state === "unavailable" || status.state === "signed_out")) {
     // The box was still booting when the page went away: the link is not out yet.
     return { kind: "keep_starting" };

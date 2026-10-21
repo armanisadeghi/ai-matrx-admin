@@ -10,9 +10,8 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
-import { setLiveKnownDomainRules, type KnownDomainRule } from "./registry";
+import { knownDomainRulesFromSnapshot, setLiveKnownDomainRules, type KnownDomainRule } from "./registry";
 
-const PROVENANCES = new Set(["seeded", "learned", "pattern", "admin_approved"]);
 /** Matches the seeded `web_domains.cache_seconds` knob (300). */
 const CACHE_MS = 300_000;
 
@@ -26,14 +25,7 @@ export async function fetchKnownDomainRules(): Promise<KnownDomainRule[]> {
   inflight = (async () => {
     const { data, error } = await supabase.schema("web").rpc("domain_categories_snapshot");
     if (error) throw new Error(`Known web domains could not be read: ${error.message}`);
-    const rules: KnownDomainRule[] = (data ?? []).map((r) => ({
-      host: r.host,
-      pathPattern: r.path_pattern ?? "",
-      category: r.category,
-      provenance: (PROVENANCES.has(r.provenance) ? r.provenance : "seeded") as KnownDomainRule["provenance"],
-      confidence: Number(r.confidence),
-      label: r.label ?? "",
-    }));
+    const rules: KnownDomainRule[] = knownDomainRulesFromSnapshot(data ?? []);
     cache = { at: Date.now(), rules };
     setLiveKnownDomainRules(rules);
     return rules;

@@ -23,6 +23,8 @@ import { ToolsAdminSlot, useToolsAdminView } from "./ToolsAdminSlot";
 import { readEntity, type EntityOffer } from "./people/entityOffers";
 import { dedupeByJob, verdictLine } from "./toolFacts";
 import { TOOL_TASKS } from "./toolTasks";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 export type ToolsSearch = CatalogSearchState & { loadMore: () => void; retry: () => void };
 
@@ -109,7 +111,7 @@ export function ToolsHome({
             const first = offers[0];
             if (lookup) onLookup(lookup);
             else if (first) {
-              if (first.href) window.open(first.href, "_blank", "noopener,noreferrer");
+              if (first.href) openOutbound(first.href, "_blank", "noopener");
               else onOffer(first);
             } else return;
             e.preventDefault();
@@ -153,9 +155,9 @@ export function ToolsHome({
           {offers.map((offer) =>
             offer.href ? (
               <Button key={offer.id} variant="outline" asChild data-entity-offer={offer.id}>
-                <a href={offer.href} target="_blank" rel="noopener noreferrer">
+                <OutboundLink href={offer.href}>
                   {offer.label}
-                </a>
+                </OutboundLink>
               </Button>
             ) : (
               <Button key={offer.id} variant="outline" onClick={() => onOffer(offer)} data-entity-offer={offer.id}>

@@ -36,6 +36,7 @@ import {
   setNewTaskTitle,
   setLastCreatedTaskId,
   clearTaskEdit,
+  dropTaskEditFields,
   hydrateTaskUserState,
   patchTaskUserState,
   type TaskUserStateEntry,
@@ -714,6 +715,31 @@ export const saveTaskEditsThunk = createAsyncThunk<
     );
   }
   dispatch(clearTaskEdit(taskId));
+});
+
+/** The task fields an approved agent change saves straight to the record. */
+export type TaskFieldSavedNow = "status" | "priority" | "due_date";
+
+/**
+ * Save an approved change to a task's status, priority or due date straight
+ * to the record — the approval is the person's confirmation, so it never
+ * waits behind the editor's Save. One optimistic write through
+ * `updateTaskFieldThunk`; the same field is dropped from any staged draft so
+ * the editor and every tile show the saved value, while the person's other
+ * staged edits (title, description, labels…) keep waiting for their Save.
+ */
+export const saveTaskFieldNowThunk = createAsyncThunk<
+  void,
+  { taskId: string; patch: Pick<UpdateTaskInput, TaskFieldSavedNow> },
+  { state: RootState; dispatch: AppDispatch }
+>("tasksUi/saveTaskFieldNow", async ({ taskId, patch }, { dispatch }) => {
+  await dispatch(updateTaskFieldThunk({ taskId, patch })).unwrap();
+  dispatch(
+    dropTaskEditFields({
+      taskId,
+      fields: Object.keys(patch) as TaskFieldSavedNow[],
+    }),
+  );
 });
 
 // ─── Per-user notification/triage state (projects.task_user_state) ─────────

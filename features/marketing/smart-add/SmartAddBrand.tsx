@@ -27,7 +27,8 @@ import { readTypedName, writeTypedName } from "./welcome/typedNameStore";
 import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
 import type { PersonGroup } from "./welcome/peopleGroups";
 import { PersonPickCards } from "./welcome/PersonPickCards";
-import { startWelcomeRound, welcomeFirstRound, welcomeFirstSeeds } from "./welcome/welcomeRound";
+import { welcomeFirstRound, welcomeFirstSeeds } from "./welcome/welcomeRound";
+import { startWelcomeRound } from "./welcome/welcomeRoundStart";
 import { welcomeVerdict } from "./welcome/welcomeVerdict";
 import { visibleEvidence } from "./visibleEvidence";
 import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
@@ -189,6 +190,7 @@ import { useEnrichWebDecisions } from "./enrich/useEnrichWebDecisions";
 import { browserImageUrl } from "@/lib/media/external-image";
 import type { SmartAddAddressBinding } from "./useSmartAddAddress";
 import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Enrich an existing brand (ENRICH.md): what we already know, the checked facts' seed, and the brand. */
 export interface SmartAddEnrich {
@@ -2428,14 +2430,12 @@ export function SmartAddBrand({
           </div>
         </div>
         {created ? (
-          <a
+          <OutboundLink
             href={marketingRoutes.brand(marketingSeg(created))}
-            target="_blank"
-            rel="noreferrer"
             className="inline-flex items-center gap-1 text-sm font-medium text-primary"
           >
             Open brand <ExternalLink className="size-3.5" />
-          </a>
+          </OutboundLink>
         ) : (
           enrich ? (
             <Button variant="primary" className="max-sm:w-full" onClick={() => setReviewing(true)} data-testid="enrich-review-changes">
@@ -2481,14 +2481,12 @@ export function SmartAddBrand({
             )}
             <span className="font-medium">{SETUP_STATE_LABEL[setupState]}</span>
             {setupRunId ? (
-            <a
+            <OutboundLink
               href={runHref(setupRunId)}
-              target="_blank"
-              rel="noreferrer"
               className="ml-auto inline-flex items-center gap-1 font-medium text-primary"
             >
               Watch <ExternalLink className="size-3" />
-            </a>
+            </OutboundLink>
             ) : null}
           </div>
           {(setupView?.steps ?? []).map((step) => (

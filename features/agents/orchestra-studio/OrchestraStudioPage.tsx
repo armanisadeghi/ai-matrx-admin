@@ -29,6 +29,7 @@ import { useMakeOrchestra } from "./make-orchestra";
 import { planWantsWorkflow, workflowBrief } from "./workflow-brief";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 import type { SystemPlan, SystemPlanStep } from "./types";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 async function agentNameOf(id: string): Promise<string | null> {
   const { data } = await supabase.schema("agent").from("definition").select("name").eq("id", id).maybeSingle();
@@ -174,7 +175,7 @@ function StepRow({
               <DropdownMenuItem onSelect={() => setOpen((v) => !v)}>{open ? "Hide the full step" : "Show the full step"}</DropdownMenuItem>
             ) : null}
             {has ? (
-              <DropdownMenuItem onSelect={() => window.open(`/agents/${step.usesAgentId}/build`, "_blank")}>Open the agent</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => openOutbound(`/agents/${step.usesAgentId}/build`, "_blank")}>Open the agent</DropdownMenuItem>
             ) : null}
             {has ? <DropdownMenuItem onSelect={onClear}>Take the agent off this step</DropdownMenuItem> : null}
             {kind !== "agent" || has ? (
@@ -410,7 +411,7 @@ export default function OrchestraStudioPage() {
     } catch {
       toast.error("The steps could not be copied", { description: "Open Workflow Studio and describe the plan there." });
     }
-    window.open(`${WORKFLOWS_APP_URL}/workflows/new`, "_blank", "noopener");
+    openOutbound(`${WORKFLOWS_APP_URL}/workflows/new`, "_blank", "noopener");
   }
 
   async function turnIntoOrchestra() {

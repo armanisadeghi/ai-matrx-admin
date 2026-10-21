@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1576,
+  "routeCount": 1577,
   "routes": [
     {
       "pattern": "/",
@@ -7183,6 +7183,11 @@
       "pattern": "/settings/data",
       "status": "live",
       "source": "app/(core)/settings/data/page.tsx"
+    },
+    {
+      "pattern": "/shape-preview",
+      "status": "live",
+      "source": "app/(link)/shape-preview/page.tsx"
     },
     {
       "pattern": "/shapes",

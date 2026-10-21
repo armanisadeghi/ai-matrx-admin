@@ -124,11 +124,47 @@ describe("getMeetingBoard", () => {
 });
 
 import { meetingPartNote } from "../items/meeting-items.logic";
+import { meetingPartText, publishMeetingPartText } from "../items/meeting-part-text";
+import { sendMeetingPartToNotes } from "../items/meeting-to-notes";
 
-describe("meetingPartNote (a meeting part sent up into Notes)", () => {
-  it("names the note by part and meeting and links back to the meeting", () => {
-    const note = meetingPartNote({ meetingId: "m 1", meetingTitle: "Weekly sync", part: "decisions" });
+const createNote = jest.fn(async (input: { label: string; content: string }) => ({ id: "n1", ...input }));
+jest.mock("@/features/notes/service/notesService", () => ({ createNote: (i: never) => createNote(i) }));
+jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: () => null }));
+jest.mock("@/lib/toast", () => ({ toast: Object.assign(jest.fn(), { error: jest.fn() }) }));
+jest.mock("@/lib/organizations/ensureOrgId", () => ({ ensureOrgId: async () => "org1" }));
+
+describe("Send to Notes carries the part's content", () => {
+  it("formats each part's text, empty when there is none", () => {
+    const src = {
+      notes: [{ text: "Ship the pilot" }],
+      decisions: [{ text: "Use plan B" }],
+      actionItems: [{ text: "Draft brief", assigneeDisplayName: "Dana" }],
+      summary: { text: "We agreed on plan B." },
+      transcript: [{ speaker: "Dana", text: "Hello all" }],
+    };
+    expect(meetingPartText("notes", src)).toBe("- Ship the pilot");
+    expect(meetingPartText("actions", src)).toBe("- Draft brief (Dana)");
+    expect(meetingPartText("summary", src)).toBe("We agreed on plan B.");
+    expect(meetingPartText("transcript", src)).toBe("**Dana** Hello all");
+    expect(meetingPartText("decisions", {})).toBe("");
+  });
+
+  it("the note holds the text, then the link back", () => {
+    const note = meetingPartNote({ meetingId: "m 1", meetingTitle: "Weekly sync", part: "decisions", text: "- Use plan B" });
     expect(note.label).toBe("Decisions · Weekly sync");
-    expect(note.content).toContain("](/meetings/m%201)");
+    expect(note.content).toContain("- Use plan B");
+    expect(note.content.indexOf("- Use plan B")).toBeLessThan(note.content.indexOf("](/meetings/m%201)"));
+  });
+
+  it("an empty part says so in one line", () => {
+    expect(meetingPartNote({ meetingId: "m1", meetingTitle: "T", part: "summary", text: "" }).content).toContain("Summary: nothing yet.");
+  });
+
+  it("sending reads what the tile published and creates the note", async () => {
+    publishMeetingPartText("m1", "notes", "- Ship the pilot");
+    await sendMeetingPartToNotes({ kind: "entity", entity: "meeting_part", id: "m1", meta: { part: "notes" } }, "Notes");
+    const input = createNote.mock.calls[0][0];
+    expect(input.content).toContain("- Ship the pilot");
+    expect(input.content).toContain("](/meetings/m1)");
   });
 });

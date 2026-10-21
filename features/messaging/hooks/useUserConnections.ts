@@ -40,6 +40,7 @@ import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useConversations } from "@ai-matrx/messaging/react";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { invitationsService } from "@/features/organizations/service/invitationsService";
+import { lookupFailed, lookupOrganizations } from "@/features/organizations/service/organizationLookup";
 import { canManageInvitations } from "@/features/organizations/types";
 import type { OrganizationWithRole } from "@/features/organizations/types";
 import type { UserBasicInfo } from "../types";
@@ -194,9 +195,17 @@ export function useUserConnections(
     name: org.name,
     role: org.role,
   }));
+  /*
+   * 🚨 A NAMED ORGANIZATION IS NEVER LOOKED FOR IN A PAGE (2026-10-21). `useUserOrganizations`
+   * holds the FIRST PAGE of her organizations (50, by last use). A surface about an organization
+   * past it — admin@admin.com's meeting in "Titanium" — found it missing, read no roster, and its
+   * picker silently offered nobody. A named organization that page does not hold is asked BY ID
+   * (`lookupOrganizations`, shared + cached); not hers → no roster request (member-only door).
+   */
+  const lookupOrganizationId = organizationId && scope.length === 0 ? organizationId : null;
   const fetchKey =
     enabled && currentUserId && !orgsLoading
-      ? JSON.stringify([currentUserId, invitationOrganizationId ?? null, nonce, scope])
+      ? JSON.stringify([currentUserId, invitationOrganizationId ?? null, nonce, scope, lookupOrganizationId])
       : null;
 
   const [resolved, setResolved] = useState<{
@@ -209,15 +218,27 @@ export function useUserConnections(
   useEffect(() => {
     if (!fetchKey) return;
     let active = true;
-    const [userId, invitationOrgId, refreshCount, orgs] = JSON.parse(fetchKey) as [
+    const [userId, invitationOrgId, refreshCount, pageOrgs, lookupId] = JSON.parse(fetchKey) as [
       string,
       string | null,
       number,
       ScopeOrg[],
+      string | null,
     ];
     void (async () => {
       try {
-        const { users: orgConnections, failures } = await fetchOrgConnections(supabase, {
+        let orgs = pageOrgs;
+        const lookupFailures: ConnectionReadFailure[] = [];
+        if (lookupId) {
+          const found = (await lookupOrganizations([lookupId])).get(lookupId);
+          if (found && !found.archivedAt) {
+            orgs = [{ id: found.id, name: found.name, role: found.role }];
+          } else if (lookupFailed(lookupId)) {
+            lookupFailures.push({ source: "this organization", error: "Its membership could not be read" });
+          }
+        }
+        if (!active) return;
+        const { users: orgConnections, failures: rosterFailures } = await fetchOrgConnections(supabase, {
           currentUserId: userId,
           organizations: orgs,
           invitationOrganizationId: invitationOrgId,
@@ -226,6 +247,7 @@ export function useUserConnections(
           // A refresh re-reads; a first load reuses a roster another picker just read.
           fresh: refreshCount > 0,
         });
+        const failures = [...lookupFailures, ...rosterFailures];
         if (active) setResolved({ key: fetchKey, orgConnections, error: null, partialFailures: failures });
       } catch (err) {
         if (!active) return;

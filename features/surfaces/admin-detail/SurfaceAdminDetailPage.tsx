@@ -120,6 +120,10 @@ import {
   surfaceAdminHref,
 } from "@ai-matrx/chat/surfaces/utils/surface-hierarchy";
 import { ProTextarea } from "@/components/official/ProTextarea";
+import {
+  AgentIntroSection,
+  type SurfaceIntroFields,
+} from "@/features/surfaces/admin-detail/AgentIntroSection";
 import { replaceAppHref } from "@/lib/deployment/navigate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
@@ -556,6 +560,14 @@ export function SurfaceAdminDetailPage({
               <ErrorAlchemyMenu error={loadError} />
             </div>
           )}
+
+          <AgentIntroSection
+            surfaceName={surface.name}
+            fields={surface as UiSurfaceRow & SurfaceIntroFields}
+            onSaved={(saved) =>
+              setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
+            }
+          />
 
           <IdentitySection
             surface={surface}

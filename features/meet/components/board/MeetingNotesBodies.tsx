@@ -37,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import type { MeetingPart } from "@/features/board/items/meeting-items.logic";
 import { ActionItemsSection } from "@/features/meet/components/record/ActionItemsSection";
+import { meetingPartText, publishMeetingPartText } from "@/features/board/items/meeting-part-text";
 import { useMeetingById, type LoadedMeeting } from "@/features/meet/hooks/useMeetingById";
 import { useMeetingActions } from "@/features/meet/hooks/useMeetingActions";
 
@@ -58,13 +59,17 @@ export function useIsInMeetingRoom(meetingId: string): boolean {
 /** One part of one meeting: live in its room, its durable record elsewhere. */
 export function MeetingPartBody({ meetingId, part }: { meetingId: string; part: MeetingPart }) {
   const inRoom = useIsInMeetingRoom(meetingId);
-  return inRoom ? <MeetingSectionBody section={part} /> : <MeetingRecordPartBody meetingId={meetingId} part={part} />;
+  return inRoom ? <MeetingSectionBody section={part} meetingId={meetingId} /> : <MeetingRecordPartBody meetingId={meetingId} part={part} />;
 }
 
 // ── live: the room's AI seam ─────────────────────────────────────────────────
 
-export function MeetingSectionBody({ section }: { section: MeetingPart }) {
+export function MeetingSectionBody({ section, meetingId }: { section: MeetingPart; meetingId?: string }) {
   const ai = useMeetAi();
+  const text = meetingPartText(section, ai);
+  useEffect(() => {
+    if (meetingId) publishMeetingPartText(meetingId, section, text);
+  });
   return (
     <div data-board-scroll className="h-full overflow-y-auto p-4 text-sm leading-relaxed text-foreground">
       <p className="mb-3 text-xs text-muted-foreground">{ai.noteTakerLabel}</p>
@@ -177,6 +182,22 @@ function RecordPart({ loaded, part }: { loaded: LoadedMeeting; part: MeetingPart
   const { meeting } = loaded;
   const record = useMeetingRecord(meeting);
   const { userId } = useMeetingActions();
+  const bundle0 = record.record;
+  const recordText = bundle0
+    ? meetingPartText(part, {
+        notes: bundle0.liveNotes,
+        decisions: bundle0.decisions,
+        actionItems: bundle0.actionItems,
+        summary: bundle0.summary,
+        transcript: readableTranscript(bundle0.transcript).map((l) => ({
+          speaker: displayNameFor(bundle0.names, l.identity, l.speaker),
+          text: l.text,
+        })),
+      })
+    : null;
+  useEffect(() => {
+    if (recordText !== null) publishMeetingPartText(meeting.id, part, recordText);
+  });
   if (record.failure !== null) {
     return (
       <div role="alert" className="space-y-2 p-4 text-sm">

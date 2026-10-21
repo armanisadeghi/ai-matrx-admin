@@ -200,14 +200,12 @@ function QueryList({
               <li key={`${query}-${i}`} className="flex min-w-0 items-center gap-3 px-3.5 py-2 text-sm">
                 <span className="w-4 shrink-0 text-right tabular-nums text-muted-foreground">{i + 1}</span>
                 {/* A related search opens as its own search, in a new tab. */}
-                <a
+                <OutboundLink
                   href={`/search?q=${encodeURIComponent(query)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="min-w-0 flex-1 truncate text-foreground hover:text-primary hover:underline"
                 >
                   {query}
-                </a>
+                </OutboundLink>
                 <span className="shrink-0 tabular-nums text-muted-foreground">{valueOf(row)}</span>
               </li>
             );

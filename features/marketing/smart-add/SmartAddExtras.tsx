@@ -15,7 +15,6 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ExternalLink, Globe, Plus, X } from "lucide-react";
 import { Button, Field, Select, type SelectOption, type WayOutItem } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
-import { addUtmSource } from "@/utils/url-utm";
 import { extractErrorMessage } from "@/utils/errors";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import {
@@ -37,6 +36,7 @@ import {
   type Relation,
 } from "./evidence";
 import { compareRelationKinds, relationGroupKey, relationGroupLabel } from "./webKinds";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // ── Custom ──────────────────────────────────────────────────────────────────────
 
@@ -330,31 +330,19 @@ export function situationOf(items: EvidenceItem[], settled: boolean): Situation 
 
 // ── Compare ─────────────────────────────────────────────────────────────────────
 
-const OWN_HOSTS = ["aimatrx.com", "matrxserver.com"];
-
 /**
- * Every link out of this flow carries our referral mark (the existing UTM helper plus the medium);
- * our own addresses are left alone.
- * TODO(outbound-referral): replace with the canonical primitive.
+ * A found address as a link: a bare host gets its scheme. Referral data is added by the outbound
+ * door (@ai-matrx/kit/outbound) at the moment the link is followed, so it renders and copies as found.
  */
 export function outboundHref(url: string): string {
-  const absolute = /^https?:\/\//i.test(url) ? url : `https://${url}`;
-  const host = websiteHost(absolute);
-  if (OWN_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) return absolute;
-  try {
-    const out = new URL(addUtmSource(absolute));
-    out.searchParams.set("utm_medium", "referral");
-    return out.toString();
-  } catch {
-    return absolute;
-  }
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
 /** Open a found page in a new tab. */
 export function OpenLink({ url, label = "Open" }: { url: string; label?: string }) {
   return (
     <Button asChild variant="quiet" icon={<ExternalLink aria-hidden />} aria-label={label} title={label}>
-      <a href={outboundHref(url)} target="_blank" rel="noopener" />
+      <OutboundLink href={outboundHref(url)} />
     </Button>
   );
 }

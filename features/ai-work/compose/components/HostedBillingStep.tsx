@@ -60,6 +60,7 @@ import {
   connectClaudeAccount,
   redeemClaudeCode,
 } from "@/features/ai-work/lib/connectClaudeAccount";
+import { minutesWords, startTimingOf, type StartTiming } from "@/features/ai-work/lib/claudeConnectFlow";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** How often a Codex sign-in waiting on the browser (or a booting box) is re-read. */
@@ -116,6 +117,8 @@ export function HostedBillingStep({
 }: HostedBillingStepProps) {
   const [busy, setBusy] = useState<Busy>(null);
   const [code, setCode] = useState("");
+  // The server's start timing (knobs), from the Connect flow or the status it answered.
+  const [timing, setTiming] = useState<StartTiming | null>(null);
 
   // Only the newest request may change what the person sees: a status read
   // that answers after Connect must not drop "Starting your sandbox" or
@@ -145,7 +148,7 @@ export function HostedBillingStep({
   // Start-then-poll with a bounded wait (the shared Connect flow): a cold
   // sandbox answers "starting" at once and the flow waits for its link.
   const connectUntilLink = async (): Promise<OwnPlanStatus> => {
-    const outcome = await connectClaudeAccount(undefined, new AbortController().signal);
+    const outcome = await connectClaudeAccount(undefined, new AbortController().signal, undefined, setTiming);
     if (outcome.kind === "signed_in" || outcome.kind === "awaiting") return outcome.status;
     if (outcome.kind === "cancelled") throw new Error("Connect was canceled.");
     throw new Error(outcome.message);
@@ -166,6 +169,8 @@ export function HostedBillingStep({
   };
 
   const state = status?.state ?? null;
+  const startingWords = (t: StartTiming | null) =>
+    t ? `Starting your sandbox; a cold start takes up to about ${minutesWords(t.expectedSeconds)}` : "Starting your sandbox";
 
   // Codex has no paste step: its sign-in finishes on OpenAI's page, so the
   // only way to learn it did is to ask again. Re-read while the box boots or
@@ -378,7 +383,7 @@ export function HostedBillingStep({
             <div className="flex flex-wrap items-center gap-2">
               <span className="flex items-center gap-1.5 type-secondary text-muted-foreground">
                 <Spinner size="xs" className="text-current" />
-                Starting your sandbox can take up to about 4 minutes
+                {startingWords(startTimingOf(status) ?? timing)}
               </span>
               <Button
                 icon={<X />}
@@ -414,7 +419,7 @@ export function HostedBillingStep({
               </Button>
               {busy === "starting" && (
                 <span className="type-secondary text-muted-foreground">
-                  Starting your sandbox can take up to about 4 minutes
+                  {startingWords(startTimingOf(status) ?? timing)}
                 </span>
               )}
             </div>

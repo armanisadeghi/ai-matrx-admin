@@ -1429,11 +1429,6 @@ export function stageName(items: EvidenceItem[]): EvidenceItem | null {
   return names.find((i) => i.source.kind === "website") ?? names[0] ?? null;
 }
 
-/**
- * A found account opens with our referral mark (utm_source=aimatrx, utm_medium=referral).
- * TODO(outbound-referral): the comparison lane's outboundHref (SmartAddExtras) is the same rule and
- * lands separately; both move to the canonical primitive together.
- */
 /** A YouTube channel id ("UC…") is not something a person reads. */
 const CHANNEL_ID = /^UC[A-Za-z0-9_-]{20,}$/;
 

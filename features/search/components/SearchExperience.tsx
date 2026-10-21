@@ -1271,13 +1271,11 @@ function PageRead({
           </Button>
           {surface === "scraper" && (
             <Button variant="quiet" asChild icon={<ScanSearch />}>
-              <a
+              <OutboundLink
                 href={`/scraper/quick?url=${encodeURIComponent(special.url)}`}
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 Full scrape
-              </a>
+              </OutboundLink>
             </Button>
           )}
         </div>

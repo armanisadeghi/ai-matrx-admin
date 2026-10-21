@@ -62,7 +62,7 @@ function vaultPort(): VaultPort {
 const openUrl = (url: string) => void openOutbound(url, "_blank", "noopener");
 /** "Open in new tab" for one item (the Authenticator's code rows): the item's own page. */
 const openItemInNewTab = (itemId: string) =>
-  void window.open(`/vault/${encodeURIComponent(itemId)}`, "_blank", "noopener");
+  void openOutbound(`/vault/${encodeURIComponent(itemId)}`, "_blank", "noopener");
 
 const notify: Notify = (message, kind) => {
   if (kind === "error") toast.error(message);
@@ -81,8 +81,8 @@ function useVaultHost(organizationId: string | null): VaultHostCapabilities {
     organizationId && userId
       ? createVaultKnobs(packageKnobClient(supabase), { organizationId, userId })
       : undefined;
-  // The website's own right-click menu (VaultContextMenu: agents, Copy, Export) answers on rows,
-  // and carries the row's own copy entries and star (`rowMenuEntriesAt`), as the More button does.
+  // The website's own right-click menu (VaultContextMenu: agents, Copy, Export) answers on rows;
+  // the row's More button still carries copy-any-field.
   const rowContextMenu = "host" as const;
   return knobs
     ? { identity, openUrl, openItemInNewTab, signIn, knobs, rowContextMenu }

@@ -8,6 +8,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import type { YouTubeAnalyticsPreview } from "@/features/marketing/google/types";
 import type { YouTubeAnalyticsSelection } from "@/features/marketing/google/youtube-analytics-request";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const VIDEO_ERROR_LABEL: Record<
   NonNullable<YouTubeAnalyticsPreview["video_report_error"]>,
@@ -77,15 +78,13 @@ const videoColumns: MatrxColumnDef<YouTubeVideo>[] = [
     header: "Video ID",
     sortable: false,
     cell: (video) => (
-      <a
+      <OutboundLink
         href={`https://www.youtube.com/watch?v=${encodeURIComponent(video.video_id)}`}
-        target="_blank"
-        rel="noopener noreferrer"
         aria-label={`Open YouTube video ${video.video_id}`}
         className="break-all font-mono underline-offset-2 hover:underline"
       >
         {video.video_id}
-      </a>
+      </OutboundLink>
     ),
   },
   ...METRIC_COLUMNS<YouTubeVideo>(),

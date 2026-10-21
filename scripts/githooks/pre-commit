@@ -73,6 +73,21 @@ if [ -f "$CLOSE_IN_FLOW" ] && git diff --cached --name-only --diff-filter=ACMR -
     }
 fi
 
+# OUTBOUND REFERRAL (Arman, 2026-10-12: "make sure it never happens again"): a staged file may not add a
+# raw link to a third-party site — <a target="_blank">, a literal https:// anchor, window.open, a literal
+# location.href — outside @ai-matrx/kit/outbound (OutboundLink / openOutbound / withReferral). Only the
+# staged code files under the app roots are scanned (~1 s); `--fix` rewrites them. Shrink-only baseline.
+OUTBOUND="$ROOT/node_modules/@ai-matrx/kit/scripts/check-outbound-referral.mjs"
+OUTBOUND_STAGED=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx' | grep -E '^(app|components|features|lib|hooks|utils|providers|actions|config|constants|types)/' || true)
+if [ -f "$OUTBOUND" ] && [ -n "$OUTBOUND_STAGED" ]; then
+    # shellcheck disable=SC2086
+    (cd "$ROOT" && node "$OUTBOUND" --baseline scripts/outbound-referral-baseline.json $OUTBOUND_STAGED) || {
+        echo "COMMIT REFUSED: a raw outbound link (above) skips our referral data." >&2
+        echo "  Fix: node node_modules/@ai-matrx/kit/scripts/check-outbound-referral.mjs --fix <file>, then stage and commit again." >&2
+        exit 1
+    }
+fi
+
 # ONE SUBJECT, ONE HOME (law 15, 2026-10-18): a new skill names its home (`subject:`), a synced skill
 # copy is never hand-edited, a subject never gets a second home. The guard lives in common-docs beside
 # this repo; a checkout without it skips this job. Only runs when a .md file is staged (~1 s).

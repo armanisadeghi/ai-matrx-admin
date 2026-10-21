@@ -78,6 +78,7 @@ import {
   saveRoundTruth,
   startRoundBench,
 } from "../round-service";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const POLL_MS = 3000;
 const SYSTEMS: RoundSystem[] = ["holder", "jev"];
@@ -690,15 +691,13 @@ function TruthList({
                   >
                     <div className="min-w-0 flex-1">
                       {item.url ? (
-                        <a
+                        <OutboundLink
                           href={item.url}
-                          target="_blank"
-                          rel="noreferrer"
                           className="type-body font-medium hover:underline break-words inline-flex items-center gap-1.5"
                         >
                           {item.title}
                           <SquareArrowOutUpRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
-                        </a>
+                        </OutboundLink>
                       ) : (
                         <div className="type-body font-medium break-words">
                           {item.title}
@@ -877,15 +876,13 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                     {JUDGMENT_LABEL[item.judgment]}
                   </div>
                   {item.url ? (
-                    <a
+                    <OutboundLink
                       href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
                       className="type-body font-medium hover:underline break-words inline-flex items-center gap-1.5"
                     >
                       {item.title}
                       <SquareArrowOutUpRight className="w-3.5 h-3.5 shrink-0 text-muted-foreground" aria-hidden />
-                    </a>
+                    </OutboundLink>
                   ) : (
                     <div className="type-body font-medium break-words">
                       {item.title}

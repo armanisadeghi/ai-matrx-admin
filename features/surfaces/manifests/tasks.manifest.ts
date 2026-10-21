@@ -332,10 +332,13 @@ const surfaceSpecific: SurfaceValue[] = [
 
 /**
  * Write half of the 360 loop — what an agent (or a rendered kind component)
- * may WRITE into the open task editor. Field targets are `mode: "draft"`:
- * they stage into the editor's Redux draft (`patchTaskEdit`) exactly as if
- * the user typed them — visible, reversible, saved only when the task is
- * saved. `add_subtasks` and `save_task` are the entity-mode actions.
+ * may WRITE into the open task editor. Text and label targets are
+ * `mode: "draft"`: they stage into the editor's Redux draft (`patchTaskEdit`)
+ * exactly as if the user typed them — visible, reversible, saved only when the
+ * task is saved. Status, priority and due date are `mode: "entity"` (Arman,
+ * 2026-10-21): the person's approval is the confirmation, so the change saves
+ * to the record at once (`saveTaskFieldNowThunk`), on the task page and on a
+ * board tile alike. `add_subtasks` and `save_task` are entity-mode too.
  *
  * All targets are `applyPolicy: "ask"` — a task is the user's commitment
  * ledger, so every agent-originated change is confirmed in place. Handlers
@@ -381,10 +384,10 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "task_status",
     label: "Task status",
     description:
-      "Stages a lifecycle status into the draft. One of: inbox | planned | active | completed | cancelled | dismissed. The user still saves.",
+      "Sets the task's lifecycle status and saves it once approved. One of: inbox | planned | active | completed | cancelled | dismissed.",
     valueType: "string",
     updatesValue: "active_task_lifecycle_status",
-    mode: "draft",
+    mode: "entity",
     applyPolicy: "ask",
     group: "task_meta",
     sortOrder: 300,
@@ -393,10 +396,10 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "task_priority",
     label: "Task priority",
     description:
-      "Stages a priority into the draft. One of: low | medium | high, or null to clear it back to None. The user still saves.",
+      "Sets the task's priority and saves it once approved. One of: low | medium | high, or null to clear it back to None.",
     valueType: "string",
     updatesValue: "active_task_priority",
-    mode: "draft",
+    mode: "entity",
     applyPolicy: "ask",
     group: "task_meta",
     sortOrder: 310,
@@ -405,10 +408,10 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "task_due_date",
     label: "Task due date",
     description:
-      "Stages a due date into the draft as a date-only string (YYYY-MM-DD), or null to clear. The user still saves.",
+      "Sets the task's due date and saves it once approved, as a date-only string (YYYY-MM-DD), or null to clear.",
     valueType: "string",
     updatesValue: "active_task_due_date",
-    mode: "draft",
+    mode: "entity",
     applyPolicy: "ask",
     group: "task_meta",
     sortOrder: 320,

@@ -93,6 +93,14 @@ jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({
   ErrorAlchemyMenu: () => null,
 }));
 
+// An organization she is in that is NOT on the first page of 50 the store holds.
+const OFF_PAGE_ORG = { id: "00000000-0000-4000-8000-0000000000ff", name: "Titanium", role: "member", archivedAt: null };
+jest.mock("@/features/organizations/service/organizationLookup", () => ({
+  lookupOrganizations: async (ids: string[]) =>
+    new Map(ids.filter((id) => id === OFF_PAGE_ORG.id).map((id) => [id, OFF_PAGE_ORG])),
+  lookupFailed: () => false,
+}));
+
 jest.mock("@/features/organizations/service/invitationsService", () => ({
   invitationsService: { listForTarget: async () => ({ ok: true, data: { invitations: [] } }) },
 }));
@@ -190,6 +198,26 @@ describe("every people picker that sits on a page unused reads no roster", () =>
     await act(async () => input.focus());
     await drain();
     expect(rosterRequests()).toBe(1);
+  });
+});
+
+describe("a named organization past the first page of organizations", () => {
+  it("is looked up by id and its roster read — never a silently empty picker", async () => {
+    // admin@admin.com's meeting in "Titanium": not in the first 50 organizations the store holds.
+    await act(async () =>
+      root.render(
+        <GuestPicker guests={[]} onChange={() => undefined} organizationId={OFF_PAGE_ORG.id} hostUserId="u-me" />,
+      ),
+    );
+    await drain();
+    expect(rosterRequests()).toBe(0);
+
+    const input = container.querySelector("input")!;
+    await act(async () => input.focus());
+    await drain();
+    expect(rpc.mock.calls.filter(([name]) => name === "get_organization_members_with_users").map(([, a]) => a.p_org_id)).toEqual([
+      OFF_PAGE_ORG.id,
+    ]);
   });
 });
 

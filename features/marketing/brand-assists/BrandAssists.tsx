@@ -31,6 +31,7 @@ import {
   offersToEmit,
   type BrandAssistOffers,
 } from "./select-offers";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 function isRunResult(value: unknown): value is BrandAssistRunResult {
   return Boolean(value && typeof value === "object" && typeof (value as { summary?: unknown }).summary === "string");
@@ -137,9 +138,9 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
                   <div key={`${item.label}-${i}`} className="flex h-6 min-w-0 items-center gap-2 text-xs">
                     <span className="shrink-0 text-muted-foreground">{item.label}</span>
                     {item.href ? (
-                      <a href={item.href} target="_blank" rel="noreferrer" className="truncate text-foreground hover:underline">
+                      <OutboundLink href={item.href} className="truncate text-foreground hover:underline">
                         {item.value}
-                      </a>
+                      </OutboundLink>
                     ) : (
                       <span className="truncate text-foreground">{item.value}</span>
                     )}
@@ -149,9 +150,9 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
                 <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="truncate">Saved to {result.lands}</span>
                   {result.review_href ? (
-                    <a href={result.review_href} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-foreground hover:underline">
+                    <OutboundLink href={result.review_href} className="ml-auto inline-flex items-center gap-1 text-foreground hover:underline">
                       Review <ExternalLink className="size-3" />
-                    </a>
+                    </OutboundLink>
                   ) : null}
                 </div>
               </div>

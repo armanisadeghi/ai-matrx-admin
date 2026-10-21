@@ -9,11 +9,9 @@
  * `welcomeFirstRound` is pure: the login seed (and a late name) → the round's seeds, the evidence the door shows as
  * already answered, and the identify workflow's exact `inputs` — the values SmartAddBrand's generic `startRound`
  * derives for this state (typed name preferred, proven email / GitHub "yes", no anchors yet, person entry).
- * `startWelcomeRound` is the one network call around it.
+ * Pure, so the server start imports it too; the door's one network call around it is welcomeRoundStart.ts.
  */
 
-import type { AppDispatch } from "@/lib/redux/store";
-import { startSystemRun } from "@/lib/workflows/system-runs";
 import {
   confirmedBasics,
   customItem,
@@ -26,7 +24,6 @@ import {
 } from "../evidence";
 import { knownDecided } from "../weThink";
 import { seedEvidence, websiteCandidate, type LoginSeed } from "./loginSeed";
-import { roundSubject } from "./welcomeSession";
 
 /** The identify workflow every Smart Add round runs (aidream system_workflows.py SMART_ADD_KEY). */
 export const IDENTIFY_WORKFLOW_KEY = "smart_add_brand_identify";
@@ -89,17 +86,4 @@ export function welcomeFirstRound(seed: LoginSeed, lateName: string | null = nul
     ...(name ? { person: { name, affiliations: [], anchors: [], find: true } } : {}),
   };
   return { seeds, name, email, find: Boolean(name), items: [...map.values()], decisions, inputs };
-}
-
-/** Start (or rejoin, while it is still running) round `n` of the session `base` with these inputs. */
-export function startWelcomeRound(
-  dispatch: AppDispatch,
-  { base, n, inputs, organizationId }: { base: string; n: number; inputs: Record<string, unknown>; organizationId: string },
-): Promise<{ runId: string; duplicate: boolean }> {
-  return startSystemRun(
-    dispatch,
-    IDENTIFY_WORKFLOW_KEY,
-    { subject: roundSubject(base, n), organizationId, sourceFeature: "marketing", inputs },
-    "Identification could not start.",
-  );
 }

@@ -71,6 +71,15 @@ export function effectiveHidden(view: Pick<SpaceDbView, "layout" | "hiddenFields
   return pool.slice(DEFAULT_CARD_FIELDS).map((f) => f.key);
 }
 
+/** Notion's load limits: how many rows a database view reads at first. */
+export const LOAD_LIMITS = [10, 25, 50, 100] as const;
+
+/** The page size a block's view asks for: its own load limit, or undefined for records-ui's default. */
+export function blockPageSize(view: Pick<SpaceDbView, "loadLimit">): number | undefined {
+  const n = view.loadLimit;
+  return typeof n === "number" && (LOAD_LIMITS as readonly number[]).includes(n) ? n : undefined;
+}
+
 export function viewSpec(tableId: string, view: ViewWithSummaries, fields: Field[] = []): SavedViewSpec {
   const layout = view.layout === "chart" ? "grid" : view.layout;
   const formats = longDates(fields);
@@ -81,6 +90,7 @@ export function viewSpec(tableId: string, view: ViewWithSummaries, fields: Field
     subject: tableId,
     layout,
     groupField: view.groupField ?? null,
+    swimlaneField: layout === "kanban" ? (view.subGroupField ?? null) : null,
     dateField: view.dateField ?? null,
     startField: view.dateField ?? null,
     sorts: view.sorts ?? [],

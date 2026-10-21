@@ -29,6 +29,7 @@ import {
   type ActivityEntry,
 } from "./tableAccessService";
 import { sayError } from "@/features/unified-data/base/sayError";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const BUTTON =
   "inline-flex h-8 shrink-0 items-center gap-1.5 rounded px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-60";
@@ -249,9 +250,9 @@ function FindDuplicates({ tableId, organizationId, level }: { tableId: string; o
             <ul className="divide-y rounded border" data-duplicate-group>
               {g.members.map((m) => (
                 <li key={m.id} className="px-2 py-1.5 text-xs">
-                  <a className="underline-offset-2 hover:underline" href={recordPageHref(tableId, m.id)} target="_blank" rel="noreferrer">
+                  <OutboundLink className="underline-offset-2 hover:underline" href={recordPageHref(tableId, m.id)}>
                     {m.title}
-                  </a>
+                  </OutboundLink>
                 </li>
               ))}
             </ul>

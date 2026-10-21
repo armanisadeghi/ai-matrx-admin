@@ -307,6 +307,8 @@ const config: Config = {
     "<rootDir>/.wt/",
     "<rootDir>/.matrx/",
     "<rootDir>/.coldwalk",
+    // The shared preview's build output: rewritten while it compiles, so a crawl mid-write fails every suite.
+    "<rootDir>/.next-preview/",
   ],
   // Restrict to *.test.ts(x) / *.spec.ts(x). Jest's default `testMatch`
   // also globs everything under `**/__tests__/**`, which picked up our

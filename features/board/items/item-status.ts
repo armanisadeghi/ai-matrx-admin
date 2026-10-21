@@ -63,8 +63,9 @@ export function useTaskStatus(source: NodeSource, basics?: ItemBasicValues | nul
   const id = idOf(source);
   const live = useAppSelector((s: RootState) => (id ? selectTaskById(s, id)?.status : undefined));
   const liveDue = useAppSelector((s: RootState) => (id ? selectTaskById(s, id)?.due_date : undefined));
-  // Edits staged in the task (the person's own, or an agent's approved change) wait for Save, exactly
-  // as on the task's page: say so here, never the stale saved status.
+  // Edits staged in the task (the person's own, or an agent's approved title/description/labels) wait
+  // for Save, exactly as on the task's page: say so here, never the stale saved status. An approved
+  // status, priority or due date saves at once (`saveTaskFieldNowThunk`), so it never lands here.
   const unsaved = useAppSelector((s: RootState) => (id ? selectTaskIsDirty(id)(s) : false));
   if (!id) return { tone: "attention", label: "Unsaved" };
   if (unsaved) return { tone: "attention", label: "Unsaved" };

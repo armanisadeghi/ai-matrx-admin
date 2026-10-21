@@ -7,8 +7,11 @@ import { open, newPage, act, slash } from "./lib.mjs";
 const shots = process.env.S ?? "/tmp";
 let failures = 0;
 const check = (name, ok, detail = "") => { if (!ok) failures += 1; console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? `  (${detail})` : ""}`); };
-const { browser, page } = await open({ next: "/spaces", width: 1440, height: 1000 });
-const id = await newPage(page);
+const reuse = process.argv[2]; // a page this walk made before (its own), to walk again
+const { browser, page } = await open({ next: reuse ? `/spaces/${reuse}` : "/spaces", width: 1440, height: 1000 });
+const id = reuse ?? (await newPage(page));
+await page.locator(".bn-editor").first().waitFor({ timeout: 240_000 });
+await page.waitForTimeout(4000);
 console.log("PAGE", id);
 const insert = async (pickName) => {
   await act(page, async () => {
@@ -33,7 +36,7 @@ const insert = async (pickName) => {
   }
   await page.waitForTimeout(4000);
 };
-await insert("Tasks");
+if (!(await page.locator(".spaces-db-frame[data-source=entity]").count())) await insert("Tasks");
 const tasks = page.locator(".spaces-db-frame[data-source=entity]").first();
 await tasks.waitFor({ timeout: 120_000 });
 await tasks.locator("tbody tr").first().waitFor({ timeout: 120_000 }).catch(() => {});
@@ -43,7 +46,7 @@ console.log("TASKS BLOCK:", (await tasks.innerText()).replace(/\n+/g, " | ").sli
 const before = await tasks.locator("tbody tr").count();
 check("Built-in > Tasks draws task rows", before > 0, `${before} rows; ${await tasks.locator(".spaces-entity-count").innerText().catch(() => "")}`);
 await page.keyboard.press("Escape");
-await insert(null);
+if (!(await page.locator(".spaces-db-frame:not([data-source=entity])").count())) await insert(null);
 const custom = page.locator(".spaces-db-frame:not([data-source=entity])").first();
 const customDrew = await custom.waitFor({ timeout: 120_000 }).then(() => true, () => false);
 check("a custom table draws beside it on the same page", customDrew && (await page.locator(".spaces-db-frame").count()) >= 2, `${await page.locator(".spaces-db-frame").count()} database blocks`);

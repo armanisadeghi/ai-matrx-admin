@@ -9,7 +9,7 @@ import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/c
 import { ChatConversationWarmup } from "@/components/warmup/ChatConversationWarmup";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ServerReadRecheck } from "@/features/access-gate/components/ServerReadRecheck";
-import { ChatNewLandingSkeleton } from "@ai-matrx/chat/agents/components/chat/ChatNewClient";
+import { ChatRoomSkeleton } from "@ai-matrx/chat/agents/components/chat/ChatRoomSkeleton";
 import { mandateDisplaySeed } from "@ai-matrx/agents/mandates";
 import { ChatRunHeader } from "@ai-matrx/chat/agents/components/chat/ChatRunHeader";
 import { readComposerModeCookie } from "@ai-matrx/chat/next/server/composer-mode.server";
@@ -136,7 +136,7 @@ async function ChatConversationSeeded({
         <ServerReadRecheck
           token="conversation"
           id={conversationId}
-          pending={<ChatNewLandingSkeleton />}
+          pending={<ChatRoomSkeleton />}
         >
           <AccessGate
             token="conversation"
@@ -188,7 +188,7 @@ async function ChatConversationSeeded({
  */
 export default function ChatConversationPage({ params }: ConversationPageProps) {
   return (
-    <Suspense fallback={<ChatNewLandingSkeleton />}>
+    <Suspense fallback={<ChatRoomSkeleton />}>
       <ChatConversationSeeded params={params} />
     </Suspense>
   );

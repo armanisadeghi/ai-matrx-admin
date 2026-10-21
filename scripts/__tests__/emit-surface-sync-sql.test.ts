@@ -50,6 +50,14 @@ describe("surface manifest SQL emitter", () => {
     expect(mirrors).toBeGreaterThan(0);
   });
 
+  it("never writes the admin-owned intro_override — the sync owns only the code intro (2026-10-21)", () => {
+    // Every manifest, so a surface added later cannot reintroduce the column.
+    const sql = emitSurfaceSyncSql({ organizationId: SYSTEM_ORG });
+    expect(sql).toContain("INSERT INTO ui.ui_surface (");
+    expect(sql).toMatch(/\bintro\b/);
+    expect(sql).not.toMatch(/intro_override/);
+  });
+
   it("rejects an absent or malformed organization id", () => {
     expect(() =>
       emitSurfaceSyncSql({

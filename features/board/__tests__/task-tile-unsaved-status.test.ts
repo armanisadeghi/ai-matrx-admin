@@ -1,7 +1,8 @@
 /**
- * An agent's approved task change (status, priority, due date…) is STAGED in the task, exactly as
- * the person's own change on the task page: it waits for Save. The tile's header must say so
- * ("Unsaved"), never keep showing the old saved status as if nothing happened.
+ * Edits staged in the task (the person's own changes on the task page, or an agent's approved
+ * title / description / labels) wait for Save. The tile's header must say so ("Unsaved"), never
+ * keep showing the old saved status as if nothing happened. (An approved status, priority or due
+ * date saves at once instead: `task-tile-approved-change-saves.test.tsx`.)
  */
 let fakeState: unknown = {};
 jest.mock("@/lib/redux/hooks", () => ({

@@ -34,6 +34,7 @@ import { linkAcquisitionToUser } from "@/lib/product-analytics/server/acquisitio
 // `escapeHtmlAttr`: it escaped only & < " — no `>` and no `'` — while
 // interpolating into an HTML attribute. kit escapes all five.
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
+import { scheduleFoundSearchAtSignIn } from "@/features/marketing/smart-add/welcome/foundSearchAtSignIn";
 
 // The PKCE code-verifier cookie the login server action sets before sending
 // the browser to the provider. When it does not come back with the callback,
@@ -408,6 +409,11 @@ export async function GET(request: Request) {
             }
           });
         }
+      }
+
+      // The sign-up welcome's found search starts on the server, after the response (SIGNUP-WELCOME.md § The flow).
+      if (data.user && data.user.is_anonymous !== true && type !== "recovery") {
+        scheduleFoundSearchAtSignIn(data.session, "oauth_callback");
       }
 
       // Apple-specific: Persist user's name on first sign-in.
