@@ -21,7 +21,7 @@
 import { useEffect } from "react";
 import { KIND_KEY } from "@ai-matrx/content-ir";
 import { requestRichContentHost, useRichContentHostLanded } from "@ai-matrx/rich-content/host";
-import { AnswerTextView } from "@/components/official/structured-value/AnswerTextView";
+import { AnswerTextView } from "@ai-matrx/chat/window-panels/windows/text-review/AnswerTextView";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { KindFixItBar } from "@/features/content-ir/react/fixit/KindFixItBar";
 import {

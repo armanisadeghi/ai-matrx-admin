@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-labelledby="title">
+  <title id="title">Harbor scene</title>
+  <rect width="640" height="480" fill="#d9f2f3"/>
+  <circle cx="501" cy="105" r="48" fill="#ffc66d"/>
+  <path d="M0 300 113 201l86 70 114-119 127 130 90-67 110 85v180H0Z" fill="#6ba9bf"/>
+  <path d="M0 332 131 273l126 65 117-76 132 69 134-64v213H0Z" fill="#347d9a"/>
+  <path d="M0 357q80-22 160 0t160 0 160 0 160 0v123H0Z" fill="#174968"/>
+  <path d="M251 355h176l-24 37H278Z" fill="#e9785c"/>
+  <path d="M333 183v172" stroke="#17364a" stroke-width="7"/>
+  <path d="m328 189-64 142h64Z" fill="#fff8e7"/>
+  <path d="m341 201 62 130h-62Z" fill="#ffbe8d"/>
+  <text x="32" y="55" fill="#17364a" font-family="sans-serif" font-size="29" font-weight="700">HARBOR SCENE</text>
+</svg>

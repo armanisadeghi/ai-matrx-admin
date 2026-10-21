@@ -38,7 +38,7 @@ import {
 } from "@/features/mandates/admin/service";
 import { onMandateCacheInvalidated } from "@ai-matrx/chat/mandates/service";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
-import { useMandateDisplayName } from "@/features/mandates/useMandateDisplayName";
+import { useMandateDisplayName } from "@ai-matrx/chat/mandates/useMandateDisplayName";
 import { mandateRoute } from "@/features/mandates/browse/types";
 import { featureLabelOf } from "@/features/mandates/feature-label";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";

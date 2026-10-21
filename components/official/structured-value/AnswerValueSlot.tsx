@@ -10,7 +10,7 @@
 // is actually shown — never with the shell on every route.
 
 import type { AnswerValueViewProps } from "@/components/official/structured-value/AnswerValueView";
-import { AnswerTextView } from "@/components/official/structured-value/AnswerTextView";
+import { AnswerTextView } from "@ai-matrx/chat/window-panels/windows/text-review/AnswerTextView";
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 
 export function AnswerValueSlot(props: AnswerValueViewProps) {

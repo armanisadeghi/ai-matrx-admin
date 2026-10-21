@@ -1,0 +1,28 @@
+{
+  "fixture_version": "2026-10-21-v1",
+  "purpose": "Controlled public image capture input for Matrx Extend T42",
+  "page_url": "https://www.aimatrx.com/matrx-extend-fixtures/images.html",
+  "images": [
+    {
+      "src": "https://www.aimatrx.com/matrx-extend-fixtures/harbor-scene.svg",
+      "width": 640,
+      "height": 480,
+      "expected_tier": "large",
+      "sha256": "529d30e4fb98f8b321b379f5b9f3907ab92cee9129d166465e1d85d99cc5e743"
+    },
+    {
+      "src": "https://www.aimatrx.com/matrx-extend-fixtures/parcel-card.svg",
+      "width": 96,
+      "height": 96,
+      "expected_tier": "medium",
+      "sha256": "f24ddda075422d0617f74c8310fe2ff9e436b9f1b29ed5d1f013cc5ac416acee"
+    },
+    {
+      "src": "https://www.aimatrx.com/matrx-extend-fixtures/green-marker.svg",
+      "width": 32,
+      "height": 32,
+      "expected_tier": "icon",
+      "sha256": "d0b862c39bf5ccd9a64f321ef51e340d55d8752444e95f90936022ec9653a040"
+    }
+  ]
+}
