@@ -1,0 +1,3717 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0587",
+  "version": 1,
+  "title": "Coworking Space",
+  "description": "Members and tours, desks and offices, meeting-room credits and front-desk tickets.",
+  "forWho": "Coworking operators and shared office managers",
+  "icon": {
+    "emoji": "🏢"
+  },
+  "cover": {
+    "url": "gallery:realestate-coworking-space-desks",
+    "offsetY": 50
+  },
+  "category": "realestate",
+  "tags": [
+    "coworking",
+    "workspace",
+    "desks",
+    "offices",
+    "members",
+    "flex"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-coworking-space",
+    "catalogueId": "SP0587",
+    "useCase": "The general manager of Foundry Row Commons uses this to see occupancy, who is over their meeting-room hours and which tours are coming up.",
+    "industry": "real_estate_property",
+    "vertical": "Coworking space",
+    "job": "crm_pipeline",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Foundry Row Commons",
+      "describes": "A two-floor coworking space in a converted foundry with private offices, dedicated and hot desks, two meeting rooms and an event hall.",
+      "address": {
+        "line1": "60 Tannery Row",
+        "city": "Chattanooga",
+        "region": "TN",
+        "postalCode": "37402",
+        "country": "US"
+      },
+      "phone": "(423) 555-0190",
+      "website": "foundryrowcommons.net",
+      "email": "hello@foundryrowcommons.net",
+      "timezone": "America/New_York"
+    },
+    "cleanupTag": "use-case:spaces-coworking-space",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Odalys Brennan-Kaur",
+              "role": "General manager",
+              "work_email": "odalys@foundryrowcommons.net",
+              "mobile": "(423) 555-0141",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Felix Adeyemi",
+              "role": "Community manager",
+              "work_email": "felix@foundryrowcommons.net",
+              "mobile": "(423) 555-0142",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Margot Lindahl",
+              "role": "Front desk",
+              "work_email": "margot@foundryrowcommons.net",
+              "mobile": "(423) 555-0143",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Rashid Oyelowo",
+              "role": "Operations and facilities",
+              "work_email": "rashid@foundryrowcommons.net",
+              "mobile": "(423) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Wendell Ashgrove",
+              "role": "Membership sales",
+              "work_email": "wendell@foundryrowcommons.net",
+              "mobile": "(423) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "member_take",
+        "table": "member",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "booking_in",
+        "table": "booking",
+        "name": "Check in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          },
+          {
+            "field": "checked_in_at",
+            "set": "value",
+            "value": "@now"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ticket_fixed",
+        "table": "ticket",
+        "name": "Mark fixed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Fixed"
+          },
+          {
+            "field": "fixed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "ticket_take",
+        "table": "ticket",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Coworking Space assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "space",
+          "describes": "Every office, desk, meeting room and booth in the building, what it rents for and who is in it."
+        },
+        {
+          "name": "related_tables",
+          "table": "member",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many members have given notice?",
+        "whyItMatters": "Every notice is a desk or office to fill next month.",
+        "expect": {
+          "table": "member",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Notice given"
+          },
+          "answer": 1,
+          "unit": "members"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open members.",
+        "action": {
+          "kind": "open",
+          "surface": "member_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "member_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open spaces.",
+        "action": {
+          "kind": "open",
+          "surface": "space_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "space_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open bookings.",
+        "action": {
+          "kind": "open",
+          "surface": "booking_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "booking_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "foundryrowcommons.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Tannery Row"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "member",
+        "name": "Members",
+        "labelSingular": "Member",
+        "labelPlural": "Members",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "id-card",
+        "titleField": "member_name",
+        "describes": "People and companies with a plan here, from first tour to moving out, with their fee and meeting-room hours.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Tour notes",
+            "values": {
+              "status": "Tour booked",
+              "member_name": "New prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the tour"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "What they do and how many people"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "How often they will come in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Day pass set up so they can work here after the tour"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "On the tour"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Start at the coffee bar, end at the space that fits them"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Show the meeting rooms and the booking screen"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Introduce one member who does similar work"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proposal sent the same day with two options"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Follow-up in two days"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "member_name",
+            "label": "Member",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Lead",
+              "Tour booked",
+              "Active",
+              "Notice given",
+              "Moved out"
+            ],
+            "choiceColors": {
+              "Lead": "slate",
+              "Tour booked": "blue",
+              "Active": "green",
+              "Notice given": "amber",
+              "Moved out": "violet"
+            },
+            "default": "Lead"
+          },
+          {
+            "key": "plan",
+            "label": "Plan",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Day pass pack",
+              "Hot desk",
+              "Dedicated desk",
+              "Private office",
+              "Virtual office"
+            ],
+            "choiceColors": {
+              "Day pass pack": "yellow",
+              "Hot desk": "teal",
+              "Dedicated desk": "blue",
+              "Private office": "violet",
+              "Virtual office": "slate"
+            }
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "key": "monthly_fee",
+            "label": "Monthly fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "hours_included",
+            "label": "Room hours included a month",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "hours_used",
+            "label": "Room hours this cycle",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "cycle": "This cycle",
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "No-show"
+                ]
+              }
+            }
+          },
+          {
+            "key": "overage",
+            "label": "Hours over plan",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Room hours this cycle} > {Room hours included a month}, {Room hours this cycle} - {Room hours included a month}, 0)"
+          },
+          {
+            "key": "overage_fee",
+            "label": "Overage to bill (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Room hours this cycle} > {Room hours included a month}, ({Room hours this cycle} - {Room hours included a month}) * 25, 0)"
+          },
+          {
+            "key": "tour_at",
+            "label": "Tour",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "start_on",
+            "label": "Member since",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Account owner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "assigned_to",
+            "label": "Followed up by",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "member_take"
+            }
+          },
+          {
+            "key": "mail_btn",
+            "label": "Send email",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{email}}"
+            }
+          },
+          {
+            "key": "add_booking_btn",
+            "label": "Book a room",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "booking",
+              "template": "Room booking",
+              "prefill": {
+                "member": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "memb-1",
+            "values": {
+              "member_name": "Lumen Cartography",
+              "status": "Active",
+              "plan": "Private office",
+              "seats": 4,
+              "monthly_fee": 1360,
+              "hours_included": 10,
+              "tour_at": "@today-14m 10:00",
+              "start_on": "@today-13m",
+              "phone": "(423) 555-0101",
+              "email": "studio.lumen@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-2",
+            "values": {
+              "member_name": "Dahlia Restrepo",
+              "status": "Active",
+              "plan": "Dedicated desk",
+              "seats": 1,
+              "monthly_fee": 375,
+              "hours_included": 4,
+              "tour_at": "@today-8m 11:00",
+              "start_on": "@today-8m",
+              "phone": "(423) 555-0102",
+              "email": "dahlia.restrepo@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-3",
+            "values": {
+              "member_name": "Kettle and Quill Studio",
+              "status": "Active",
+              "plan": "Private office",
+              "seats": 2,
+              "monthly_fee": 820,
+              "hours_included": 6,
+              "tour_at": "@today-2y 15:00",
+              "start_on": "@today-2y",
+              "phone": "(423) 555-0103",
+              "email": "hello.kettlequill@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-4",
+            "values": {
+              "member_name": "Marcus Oyelaran",
+              "status": "Active",
+              "plan": "Hot desk",
+              "seats": 1,
+              "monthly_fee": 250,
+              "hours_included": 2,
+              "tour_at": "@today-5m 09:30",
+              "start_on": "@today-5m",
+              "phone": "(423) 555-0104",
+              "email": "marcus.oyelaran@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-5",
+            "values": {
+              "member_name": "Brightwell Legal",
+              "status": "Active",
+              "plan": "Virtual office",
+              "seats": 0,
+              "monthly_fee": 99,
+              "hours_included": 2,
+              "start_on": "@today-1y",
+              "phone": "(423) 555-0105",
+              "email": "office.brightwell@inbox-mail.net",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "memb-6",
+            "values": {
+              "member_name": "Signal Harbor Robotics",
+              "status": "Notice given",
+              "plan": "Dedicated desk",
+              "seats": 1,
+              "monthly_fee": 425,
+              "hours_included": 4,
+              "tour_at": "@today-10m 14:00",
+              "start_on": "@today-10m",
+              "phone": "(423) 555-0106",
+              "email": "ops.signalharbor@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-7",
+            "values": {
+              "member_name": "Ines Achterberg",
+              "status": "Active",
+              "plan": "Hot desk",
+              "seats": 1,
+              "monthly_fee": 250,
+              "hours_included": 2,
+              "tour_at": "@today-3m 10:30",
+              "start_on": "@today-3m",
+              "phone": "(423) 555-0107",
+              "email": "ines.achterberg@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-8",
+            "values": {
+              "member_name": "Tamsin Okafor",
+              "status": "Active",
+              "plan": "Day pass pack",
+              "seats": 1,
+              "monthly_fee": 180,
+              "hours_included": 0,
+              "start_on": "@today-40d",
+              "phone": "(423) 555-0108",
+              "email": "tamsin.okafor@inbox-mail.net",
+              "owner": "tm-3"
+            }
+          },
+          {
+            "key": "memb-9",
+            "values": {
+              "member_name": "Northgate Data Co.",
+              "status": "Tour booked",
+              "plan": "Private office",
+              "seats": 6,
+              "monthly_fee": 2250,
+              "hours_included": 14,
+              "tour_at": "@today+1d 10:00",
+              "phone": "(423) 555-0109",
+              "email": "founders.northgate@inbox-mail.net",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "memb-10",
+            "values": {
+              "member_name": "Rowan Delacroix",
+              "status": "Tour booked",
+              "plan": "Hot desk",
+              "seats": 1,
+              "monthly_fee": 250,
+              "hours_included": 2,
+              "tour_at": "@today 16:00",
+              "phone": "(423) 555-0110",
+              "email": "rowan.delacroix@inbox-mail.net",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "memb-11",
+            "values": {
+              "member_name": "Hollis Varga",
+              "status": "Tour booked",
+              "plan": "Dedicated desk",
+              "seats": 1,
+              "monthly_fee": 425,
+              "hours_included": 4,
+              "tour_at": "@today+3d 11:30",
+              "phone": "(423) 555-0111",
+              "email": "hollis.varga@inbox-mail.net",
+              "owner": "tm-5"
+            }
+          },
+          {
+            "key": "memb-12",
+            "values": {
+              "member_name": "Pinecrest Tutoring",
+              "status": "Moved out",
+              "plan": "Private office",
+              "seats": 2,
+              "monthly_fee": 950,
+              "hours_included": 6,
+              "tour_at": "@today-3y 13:00",
+              "start_on": "@today-3y",
+              "phone": "(423) 555-0112",
+              "email": "admin.pinecrest@inbox-mail.net",
+              "owner": "tm-2"
+            }
+          },
+          {
+            "key": "memb-13",
+            "values": {
+              "member_name": "Yara Thornbury",
+              "status": "Lead",
+              "plan": "Virtual office",
+              "seats": 0,
+              "monthly_fee": 99,
+              "hours_included": 2,
+              "phone": "(423) 555-0113",
+              "email": "yara.thornbury@inbox-mail.net",
+              "owner": "tm-5"
+            }
+          }
+        ],
+        "independentOf": {
+          "owner": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "tour_at",
+            "start_on"
+          ]
+        ]
+      },
+      {
+        "token": "space",
+        "name": "Spaces",
+        "labelSingular": "Space",
+        "labelPlural": "Spaces",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "door-closed",
+        "titleField": "space_name",
+        "describes": "Every office, desk, meeting room and booth in the building, what it rents for and who is in it.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "space_name",
+            "label": "Space",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Available",
+            "choices": [
+              "Available",
+              "Held for a tour",
+              "Occupied",
+              "Out of service"
+            ],
+            "choiceColors": {
+              "Available": "green",
+              "Held for a tour": "blue",
+              "Occupied": "violet",
+              "Out of service": "amber"
+            },
+            "statusGroups": {
+              "Available": "todo",
+              "Held for a tour": "in_progress",
+              "Occupied": "done",
+              "Out of service": "in_progress"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Private office",
+              "Dedicated desk",
+              "Hot desk zone",
+              "Meeting room",
+              "Phone booth",
+              "Event hall"
+            ],
+            "choiceColors": {
+              "Private office": "violet",
+              "Dedicated desk": "blue",
+              "Hot desk zone": "teal",
+              "Meeting room": "orange",
+              "Phone booth": "slate",
+              "Event hall": "pink"
+            }
+          },
+          {
+            "key": "floor",
+            "label": "Floor",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Ground floor",
+              "Second floor"
+            ],
+            "choiceColors": {
+              "Ground floor": "slate",
+              "Second floor": "blue"
+            }
+          },
+          {
+            "key": "seats",
+            "label": "Seats",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "priced_per",
+            "label": "Priced per",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Month",
+              "Hour",
+              "Free for members"
+            ],
+            "choiceColors": {
+              "Month": "blue",
+              "Hour": "orange",
+              "Free for members": "green"
+            }
+          },
+          {
+            "key": "occupant",
+            "label": "Occupant",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "member",
+            "relationMax": 1
+          },
+          {
+            "key": "per_seat",
+            "label": "Price per seat (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(AND({Priced per} = \"Month\", {Seats} > 0), ROUND({Price (USD)} / {Seats}, 0), \"\")"
+          },
+          {
+            "key": "hours_booked",
+            "label": "Hours booked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "No-show"
+                ]
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "spac-1",
+            "values": {
+              "space_name": "Office 201, four seats",
+              "status": "Occupied",
+              "kind": "Private office",
+              "floor": "Second floor",
+              "seats": 4,
+              "price": 1600,
+              "priced_per": "Month",
+              "occupant": "memb-1"
+            }
+          },
+          {
+            "key": "spac-2",
+            "values": {
+              "space_name": "Office 202, two seats",
+              "status": "Occupied",
+              "kind": "Private office",
+              "floor": "Second floor",
+              "seats": 2,
+              "price": 950,
+              "priced_per": "Month",
+              "occupant": "memb-3"
+            }
+          },
+          {
+            "key": "spac-3",
+            "values": {
+              "space_name": "Office 203, six seats",
+              "status": "Held for a tour",
+              "kind": "Private office",
+              "floor": "Second floor",
+              "seats": 6,
+              "price": 2250,
+              "priced_per": "Month"
+            }
+          },
+          {
+            "key": "spac-4",
+            "values": {
+              "space_name": "Office 204, three seats",
+              "status": "Available",
+              "kind": "Private office",
+              "floor": "Second floor",
+              "seats": 3,
+              "price": 1250,
+              "priced_per": "Month"
+            }
+          },
+          {
+            "key": "spac-5",
+            "values": {
+              "space_name": "Office 205, two seats",
+              "status": "Out of service",
+              "kind": "Private office",
+              "floor": "Second floor",
+              "seats": 2,
+              "price": 950,
+              "priced_per": "Month"
+            }
+          },
+          {
+            "key": "spac-6",
+            "values": {
+              "space_name": "Desk D-07, window row",
+              "status": "Occupied",
+              "kind": "Dedicated desk",
+              "floor": "Ground floor",
+              "seats": 1,
+              "price": 425,
+              "priced_per": "Month",
+              "occupant": "memb-2"
+            }
+          },
+          {
+            "key": "spac-7",
+            "values": {
+              "space_name": "Desk D-08, window row",
+              "status": "Occupied",
+              "kind": "Dedicated desk",
+              "floor": "Ground floor",
+              "seats": 1,
+              "price": 425,
+              "priced_per": "Month",
+              "occupant": "memb-6"
+            }
+          },
+          {
+            "key": "spac-8",
+            "values": {
+              "space_name": "Desk D-09, by the stairs",
+              "status": "Available",
+              "kind": "Dedicated desk",
+              "floor": "Ground floor",
+              "seats": 1,
+              "price": 425,
+              "priced_per": "Month"
+            }
+          },
+          {
+            "key": "spac-9",
+            "values": {
+              "space_name": "Hot desk lounge",
+              "status": "Available",
+              "kind": "Hot desk zone",
+              "floor": "Ground floor",
+              "seats": 30,
+              "price": 250,
+              "priced_per": "Month"
+            }
+          },
+          {
+            "key": "spac-10",
+            "values": {
+              "space_name": "Ironworks boardroom",
+              "status": "Available",
+              "kind": "Meeting room",
+              "floor": "Second floor",
+              "seats": 12,
+              "price": 60,
+              "priced_per": "Hour"
+            }
+          },
+          {
+            "key": "spac-11",
+            "values": {
+              "space_name": "Kiln huddle room",
+              "status": "Available",
+              "kind": "Meeting room",
+              "floor": "Ground floor",
+              "seats": 4,
+              "price": 30,
+              "priced_per": "Hour"
+            }
+          },
+          {
+            "key": "spac-12",
+            "values": {
+              "space_name": "Phone booth A",
+              "status": "Available",
+              "kind": "Phone booth",
+              "floor": "Ground floor",
+              "seats": 1,
+              "price": 0,
+              "priced_per": "Free for members"
+            }
+          },
+          {
+            "key": "spac-13",
+            "values": {
+              "space_name": "Casting hall",
+              "status": "Available",
+              "kind": "Event hall",
+              "floor": "Ground floor",
+              "seats": 80,
+              "price": 150,
+              "priced_per": "Hour"
+            }
+          }
+        ],
+        "independentOf": {
+          "occupant": "Either record can be created or change status before the other."
+        }
+      },
+      {
+        "token": "booking",
+        "name": "Room bookings",
+        "labelSingular": "Booking",
+        "labelPlural": "Bookings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "booking_name",
+        "describes": "Meeting room and event hall bookings, the hours used against each member's plan and outside rentals.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Checked in",
+              "Completed"
+            ],
+            "filled": [
+              "checked_in_at"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Room booking",
+            "values": {
+              "status": "Confirmed",
+              "booking_name": "New booking",
+              "cycle": "This cycle"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Layout: boardroom, classroom or open"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Screen and call link tested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Coffee and water if ordered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Room reset and whiteboard wiped"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Hours confirmed against the plan"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "booking_name",
+            "label": "Booking",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Confirmed",
+            "choices": [
+              "Confirmed",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Confirmed": "blue",
+              "Checked in": "violet",
+              "Completed": "green",
+              "No-show": "pink",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Confirmed": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "space",
+            "relationMax": 1
+          },
+          {
+            "key": "member",
+            "label": "Member",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "member",
+            "relationMax": 1
+          },
+          {
+            "key": "start_at",
+            "label": "Starts",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "hours",
+            "label": "Hours",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0.5
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "cycle",
+            "label": "Billing cycle",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "This cycle",
+              "Billed"
+            ],
+            "choiceColors": {
+              "This cycle": "blue",
+              "Billed": "green"
+            },
+            "default": "This cycle"
+          },
+          {
+            "key": "outside_fee",
+            "label": "Outside rental fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "checked_in_at",
+            "label": "Checked in at",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "in_btn",
+            "label": "Check in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "booking_in"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "book-1",
+            "values": {
+              "booking_name": "Lumen Cartography all-hands",
+              "status": "Completed",
+              "room": "spac-10",
+              "member": "memb-1",
+              "start_at": "@today-35d 09:00",
+              "hours": 2,
+              "cycle": "Billed",
+              "checked_in_at": "@today-35d 08:55"
+            }
+          },
+          {
+            "key": "book-2",
+            "values": {
+              "booking_name": "Lumen Cartography client review",
+              "status": "Completed",
+              "room": "spac-10",
+              "member": "memb-1",
+              "start_at": "@today-8d 10:00",
+              "hours": 3,
+              "cycle": "This cycle",
+              "checked_in_at": "@today-8d 09:58"
+            }
+          },
+          {
+            "key": "book-3",
+            "values": {
+              "booking_name": "Kettle and Quill portfolio shoot",
+              "status": "Completed",
+              "room": "spac-11",
+              "member": "memb-3",
+              "start_at": "@today-6d 13:00",
+              "hours": 2,
+              "cycle": "This cycle",
+              "checked_in_at": "@today-6d 13:05"
+            }
+          },
+          {
+            "key": "book-4",
+            "values": {
+              "booking_name": "Dahlia Restrepo investor call",
+              "status": "Completed",
+              "room": "spac-11",
+              "member": "memb-2",
+              "start_at": "@today-5d 15:00",
+              "hours": 2,
+              "cycle": "This cycle",
+              "checked_in_at": "@today-5d 14:57"
+            }
+          },
+          {
+            "key": "book-5",
+            "values": {
+              "booking_name": "Lumen Cartography sprint planning",
+              "status": "Completed",
+              "room": "spac-10",
+              "member": "memb-1",
+              "start_at": "@today-4d 09:00",
+              "hours": 4,
+              "cycle": "This cycle",
+              "checked_in_at": "@today-4d 09:02"
+            }
+          },
+          {
+            "key": "book-6",
+            "values": {
+              "booking_name": "Marcus Oyelaran podcast recording",
+              "status": "No-show",
+              "room": "spac-11",
+              "member": "memb-4",
+              "start_at": "@today-3d 16:00",
+              "hours": 1,
+              "cycle": "This cycle"
+            }
+          },
+          {
+            "key": "book-7",
+            "values": {
+              "booking_name": "Dahlia Restrepo hiring interviews",
+              "status": "Completed",
+              "room": "spac-11",
+              "member": "memb-2",
+              "start_at": "@today-2d 10:00",
+              "hours": 3,
+              "cycle": "This cycle",
+              "checked_in_at": "@today-2d 09:50"
+            }
+          },
+          {
+            "key": "book-8",
+            "values": {
+              "booking_name": "Lumen Cartography map review workshop",
+              "status": "Confirmed",
+              "room": "spac-10",
+              "member": "memb-1",
+              "start_at": "@today 13:00",
+              "hours": 5,
+              "cycle": "This cycle"
+            }
+          },
+          {
+            "key": "book-9",
+            "values": {
+              "booking_name": "Kettle and Quill client pitch",
+              "status": "Confirmed",
+              "room": "spac-11",
+              "member": "memb-3",
+              "start_at": "@today+1d 11:00",
+              "hours": 2,
+              "cycle": "This cycle"
+            }
+          },
+          {
+            "key": "book-10",
+            "values": {
+              "booking_name": "Ines Achterberg mock interview",
+              "status": "Confirmed",
+              "room": "spac-11",
+              "member": "memb-7",
+              "start_at": "@today+2d 09:00",
+              "hours": 1,
+              "cycle": "This cycle"
+            }
+          },
+          {
+            "key": "book-11",
+            "values": {
+              "booking_name": "Founders breakfast meetup",
+              "status": "Confirmed",
+              "room": "spac-13",
+              "start_at": "@today+5d 08:00",
+              "hours": 3,
+              "cycle": "This cycle",
+              "outside_fee": 450
+            }
+          },
+          {
+            "key": "book-12",
+            "values": {
+              "booking_name": "Signal Harbor farewell lunch",
+              "status": "Cancelled",
+              "room": "spac-13",
+              "member": "memb-6",
+              "start_at": "@today+9d 12:00",
+              "hours": 2,
+              "cycle": "This cycle"
+            }
+          }
+        ],
+        "independentOf": {
+          "room": "Either record can be created or change status before the other.",
+          "member": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The start time is the booking; the check-in time is stamped when the group arrives, a little before or after."
+      },
+      {
+        "token": "ticket",
+        "name": "Front desk tickets",
+        "labelSingular": "Ticket",
+        "labelPlural": "Tickets",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "life-buoy",
+        "titleField": "ticket_name",
+        "describes": "Everything members ask the front desk or facilities to fix: Wi-Fi, key cards, printers, heating, packages.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Fixed"
+            ],
+            "filled": [
+              "fixed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "ticket_name",
+            "label": "Request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Open",
+            "choices": [
+              "Open",
+              "In progress",
+              "Waiting on vendor",
+              "Fixed"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "In progress": "blue",
+              "Waiting on vendor": "amber",
+              "Fixed": "green"
+            },
+            "statusGroups": {
+              "Open": "todo",
+              "In progress": "in_progress",
+              "Waiting on vendor": "in_progress",
+              "Fixed": "done"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Wi-Fi",
+              "Key card",
+              "Printer",
+              "Heating and cooling",
+              "Kitchen",
+              "Mail and packages",
+              "Screens and AV"
+            ],
+            "choiceColors": {
+              "Wi-Fi": "blue",
+              "Key card": "violet",
+              "Printer": "slate",
+              "Heating and cooling": "orange",
+              "Kitchen": "yellow",
+              "Mail and packages": "teal",
+              "Screens and AV": "pink"
+            }
+          },
+          {
+            "key": "priority",
+            "label": "Priority",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Low",
+              "Normal",
+              "High"
+            ],
+            "choiceColors": {
+              "Low": "slate",
+              "Normal": "blue",
+              "High": "red"
+            },
+            "default": "Normal"
+          },
+          {
+            "key": "member",
+            "label": "Reported by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "member",
+            "relationMax": 1
+          },
+          {
+            "key": "reported_at",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "fixed_on",
+            "label": "Fixed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fix_btn",
+            "label": "Mark fixed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ticket_fixed"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "ticket_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tick-1",
+            "values": {
+              "ticket_name": "Wi-Fi drops in office 201 every afternoon",
+              "status": "In progress",
+              "kind": "Wi-Fi",
+              "priority": "High",
+              "member": "memb-1",
+              "reported_at": "@today-2d 14:20"
+            }
+          },
+          {
+            "key": "tick-2",
+            "values": {
+              "ticket_name": "Key card will not open the side door",
+              "status": "Fixed",
+              "kind": "Key card",
+              "priority": "Normal",
+              "member": "memb-4",
+              "reported_at": "@today-6d 08:10",
+              "fixed_on": "@today-6d"
+            }
+          },
+          {
+            "key": "tick-3",
+            "values": {
+              "ticket_name": "Second-floor printer jams on double-sided",
+              "status": "Waiting on vendor",
+              "kind": "Printer",
+              "priority": "Normal",
+              "reported_at": "@today-5d 11:45"
+            }
+          },
+          {
+            "key": "tick-4",
+            "values": {
+              "ticket_name": "Boardroom too warm after 2 pm",
+              "status": "Open",
+              "kind": "Heating and cooling",
+              "priority": "Normal",
+              "member": "memb-1",
+              "reported_at": "@today-1d 15:30"
+            }
+          },
+          {
+            "key": "tick-5",
+            "values": {
+              "ticket_name": "Courier package for Kettle and Quill",
+              "status": "Fixed",
+              "kind": "Mail and packages",
+              "priority": "Low",
+              "member": "memb-3",
+              "reported_at": "@today-3d 10:05",
+              "fixed_on": "@today-3d"
+            }
+          },
+          {
+            "key": "tick-6",
+            "values": {
+              "ticket_name": "Coffee machine needs descaling",
+              "status": "Open",
+              "kind": "Kitchen",
+              "priority": "Low",
+              "reported_at": "@today 08:15"
+            }
+          },
+          {
+            "key": "tick-7",
+            "values": {
+              "ticket_name": "Huddle room screen will not mirror laptops",
+              "status": "Open",
+              "kind": "Screens and AV",
+              "priority": "High",
+              "member": "memb-2",
+              "reported_at": "@today 09:40"
+            }
+          }
+        ],
+        "independentOf": {
+          "member": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "reported_at",
+            "fixed_on"
+          ]
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "The team member who looks after this member.",
+        "fromTable": "member",
+        "fromField": "owner",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "accounts"
+      },
+      {
+        "describes": "A rented office or desk has one member in it.",
+        "fromTable": "space",
+        "fromField": "occupant",
+        "toTable": "member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "spaces"
+      },
+      {
+        "describes": "Each booking is for one room.",
+        "fromTable": "booking",
+        "fromField": "room",
+        "toTable": "space",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "The member who booked; empty for an outside rental.",
+        "fromTable": "booking",
+        "fromField": "member",
+        "toTable": "member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings"
+      },
+      {
+        "describes": "The member who reported it, if any.",
+        "fromTable": "ticket",
+        "fromField": "member",
+        "toTable": "member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "tickets"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_member",
+        "name": "All members",
+        "table": "member",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "member_board",
+        "name": "Members board",
+        "table": "member",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "member_tours",
+        "name": "Tours this week",
+        "table": "member",
+        "kind": "grid",
+        "within": {
+          "tour_at": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "member_next7",
+        "name": "Tours in the next 7 days",
+        "table": "member",
+        "kind": "grid",
+        "within": {
+          "tour_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Tour booked"
+        }
+      },
+      {
+        "token": "member_notice",
+        "name": "Notice given",
+        "table": "member",
+        "kind": "grid",
+        "filters": {
+          "status": "Notice given"
+        }
+      },
+      {
+        "token": "member_mine",
+        "name": "My follow-ups",
+        "table": "member",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_space",
+        "name": "All spaces",
+        "table": "space",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "space_board",
+        "name": "Spaces board",
+        "table": "space",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "space_free",
+        "name": "Free to rent",
+        "table": "space",
+        "kind": "grid",
+        "filters": {
+          "status": "Available"
+        }
+      },
+      {
+        "token": "all_booking",
+        "name": "All bookings",
+        "table": "booking",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "booking_board",
+        "name": "Bookings board",
+        "table": "booking",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "booking_cal",
+        "name": "Bookings calendar",
+        "table": "booking",
+        "kind": "calendar",
+        "dateField": "start_at",
+        "allDay": true
+      },
+      {
+        "token": "booking_today",
+        "name": "Today",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "start_at": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "booking_week",
+        "name": "This week",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "start_at": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "booking_next7",
+        "name": "Next 7 days",
+        "table": "booking",
+        "kind": "grid",
+        "within": {
+          "start_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Confirmed"
+        }
+      },
+      {
+        "token": "all_ticket",
+        "name": "All tickets",
+        "table": "ticket",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "ticket_board",
+        "name": "Tickets board",
+        "table": "ticket",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "ticket_open",
+        "name": "Not fixed yet",
+        "table": "ticket",
+        "kind": "grid",
+        "anyOf": {
+          "status": [
+            "Open",
+            "In progress",
+            "Waiting on vendor"
+          ]
+        }
+      },
+      {
+        "token": "ticket_mine",
+        "name": "My tickets",
+        "table": "ticket",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "ticket_recent",
+        "name": "Reported in the last 7 days",
+        "table": "ticket",
+        "kind": "grid",
+        "within": {
+          "reported_at": {
+            "relative": "past_days",
+            "n": 7
+          }
+        }
+      }
+    ],
+    "forms": [
+      {
+        "token": "tour_request",
+        "name": "Book a tour",
+        "describes": "How someone interested in a membership books a tour.",
+        "audience": "staff",
+        "table": "member",
+        "fields": [
+          {
+            "fieldKey": "member_name",
+            "ask": "Your name or your company's?",
+            "required": true
+          },
+          {
+            "fieldKey": "plan",
+            "ask": "Which plan interests you?"
+          },
+          {
+            "fieldKey": "seats",
+            "ask": "How many people?"
+          },
+          {
+            "fieldKey": "tour_at",
+            "ask": "When would you like to visit?"
+          }
+        ],
+        "submitLabel": "Book the tour",
+        "confirmation": "Tour request saved at Tour booked; the confirmation goes out by email."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "coworking-space",
+      "parent": null,
+      "title": "Coworking Space",
+      "icon": {
+        "emoji": "🏢"
+      },
+      "cover": {
+        "url": "gallery:realestate-coworking-space-desks",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Members holds everyone from first tour to moving out; Spaces shows what is rented and free; Room bookings count meeting-room hours against each plan. Start on the Dashboard: today's rooms and tours, then open tickets."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:tours"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:room-credits"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Members"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "People and companies with a plan here, from first tour to moving out, with their fee and meeting-room hours."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "member",
+              "view": "member_board"
+            },
+            "inline": true,
+            "title": "Members",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "memb-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "seats",
+                  "hours_included",
+                  "hours_used",
+                  "overage",
+                  "overage_fee",
+                  "start_on",
+                  "phone",
+                  "email",
+                  "owner",
+                  "assigned_to",
+                  "take_btn",
+                  "mail_btn",
+                  "add_booking_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "memb-t",
+                "name": "All members",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "memb-tours",
+                "name": "Tours this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "tour_at": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "memb-next7",
+                "name": "Tours in the next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "tour_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Tour booked"
+                }
+              },
+              {
+                "id": "memb-notice",
+                "name": "Notice given",
+                "layout": "list",
+                "icon": "LogOut",
+                "filters": {
+                  "status": "Notice given"
+                }
+              },
+              {
+                "id": "memb-mine",
+                "name": "My follow-ups",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "memb-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Spaces"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every office, desk, meeting room and booth in the building, what it rents for and who is in it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "space",
+              "view": "space_board"
+            },
+            "inline": true,
+            "title": "Spaces",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "spac-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "floor",
+                  "priced_per",
+                  "occupant",
+                  "per_seat",
+                  "hours_booked",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "spac-t",
+                "name": "All spaces",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "spac-free",
+                "name": "Free to rent",
+                "layout": "list",
+                "icon": "DoorOpen",
+                "filters": {
+                  "status": "Available"
+                }
+              }
+            ],
+            "activeViewId": "spac-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Room bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Meeting room and event hall bookings, the hours used against each member's plan and outside rentals."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "booking_board"
+            },
+            "inline": true,
+            "title": "Room bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "book-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "cycle",
+                  "outside_fee",
+                  "checked_in_at",
+                  "in_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "book-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "start_at",
+                "hiddenFields": [
+                  "status",
+                  "hours",
+                  "cycle",
+                  "outside_fee",
+                  "checked_in_at",
+                  "in_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "book-t",
+                "name": "All bookings",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "book-today",
+                "name": "Today",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "start_at": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "book-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "start_at": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "book-next7",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "CalendarRange",
+                "within": {
+                  "start_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Confirmed"
+                }
+              }
+            ],
+            "activeViewId": "book-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Front desk tickets"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everything members ask the front desk or facilities to fix: Wi-Fi, key cards, printers, heating, packages."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ticket",
+              "view": "ticket_board"
+            },
+            "inline": true,
+            "title": "Front desk tickets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tick-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "reported_at",
+                  "fixed_on",
+                  "assigned_to",
+                  "fix_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "tick-t",
+                "name": "All tickets",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "tick-open",
+                "name": "Not fixed yet",
+                "layout": "list",
+                "icon": "CircleDot",
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress",
+                    "Waiting on vendor"
+                  ]
+                }
+              },
+              {
+                "id": "tick-mine",
+                "name": "My tickets",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              },
+              {
+                "id": "tick-recent",
+                "name": "Reported in the last 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "reported_at": {
+                    "relative": "past_days",
+                    "n": 7
+                  }
+                }
+              }
+            ],
+            "activeViewId": "tick-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "coworking-space",
+      "title": "Start here: how the space runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Members holds everyone with a plan, from first tour to moving out. Spaces is the building: every office, desk and room. Room bookings counts meeting-room hours against each plan. Front desk tickets is everything that needs fixing."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The front desk's day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the Dashboard. Check today's bookings and press "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " as each group arrives."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Greet today's tours and give them a day pass so they can work here after the tour."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log every request as a ticket, even the ones fixed on the spot. Patterns show up only when everything is written down."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The community manager's week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call anyone in "
+            },
+            {
+              "text": "Notice given",
+              "bold": true
+            },
+            {
+              "text": " to ask why. A smaller plan often keeps a member who was about to leave."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Read "
+            },
+            {
+              "text": "Hours over plan",
+              "bold": true
+            },
+            {
+              "text": " on Members before invoices go out. Overage is billed at 25 USD an hour."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep "
+            },
+            {
+              "text": "Spaces",
+              "bold": true
+            },
+            {
+              "text": " honest: an office held for a tour goes back to Available if the tour does not sign within a week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Members on a twelve-month term pay 12% to 15% under the list price on Spaces; their fee on Members is what they actually pay."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Room hours a month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hot desk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "250 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dedicated desk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "425 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Private office"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "from 950 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "6 to 14"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Virtual office"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "99 USD"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "coworking-space",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Today's room bookings and tours, members over their meeting-room hours, and open tickets with the highest priority first."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "space",
+                      "view": "all_space"
+                    },
+                    "inline": true,
+                    "title": "Spaces",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-spaces-by-status",
+                        "name": "Spaces by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-spaces-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "member",
+                      "view": "all_member"
+                    },
+                    "inline": true,
+                    "title": "Members",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-monthly-fees-by-plan",
+                        "name": "Monthly fees by plan",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "plan",
+                          "op": "sum",
+                          "field": "monthly_fee"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-monthly-fees-by-plan"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "ticket",
+                      "view": "all_ticket"
+                    },
+                    "inline": true,
+                    "title": "Front desk tickets",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-tickets-by-kind",
+                        "name": "Tickets by kind",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-tickets-by-kind"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rooms booked today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Room bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-today-s-bookings",
+                "name": "Today's bookings",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "start_at": {
+                    "relative": "today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-today-s-bookings"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tours this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "member",
+              "view": "all_member"
+            },
+            "inline": true,
+            "title": "Members",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-this-week-s-tours",
+                "name": "This week's tours",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "tour_at": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-this-week-s-tours"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My follow-ups"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "member",
+              "view": "all_member"
+            },
+            "inline": true,
+            "title": "Members",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tickets not fixed yet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ticket",
+              "view": "all_ticket"
+            },
+            "inline": true,
+            "title": "Front desk tickets",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-open-tickets",
+                "name": "Open tickets",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "In progress",
+                    "Waiting on vendor"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-open-tickets"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Members who gave notice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "member",
+              "view": "all_member"
+            },
+            "inline": true,
+            "title": "Members",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-leaving-soon",
+                "name": "Leaving soon",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Notice given"
+                }
+              }
+            ],
+            "activeViewId": "l-leaving-soon"
+          }
+        }
+      ]
+    },
+    {
+      "key": "tours",
+      "parent": "coworking-space",
+      "title": "Giving a tour that ends in a membership",
+      "icon": {
+        "emoji": "🚪"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A coworking space sells a feeling: this is where I get my best work done. The tour is where people feel it or do not. Most members decide on the tour or in the two days after it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before they arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every tour is a row in Members at "
+            },
+            {
+              "text": "Tour booked",
+              "bold": true
+            },
+            {
+              "text": ", with the tour time. Ask three questions when booking: what they do, how many people, and how often they will come in. The answers decide which space you end the tour in. Hold that space: set it to "
+            },
+            {
+              "text": "Held for a tour",
+              "bold": true
+            },
+            {
+              "text": " in Spaces."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The route"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start at the coffee bar and offer a drink. People relax with a cup in hand."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the hot desk lounge and the phone booths, the places they will use every day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Show a meeting room and the booking screen. Explain how room hours work on their plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Introduce one member who does similar work, with that member's permission. Community is the reason people pay more than a café."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "End in the space that fits their answers, not the most expensive one."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The offer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send a proposal the same day with two options, for example a dedicated desk and a two-seat office. Give them a free day pass for the rest of the week; people who work here for a day join far more often than people who only walked through."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Assign the follow-up to yourself so it shows in "
+            },
+            {
+              "text": "My follow-ups",
+              "bold": true
+            },
+            {
+              "text": ". Call on day two. If they sign, set the start date, move them to Active and set their space to Occupied with them as the occupant."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy number"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tours a week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 to 6"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tours that sign within 14 days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 in 3"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Offices held for a tour"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "never more than a week"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If tours are not signing, look first at price per seat on the offices you show and at the state of the meeting rooms. A warm boardroom or a dead screen on the tour costs memberships, which is why open tickets sit on the same Dashboard."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "room-credits",
+      "parent": "coworking-space",
+      "title": "Meeting-room hours and monthly billing",
+      "icon": {
+        "emoji": "🧾"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every plan includes meeting-room hours each month. Members love them, and they are also where a coworking space quietly gives away money. This page is how hours are counted and billed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How hours are counted"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each booking has "
+            },
+            {
+              "text": "Hours",
+              "bold": true
+            },
+            {
+              "text": " and a "
+            },
+            {
+              "text": "Billing cycle",
+              "bold": true
+            },
+            {
+              "text": ". Everything booked since the last invoice run is "
+            },
+            {
+              "text": "This cycle",
+              "bold": true
+            },
+            {
+              "text": ". On each member, "
+            },
+            {
+              "text": "Room hours this cycle",
+              "bold": true
+            },
+            {
+              "text": " adds up their bookings in this cycle, leaving out cancellations and no-shows. "
+            },
+            {
+              "text": "Hours over plan",
+              "bold": true
+            },
+            {
+              "text": " compares it with the hours their plan includes."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Member"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Included"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "This cycle"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lumen Cartography"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "12"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 hours, 50 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dahlia Restrepo"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 hour, 25 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kettle and Quill Studio"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "6"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "none"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly run"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the last working day of the month, filter Members by Hours over plan and check each one against the booking list. Members sometimes book a room for a colleague; ask before billing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the "
+            },
+            {
+              "text": "Overage to bill",
+              "bold": true
+            },
+            {
+              "text": " to each member's invoice with the plan fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set every booking in this cycle to "
+            },
+            {
+              "text": "Billed",
+              "bold": true
+            },
+            {
+              "text": ". Next month's totals start from zero."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "No-shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A booking nobody checks in to within 15 minutes is a no-show; the room goes back on the screen for others. No-shows do not count against hours, but three in a month earn a friendly word, because they block rooms other members wanted."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Outside rentals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Non-members can rent the boardroom by the hour and the casting hall for events. Leave Member empty on the booking and fill in "
+            },
+            {
+              "text": "Outside rental fee",
+              "bold": true
+            },
+            {
+              "text": ". Members always get first choice of times; outside groups book no more than four weeks ahead."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day passes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A day pass pack includes no room hours. If a day pass holder needs a room, charge the hourly price. When a day-pass member comes in more than eight days a month, offer a hot desk plan: it is cheaper for them and steadier for us."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
