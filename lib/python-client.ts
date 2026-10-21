@@ -85,7 +85,7 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { waitForOrganizationAdmission } from "@/lib/api/organization-admission";
 import type { RootState } from "@/lib/redux/store";
 import { extractErrorMessage } from "@/utils/errors";
-import { getCachedFingerprint } from "@/lib/services/fingerprint-service";
+import { getCachedFingerprint, getFingerprint } from "@/lib/services/fingerprint-service";
 import { logApiTarget } from "@/lib/api/log-api-target";
 import {
   configuredFilesServiceUrl,
@@ -536,7 +536,13 @@ export async function buildHeaders(
   method: string = "POST",
 ): Promise<{ headers: Record<string, string>; requestId: string }> {
   const token = (await getAccessTokenOrNull()) ?? (await guestWorkspaceBearer(opts.organizationId));
-  const fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
+  let fingerprint = opts.guestFingerprint ?? getCachedFingerprint();
+  // A first-time visitor has no stored id yet (the cached read is synchronous and only sees memory/localStorage;
+  // the server-issued visitor cookie is read by getFingerprint). Resolve it in the browser before refusing, so a
+  // signed-out person's first request is theirs and not "Please sign in to continue".
+  if (!token && !fingerprint && typeof window !== "undefined") {
+    fingerprint = await getFingerprint().catch(() => null);
+  }
 
   // Reject only when neither identity exists. Authed users still send the
   // fingerprint so the backend can correlate / migrate guest activity.

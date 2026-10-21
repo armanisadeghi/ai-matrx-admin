@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   isRecord,
+  placesBesideEntity,
   num,
   readWebSearchCollectionValue,
   records,
@@ -72,8 +73,8 @@ export default function WebSearchResultsBlock({
   const imagesFirst = vertical === "images";
   const faqs = renderable(records(value.faqs), "question");
   const discussions = renderable(records(value.discussions), "title");
-  const places = renderable(records(value.places), "name");
   const entity = isRecord(value.entity) ? value.entity : null;
+  const places = placesBesideEntity(renderable(records(value.places), "name"), entity);
   const aiAnswer = isRecord(value.ai_answer) ? value.ai_answer : null;
   const related = strings(value.related_searches);
 

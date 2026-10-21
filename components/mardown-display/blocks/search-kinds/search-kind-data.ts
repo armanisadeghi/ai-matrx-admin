@@ -137,3 +137,19 @@ export function dateLine(
 // puts the unit in the name — a bare `formatDuration` hides whether the
 // number is seconds or milliseconds at every call site.
 export { formatDurationSeconds } from "@ai-matrx/kit/format";
+
+const placeKey = (name: string | null): string => (name ?? "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+
+/**
+ * The Places list without the business the knowledge card already shows. One business used to appear twice
+ * on a results page: as the card (with its address, phone and hours) and again as a Places entry.
+ */
+export function placesBesideEntity(
+  places: Record<string, unknown>[],
+  entity: Record<string, unknown> | null,
+): Record<string, unknown>[] {
+  if (!entity || !isRecord(entity.place)) return places;
+  const shown = placeKey(text(entity.name));
+  if (!shown) return places;
+  return places.filter((p) => placeKey(text(p.name)) !== shown);
+}
