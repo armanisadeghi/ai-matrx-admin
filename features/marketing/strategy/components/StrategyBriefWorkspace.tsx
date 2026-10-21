@@ -28,9 +28,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PropertyRow } from "@ai-matrx/design-system/controls";
+import { PropertyRow, Tile } from "@ai-matrx/design-system/controls";
+import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import { DurableRunFailure } from "@/lib/durable-run/DurableRunFailure";
 import {
   LoadingSurface,
@@ -45,6 +45,7 @@ import {
   type BrandKind,
 } from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { webCopy } from "@/features/marketing/lib/copy-payloads";
 
 import type { StrategyBrief, StrategyScope } from "../data";
 import {
@@ -330,66 +331,49 @@ export function StrategyBriefWorkspace({
       : {};
 
   const body = (
-    <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-[var(--matrx-page-block-gap)] px-[var(--matrx-page-gutter)] pt-[var(--matrx-page-top)]">
+      {/* The shell breadcrumb names the page; this is its one heading for assistive tech. */}
       <h1 className="sr-only">{nounTitle}</h1>
-      {/* Lead with the substance: who they are, then the strategy itself. */}
-      <header className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-4 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            {nounTitle}
-          </h2>
-          {generate.running ? (
-            <span className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="size-3.5 animate-spin" aria-hidden />
-              {generate.stage ?? "Working…"}
-            </span>
-          ) : (
-            <Button
-              variant={current ? "outline" : "primary"}
-              onClick={() => void runGenerate()}
-            >
-              {current ? (
-                <RefreshCw className="size-3.5" aria-hidden />
-              ) : (
-                <AGENT_ICON className="size-3.5" aria-hidden />
-              )}
-              {current ? "Write a new version" : `Write the ${noun}`}
-            </Button>
-          )}
-        </div>
+      {/* Where it stands: what is done, what is not, each opening its section. */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {states.length > 0 ? (
-          <ul className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <ul className="grid min-w-0 flex-1 grid-cols-2 gap-2 lg:grid-cols-4">
             {states.map((state) => (
               <li key={state.key} className="min-w-0">
-                <button
-                  type="button"
+                <Tile
+                  layout="row"
+                  icon={state.done ? <Check /> : <CircleDashed />}
+                  glyphTone={state.done ? "success" : undefined}
+                  title={state.label}
+                  line={state.value}
                   onClick={() => goTo(state.anchor)}
-                  className="flex h-full w-full min-w-0 flex-col items-start gap-1 rounded-xl border border-border bg-card/80 p-3 text-left transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    {state.label}
-                  </span>
-                  <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                    {state.done ? (
-                      <Check
-                        className="size-3.5 shrink-0 text-primary"
-                        aria-hidden
-                      />
-                    ) : (
-                      <CircleDashed
-                        className="size-3.5 shrink-0 text-muted-foreground"
-                        aria-hidden
-                      />
-                    )}
-                    <span className="truncate">{state.value}</span>
-                  </span>
-                  <span className="text-xs text-primary">{state.action}</span>
-                </button>
+                />
               </li>
             ))}
           </ul>
-        ) : null}
-      </header>
+        ) : (
+          <div className="flex-1" />
+        )}
+        {generate.running ? (
+          <span className="type-secondary flex shrink-0 items-center gap-2 text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+            {generate.stage ?? "Working…"}
+          </span>
+        ) : (
+          <Button
+            className="shrink-0"
+            variant={current ? "outline" : "primary"}
+            onClick={() => void runGenerate()}
+          >
+            {current ? (
+              <RefreshCw aria-hidden />
+            ) : (
+              <AGENT_ICON aria-hidden />
+            )}
+            {current ? "Write a new version" : `Write the ${noun}`}
+          </Button>
+        )}
+      </div>
 
       <DurableRunFailure
         error={generate.error}
@@ -399,9 +383,24 @@ export function StrategyBriefWorkspace({
 
       {current ? (
         <>
-          <SectionCard title="The brief">
+          <SectionCard
+            title="The brief"
+            copy={webCopy({
+              label: "Brief",
+              kind: "brand_strategy_brief",
+              surface: "Brand strategy",
+              description: `The ${noun}, version ${current.versionNo}.`,
+              lines: [current.briefMarkdown],
+              data: { brief_markdown: current.briefMarkdown, version: current.versionNo },
+            })}
+          >
             <div className="p-3">
-              <MarkdownRenderer content={current.briefMarkdown} fontSize={14} />
+              <RichContent
+                source={current.briefMarkdown}
+                level="standard"
+                imagePolicy="ai"
+                headingAnchors={false}
+              />
             </div>
           </SectionCard>
 
@@ -453,28 +452,28 @@ export function StrategyBriefWorkspace({
                 about="Each line of business, the customers it is for and how far it reaches: national, regional, a service radius or specific locations."
               >
                 {current.serviceLines.length === 0 ? (
-                  <p className="p-3 text-sm text-muted-foreground">
+                  <p className="type-body p-3 text-muted-foreground">
                     None established yet
                   </p>
                 ) : (
                   <ul className="divide-y divide-border">
                     {current.serviceLines.map((line) => (
-                      <li key={line.name} className="px-3 py-2">
+                      <li key={line.name} className="flex flex-col gap-1 px-3 py-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-medium text-foreground">
+                          <span className="type-title text-foreground">
                             {line.name}
                           </span>
                           <Badge variant="outline">
                             {footprintLabel(line.footprint)}
                           </Badge>
                           {line.customerSegment ? (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="type-secondary text-muted-foreground">
                               for {line.customerSegment}
                             </span>
                           ) : null}
                         </div>
                         {line.footprintDetail || line.why ? (
-                          <p className="mt-0.5 text-xs text-muted-foreground">
+                          <p className="type-secondary text-muted-foreground">
                             {[line.footprintDetail, line.why]
                               .filter(Boolean)
                               .join(" — ")}
@@ -534,7 +533,7 @@ export function StrategyBriefWorkspace({
                 key={site.id}
                 className="flex items-center justify-between gap-2 px-3 py-2"
               >
-                <span className="min-w-0 truncate text-sm text-foreground">
+                <span className="type-body min-w-0 truncate text-foreground">
                   {site.domain ?? site.name}
                 </span>
                 <Button asChild variant="quiet">
@@ -630,32 +629,27 @@ export function StrategyBriefWorkspace({
             {(history.data ?? []).map((version) => (
               <li key={version.id} className="px-3 py-2">
                 <details>
-                  <summary className="flex cursor-pointer flex-wrap items-center gap-2 text-xs">
-                    <History
-                      className="size-3.5 text-muted-foreground"
-                      aria-hidden
-                    />
-                    <span className="font-medium text-foreground">
+                  <summary className="type-meta flex cursor-pointer flex-wrap items-center gap-2 text-muted-foreground">
+                    <History className="size-4" aria-hidden />
+                    <span className="type-title text-foreground">
                       v{version.versionNo}
                     </span>
-                    <span className="text-muted-foreground">
-                      {formatDate(version.generatedAt)}
-                    </span>
+                    <span>{formatDate(version.generatedAt)}</span>
                     {version.agentConfidence != null ? (
                       <Badge variant="outline">
                         confidence {version.agentConfidence}/5
                       </Badge>
                     ) : null}
                     {version.reviewedAt ? (
-                      <span className="text-muted-foreground">
-                        confirmed {formatDate(version.reviewedAt)}
-                      </span>
+                      <span>confirmed {formatDate(version.reviewedAt)}</span>
                     ) : null}
                   </summary>
-                  <div className="mt-2 space-y-3 rounded-md border border-border p-3">
-                    <MarkdownRenderer
-                      content={version.briefMarkdown}
-                      fontSize={13}
+                  <div className="flex flex-col gap-3 pt-2">
+                    <RichContent
+                      source={version.briefMarkdown}
+                      level="standard"
+                      imagePolicy="ai"
+                      headingAnchors={false}
                     />
                     {version.guidance ? (
                       <PropertyRow
