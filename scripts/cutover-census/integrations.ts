@@ -210,11 +210,11 @@ export const INTEGRATIONS: Integration[] = [
     what: "Births from a CSV block, a canvas table, the content-IR studio",
     why: "SAVE-AS-TABLE-EVERYWHERE: every such birth is the saveToTable overlay, which asks whereANewTableIsBorn (record store → records-ui SaveToTable; older → SaveTableModal → service.createTable)",
     plain: "saving a CSV or a canvas table still creates it in the older tables",
-    owner: "matrx-frontend features/save-to-table/SaveToTableOverlay.tsx",
+    owner: "matrx-frontend features/overlays/definitions/saveToTable.render.tsx",
     claims: { "matrx-frontend": ["components/mardown-display/blocks/csv/CsvBlock.tsx"] },
     proofs: [
-      { kind: "contains", repo: "matrx-frontend", file: "features/save-to-table/SaveToTableOverlay.tsx", pattern: "whereANewTableIsBorn", says: "births where the organization's tables live" },
-      { kind: "lacks", repo: "matrx-frontend", files: ["features/save-to-table/SaveToTableOverlay.tsx", "components/mardown-display/blocks/csv/CsvBlock.tsx"], pattern: "\\.rpc\\(|\\.from\\(\\s*[\"']udt_", says: "reaches no older door itself" },
+      { kind: "contains", repo: "matrx-frontend", file: "features/overlays/definitions/saveToTable.render.tsx", pattern: "whereANewTableIsBorn", says: "births where the organization's tables live" },
+      { kind: "lacks", repo: "matrx-frontend", files: ["features/overlays/definitions/saveToTable.render.tsx", "components/mardown-display/blocks/csv/CsvBlock.tsx"], pattern: "\\.rpc\\(|\\.from\\(\\s*[\"']udt_", says: "reaches no older door itself" },
     ],
   },
   {
