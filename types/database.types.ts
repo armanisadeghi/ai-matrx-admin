@@ -149324,6 +149324,9 @@ export type Database = {
           executor_name: string | null
           id: string
           intro: string | null
+          intro_override: string | null
+          intro_override_updated_at: string | null
+          intro_override_updated_by: string | null
           is_active: boolean
           label: string | null
           last_check: Json | null
@@ -149365,6 +149368,9 @@ export type Database = {
           executor_name?: string | null
           id?: string
           intro?: string | null
+          intro_override?: string | null
+          intro_override_updated_at?: string | null
+          intro_override_updated_by?: string | null
           is_active?: boolean
           label?: string | null
           last_check?: Json | null
@@ -149406,6 +149412,9 @@ export type Database = {
           executor_name?: string | null
           id?: string
           intro?: string | null
+          intro_override?: string | null
+          intro_override_updated_at?: string | null
+          intro_override_updated_by?: string | null
           is_active?: boolean
           label?: string | null
           last_check?: Json | null
