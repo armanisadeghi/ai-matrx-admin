@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useOpenCanvasItem } from "@/features/canvas/hooks/useOpenCanvasItem";
 import { useCanvasArtifactUrlState } from "@/features/canvas/hooks/useCanvasArtifactUrlState";
 import { useArtifactCanvas } from "@/features/canvas/host/useArtifactCanvas";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import {
   fetchUserArtifactsThunk,
   archiveArtifactThunk,

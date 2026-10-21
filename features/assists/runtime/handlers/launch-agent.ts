@@ -7,7 +7,7 @@
 
 import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import type { ProvisionKey } from "@ai-matrx/agents/generated/provision-offers";
-import { provideHostValues } from "@/features/mandates/host-values/host-values";
+import { provideHostValues } from "@ai-matrx/chat/mandates/host-values/host-values";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type {
   AssistActionDefinition,

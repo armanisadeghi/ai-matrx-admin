@@ -83,8 +83,8 @@ import { BrandAssetEditorDialog } from "@/features/marketing/components/brands/B
 import { BusinessFactEditorDialog } from "@/features/marketing/components/brands/BusinessFactEditorDialog";
 import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
-import { GscPortfolioClassBar } from "@/features/marketing/search-console/components/ambassador/GscPortfolioClassBar";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
+import { isBannerUrl, orphanAvatarAssetIds, personAvatarAssetIds, pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
 import {
   BRAND_HERO_FRAME,
   BrandHomeSkeleton,
@@ -98,8 +98,11 @@ import {
   BrandOverviewActions,
   BrandOverviewKnown,
   BrandOverviewKpis,
+  BrandOverviewNext,
   BrandOverviewLook,
+  BrandSearchClassBar,
 } from "@/features/marketing/components/brands/BrandOverviewPanels";
+import { BrandOverviewActivity } from "@/features/marketing/components/brands/BrandOverviewActivity";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -109,6 +112,7 @@ import {
   useBrand,
   useBrandAssets,
   useBrandProperties,
+  useBrandPropertiesForMatching,
   useBrandSites,
   useBusinessFacts,
   useCreateSite,
@@ -139,7 +143,9 @@ import { ChangeReviewWindow } from "@/features/trash/review/ChangeReviewWindow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { normalizeWebsiteUrl, secureImageUrl } from "@/features/marketing/lib/website-url";
+import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
+import { brandAssetPreviewUrl } from "@/features/marketing/lib/brand-asset-preview";
+import { assetImageExpired } from "@/features/marketing/lib/asset-rehost";
 import { linkLabel as linkLabelOf } from "@/features/marketing/lib/link-in-bio";
 import {
   BRAND_ASSET_KIND_LABELS,
@@ -243,10 +249,7 @@ function factValueText(fact: BusinessFact): string {
  * never the browser's broken-image alt text.
  */
 function assetPreviewUrl(asset: BrandAsset): string | null {
-  return asset.source_url &&
-    /\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(asset.source_url)
-    ? secureImageUrl(asset.source_url)
-    : null;
+  return brandAssetPreviewUrl(asset);
 }
 
 /** Color assets carry their value in `data` (hex/value) or a `#hex` title. */
@@ -656,6 +659,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const createSite = useCreateSite();
   // access-errors: ok — cockpit section list under the gated brand primary
   const properties = useBrandProperties(brandId);
+  const matchingProperties = useBrandPropertiesForMatching(brandId);
   const personas = useBrandPersonas(brandId);
   // access-errors: ok — cockpit section list under the gated brand primary
   const assets = useBrandAssets(brandId);
@@ -701,15 +705,30 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
     null;
   const factRows = facts.data ?? [];
   const assetRows = assets.data ?? [];
+  // A person's profile picture that enrichment saved as a logo is never the brand's mark.
+  // Also not the brand's: a discovered social avatar whose source account is no longer a live property of the brand.
+  // Judged only once every live property has loaded (an unloaded list would call every avatar an orphan).
+  const personAvatars = new Set<string>([
+    ...personAvatarAssetIds(assetRows, matchingProperties.data ?? properties.data ?? []),
+    ...(matchingProperties.data ? orphanAvatarAssetIds(assetRows, matchingProperties.data) : []),
+  ]);
 
   // The brand's best identity marks: explicit brand URLs first, then the
   // confirmed asset library — a brand with confirmed logos never shows a
   // placeholder globe just because nobody copied a URL onto the brand row.
   const heroIdentity = {
     name: current.name,
+    // A sharing banner saved as the logo (og:image) never stands in for the mark: the best ranked logo asset does.
     logo_url:
-      current.logo_url ||
-      firstAssetUrl(assetRows, ["logo", "logo_dark", "wordmark", "headshot"]),
+      pickHeroLogo(
+        current.logo_url,
+        assetRows
+          .filter((asset) => ["logo", "logo_dark", "wordmark", "headshot"].includes(asset.kind) && !personAvatars.has(asset.id))
+          .flatMap((asset) => {
+            const url = assetPreviewUrl(asset);
+            return url && !assetImageExpired(asset) ? [{ url, kind: asset.kind, fileId: asset.file_id }] : [];
+          }),
+      ),
     favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
   };
 
@@ -730,12 +749,19 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
   const toOverviewAsset = (asset: BrandAsset) => ({
     id: asset.id,
     preview: assetPreviewUrl(asset),
+    kind: asset.kind,
+    fileId: asset.file_id,
+    expired: assetImageExpired(asset),
+    organizationId: asset.organization_id,
     color: null,
     label: isBrandAssetKind(asset.kind) ? BRAND_ASSET_KIND_LABELS[asset.kind] : humanizeIdentifier(asset.kind) || asset.kind,
   });
   const heroAccent = vividColor(brandColors.map((c) => c.value));
   const LOGO_KINDS: readonly string[] = ["logo", "logo_dark", "wordmark", "favicon", "headshot"];
-  const logoAssets = sortedAssets.filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset)).map(toOverviewAsset);
+  // A sharing banner (og:image / twitter card) is never a mark, so Brand look never offers one.
+  const logoAssets = sortedAssets
+    .filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset) && !isBannerUrl(asset.source_url) && !personAvatars.has(asset.id))
+    .map(toOverviewAsset);
 
   // Surface scope — assembled at trigger time from what the cockpit already
   // loaded. No fetching; keys are omitted when their data is not loaded yet.
@@ -980,7 +1006,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                         Share
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link prefetch={false} href={marketingRoutes.brandDiscovery(brandId)}>
+                        <Link prefetch={false} href={marketingRoutes.brandDiscovery(marketingSeg(current))}>
                           <Inbox />
                           To review
                           <DropdownMenuShortcut className="tabular-nums">
@@ -1013,7 +1039,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <Button asChild variant="outline" className="min-w-[3.5rem] tabular-nums">
                     <Link
                       prefetch={false}
-                      href={marketingRoutes.brandDiscovery(brandId)}
+                      href={marketingRoutes.brandDiscovery(marketingSeg(current))}
                       aria-label={`${(pending.data ?? 0).toLocaleString()} to review`}
                       title={`${(pending.data ?? 0).toLocaleString()} to review`}
                     >
@@ -1069,8 +1095,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     <PersonFollowerTotal brandId={current.id} />
                   </>
                 ) : null}
+                {/* On a phone the line has room for status and setup only: a squeezed industry chip was an empty pill. */}
                 {current.industry ? (
-                  <Badge variant="outline" className="min-w-0 truncate">{current.industry}</Badge>
+                  <Badge variant="outline" className="hidden min-w-12 truncate sm:inline-flex" title={current.industry}>
+                    {current.industry}
+                  </Badge>
                 ) : null}
                 <div className="flex shrink-0 items-center">
                   <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
@@ -1131,13 +1160,23 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
 
           {tab === "overview" ? (
             <div className="grid gap-3">
+              <BrandOverviewNext
+                brandId={current.id}
+                brandSeg={brandSeg}
+                siteIds={websiteSites.map((site) => site.id)}
+                accounts={socialAccounts.data ?? []}
+                accountsLoading={socialAccounts.isLoading}
+                pending={pending.isLoading ? null : (pending.data ?? 0)}
+                factCount={factRows.length}
+                canEdit={canEdit}
+                tabHref={tabHref}
+              />
               <BrandOverviewKpis
                 brandId={current.id}
                 brandSeg={brandSeg}
                 siteIds={websiteSites.map((site) => site.id)}
                 accounts={socialAccounts.data ?? []}
                 accountsLoading={socialAccounts.isLoading}
-                competitors={(parseBrandProfile(current.profile).competitors ?? []).length}
                 tabHref={tabHref}
               />
               <div className="grid items-start gap-3 lg:grid-cols-3">
@@ -1145,6 +1184,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <BrandOverviewAccounts
                     brandId={current.id}
                     brandSeg={brandSeg}
+                    brandName={current.name}
+                    identity={{
+                      legalNames: factRows.filter((f) => f.kind === "legal_name").map(factValueText),
+                      websites: [current.website_url, ...(properties.data ?? []).filter((p) => p.kind === "website").map((p) => p.url)],
+                    }}
                     organizationId={current.organization_id}
                     accounts={socialAccounts.data ?? []}
                     loading={socialAccounts.isLoading}
@@ -1159,12 +1203,13 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     brandId={current.id}
                     brandSeg={brandSeg}
                     organizationId={current.organization_id}
+                    siteIds={websiteSites.map((site) => site.id)}
                     profile={parseBrandProfile(current.profile)}
                     personas={personas.data ?? []}
+                    tabHref={tabHref}
                   />
                   <BrandOverviewAbout
                     facts={factRows}
-                    description={current.description}
                     industry={current.industry}
                     websiteUrl={publicWebsiteUrl}
                     canEdit={canEdit}
@@ -1202,17 +1247,27 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   />
                   <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
                   <BrandOverviewWebsites
-                    brandId={brandId}
+                    brandId={brandSeg}
                     sites={websiteSites}
                     publicWebsiteUrl={publicWebsiteUrl}
                     onOpen={() => setTab("web")}
+                  />
+                  <BrandOverviewActivity
+                    brandId={current.id}
+                    brandSeg={brandSeg}
+                    sites={websiteSites}
+                    profileIds={(socialAccounts.data ?? [])
+                      .filter((a) => a.ownerKind !== "person" && a.profileId)
+                      .map((a) => a.profileId as string)}
+                    enabled={!socialAccounts.isLoading && !sites.isLoading}
                   />
                 </div>
               </div>
             </div>
           ) : null}
 
-          {tab === "overview" ? (
+          {/* Custom fields and linked records are profile data: they live on the Profile tab, not the headline page. */}
+          {tab === "profile" ? (
             <EntityCustomFields entityToken="web_brand" recordId={current.id} organizationId={current.organization_id} />
           ) : null}
 
@@ -1281,7 +1336,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             // Holds the bar's height while the brand's sites load, so the cards below never drop.
             <div aria-hidden="true" className="h-[42px] rounded-lg border border-border bg-card" />
           ) : websiteSites.length > 0 ? (
-            <GscPortfolioClassBar
+            <BrandSearchClassBar
               siteIds={websiteSites.map((site) => site.id)}
               totalSites={websiteSites.length}
               title={`Search performance across ${current.name}`}

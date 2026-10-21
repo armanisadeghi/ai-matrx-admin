@@ -1,5 +1,6 @@
 import { getAgent } from "@/lib/agents/data";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
+import { agentVersionTabTitle } from "@/features/agents/route/agent-version-tab-title";
 
 export async function generateMetadata({
   params,
@@ -10,17 +11,9 @@ export async function generateMetadata({
   const agent = await getAgent(id);
   // A null read is ambiguous (denied / deleted / never existed) — the body
   // renders the real answer via <AccessGate>; the tab title stays generic.
-  if (!agent) {
-    return createDynamicRouteMetadata("/agents", {
-      titlePrefix: "Versions",
-      letter: "LA",
-      title: "Agent",
-    });
-  }
   return createDynamicRouteMetadata("/agents", {
-    titlePrefix: "Versions",
-    title: agent.name,
-    description: `Version history for ${agent.name}.`,
+    title: agentVersionTabTitle(agent?.name, agent?.version ?? null),
+    ...(agent ? { description: `Version history for ${agent.name}.` } : {}),
     letter: "LA",
   });
 }

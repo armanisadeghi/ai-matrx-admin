@@ -90,7 +90,7 @@ export function FilePreview({ client, entry, onOpenChange }: { client: DesktopCl
     <Dialog open={entry !== null} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85dvh] flex-col gap-3 sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle className="truncate pr-8">{entry?.name ?? ""}</DialogTitle>
+          <DialogTitle className="truncate">{entry?.name ?? ""}</DialogTitle>
           <DialogDescription>
             {entry ? `${formatFileSize(entry.size)} · ${formatAbsoluteDate(entry.mtime * 1000, { dateStyle: "medium", timeStyle: "short" })}` : ""}
           </DialogDescription>

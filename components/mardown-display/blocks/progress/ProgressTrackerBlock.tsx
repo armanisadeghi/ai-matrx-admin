@@ -41,7 +41,8 @@ import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-r
 import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertProgressToTasks } from "@/features/tasks/utils/importConverters";
 import { CopySourceButton } from "../common/CopySourceButton";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
@@ -80,6 +81,8 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const controls = useBlockControls("progress_tracker", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -355,12 +358,13 @@ const ProgressTrackerBlock: React.FC<ProgressTrackerBlockProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+            <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
               <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <BarChart3 className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={tracker.title} className="truncate text-sm font-medium text-foreground">
                   {tracker.title}
                 </InlineControlText>
+                {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
               </div>
               <div className="flex shrink-0 items-center gap-0.5">
                 <Button variant="quiet" icon={<Upload />} aria-label="Import to Tasks" title="Import to Tasks" onClick={() => setIsImportModalOpen(true)} />

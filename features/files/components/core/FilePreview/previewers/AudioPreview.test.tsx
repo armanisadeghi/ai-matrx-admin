@@ -17,6 +17,33 @@ jest.mock("@/components/ui/slider", () => ({
   Slider: () => <div data-testid="volume-slider" />,
 }));
 
+// The speed picker became the design-system Select (Radix DropdownMenu) in 12daa1b7b8
+// (2026-10-14). Radix commits once more on its own mount, so a fresh session's commit count
+// measured Radix, not this previewer. A plain native stand-in, like the Slider's above, keeps
+// the one-commit assertion measuring only AudioPreview's own source-change reset.
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"),
+  Select: ({
+    value,
+    options,
+    onValueChange,
+    "aria-label": ariaLabel,
+  }: {
+    value: string;
+    options: { value: string; label: string }[];
+    onValueChange: (v: string) => void;
+    "aria-label"?: string;
+  }) => (
+    <select aria-label={ariaLabel} value={value} onChange={(e) => onValueChange(e.target.value)}>
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
+  ),
+}));
+
 import { AudioPreview } from "./AudioPreview";
 
 describe("AudioPreview", () => {

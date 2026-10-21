@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import type {
   HtmlPageMetaFields,
   HtmlPageRecord,
@@ -22,7 +22,7 @@ export function useHtmlPagesManager() {
     setIsLoading(true);
     setError(null);
     try {
-      const list = (await HTMLPageService.getUserPages()) as HtmlPageSummary[];
+      const list = (await HTMLPageService.getUserPages()) as unknown as HtmlPageSummary[];
       setPages(list ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load pages");
@@ -37,7 +37,7 @@ export function useHtmlPagesManager() {
 
   const getPage = useCallback(
     async (pageId: string): Promise<HtmlPageRecord> => {
-      return (await HTMLPageService.getPage(pageId)) as HtmlPageRecord;
+      return (await HTMLPageService.getPage(pageId)) as unknown as HtmlPageRecord;
     },
     [],
   );

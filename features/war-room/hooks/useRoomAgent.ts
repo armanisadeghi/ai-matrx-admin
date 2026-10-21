@@ -51,7 +51,7 @@ import {
   selectSessionsById,
   selectThreadIdsForRoom,
 } from "@/features/war-room/redux/selectors";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
+import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import {
   attachEntityToContainer,
   hydrateRoomAssignments,

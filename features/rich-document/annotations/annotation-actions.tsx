@@ -44,9 +44,10 @@ export interface AnnotationSelectionHost {
   /**
    * Pin the current selection to the source text. `silent` answers "can it be
    * pinned?" without telling the person; otherwise a selection that cannot be
-   * pinned (a formula, a label) is said once through the app's toast.
+   * pinned (a formula, a label) is said once through the app's toast. `range` pins that
+   * passage instead of the live selection (a menu row deciding from the selection its open captured).
    */
-  capture(options?: { silent?: boolean }): CapturedSelection | null;
+  capture(options?: { silent?: boolean; range?: Range | null }): CapturedSelection | null;
   /** The report about a passage (the feedback window's title + subject, quote and position filled in). */
   report(selection: CapturedSelection): FeedbackReport;
 }

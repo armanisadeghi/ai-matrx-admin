@@ -32,7 +32,8 @@ import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { slideThumbnailPlacement } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button } from "@ai-matrx/design-system/controls";
 import { SaveToPresentationsButton } from "@/features/presentations/components/SaveToPresentationsButton";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { FullScreenPortal } from "../FullScreenPortal";
 
 // Lazy load PresentationExportMenu to avoid loading GoogleAPIProvider on initial render
@@ -100,6 +101,8 @@ const Slideshow = (
   const [direction, setDirection] = useState("next");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const slideContainerRef = useRef<HTMLDivElement>(null);
   // In a canvas pane the slide scales to fit the pane (aspect kept) with a
   // strip of thumbnails below a portrait pane or beside a wide one. Outside
@@ -203,8 +206,9 @@ const Slideshow = (
           className={`bg-textured ${isFullScreen ? "h-full w-full max-w-7xl max-h-[95dvh] rounded-2xl overflow-hidden" : inCanvasLayout ? "h-full w-full" : "w-full"} flex flex-col`}
         >
           {/* Header with Controls */}
-          <div className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-card">
+          <div data-block-header className="flex-shrink-0 px-3 py-2 border-b border-border flex flex-wrap items-center justify-between gap-2 bg-card">
             <div className="flex items-center gap-2 min-w-0">
+              {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
               <div className="hidden min-w-0 items-center gap-1.5 overflow-x-auto scrollbar-none sm:flex">
                 {slides.map((_, index) => (
                   <button

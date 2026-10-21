@@ -36,7 +36,7 @@ export type ResourceCollectionData = Omit<
 export function parseResourcesMarkdown(content: string): ResourceCollectionData {
   const lines = content.split('\n').filter(line => line.trim());
   
-  let title = 'Resource Collection';
+  let title = '';
   let description: string | undefined;
   const categories: ResourceCategory[] = [];
   let currentCategory: ResourceCategory | null = null;
@@ -96,7 +96,7 @@ export function parseResourcesMarkdown(content: string): ResourceCollectionData 
   if (categories.length === 0 && lines.some(line => line.startsWith('- '))) {
     const defaultCategory: ResourceCategory = {
       id: 'category-1',
-      name: 'Resources',
+      name: '',
       resources: []
     };
 

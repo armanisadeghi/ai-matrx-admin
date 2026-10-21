@@ -37,6 +37,7 @@ import { PassageQuote } from "./PassageQuote";
 import { stageRecordComment, useWithNextMessage, WithNextMessageSwitch } from "./comment-remarks";
 import type { AnnotationSource } from "./types";
 import { useSelectionZone, type SelectionToolbarUi } from "@ai-matrx/rich-content/selection-toolbar/selection-zones";
+import { textRangeOf } from "@/components/selection-toolbar/text-range";
 import {
   COMMENT_SENDS_WITH_NEXT_MESSAGE_DEFAULT,
   COMMENT_SENDS_WITH_NEXT_MESSAGE_KNOB,
@@ -224,12 +225,22 @@ function useAnnotatedRoot(root: HTMLElement | null, passageActions?: readonly Ac
     });
   });
 
-  /** Pin the current selection to the source text (null when it cannot be pinned). */
-  const capture = ({ silent = false }: { silent?: boolean } = {}): CapturedSelection | null => {
+  /** Pin the current selection (or the given passage) to the source text (null when it cannot be pinned). */
+  const capture = ({ silent = false, range: given = null }: { silent?: boolean; range?: Range | null } = {}): CapturedSelection | null => {
     if (!root) return null;
-    const sel = typeof window !== "undefined" ? window.getSelection() : null;
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
-    const range = sel.getRangeAt(0);
+    let raw: Range;
+    if (given) {
+      if (given.collapsed || !given.startContainer.isConnected) return null;
+      raw = given;
+    } else {
+      const sel = typeof window !== "undefined" ? window.getSelection() : null;
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
+      raw = sel.getRangeAt(0);
+    }
+    // The words selected, never the blank space around them: a triple-click runs its end on past
+    // the content (a chat answer's footer), which put the whole passage outside this root.
+    const range = textRangeOf(raw);
+    if (!range) return null;
     if (!root.contains(range.commonAncestorContainer)) return null;
     let current = liveProjection();
     if (!current) return null;

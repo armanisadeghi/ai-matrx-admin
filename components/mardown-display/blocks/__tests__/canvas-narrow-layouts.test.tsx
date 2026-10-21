@@ -328,6 +328,15 @@ describe("comparison", () => {
     expect(cards).not.toBeNull();
     expect(cards?.querySelectorAll("dl").length).toBe(data.items.length);
   });
+
+  it("never draws an Avg tile: the summary is two counts in one quiet line (review 5, G7)", async () => {
+    const data = createSampleComparisonTable();
+    await show(<ComparisonTableBlock comparison={data} />, null);
+    const summary = container.querySelector("[data-comparison-summary]");
+    expect(summary?.textContent).toBe(`${data.items.length} items · ${data.criteria.length} criteria`);
+    expect(summary?.children.length).toBe(0);
+    expect(container.textContent).not.toMatch(/\bAvg\b/);
+  });
 });
 
 describe("stats", () => {

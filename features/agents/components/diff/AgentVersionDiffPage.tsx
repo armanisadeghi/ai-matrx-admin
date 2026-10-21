@@ -42,7 +42,7 @@ import { AgentDiffViewer, buildAgentAdapterRegistry } from "@/features/agents/co
 import { VersionHistoryTimeline } from "@/features/agents/components/diff/VersionHistoryTimeline";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
 import { RecordId } from "@ai-matrx/design-system";
-import { promoteFailureMessage } from "@ai-matrx/agents/versions";
+import { promoteConfirmMessage, promoteFailureMessage, promoteSuccessMessage } from "@ai-matrx/agents/versions";
 import { compareAgentDefinitions } from "@ai-matrx/agents/versions";
 import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment";
 import { DefaultFieldAdapter } from "@ai-matrx/diff/react";
@@ -80,6 +80,8 @@ export function AgentVersionDiffPage({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [versions, setVersions] = useState<AgentVersionHistoryItem[]>([]);
+  // Bumped after a restore so the history re-reads and shows the version the restore saved.
+  const [historyRead, setHistoryRead] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   /**
@@ -181,7 +183,7 @@ export function AgentVersionDiffPage({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
+  }, [agentId, historyRead]);
 
   // Fetch left snapshot when selected
   useEffect(() => {
@@ -228,7 +230,14 @@ export function AgentVersionDiffPage({
         promoteAgentVersion({ agentId, version: leftVersion }),
       ).unwrap();
       if (result.success) {
-        toast.success(`Promoted v${leftVersion} to current`);
+        // agx_promote_version saves the restore as a new version and names it; the history re-reads.
+        toast.success(
+          promoteSuccessMessage(leftVersion, {
+            newVersion: result.new_version ?? null,
+            unchanged: result.unchanged === true,
+          }),
+        );
+        setHistoryRead((n) => n + 1);
       } else {
         toast.error(result.error ?? "Failed to promote version");
       }
@@ -774,9 +783,7 @@ export function AgentVersionDiffPage({
           <AlertDialogHeader>
             <AlertDialogTitle>Promote Version</AlertDialogTitle>
             <AlertDialogDescription>
-              This will replace the current agent configuration with the content
-              from v{leftVersion}. The current configuration will be saved as a
-              new version in the history.
+              {leftVersion != null ? promoteConfirmMessage(leftVersion) : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

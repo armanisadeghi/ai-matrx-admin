@@ -164,8 +164,7 @@ export function CleanupReviewDialog({
         className="flex h-[88dvh] w-[92vw] max-w-3xl flex-col gap-0 p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {/* pr-14 clears the Dialog's built-in close (X) button */}
-        <DialogHeader className="shrink-0 flex-row items-center gap-2 space-y-0 border-b border-border px-4 py-3 pr-14">
+        <DialogHeader className="shrink-0 flex-row items-center gap-2 space-y-0 border-b border-border px-4 py-3">
           <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />
           {/* THE DOOR LAW: this dialog is about to rewrite a specific note and
               named it as flat text with `noteId` sitting right beside it in

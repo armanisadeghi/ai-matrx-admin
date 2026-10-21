@@ -115,6 +115,7 @@ import { getManifest } from "@/features/surfaces/manifests/registry";
 import { useMandateSet } from "@ai-matrx/chat/mandates/useMandateSet";
 import { mandateRoute } from "@/features/mandates/browse/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 /**
  * Canonical entity_type for agent↔surface binding edges rows in the scope-assignments
@@ -1243,6 +1244,7 @@ function CreateShortcutFromBindingDialog({
       });
       toast.success("Shortcut created");
       onClose();
+      expectNavigation(`/agents/shortcuts/edit/${newId}`); // a window closes before this push: the overlay layer writes no address behind it
       router.push(`/agents/shortcuts/edit/${newId}`);
     } catch (e) {
       (isCapturedSurfaceRegistrationError(e)

@@ -180,7 +180,7 @@ export const parseTimelineMarkdown = (content: string): TimelineData | null => {
         currentPeriod.events.push({
           id: eventId,
           title: eventTitle,
-          date: eventDate || 'TBD',
+          date: eventDate,
           description: eventDescription,
           status: eventStatus,
           category: eventCategory || undefined
@@ -199,7 +199,7 @@ export const parseTimelineMarkdown = (content: string): TimelineData | null => {
     }
 
     return {
-      title: title || 'Timeline',
+      title,
       description: description || undefined,
       periods
     };

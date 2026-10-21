@@ -1,6 +1,8 @@
 // record-view: none — addressed by a catalog key (version), not a record id
 import { notFound } from "next/navigation";
 import { getAgent } from "@/lib/agents/data";
+import { createDynamicRouteMetadata } from "@/utils/route-metadata";
+import { agentVersionTabTitle } from "@/features/agents/route/agent-version-tab-title";
 import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
@@ -11,10 +13,14 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string; version: string }>;
 }) {
-  const { version } = await params;
+  const { id, version } = await params;
   const versionNum = parseInt(version, 10);
   if (isNaN(versionNum)) return { title: "Agent version" };
-  return { title: `v${versionNum}` };
+  const agent = await getAgent(id);
+  return createDynamicRouteMetadata("/agents", {
+    title: agentVersionTabTitle(agent?.name, versionNum),
+    letter: "LA",
+  });
 }
 
 export default async function AgentVersionPage({

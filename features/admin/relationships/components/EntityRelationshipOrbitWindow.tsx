@@ -16,6 +16,7 @@ import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { Button } from "@/components/ui/button";
 import { EntityRelationshipOrbit } from "./EntityRelationshipOrbit";
 import type { RelationshipRule } from "../types";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 interface Props {
   token: string;
@@ -48,6 +49,7 @@ export default function EntityRelationshipOrbitWindow({
           variant="quiet"
           title="Open full page"
           onClick={() => {
+            expectNavigation(`/administration/database/relationships/explorer/${activeToken}`); // a window closes around this push: the overlay layer writes no address behind it
             router.push(
               `/administration/database/relationships/explorer/${activeToken}`,
             );

@@ -253,7 +253,8 @@ export function tableMenuActions({ source, onSource }: TileMenuContext): TileMen
 export function SectionWithBoardTokens({ tableId, title }: { tableId: string; title?: string | undefined }) {
   // The board's tokens are provided once for every tile (`BoardTokensMount`), so the section adds none.
   // The section is titled as its tile is ("Colors"), never the copy's long table name.
-  return <SectionCard source={{ kind: "table", id: tableId }} {...(title ? { title } : {})} />;
+  // An empty section on a board is its heading and Add only (a fresh design board is ten of them).
+  return <SectionCard source={{ kind: "table", id: tableId }} empty="quiet" {...(title ? { title } : {})} />;
 }
 
 /**

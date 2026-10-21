@@ -207,15 +207,13 @@ describe("cooking_recipe_legacy_text — both wire framings converge to one sche
     ).toBeNull();
   });
 
-  it("declines the title-less mis-parse (H4 header swallowed as title, ingredients dropped)", () => {
-    // Real parser failure mode: no H3 title → the first #### line satisfies
-    // startsWith("###") and becomes the title; the ingredients section never
-    // opens, so everything is lost. The strategy must refuse, not converge.
-    expect(
-      cookingRecipeLegacyTextToKindValue(
-        "#### Ingredients:\n- 2 cups flour\n- 1 tsp salt",
-      ),
-    ).toBeNull();
+  it("a title-less recipe keeps its ingredients: a #### header is a section, never the title", () => {
+    // Old failure mode: no H3 title -> the first #### line satisfied startsWith("###") and became the
+    // title, so every ingredient was lost. It is fixed at the parser; nothing is invented for the title.
+    const value = cookingRecipeLegacyTextToKindValue("#### Ingredients:\n- 2 cups flour\n- 1 tsp salt");
+    expect(value).not.toBeNull();
+    expect(value?.title).toBe("");
+    expect(value?.ingredients).toHaveLength(2);
   });
 });
 
@@ -240,7 +238,7 @@ describe("cooking_recipe bridge — serverData is exactly what the real componen
     expect(serverData).toEqual(legacy);
   });
 
-  it("fills the parser's own defaults for missing yields/times", () => {
+  it("invents no yields or times when they are missing", () => {
     const serverData = cookingRecipeServerDataFromEnvelope(
       envelopeFromCompleteValue(
         {
@@ -264,12 +262,13 @@ describe("cooking_recipe bridge — serverData is exactly what the real componen
         COOKING_RECIPE_KIND,
       ),
     );
+    // Review 5, G5: what the recipe does not state stays empty. No guessed servings or times.
     expect(serverData).toMatchObject({
       title: "Buttered Toast",
-      yields: "Serves 4",
-      totalTime: "30 minutes",
-      prepTime: "15 minutes",
-      cookTime: "15 minutes",
+      yields: "",
+      totalTime: "",
+      prepTime: "",
+      cookTime: "",
     });
   });
 

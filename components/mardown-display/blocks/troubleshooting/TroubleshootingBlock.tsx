@@ -47,7 +47,8 @@ import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { convertTroubleshootingToTasks } from "@/features/tasks/utils/importConverters";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { CopySourceButton } from "../common/CopySourceButton";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
@@ -55,6 +56,7 @@ interface TroubleshootingData {
   title: string;
   description?: string;
   issues: TroubleshootingIssue[];
+  looseLines?: string[];
 }
 
 export interface TroubleshootingState {
@@ -94,6 +96,8 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
   });
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const controls = useBlockControls("troubleshooting", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -365,12 +369,13 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+            <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
               <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <HelpCircle className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={troubleshooting.title} className="truncate text-sm font-medium text-foreground">
                   {troubleshooting.title}
                 </InlineControlText>
+                {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
               </div>
               <div className="flex shrink-0 items-center gap-0.5">
                 <Button variant="quiet" icon={<Upload />} aria-label="Import to Tasks" title="Import to Tasks" onClick={() => setIsImportModalOpen(true)} />
@@ -456,17 +461,26 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                     />
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {filteredIssues.length} issue
-                      {filteredIssues.length !== 1 ? "s" : ""} found
-                    </span>
-                  </div>
+                  {troubleshooting.issues.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400" data-troubleshooting-found="">
+                        {filteredIssues.length} issue
+                        {filteredIssues.length !== 1 ? "s" : ""} found
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Issues List */}
               <div ref={blockContentRef} className="space-y-4">
+                {troubleshooting.issues.length === 0 && troubleshooting.looseLines && (
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-foreground" data-testid="troubleshooting-loose-lines">
+                    {troubleshooting.looseLines.map((text, index) => (
+                      <li key={index}>{text}</li>
+                    ))}
+                  </ul>
+                )}
                 {filteredIssues.map((issue) => {
                   const isExpanded = expandedIssues.has(issue.id);
                   const severityIcon = getSeverityIcon(issue.severity);
@@ -758,7 +772,8 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                 })}
               </div>
 
-              {/* Totals: one quiet line; steps only when there are any */}
+              {/* Totals: one quiet line; steps only when there are any; nothing when the source named no issue (never "0 issues") */}
+              {troubleshooting.issues.length > 0 && (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3 text-sm text-muted-foreground" data-troubleshooting-totals="">
                 <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Target className="h-3.5 w-3.5" />{troubleshooting.issues.length} {troubleshooting.issues.length === 1 ? "issue" : "issues"}</span>
                 <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><Wrench className="h-3.5 w-3.5" />{totalSolutions} {totalSolutions === 1 ? "solution" : "solutions"}</span>
@@ -766,6 +781,7 @@ const TroubleshootingBlock: React.FC<TroubleshootingBlockProps> = ({
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap"><CheckCircle2 className="h-3.5 w-3.5" />{completedSteps.size} of {totalSteps} steps done</span>
                 )}
               </div>
+              )}
             </div>
           </div>
         </div>

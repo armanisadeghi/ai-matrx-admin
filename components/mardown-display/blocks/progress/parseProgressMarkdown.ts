@@ -40,7 +40,7 @@ export type ProgressTrackerData = Omit<
 export function parseProgressMarkdown(content: string): ProgressTrackerData {
   const lines = content.split('\n').filter(line => line.trim());
   
-  let title = 'Progress Tracker';
+  let title = '';
   let description: string | undefined;
   const phases: ProgressCategory[] = [];
   let currentCategory: ProgressCategory | null = null;
@@ -107,7 +107,7 @@ export function parseProgressMarkdown(content: string): ProgressTrackerData {
   if (phases.length === 0 && lines.some(line => line.startsWith('- ['))) {
     const defaultCategory: ProgressCategory = {
       id: 'category-1',
-      name: 'Tasks',
+      name: '',
       steps: []
     };
 

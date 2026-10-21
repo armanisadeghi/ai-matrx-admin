@@ -16,7 +16,9 @@ import type {
   DocumentAgentReviewProps,
 } from "@ai-matrx/context-menu/engine";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsDebugMode, toggleDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
+// Debug mode is the chat package's preference write (this app's root reducer turns it into its own
+// adminDebug action in the same reduction): the same toggle Matrx 2 binds.
+import { selectIsDebugMode, toggleDebugMode } from "@ai-matrx/chat/host/prefs";
 import { selectIsSuperAdmin, selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
 import { openCompareWithBase, selectHasCompareBase, setCompareBase } from "@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice";

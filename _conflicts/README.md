@@ -33,6 +33,7 @@ Its files stay as they are.
 ## Held files
 
 ## Resolution log
+- 2026-10-21 04:10 PDT — Claude ship-all resolved `_conflicts/2026-10-21-033854/pnpm-lock.yaml.held` by keeping the live lockfile (== origin/main): the held side differed only in older @ai-matrx versions (agents 0.59.181+0.59.182 twice, chat 0.8.275, coding-sessions 0.3.419) that live supersedes (agents 0.59.184, chat 0.8.277, coding-sessions 0.3.420); `check-matrx-packages --duplicates` 33 packages, one version each. Owner: none found (lockfile).
 
 - 2026-10-20 21:04 PDT — Codex resolved `_conflicts/2026-10-20-204646/pnpm-lock.yaml.held`: kept the live lockfile from the current ship-all consumer sync (release `v0.4.3400`). It preserves LOCAL's newer chat `0.8.263` and coding-sessions `0.3.401`, GITHUB's rich-content `0.2.242`, and advances coding-sessions to `0.3.402`. Owner: none found (the session lookup found mentions only, with no edit owner). Verified `check:matrx-packages`, duplicate and lockfile-key checks; no conflict markers remain.
 

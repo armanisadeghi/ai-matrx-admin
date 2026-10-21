@@ -777,6 +777,8 @@ export interface CreateBrandAssetInput {
    */
   source:
     "discovered" | "uploaded" | "manual" | "generated" | "research" | "stock";
+  /** Provenance details (e.g. `source_property_id`: the account a profile picture came from). */
+  metadata?: Record<string, string> | null;
 }
 
 export interface UpdateBrandAssetInput {

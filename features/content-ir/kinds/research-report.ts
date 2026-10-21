@@ -435,7 +435,7 @@ export function researchDataFromKindValue(
   value: Record<string, unknown>,
 ): ResearchData {
   const research: ResearchData = {
-      title: str(value.title) || "Research Analysis",
+      title: str(value.title),
       overview: str(value.overview),
       introduction: str(value.introduction),
       researchQuestions: strArray(value.researchQuestions),

@@ -76,6 +76,15 @@ import { tryReadAllRowsRest } from "@ai-matrx/data/db";
 import { loadDbEnv } from "./lib/direct-db";
 import { openGateDb } from "./lib/gate-db";
 import { readHeader } from "./lib/migration-target";
+import {
+  classifySlotCollisions,
+  isTimestampSlot,
+  nextFreeNumber,
+  nextFreeTimestamp,
+  runSlotSelfTest,
+  slotNumber,
+  slotSeries,
+} from "./lib/migration-slot";
 import { basedOnCheck, findReplaceOccurrences, type Query } from "./migration-based-on";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 
@@ -391,37 +400,9 @@ function listSql(dir: string): string[] {
  * the trigger only sees the LEDGER, so it cannot know about a colliding file
  * that is still sitting UNAPPLIED on someone's disk. This check reads the disk.
  *
- * Keep the slot rule below in sync with public.migration_slot(text) — that SQL
- * function is the definition; this is the mirror.
+ * The slot rule lives in scripts/lib/migration-slot.ts (a mirror of
+ * public.migration_slot(text), which is the definition); `--self-test-slots` proves parity.
  */
-const SLOT_RE = /^(.*?)_(\d{1,4})([a-z]?)(?:_[a-z].*)?\.sql$/;
-
-/** Canonical slot key for a filename, or null when it claims no numeric slot. */
-function migrationSlot(filename: string): string | null {
-  const m = filename.match(SLOT_RE);
-  if (!m) return null;
-  return `${m[1]} #${m[2].padStart(4, "0")}${m[3]}`;
-}
-
-function slotSeries(slot: string): string {
-  return slot.split(" #")[0] ?? "";
-}
-
-function slotNumber(slot: string): number {
-  return parseInt((slot.split(" #")[1] ?? "").replace(/[a-z]$/, ""), 10);
-}
-
-/** Lowest number in `series` that no file on disk and no ledger row has claimed. */
-function nextFreeNumber(series: string, allSlots: Iterable<string>): number {
-  let max = 0;
-  for (const slot of allSlots) {
-    if (slotSeries(slot) !== series) continue;
-    const n = slotNumber(slot);
-    if (Number.isFinite(n) && n > max) max = n;
-  }
-  return max + 1;
-}
-
 /**
  * A real checksum is the SHA-256 of the SQL that ran: 64 lowercase hex chars.
  *
@@ -564,6 +545,7 @@ async function main(): Promise<number> {
   const strict = process.argv.includes("--strict");
 
   if (process.argv.includes("--self-test-dd137b13")) return runDd137b13SelfTest();
+  if (process.argv.includes("--self-test-slots")) return runSlotSelfTest();
 
   const dd137b13Errors = dd137b13SourceRepairErrors();
   if (dd137b13Errors.length) {
@@ -829,25 +811,11 @@ async function main(): Promise<number> {
   // applied it is history: renaming an applied migration orphans every citation
   // of its bytes, which is exactly why the 2026-08-28 hr_c4_55 pair was recorded
   // in a file header instead of renumbered. Those are counted, never screamed.
-  const slotMembers = new Map<string, Set<string>>();
-  for (const f of [...local.keys(), ...skipped, ...ledger.keys()]) {
-    const slot = migrationSlot(f);
-    if (!slot) continue;
-    let set = slotMembers.get(slot);
-    if (!set) slotMembers.set(slot, (set = new Set()));
-    set.add(f);
-  }
-
-  const actionable: Array<{ slot: string; files: string[] }> = [];
-  let historicalCollisions = 0;
-  for (const [slot, set] of slotMembers) {
-    if (set.size < 2) continue;
-    const files = [...set].sort();
-    // "Unapplied" means: on disk, and the ledger has never seen it.
-    if (files.some((f) => !ledger.has(f) && existsSync(resolve(MIGRATIONS_DIR, f))))
-      actionable.push({ slot, files });
-    else historicalCollisions += 1;
-  }
+  const { slotMembers, actionable, historical: historicalCollisions } = classifySlotCollisions(
+    [...local.keys(), ...skipped, ...ledger.keys()],
+    (f) => ledger.has(f),
+    (f) => existsSync(resolve(MIGRATIONS_DIR, f)),
+  );
 
   if (actionable.length) {
     console.log();
@@ -865,12 +833,22 @@ async function main(): Promise<number> {
           : `${C.yellow}[unapplied — renumber this one]${C.reset}`;
         console.log(`    ${C.white}- ${f}${C.reset} ${state}`);
       }
-      console.log(
-        `    ${C.white}Fix: renumber the unapplied file to ` +
-          `${series}_${String(free).padStart(2, "0")}_<slug>.sql${C.reset} ` +
-          `${C.dim}(next free number in this series; for a deliberate sub-step use ` +
-          `${series}_${String(slotNumber(slot)).padStart(2, "0")}a_<slug>.sql instead)${C.reset}`,
-      );
+      if (isTimestampSlot(slot)) {
+        const nextTs = nextFreeTimestamp(slot, slotMembers.keys());
+        console.log(
+          `    ${C.white}Fix: rename the unapplied file to ${nextTs}_<slug>.sql${C.reset} ` +
+            `${C.dim}(next free timestamp; for a deliberate sub-step glue a letter: ${slot.slice(2)}a_<slug>.sql)${C.reset}`,
+        );
+      } else {
+        const pad = (n: number) => String(n).padStart(series ? 2 : 4, "0");
+        const prefix = series ? `${series}_` : "";
+        console.log(
+          `    ${C.white}Fix: renumber the unapplied file to ` +
+            `${prefix}${pad(free)}_<slug>.sql${C.reset} ` +
+            `${C.dim}(next free number in this series; for a deliberate sub-step use ` +
+            `${prefix}${pad(slotNumber(slot))}a_<slug>.sql instead)${C.reset}`,
+        );
+      }
       console.log(
         `    ${C.dim}Re-point hr.function_contract.home_migration rows and in-body ` +
           `number stamps in the same edit.${C.reset}`,

@@ -22,3 +22,14 @@ describe("formatSocialHandle", () => {
     expect(formatSocialHandle({ platform: "reddit", handle: "" })).toBe("");
   });
 });
+
+describe("LinkedIn company pages", () => {
+  it("writes a company page as /company/, never /in/ (the-good-trade, 2026-10-21)", () => {
+    expect(
+      formatSocialHandle({ platform: "linkedin", handle: "the-good-trade", url: "https://www.linkedin.com/company/the-good-trade" }),
+    ).toBe("linkedin.com/company/the-good-trade");
+    expect(formatSocialHandle({ platform: "linkedin", handle: "arman-sadeghi-8b176627", url: "https://www.linkedin.com/in/arman-sadeghi-8b176627" })).toBe(
+      "linkedin.com/in/arman-sadeghi",
+    );
+  });
+});

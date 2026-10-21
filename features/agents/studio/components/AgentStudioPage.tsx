@@ -86,7 +86,7 @@ import { STUDIO_ASSISTANT_MANDATE, STUDIO_SURFACE_NAME, buildFromWorkspace, chec
 import { approvalText, codeApprove, type WorkspaceInput } from "../workspace";
 import { StudioWorkspacePane, useStudioWorkspace } from "./StudioWorkspacePane";
 import { useStudioBuilderFeed } from "../studio-builder-feed";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
+import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import { StudioStart, keepStudioDraft } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
 import { StudioControls, type ControlsTab } from "./StudioControls";
@@ -378,7 +378,9 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
       agent_id: state.agentId ?? undefined,
       build_id: state.buildId ?? undefined,
     },
-    { everyTurn: true },
+    // hostSuppliesContext: the page's frame is not something the person attached, so her bubble
+    // carries no display-only "N sent" receipt chip (lane 1B found it back after the hand hook went).
+    { everyTurn: true, hostSuppliesContext: true },
   );
 
   /**

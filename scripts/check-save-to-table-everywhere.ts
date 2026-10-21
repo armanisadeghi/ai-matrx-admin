@@ -114,7 +114,7 @@ export const BIRTH_HOMES: Record<string, string> = {
 };
 
 /** The one place the older-store dialog may be opened from. */
-const SAVE_TABLE_MODAL_HOME = "features/save-to-table/SaveToTableOverlay.tsx";
+const SAVE_TABLE_MODAL_HOME = "features/overlays/definitions/saveToTable.render.tsx";
 
 export interface Finding {
   rule: 1 | 2 | 3 | 4;

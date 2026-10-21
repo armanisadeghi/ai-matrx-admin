@@ -40,7 +40,8 @@ import { IconButton } from "@ai-matrx/design-system";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { decisionBranchesSideBySide } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { CopySourceButton } from "../common/CopySourceButton";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
@@ -126,6 +127,8 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const controls = useBlockControls("decision_tree", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -252,14 +255,11 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
       };
 
       const newHistory = [...navigationHistory, step];
-      const newPaths = nextNode.action
-        ? new Set([...completedPaths, nextNode.id])
-        : completedPaths;
 
       setNavigationHistory(newHistory);
       setCurrentNode(nextNode);
-      if (nextNode.action) setCompletedPaths(newPaths);
-      emitState(nextNode, newHistory, newPaths);
+      // Reaching an action is not completing it: only "Mark as Completed" adds to the count.
+      emitState(nextNode, newHistory, completedPaths);
     }
   };
 
@@ -550,12 +550,13 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+            <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
               <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <GitBranch className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={decisionTree.title} className="truncate text-sm font-medium text-foreground">
                   {decisionTree.title}
                 </InlineControlText>
+                {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <IconButton
@@ -749,7 +750,7 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                     </h2>
 
                     {currentNode.action && (
-                      <Badge className="shrink-0" tone="success" title="Decision Complete" icon={<CheckCircle2 />}>
+                      <Badge className="shrink-0 gap-1.5" tone="success" title="Decision Complete" icon={<CheckCircle2 />}>
                         <span className="hidden sm:inline">Decision Complete</span>
                       </Badge>
                     )}
@@ -781,13 +782,13 @@ const DecisionTreeBlock: React.FC<DecisionTreeBlockProps> = ({
                         </p>
                       )}
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <Button variant="success" icon={<CheckCircle2 />} onClick={() => {
+                        <Button variant={completedPaths.has(currentNode.id) ? "outline" : "success"} disabled={completedPaths.has(currentNode.id)} icon={<CheckCircle2 />} onClick={() => {
                             const newPaths = new Set([...completedPaths, currentNode.id]);
                             setCompletedPaths(newPaths);
                             emitState(currentNode, navigationHistory, newPaths);
-                          }} title="Mark as Completed">
+                          }} title={completedPaths.has(currentNode.id) ? "Completed" : "Mark as Completed"} data-decision-completed={completedPaths.has(currentNode.id) ? "" : undefined}>
                           <span className="hidden sm:inline">
-                            Mark as Completed
+                            {completedPaths.has(currentNode.id) ? "Completed" : "Mark as Completed"}
                           </span>
                         </Button>
                         <Button variant="outline" icon={<RotateCcw />} onClick={goToRoot} title="Start New Decision">

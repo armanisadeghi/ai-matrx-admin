@@ -34,7 +34,8 @@ import { recipeShoppingList } from "./recipe-shopping-list";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
 import { CopySourceButton } from "../common/CopySourceButton";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
@@ -96,6 +97,12 @@ export function recipeStatValue(raw: string | number | undefined | null, words: 
   return value;
 }
 
+/** A step with no bold action is its own description: the heading is the whole line, said once (review 5, G13: "Mix for" over "Mix for 3 minutes"). */
+export function stepRepeatsItsAction(step: { action: string; description: string }): boolean {
+  const action = step.action.trim().toLowerCase();
+  return action !== "" && step.description.trim().toLowerCase().startsWith(action);
+}
+
 const RecipeViewer: React.FC<RecipeViewerProps> = ({
   recipe,
   source,
@@ -116,6 +123,8 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
   );
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const controls = useBlockControls("cooking_recipe", source ?? "", useBlockEdit());
   // A narrow canvas pane: the quick stats wrap to two per row (four in 360px
   // leaves no room for a value), and ingredients sit above the steps. Outside
@@ -320,12 +329,13 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
         >
           {/* The block's one header: title left, actions right (Controls, "</>" and Copy come from the shared slot) */}
           {!isFullScreen && (
-            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+            <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
               <div className="flex min-w-[9rem] flex-1 items-center gap-2">
                 <ChefHat className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <InlineControlText controls={controls} fieldKey="title" value={recipe.title} className="truncate text-sm font-medium text-foreground">
                   {recipe.title}
                 </InlineControlText>
+                {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <IconButton
@@ -410,9 +420,11 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                           </InlineControlText>
                         </h1>
                       )}
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                        {recipe.yields}
-                      </p>
+                      {recipe.yields && (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {recipe.yields}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -597,15 +609,17 @@ const RecipeViewer: React.FC<RecipeViewerProps> = ({
                                     : "text-gray-900 dark:text-gray-100"
                                 }`}
                               >
-                                {step.action}
+                                {stepRepeatsItsAction(step) ? step.description : step.action}
                               </div>
                             </div>
 
                             {!isCompleted && (
                               <div className="mt-2 space-y-1.5 w-full">
-                                <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
-                                  {step.description}
-                                </p>
+                                {!stepRepeatsItsAction(step) && (
+                                  <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+                                    {step.description}
+                                  </p>
+                                )}
                                 {step.time && (
                                   <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                                     <Clock className="h-3 w-3 flex-shrink-0" />

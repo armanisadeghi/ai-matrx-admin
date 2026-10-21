@@ -22,7 +22,7 @@ import { filterUndecidedKeys } from "@/features/assists/service";
 import { emitAssistTracked } from "@/features/assists/redux/emitTracked";
 import { assistPriority } from "@/features/assists/types";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
-import type { HostValuesFor } from "@/features/mandates/host-values/host-values";
+import type { HostValuesFor } from "@ai-matrx/chat/mandates/host-values/host-values";
 
 const SOURCE_KEY = "notes.unorganized";
 

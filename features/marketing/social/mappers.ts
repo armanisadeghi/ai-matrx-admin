@@ -420,6 +420,8 @@ export function brandSocialRowToAccountRow(r: BrandSocialAccountRpcRow): Account
     propertyId: r.property_id,
     ownerKind: r.owner_kind === "person" ? "person" : "company",
     ownerName: r.owner_name,
+    ownerPartyId: r.owner_party_id,
+    profileName: r.profile_display_name?.trim() || null,
     trackable: Boolean(r.trackable),
     isVerified: Boolean(r.is_verified),
     externalUrl: r.url ?? r.profile_url,

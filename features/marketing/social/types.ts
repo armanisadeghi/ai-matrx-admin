@@ -286,6 +286,10 @@ export interface AccountRow {
   /** Whose account (brand_social_accounts): the brand's own, or a named person's. Absent on competitor rows. */
   ownerKind?: "company" | "person";
   ownerName?: string | null;
+  /** The CRM person who owns a person-owned account (null: the brand's, or not linked yet). */
+  ownerPartyId?: string | null;
+  /** The account's own profile name as the platform shows it (null until it is read). */
+  profileName?: string | null;
   /** The server can track this platform (false: say so, no Track button). Absent = judge by platform. */
   trackable?: boolean;
   /** An own account the organization tracks that this brand does not carry yet (attached through a connection). */

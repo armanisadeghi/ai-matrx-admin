@@ -102,6 +102,7 @@ import {
 import { useKnowledgeSearchStream, type SectionState } from "./useKnowledgeSearchStream";
 import type { DataHomeRow } from "@/features/unified-data/home/dataHomeRows";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 /**
  * The data home's tables source (features/unified-data/home/dataHomeTablesSource.ts), loaded with
@@ -357,6 +358,7 @@ export default function KnowledgeCommandBar({
       return;
     }
     close();
+    expectNavigation(href); // a window closes around this push: the overlay layer writes no address behind it
     startTransition(() => router.push(href));
   };
 
@@ -383,6 +385,7 @@ export default function KnowledgeCommandBar({
       [...chips, ...parseQueryText(input).chips],
     );
     close();
+    expectNavigation(hubHref({ ...DEFAULT_HUB_STATE, query: finalQuery })); // a window closes around this push: the overlay layer writes no address behind it
     startTransition(() =>
       router.push(hubHref({ ...DEFAULT_HUB_STATE, query: finalQuery })),
     );
@@ -669,6 +672,7 @@ export default function KnowledgeCommandBar({
             value={`table:${row.id}`}
             onSelect={() => {
               close();
+              expectNavigation(row.href); // a window closes around this push: the overlay layer writes no address behind it
               startTransition(() => router.push(row.href));
             }}
             className="flex items-start gap-2"
@@ -730,6 +734,7 @@ export default function KnowledgeCommandBar({
             value={`person:${hit.id}`}
             onSelect={() => {
               close();
+              expectNavigation(userRecordHref(hit.id)); // a window closes around this push: the overlay layer writes no address behind it
               startTransition(() => router.push(userRecordHref(hit.id)));
             }}
             data-person-hit={hit.id}
@@ -781,6 +786,7 @@ export default function KnowledgeCommandBar({
             value={`record:${hit.recordId}`}
             onSelect={() => {
               close();
+              expectNavigation(recordPageHref(hit.tableId, hit.recordId)); // a window closes around this push: the overlay layer writes no address behind it
               startTransition(() => router.push(recordPageHref(hit.tableId, hit.recordId)));
             }}
             className="flex items-start gap-2"
@@ -805,6 +811,7 @@ export default function KnowledgeCommandBar({
         value="command:search-web"
         onSelect={() => {
           close();
+          expectNavigation(buildSearchHref(searchingText)); // a window closes around this push: the overlay layer writes no address behind it
           startTransition(() => router.push(buildSearchHref(searchingText)));
         }}
       >

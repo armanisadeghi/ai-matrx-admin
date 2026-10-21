@@ -434,10 +434,12 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                             </span>
                           )}
 
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1.5">
-                            <Clock className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{event.date}</span>
-                          </div>
+                          {event.date && (
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1.5">
+                              <Clock className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{event.date}</span>
+                            </div>
+                          )}
 
                           {event.description && (
                           <p
@@ -474,7 +476,7 @@ const TimelineBlock: React.FC<TimelineBlockProps> = ({
                   Timeline Complete!
                 </h3>
                 <p className="text-xs text-green-700 dark:text-green-300">
-                  All events in {timeline.title} have been completed!
+                  {timeline.title ? `All events in ${timeline.title} have been completed!` : "All events have been completed!"}
                 </p>
               </div>
               <Button variant="success" onClick={resetProgress} className="mt-1">

@@ -200,7 +200,7 @@ const CMS_ADMIN_MAP: FeatureAdminMap = {
       method: "Multiple",
       description:
         "aidream's door for the standalone html_pages system — owner-scoped as the caller, delete archives. Replaced the Next.js /api/html-pages proxy, which is deleted.",
-      filePath: "features/html-pages/services/htmlPageService.js",
+      filePath: "@ai-matrx/chat window-panels/windows/html-pages/html-page-service.ts (aidream)",
     },
   ],
 

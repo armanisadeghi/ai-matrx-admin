@@ -32,7 +32,7 @@ import { cn } from "@/styles/themes/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import {
   onHtmlVersionPublished,
   resolveHtmlCanvasPage,

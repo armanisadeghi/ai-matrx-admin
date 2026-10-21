@@ -26,6 +26,7 @@ import {
 } from "@/features/marketing/data/service";
 import { applyRetraction, restoreRetraction, type RetractionSummary } from "@/features/marketing/data/retraction";
 import type { MarketingBrand } from "@/features/marketing/types";
+import { sourceAccountOf } from "@/features/marketing/components/brands/logo-rank";
 import { extractErrorMessage } from "@/utils/errors";
 import { persistAnswer, type PersistContext } from "../validate/persist";
 import { focusFromEvidence } from "../validate/queue";
@@ -57,6 +58,9 @@ async function setLogo(ctx: PersistContext, snapshot: BrandSnapshot, change: Enr
   if (!i) throw new Error("No logo to use");
   const url = i.image_url ?? i.value;
   const brand = ctx.getBrand();
+  // A profile picture belongs to the account it came from: a person's account never gives the brand its logo.
+  const account = i.source.kind === "social_profile" ? sourceAccountOf(snapshot.properties, i.platform, i.source.url) : null;
+  if (account?.owner_kind === "person") throw new Error("This is a person's profile picture, not the brand's logo.");
   const primary = change.slot === "logo";
   const demoted = primary ? snapshot.assets.filter((a) => (a.kind === "logo" || a.kind === "headshot") && a.is_primary) : [];
   for (const a of demoted) await updateBrandAsset({ assetId: a.id, expectedVersion: a.version, patch: { is_primary: false } });
@@ -70,6 +74,7 @@ async function setLogo(ctx: PersistContext, snapshot: BrandSnapshot, change: Enr
     notes: `Smart Add enrich · ${i.source.where ?? i.source.kind}${i.source.url ? ` · ${i.source.url}` : ""}`,
     isPrimary: primary,
     source: "discovered",
+    ...(account ? { metadata: { source_property_id: account.id, source_platform: account.kind } } : {}),
   });
   const before = brand.logo_url;
   if (primary) ctx.setBrand(await updateBrand({ brandId: brand.id, expectedVersion: brand.version, base: brand, patch: { logo_url: url } }));

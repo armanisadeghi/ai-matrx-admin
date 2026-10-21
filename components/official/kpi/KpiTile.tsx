@@ -15,6 +15,10 @@
 // `components/official/InfoHint.tsx` — an info icon right after the label that
 // opens on hover, keyboard focus, and tap — never as a native `title=` on the
 // tile, which phones and keyboard users can't reach.
+//
+// `trend` draws a small history line beside the number (oldest first). Pass it
+// only when real history exists — never a flat stand-in; `period` names the
+// span ("28 days") for screen readers and the hover label.
 
 "use client";
 
@@ -58,7 +62,49 @@ export interface KpiTileProps {
   loading?: boolean;
   /** The read behind `value`. Failed → "—" (never 0); loading → the loading bar. */
   read?: CountRead | null;
+  /** Real history behind the number, oldest first (≥ 2 points), and the span it covers. */
+  trend?: KpiTrend | null;
   className?: string;
+}
+
+export interface KpiTrend {
+  values: readonly number[];
+  /** The span the line covers ("28 days", "12 weeks"). */
+  period: string;
+  /** What the line counts when it is not the tile's number ("Posts per week"). */
+  label?: string;
+}
+
+const SPARK_W = 64;
+const SPARK_H = 20;
+
+/** The tile's history line: a filled area under the line (none when flat), scaled from its low point. */
+function KpiSparkline({ trend, label }: { trend: KpiTrend; label: string }) {
+  const n = trend.values.length;
+  if (n < 2) return null;
+  const min = Math.min(...trend.values);
+  const max = Math.max(...trend.values);
+  // A floor of 10% of the peak: a change of 11 on 3,700 stays a near-flat line, never a cliff.
+  const range = Math.max(max - min, Math.abs(max) * 0.1) || 1;
+  // A level line sits at mid-height: drawn on the floor it would read as zero.
+  const y = (v: number) => (max === min ? SPARK_H / 2 : SPARK_H - 2 - ((v - min) / range) * (SPARK_H - 4));
+  const pts = trend.values
+    .map((v, i) => `${((i / (n - 1)) * SPARK_W).toFixed(1)},${y(v).toFixed(1)}`)
+    .join(" ");
+  return (
+    <svg
+      viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+      preserveAspectRatio="none"
+      role="img"
+      aria-label={`${trend.label ?? label}, last ${trend.period}`}
+      className="h-5 w-16 shrink-0 text-primary"
+    >
+      <title>{`${trend.label ?? label}, last ${trend.period}`}</title>
+      {/* A flat series is a line only: an area under it would read as a filled bar, not "no change". */}
+      {max === min ? null : <polygon points={`0,${SPARK_H} ${pts} ${SPARK_W},${SPARK_H}`} fill="currentColor" fillOpacity={0.15} />}
+      <polyline points={pts} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
 }
 
 export function KpiTile({
@@ -70,6 +116,7 @@ export function KpiTile({
   title,
   loading: loadingProp = false,
   read,
+  trend,
   className,
 }: KpiTileProps) {
   const readState = countReadState({ read });
@@ -99,15 +146,18 @@ export function KpiTile({
       {loading ? (
         <div className="my-0.5 h-6 w-12 animate-pulse rounded bg-muted" aria-hidden />
       ) : (
-        <div
-          className={cn(
-            "truncate text-lg font-semibold leading-tight tabular-nums",
-            shown === null ? "text-muted-foreground" : TONE_VALUE[tone],
-          )}
-          aria-label={failed ? unavailableCountLabel(label) : undefined}
-          title={failed ? "Couldn't be read" : undefined}
-        >
-          {shown === null ? "—" : shown}
+        <div className="flex min-w-0 items-end justify-between gap-2">
+          <div
+            className={cn(
+              "truncate text-lg font-semibold leading-tight tabular-nums",
+              shown === null ? "text-muted-foreground" : TONE_VALUE[tone],
+            )}
+            aria-label={failed ? unavailableCountLabel(label) : undefined}
+            title={failed ? "Couldn't be read" : undefined}
+          >
+            {shown === null ? "—" : shown}
+          </div>
+          {trend && shown !== null ? <KpiSparkline trend={trend} label={label} /> : null}
         </div>
       )}
       {hint ? (

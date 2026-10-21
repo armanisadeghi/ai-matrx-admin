@@ -35,6 +35,7 @@ import {
   isPropertyKind,
 } from "@/features/marketing/types";
 import { extractErrorMessage } from "@/utils/errors";
+import { AccountOwnerPicker, type Owner } from "@/features/marketing/components/brands/AccountOwnerDialog";
 
 const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
@@ -99,6 +100,10 @@ function PropertyEditorDialogBody({
   const [status, setStatus] = useState(property?.status ?? "active");
   const [moreOpen, setMoreOpen] = useState((property?.status ?? "active") !== "active");
   const social = isSocialPlatform(kind);
+  // Whose account a new social account is: the brand's (default) or a person's, so a founder's own account never
+  // lands in the brand's audience. An existing account's owner changes from its row's Owner menu.
+  const [owner, setOwner] = useState<Owner>("company");
+  const [ownerPerson, setOwnerPerson] = useState<{ id: string; name: string } | null>(null);
   const input = useSocialAccountInput({
     initialText: property?.handle || property?.url || "",
     contextPlatform: social ? kind : null,
@@ -117,7 +122,7 @@ function PropertyEditorDialogBody({
     : PROPERTY_KINDS.filter((value) => value !== "website");
 
   const account = social ? input.account : null;
-  const canSave = social ? account !== null : isWebsite || url.trim().length > 0;
+  const canSave = social ? account !== null && (owner === "company" || ownerPerson !== null) : isWebsite || url.trim().length > 0;
 
   const save = async () => {
     const trimmedUrl = social ? (account?.url ?? "") : url.trim();
@@ -150,8 +155,9 @@ function PropertyEditorDialogBody({
           handle: trimmedHandle || null,
           displayName: name || null,
           status,
+          ...(social && owner === "person" && ownerPerson ? { ownerKind: "person" as const, ownerPartyId: ownerPerson.id } : {}),
         });
-        toast.success("Property added");
+        toast.success(social ? "Account added" : "Property added");
       }
       onOpenChange(false);
     } catch (error) {
@@ -167,12 +173,14 @@ function PropertyEditorDialogBody({
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {property ? "Edit property" : "Add property"}
+            {property ? "Edit property" : social ? "Add account" : "Add property"}
           </DialogTitle>
           <DialogDescription>
             {isWebsite
               ? "Website properties are managed through their site — edit the presence details here."
-              : "A social account or other presence this brand owns."}
+              : social
+                ? "A social account of the brand or of one of its people."
+                : "A presence this brand owns."}
           </DialogDescription>
         </DialogHeader>
 
@@ -204,7 +212,20 @@ function PropertyEditorDialogBody({
               </Label>
               <SocialAccountInput input={input} id="property-account" autoFocus />
             </div>
-          ) : (
+          ) : null}
+          {social && !property ? (
+            <div className="space-y-1">
+              <Label className="text-xs">Owner</Label>
+              <AccountOwnerPicker
+                owner={owner}
+                onOwnerChange={setOwner}
+                person={ownerPerson}
+                onPersonChange={setOwnerPerson}
+                organizationId={organizationId}
+              />
+            </div>
+          ) : null}
+          {social ? null : (
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1">
                 <Label htmlFor="property-url" className="text-xs">
@@ -257,7 +278,7 @@ function PropertyEditorDialogBody({
             Cancel
           </Button>
           <Button icon={busy ? <Loader2 className="animate-spin" /> : null} variant="primary" disabled={busy || !canSave} onClick={() => void save()}>
-            {property ? "Save property" : "Add property"}
+            {property ? "Save property" : social ? "Add account" : "Add property"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -57,7 +57,7 @@ describe("a checklist inside the collapsible wrapper stands down so there is one
     const checklist = fs.readFileSync(path.join(ROOT, "tasks/TaskChecklist.tsx"), "utf8");
     expect(block).toContain("controlsInHeader");
     expect(checklist).toMatch(/useBlockHostSlot\(!controlsInHeader\)/);
-    expect(checklist).toMatch(/\{!controlsInHeader && \(\s*<div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b/);
+    expect(checklist).toMatch(/\{!controlsInHeader && \(\s*<div (?:data-block-header )?className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b/);
   });
 });
 

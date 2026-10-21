@@ -52,6 +52,7 @@ import { formatVariableDisplayLines } from "@ai-matrx/chat/agents/utils/variable
 import { toast } from "@/lib/toast";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 function formatTimestamp(ts: number): string {
   return new Date(ts).toLocaleString(undefined, {
@@ -238,6 +239,7 @@ export default function RecoveryWindowImpl() {
   const handleRetry = () => {
     if (!selected) return;
     close();
+    expectNavigation(selected.routeHref); // a window closes before this push: the overlay layer writes no address behind it
     router.push(selected.routeHref);
     toast.info("Navigated to original page. Your input is preserved below.", {
       description:

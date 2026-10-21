@@ -30,6 +30,17 @@ export function mathSubtitle(problem: Pick<MathProblemProps, "topic_name" | "mod
         .join(" • ");
 }
 
+/**
+ * A model writes the statement as one string as often as the { text, equation, instruction } record.
+ * A string IS the statement's text: it shows as written, and no equation or instruction is made up
+ * beside it (review 5, G12: the block used to draw an empty body).
+ */
+export function withStatementRecord<T extends { problem_statement?: unknown }>(problem: T): T {
+    return typeof problem.problem_statement === "string" && problem.problem_statement.trim() !== ""
+        ? { ...problem, problem_statement: { text: problem.problem_statement } }
+        : problem;
+}
+
 const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initialProblemData, artifactId, controls = null }) => {
     // State to handle uploaded problems
     const [problemData, setProblemData] = useState(initialProblemData);
@@ -40,7 +51,7 @@ const MathProblemBlock: React.FC<MathProblemBlockProps> = ({ problemData: initia
     
     // Normalize LaTeX content to fix common AI mistakes (memoized to avoid re-processing)
     const normalizedProblemData = useMemo(
-        () => normalizeMathProblemLatex(problemData.math_problem),
+        () => normalizeMathProblemLatex(withStatementRecord(problemData.math_problem)),
         [problemData]
     );
 

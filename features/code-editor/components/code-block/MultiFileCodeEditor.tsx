@@ -17,7 +17,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import { agentForPromptKey } from "@/features/code-editor/agent-code-editor/agents";
 import { useOpenSmartCodeEditorWindow } from "@/features/overlays/definitions/smartCodeEditorWindow.overlay";
 import {

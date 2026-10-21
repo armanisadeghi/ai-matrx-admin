@@ -41,6 +41,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 export interface WindowOverlayDescriptor {
   /** Registered overlayId (e.g. `quickDataWindow`). */
@@ -81,6 +82,7 @@ export function OpenDestinationDialog({
 
   const openHere = useCallback(() => {
     close();
+    expectNavigation(route); // a window closes before this push: the overlay layer writes no address behind it
     router.push(route);
   }, [close, router, route]);
 

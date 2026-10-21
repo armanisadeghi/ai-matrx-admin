@@ -146,7 +146,8 @@ export function AgentDriftReport({
 
   // The reports surface for the open report (user scope only: the admin variant is the admin
   // reporting surface's). Read at send time from what the report already holds.
-  const getScope = withScopeContributions("matrx-user/reports", () => buildDriftReportScope({ report, selected, table: table.state, view: viewSnapshot.current }));
+  const readDriftScope = () => buildDriftReportScope({ report, selected, table: table.state, view: viewSnapshot.current });
+  const getScope = withScopeContributions("matrx-user/reports", readDriftScope);
   const parseView = (value: unknown) => {
     const patch = reportViewPatch.parse(value);
     if (patch.selected_agent_id && (status !== "succeeded" || !rows.some((row) => row.agentId === patch.selected_agent_id))) {
@@ -212,7 +213,7 @@ export function AgentDriftReport({
         return { summary: "Updated the report view; agent definitions and pins are unchanged.", data: patch };
       } },
     })}>
-      <NonEditableContextMenu sourceFeature="reports" surfaceName="matrx-user/reports" menuVersion={1} getApplicationScope={getScope} contentSource={{ type: "raw" }} extraSections={[{ id: "report-actions", label: "Report", anchor: "after-clipboard", items: [
+      <NonEditableContextMenu sourceFeature="reports" surfaceName="matrx-user/reports" menuVersion={1} getApplicationScope={readDriftScope} contentSource={{ type: "raw" }} extraSections={[{ id: "report-actions", label: "Report", anchor: "after-clipboard", items: [
         { kind: "item", id: "refresh", label: "Refresh", icon: RotateCw, disabled: status === "loading", description: status === "loading" ? "Waiting for the current read" : undefined, onSelect: refresh },
         { kind: "item", id: "close-detail", label: "Close detail", icon: RotateCw, disabled: selected === null, description: selected === null ? "No agent detail is open" : undefined, onSelect: () => setSelected(null) },
       ] }]}>

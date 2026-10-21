@@ -21,6 +21,9 @@ import { ensureScopeSkeleton } from "@/features/scopes/redux/thunks/ensureScopeS
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { whenPrimaryContentShown } from "@/lib/boot/primaryContent";
 
+/** Most stack captures the dev diagnostic will ever pay for per store (cost is per read, not per reader). */
+export const DEMAND_CAPTURE_ATTEMPTS = 200;
+
 type TreeStatusView = { scopesTree?: { treeStatus?: string; skeletonStatus?: string } };
 
 function treeUntouched(state: unknown): boolean {
@@ -36,11 +39,15 @@ export const scopeTreeDemandEnhancer: StoreEnhancer = (createStore) => (reducer,
   const views = new WeakMap<object, object>();
   let scheduled = false;
   let satisfied = false;
+  let captureAttempts = 0;
 
   const demand = () => {
     // Who asked — the one question a "why did the tree load here?" hunt needs answered. Dev only:
     // every distinct reader before the load starts, in `window.__matrxScopeTreeDemandBy`.
-    if (process.env.NODE_ENV !== "production") {
+    // Bounded: a stack capture costs ~70 µs, and a page that reads `scopesTree` per row (/files/all)
+    // reads it 1.6 MILLION times before the tree lands — uncapped, that froze the tab for 114 s.
+    if (process.env.NODE_ENV !== "production" && captureAttempts < DEMAND_CAPTURE_ATTEMPTS) {
+      captureAttempts++;
       const by = ((window as { __matrxScopeTreeDemandBy?: string[] }).__matrxScopeTreeDemandBy ??= []);
       const stack = new Error("scope tree demand").stack ?? "";
       if (by.length < 20 && !by.includes(stack)) by.push(stack);

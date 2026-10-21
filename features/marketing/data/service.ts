@@ -1,4 +1,5 @@
 import { dateFilter } from "./date-bounds";
+import { isExpiringCdnUrl, rehostBrandAsset } from "@/features/marketing/lib/asset-rehost";
 import { marketingProperties, toRelationUsage, type RelationUsage } from "./relation-usage";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { applyHiddenView, type HiddenView } from "@/features/access-gate/service/hiddenByMe";
@@ -4337,10 +4338,16 @@ export async function createBrandAsset(
       is_primary: input.isPrimary,
       source: input.source,
       confirmed_at: new Date().toISOString(),
+      ...(input.metadata ? { metadata: input.metadata } : {}),
     })
     .select(BRAND_ASSET_COLUMNS)
     .single();
-  return assertData(response.data, response.error);
+  const created = assertData(response.data, response.error);
+  // A provider-CDN picture (Facebook, Instagram) expires: file it in our own file service now, while its link works.
+  if (!created.file_id && isExpiringCdnUrl(created.source_url)) {
+    void rehostBrandAsset(created.id, input.organizationId);
+  }
+  return created;
 }
 
 export async function updateBrandAsset(
@@ -5156,6 +5163,35 @@ export async function getSiteRootStructuredData(
     capturedAt: snapshotResponse.data.captured_at,
     structuredData: snapshotResponse.data.structured_data,
   };
+}
+
+/**
+ * Whose account this is: the brand's own (`company`, no person) or a named person's. A person's
+ * following never counts as the brand's audience, posts or tracking, so an import that attached
+ * someone's personal account is corrected here. The row's own organization scopes the write.
+ */
+export async function setPropertyOwner(input: {
+  propertyId: string;
+  organizationId: string;
+  ownerKind: "company" | "person";
+  ownerPartyId: string | null;
+}): Promise<void> {
+  const response = await (
+    await authenticatedWebDb(supabase)
+  )
+    .from("property")
+    .update({
+      owner_kind: input.ownerKind,
+      owner_party_id: input.ownerKind === "person" ? input.ownerPartyId : null,
+    })
+    .eq("id", input.propertyId)
+    .eq("organization_id", input.organizationId)
+    .is("deleted_at", null)
+    .select("id");
+  if (response.error?.code === "23505") {
+    throw new Error("This brand already lists that account with the same owner.");
+  }
+  assertMutated(response.data, response.error, "change whose account this is");
 }
 
 /** Link (or clear) the person who owns a person-owned account. Direct write under RLS; the DB checks the party is in the same organization. */

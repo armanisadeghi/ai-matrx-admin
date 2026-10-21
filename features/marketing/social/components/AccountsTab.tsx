@@ -21,7 +21,7 @@ import { countOf, withCostOn } from "../social-actions";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import { createSocialAccountsScope, SOCIAL_ACCOUNTS_SURFACE_NAME } from "@/features/surfaces/manifests/marketing-social-accounts.manifest";
 import { useMemo, useState, type ReactNode } from "react";
-import { Globe, Link2, Plus, RefreshCw, Trash2, UserPlus } from "lucide-react";
+import { Globe, Link2, Plus, RefreshCw, Trash2, UserCog, UserPlus } from "lucide-react";
 
 import {
   Badge,
@@ -71,6 +71,7 @@ import {
   type TrackedRole,
 } from "../types";
 import { PersonOwnerChip } from "../../components/brands/PersonOwnerChip";
+import { AccountOwnerDialog } from "../../components/brands/AccountOwnerDialog";
 import { socialRowOpen } from "../row-open";
 import { accountHref } from "../account-href";
 import { brandAccountHref } from "../property-account-href";
@@ -136,6 +137,7 @@ export function AccountsTab() {
   // A provider's consent sends the person back here: its follow-up steps (pick the account) live in the hub.
   const [manageOpen, setManageOpen] = useState(() => CONNECTION_RETURN_PARAMS.some((k) => searchParams?.has(k)));
   const [summaryRow, setSummaryRow] = useState<AccountRow | null>(null);
+  const [ownerRow, setOwnerRow] = useState<AccountRow | null>(null);
   const accounts = useAccountRows(organizationId, brandId);
   const connections = useConnectionStates(organizationId);
   const plans = useConnectedPlans(organizationId, canEdit);
@@ -320,6 +322,9 @@ export function AccountsTab() {
                   <span className="truncate text-sm font-medium text-foreground">
                     {labels.primary}
                   </span>
+                  {showOwnerChip(r, brandKind) ? (
+                    <span className="shrink-0"><Badge>Personal</Badge></span>
+                  ) : null}
                   {showOwnerChip(r, brandKind) ? (
                     <PersonOwnerChip
                       canEdit={canEdit}
@@ -705,6 +710,7 @@ export function AccountsTab() {
 
   return (
     <>
+      <AccountOwnerDialog account={ownerRow} organizationId={organizationId} onClose={() => setOwnerRow(null)} />
       <ManageConnectionsDialog
         open={manageOpen}
         onOpenChange={setManageOpen}
@@ -808,6 +814,19 @@ export function AccountsTab() {
                     "Can't be read the usual way? Your own browser still can. Only your organization sees it.",
                   disabled: busyRow !== null,
                   onClick: () => openCapture(captureTarget(row)),
+                },
+              ]
+            : []),
+          // Whose account: the brand's own or a person's (a person's never counts toward the brand's KPIs).
+          ...(row.role === "own" && row.propertyId && !row.unassigned
+            ? [
+                {
+                  id: "owner",
+                  icon: UserCog,
+                  label: row.ownerKind === "person" ? "Owner: a person" : "Owner: the brand",
+                  tooltip: "Whose account is this?",
+                  disabled: busyRow !== null,
+                  onClick: () => setOwnerRow(row),
                 },
               ]
             : []),

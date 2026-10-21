@@ -12,6 +12,7 @@ import { sanitizeAgentToolIds } from "@ai-matrx/chat/agents/redux/agent-definiti
 import { currentRequestLoginHref } from "@/utils/auth/server-login-href";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { agentNameTaken } from "@ai-matrx/chat/agents/redux/agent-definition/agentNameTaken";
+import { resolveLiveModelId, type SuccessionClient } from "@ai-matrx/agents/models";
 
 type AgentInsert = Omit<
   Database["agent"]["Tables"]["definition"]["Insert"],
@@ -94,7 +95,12 @@ async function insertSeededDefinition(
   supabase: Awaited<ReturnType<typeof createClient>>,
   row: AgentInsert,
 ) {
-  let attempt = row;
+  // A seed's model is a constant in code that outlives the model it names: write its live successor,
+  // never a superseded model the builder's picker would "heal" on first view (an unsaved model
+  // change nobody made on a brand-new agent).
+  let attempt = row.model_id
+    ? { ...row, model_id: await resolveLiveModelId(supabase as unknown as SuccessionClient, row.model_id) }
+    : row;
   for (let tries = 0; tries < 3; tries += 1) {
     const result = await supabase
       .schema("agent")

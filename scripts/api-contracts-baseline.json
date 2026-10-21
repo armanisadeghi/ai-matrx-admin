@@ -20,5 +20,6 @@
   "features/rag/api/search-lab.ts",
   "features/rag/api/search.ts",
   "features/rag/api/stages.ts",
-  "features/rag/components/RepositoriesPage.tsx"
+  "features/rag/components/RepositoriesPage.tsx",
+  "features/spaces/io/NotionSyncBar.tsx"
 ]

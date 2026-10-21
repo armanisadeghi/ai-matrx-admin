@@ -7,20 +7,21 @@
  * RED against the producers before they sent `hostValues` (2026-10-18).
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-jest.mock("@ai-matrx/chat/host", () => ({
+jest.mock("@ai-matrx/chat/host/conversation-hooks", () => ({
+  ...jest.requireActual("@ai-matrx/chat/host/conversation-hooks"),
   getConversationHooks: () => undefined,
   registerConversationHooks: () => () => undefined,
 }));
-jest.mock("@/lib/redux/store-singleton", () => ({ getStoreSingleton: () => null }));
+jest.mock("@ai-matrx/chat/store/store-singleton", () => ({ getStoreSingleton: () => null }));
 
 import {
   hostValuesForTurn,
   presentHostValues,
   provideHostValues,
-} from "../host-values";
+} from "@ai-matrx/chat/mandates/host-values/host-values";
 import { HOST_VALUE_SITES, OPEN_SITE_CEILING } from "../sites";
 import { notesPileValues } from "@/features/notes/notes-assists-producer";
 import { overduePileValues } from "@/features/tasks/tasks-assists-producer";
@@ -59,10 +60,15 @@ describe("host-value sites guard", () => {
     const page = readFileSync(path.join(ROOT, "features/agents/studio/components/AgentStudioPage.tsx"), "utf8");
     const run = readFileSync(path.join(ROOT, "features/agents/studio/components/StudioRun.tsx"), "utf8");
     expect(page).toMatch(
-      /useMandateHostValues\(\s*ASSISTANT_MANDATE,\s*"agent_studio\.do_the_job_together",[\s\S]*?studio_mode[\s\S]*?studio_phase[\s\S]*?agent_id[\s\S]*?build_id[\s\S]*?\{\s*everyTurn:\s*true\s*\}/,
+      /useMandateHostValues\(\s*ASSISTANT_MANDATE,\s*"agent_studio\.do_the_job_together",[\s\S]*?studio_mode[\s\S]*?studio_phase[\s\S]*?agent_id[\s\S]*?build_id[\s\S]*?\{\s*everyTurn:\s*true,\s*hostSuppliesContext:\s*true\s*\}/,
     );
     expect(page).not.toMatch(/assistantVariables|mandateVariables/);
     expect(run).not.toMatch(/mandateVariables|registerConversationHooks|variablesRef/);
+  });
+
+  it("the channel is the package's, not a local copy", () => {
+    expect(existsSync(path.join(ROOT, "features/mandates/host-values/host-values.ts"))).toBe(false);
+    expect(existsSync(path.join(ROOT, "features/mandates/host-values/useMandateHostValues.ts"))).toBe(false);
   });
 
   it("the assist launch provides the chip's values and opens the mandate door", () => {

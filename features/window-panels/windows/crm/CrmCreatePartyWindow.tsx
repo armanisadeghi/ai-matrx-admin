@@ -8,6 +8,7 @@ import type { PartyKind } from "@/features/crm/types";
 import { CRM_CREATE_PARTY_SURFACE_NAME } from "@/features/surfaces/manifests/crm-create-party.manifest";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { expectNavigation } from "@ai-matrx/summon/url";
 
 export interface CrmCreatePartyWindowProps {
   isOpen: boolean;
@@ -58,7 +59,10 @@ export default function CrmCreatePartyWindow({
           onCreated={(partyId) => {
             onClose();
             const href = resolveEntityDoors("party", partyId).href;
-            if (href) router.push(href);
+            if (href) {
+      expectNavigation(href); // a window closes around this push: the overlay layer writes no address behind it
+      router.push(href);
+    }
           }}
         />
       </NonEditableContextMenu>

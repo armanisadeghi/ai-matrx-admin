@@ -2,7 +2,7 @@
 
 import { FileCode } from "lucide-react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import type {
   LibrarySourceAdapter,
   LoadedSourceEntry,
@@ -80,7 +80,7 @@ export const htmlPagesAdapter: LibrarySourceAdapter = {
     if (!userId) return [];
     const rows = (await HTMLPageService.getUserPages(
       userId,
-    )) as HtmlPageListRow[];
+    )) as unknown as HtmlPageListRow[];
     return (rows ?? []).map((row) => ({
       rowId: row.id,
       name: `${safeFilename(row.meta_title || "page")}.html`,
@@ -94,7 +94,7 @@ export const htmlPagesAdapter: LibrarySourceAdapter = {
     _supabase: SupabaseClient,
     rowId: string,
   ): Promise<LoadedSourceEntry> {
-    const row = (await HTMLPageService.getPage(rowId)) as HtmlPageFullRow;
+    const row = (await HTMLPageService.getPage(rowId)) as unknown as HtmlPageFullRow;
     if (!row?.id) {
       throw recordUnavailable({
         entity: "HTML page",
@@ -120,7 +120,7 @@ export const htmlPagesAdapter: LibrarySourceAdapter = {
     // Preserve existing metadata; only overwrite html_content.
     const existing = (await HTMLPageService.getPage(
       args.rowId,
-    )) as HtmlPageFullRow | null;
+    )) as unknown as HtmlPageFullRow | null;
     if (!existing?.id) {
       throw new RemoteConflictError("html_pages", args.rowId);
     }
@@ -167,7 +167,7 @@ export const htmlPagesAdapter: LibrarySourceAdapter = {
 
     const existing = (await HTMLPageService.getPage(
       args.rowId,
-    )) as HtmlPageFullRow | null;
+    )) as unknown as HtmlPageFullRow | null;
     if (!existing?.id) {
       throw new RemoteConflictError("html_pages", args.rowId);
     }

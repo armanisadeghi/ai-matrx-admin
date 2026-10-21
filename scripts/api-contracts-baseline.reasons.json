@@ -24,5 +24,10 @@
     "reason": "Pre-existing raw python-client import (stream-ticket, takeover, stream claim/renew on a foreign origin via requestRaw); 2026-10-17 Computer fix only added a view-mode option. Moving the whole Cloud Browser client to generated operations is its own change.",
     "accepted_by": "Armani Sadeghi",
     "date": "2026-10-17"
+  },
+  "features/spaces/io/NotionSyncBar.tsx": {
+    "reason": "Pre-existing postJson call to /notion-import/sync (a 202 waiting answer is read through it); no typed client covers this route yet",
+    "accepted_by": "Armani Sadeghi",
+    "date": "2026-10-21"
   }
 }
