@@ -55,6 +55,33 @@ let flushScheduled = false;
 /** Epoch ms of this page's first flush attempt — the identity-wait clock. */
 let firstFlushAt: number | null = null;
 const persistedIds = new Set<string>();
+/** Failed filing attempts per capture id, for the bounded transient retry. */
+const fileAttempts = new Map<string, number>();
+const MAX_FILE_ATTEMPTS = 5;
+const FILE_RETRY_BASE_MS = 15_000;
+
+/**
+ * The database or its API was briefly unreachable: the error is still worth filing, so try again.
+ * 2026-10-21: three captures failed to file with PGRST002 during a database stall and were dropped,
+ * so the server never saw the outage the page was showing.
+ */
+export function isTransientFilingFailure(failure: { code?: string | null; status?: number | null } | null): boolean {
+  if (!failure) return true; // a thrown fetch / network error
+  const code = failure.code ?? "";
+  if (/^PGRST00[0-3]$/.test(code) || code === "57014" || code === "55P03" || code.startsWith("08") || code === "53300") return true;
+  const status = failure.status ?? 0;
+  return status === 0 || status === 408 || status === 429 || status >= 502;
+}
+
+/** Un-mark a capture whose filing failed transiently and schedule another try; false once attempts run out. */
+function retryFiling(id: string): boolean {
+  const attempts = (fileAttempts.get(id) ?? 0) + 1;
+  fileAttempts.set(id, attempts);
+  if (attempts >= MAX_FILE_ATTEMPTS) return false;
+  persistedIds.delete(id);
+  scheduleFlush(FILE_RETRY_BASE_MS * attempts);
+  return true;
+}
 
 function scheduleFlush(delayMs: number): void {
   if (flushScheduled) return;
@@ -252,7 +279,7 @@ async function flush(): Promise<void> {
       // never a guess.
       const sourceFeature = sourceFeatureForRoute(e.route || e.url || null);
       if (isAuthenticated) {
-        const { error: rpcError } = await supabase.rpc("log_client_error", {
+        const { error: rpcError, status: rpcStatus } = await supabase.rpc("log_client_error", {
           // DD-115: every client names itself. The RPC used to stamp
           // `source_app='matrx-frontend'` on whoever called it, so extension and
           // desktop failures were triaged as web-app failures. Naming it here is
@@ -276,7 +303,11 @@ async function flush(): Promise<void> {
         });
         if (rpcError) {
           // Never silent: the error could not be filed. Not re-captured (that would loop).
-          console.warn(`[error-persistence] log_client_error refused: ${rpcError.message}`);
+          const retrying =
+            isTransientFilingFailure({ code: rpcError.code, status: rpcStatus }) && retryFiling(e.id);
+          console.warn(
+            `[error-persistence] log_client_error refused: ${rpcError.message}${retrying ? " (will retry)" : ""}`,
+          );
         }
       } else {
         const response = await fetch("/api/diagnostics/client-error", {
@@ -297,11 +328,13 @@ async function flush(): Promise<void> {
         });
         if (!response.ok) {
           // Never silent: the error could not be filed. Not re-captured (that would loop).
+          if (isTransientFilingFailure({ status: response.status })) retryFiling(e.id);
           console.warn(`[error-persistence] /api/diagnostics/client-error answered ${response.status}: ${await response.text().catch(() => "")}`);
         }
       }
     } catch (error) {
-      // Persistence never breaks the app — and never fails silently.
+      // Persistence never breaks the app — and never fails silently. A thrown call is a network failure: retry.
+      retryFiling(e.id);
       console.warn("[error-persistence] could not file a captured error", error);
     }
   }

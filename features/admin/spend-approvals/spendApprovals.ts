@@ -333,8 +333,31 @@ export async function decideSpendApproval(
     p_expires_at: fields.expiresAt ?? undefined,
     p_expected_status: fields.expectedStatus ?? undefined,
   });
-  if (error) throw pgErrorToError(error);
+  if (error) {
+    // PT409 is the door's "Not changed: … is now X, not Y" — the one refusal that means someone decided since.
+    if (fields.expectedStatus && error.code === STALE_STATUS_CODE) throw new ApprovalDecidedSinceError(error.message);
+    throw pgErrorToError(error);
+  }
   invalidateApprovalStatus();
+}
+
+/**
+ * SQLSTATE `billing.run_approval_decide` raises when `p_expected_status` no longer holds (nothing changed):
+ * HTTP 409, answered once. It was 40001 until 2026-10-21, which PostgREST retries without limit — eight
+ * stale "Approve again" calls looped ~6,000 times a minute and took the database down 15:40–15:59Z.
+ */
+const STALE_STATUS_CODE = "PT409";
+
+/**
+ * The decision was refused because the approval is no longer in the status the card showed. Every
+ * other failure (a timeout, the database unreachable, a permission refusal) stays a plain Error with
+ * its real reason, so a caller never reports an outage as "someone decided it since".
+ */
+export class ApprovalDecidedSinceError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ApprovalDecidedSinceError";
+  }
 }
 
 /** Put back the owner's own approval (status and expiry) that the volume rule paused: one call, one click. */
