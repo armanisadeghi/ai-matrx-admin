@@ -17,6 +17,8 @@ import { useEffect, useRef, useState } from "react";
 
 import type { RemoteCaret } from "@ai-matrx/office/docs";
 
+import { FLAG_HEIGHT, flagSlots } from "@/features/documents/components/caretFlagStack";
+
 interface Box {
   left: number;
   right: number;
@@ -123,7 +125,8 @@ export function RemoteDocCarets({ univer, unitId, carets }: { univer: Univer | n
 
   return (
     <div ref={root} className="pointer-events-none absolute inset-0 z-10 overflow-hidden" aria-hidden="true" data-remote-carets="">
-      {placed.map((p) => {
+      {placed.map((p, index) => {
+        const slot = flagSlots(placed.map((q) => q.caret))[index] ?? 0;
         const h = Math.max(p.caret.bottom - p.caret.top, 12);
         const flagBelow = p.caret.top < 18;
         return (
@@ -138,7 +141,7 @@ export function RemoteDocCarets({ univer, unitId, carets }: { univer: Univer | n
             <div className="absolute" style={{ left: p.caret.left - 1, top: p.caret.top, width: 2, height: h, backgroundColor: p.color }}>
               <span
                 className="absolute left-0 whitespace-nowrap rounded-sm px-1 text-[10px] font-medium leading-[14px] shadow-sm ring-1 ring-black/10 dark:ring-white/20"
-                style={{ [flagBelow ? "top" : "bottom"]: "100%", backgroundColor: p.color, color: textOn(p.color) }}
+                style={{ [flagBelow ? "top" : "bottom"]: `calc(100% + ${slot * FLAG_HEIGHT}px)`, backgroundColor: p.color, color: textOn(p.color) }}
               >
                 {p.name}
               </span>

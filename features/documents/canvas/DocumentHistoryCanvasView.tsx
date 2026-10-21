@@ -10,7 +10,7 @@ export default function DocumentHistoryCanvasView({ data }: CanvasKindProps) {
   const tab = readHistoryTab(data);
   if (!tab) return null;
   return (
-    <div className="h-full min-h-0 overflow-y-auto bg-background p-3">
+    <div className="h-full min-h-0 overflow-y-auto bg-background p-3" data-matrx-page-scroll="">
       <DocumentHistoryViewer documentId={tab.id} editable={tab.editable} />
     </div>
   );
