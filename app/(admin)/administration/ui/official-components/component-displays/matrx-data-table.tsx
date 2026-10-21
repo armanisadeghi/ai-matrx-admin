@@ -143,7 +143,7 @@ export default function MatrxDataTableDisplay({
         </p>
       </div>
 
-      <div className="h-[32rem] rounded-lg border border-border bg-textured p-3">
+      <div className="h-[32rem]">
         <MatrxDataTable
           urlState={{ id: "official-table-demo" }}
           data={data}

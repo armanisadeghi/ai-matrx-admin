@@ -2,7 +2,8 @@
 
 // A person's Acquisition tab: the ONE acquisition explorer narrowed to this person by prop
 // (pageWhere person = id; counted on the database, no roster read). The journey canvas opens from
-// the acquisition list focused on this person — its rows are identity rows, not user ids.
+// the acquisition list focused on this person — its rows are identity rows, not user ids. Copy for AI
+// (the page's one door) hands over what the explorer shows: its question, answers and window.
 
 import { ExternalLink } from "lucide-react";
 import AppLink from "@/components/navigation/AppLink";
@@ -13,7 +14,7 @@ export function userAcquisitionListHref(userId: string): string {
   return `/administration/users/acquisition?user=${encodeURIComponent(userId)}`;
 }
 
-export function UserAcquisitionTab({ userId }: UserTabBodyProps) {
+export function UserAcquisitionTab({ userId, shareForAi }: UserTabBodyProps) {
   return (
     <div className="flex flex-col gap-3" data-testid="user-acquisition-tab">
       <div className="flex justify-end">
@@ -21,7 +22,7 @@ export function UserAcquisitionTab({ userId }: UserTabBodyProps) {
           Open journey <ExternalLink className="h-3.5 w-3.5" />
         </AppLink>
       </div>
-      <UserAcquisitionExplorer focusUser={userId} />
+      <UserAcquisitionExplorer focusUser={userId} onShown={(shown) => shareForAi({ acquisition: shown })} />
     </div>
   );
 }

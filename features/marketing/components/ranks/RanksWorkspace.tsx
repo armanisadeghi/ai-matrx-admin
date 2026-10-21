@@ -510,7 +510,7 @@ function HistoryDialog({
         ) : (
           <div className="grid gap-4">
             <RankSparkline points={points} />
-            <div className="rounded-md border border-border p-2">
+            <div>
               <MatrxDataTable {...NO_RAW_ROW_WINDOW}
                 data={[...points].reverse()}
                 columns={historyColumns}
@@ -531,7 +531,7 @@ function HistoryDialog({
                     {formatDate(landscape.observed_at)})
                   </p>
                 </div>
-                <div className="rounded-md border border-border p-2">
+                <div>
                   <MatrxDataTable {...NO_RAW_ROW_WINDOW}
                     data={landscapeResults}
                     columns={[...(landscapeColumns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (result) => (

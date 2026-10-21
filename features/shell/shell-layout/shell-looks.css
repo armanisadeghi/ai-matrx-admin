@@ -53,10 +53,11 @@
   box-shadow: var(--look-tile-shadow, none);
 }
 
-.shell-root[data-shell-look="meet-matrx"]
-  :is(.shell-nav-item, .shell-mobile-nav-item)
-  > .shell-nav-icon:not([data-look-tile]):has(> svg, > span > svg)
-  svg {
+/* The glyph itself: being that child (or grandchild through a span) is the condition, so no :has()
+   here — a :has() above a bare `svg` subject made every DOM insertion restyle the phone page
+   (32 ms against 8 ms; review 6b, 2026-10-21). */
+.shell-root[data-shell-look="meet-matrx"] :is(.shell-nav-item, .shell-mobile-nav-item) > .shell-nav-icon:not([data-look-tile]) > svg,
+.shell-root[data-shell-look="meet-matrx"] :is(.shell-nav-item, .shell-mobile-nav-item) > .shell-nav-icon:not([data-look-tile]) > span > svg {
   width: 0.875rem;
   height: 0.875rem;
   color: #fff !important;

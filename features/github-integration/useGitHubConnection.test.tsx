@@ -18,7 +18,10 @@ jest.mock("./service", () => ({
   syncGitHubConnection: () => mockSync(),
   disconnectGitHubConnection: () => mockDisconnect(),
 }));
-import { useGitHubConnection } from "./useGitHubConnection";
+import {
+  resetGitHubConnectionReadForTests,
+  useGitHubConnection,
+} from "./useGitHubConnection";
 
 (
   globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -110,5 +113,40 @@ describe("GitHub connection action lifecycle", () => {
     });
     expect(mockStart).toHaveBeenCalledTimes(2);
     expect(container.textContent).toBe("idle");
+  });
+});
+
+describe("GitHub connection read", () => {
+  it("is ONE read for every caller on the page, not one per caller", async () => {
+    jest.clearAllMocks();
+    resetGitHubConnectionReadForTests();
+    mockLoad.mockResolvedValue({
+      connection: { status: "connected" },
+      account: null,
+      installations: [],
+      repositories: [],
+    });
+    const seen: Array<ReturnType<typeof useGitHubConnection>> = [];
+    function Caller({ index }: { index: number }) {
+      seen[index] = useGitHubConnection();
+      return null;
+    }
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    await act(async () =>
+      root.render(
+        <>
+          <Caller index={0} />
+          <Caller index={1} />
+          <Caller index={2} />
+        </>,
+      ),
+    );
+    expect(mockLoad).toHaveBeenCalledTimes(1);
+    for (const caller of seen) {
+      expect(caller.loading).toBe(false);
+      expect(caller.inventory.connection).toEqual({ status: "connected" });
+    }
+    await act(async () => root.unmount());
   });
 });

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ScraperDataUtils from '../utils/data-utils';
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
   const [activeSection, setActiveSection] = useState('overview');
@@ -223,12 +224,9 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
                   </svg>
                   Preview in SERP
                 </button>
-                <button className="flex items-center justify-center px-4 py-2 bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-md text-sm font-medium hover:bg-green-100 dark:hover:bg-green-800 transition-colors">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <ControlButton variant="success" icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                  </svg>
-                  Generate Meta Description
-                </button>
+                  </svg>}>Generate Meta Description</ControlButton>
                 <button className="flex items-center justify-center px-4 py-2 bg-purple-50 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-md text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
@@ -448,9 +446,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white">Schema Markup</h3>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Generate schema markup to help search engines understand your content.</p>
-                <button className="w-full px-4 py-2 bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-md text-sm font-medium hover:bg-green-100 dark:hover:bg-green-800 transition-colors">
-                  Generate Schema
-                </button>
+                <ControlButton variant="success" className="w-full">Generate Schema</ControlButton>
               </div>
             </div>
             
@@ -498,9 +494,7 @@ const SEOAnalysisPage = ({ overview = {}, structuredData = {} }) => {
               )}
               
               <div className="flex space-x-3">
-                <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium transition-colors">
-                  Generate FAQ Schema
-                </button>
+                <ControlButton variant="success">Generate FAQ Schema</ControlButton>
                 <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md text-sm font-medium transition-colors">
                   Preview
                 </button>

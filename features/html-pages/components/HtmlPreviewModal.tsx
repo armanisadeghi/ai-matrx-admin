@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { usePageSandbox } from "@/features/html-pages/utils/use-page-sandbox";
 
 // TODO: Fix loading inefficiency.
@@ -598,46 +599,8 @@ ${wordPressCSS}
               // Preview Tab
               <div className="h-full flex flex-col">
                 <div className="mb-3 flex justify-end gap-2">
-                  <button
-                    onClick={handleCopyHtml}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                      copied
-                        ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                        : "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                    }`}
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle2 size={16} />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        Copy HTML
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleCopyHtmlNoBullets}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                      copiedNoBullets
-                        ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                        : "bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 text-orange-700 dark:text-orange-300"
-                    }`}
-                  >
-                    {copiedNoBullets ? (
-                      <>
-                        <CheckCircle2 size={16} />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        Copy HTML No Bullet Styles
-                      </>
-                    )}
-                  </button>
+                  <ControlButton variant={copied ? "success" : "outline"} onClick={handleCopyHtml} icon={copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}>{copied ? "Copied!" : "Copy HTML"}</ControlButton>
+                  <ControlButton variant={copiedNoBullets ? "success" : "outline"} onClick={handleCopyHtmlNoBullets} icon={copiedNoBullets ? <CheckCircle2 size={16} /> : <Copy size={16} />}>{copiedNoBullets ? "Copied!" : "Copy HTML No Bullet Styles"}</ControlButton>
                 </div>
                 <iframe
                   srcDoc={getCurrentHtmlContent()}
@@ -657,46 +620,8 @@ ${wordPressCSS}
                   >
                     Select All
                   </button>
-                  <button
-                    onClick={handleCopyHtml}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                      copied
-                        ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                        : "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                    }`}
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle2 size={16} />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        Copy HTML
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleCopyHtmlNoBullets}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                      copiedNoBullets
-                        ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                        : "bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 text-orange-700 dark:text-orange-300"
-                    }`}
-                  >
-                    {copiedNoBullets ? (
-                      <>
-                        <CheckCircle2 size={16} />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        Copy HTML No Bullet Styles
-                      </>
-                    )}
-                  </button>
+                  <ControlButton variant={copied ? "success" : "outline"} onClick={handleCopyHtml} icon={copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}>{copied ? "Copied!" : "Copy HTML"}</ControlButton>
+                  <ControlButton variant={copiedNoBullets ? "success" : "outline"} onClick={handleCopyHtmlNoBullets} icon={copiedNoBullets ? <CheckCircle2 size={16} /> : <Copy size={16} />}>{copiedNoBullets ? "Copied!" : "Copy HTML No Bullet Styles"}</ControlButton>
                 </div>
                 <textarea
                   ref={textareaRef}
@@ -720,26 +645,7 @@ ${wordPressCSS}
                     >
                       Select All
                     </button>
-                    <button
-                      onClick={handleCopyCSS}
-                      className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                        copiedCSS
-                          ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                          : "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                      }`}
-                    >
-                      {copiedCSS ? (
-                        <>
-                          <CheckCircle2 size={16} />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <FileCode size={16} />
-                          Copy CSS
-                        </>
-                      )}
-                    </button>
+                    <ControlButton variant={copiedCSS ? "success" : "outline"} onClick={handleCopyCSS} icon={copiedCSS ? <CheckCircle2 size={16} /> : <FileCode size={16} />}>{copiedCSS ? "Copied!" : "Copy CSS"}</ControlButton>
                   </div>
                 </div>
                 <textarea
@@ -804,26 +710,7 @@ ${wordPressCSS}
                   </div>
 
                   <div className="text-center">
-                    <button
-                      onClick={handleCopyCustom}
-                      className={`inline-flex items-center gap-3 px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
-                        copiedCustom
-                          ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                          : "bg-blue-600 hover:bg-blue-700 text-white"
-                      }`}
-                    >
-                      {copiedCustom ? (
-                        <>
-                          <CheckCircle2 size={18} />
-                          Copied to Clipboard!
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={18} />
-                          Copy Custom HTML
-                        </>
-                      )}
-                    </button>
+                    <ControlButton variant={copiedCustom ? "success" : "primary"} onClick={handleCopyCustom} icon={copiedCustom ? <CheckCircle2 size={18} /> : <Copy size={18} />}>{copiedCustom ? "Copied to Clipboard!" : "Copy Custom HTML"}</ControlButton>
 
                     {!includeBulletStyles && !includeDecorativeLineBreaks && (
                       <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
@@ -1478,26 +1365,7 @@ ${wordPressCSS}
                     >
                       Select All
                     </button>
-                    <button
-                      onClick={handleCopyComplete}
-                      className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                        copiedComplete
-                          ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                          : "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                      }`}
-                    >
-                      {copiedComplete ? (
-                        <>
-                          <CheckCircle2 size={16} />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Globe size={16} />
-                          Copy Complete HTML
-                        </>
-                      )}
-                    </button>
+                    <ControlButton variant={copiedComplete ? "success" : "outline"} onClick={handleCopyComplete} icon={copiedComplete ? <CheckCircle2 size={16} /> : <Globe size={16} />}>{copiedComplete ? "Copied!" : "Copy Complete HTML"}</ControlButton>
                   </div>
                 </div>
                 <textarea

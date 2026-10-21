@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import React, { useRef } from "react";
 import { Globe, CheckCircle2 } from "lucide-react";
 import type { HtmlPreviewTabProps } from "../types";
@@ -27,26 +28,7 @@ export function CompleteHtmlTab({ state, actions }: HtmlPreviewTabProps) {
                     >
                         Select All
                     </button>
-                    <button
-                        onClick={actions.handleCopyComplete}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                            state.copiedComplete
-                                ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                                : "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                        }`}
-                    >
-                        {state.copiedComplete ? (
-                            <>
-                                <CheckCircle2 size={16} />
-                                Copied!
-                            </>
-                        ) : (
-                            <>
-                                <Globe size={16} />
-                                Copy Complete HTML
-                            </>
-                        )}
-                    </button>
+                    <ControlButton variant={state.copiedComplete ? "success" : "outline"} onClick={actions.handleCopyComplete} icon={state.copiedComplete ? <CheckCircle2 size={16} /> : <Globe size={16} />}>{state.copiedComplete ? "Copied!" : "Copy Complete HTML"}</ControlButton>
                 </div>
             </div>
             <textarea

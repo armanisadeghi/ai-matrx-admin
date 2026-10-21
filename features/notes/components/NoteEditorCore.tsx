@@ -28,7 +28,7 @@
 // - Conflict resolution UI
 
 import { useLoadMark } from "@/lib/diagnostics/loadMark";
-import React, { useRef, useCallback, useEffect, useLayoutEffect, useState } from "react";
+import React, { useRef, useCallback, useDeferredValue, useEffect, useLayoutEffect, useState } from "react";
 import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
 import { createMarkdownImageUpload } from "@ai-matrx/rich-content/editor/format/markdown-image-upload";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
@@ -282,8 +282,11 @@ export function NoteEditorCore({
   useLoadMark("Notes editor on screen", "heavy", { home: ["/notes"] });
   // Plain is an editing view. A person who may only READ the note gets the
   // canonical rendered view, never its raw source (round 6, R6).
+  // A view switch paints the switch at once and draws the new view in a background render React
+  // can yield out of (review 6b: Write → Read drew the whole note inside the click, 290–470 ms).
+  const switchedEditorMode = useDeferredValue(requestedEditorMode);
   const editorMode: EditorMode =
-    readOnly && requestedEditorMode === "plain" ? "preview" : requestedEditorMode;
+    readOnly && switchedEditorMode === "plain" ? "preview" : switchedEditorMode;
   // Full-page surfaces end with THE PAGE RUNWAY (styles/shell.css
   // --matrx-page-runway: the last line scrolls to about half the screen, never
   // under what floats); embedded/tile surfaces must NOT (it balloons content

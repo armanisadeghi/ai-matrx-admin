@@ -3,33 +3,33 @@
 import { useEffect, useState } from "react";
 import { Crown } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
 import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
 
 /**
- * Crown affordance in the main sidebar footer — the creator analogue of the
- * admin Bug. Visible to creators (so they can open the hub and enable creator
- * mode); toggles the global `creatorHub` overlay, matching the admin Bug's
- * toggle semantics.
+ * Crown affordance in the admin block of the sidebar footer; toggles the
+ * global `creatorHub` overlay, matching the admin Bug's toggle semantics.
+ *
+ * 🚨 THE FOOTER NEVER CHANGES HEIGHT WITH THE PAGE (2026-10-21). It rendered only
+ * while `creatorDebug.isCreator` — "you made the agent on screen" — so every chat
+ * switch between agents added or removed a 27 px row and moved the whole history
+ * list above it. It lives only in the admin block (AdminSidebarSectionImpl), so it
+ * is always there for the admin who sees that block.
  */
 export default function SidebarCreatorHubToggle() {
   const dispatch = useAppDispatch();
-  const isCreator = useAppSelector(selectIsCreator);
   const isOpen = useAppSelector((state) =>
     selectIsOverlayOpen(state, "creatorHub"),
   );
 
-  // `creatorDebug.isCreator` is set client-side by `useCreatorOwnershipSync`
-  // (post-mount effect), so on first render it is always false. Defer the
-  // show/hide gate to post-hydration to guarantee SSR and the first client
-  // commit agree — otherwise this toggle and the sibling admin toggle can
-  // swap DOM positions during hydration and crash the tree.
+  // Post-hydration only, so SSR and the first client commit agree (the sibling
+  // admin toggles hydrate the same way); the footer's pre-paint reserve
+  // (admin-footer-reserve.ts) holds its measured height, so this never shifts.
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     setHydrated(true);
   }, []);
 
-  if (!hydrated || !isCreator) return null;
+  if (!hydrated) return null;
 
   return (
     <button

@@ -5,12 +5,12 @@
 // its row actions, each asking a reason through the one reason prompt and writing
 // admin.admin_audit_log inside its SQL function: iam.end_session (one sign-in),
 // iam.remove_mfa_factor, iam.revoke_api_key_for_person. Sign out everywhere is the page's
-// registered action (useUserActions). There is NO sign-in history anywhere
-// (auth.audit_log_entries stopped being written on 2026-08-20; lane Q, 21-contract.md), so the
-// old "Recent sign-ins" — the live sessions re-sorted — is gone: Active sessions is the truth.
+// registered action (useUserActions). Sign-in history is its own read (admin.user_sign_ins over
+// iam.sign_in_event, captured by auth triggers since 2026-10-21 — UserSignInHistory); Active sessions
+// lists only the sign-ins still live.
 
 import { useEffect, useState, type ReactNode } from "react";
-import { Fingerprint, KeyRound, LogOut, MonitorSmartphone, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
+import { Fingerprint, History, KeyRound, LogOut, MonitorSmartphone, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
 import { ErrorNotice, readOf } from "@ai-matrx/design-system";
 import { Badge, Button, PropertyRow, RegionSkeleton, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -24,6 +24,7 @@ import { createClient } from "@/utils/supabase/client";
 import { isJsonObject, type JsonObject } from "@/types/json";
 import { toast } from "@/lib/toast";
 import { useRecordLoad } from "./useRecordLoad";
+import { UserSignInHistory, deviceOf } from "./UserSignInHistory";
 import { useReasonPrompt } from "./useReasonPrompt";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
 import { personTitle } from "./userOverview";
@@ -159,37 +160,6 @@ function when(iso: string | null | undefined): string | null {
   return iso
     ? new Date(iso).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
     : null;
-}
-
-/** "Chrome on Mac" from a user agent; the full string stays in the cell's tooltip. */
-export function deviceOf(ua: string | null | undefined): string {
-  if (!ua) return "Unknown device";
-  const browser = /Edg\//.test(ua)
-    ? "Edge"
-    : /OPR\//.test(ua)
-      ? "Opera"
-      : /Firefox\//.test(ua)
-        ? "Firefox"
-        : /Chrome\//.test(ua)
-          ? "Chrome"
-          : /Safari\//.test(ua)
-            ? "Safari"
-            : /node|undici|python|curl|axios|okhttp|Go-http/i.test(ua)
-              ? "Script"
-              : null;
-  const os = /iPhone|iPad|iOS/.test(ua)
-    ? "iOS"
-    : /Android/.test(ua)
-      ? "Android"
-      : /Mac OS X|Macintosh/.test(ua)
-        ? "Mac"
-        : /Windows/.test(ua)
-          ? "Windows"
-          : /Linux/.test(ua)
-            ? "Linux"
-            : null;
-  if (browser && os) return `${browser} on ${os}`;
-  return browser ?? os ?? ua.slice(0, 40);
 }
 
 const FACTOR_LABEL: Record<string, string> = { totp: "Authenticator app", phone: "Phone (SMS)", webauthn: "Passkey" };
@@ -489,6 +459,10 @@ export function UserSecurityTab({ userId, overview, version: pageVersion, reload
             },
           ]}
         />
+      </Section>
+
+      <Section title="Sign-in history" icon={History}>
+        <UserSignInHistory userId={userId} version={pageVersion + version} />
       </Section>
 
       <Section title="API keys" icon={KeyRound}>

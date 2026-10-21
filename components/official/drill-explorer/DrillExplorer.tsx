@@ -165,6 +165,7 @@ export function DrillExplorer({
   pageWindow,
   base,
   surfaceName,
+  onShown,
 }: DrillExplorerProps) {
   // THE FIXED BASE (lane DRILL-PRIMITIVE-3) narrows every ask like the page's own filters, and is said as crumbs.
   const baseKey = JSON.stringify(base ?? []);
@@ -356,6 +357,12 @@ export function DrillExplorer({
     ...(carriedSaid.kept ? [carriedSaid.kept] : []),
     ...(carriedSaid.leftOut ? [carriedSaid.leftOut] : []),
   ];
+
+  // WHAT IS ON SCREEN, for the host's Copy for AI (onShown). A host stores it (a ref), so saying it
+  // again after a render costs nothing and never re-renders.
+  useEffect(() => {
+    onShown?.({ title, question, answers, whole, range, countedThrough, says, conditions });
+  }, [onShown, title, question, answers, whole, range, countedThrough, says, conditions]);
 
   // WHAT THE OPEN BUILT-IN VIEW DECLARES BEYOND ITS QUESTION (lane DRILL-FLIP-FIXES): its glance columns
   // (R2, while its grouping is on screen) and its stacked Measures (L3, while it shows them all).

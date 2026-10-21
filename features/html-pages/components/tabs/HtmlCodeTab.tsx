@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import React, { useRef } from "react";
 import { Copy, CheckCircle2 } from "lucide-react";
 import type { HtmlPreviewTabProps } from "../types";
@@ -23,46 +24,8 @@ export function HtmlCodeTab({ state, actions }: HtmlPreviewTabProps) {
                 >
                     Select All
                 </button>
-                <button
-                    onClick={actions.handleCopyHtml}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                        state.copied
-                            ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                            : "bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300"
-                    }`}
-                >
-                    {state.copied ? (
-                        <>
-                            <CheckCircle2 size={16} />
-                            Copied!
-                        </>
-                    ) : (
-                        <>
-                            <Copy size={16} />
-                            Copy HTML
-                        </>
-                    )}
-                </button>
-                <button
-                    onClick={actions.handleCopyHtmlNoBullets}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
-                        state.copiedNoBullets
-                            ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                            : "bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 text-orange-700 dark:text-orange-300"
-                    }`}
-                >
-                    {state.copiedNoBullets ? (
-                        <>
-                            <CheckCircle2 size={16} />
-                            Copied!
-                        </>
-                    ) : (
-                        <>
-                            <Copy size={16} />
-                            Copy HTML No Bullet Styles
-                        </>
-                    )}
-                </button>
+                <ControlButton variant={state.copied ? "success" : "outline"} onClick={actions.handleCopyHtml} icon={state.copied ? <CheckCircle2 size={16} /> : <Copy size={16} />}>{state.copied ? "Copied!" : "Copy HTML"}</ControlButton>
+                <ControlButton variant={state.copiedNoBullets ? "success" : "outline"} onClick={actions.handleCopyHtmlNoBullets} icon={state.copiedNoBullets ? <CheckCircle2 size={16} /> : <Copy size={16} />}>{state.copiedNoBullets ? "Copied!" : "Copy HTML No Bullet Styles"}</ControlButton>
             </div>
             <textarea
                 ref={textareaRef}

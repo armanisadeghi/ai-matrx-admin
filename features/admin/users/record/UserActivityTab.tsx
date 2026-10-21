@@ -30,6 +30,7 @@ import { Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-syste
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import AppLink from "@/components/navigation/AppLink";
 import { ScopedPersonRef } from "./ScopedPersonRef";
+import { ActivityRecordDoor, isPeekRecordType } from "./ActivityRecordDoor";
 import { adminActionWords } from "../lib/adminActionWords";
 import { useRecordLoad } from "./useRecordLoad";
 import {
@@ -90,10 +91,21 @@ function ActivityRow({ item, personId, scope }: { item: ActivityItem; personId: 
   const byOther = item.actor_id && item.actor_id !== personId ? item.actor_id : null;
   // Admin rows read in the Admin history tab's words (one formatter for the same audit row).
   const words = item.kind === "admin" || item.kind === "org_admin" ? adminActionWords(item.title) : item.title;
+  const peekType = !href && scope.kind !== "organization" && item.record?.id && isPeekRecordType(item.record.type) ? item.record.type : null;
   const title = href ? (
     <AppLink href={href} className="truncate font-medium text-foreground hover:text-primary">
       {words}
     </AppLink>
+  ) : peekType && item.record?.id ? (
+    <ActivityRecordDoor
+      type={peekType}
+      id={item.record.id}
+      trigger={
+        <button type="button" className="truncate text-left font-medium text-foreground hover:text-primary" data-testid="user-activity-peek">
+          {words}
+        </button>
+      }
+    />
   ) : (
     <span className="truncate font-medium text-foreground">{words}</span>
   );

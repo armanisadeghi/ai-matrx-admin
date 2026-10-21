@@ -156,11 +156,12 @@ function MediaPicker({ req }: { req: PickerRequest }) {
       role="dialog"
       aria-label={provider ? provider.title : `Add ${req.kind}`}
     >
-      <div className="flex items-center border-b border-border px-2">
+      <div className="flex items-center border-b border-border">
         {linkOnly ? (
-          <span className="px-2 py-2 text-sm font-medium">{provider ? provider.title : req.kind === "bookmark" ? "Bookmark" : "Embed link"}</span>
+          <span className="px-3 py-2 text-sm font-medium">{provider ? provider.title : req.kind === "bookmark" ? "Bookmark" : "Embed link"}</span>
         ) : (
           <Tabs
+            inset
             aria-label="Media source"
             value={tab}
             onValueChange={setTab}

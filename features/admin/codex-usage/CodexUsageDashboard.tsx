@@ -598,7 +598,7 @@ export function CodexUsageDashboard() {
             </section>
           ) : null}
 
-          <section className="min-w-0 rounded-lg border bg-card">
+          <section className="min-w-0">
             <MatrxDataTable<CodexCell>
               tableId="admin/codex-usage/usage"
               data={cells}

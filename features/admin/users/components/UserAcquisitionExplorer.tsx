@@ -12,6 +12,7 @@ import type { DrillSource } from "@ai-matrx/records";
 import type { MatrxDrillQuestion } from "@ai-matrx/design-system/data-table";
 
 import { DrillExplorer } from "@/components/official/drill-explorer/DrillExplorer";
+import type { DrillExplorerShown } from "@/components/official/drill-explorer/types";
 import { drillClientFor } from "@/components/official/drill-explorer/useDrillExplorer";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { usageNameResolver } from "@/features/admin/usage-drill/useUsageDrill";
@@ -30,7 +31,14 @@ const FIRST_QUESTION: MatrxDrillQuestion = {
   window: "30d",
 };
 
-export function UserAcquisitionExplorer({ focusUser }: { focusUser: string | null }) {
+export function UserAcquisitionExplorer({
+  focusUser,
+  onShown,
+}: {
+  focusUser: string | null;
+  /** What the explorer shows, for a host's Copy for AI. */
+  onShown?: (shown: DrillExplorerShown) => void;
+}) {
   return (
     <DrillExplorer
       source={USER_ACQUISITION_SOURCE}
@@ -48,6 +56,7 @@ export function UserAcquisitionExplorer({ focusUser }: { focusUser: string | nul
       location="Administration › User acquisition"
       {...(focusUser ? { pageWhere: { person: [focusUser] } } : {})}
       dataAttributes={{ "data-user-acquisition-explorer": "platform" }}
+      {...(onShown ? { onShown } : {})}
     />
   );
 }

@@ -12,6 +12,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
@@ -127,26 +128,21 @@ export function SavePageTab({ state, actions, user }: HtmlPreviewTabProps) {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
+                <ControlButton
+                  variant={refreshSuccess ? "success" : "quiet"}
                   onClick={handleRefreshMetadata}
                   disabled={isRefreshing}
-                  className={`p-2 rounded-lg transition-all ${
-                    refreshSuccess
-                      ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                      : isRefreshing
-                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 cursor-wait"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                  }`}
-                  title="Refresh metadata from current HTML"
-                >
-                  {refreshSuccess ? (
-                    <CheckCircle2 className="h-4 w-4" />
-                  ) : (
-                    <RefreshCw
-                      className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-                    />
-                  )}
-                </button>
+                  aria-label="Refresh metadata from current HTML"
+                  icon={
+                    refreshSuccess ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <RefreshCw
+                        className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                      />
+                    )
+                  }
+                />
               </TooltipTrigger>
               <TooltipContent>
                 <p>

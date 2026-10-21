@@ -603,7 +603,7 @@ function ToolsAnalysis({
       </section>
 
       {pairs.length > 0 && (
-        <section className="rounded-lg border border-border bg-card">
+        <section>
           <MatrxDataTable<PairRow>
             data={pairRows}
             columns={PAIR_COLUMNS}
