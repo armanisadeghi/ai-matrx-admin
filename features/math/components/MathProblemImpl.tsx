@@ -145,6 +145,17 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
                             )}
                         </div>
                     )}
+                    {/* The question itself, as written: a block that opens on a bare "Start" hides what it asks (review 5, G12). */}
+                    {embedded && problem_statement?.text && (
+                        <p className="text-sm text-foreground" data-math-statement="">
+                            <InlineMathText text={problem_statement.text} />
+                        </p>
+                    )}
+                    {embedded && problem_statement?.equation && (
+                        <div className="overflow-x-auto">
+                            <DisplayMath math={problem_statement.equation} />
+                        </div>
+                    )}
                     {/* Only the facts that are there: an empty Course / Topic / Module tile says nothing (review 2 N2). */}
                     {metaTiles.length > 0 && (
                         <div className={`grid gap-2 ${["grid-cols-1", "grid-cols-2", "grid-cols-3"][metaTiles.length - 1]}`}>
@@ -178,12 +189,16 @@ const MathProblemImpl: React.FC<MathProblemProps> = ({
                     <p className="text-sm text-amber-900 dark:text-amber-100 mb-2">
                         <InlineMathText text={problem_statement.text} />
                     </p>
-                    <div className="bg-white/70 dark:bg-gray-900/70 rounded-lg p-2 mb-2 overflow-x-auto">
-                        <DisplayMath math={problem_statement.equation} />
-                    </div>
-                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                        <InlineMathText text={problem_statement.instruction} />
-                    </p>
+                    {problem_statement.equation && (
+                        <div className="bg-white/70 dark:bg-gray-900/70 rounded-lg p-2 mb-2 overflow-x-auto">
+                            <DisplayMath math={problem_statement.equation} />
+                        </div>
+                    )}
+                    {problem_statement.instruction && (
+                        <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                            <InlineMathText text={problem_statement.instruction} />
+                        </p>
+                    )}
                 </div>
             );
         }

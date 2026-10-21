@@ -29,3 +29,12 @@ it("both badge shapes take their left from the measured start of the page, never
   expect(badge).not.toMatch(/sm:left-4/);
   expect(badge.match(/sm:left-\[var\(--error-badge-left,1rem\)\]/g) ?? []).toHaveLength(2);
 });
+
+it("on a phone both badge shapes rest in the left gutter and never cover content (review 5, G8)", () => {
+  const badge = readFileSync(join(__dirname, "..", "ErrorInspectorBadge.tsx"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  // Not a pill at left-3 over the text: flush left, a few px wide, only below the sm breakpoint.
+  expect(badge).not.toMatch(/ left-3 /);
+  expect(badge.match(/ left-0 /g) ?? []).toHaveLength(2);
+  expect(badge).toContain("max-sm:w-3.5");
+  expect(badge).toContain("max-sm:w-3 ");
+});

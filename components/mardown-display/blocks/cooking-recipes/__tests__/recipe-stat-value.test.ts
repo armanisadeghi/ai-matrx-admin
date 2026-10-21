@@ -1,5 +1,5 @@
 /** Review 4, F7: a recipe time says its label once ("Prep 10 minutes", never "Prep / 10 minutes prep"). */
-import { recipeStatValue } from "../cookingRecipeDisplay";
+import { recipeStatValue, stepRepeatsItsAction } from "../cookingRecipeDisplay";
 
 const PREP = ["prep", "preparation", "prep time"];
 const COOK = ["cook", "cooking", "cook time", "cooking time"];
@@ -15,5 +15,13 @@ describe("recipeStatValue", () => {
     [undefined, PREP, ""],
   ])("%p → %p", (raw, words, expected) => {
     expect(recipeStatValue(raw as string | undefined, words)).toBe(expected);
+  });
+});
+
+describe("a step says itself once (review 5, G13)", () => {
+  it("a step with no bold action is not its own heading and body", () => {
+    expect(stepRepeatsItsAction({ action: "Mix for", description: "Mix for 3 minutes" })).toBe(true);
+    expect(stepRepeatsItsAction({ action: "Whisk", description: "Whisk the eggs until pale" })).toBe(true);
+    expect(stepRepeatsItsAction({ action: "Bake", description: "Put it in the oven for 20 minutes" })).toBe(false);
   });
 });

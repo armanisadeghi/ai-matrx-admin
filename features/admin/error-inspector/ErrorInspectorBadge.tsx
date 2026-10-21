@@ -51,17 +51,20 @@ export default function ErrorInspectorBadge() {
         style={placeStyle}
         onClick={toggle}
         title={`${red} error${red === 1 ? "" : "s"} captured — open Error Inspector`}
+        aria-label={`${red} error${red === 1 ? "" : "s"} captured — open Error Inspector`}
         data-error-inspector-badge=""
         className={cn(
           // Mobile sits ABOVE the bottom band where composers/action bars live
           // — at bottom-4 it covered a composer's controls (2026-08-16).
-          "fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] left-3 z-[60] flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-lg sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] sm:left-[var(--error-badge-left,1rem)]",
+          "fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] left-0 z-[60] flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-lg max-sm:h-7 max-sm:w-3.5 max-sm:justify-center max-sm:gap-0 max-sm:rounded-l-none max-sm:px-0 max-sm:py-0 max-sm:[&>*:not([data-phone-dot])]:hidden sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] sm:left-[var(--error-badge-left,1rem)]",
           "bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-colors",
           unseenRed > 0
             ? "border-destructive/50 text-destructive animate-pulse"
             : "border-border text-muted-foreground hover:text-foreground hover:bg-muted",
         )}
       >
+        {/* On a phone the badge is a slim tab in the page's left gutter (content starts 16px in): it never covers content. */}
+        <span data-phone-dot="" aria-hidden className="hidden h-2 w-2 rounded-full bg-destructive max-sm:block" />
         <AlertTriangle className="h-3.5 w-3.5" />
         <span className="text-xs font-semibold tabular-nums">{red}</span>
         <span className="text-[11px] font-medium hidden sm:inline">
@@ -86,11 +89,11 @@ export default function ErrorInspectorBadge() {
         title={`${orange} minor issue${orange === 1 ? "" : "s"} — open Error Inspector`}
         aria-label="Open Error Inspector"
         data-error-inspector-badge=""
-        className="fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] left-3 z-[60] flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-transform hover:scale-110 sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] sm:left-[var(--error-badge-left,1rem)]"
+        className="fixed bottom-[calc(6rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] left-0 z-[60] flex h-5 w-5 items-center justify-center rounded-full border border-border max-sm:w-3 max-sm:rounded-l-none max-sm:border-l-0 bg-card/95 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-transform hover:scale-110 sm:bottom-[calc(1rem+var(--page-bottom-dock-h,0px)+var(--error-badge-lift,0px))] sm:left-[var(--error-badge-left,1rem)]"
       >
         <span
           className={cn(
-            "h-2.5 w-2.5 rounded-full bg-amber-500",
+            "h-2.5 w-2.5 rounded-full bg-amber-500 max-sm:h-2 max-sm:w-2",
             unseenOrange > 0 && "animate-pulse",
           )}
         />
