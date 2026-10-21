@@ -131,9 +131,19 @@ describe("the transfer dialog", () => {
     expect(dialog.textContent).toContain("You cannot open it");
     expect(dialog.textContent).toContain("stays on as an editor");
     // the default recipient is the viewer, never the current owner
-    const to = q("[data-transfer-to]") as HTMLSelectElement;
-    expect(to.value).toBe(ME);
-    expect(Array.from(to.options).map((o) => o.value)).not.toContain(DR);
+    const to = q("[data-transfer-to]") as HTMLElement;
+    expect(to.getAttribute("data-value")).toBe(ME);
+    const trigger = to.querySelector('[aria-label="New owner"]') as HTMLElement;
+    expect(trigger.textContent).toContain(people.find((p) => p.id === ME)!.name);
+    expect(trigger.textContent).not.toContain("Dr. Reyes");
+    // the offered recipients never include the current owner
+    // the canonical Select is a Radix menu: it opens from the keyboard (or a pointerdown), not a bare click
+    act(() => trigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+    await flush();
+    const offered = Array.from(document.querySelectorAll('[role="option"], [role="menuitemradio"], [role="menuitem"]')).map((o) => o.textContent ?? "");
+    expect(offered.length).toBeGreaterThan(0);
+    expect(offered.some((t) => t.includes("Dr. Reyes"))).toBe(false);
+    act(() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
 
     // no reason: said, not sent
     act(() => (q("[data-transfer-go]") as HTMLButtonElement).click());

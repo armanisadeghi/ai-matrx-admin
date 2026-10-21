@@ -155,13 +155,18 @@ export function TransferTableOwnership({
         {loaded.state === "ready" && n > 0 && !done && (
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="transfer-to">New owner</Label>
-              <Select
-                value={to}
-                onValueChange={setTo}
-                aria-label="New owner"
-                options={recipients.map((p) => ({ value: p.id, label: p.name }))}
-              />
+              {/* The canonical Select takes no id, so the label names it through aria-label (a
+                  htmlFor here pointed at nothing once the native select was replaced). The wrapper
+                  states the chosen recipient for the page's own checks. */}
+              <Label>New owner</Label>
+              <div data-transfer-to data-value={to}>
+                <Select
+                  value={to}
+                  onValueChange={setTo}
+                  aria-label="New owner"
+                  options={recipients.map((p) => ({ value: p.id, label: p.name }))}
+                />
+              </div>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="transfer-reason">Why</Label>
