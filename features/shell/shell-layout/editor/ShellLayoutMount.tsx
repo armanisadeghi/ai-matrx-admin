@@ -9,7 +9,7 @@
 // open for ~1.3 s on a cold page (2026-10-19).
 import type { ReactNode } from "react";
 import { RecordsProvider } from "@ai-matrx/records/react";
-import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
+import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/appRecordsConfig";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 export function ShellLayoutMount({ organizationId, children }: { organizationId?: string | null; children: ReactNode }) {

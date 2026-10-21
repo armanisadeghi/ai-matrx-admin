@@ -25,14 +25,14 @@ import { useBackendApi } from "@/hooks/useBackendApi";
 import { RecordBodyEditor } from "@/features/data-tables/records-ui-host/RecordBodyEditor";
 import { RecordBodySpace } from "@/features/spaces/embed/RecordBodySpace";
 import { IconResolver } from "@ai-matrx/icons";
-import { useCallback, useLayoutEffect, useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, type ReactNode } from "react";
 import { writeSyncedCell } from "@/features/unified-data/connect-database/service";
 import { extractErrorMessage } from "@/utils/errors";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 import { useRecordsDataSource, type RecordsDataSource } from "./recordsDataSource";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { personActor, setPersonTimeZone, tableRightsAt } from "@ai-matrx/records-ui/helpers";
+import { personActor, tableRightsAt } from "@ai-matrx/records-ui/helpers";
 import type { AgentBuildAsk, OpenRecordsAsk, RecordsUiHost, TableAskRequest } from "@ai-matrx/records-ui";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 
@@ -67,7 +67,6 @@ import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { currentPointsRate } from "@/components/cost/pointsRate";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createRecordsPresencePort } from "@ai-matrx/records/realtime";
-import { createRecordsRealtimePort } from "@ai-matrx/records/realtime";
 import type { DataBuildOrAskOffer } from "@ai-matrx/agents/generated/provision-offers";
 
 
@@ -479,56 +478,4 @@ export function useRecordsUiPorts({
   return { members, onAskForOne, openRecords, navigate, runAgentAction, askTable, enrich, organizationId, linkRecord, presence };
 }
 
-
-
-/**
- * ONE PORT PER ORGANIZATION, SO THE SAME ORGANIZATION IS THE SAME PORT (lane PANEL-REMOUNT,
- * 2026-09-24). `<RecordsProvider>` rebuilds its records client when `config.realtime` changes
- * identity, and the /data pages build `config` on every render of the page, so a fresh port
- * per call re-read the whole grid on any `?panels=` / `?view=` write. The package's port
- * (`@ai-matrx/records/realtime`) binds the AMBIENT manager `providers/RealtimeHost.tsx` mounts.
- */
-const realtimePortsByOrganization = new Map<string, ReturnType<typeof createRecordsRealtimePort>>();
-
-function realtimePortFor(organizationId: string): ReturnType<typeof createRecordsRealtimePort> {
-  let port = realtimePortsByOrganization.get(organizationId);
-  if (!port) {
-    port = createRecordsRealtimePort();
-    realtimePortsByOrganization.set(organizationId, port);
-  }
-  return port;
-}
-
-/** The `config` every records-ui mount takes (`RecordsMount` / `RecordsProvider`). */
-export interface AppRecordsConfig {
-  dataSource: DataSource;
-  actor: ReturnType<typeof personActor>;
-  organizationId: string | null;
-  /** Live updates for the organization's tables; absent only while there is no organization. */
-  realtime?: ReturnType<typeof createRecordsRealtimePort>;
-}
-
-/**
- * THE ONE RECORDS CONFIG. Every records-ui mount in the app takes its `config` from here:
- * the data seam, the signed-in person as actor, the organization, and the live-updates port
- * (one per organization, so the same organization is the same port). Never hand-build one.
- */
-export function useAppRecordsConfig(organizationId: string | null): AppRecordsConfig {
-  const dataSource = useRecordsDataSource();
-  const userId = useAppSelector(selectUserId);
-  // THE PERSON'S ZONE reaches every records-ui screen (calendar today, now-line, date picker) here: every
-  // records mount builds its config through this hook, so the saved zone is mirrored once, in one place.
-  const personZone = usePersonTimeZone();
-  useLayoutEffect(() => {
-    setPersonTimeZone(personZone);
-  }, [personZone]);
-  return useMemo(
-    () => ({
-      dataSource,
-      actor: personActor(userId),
-      organizationId,
-      ...(organizationId ? { realtime: realtimePortFor(organizationId) } : {}),
-    }),
-    [dataSource, userId, organizationId],
-  );
-}
+export { useAppRecordsConfig, type AppRecordsConfig } from "./appRecordsConfig";
