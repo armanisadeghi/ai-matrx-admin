@@ -152883,6 +152883,21 @@ export type Database = {
         Args: { p_binding: Json; p_operation: string; p_previous?: Json }
         Returns: Json
       }
+      reconcile_connection_product_shares: {
+        Args: { p_connection: string }
+        Returns: undefined
+      }
+      set_connection_product_share: {
+        Args: {
+          p_actor: string
+          p_add: boolean
+          p_connection: string
+          p_grantee: string
+          p_kind: string
+          p_product: string
+        }
+        Returns: undefined
+      }
       set_last_active_organization: {
         Args: { p_organization_id: string }
         Returns: string
