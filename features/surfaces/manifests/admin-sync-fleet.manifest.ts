@@ -3,6 +3,7 @@ import type {
   SurfaceScopePayload,
   SurfaceValue,
   SurfaceValueGroup,
+  SurfaceWriteTarget,
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
@@ -13,6 +14,68 @@ const groups: SurfaceValueGroup[] = [
   { key: "view", label: "Table views", sortOrder: 300 },
 ];
 const values: SurfaceValue[] = [
+  {
+    name: "page_overview",
+    label: "Fleet overview",
+    description:
+      "Compact XML overview of loaded fleet health, segment searches and the first 12 path-free mapping identities; total/shown attributes identify truncation.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 4000,
+    inlineUpTo: 5000,
+    autoContext: true,
+    group: "fleet",
+    sortOrder: 0,
+  },
+  {
+    name: "over_quota_search",
+    label: "Over quota search",
+    description:
+      "Current controlled search text for the over quota health segment. Empty text means no segment search.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 100,
+    autoContext: false,
+    group: "view",
+    sortOrder: 150,
+  },
+  {
+    name: "stalled_search",
+    label: "Stopped search",
+    description:
+      "Current controlled search text for the stopped health segment. Empty text means no segment search.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 100,
+    autoContext: false,
+    group: "view",
+    sortOrder: 150,
+  },
+  {
+    name: "degraded_search",
+    label: "Degraded search",
+    description:
+      "Current controlled search text for the degraded health segment. Empty text means no segment search.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 100,
+    autoContext: false,
+    group: "view",
+    sortOrder: 150,
+  },
+  {
+    name: "behind_search",
+    label: "Devices behind search",
+    description:
+      "Current controlled search text for the devices behind health segment. Empty text means no segment search.",
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 100,
+    autoContext: false,
+    group: "view",
+    sortOrder: 150,
+  },
+
   {
     name: "sync_mappings",
     label: "Sync mappings",
@@ -45,7 +108,7 @@ const values: SurfaceValue[] = [
     valueType: "object",
     alwaysAvailable: true,
     typicalCharCount: 1000,
-    autoContext: true,
+    autoContext: false,
     group: "health",
     sortOrder: 20,
   },
@@ -193,6 +256,56 @@ const values: SurfaceValue[] = [
     sortOrder: 140,
   },
 ];
+const writeTargets: SurfaceWriteTarget[] = [
+  {
+    name: "over_quota_search",
+    label: "Over quota search",
+    description:
+      "Changes the existing over quota table search only. Plain string; empty clears it. Never changes a mapping, quota, device or permission.",
+    valueType: "string",
+    updatesValue: "over_quota_search",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 150,
+  },
+  {
+    name: "stalled_search",
+    label: "Stopped search",
+    description:
+      "Changes the existing stopped table search only. Plain string; empty clears it. Never changes a mapping, quota, device or permission.",
+    valueType: "string",
+    updatesValue: "stalled_search",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 150,
+  },
+  {
+    name: "degraded_search",
+    label: "Degraded search",
+    description:
+      "Changes the existing degraded table search only. Plain string; empty clears it. Never changes a mapping, quota, device or permission.",
+    valueType: "string",
+    updatesValue: "degraded_search",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 150,
+  },
+  {
+    name: "behind_search",
+    label: "Devices behind search",
+    description:
+      "Changes the existing devices behind table search only. Plain string; empty clears it. Never changes a mapping, quota, device or permission.",
+    valueType: "string",
+    updatesValue: "behind_search",
+    mode: "ui",
+    applyPolicy: "auto",
+    group: "view",
+    sortOrder: 150,
+  },
+];
 export const adminSyncFleetManifest: SurfaceManifest = {
   surfaceName: ADMIN_SYNC_FLEET_SURFACE_NAME,
   client: "matrx-admin",
@@ -205,11 +318,18 @@ export const adminSyncFleetManifest: SurfaceManifest = {
   readiness: "partial",
   readinessNote:
     "Complete live scope and canonical menu authored; browser behavior, helper isolation and independent certification remain to be verified.",
-  intro: `<surface_intro>Path-free organization-authorized folder sync health. Mapping rows and overlapping quota, stopped, degraded and silent-device segments describe the loaded fleet, with each table view exposed separately. Local folders and private storage ledgers are not loaded here.</surface_intro>`,
+  guide: "features/surfaces/guides/admin-sync-fleet.md",
+  intro: `<surface_intro>Start with page_overview: loaded fleet health and current searches. This page has no create, edit or delete mapping action; mapping rows and derived health evidence are read-only. Use the four segment search targets for view changes only. Never use generic context or data tools to bypass this page's read-only records. Path-free organization-authorized folder sync health. Mapping rows and overlapping quota, stopped, degraded and silent-device segments describe the loaded fleet, with each table view exposed separately. Local folders and private storage ledgers are not loaded here.</surface_intro>`,
   groups,
+  writeTargets,
   values: mergeBaselineValues([], values),
 };
 export function createAdminSyncFleetScope(values: {
+  page_overview: string;
+  over_quota_search: string;
+  stalled_search: string;
+  degraded_search: string;
+  behind_search: string;
   sync_mappings: unknown[];
   sync_mapping_count: number;
   fleet_health: object;
