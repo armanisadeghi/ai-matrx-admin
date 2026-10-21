@@ -86,15 +86,26 @@ function useStaticValue(
   });
 }
 
-function DuplicateButton({ view }: { view: PublicSpaceView }) {
+function DuplicateButton({
+  view,
+  embedded,
+}: {
+  view: PublicSpaceView;
+  embedded: boolean;
+}) {
   // Duplicate happens inside the app (/spaces/duplicate): a signed-out visitor signs in and comes back,
-  // and the copy is filed in the organization the person works in.
+  // and the copy is filed in the organization the person works in. Inside somebody else's website the
+  // sign-in cannot happen in the frame, so it opens in a new tab.
   const target = `/spaces/duplicate?from=${encodeURIComponent(view.slug ?? view.id)}`;
   return (
     <Button
       variant="outline"
       icon={<Copy size={15} />}
-      onClick={() => window.location.assign(target)}
+      onClick={() =>
+        embedded
+          ? window.open(target, "_blank", "noopener")
+          : window.location.assign(target)
+      }
       data-testid="public-duplicate"
     >
       Duplicate
@@ -104,7 +115,14 @@ function DuplicateButton({ view }: { view: PublicSpaceView }) {
 
 const NO_SUBSCRIBE = () => () => undefined;
 
-export function PublicSpace({ view }: { view: PublicSpaceView }) {
+export function PublicSpace({
+  view,
+  embedded = false,
+}: {
+  view: PublicSpaceView;
+  /** Drawn inside somebody else's website (`/site/<link>?embed=1`). */
+  embedded?: boolean;
+}) {
   const router = useRouter();
   // BlockNote 0.55 reads `window` while it creates the editor, so the server renders the page's frame
   // (title, cover, icon) and the browser draws the blocks — a server render of the editor answered 500.
@@ -147,6 +165,7 @@ export function PublicSpace({ view }: { view: PublicSpaceView }) {
       <div
         className="spaces-root relative z-0 h-dvh overflow-hidden"
         data-public-page=""
+        data-public-embed={embedded ? "" : undefined}
       >
         <div className="spaces-frame">
           <main className="spaces-main">
@@ -185,7 +204,9 @@ export function PublicSpace({ view }: { view: PublicSpaceView }) {
                   ))}
                 </nav>
                 <span className="flex-1" />
-                {view.allowDuplicate ? <DuplicateButton view={view} /> : null}
+                {view.allowDuplicate ? (
+                  <DuplicateButton view={view} embedded={embedded} />
+                ) : null}
               </header>
               <div className="spaces-body">
                 <div className="spaces-scroll" data-matrx-page-scroll="">

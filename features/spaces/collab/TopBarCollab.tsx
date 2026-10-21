@@ -83,7 +83,7 @@ export function ShareMenu({ spaceId, title, onCopyLink }: { spaceId: string; tit
             ]}
           />
           {tab === "publish" ? (
-            <PublishPanel spaceId={spaceId} />
+            <PublishPanel spaceId={spaceId} title={title} />
           ) : (
           <div className="grid gap-1.5">
             <Button variant="primary" className="w-full" onClick={invite}>
