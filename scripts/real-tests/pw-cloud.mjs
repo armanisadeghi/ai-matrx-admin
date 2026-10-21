@@ -18,8 +18,9 @@ import { mintSessionCookies } from "./session-cookies.mjs";
 
 const SAFETY_NET_ORG = "226be635-194d-42dd-87c8-7a9562f70939";
 const IDLE_TTL_SECONDS = 1800;
+const READ_ONLY = new Set(["url", "title", "text", "find", "shot", "launch"]);
 const DEFAULT_CHAT_AGENT = "ccab43ad-05e4-45d6-a49f-8e5605ed66f5"; // Chat Plumbing Test Agent (same as pw.mjs)
-const BOX_DRIVER = "~/rt/pw_cloud_box.py";
+const BOX_DRIVER = "/tmp/rt/pw_cloud_box.py"; // the box's own /tmp: every box of one account shares one home
 
 const [run, cmd, ...args] = process.argv.slice(2);
 if (!run || !cmd) { console.error("usage: node pw-cloud.mjs <run> <command> [args]"); process.exit(2); }
@@ -59,8 +60,9 @@ async function box(sandboxId, request, timeoutSec = 180) {
   // so retrying cannot run a command twice.
   for (let attempt = 1; attempt <= 8; attempt++) {
     r = await api("POST", `/sandboxes/${sandboxId}/exec`, { command: `python3 ${BOX_DRIVER}`, stdin: JSON.stringify(request), timeout: timeoutSec }, (timeoutSec + 30) * 1000);
-    if (r.status !== 503) break;
-    console.error(`pw-cloud: the orchestrator is busy (503); retrying in 15 s (${attempt}/8)`);
+    // A 502 may come after the command ran, so only a command that changes nothing is retried on it.
+    if (r.status !== 503 && !(r.status === 502 && READ_ONLY.has(request.cmd))) break;
+    console.error(`pw-cloud: the orchestrator is busy (${r.status}); retrying in 15 s (${attempt}/8)`);
     await new Promise((res) => setTimeout(res, 15000));
   }
   if (r.status === 410 || r.status === 404) { console.error(`run ${run}'s cloud machine is gone (expired after ${IDLE_TTL_SECONDS / 60} idle minutes or stopped); use: node pw-cloud.mjs ${run} start`); process.exit(1); }
@@ -76,6 +78,8 @@ async function start() {
       const res = await box(st.sandbox_id, { cmd: "launch" }, 400);
       if (res.exit_code === 0) return console.log(`${res.stdout.trim()} (cloud machine ${st.sandbox_id})`);
     }
+    await api("DELETE", `/sandboxes/${st.sandbox_id}?graceful=false&purge=true`).catch(() => null);
+    fs.rmSync(stateFile, { force: true });
   }
   // The box is owned by the test account; mint (and discard) a session only to learn its user id.
   const { userId } = await mintSessionCookies();
@@ -93,10 +97,16 @@ async function start() {
   const id = created.json.sandbox_id;
   fs.writeFileSync(stateFile, JSON.stringify({ sandbox_id: id, created_at: new Date().toISOString() }));
   const driver = fs.readFileSync(new URL("./pw_cloud_box.py", import.meta.url), "utf8");
-  const up = await api("POST", `/sandboxes/${id}/exec`, { command: `mkdir -p ~/rt && cat > ${BOX_DRIVER}`, stdin: driver, timeout: 60 }, 90000);
+  const up = await api("POST", `/sandboxes/${id}/exec`, { command: `mkdir -p /tmp/rt && cat > ${BOX_DRIVER}`, stdin: driver, timeout: 60 }, 90000);
   if (up.json?.exit_code !== 0) { console.error(`pw-cloud: could not put the driver on ${id}: ${up.text.slice(0, 400)}`); process.exit(1); }
   const res = await box(id, { cmd: "launch" }, 400);
-  if (res.exit_code !== 0) { console.error(res.stderr || res.stdout); process.exit(1); }
+  if (res.exit_code !== 0) {
+    // Never leave a machine behind: each one counts against the account's sandbox ceiling (5).
+    await api("DELETE", `/sandboxes/${id}?graceful=false&purge=true`).catch(() => null);
+    fs.rmSync(stateFile, { force: true });
+    console.error(`pw-cloud: the browser did not start on ${id} (machine deleted): ${(res.stderr || res.stdout).trim().split("\n").slice(-5).join(" | ")}`);
+    process.exit(1);
+  }
   console.log(`${res.stdout.trim()} (cloud machine ${id})`);
 }
 

@@ -19,8 +19,12 @@ import time
 import urllib.request
 
 PORT = 9222
-HOME = os.path.expanduser("~")
-PROFILE = os.path.join(HOME, "rt-profile")
+# Everything this run owns lives in the container's own /tmp, never under ~: every box of one account mounts the
+# SAME persistent home, so a profile there was shared by concurrent runs (cookies included) and the second run's
+# Chrome found the first one's profile lock and exited ("chrome did not start", q04-cloud-r2, 2026-10-21).
+HOME = "/tmp/rt"
+os.makedirs(HOME, exist_ok=True)
+PROFILE = os.path.join(HOME, "profile")
 CDP = f"http://127.0.0.1:{PORT}"
 
 
@@ -43,7 +47,7 @@ def launch() -> None:
     if not os.path.exists(exe):
         subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    log = open(os.path.join(HOME, "rt-chrome.log"), "ab")
+    log = open(os.path.join(HOME, "chrome.log"), "ab")
     subprocess.Popen([exe, "--headless=new", f"--remote-debugging-port={PORT}", f"--user-data-dir={PROFILE}",
                       "--window-size=1440,900", "--no-first-run", "--no-default-browser-check",
                       "--disable-dev-shm-usage", "about:blank"],
@@ -60,7 +64,7 @@ def launch() -> None:
     raise SystemExit("chrome did not start")
 
 
-CONSOLE_LOG = os.path.join(HOME, "rt-console.jsonl")
+CONSOLE_LOG = os.path.join(HOME, "console.jsonl")
 
 
 def watch_console() -> None:
