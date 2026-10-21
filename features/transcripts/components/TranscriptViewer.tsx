@@ -276,13 +276,17 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
 
   // Audio Player Handlers. `play()` is a promise that rejects when the
   // element cannot play its source; the element's own play/pause events are
-  // what set `isPlaying`, so a refused play never shows a Pause button. A
-  // dead source ("NotSupportedError") also fires the element's error event,
-  // which owns recovery and the failure report.
+  // what set `isPlaying`, so a refused play never shows a Pause button.
   const startPlayback = (el: HTMLAudioElement) => {
     el.play().catch((err: unknown) => {
       setIsPlaying(false);
-      if (err instanceof DOMException && ["NotAllowedError", "AbortError", "NotSupportedError"].includes(err.name)) return;
+      if (err instanceof DOMException && ["NotAllowedError", "AbortError"].includes(err.name)) return;
+      // A dead source: hand it to the load-recovery machine (it ignores a
+      // duplicate of the element's own error event while one is in flight).
+      if (err instanceof DOMException && err.name === "NotSupportedError") {
+        audioRecovery.onLoadError(err);
+        return;
+      }
       console.error("[transcripts] audio play() refused", {
         transcriptId: activeTranscript?.id,
         audioFileId,

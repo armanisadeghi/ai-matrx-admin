@@ -37,7 +37,29 @@ export interface Finding {
   what: string;
 }
 
-const PLAY_CALL = /([\w$\]\)]+)\s*(\?\.|\.)\s*play\s*\(\s*\)/g;
+const PLAY_CALL = /([\w$\]\)]+!?)\s*(\?\.|\.)\s*play\s*(\?\.)?\s*\(\s*\)/g;
+
+/** Whether the `.then(` at the start of `text` passes a second (rejection) argument. */
+function thenHasRejectionHandler(text: string): boolean {
+  const open = text.indexOf("(");
+  let depth = 0;
+  for (let i = open; i < text.length; i += 1) {
+    const c = text[i];
+    if (c === '"' || c === "'" || c === "`") {
+      for (i += 1; i < text.length && text[i] !== c; i += 1) if (text[i] === "\\") i += 1;
+      continue;
+    }
+    if (c === "(" || c === "{" || c === "[") depth += 1;
+    else if (c === ")" || c === "}" || c === "]") {
+      depth -= 1;
+      if (depth === 0) {
+        // `.then(a).catch(…)` is handled too.
+        return /^\s*\.catch\s*\(/.test(text.slice(i + 1));
+      }
+    } else if (c === "," && depth === 1) return true;
+  }
+  return false;
+}
 
 export function scanFile(file: string, src: string): Finding[] {
   const out: Finding[] = [];
@@ -63,10 +85,12 @@ export function scanFile(file: string, src: string): Finding[] {
     const lineNo = lineOf(index);
     const lineText = lines[lineNo - 1].trim();
     if (lineText.startsWith("//") || lineText.startsWith("*") || lineText.startsWith("/*")) continue;
-    const receiver = m[1].replace(/[\])]+$/, "");
+    const receiver = m[1].replace(/[\])!]+$/, "");
     if (NOT_A_MEDIA_ELEMENT[`${file}::${receiver}`]) continue;
     const after = src.slice(index + m[0].length).replace(/^\s+/, "");
-    if (/^\.(catch|then)\s*\(/.test(after)) continue;
+    if (/^\.catch\s*\(/.test(after)) continue;
+    // `.then(onOk, onErr)` handles; a one-argument `.then(onOk)` does not.
+    if (/^\.then\s*\(/.test(after) && thenHasRejectionHandler(after)) continue;
     // Walk back over the receiver expression to the token that precedes it.
     const before = src.slice(Math.max(0, index - 200), index).replace(/[\w$.?!\[\]()]+$/, "");
     if (/\b(await|return)\s*$/.test(before)) continue;
@@ -97,6 +121,9 @@ function selfTest(): number {
     "void el.play();",
     "audioRef.current?.play();",
     "if (x) a.play()\nsetPlaying(true);",
+    "ref.current!.play();",
+    "el.play?.();",
+    "el.play().then(() => setPlaying(true));",
   ];
   const good = [
     "el.play().catch(() => setPlaying(false));",
@@ -105,6 +132,7 @@ function selfTest(): number {
     "const p = el.play();",
     "void elementRef.current?.play().catch(() => {});",
     "audio\n  .play()\n  .then(() => {}, () => {});",
+    "el.play().then(() => go()).catch(() => stop());",
     "player.play(resp.source);",
     "router.push(ENGAGE_ROUTES.play(id, code));",
   ];
