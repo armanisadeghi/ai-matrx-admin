@@ -27,7 +27,7 @@ import os from "node:os";
 import path from "node:path";
 import { markBrowserAgentTraffic } from "../lib/agent-traffic.mjs";
 
-const require = createRequire("/Users/armanisadeghi/code/matrx-frontend/package.json");
+const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 const [run, cmd, ...args] = process.argv.slice(2);
 if (!run || !cmd) { console.error("usage: node pw.mjs <run> <command> [args]"); process.exit(2); }
