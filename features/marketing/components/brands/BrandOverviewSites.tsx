@@ -76,7 +76,8 @@ function SiteRow({ brandSeg, site }: { brandSeg: string; site: MarketingSite }) 
         prefetch={false}
         href={siteHref}
         aria-label={`Open ${site.name}`}
-        className="relative block aspect-[16/10] overflow-hidden rounded-md border border-border bg-muted/40"
+        // Phone: the stats lead; the homepage picture would take the whole first screen.
+        className="relative hidden aspect-[16/10] overflow-hidden rounded-md border border-border bg-muted/40 sm:block"
       >
         {fileId ? (
           <InlineMediaRef
@@ -112,14 +113,14 @@ function SiteRow({ brandSeg, site }: { brandSeg: string; site: MarketingSite }) 
           <span className="ml-auto flex shrink-0 items-center gap-1">
             {probe.secure !== null ? (
               <Badge
-                tone={probe.secure ? "success" : "danger"}
+                tone={probe.secure ? "success" : "destructive"}
                 title={probe.tlsUntil ? `Certificate valid until ${probe.tlsUntil.slice(0, 10)}` : undefined}
               >
                 {probe.secure ? <Lock className="size-3" aria-hidden="true" /> : <LockOpen className="size-3" aria-hidden="true" />}
                 {probe.secure ? "Secure" : "Not secure"}
               </Badge>
             ) : null}
-            {probe.robots ? <Badge>robots.txt</Badge> : null}
+            {probe.robots ? <span className="hidden sm:inline-flex"><Badge>robots.txt</Badge></span> : null}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-1 sm:grid-cols-5">
@@ -209,7 +210,7 @@ export function BrandOverviewSites({
     >
       {loading ? (
         <div className="grid gap-3 p-3 sm:grid-cols-[13rem_minmax(0,1fr)]" aria-busy="true">
-          <Skeleton className="aspect-[16/10] rounded-md" />
+          <Skeleton className="hidden aspect-[16/10] rounded-md sm:block" />
           <div className="grid content-start gap-2">
             <Skeleton className="h-5 w-56 max-w-full" />
             <Skeleton className="h-10 w-full" />
