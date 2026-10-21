@@ -32,10 +32,6 @@
   --shell-panel-w: 17.5rem; /* 280px — secondary sidebar width */
   --shell-safe-area-top: env(safe-area-inset-top, 0px);
   --shell-safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  /* Set only while SystemScheduleAlarmBanner is visible. The shell scroll
-     owner consumes it so a fixed operational notice cannot cover final page
-     actions or the shared toast viewport. */
-  --shell-fixed-alert-clearance: 0px;
   /* THE RIGHT INSET FOR APP CHROME. Fixed chrome anchored to the right edge
      (toasts, the assists dock, the window tray) is positioned against the
      VIEWPORT, so it ignores the shell root shrinking for the canvas column and
@@ -44,17 +40,6 @@
      whatever later claims the right edge. --shell-canvas-w is written on
      <html> by the canvas host (0px closed, forced 0px on phones). */
   --app-right-inset: var(--shell-canvas-w, 0px);
-  /* How much of the bottom-LEFT corner the shell's own floating chrome covers,
-     measured and published by that chrome while it is on screen (today: the
-     admin Error Inspector badge). Page content parked in that corner — a key
-     legend, a status line, a footer control — reserves it so the shell never
-     sits on top of a page's last line. 0 when nothing is floating there.
-     Unlike the schedule alarm's runway this IS measured, and safely: the badge
-     is fixed-position and sized by its own contents (a pill, or a dot), so
-     nothing it publishes can feed back into its own size. A guessed padding
-     was tried first and was wrong at the next viewport (verifier finding 6,
-     2026-09-12; still overlapping at 1440x900 in V2 finding 7, 2026-09-14). */
-  --shell-fixed-corner-clearance: 0px;
   /* Panel sidebar background — matches bg-textured (zinc-100 + subtle grid) */
   --shell-panel-bg: rgb(244 244 245);
   --shell-panel-bg-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' viewBox='0 0 2 2'%3E%3Cpath fill='%23999' fill-opacity='0.07' d='M1 1h0.5v0.5H1V1z'%3E%3C/path%3E%3C/svg%3E");
@@ -1971,7 +1956,6 @@ body[style*="pointer-events: none"] {
      Routes that need space below the header add their own top padding/offset.
      No shell-level padding-top: routes own their own internal top spacing. */
   margin-top: calc(-1 * var(--shell-header-h));
-  scroll-padding-bottom: var(--shell-fixed-alert-clearance);
 }
 
 /* A full-page route may own vertical scrolling instead of .shell-main. Keep
@@ -1992,73 +1976,6 @@ body[style*="pointer-events: none"] {
     .shell-main [data-matrx-table-sticky-header="true"].relative
   ) {
   --shell-header-fade-h: 0rem;
-}
-
-/* Padding on an overflow owner is absorbed by border-box sizing when a route
-   child is min-height:100%, so it does not reliably create scroll range. A
-   real final flow item does: even full-viewport route children can scroll
-   completely above the fixed alarm instead of leaving their last control
-   underneath it. */
-:root[data-admin-attention] .shell-main::after {
-  content: "";
-  display: block;
-  height: max(var(--shell-fixed-alert-clearance), var(--matrx-page-runway));
-  pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule below */
-}
-
-/* …BUT NEVER ON A ROUTE BODY THAT IS ITSELF THE VIEWPORT.
-   A full-height app surface (`h-full overflow-hidden` directly under the
-   scroll owner — the chat room, the studio, any surface that clips its own
-   content and owns its internal scrollers) has no scroll of its own, so this
-   runway is not clearance: it is pure SLACK. The shell scroll owner gains
-   72px (compact) to 14rem (expanded) of range, and one wheel tick over the
-   thread slides the WHOLE surface up under the floating shell header —
-   composer, and with it the docked canvas column's title bar and content
-   switcher.
-
-   Seen live on production 2026-09-14 (www.aimatrx.com, 1280x720, the schedule
-   alarm showing): the canvas Preview/Source pills measured y = +53.5 at rest
-   and y = -18.5 after the shell scrolled its 72px of slack — off the top of
-   the screen, with the canvas switcher the "offer, don't hijack" design
-   depends on. `window.scrollTo(0,0)` does nothing about it, because the
-   scroll owner is `.shell-main`, not the window.
-
-   A surface that clips at the viewport can never have content hidden under a
-   fixed notice in the first place — its own inner scrollers carry
-   `.scroll-page-end-space` for that. So this rule takes nothing away.
-
-   THE CONTRACT IS "h-full AND OWNS ITS OVERFLOW", not one spelling of it. Until
-   2026-09-24 this matched only `.h-full.overflow-hidden`, so a full-height body
-   that SCROLLS itself (`h-full overflow-y-auto` — the agent layout wrapping
-   /agents/[id]/run, the admin system-agent layout, marketing ads, schedules)
-   still got the runway, and the run page's composer slid up under the header
-   on the first wheel tick. Such a body has nothing for `.shell-main` to scroll;
-   it reserves its own end space inside its own scroller. */
-:root[data-admin-attention]
-  .shell-main:has(
-    > .h-full:is(
-        .overflow-hidden,
-        .overflow-clip,
-        .overflow-auto,
-        .overflow-y-auto,
-        .overflow-y-hidden,
-        .overflow-y-clip
-      )
-  )::after {
-  content: none;
-}
-
-/* Global fixed notices are route-independent. Their singleton publishes only
-   a semantic compact/expanded state; CSS owns the responsive runway. This is
-   intentionally not a measured height, so no observer can feed layout back
-   into the fixed card. The compact pill clears one touch target; an expanded
-   alarm clears its action row on phones and its card on desktop. */
-:root[data-admin-attention="compact"] {
-  /* The compact pill carries data-matrx-floating-bottom, so FloatingClearanceSync
-     already measures it into --matrx-floating-clearance (measured + page end).
-     A constant here stacked a second clearance on it: 4.5rem beat the measured
-     48px + 16px, leaving 24px empty under the page against a 16px page end. */
-  --shell-fixed-alert-clearance: 0px;
 }
 
 /* Keep the default floating notice above table navigation and the complete
@@ -2102,16 +2019,6 @@ body[style*="pointer-events: none"] {
       ) +
       anchor-size(--matrx-table-summary-totals height, 0px)
     );
-  }
-}
-
-:root[data-admin-attention="expanded"] {
-  --shell-fixed-alert-clearance: max(14rem, 36dvh, env(safe-area-inset-bottom, 0px));
-}
-
-@media (min-width: 640px) {
-  :root[data-admin-attention="expanded"] {
-    --shell-fixed-alert-clearance: max(10rem, 24dvh, env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -2214,10 +2121,7 @@ body[style*="pointer-events: none"] {
   display: block;
   flex: none;
   grid-column: 1 / -1;
-  block-size: max(
-    var(--matrx-page-runway),
-    var(--shell-fixed-alert-clearance, 0px)
-  );
+  block-size: var(--matrx-page-runway);
   pointer-events: none;
   /* An empty spacer paints nothing, but the browser still reports it as a LAYOUT SHIFT whenever the
      list above it grows (a phone list's runway moved off-screen = CLS 0.1 by itself). Hidden boxes are
@@ -2254,17 +2158,24 @@ body[style*="pointer-events: none"] {
 
 /* A page that does NOT scroll — a list whose table fills the height with its
    own pager (EntityListPage) — gets no runway at all. Its page surface
-   declares `data-matrx-page-end` and pads its foot by the page end plus what
-   floats, so its last element (the pager) ends --matrx-page-end above the
-   floating chat, never under it, and never twice. It reads the FIXED
-   measure: chrome that already rests above the page's own pager (the assists
-   pill, `data-matrx-floating-follows-page`) is left out, or the pager would
-   lift the pill, the pill the pager, without end. */
+   declares `data-matrx-page-end` and pads its foot by the page end once — a
+   constant. FLOATING THINGS NEVER MOVE THE PAGE (Arman, 2026-10-20): until
+   then this added what floated, so the pager jumped every time the chat dock
+   or a pill appeared. Now the pager stays put and the floating chrome rests
+   above it (it publishes --page-bottom-dock-h; the assists pill and the
+   ambient dock read it). Guard: pnpm check:overlays-never-move-page. */
 [data-matrx-page-end] {
-  padding-block-end: calc(
-    max(var(--matrx-floating-fixed-measured, 0px), env(safe-area-inset-bottom, 0px)) +
-      var(--matrx-page-end)
-  );
+  padding-block-end: calc(env(safe-area-inset-bottom, 0px) + var(--matrx-page-end));
+}
+/* The phone nav dock is not a pill: a route that shows it has it from the first paint, a fixed
+   bar of known height. The page ends above it once, by that constant — never by a measure. */
+@media (max-width: 1023px) {
+  .shell-root[data-show-dock]:not([data-note-detail-active]) [data-matrx-page-end] {
+    padding-block-end: calc(
+      var(--shell-dock-h) + var(--shell-dock-bottom) + env(safe-area-inset-bottom, 0px) +
+        var(--matrx-page-end)
+    );
+  }
 }
 
 /* A full-height route body owns its own layout: .shell-main has nothing to
@@ -2355,7 +2266,7 @@ body[style*="pointer-events: none"] {
   display: block;
   flex: none;
   grid-column: 1 / -1;
-  block-size: max(var(--matrx-page-runway), var(--shell-fixed-alert-clearance, 0px));
+  block-size: var(--matrx-page-runway);
   pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule above */
 }
 
@@ -2376,7 +2287,7 @@ body[style*="pointer-events: none"] {
   display: block;
   flex: none;
   grid-column: 1 / -1;
-  block-size: max(var(--matrx-page-runway), var(--shell-fixed-alert-clearance, 0px));
+  block-size: var(--matrx-page-runway);
   pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule above */
 }
 
@@ -2442,10 +2353,12 @@ body[style*="pointer-events: none"] {
   background: transparent;
   pointer-events: none;
   /* Rests ABOVE the page's own bottom bar (--matrx-page-foot-h, measured by
-     FloatingClearanceSync from [data-matrx-page-foot]) — never on it. */
+     FloatingClearanceSync from [data-matrx-page-foot]) and above a list's pager
+     or a page dock (--page-bottom-dock-h) — never on them. The dock moves; the
+     page never makes room for it (pnpm check:overlays-never-move-page). */
   bottom: calc(
-    1.25rem + var(--matrx-page-foot-h, 0px) + var(--keyboard-inset-height, 0px) +
-      env(safe-area-inset-bottom, 0px)
+    1.25rem + max(var(--matrx-page-foot-h, 0px), var(--page-bottom-dock-h, 0px)) +
+      var(--keyboard-inset-height, 0px) + env(safe-area-inset-bottom, 0px)
   );
 }
 
@@ -2491,9 +2404,6 @@ body:has(.shell-root[data-pathname^="/administration"]) {
   padding-bottom: 0;
   scroll-padding-bottom: 0;
 }
-:root[data-admin-attention] .shell-root[data-pathname^="/administration"] .shell-main::after {
-  display: none;
-}
 
 /* The shell's scrollbar is the app-wide default (app/globals.css, base layer). */
 
@@ -2526,30 +2436,9 @@ body:has(.shell-root[data-pathname^="/administration"]) {
       "main";
   }
 
-  /* Mobile dock is opt-in — no bottom padding unless a route requests it. */
-  .shell-main {
-    padding-bottom: var(--shell-fixed-alert-clearance);
-    scroll-padding-bottom: var(--shell-fixed-alert-clearance);
-  }
-
-  /* The ::after runway (the attention alarm AND the floating clearance, which
-     measures the mobile dock like every other floating chrome) already
-     supplies this clearance. Keep scroll padding for focus navigation, but do
-     not duplicate the flow reserve. A dock route has NO reserve of its own:
-     until 2026-10-04 it padded .shell-main by the dock's height and the
-     runway stacked on top — 222px of blank at 375px. */
-  :root[data-admin-attention] .shell-main {
-    padding-bottom: 0;
-  }
-
   /* Hide dock when a note detail is open — note editor owns the bottom chrome */
   .shell-root[data-note-detail-active] .shell-dock {
     display: none !important;
-  }
-
-  /* Note detail owns the bottom chrome: no alarm padding either */
-  .shell-root[data-note-detail-active] .shell-main {
-    padding-bottom: 0;
   }
 
   /* Dock hidden by default; a route opts in with [data-show-dock] (section 17). */
