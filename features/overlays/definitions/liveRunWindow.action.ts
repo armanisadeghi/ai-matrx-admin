@@ -3,7 +3,7 @@
 // `liveRunWindow`'s option shape and its plain open action, apart from the opener module
 // (liveRunWindow.overlay.tsx) so a thunk, middleware or menu that only dispatches it stays light.
 import type { LiveRunProgressState } from "@ai-matrx/chat/agents/components/live-run/LiveRunProgress";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/boot";
 
 const OVERLAY_ID = "liveRunWindow" as const;
 

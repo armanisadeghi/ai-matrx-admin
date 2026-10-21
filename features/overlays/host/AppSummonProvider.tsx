@@ -9,7 +9,7 @@
  */
 import { useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { SummonRoot, type OverlayErrorExtrasContext, type OverlayRenderContext } from "@ai-matrx/summon/root";
+import { SummonRoot, type OverlayErrorExtrasContext, type OverlayRenderContext } from "@ai-matrx/summon/boot-root";
 import { SurfaceLayerBoundary } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useAppStore } from "@/lib/redux/hooks";
 import { AppWindowSelectionSurface } from "./AppWindowSelectionSurface";

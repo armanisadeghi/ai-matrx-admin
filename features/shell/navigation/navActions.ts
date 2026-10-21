@@ -44,7 +44,7 @@ import { useOpenCreateProjectWindow } from "@/features/overlays/definitions/crea
 import { useOpenPickListManagerWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenFavoritesManagerWindow } from "@/features/overlays/definitions/favoritesManagerWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/boot";
 import { isServiceFailure } from "@/features/data-tables/types";
 import type { ShellNavActionId } from "../constants/nav-data";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";

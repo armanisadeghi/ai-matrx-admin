@@ -31,7 +31,7 @@ import {
   useAppRecordsConfig,
   useRecordsUiPorts,
 } from "@/features/data-tables/records-ui-host/recordsUiHost";
-import { expectNavigationThen } from "@/lib/navigation/expectNavigationLazy";
+import { expectNavigation } from "@ai-matrx/summon/boot-kit";
 
 /** The no-organization notice's line here: nothing failed to load, a new thing needs a home. */
 export const SAVED_WHERE_CHOSEN = "New things are saved in the organization you choose";
@@ -115,11 +115,10 @@ export function NewTableBody({
           // Data home lists the new table at once when the person comes back.
           // a window closes before this push: the overlay layer writes no address behind it
           const href = dashboardId ? `/data/${tableId}?dashboard=${dashboardId}` : `/data/${tableId}`;
-          expectNavigationThen(href, () => {
-            router.push(href);
-            readTheHomeAgain();
-            onClose?.();
-          });
+          expectNavigation(href);
+          router.push(href);
+          readTheHomeAgain();
+          onClose?.();
         }}
       />
     </MakeMount>

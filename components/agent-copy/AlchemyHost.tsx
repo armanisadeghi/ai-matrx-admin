@@ -16,7 +16,7 @@ import {
 import type { AlchemyHostPorts } from "@ai-matrx/alchemy/ports";
 import { createAlchemyHostPorts } from "./alchemy-host-ports";
 import { AlchemyWindowHost, createAlchemyWindowController } from "./AlchemyWindowHost";
-import { focusWindow } from "@ai-matrx/summon/open";
+import { focusWindow } from "@ai-matrx/summon/boot";
 import { createActionRegistry } from "@ai-matrx/alchemy/actions";
 import { AlchemyActionsProvider } from "@ai-matrx/alchemy/react/host";
 import { useRouter } from "next/navigation";

@@ -20,7 +20,7 @@
 // at once; one that changed but does not prove it yet is read once more.
 
 import { useQueryClient } from "@tanstack/react-query";
-import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
+import { selectIsOverlayOpen } from "@ai-matrx/summon/boot";
 import type { OpenFirstPartyConnect } from "@ai-matrx/chat/agents/connectors/first-party-connectors";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

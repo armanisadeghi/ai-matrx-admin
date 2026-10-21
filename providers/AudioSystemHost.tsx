@@ -42,7 +42,7 @@ import {
 } from "@/features/audio/activation";
 import { getSharedDirtyRecordingMarker } from "@ai-matrx/browser-audio/core";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
+import { selectIsOverlayOpen } from "@ai-matrx/summon/boot";
 import { useIdleReady } from "@ai-matrx/kit/idle-scheduler";
 
 import { installSpeechHost } from "@/features/audio/service/speechHost";
