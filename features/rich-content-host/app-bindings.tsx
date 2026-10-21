@@ -48,7 +48,7 @@ import IconInputWithValidation from "@/components/official/icons/IconInputWithVa
 // The door, not the viewer: records-ui loads only when a table is shown (LocatedTableViewerDoor.tsx).
 import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewerDoor";
 import { OpenDestinationDialog } from "@/features/page-extraction/data-review/OpenDestinationDialog";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import { getSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { TextInputDialog } from "@ai-matrx/design-system";

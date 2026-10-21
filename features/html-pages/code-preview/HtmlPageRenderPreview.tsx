@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { FileCode } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectTabById } from "@/features/code/redux/tabsSlice";
-import { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
+import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import type { HtmlPageRecord } from "@/features/html-pages/types";
 import type { RenderPreviewerProps } from "@/features/code/preview/renderPreviewRegistry";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -43,7 +43,7 @@ export function HtmlPageRenderPreview({
     void HTMLPageService.getPage(rowId)
       .then((data) => {
         if (cancelled) return;
-        setPage(data as HtmlPageRecord);
+        setPage(data as unknown as HtmlPageRecord);
         setMetaError(null);
       })
       .catch((err: unknown) => {

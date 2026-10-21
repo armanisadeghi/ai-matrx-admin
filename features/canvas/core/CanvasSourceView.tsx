@@ -229,7 +229,7 @@ function HtmlPageCanvasSourceLoad({
     void (async () => {
       try {
         const { HTMLPageService } = await import(
-          "@/features/html-pages/services/htmlPageService"
+          "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service"
         );
         const page = (await HTMLPageService.getPage(pageId)) as {
           html_content?: unknown;

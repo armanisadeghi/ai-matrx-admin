@@ -105,7 +105,6 @@ import { useGitHubConnection } from "@/features/github-integration/useGitHubConn
 import { useOutputFeedback } from "@/lib/output-feedback/useOutputFeedback";
 import { saveOutputFeedback } from "@/lib/output-feedback/service";
 import { precedingQuestion } from "@/features/masterwork/oracle/precedingQuestion";
-import type { HTMLPageService } from "@/features/html-pages/services/htmlPageService";
 import type { reconcileMessagesArtifacts } from "@/features/canvas/materialization/reconcileArtifacts";
 import { looksLikeContact } from "@/features/crm/agent-context/parseContactSelection";
 import { invalidateCanvasItemCache } from "@/features/canvas/hooks/useCanvasItem";
@@ -128,6 +127,10 @@ const NoteVersionHistoryPanel = dynamic(
   () => import("@/features/notes/components/diff/NoteVersionHistoryPanel").then((m) => ({ default: m.NoteVersionHistoryPanel })),
   { ssr: false, loading: () => createElement("div", { className: "flex h-32 items-center justify-center text-xs text-muted-foreground" }, "Loading version history…") },
 );
+
+type HtmlPageSlots = typeof import("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service").htmlPageSlots;
+const loadHtmlPageSlots = async (): Promise<HtmlPageSlots> =>
+  (await import("@ai-matrx/chat/window-panels/windows/html-pages/html-page-service")).htmlPageSlots;
 
 registerChatUi({
   HtmlPreviewFullScreenEditor,
@@ -184,12 +187,11 @@ registerChatUi({
   canvasGetById: (id: string) => canvasArtifactService.getById(id),
   createSandboxFilesystemAdapter: (instanceId: string) => new SandboxFilesystemAdapter(instanceId),
   notesGetById: (id: string) => NotesAPI.getById(id),
-  createHtmlPage: async (...args: Parameters<typeof HTMLPageService.createPage>) =>
-    (await loadImpl()).fullFnImpls.HTMLPageService.createPage(...args),
-  // Loads @ai-matrx/print/markdown (KaTeX, ~680 KB) on the first share, never on every page;
-  // @ai-matrx/chat >= 0.5.2 awaits this slot.
-  convertMarkdownToHtml: async (markdown: string) =>
-    (await import("@/features/html-pages/utils/html-markdown")).convertMarkdownToHtml(markdown),
+  // Publish / Share as webpage: the chat package's HTML-page service (aidream /cms/html-pages) and its
+  // markdown converter (loads @ai-matrx/print/markdown, KaTeX ~680 KB, on the first share only) — the
+  // same two functions Matrx 2 registers.
+  createHtmlPage: async (...args: Parameters<HtmlPageSlots["createHtmlPage"]>) => (await loadHtmlPageSlots()).createHtmlPage(...args),
+  convertMarkdownToHtml: async (markdown: string) => (await loadHtmlPageSlots()).convertMarkdownToHtml(markdown),
   sklActions: sklActions,
   selectAllContentBlocksArray,
   selectContentBlocksByScope,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HTMLPageService } from '@/features/html-pages/services/htmlPageService';
+import { HTMLPageService } from '@ai-matrx/chat/window-panels/windows/html-pages/html-page-service';
 
 export function useHTMLPages(userId) {
   const [isCreating, setIsCreating] = useState(false);
