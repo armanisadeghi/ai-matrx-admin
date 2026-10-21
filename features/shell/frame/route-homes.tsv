@@ -857,8 +857,7 @@ route	tree node	how found today	note
 /organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
 /organizations/[orgId]/admin/triggers	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
 /organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
-/organizations/[orgId]/admin/users/[userId]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
-/organizations/[orgId]/admin/users/[userId]/resources	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
+/organizations/[orgId]/admin/users/[userId]/[[...tab]]	NOT TILES › Account menu	opened from a list (under menu: Account)	organizations
 /organizations/[orgId]/applets	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as BUILD › Applets
 /organizations/[orgId]/context-items	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Data › Scopes & context
 /organizations/[orgId]/files	NOT TILES › Account menu	opened from a list (under menu: Account)	organization's own view; same job as Productivity › Drive
