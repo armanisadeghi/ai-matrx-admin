@@ -4,61 +4,18 @@
 //
 // The dialogs behind useDocumentDialogsHost, compiled as ONE piece behind the
 // host's single dynamic edge: the convert-source dialog and the
-// save-as-flashcard question prompt. (Saving a table is the `saveToTable`
+// save-as-flashcard question prompt (the chat package's SaveAsFlashcardDialog). (Saving a table is the `saveToTable`
 // overlay — the one "Save to a table" every surface opens.)
 
 import * as React from "react";
-import { toast } from "@/lib/toast";
 import {
   ConvertContentDialog,
   type ConvertOrigin,
 } from "@/features/education/convert/ConvertContentDialog";
-import { TextInputDialog } from "@ai-matrx/design-system";
-import { fcService } from "@/features/flashcards/data/fcService";
-import { requireUserId } from "@/utils/auth/getUserId";
+import { SaveAsFlashcardDialog } from "@ai-matrx/chat/window-panels/windows/study/SaveAsFlashcardDialog";
 import { DocumentAgentReview } from "./DocumentAgentReview";
 import { ChatMessageDialogs } from "./ChatMessageDialogs";
 import type { RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
-import { openOutbound } from "@ai-matrx/kit/outbound";
-
-/** The deck every "Save as flashcard" lands in — one per person. */
-const SAVED_CARDS_DECK = "Saved cards";
-const SAVED_CARDS_SOURCE = "rich_document_saved_cards";
-
-async function saveFlashcard(front: string, back: string): Promise<void> {
-  const userId = requireUserId();
-  const sets = await fcService.listSets();
-  if (sets.error) throw new Error(String(sets.error));
-  let deck = (sets.data ?? []).find(
-    (s) =>
-      s.created_by === userId &&
-      (s.metadata as Record<string, unknown> | null)?.source_system ===
-        SAVED_CARDS_SOURCE,
-  );
-  if (!deck) {
-    const created = await fcService.createSet({
-      name: SAVED_CARDS_DECK,
-      description: "Cards you saved from answers, notes and documents.",
-      metadata: { source_system: SAVED_CARDS_SOURCE },
-    });
-    if (!created.data) {
-      throw new Error(String(created.error ?? "Could not create the deck"));
-    }
-    deck = created.data;
-  }
-  const added = await fcService.addCards(deck.id, [{ front, back }], {
-    orgId: deck.organization_id,
-  });
-  if (added.error) throw new Error(String(added.error));
-  const deckId = deck.id;
-  toast.success(`Saved to "${deck.name}"`, {
-    action: {
-      label: "Open deck",
-      onClick: () =>
-        openOutbound(`/education/flashcards/${deckId}`, "_blank", "noopener"),
-    },
-  });
-}
 
 export interface DocumentDialogsImplProps {
   convert: {
@@ -95,7 +52,6 @@ export default function DocumentDialogsImpl(
     chatDialog,
     onChatDialogClose,
   } = props;
-  const [savingCard, setSavingCard] = React.useState(false);
   return (
     <>
       {convert ? (
@@ -117,32 +73,8 @@ export default function DocumentDialogsImpl(
         />
       ) : null}
       {cardAnswer !== null ? (
-        <TextInputDialog
-          open
-          onOpenChange={(open) => {
-            if (!open && !savingCard) onCardClose();
-          }}
-          title="Save as flashcard"
-          description="This passage becomes the answer. Write the question that should bring it to mind."
-          placeholder="e.g. How long is the Gold tier refund window?"
-          multiline
-          rows={3}
-          confirmLabel="Save card"
-          busy={savingCard}
-          onConfirm={async (front) => {
-            setSavingCard(true);
-            try {
-              await saveFlashcard(front.trim(), cardAnswer);
-              onCardClose();
-            } catch (error) {
-              toast.error("Could not save the flashcard", {
-                description: error instanceof Error ? error.message : String(error),
-              });
-            } finally {
-              setSavingCard(false);
-            }
-          }}
-        />
+        // The chat package's flashcard prompt (window-panels/windows/study) — the one Matrx 2 opens.
+        <SaveAsFlashcardDialog answer={cardAnswer} onClose={onCardClose} />
       ) : null}
     </>
   );

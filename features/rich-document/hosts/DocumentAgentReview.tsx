@@ -2,286 +2,35 @@
 
 // features/rich-document/hosts/DocumentAgentReview.tsx
 //
-// A text field's AI powers (Clean up, Help with this…, Custom agent) on a
-// RENDERED document. Three steps, one dialog:
-//
-//   1. Prepare — the source's own save adapter hands back the authoritative
-//      bytes (a note's physical body, a chat row's single message), so the
-//      agent works on what is stored, not on what a view happened to render.
-//   2. Run — the SAME machinery ProTextarea uses: Clean up runs the cleanup
-//      role's agent through useProTextareaAgentAction; Help / Custom agent run
-//      in ProTextareaAgentPanel (mandate door or the person's chosen agent).
-//   3. Review — the proposal as a diff against the source. Apply writes
-//      through the source's save adapter as a SPLICE (only the changed blocks
-//      change — review/proposedEdit.ts); a proposal that would rewrite a
-//      protected island (code, math, a kind block…) is refused with the reason,
-//      never forced. Discard writes nothing.
+// A text field's AI powers (Clean up, Help with this…, Custom agent) on a RENDERED document: the
+// chat package's review-and-apply window (window-panels/windows/text-review/DocumentAgentReview —
+// the same body Matrx 2 opens from an answer's menu), bound to the web's edit port. The port adds
+// what only the web's sources need on top of each source's own save adapter: a note's revision
+// receipt, partial-save and post-acknowledgement recovery (../actions/handlers/preparedEdit).
 
 import * as React from "react";
-import { DiffViewer } from "@ai-matrx/diff/react";
-import { toast } from "@/lib/toast";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ProTextAgentActionPopoverBody } from "@/components/official/ProTextAgentActionPopoverBody";
-import { ProTextareaAgentPanel } from "@/components/official/ProTextareaAgentPanel";
-import { useProTextareaAgentAction } from "@/components/official/useProTextareaAgentAction";
-import {
-  PRO_TEXTAREA_AGENT_ACTIONS,
-  PRO_TEXTAREA_HELP_DEFAULT_MANDATE_KEY,
-  type ProTextareaAgentActionId,
-} from "@/components/official/proTextareaAgentActions";
-import { useSurfaceAgentRoles } from "@ai-matrx/chat/surfaces/hooks/useSurfaceConfig";
-import { CLEANUP_SURFACE_NAME } from "@/features/transcription-cleanup/hooks/useAiPostProcess";
-import { getErrorMessage } from "../actions/utils";
+  DocumentAgentReview as PackageDocumentAgentReview,
+  type DocumentAgentReviewProps as PackageDocumentAgentReviewProps,
+} from "@ai-matrx/chat/window-panels/windows/text-review/DocumentAgentReview";
+import type { PreparedEditPort } from "@ai-matrx/chat/window-panels/windows/text-review/prepared-edit";
 import {
   acknowledgedPreparedSource,
   prepareContentEdit,
   savePreparedContentEdit,
 } from "../actions/handlers/preparedEdit";
-import { explainSpliceRefusal, spliceProposal } from "@ai-matrx/rich-content/rich-document/review/proposedEdit";
-import { maskProtectedSpans, unmaskProtectedSpans } from "@ai-matrx/rich-content/rich-document/review/protectedSpans";
-import type { ChatAnswerSaveReceipt, ContentSource, RichDocumentActionContext } from "@ai-matrx/rich-content/rich-document/types";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
-export interface DocumentAgentReviewProps {
-  actionId: ProTextareaAgentActionId;
-  ctx: RichDocumentActionContext;
-  onClose: () => void;
-  /**
-   * An answer produced elsewhere (an agent window's "Apply to source"): the
-   * review opens straight on it — no run step.
-   */
-  initialProposal?: string | null;
-}
+/** The web's edit port: notes carry revision receipts; every other source is its adapter. */
+export const webPreparedEditPort: PreparedEditPort = {
+  prepare: prepareContentEdit,
+  save: savePreparedContentEdit,
+  acknowledged: acknowledgedPreparedSource,
+};
 
-type Prepared = { source: ContentSource; content: string };
+export type DocumentAgentReviewProps = Omit<PackageDocumentAgentReviewProps, "editPort">;
 
-export function DocumentAgentReview({
-  actionId,
-  ctx,
-  onClose,
-  initialProposal = null,
-}: DocumentAgentReviewProps): React.ReactElement {
-  const definition = PRO_TEXTAREA_AGENT_ACTIONS[actionId];
-  const [prepared, setPrepared] = React.useState<Prepared | null>(null);
-  const [prepareError, setPrepareError] = React.useState<string | null>(null);
-  const [proposal, setProposal] = React.useState<string | null>(initialProposal);
-  const [saving, setSaving] = React.useState(false);
-  const [agentId, setAgentId] = React.useState<string | null>(null);
-  const [agentName, setAgentName] = React.useState<string | null>(null);
-  const agentAction = useProTextareaAgentAction();
-  const cleanupRoles = useSurfaceAgentRoles(CLEANUP_SURFACE_NAME);
-  const cleanupAgentId = cleanupRoles.roles.clean?.effectiveAgentId ?? null;
-
-  React.useEffect(() => {
-    let cancelled = false;
-    void prepareContentEdit(ctx).then(
-      (p) => {
-        if (!cancelled) setPrepared(p);
-      },
-      (error: unknown) => {
-        if (!cancelled) {
-          setPrepareError(getErrorMessage(error, "This content cannot be saved from here."));
-        }
-      },
-    );
-    return () => {
-      cancelled = true;
-    };
-    // Prepare ONCE per open — the bytes the agent works on must not move.
-  }, []);
-
-  const effectiveCleanupAgent = agentId ?? cleanupAgentId;
-
-  // What the agent receives: the text with its protected spans (terminal
-  // escapes, {{variables}}, inline tags…) as markers it cannot alter; the
-  // result gets them back byte-for-byte before review (review/protectedSpans).
-  const agentInput = prepared ? maskProtectedSpans(prepared.content) : null;
-  const unmaskedForDisplay = agentInput
-    ? unmaskProtectedSpans(agentAction.result, agentInput.spans)
-    : null;
-  const shownAgentResult =
-    unmaskedForDisplay && !("error" in unmaskedForDisplay) ? unmaskedForDisplay.text : agentAction.result;
-  const receiveResult = (raw: string) => {
-    if (!agentInput) return;
-    const restored = unmaskProtectedSpans(raw, agentInput.spans);
-    if ("error" in restored) {
-      toast.error(restored.error);
-      return;
-    }
-    setProposal(restored.text);
-  };
-
-  // The splice is computed up front so a refusal is SAID before Apply, never
-  // discovered after it.
-  let splice: ReturnType<typeof spliceProposal> = null;
-  let spliceError: string | null = null;
-  if (prepared && proposal !== null) {
-    try {
-      splice = spliceProposal(prepared.content, proposal);
-    } catch (error) {
-      spliceError = explainSpliceRefusal(error);
-    }
-  }
-
-  const apply = async () => {
-    if (!prepared || !splice) return;
-    const got: { receipt: ChatAnswerSaveReceipt | null } = { receipt: null };
-    setSaving(true);
-    try {
-      await savePreparedContentEdit({
-        ctx,
-        source: prepared.source,
-        newContent: splice.text,
-        // The proposal was spliced into the text this review opened on (for a
-        // chat answer: its display projection) — the adapter maps the change
-        // onto the stored bytes.
-        previousContent: prepared.content,
-        onReceipt: (r) => {
-          got.receipt = r;
-        },
-      });
-      // Say what was WRITTEN, not what the proposal intended: a chat answer
-      // reports the spans its save changed (every other stored byte is
-      // byte-identical by the splice); other sources report the proposal.
-      const receipt = got.receipt;
-      const spans = receipt ? receipt.changedSpans : splice.changes.length;
-      toast.success(definition.applySuccessToast, {
-        description:
-          receipt && !receipt.written
-            ? "Nothing needed changing — the saved text already reads this way."
-            : receipt?.mostlyRewritten
-              ? "Most of the text was rewritten; hidden and protected parts are exactly as they were."
-              : `${spans} ${spans === 1 ? "place" : "places"} changed; everything else is exactly as it was.`,
-      });
-      onClose();
-    } catch (error) {
-      const settled = acknowledgedPreparedSource(prepared.source, error, splice.text);
-      if (settled) setPrepared({ source: settled, content: splice.text });
-      toast.error(getErrorMessage(error, "Could not save the change"));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  let body: React.ReactNode;
-  if (prepareError) {
-    body = <p className="text-sm text-destructive">{prepareError} <ErrorAlchemyMenu error={prepareError} /></p>;
-  } else if (!prepared) {
-    body = <p className="text-sm text-muted-foreground">Reading the saved version…</p>;
-  } else if (proposal !== null) {
-    body = (
-      <div className="flex min-h-0 flex-col gap-3">
-        <div className="min-h-0 flex-1 overflow-auto rounded-md border border-border">
-          <DiffViewer
-            original={prepared.content}
-            modified={proposal}
-            originalLabel="Saved"
-            modifiedLabel="Proposed"
-          />
-        </div>
-        {spliceError ? (
-          <p className="text-sm text-destructive">
-            {spliceError} Copy the proposal and edit the protected part by hand instead.
-            <ErrorAlchemyMenu error={spliceError} />
-          </p>
-        ) : splice === null ? (
-          <p className="text-sm text-muted-foreground">
-            The proposal is identical to what is saved — there is nothing to apply.
-          </p>
-        ) : null}
-        <div className="flex justify-end gap-2">
-          {initialProposal === null ? (
-            <Button variant="quiet" onClick={() => setProposal(null)} disabled={saving}>
-              Back
-            </Button>
-          ) : null}
-          <Button variant="outline" onClick={onClose} disabled={saving}>
-            Discard
-          </Button>
-          <Button variant="primary" onClick={() => void apply()} disabled={saving || !splice}>
-            {saving ? "Saving…" : "Apply"}
-          </Button>
-        </div>
-      </div>
-    );
-  } else if (actionId === "cleanup") {
-    body = (
-      <ProTextAgentActionPopoverBody
-        title={definition.popoverTitle}
-        phase={agentAction.phase}
-        isBusy={agentAction.isBusy}
-        isThinking={agentAction.isThinking}
-        // The person reads the result with its protected spans back in place,
-        // never the markers the agent worked with.
-        result={shownAgentResult}
-        error={agentAction.error}
-        agentName={agentName}
-        onSelectAgent={(id) => {
-          setAgentId(id);
-          setAgentName(null);
-        }}
-        onRun={() => {
-          if (!effectiveCleanupAgent) {
-            toast.info(definition.chooseAgentToast);
-            return;
-          }
-          void agentAction.run(agentInput?.text ?? prepared.content, effectiveCleanupAgent);
-        }}
-        canRun={Boolean(effectiveCleanupAgent) && !agentAction.isBusy}
-        onApply={() => receiveResult(agentAction.result)}
-        onBack={onClose}
-        onCancel={onClose}
-      />
-    );
-  } else {
-    body = (
-      <ProTextareaAgentPanel
-        actionId={actionId}
-        agentId={agentId}
-        mandateKey={
-          actionId === "help" && !agentId ? PRO_TEXTAREA_HELP_DEFAULT_MANDATE_KEY : null
-        }
-        agentLabel={agentName}
-        onAgentIdChange={(id) => setAgentId(id)}
-        onAgentClear={() => setAgentId(null)}
-        sourceText={agentInput?.text ?? prepared.content}
-        onApplySourceText={receiveResult}
-        onBack={onClose}
-        onCancel={onClose}
-        sourceFeature={ctx.source.type === "note" ? "notes" : ctx.source.type === "chat-message" ? "chat" : "documents"}
-      />
-    );
-  }
-
-  return (
-    <Dialog
-      open
-      onOpenChange={(open) =>
-        !open && !saving && onClose()
-      }
-    >
-      <DialogContent
-        className="flex max-h-[85dvh] w-[min(56rem,95vw)] max-w-none flex-col"
-      >
-        <DialogHeader>
-          <DialogTitle>
-            {initialProposal !== null ? "Apply to source" : definition.popoverTitle}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            {proposal !== null ? "Review the change before applying it." : definition.popoverTitle}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-auto">{body}</div>
-      </DialogContent>
-    </Dialog>
-  );
+export function DocumentAgentReview(props: DocumentAgentReviewProps): React.ReactElement {
+  return <PackageDocumentAgentReview {...props} editPort={webPreparedEditPort} />;
 }
 
 export default DocumentAgentReview;
