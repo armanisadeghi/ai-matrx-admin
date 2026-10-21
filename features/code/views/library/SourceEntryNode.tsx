@@ -8,7 +8,6 @@ import React, {
   useState,
 } from "react";
 import {
-  ChevronRight,
   Pencil,
   Copy as CopyIcon,
   RefreshCw,
@@ -36,6 +35,7 @@ import type {
 import { Button } from "@/components/ui/button";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface SourceEntryNodeProps {
   /** Start open (the one row a focused host is editing). */
@@ -230,7 +230,7 @@ export const SourceEntryNode: React.FC<SourceEntryNodeProps> = ({
             }
           }}
           className={cn(
-            "flex items-center gap-1 text-[13px] rounded-sm",
+            "flex items-center gap-1 rounded-sm",
             ROW_HEIGHT,
             "max-lg:h-11",
             TEXT_BODY,
@@ -239,22 +239,15 @@ export const SourceEntryNode: React.FC<SourceEntryNodeProps> = ({
             selfActive && !renaming && ACTIVE_ROW,
             renaming && "bg-card outline outline-1 outline-blue-400",
           )}
-          style={{ paddingLeft: 8 + depth * 12 }}
+          style={treeIndentStyle(depth)}
           title={entry.description ?? entry.name}
         >
           {adapter.multiField ? (
-            <ChevronRight
-              size={12}
-              className={cn(
-                "shrink-0 text-neutral-500 transition-transform",
-                expanded && "rotate-90",
-                !fields?.length && "opacity-30",
-              )}
-            />
+            <TreeDisclosure expandable expanded={expanded} className={!fields?.length ? "opacity-30" : undefined} />
           ) : (
-            <span className="inline-block w-3" />
+            <TreeDisclosure expandable={false} />
           )}
-          <FileIcon name={renaming ? renameValue : entry.name} kind="file" />
+          <FileIcon name={renaming ? renameValue : entry.name} kind="file" size={16} />
           {renaming ? (
             <input
               ref={renameInputRef}
@@ -280,7 +273,7 @@ export const SourceEntryNode: React.FC<SourceEntryNodeProps> = ({
             <span className="min-w-0 flex-1 truncate">{entry.name}</span>
           )}
           {!renaming && entry.badge && (
-            <span className="ml-auto rounded bg-neutral-200 px-1 py-0 text-[10px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+            <span className="ml-auto rounded bg-neutral-200 px-1 py-0 type-body font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
               {entry.badge}
             </span>
           )}
@@ -364,25 +357,25 @@ const SourceFieldLeaf: React.FC<SourceFieldLeafProps> = ({
         }
       }}
       className={cn(
-        "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+        "flex items-center gap-1 cursor-pointer rounded-sm",
         ROW_HEIGHT,
         TEXT_BODY,
         HOVER_ROW,
         active && ACTIVE_ROW,
         !field.hasContent && "text-neutral-500",
       )}
-      style={{ paddingLeft: 8 + depth * 12 }}
+      style={treeIndentStyle(depth)}
       title={
         field.hasContent
           ? `${field.label}: ${leafName}`
           : `${field.label} (empty — click to create)`
       }
     >
-      <span className="inline-block w-3" />
-      <FileIcon name={leafName} kind="file" />
+      <TreeDisclosure expandable={false} />
+      <FileIcon name={leafName} kind="file" size={16} />
       <span className="truncate">{field.label}</span>
       {!field.hasContent && (
-        <span className="ml-auto text-[10px] italic text-neutral-500">
+        <span className="ml-auto type-body italic text-neutral-500">
           empty
         </span>
       )}

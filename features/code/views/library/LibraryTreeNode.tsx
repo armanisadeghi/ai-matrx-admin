@@ -8,11 +8,8 @@ import React, {
   useState,
 } from "react";
 import {
-  ChevronRight,
   Copy as CopyIcon,
   FilePlus,
-  Folder,
-  FolderOpen,
   FolderPlus,
   Info,
   MoreHorizontal,
@@ -48,6 +45,7 @@ import {
   TEXT_BODY,
 } from "../../styles/tokens";
 import { libraryTabId } from "../../hooks/useOpenLibraryFile";
+import { TreeDisclosure, TreeFolderIcon, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 
 interface LibraryTreeNodeProps {
   folder: CodeFolder;
@@ -164,18 +162,18 @@ export const PersistedLibraryFileRow: React.FC<
           }
         }}
         className={cn(
-          "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+          "flex items-center gap-1 cursor-pointer rounded-sm",
           ROW_HEIGHT,
           "max-lg:h-11",
           TEXT_BODY,
           HOVER_ROW,
           active && ACTIVE_ROW,
         )}
-        style={{ paddingLeft: 8 + depth * 12 }}
+        style={treeIndentStyle(depth)}
         title={path}
       >
-        <span className="inline-block w-3" />
-        <FileIcon name={file.name} kind="file" />
+        <TreeDisclosure expandable={false} />
+        <FileIcon name={file.name} kind="file" size={16} />
         <span className="min-w-0 flex-1 truncate">{file.name}</span>
         {file._dirty && (
           <span
@@ -348,29 +346,18 @@ export const LibraryTreeNode: React.FC<LibraryTreeNodeProps> = ({
             }
           }}
           className={cn(
-            "flex items-center gap-1 text-[13px] cursor-pointer rounded-sm",
+            "flex items-center gap-1 cursor-pointer rounded-sm",
             ROW_HEIGHT,
             "max-lg:h-11",
             TEXT_BODY,
             HOVER_ROW,
             focused && ACTIVE_ROW,
           )}
-          style={{ paddingLeft: 8 + depth * 12 }}
+          style={treeIndentStyle(depth)}
           title={folder.description ?? folder.name}
         >
-          <ChevronRight
-            size={12}
-            className={cn(
-              "shrink-0 text-neutral-500 transition-transform",
-              expanded && "rotate-90",
-              !hasChildren && "opacity-30",
-            )}
-          />
-          {expanded ? (
-            <FolderOpen size={14} className="shrink-0 text-blue-500" />
-          ) : (
-            <Folder size={14} className="shrink-0 text-blue-500" />
-          )}
+          <TreeDisclosure expandable={hasChildren} expanded={expanded} />
+          <TreeFolderIcon open={expanded} />
           <EntityRef
             token="code_folder"
             id={folder.id}
@@ -421,8 +408,8 @@ export const LibraryTreeNode: React.FC<LibraryTreeNodeProps> = ({
           ))}
           {!hasChildren && (
             <div
-              className="text-[11px] text-neutral-500"
-              style={{ paddingLeft: 8 + (depth + 1) * 12 }}
+              className="type-body text-neutral-500"
+              style={treeIndentStyle(depth + 1)}
             >
               Empty folder
             </div>
