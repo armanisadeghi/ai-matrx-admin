@@ -23,6 +23,7 @@
 
 import { Popover, PopoverAnchor, PopoverContent, Skeleton } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { noteDisplayLabel } from "@/features/notes/format";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import React, {
@@ -92,6 +93,8 @@ import {
   selectDeletedNotesList,
   selectNotesTrashStatus,
   selectNotesTrashError,
+  selectNotesTrashCount,
+  selectNotesTrashRemaining,
   selectInstanceActiveTab,
   selectInstanceTabs,
   selectNotesListStatus,
@@ -278,6 +281,9 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
   const deletedNotes = useAppSelector(selectDeletedNotesList);
   const trashStatus = useAppSelector(selectNotesTrashStatus);
   const trashError = useAppSelector(selectNotesTrashError);
+  // The count is the server's total, never the rows this page holds (archived-items law).
+  const trashCount = useAppSelector(selectNotesTrashCount) ?? deletedNotes.length;
+  const trashRemaining = useAppSelector(selectNotesTrashRemaining);
   const sharedNotes = useAppSelector(selectSharedWithMeNotes);
   const sharedError = useAppSelector(selectNotesSharedError);
   const sharedStatus = useAppSelector(selectNotesSharedStatus);
@@ -1572,9 +1578,9 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
             )}
             <Trash2 className="text-rose-500 dark:text-rose-400" />
             <span className="flex-1 text-left truncate">Trash</span>
-            {deletedNotes.length > 0 && (
+            {trashCount > 0 && (
               <span className="text-xs font-normal opacity-50 tabular-nums">
-                <UntrustedCount value={deletedNotes.length} trustworthy={trashStatus !== "error"} label="Notes in trash" />
+                <UntrustedCount value={trashCount} trustworthy={trashStatus !== "error"} label="Notes in trash" />
               </span>
             )}
           </button>
@@ -1639,6 +1645,24 @@ export function NoteSidebar({ instanceId, onNoteOpened }: NoteSidebarProps) {
                       </div>
                     );
                   })}
+                  {trashRemaining > 0 && (
+                    <ControlButton
+                      variant="quiet"
+                      className="mx-1 mt-1"
+                      disabled={trashStatus === "loading"}
+                      onClick={() => void dispatch(fetchDeletedNotes({ more: true }))}
+                    >
+                      {trashStatus === "loading" ? "Loading…" : `Load more (${trashRemaining})`}
+                    </ControlButton>
+                  )}
+                  {trashStatus === "error" && (
+                    <ReadFailure
+                      error={trashError ?? true}
+                      what="more of your trash"
+                      onRetry={() => void dispatch(fetchDeletedNotes({ more: true }))}
+                      className="m-1"
+                    />
+                  )}
                 </>
               )}
             </div>

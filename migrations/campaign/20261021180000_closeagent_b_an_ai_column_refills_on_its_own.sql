@@ -343,12 +343,12 @@ $function$;
 CREATE OR REPLACE FUNCTION custom.enrich_refill_due_tick()
  RETURNS jsonb
  LANGUAGE plpgsql
- SECURITY DEFINER
  SET search_path TO 'pg_catalog'
 AS $function$
 declare
   v_stamped integer := 0;
 begin
+  -- Not a door: no client holds EXECUTE (PUBLIC's default is revoked below); it runs as the pg_cron job's role.
   -- LANE CLOSE-AGENT (CD-AGENT-12): called from custom.automation_time_tick (no schedule of its own). Once a day
   -- per AI column that a person set to refill on its own (source_config.auto_refill, with the person in
   -- auto_refill_by), and only while the column is switched on and says how often a value is due again, this
@@ -377,6 +377,7 @@ begin
 end
 $function$;
 
+REVOKE EXECUTE ON FUNCTION custom.enrich_refill_due_tick() FROM PUBLIC;
 
 CREATE OR REPLACE FUNCTION custom.automation_time_tick()
  RETURNS jsonb

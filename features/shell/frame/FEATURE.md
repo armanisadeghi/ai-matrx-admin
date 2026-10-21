@@ -210,6 +210,23 @@ copy.
 
 Blind spots: hrefs from other helpers, slug concatenation, in-page tab state (competitors, SEO backlinks/search-console sub-views), server `redirect()` targets, links in the database.
 
+## Frame crawl
+
+`scripts/frame-crawl/crawl.mjs` loads every signed-in app page on the LIVE site as `admin@admin.com` and
+records how it behaves, so a shell change is judged against numbers. Read-only: page loads only.
+
+- **Run:** `node scripts/frame-crawl/crawl.mjs [--mode classic|frame] [--only /prefix] [--retry-errors] [--report]`.
+  Resumable (a recorded route+width is skipped). `--mode frame` appends `?frame=new` (not live yet).
+- **Routes:** `route-flow.json` groups core + transitional, minus anything `route-homes.tsv` files under
+  "Not in the app frame". Widths 1440x900 and 390x844, at most 4 browser sessions.
+- **Dynamic segments:** one id per pattern, kept in `ids.json`. It comes from the parent list opened with
+  `?scope=mine` (Mine tab selected) or from a list with no lane control; no record means a "skipped" row.
+- **Per row:** final URL, status and redirects, console and red captured errors, 5xx responses, header
+  portals and crumb trails (double header), horizontal overflow, last element under fixed bottom chrome,
+  CLS, time to stable, screenshot (scratch folder, never git).
+- **Output:** `baseline-classic.json` (rows + summary) is the pre-change baseline recorded before any shell
+  edit; later phases write `baseline-frame.json` and are compared against it.
+
 ## Tests
 
 `features/shell/frame/__tests__/app-frame.test.tsx` (`pnpm test features/shell/frame`) covers:
@@ -220,6 +237,8 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-21 (frame crawl): `scripts/frame-crawl/` records the classic-shell baseline (P0).
 
 - 2026-10-21 (round 11): defaults Flush + Same + Fade; the fade is 8px, takes no height and
   appears only on scroll.

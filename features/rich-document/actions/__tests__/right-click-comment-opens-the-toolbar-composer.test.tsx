@@ -375,6 +375,9 @@ it("a chat answer: select → plain → select (the second triple-click runs int
 // line, so the range crosses the empty section's header ("info · empty"), the next header ("info")
 // and the `<style>` a prose frame drew inside the content. None of that is text the person or the
 // model wrote; judged by it, the passage could not be pinned and Comment vanished.
+// The real block renderer registers the app's host bindings, whose import graph reaches the
+// associations store; nothing here writes an association.
+jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: {} }));
 import { BlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/BlockRenderer";
 import { splitContentIntoBlocksV2 } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/content-splitter-v2";
 

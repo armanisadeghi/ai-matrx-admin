@@ -130,17 +130,26 @@ const notesAdapter: VirtualSourceAdapter = {
     const homeScopeId = scopeIdFromHomeVid(args.parentId);
     if (!homeScopeId) return [];
     const listListScope = await defaultListFilter("note", { userId });
-    let query = supabase
-      .schema("workbench").from("notes")
-      .select("id, label, updated_at, version");
-    query = listListScope.apply(query);
-    query = args.includeDeleted
-      ? query.not("deleted_at", "is", null)
-      : query.is("deleted_at", null);
-    query = query.eq("home_scope_id", homeScopeId);
-    const { data, error } = await query.order("updated_at", { ascending: false });
-    if (error) return [];
-    return (data ?? []).map(
+    // A folder listing is read as complete (deleted ones included): count-verified
+    // paging, because PostgREST stops every request at 1000 rows and says nothing.
+    const data = await readAllRows<{ id: string; label: string | null; updated_at: string | null; version: number | null }>(
+      ({ from, to }) => {
+        let query = supabase
+          .schema("workbench").from("notes")
+          .select("id, label, updated_at, version", { count: "exact" });
+        query = listListScope.apply(query);
+        query = args.includeDeleted
+          ? query.not("deleted_at", "is", null)
+          : query.is("deleted_at", null);
+        return query
+          .eq("home_scope_id", homeScopeId)
+          .order("updated_at", { ascending: false })
+          .order("id", { ascending: true })
+          .range(from, to);
+      },
+      { label: "workbench.notes (home folder)" },
+    );
+    return data.map(
       (row): VirtualNode => ({
         id: row.id,
         kind: "file",

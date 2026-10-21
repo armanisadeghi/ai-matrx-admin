@@ -4,7 +4,11 @@
  * running for a row is that row's state; a different account signed in is said plainly.
  */
 import {
+  cloudActionLabel,
   cloudDeliveryFor,
+  cloudSharing,
+  cloudSharingWords,
+  EMAIL_UNKNOWN_REASON,
   cloudDeliveryWords,
   macCourierEmails,
   signedInAsSomeoneElse,
@@ -54,5 +58,33 @@ describe("claude cloud delivery rules", () => {
     expect(st.kind).toBe("ready_via_mac");
     expect(cloudDeliveryWords(st).word).toBe("Ready (via this Mac)");
     expect(cloudDeliveryFor("b@x.com", [], null, live).kind).toBe("needs_sign_in");
+  });
+});
+
+/**
+ * 2026-10-21 review: a row with no email said "Needs one sign-in" while its action was dimmed, and
+ * two rows with one email both mapped to one cloud row with nothing saying so.
+ */
+describe("honest cloud states for unknown and shared emails", () => {
+  it("an account with no email is 'Email not known', with the reason and what makes it known", () => {
+    const st = cloudDeliveryFor(null, [row({})], null);
+    expect(st.kind).toBe("email_unknown");
+    expect(cloudDeliveryWords(st).word).toBe("Email not known");
+    expect(cloudActionLabel(st, "x")).toContain(EMAIL_UNKNOWN_REASON);
+    expect(EMAIL_UNKNOWN_REASON).toMatch(/fills in the next time this account signs in/);
+  });
+
+  it("rows with the same email are one shared sign-in; the first carries the action", () => {
+    const share = cloudSharing([
+      { id: "claude:1", email: "A@x.com", name: "a@x.com (main)" },
+      { id: "claude:2", email: "a@x.com", name: "a@x.com (work)" },
+      { id: "claude:3", email: "b@x.com", name: "b@x.com (b)" },
+      { id: "claude:4", email: null, name: "Unknown" },
+    ]);
+    expect(share.get("claude:1")).toEqual({ primary: true, others: ["a@x.com (work)"], primaryName: "a@x.com (main)" });
+    expect(share.get("claude:2")).toEqual({ primary: false, others: ["a@x.com (main)"], primaryName: "a@x.com (main)" });
+    expect(share.has("claude:3")).toBe(false);
+    expect(share.has("claude:4")).toBe(false);
+    expect(cloudSharingWords(share.get("claude:2")!).sentence).toContain("use that row's cloud action");
   });
 });

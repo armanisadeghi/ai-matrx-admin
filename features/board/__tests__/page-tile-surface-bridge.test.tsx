@@ -129,8 +129,11 @@ function FramedOtherPage() {
 /** A browser's postMessage: delivered later, carrying the sender's origin and window. */
 function browserPostMessage(target: Window, sender: Window) {
   target.postMessage = ((data: unknown, targetOrigin: string) => {
+    // A window already closed (an iframe removed) posts nothing.
+    const origin = sender.location?.origin;
+    if (!origin || !target.location) return;
     if (targetOrigin !== "*" && targetOrigin !== target.location.origin) return;
-    setTimeout(() => deliver(target, data, sender.location.origin, sender));
+    setTimeout(() => deliver(target, data, origin, sender));
   }) as Window["postMessage"];
 }
 
@@ -288,7 +291,7 @@ describe("a Page tile's surface is its framed page's surface", () => {
     await flush();
     // Gone: no surface on the tile, and the runtime an agent may still hold answers nothing it said before.
     expect(tile.primary()).toBeNull();
-    expect(await runtimeBefore.getScope()).toEqual({});
+    expect(() => runtimeBefore.getScope()).toThrow(/stopped emitting/);
     const ran = await actOnItem(tile, { tool: "framed_note_count_words", input: {} });
     expect(ran.ok).toBe(false);
     expect(page.ranInFrame).toEqual([]);

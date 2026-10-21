@@ -210,9 +210,9 @@ export function BrandSocialProfilesCard({
             busyRow === r.id && progress ? (
               <span className="truncate text-xs text-primary">{progress}</span>
             ) : handleValue ? (
-              <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+              <span className="flex min-w-0 items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
                 <span className="shrink-0">{platformLabel(r.platform)} ·</span>
-                {handleValue}
+                <span className="min-w-0 truncate">{handleValue}</span>
               </span>
             ) : (
               <span className="truncate text-xs text-muted-foreground">
@@ -293,7 +293,7 @@ export function BrandSocialProfilesCard({
               : r.tracking === "Needs a handle"
                 ? "Add the account handle to track it"
                 : "Not a social profile";
-          return <span className="text-xs text-muted-foreground" title={title}>{r.tracking}</span>;
+          return <span className="whitespace-nowrap text-xs text-muted-foreground" title={title}>{r.tracking}</span>;
         },
       },
       {

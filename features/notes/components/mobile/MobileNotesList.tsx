@@ -25,12 +25,15 @@ import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useNotesRedux } from "../../hooks/useNotesRedux";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   selectDeletedNotesList,
   selectSharedWithMeNotes,
   selectNotesSharedError,
   selectNotesTrashStatus,
   selectNotesTrashError,
+  selectNotesTrashCount,
+  selectNotesTrashRemaining,
 } from "../../redux/selectors";
 import {
   fetchNotesList,
@@ -68,6 +71,9 @@ export default function MobileNotesList({
   const deletedNotes = useAppSelector(selectDeletedNotesList);
   const trashStatus = useAppSelector(selectNotesTrashStatus);
   const trashError = useAppSelector(selectNotesTrashError);
+  // The count is the server's total, never the rows this page holds (archived-items law).
+  const trashCount = useAppSelector(selectNotesTrashCount) ?? deletedNotes.length;
+  const trashRemaining = useAppSelector(selectNotesTrashRemaining);
 
   const [searchQuery, setSearchQuery] = useState("");
   // Bodies are matched by the database (list rows carry only a preview).
@@ -358,9 +364,9 @@ export default function MobileNotesList({
                     size={12}
                   />
                   <span>Trash</span>
-                  {deletedNotes.length > 0 && (
+                  {trashCount > 0 && (
                     <span className="rounded-full bg-muted px-1.5 text-[10px]">
-                      <UntrustedCount value={deletedNotes.length} trustworthy={trashStatus !== "error"} label="Notes in trash" />
+                      <UntrustedCount value={trashCount} trustworthy={trashStatus !== "error"} label="Notes in trash" />
                     </span>
                   )}
                   <ChevronDown
@@ -434,6 +440,23 @@ export default function MobileNotesList({
                             );
                           })}
                         </div>
+                        {trashRemaining > 0 && (
+                          <ControlButton
+                            variant="quiet"
+                            className="mx-4 mt-2"
+                            disabled={trashStatus === "loading"}
+                            onClick={() => void dispatch(fetchDeletedNotes({ more: true }))}
+                          >
+                            {trashStatus === "loading" ? "Loading…" : `Load more (${trashRemaining})`}
+                          </ControlButton>
+                        )}
+                        {trashStatus === "error" && (
+                          <ReadFailure
+                            error={trashError ?? true}
+                            what="more of your trash"
+                            onRetry={() => dispatch(fetchDeletedNotes({ more: true }))}
+                          />
+                        )}
                       </>
                     )}
                   </div>

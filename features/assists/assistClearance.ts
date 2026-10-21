@@ -6,8 +6,9 @@
 //
 //   1. At its resting place (bottom-right) when nothing lies under it.
 //   2. Lifted to the nearest free spot above when a control is under it (09-28 round 2).
-//   3. In the chrome's own empty space — the list's pager bar, else the header beside its right
-//      cluster — when no free spot is in reach (chair ruling, 2026-10-01).
+//   3. In the chrome's own empty space — the list's pager bar or the page's own bottom bar (a
+//      note's status bar), else the header beside its right cluster — when no free spot is in
+//      reach (chair ruling, 2026-10-01; page foot 2026-10-21).
 //   4. Faded and click-through (yield) only when even the chrome has no room.
 //   A list's rows are never a free spot: the control never rests over a row (DH3-VERIFY-2).
 //
@@ -33,7 +34,7 @@
 
 import { useEffect } from "react";
 
-import { TRANSIENT_OVERLAY_SELECTOR } from "@/lib/layout/floating-chrome";
+import { PAGE_FOOT_ATTR, TRANSIENT_OVERLAY_SELECTOR } from "@/lib/layout/floating-chrome";
 import { pageInMotion, watchPageMotion } from "@/lib/layout/page-motion";
 
 const DOCK_SELECTOR = "[data-assists-dock]";
@@ -375,10 +376,15 @@ function visibleRect(el: Element | null): DOMRect | null {
 /** The slots on screen, footer first (the ruling's order). */
 function slotRegions(): { region: DockSlotRegion; host: Element }[] {
   const out: { region: DockSlotRegion; host: Element }[] = [];
-  const footers = document.querySelectorAll('[data-matrx-table-footer], [data-assist-dock-slot="footer"]');
+  // A page's own bottom bar (`data-matrx-page-foot`: the note's status bar) is chrome too (review 6
+  // H8, 2026-10-21): in a note's Split view blocks fill both panes and the header's cluster leaves
+  // no room, so the pill faded over a progress tracker's row. Its empty stretch is a slot, as a
+  // list's pager is. One inside a window or a dialog is that window's, never the page's.
+  const footers = document.querySelectorAll(`[data-matrx-table-footer], [data-assist-dock-slot="footer"], [${PAGE_FOOT_ATTR}]`);
   for (const el of footers) {
     // <html> carries the same attribute as the dock's own state ("docked in the footer"): never a bar.
     if (el === document.documentElement || el.closest(DOCK_SELECTOR)) continue;
+    if (el.matches(`[${PAGE_FOOT_ATTR}]`) && el.closest("[data-window-panel], [role=dialog]")) continue;
     const r = visibleRect(el);
     if (r) out.push({ host: el, region: { kind: "footer", band: r, startRight: Math.min(r.right, window.innerWidth) } });
   }

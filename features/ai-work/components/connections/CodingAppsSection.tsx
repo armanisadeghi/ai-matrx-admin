@@ -39,8 +39,12 @@ import {
   cloudDeliveryFor,
   cloudDeliveryWords,
   cloudRowFor,
+  cloudSharing,
+  cloudSharingWords,
+  EMAIL_UNKNOWN_REASON,
   unmatchedCloudRows,
   type CloudAccountRow,
+  type CloudSharing,
   type CloudDeliveryState,
 } from "@/features/ai-work/lib/claudeCloudDelivery";
 import { listChooserComputers, type ChooserComputer } from "@/features/ai-work/lib/computerChooser";
@@ -282,6 +286,9 @@ export interface AppsTablesProps {
   cloud?: ClaudeCloudDelivery | null;
 }
 
+/** Rows sharing one email are told apart by where they are signed in (else their id). */
+const sharedName = (a: AppAccount) => `${accountName(a)} (${a.instances.length ? a.instances.join(", ") : a.account_id.slice(0, 8)})`;
+
 /** A connected cloud account this computer has not seen, as an Accounts row (no reading of its own). */
 function cloudOnlyAccount(row: CloudAccountRow): AppAccount {
   return {
@@ -352,13 +359,21 @@ export function AppsTables(p: AppsTablesProps) {
   // connected cloud account this computer has not seen still gets a row of its own.
   const cloud = p.cloud ?? null;
   const cloudRows = cloud?.rows ?? [];
-  const accounts = [
-    ...p.accounts,
-    ...unmatchedCloudRows(p.accounts.filter((a) => a.app_key === "claude").map((a) => a.email), cloudRows).map(cloudOnlyAccount),
-  ];
+  const unmatched = unmatchedCloudRows(p.accounts.filter((a) => a.app_key === "claude").map((a) => a.email), cloudRows);
+  const accounts = [...p.accounts, ...unmatched.map(cloudOnlyAccount)];
   const cloudOnly = (a: AppAccount) => a.account_id.startsWith("cloud:");
+  const cloudOnlyRow = new Map(unmatched.map((r) => [`cloud:${r.id}`, r]));
   const running = cloud?.running ? { forEmail: cloud.running.forEmail, step: cloud.running.step } : null;
-  const cloudOf = (a: AppAccount): CloudDeliveryState | null => (a.app_key === "claude" && cloud ? cloudDeliveryFor(a.email, cloudRows, running, cloud.macEmails) : null);
+  const cloudOf = (a: AppAccount): CloudDeliveryState | null => {
+    if (a.app_key !== "claude" || !cloud) return null;
+    // A cloud-only row IS its cloud row, email or not.
+    const own = cloudOnlyRow.get(a.account_id);
+    if (own && !a.email) return own.status === "connected" ? { kind: "ready", row: own } : { kind: "signed_out", row: own };
+    return cloudDeliveryFor(a.email, cloudRows, running, cloud.macEmails);
+  };
+  // Same email = one claude.ai sign-in: the rows share one state, and the first carries the action.
+  const sharing = cloudSharing(accounts.filter((a) => a.app_key === "claude").map((a) => ({ id: acctKey(a), email: a.email, name: sharedName(a) })));
+  const shareOf = (a: AppAccount): CloudSharing | null => sharing.get(acctKey(a)) ?? null;
   const signInBusy = Boolean(cloud && (cloud.running || cloud.resuming));
   // The cloud sandbox delivers for this account (a live Mac may deliver too: "Ready (via this Mac)").
   const sandboxReady = (st: CloudDeliveryState | null) => st?.kind === "ready" || (st?.kind === "ready_via_mac" && st.row?.status === "connected");
@@ -369,14 +384,16 @@ export function AppsTables(p: AppsTablesProps) {
         ? "Reading your cloud accounts…"
         : st?.kind === "ready"
           ? null
-          : !a.email
-            ? "Its email is not known yet"
-            : signInBusy && st?.kind !== "in_progress"
+          : st?.kind === "email_unknown"
+            ? EMAIL_UNKNOWN_REASON
+            : shareOf(a)?.primary === false
+              ? `Same Claude sign-in as ${shareOf(a)?.primaryName}; use that row`
+              : signInBusy && st?.kind !== "in_progress"
               ? "Another sign-in is running; finish or cancel it first"
               : null;
   const deliver = (a: AppAccount) => cloud?.start(a.email);
   const stopDelivering = (a: AppAccount) => {
-    const row = cloud ? cloudRowFor(a.email, cloudRows) : null;
+    const row = cloud ? (cloudOnlyRow.get(a.account_id) ?? cloudRowFor(a.email, cloudRows)) : null;
     if (row && cloud) cloud.signOut(row);
   };
   const connectorUrl = `${resolveBaseUrl().replace(/\/$/, "")}/api/matrx-mcp`;
@@ -554,7 +571,15 @@ export function AppsTables(p: AppsTablesProps) {
               const st = cloudOf(a);
               if (!st) return <span className="text-muted-foreground">—</span>;
               const w = cloudDeliveryWords(st);
-              return <ToneWord tone={w.tone} word={w.word} label={`Cloud sessions: ${w.word}`} />;
+              const share = shareOf(a);
+              if (!share) return <ToneWord tone={w.tone} word={w.word} label={`Cloud sessions: ${w.word}`} />;
+              const sw = cloudSharingWords(share);
+              return (
+                <span className="flex min-w-0 items-center gap-1.5" title={sw.sentence} data-cloud-shared>
+                  <ToneWord tone={w.tone} word={w.word} label={`Cloud sessions: ${w.word}. ${sw.sentence}`} />
+                  <span className="shrink-0 text-xs text-muted-foreground">· {sw.tag}</span>
+                </span>
+              );
             },
           },
         ] satisfies MatrxColumnDef<AppAccount>[])
@@ -565,7 +590,8 @@ export function AppsTables(p: AppsTablesProps) {
     const st = cloudOf(a);
     if (!st) return [];
     const dWhy = deliverWhy(a, st);
-    const row = cloudRowFor(a.email, cloudRows);
+    const row = cloudOnlyRow.get(a.account_id) ?? cloudRowFor(a.email, cloudRows);
+    const share = shareOf(a);
     return [
       {
         id: "cloud",
@@ -580,10 +606,10 @@ export function AppsTables(p: AppsTablesProps) {
           },
           {
             id: "stop",
-            label: "Stop delivering to its cloud sessions",
+            label: share?.primary ? `Stop delivering to its cloud sessions (also ${share.others.join(", ")})` : "Stop delivering to its cloud sessions",
             destructive: true,
             separatorBefore: true,
-            disabledReason: !sandboxReady(st) || !row?.slot ? "Not delivering now" : undefined,
+            disabledReason: !sandboxReady(st) || !row?.slot ? "Not delivering now" : share && !share.primary ? `Same Claude sign-in as ${share.primaryName}; use that row` : undefined,
             onSelect: () => stopDelivering(a),
           },
         ],
@@ -687,7 +713,7 @@ export function AppsTables(p: AppsTablesProps) {
           }}
           rowActions={(a, controls) => acctActions(a, controls.openDetail)}
           contextMenu={cloud ? { sections: (payload) => (payload.level === "row" || payload.level === "cell" ? acctMenu(payload.row) : []) } : undefined}
-          detail={{ title: (a) => accountName(a), description: (a) => (cloudOnly(a) ? "Claude · delivering to cloud sessions; not seen on this computer" : `${appLabel(a.app_key)} · ${availability(a) === "available" ? `available, use ${ranks.get(acctKey(a)) === 1 ? "first" : `#${ranks.get(acctKey(a)) ?? ""}`}` : availability(a) === "unknown" ? "no usage reading yet" : "at its limit"}`), render: (a) => <AccountDetail a={a} stale={stale(a)} now={now} cloud={cloudOf(a)} /> }}
+          detail={{ title: (a) => accountName(a), description: (a) => (cloudOnly(a) ? "Claude · delivering to cloud sessions; not seen on this computer" : `${appLabel(a.app_key)} · ${availability(a) === "available" ? `available, use ${ranks.get(acctKey(a)) === 1 ? "first" : `#${ranks.get(acctKey(a)) ?? ""}`}` : availability(a) === "unknown" ? "no usage reading yet" : "at its limit"}`), render: (a) => <AccountDetail a={a} stale={stale(a)} now={now} cloud={cloudOf(a)} shared={shareOf(a)} /> }}
           isLoading={p.readingAccounts && !accounts.length}
           read={{ status: p.accountsError ? "error" : p.readingAccounts && !accounts.length ? "loading" : "ready", error: p.accountsError ?? undefined, onRetry: p.onDone, what: "this computer's accounts" }}
           emptyState={{ title: p.client ? (accounts.length ? "No accounts match" : "No accounts seen yet") : "No computer connected" }}
@@ -753,7 +779,7 @@ function InstanceDetail({ i, account, chats, away, now }: { i: AppInstance; acco
 }
 
 /** Every fact about one account: who it is, its newest reading, where and when it was read, what is missing. */
-function AccountDetail({ a, stale, now, cloud = null }: { a: AppAccount; stale: boolean; now: number; cloud?: CloudDeliveryState | null }) {
+function AccountDetail({ a, stale, now, cloud = null, shared = null }: { a: AppAccount; stale: boolean; now: number; cloud?: CloudDeliveryState | null; shared?: CloudSharing | null }) {
   const at = (ms: number | null) => (ms ? `${time(ms)} (${ago(ms, now)})` : null);
   const source = a.weekly_reset_source === "app" ? "the app itself" : a.weekly_reset_source === "usage_history" ? "a reset seen in its usage history" : a.weekly_reset_source ? "your list (not confirmed yet)" : null;
   return (
@@ -786,8 +812,9 @@ function AccountDetail({ a, stale, now, cloud = null }: { a: AppAccount; stale: 
                   ? "Your cloud sandbox, signed in as this account (works while your computer is off)"
                   : null
             }
-            empty="Nothing yet: one sign-in from this row's cloud action"
+            empty={cloud.kind === "email_unknown" ? `Nothing: ${EMAIL_UNKNOWN_REASON.toLowerCase()}` : "Nothing yet: one sign-in from this row's cloud action"}
           />
+          {shared ? <Fact label="Shared sign-in" value={cloudSharingWords(shared).sentence} /> : null}
         </>
       ) : null}
     </div>

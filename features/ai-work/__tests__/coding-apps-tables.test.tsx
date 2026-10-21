@@ -187,6 +187,36 @@ describe("Claude cloud delivery on the account rows", () => {
     expect(action("a@example.com").disabled).toBe(true);
   });
 
+  const cloudAction = (tr: Element | undefined) =>
+    [...(tr?.querySelectorAll("button") ?? [])].find((b) => (b.getAttribute("aria-label") ?? "").includes("cloud sessions"))!;
+
+  it("an account with no email says so, never 'Needs one sign-in' over a dimmed action", () => {
+    const accts = [...accounts, account({ account_id: "acct-noemail", email: null, instances: [] })];
+    render(<AppsTables {...props({ accounts: accts, cloud: cloud() })} />);
+    const tr = rowOf("Unknown");
+    expect(tr?.textContent).toContain("Email not known");
+    expect(tr?.textContent).not.toContain("Needs one sign-in");
+    const btn = cloudAction(tr);
+    expect(btn.disabled).toBe(true);
+    expect(btn.getAttribute("aria-label")).toContain("fills in the next time this account signs in");
+  });
+
+  it("two rows with one email are marked as one shared sign-in with a single action", () => {
+    const c = cloud({ rows: [] });
+    const accts = [
+      account({}),
+      account({ account_id: "acct-a2", email: "a@example.com", instances: ["work"] }),
+    ];
+    render(<AppsTables {...props({ accounts: accts, cloud: c })} />);
+    const rows = [...acctTable().querySelectorAll("tbody tr")].filter((tr) => tr.textContent?.includes("a@example.com"));
+    expect(rows).toHaveLength(2);
+    for (const tr of rows) expect(tr.querySelector("[data-cloud-shared]")?.textContent).toContain("Shared sign-in");
+    const [first, second] = rows.map(cloudAction);
+    expect(first.disabled).toBe(false);
+    expect(second.disabled).toBe(true);
+    expect(second.getAttribute("aria-label")).toContain("Same Claude sign-in as a@example.com (main)");
+  });
+
   it("a running sign-in is shown on its own row and names the account, step and time", () => {
     const c = cloud({ running: { forEmail: "b@example.com", slot: "s", startedAt: Date.now() - 65_000, step: "starting", phase: "app", phaseDetail: null, link: null } });
     render(<AppsTables {...props({ cloud: c })} />);

@@ -1521,7 +1521,7 @@ export const primaryNavItems: ShellNavItem[] = [
         group: "Scopes",
       },
       { id: "data.context-items", label: "Context Items", href: "/context-items", iconName: "ListTree", guestHidden: true, group: "Scopes" },
-      { id: "data.context-switcher-window", label: "Context Switcher Window", href: "/scopes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-context-switcher-panel", guestHidden: true },
+      { id: "data.context-switcher-window", label: "Scope Switcher Window", href: "/scopes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-context-switcher-panel", guestHidden: true },
     ],
   },
   {

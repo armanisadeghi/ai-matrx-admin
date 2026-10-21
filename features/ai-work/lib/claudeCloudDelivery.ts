@@ -33,7 +33,13 @@ export type CloudDeliveryState =
   | { kind: "ready_via_mac"; row: CloudAccountRow | null }
   | { kind: "signed_out"; row: CloudAccountRow }
   | { kind: "needs_sign_in" }
+  /** The local account has no email yet, so nothing can be matched or signed in for it. */
+  | { kind: "email_unknown" }
   | { kind: "in_progress"; step: CloudSignInRunning["step"] };
+
+/** Why a row with no email has no cloud action, and what makes the email known. */
+export const EMAIL_UNKNOWN_REASON =
+  "Its email is not known yet; it fills in the next time this account signs in on this computer";
 
 export const normalEmail = (email: string | null | undefined): string | null => {
   const e = email?.trim().toLowerCase();
@@ -79,7 +85,8 @@ export function cloudDeliveryFor(
   viaMac: ReadonlySet<string> = new Set(),
 ): CloudDeliveryState {
   const key = normalEmail(email);
-  if (running && key && normalEmail(running.forEmail) === key) return { kind: "in_progress", step: running.step };
+  if (!key) return { kind: "email_unknown" };
+  if (running && normalEmail(running.forEmail) === key) return { kind: "in_progress", step: running.step };
   const row = cloudRowFor(email, rows);
   if (key && viaMac.has(key)) return { kind: "ready_via_mac", row };
   if (row?.status === "connected") return { kind: "ready", row };
@@ -115,6 +122,8 @@ export function cloudDeliveryWords(state: CloudDeliveryState): {
       return { word: "Signed out", tone: "neutral", order: 2 };
     case "needs_sign_in":
       return { word: "Needs one sign-in", tone: "neutral", order: 3 };
+    case "email_unknown":
+      return { word: "Email not known", tone: "neutral", order: 4 };
   }
 }
 
@@ -124,7 +133,52 @@ export function cloudActionLabel(state: CloudDeliveryState, name: string): strin
   if (state.kind === "ready_via_mac")
     return state.row?.status === "connected" ? `Messages already reach ${name}'s cloud sessions` : `Also deliver to ${name}'s cloud sessions while the Mac is off (one sign-in)`;
   if (state.kind === "in_progress") return `Signing ${name} in for cloud sessions…`;
+  if (state.kind === "email_unknown") return `Deliver to cloud sessions (${EMAIL_UNKNOWN_REASON})`;
   return `Deliver to ${name}'s cloud sessions (one sign-in)`;
+}
+
+/**
+ * Cloud delivery is one claude.ai sign-in per email: the cloud list knows nothing finer (no
+ * account id, no organization). Two rows on this computer with the same email are therefore ONE
+ * cloud identity: they share one state and one action. The first row (in the order given) carries
+ * the action; every row of the group names the others.
+ */
+export interface CloudSharing {
+  /** The row that carries the cloud action for the whole group. */
+  primary: boolean;
+  /** The names of the group's primary row (for non-primary rows) or of the other rows (for the primary). */
+  others: string[];
+  /** The primary row's name. */
+  primaryName: string;
+}
+
+export function cloudSharing(
+  accounts: ReadonlyArray<{ id: string; email: string | null; name: string }>,
+): Map<string, CloudSharing> {
+  const groups = new Map<string, { id: string; name: string }[]>();
+  for (const a of accounts) {
+    const key = normalEmail(a.email);
+    if (!key) continue;
+    const g = groups.get(key) ?? [];
+    g.push({ id: a.id, name: a.name });
+    groups.set(key, g);
+  }
+  const out = new Map<string, CloudSharing>();
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    const [first, ...rest] = g;
+    out.set(first.id, { primary: true, others: rest.map((r) => r.name), primaryName: first.name });
+    for (const r of rest) out.set(r.id, { primary: false, others: [first.name], primaryName: first.name });
+  }
+  return out;
+}
+
+/** The short note a shared row shows beside its cloud state, and its full sentence. */
+export function cloudSharingWords(share: CloudSharing): { tag: string; sentence: string } {
+  const names = share.others.join(", ");
+  return share.primary
+    ? { tag: "Shared sign-in", sentence: `One Claude sign-in with ${names} (same email): this row's cloud action covers both.` }
+    : { tag: "Shared sign-in", sentence: `Same Claude sign-in as ${share.primaryName} (same email): use that row's cloud action.` };
 }
 
 /** Connected cloud accounts no row on this computer names: they still get a row. */

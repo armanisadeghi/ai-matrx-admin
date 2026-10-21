@@ -58,8 +58,10 @@ const CHILD_EXPR = />\s*\{\s*([\w$.?]+)\s*\}/g;
 const LONE_CHILD = /^\s*\{\s*([\w$.?]+)\s*\}\s*$/;
 const PROP_EXPR = new RegExp(String.raw`\b(?:${VISIBLE_PROPS})=\{\s*([\w$.?]+)\s*\}`, "g");
 const PROP_LIT = new RegExp(String.raw`\b(?:${VISIBLE_PROPS})\s*=\s*(["'])((?:(?!\1).){1,300})\1`, "g");
-const JSX_TEXT = /(?<![=\s])>([^<>{}]{1,300})</g; // not `=>` or a comparison `a > b`
-const CODE_LIKE = /=>|===|&&|\|\||\?\?|;\s|\);|\breturn\b|\bconst\b|\bcase\s*["']|(?<!:)\/\/|\?\.\w|\(|\)/;
+const JSX_TEXT = /(?<!=)(?<![^"'}\s]\s)>([^<>{}]{1,300})</g; // not `=>`; a comparison `a > b` (space after a bare word); `<span className="x" >` has a quote first
+const CODE_LIKE = /=>|===|&&|\|\||\?\?|;\s*$|\);|\breturn\b|\bconst\b|\bcase\s*["']|(?<!:)\/\/|\?\.\w|\(|\)/;
+/** A TypeScript declaration line (a type literal holds snake_case keys and `>` of generics). */
+const TS_DECLARATION = /^(?:export\s+)?(?:declare\s+)?(?:type|interface|const|let|function|import)\b/;
 /** A code view: the identifier is the content. */
 const CODE_VIEW = /<code\b|<kbd\b|<pre\b/;
 /**
@@ -80,11 +82,13 @@ export function findOffenders(src) {
     if (CODE_VIEW.test(near)) return;
     if (MONO.test(near) && EDIT_CONTEXT.test(near)) return;
     const t = line.trim();
+    const declaration = TS_DECLARATION.test(t); // `type X = { a_b: Record<..>; c_d: ..}` is code, not text
     for (const m of line.matchAll(CHILD_EXPR)) if (ID_EXPR.test(m[1])) out.add(t);
     const lone = LONE_CHILD.exec(line);
     if (lone && ID_EXPR.test(lone[1])) out.add(t);
     for (const m of line.matchAll(PROP_EXPR)) if (ID_EXPR.test(m[1])) out.add(t);
     for (const m of line.matchAll(PROP_LIT)) if (SNAKE.test(m[2])) out.add(t);
+    if (declaration) return;
     for (const m of line.matchAll(JSX_TEXT)) {
       const text = m[1].trim();
       if (!text || CODE_LIKE.test(text)) continue;
@@ -136,6 +140,12 @@ function selfTest() {
     ["<li key={v.name}>Normal Text</li>", 0],
     ['<span className="truncate" title={x}>\n  {variable.name}\n</span>', 1],
     ['<Row label="Normal Text" />', 0],
+    ['<span className="x" >huge_context</span>', 1],
+    ["<b>a; huge_context</b>", 1],
+    ["<b>{items.map((x) => x.a_b)}</b>", 0],
+    ["<b>{a > b_c}</b>", 0],
+    ["x = a > b_c</b>", 0],
+    ["type R = { n: Record<string, number>; came_over: Record<string, number> };", 0],
   ];
   let bad = 0;
   for (const [src, want] of cases) {

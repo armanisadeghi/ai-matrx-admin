@@ -34,6 +34,7 @@ import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { recordToast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { extractErrorMessage } from "@/utils/errors";
 import { lookupSystemRun } from "@/lib/workflows/system-runs";
 import { runHref } from "@/features/workflow-runtime/run-doors";
@@ -305,7 +306,15 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
   };
 
   const missing = (accounts.data ?? []).filter((a) => !a.trackedId);
+  // Bulk, paid work: the confirm step names the points before anything runs (points law: confirm before bulk work).
   const fetchMissing = async () => {
+    const total = defaultPosts ? spend.postsTotalText(missing.map((a) => a.kind), defaultPosts) : null;
+    const ok = await confirm({
+      title: `Fetch posts for ${missing.length} accounts?`,
+      description: total ? `Uses ${total.replace(/^≈ /, "about ")}.` : undefined,
+      confirmLabel: "Fetch all posts",
+    });
+    if (!ok) return;
     for (const account of missing) await fetchPosts(account);
   };
 
@@ -405,14 +414,14 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
         id: "fetched",
         label: "Fetched",
         header: "Fetched",
-        width: 100,
+        width: 120,
         align: "right",
         accessorFn: (r) => r.count,
         copyValue: (r) => (r.count === null ? "" : `${r.count} ${r.unit}`),
         filter: "number",
         cell: (r) =>
           r.count === null ? (
-            <span className="whitespace-nowrap text-muted-foreground">Not fetched</span>
+            <span className="text-muted-foreground">—</span>
           ) : (
             <span className="whitespace-nowrap tabular-nums">
               {formatCount(r.count)} {r.unit}
@@ -482,6 +491,8 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
     ];
   };
 
+  // The Cost popover (an info view, so points belong here): one fetch per account, plus the fetch-all total.
+  const costRows = defaultPosts ? (accounts.data ?? []).map((a) => ({ a, points: spend.postsTotalText([a.kind], defaultPosts) })) : [];
   const missingTotal = !accounts.isError && defaultPosts && missing.length > 1 ? spend.postsTotalText(missing.map((a) => a.kind), defaultPosts) : null;
 
   const run = setup.data;
@@ -494,24 +505,38 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
       headerExtra={
         canEdit ? (
           <>
-            {missingTotal && !accounts.isError ? (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="quiet" icon={<Coins />} aria-label="What fetching posts costs">
-                    Cost
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" width="md" padding="sm">
-                  <p className="px-1 pb-1.5 text-xs text-muted-foreground">{defaultPosts} posts per fetch</p>
-                  {missingTotal && !accounts.isError ? (
-                    <p className="mt-1 flex items-center gap-2 border-t border-border px-1 pt-1.5 text-sm">
-                      <span className="flex-1">Fetch all posts ({missing.length})</span>
-                      <span className="tabular-nums">{missingTotal}</span>
-                    </p>
-                  ) : null}
-                </PopoverContent>
-              </Popover>
-            ) : null}
+            {/* Drawn from first paint so the header never shifts; disabled until the accounts are read. */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="quiet" icon={<Coins />} disabled={!accounts.isSuccess} aria-label="What fetching posts costs">
+                  Cost
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" width="md" padding="sm">
+                <p className="px-1 pb-1.5 text-xs text-muted-foreground">
+                  {defaultPosts ? `${defaultPosts} posts per fetch` : "Posts per fetch not set"}
+                </p>
+                {costRows.length ? (
+                  <ul className="flex flex-col">
+                    {costRows.map(({ a, points }) => (
+                      <li key={a.propertyId} className="flex min-w-0 items-center gap-2 px-1 py-1 text-sm">
+                        <PropertyKindMark kind={a.kind} size={16} />
+                        <span className="min-w-0 flex-1 truncate">{a.label}</span>
+                        <span className="shrink-0 tabular-nums text-muted-foreground">{points ?? "—"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-1 py-1 text-sm text-muted-foreground">No accounts to fetch</p>
+                )}
+                {missingTotal ? (
+                  <p className="mt-1 flex items-center gap-2 border-t border-border px-1 pt-1.5 text-sm">
+                    <span className="flex-1">Fetch all posts ({missing.length})</span>
+                    <span className="tabular-nums">{missingTotal}</span>
+                  </p>
+                ) : null}
+              </PopoverContent>
+            </Popover>
             {!accounts.isError && missing.length > 1 ? (
               <Button variant="outline" onClick={() => void fetchMissing()}>
                 Fetch all posts

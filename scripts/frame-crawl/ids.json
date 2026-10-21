@@ -433,5 +433,349 @@
   },
   "/agents/[id]/shortcuts/old/edit/[shortcutId]": {
     "skipped": "parent list answered 404"
+  },
+  "/files/[...path]": {
+    "skipped": "list shows no records"
+  },
+  "/detail/[type]": {
+    "skipped": "list shows no records"
+  },
+  "/exports/[libraryId]": {
+    "skipped": "list shows no records"
+  },
+  "/mandates/[mandateKey]": {
+    "skipped": "list shows no records"
+  },
+  "/masterwork/[id]": {
+    "value": "9b34f2a2-0862-4161-b1f7-4bc2275be1ed",
+    "from": "/masterwork/9b34f2a2-0862-4161-b1f7-4bc2275be1ed",
+    "ownership": "no-lane-list"
+  },
+  "/messages/[conversationId]": {
+    "skipped": "list shows no records"
+  },
+  "/meetings/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/notes/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/projects/[projectId]": {
+    "skipped": "list shows no records"
+  },
+  "/scraper/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/sandbox/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/shapes/[kind]": {
+    "skipped": "list shows no records"
+  },
+  "/surfaces/[...name]": {
+    "skipped": "list shows no records"
+  },
+  "/tasks/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/vault/[itemId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/builds/[buildId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/go/[...slug]": {
+    "skipped": "list shows no records"
+  },
+  "/applets/build/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/shortcuts/[shortcutId]": {
+    "skipped": "list shows no records"
+  },
+  "/chat/message-templates/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/crm/deals/[dealId]": {
+    "skipped": "list shows no records"
+  },
+  "/chat/talk/[conversationId]": {
+    "skipped": "list shows no records"
+  },
+  "/detail/[type]/[id]": {
+    "skipped": "parent record unresolved"
+  },
+  "/chat/a/[agentId]": {
+    "skipped": "list shows no records"
+  },
+  "/data/interfaces/[interfaceId]": {
+    "skipped": "list shows no records"
+  },
+  "/education/family/[studentId]": {
+    "skipped": "list shows no records"
+  },
+  "/education/kits/[sourceId]": {
+    "skipped": "list shows no records"
+  },
+  "/data/custom-fields/[token]": {
+    "skipped": "list shows no records"
+  },
+  "/education/notes/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/education/study-guides/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/files/all/[[...path]]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/people/[employeeId]": {
+    "skipped": "mixed-ownership list and Mine lane did not apply"
+  },
+  "/images/edit/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/performance/[reviewId]": {
+    "skipped": "list shows no records"
+  },
+  "/files/f/[fileId]": {
+    "skipped": "list shows no records"
+  },
+  "/knowledge/extractions/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/mandates/record-preview/[mandateKey]": {
+    "skipped": "list shows no records"
+  },
+  "/mandates/id/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/brands/[brandId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/content-plan/[siteId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/initiatives/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/sites/[siteId]": {
+    "skipped": "list shows no records"
+  },
+  "/tools/pdf-extractor/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/transcripts/scribe/[sessionId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/conversation/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/matrix/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/open/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/model/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/smart-add/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/settings/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/request-mod/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/system-prompt/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/tuning/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/tools/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/battle/variations/[setId]": {
+    "skipped": "list shows no records"
+  },
+  "/agents/shortcuts/edit/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/data/[tableId]/r/[recordId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/education/subjects/quick-math/[id]": {
+    "value": "eae4656a-abcd-4f66-9958-95c5d9d95097",
+    "from": "/education/subjects/quick-math/eae4656a-abcd-4f66-9958-95c5d9d95097",
+    "ownership": "no-lane-list"
+  },
+  "/chat/message-templates/edit/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/people/[employeeId]/[tab]": {
+    "skipped": "parent record unresolved"
+  },
+  "/chat/talk/a/[agentId]": {
+    "skipped": "list shows no records"
+  },
+  "/cms/[siteId]/collections/[collectionId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/people/relations/[caseId]": {
+    "value": "5968e1fd-ef41-4168-a629-625b25456ed8",
+    "from": "/hr/people/relations/5968e1fd-ef41-4168-a629-625b25456ed8",
+    "ownership": "no-lane-list"
+  },
+  "/hr/me/time-off/[policyId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/performance/cycles/[cycleId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/performance/respond/[trackId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/performance/reviews/[reviewId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/time/periods/[periodId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/settings/leave-policies/[policyId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/time/overtime/[requestId]": {
+    "skipped": "list shows no records"
+  },
+  "/hr/time/timesheets/[employmentId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/locations/[locationId]": {
+    "value": "5c07d83f-ff16-4dbb-89c6-27802e916229",
+    "from": "/marketing/1c71e366-143c-4692-8e9a-1b59bdfe114a/locations/5c07d83f-ff16-4dbb-89c6-27802e916229/grid",
+    "ownership": "no-lane-list"
+  },
+  "/legal/ca-wc/pd-ratings-calculator/[claimId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/brands/[brandId]/[[...rest]]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]": {
+    "skipped": "mixed-ownership list and Mine lane did not apply"
+  },
+  "/marketing/sites/[siteId]/[...rest]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/seo/[siteId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/socials/[platform]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/content-plan/nodes/[nodeId]": {
+    "skipped": "list shows no records"
+  },
+  "/organizations/[orgId]/mandates/[mandateKey]": {
+    "skipped": "list shows no records"
+  },
+  "/organizations/[orgId]/scopes/[typeId]": {
+    "skipped": "list shows no records"
+  },
+  "/organizations/[orgId]/projects/[projectId]": {
+    "skipped": "list shows no records"
+  },
+  "/workflows/[id]/review/[issueId]": {
+    "skipped": "list shows no records"
+  },
+  "/applets/manage/[id]/v/[version]": {
+    "skipped": "parent record unresolved"
+  },
+  "/hr/people/[employeeId]/c/[tabKey]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/intelligence/reputation/[siteId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/planning/initiatives/[id]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/seo/[siteId]/[...rest]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/socials/[platform]/[accountId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]/[...rest]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/content/map/[mapId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/content/plan/[siteId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/socials/videos/[projectId]": {
+    "skipped": "list shows no records"
+  },
+  "/organizations/[orgId]/scopes/[typeId]/[scopeId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/admin/spend-approvals/[kind]": {
+    "skipped": "list shows no records"
+  },
+  "/masterwork/[id]/sources/kept/[sourceKey]": {
+    "skipped": "list shows no records"
+  },
+  "/organizations/[orgId]/admin/triggers/[triggerId]": {
+    "skipped": "list shows no records"
+  },
+  "/organizations/[orgId]/settings/mandates/[mandateKey]": {
+    "skipped": "list shows no records"
+  },
+  "/research/topics/[topicId]/tags/[tagId]": {
+    "skipped": "list shows no records"
+  },
+  "/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/seo/[siteId]/findings/[findingId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]/pages/[pageId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/admin/automations/[kind]/[id]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/admin/users/[userId]/[[...tab]]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/scopes/[typeId]/[scopeId]/[itemId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]": {
+    "skipped": "parent record unresolved"
+  },
+  "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]": {
+    "skipped": "parent record unresolved"
   }
 }

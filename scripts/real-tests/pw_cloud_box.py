@@ -109,9 +109,13 @@ def serve() -> None:
 
     console: list[str] = []
 
+    def keep(line):
+        console.append(line)
+        del console[:-2000]  # nobody reading `console` must not grow the driver without bound
+
     def attach(pg):
-        pg.on("console", lambda m: m.type in ("error", "warning") and console.append(f"[{m.type}] {m.text[:400]}"))
-        pg.on("pageerror", lambda e: console.append(f"[pageerror] {str(e)[:400]}"))
+        pg.on("console", lambda m: m.type in ("error", "warning") and keep(f"[{m.type}] {m.text[:400]}"))
+        pg.on("pageerror", lambda e: keep(f"[pageerror] {str(e)[:400]}"))
 
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp(CDP, timeout=15000)

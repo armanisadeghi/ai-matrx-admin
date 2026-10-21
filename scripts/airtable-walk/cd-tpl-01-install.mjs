@@ -4,6 +4,7 @@
 //   ORIGIN=http://<session>.localhost:3001 SLUG=<slug> SHOTS=<dir> [MEMBER=1] node scripts/airtable-walk/cd-tpl-01-install.mjs
 import { mkdirSync } from "node:fs";
 import { ORIGIN, start } from "./lib.mjs";
+import { resumeIfParked } from "./walk-signin.mjs";
 
 const SLUG = process.env.SLUG;
 if (!SLUG) throw new Error("SLUG= a template slug");
@@ -17,8 +18,11 @@ const check = (label, ok, detail = "") => { console.log((ok ? "PASS " : "FAIL ")
 const s = await start(member);
 console.log("signed in as", s.who);
 const page = s.page;
+const go = async (url) => { await page.goto(url, { waitUntil: "domcontentloaded", timeout: 240000 }); await resumeIfParked(page, "cd-tpl-01"); };
+// The shared preview pauses an idle tab when another session needs its slot: keep resuming.
+const keep = setInterval(() => resumeIfParked(page, "cd-tpl-01").catch(() => {}), 5000);
 try {
-  await page.goto(`${ORIGIN}/templates/${SLUG}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+  await go(`${ORIGIN}/templates/${SLUG}`);
   await page.waitForSelector("[data-public-template-install]", { timeout: 180000 });
   const title = await page.locator("h1").first().innerText().catch(() => "");
   console.log("template", title);
@@ -55,7 +59,7 @@ try {
   const tableHref = await page.locator('[data-make-template-landing-row="table"] a').first().getAttribute("href").catch(() => null);
   console.log("first table", tableHref);
   if (tableHref) {
-    await page.goto(ORIGIN + tableHref, { waitUntil: "domcontentloaded", timeout: 240000 });
+    await go(ORIGIN + tableHref);
     const ok = await page.waitForSelector("[data-table-toolbar]", { timeout: 180000 }).then(() => true, () => false);
     await page.waitForTimeout(3000);
     await page.screenshot({ path: `${SHOTS}/03-table.png` });
@@ -64,7 +68,7 @@ try {
     console.log("grid rows on screen", rows);
   }
   // Remove.
-  await page.goto(`${ORIGIN}/templates/${SLUG}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+  await go(`${ORIGIN}/templates/${SLUG}`);
   await remove.waitFor({ timeout: 180000 });
   await remove.click();
   await page.getByRole("alertdialog").or(page.getByRole("dialog")).getByRole("button", { name: /^Remove$/ }).click();
@@ -77,6 +81,7 @@ try {
   check("walk ran to the end", false, e.message);
 }
 console.log("console errors", JSON.stringify(s.errs.slice(0, 8)));
+clearInterval(keep);
 await s.browser.close();
 console.log(fails.length ? `FAIL cd-tpl-01 (${fails.length})` : "PASS cd-tpl-01");
 process.exit(fails.length ? 1 : 0);

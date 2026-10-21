@@ -664,7 +664,7 @@ export const TOOLS_GRID_TILES: ReadonlyArray<ToolsGridTile> = [
   },
   {
     id: "tile.context-switcher",
-    label: "Context Switcher",
+    label: "Scope Switcher",
     icon: Layers,
     category: "dupes",
     gate: "admin",

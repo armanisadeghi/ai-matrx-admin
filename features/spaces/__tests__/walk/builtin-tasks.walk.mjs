@@ -12,9 +12,11 @@ const id = await newPage(page);
 console.log("PAGE", id);
 const insert = async (pickName) => {
   await act(page, async () => {
-    await page.locator(".bn-editor .bn-inline-content").last().click();
+    // An empty paragraph at the end of the page: the last text block, never a block inside a database.
+    const para = page.locator(".bn-editor .bn-block-content[data-content-type=paragraph] .bn-inline-content").last();
+    await para.click();
     await page.keyboard.press("End");
-    await page.keyboard.press("Enter");
+    if ((await para.innerText()).trim() !== "") await page.keyboard.press("Enter");
     await slash(page, "Table view");
   });
   const dlg = page.getByRole("dialog").last();
@@ -35,8 +37,12 @@ await insert("Tasks");
 const tasks = page.locator(".spaces-db-frame[data-source=entity]").first();
 await tasks.waitFor({ timeout: 120_000 });
 await tasks.locator("tbody tr").first().waitFor({ timeout: 120_000 }).catch(() => {});
+await page.waitForTimeout(5000);
+await page.screenshot({ path: `${shots}/cd-page-16-0-tasks.png`, fullPage: true });
+console.log("TASKS BLOCK:", (await tasks.innerText()).replace(/\n+/g, " | ").slice(0, 300));
 const before = await tasks.locator("tbody tr").count();
 check("Built-in > Tasks draws task rows", before > 0, `${before} rows; ${await tasks.locator(".spaces-entity-count").innerText().catch(() => "")}`);
+await page.keyboard.press("Escape");
 await insert(null);
 const custom = page.locator(".spaces-db-frame:not([data-source=entity])").first();
 const customDrew = await custom.waitFor({ timeout: 120_000 }).then(() => true, () => false);

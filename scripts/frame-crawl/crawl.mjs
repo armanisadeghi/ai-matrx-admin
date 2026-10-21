@@ -115,7 +115,7 @@ const INIT = () => {
     }).observe({ type: "layout-shift", buffered: true });
   } catch {}
   const arm = () => {
-    new MutationObserver(() => (window.__f.lastMut = performance.now())).observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+    new MutationObserver(() => (window.__f.lastMut = performance.now())).observe(document, { subtree: true, childList: true, characterData: true });
   };
   if (document.documentElement) arm();
   else document.addEventListener("readystatechange", arm, { once: true });
@@ -130,7 +130,8 @@ const MEASURE = () => {
     return s.visibility !== "hidden" && s.display !== "none" && s.opacity !== "0";
   };
   const portals = [...document.querySelectorAll("[data-page-header-portal]")];
-  const portalsVisible = portals.filter(vis);
+  // a header portal counts when it carries content (the portal node itself is display:contents, so it has no box)
+  const portalsVisible = portals.filter((p) => (p.textContent ?? '').trim().length > 0 || p.children.length > 0);
   const center = document.querySelector("#shell-header-center, .shell-header-center");
   const trails = [...document.querySelectorAll('nav[aria-label*="readcrumb" i], [data-crumb-trail]')].filter(vis);
   const de = document.documentElement;

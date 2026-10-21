@@ -105,7 +105,7 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "linkRecordSheet", label: "Link a record", instance: "single" },
   { id: "contextAssignment", label: "Attach To", instance: "single", window: {} },
   { id: "contextItemsWindow", label: "Context Items", instance: "single", window: { windowId: "context-items-window", mobile: "drawer" } },
-  { id: "contextSwitcherWindow", label: "Context Switcher Window", instance: "single", window: { windowId: "context-switcher-window", mobile: "drawer" } },
+  { id: "contextSwitcherWindow", label: "Scope Switcher Window", instance: "single", window: { windowId: "context-switcher-window", mobile: "drawer" } },
   { id: "credentialVaultWindow", label: "Vault Window", instance: "single", window: { windowId: "credential-vault-window", mobile: "drawer" } },
   { id: "drillDeckContextWindow", label: "Drill Deck Context Window", instance: "single", window: { windowId: "drill-deck-context-window", mobile: "drawer" } },
   { id: "createProjectWindow", label: "Create Project", instance: "multi", window: { windowId: "create-project-window", mobile: "drawer" } },
