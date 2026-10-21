@@ -78,7 +78,7 @@ export interface KpiTrend {
 const SPARK_W = 64;
 const SPARK_H = 20;
 
-/** The tile's history line: a filled area under the line, scaled from its low point. */
+/** The tile's history line: a filled area under the line (none when flat), scaled from its low point. */
 function KpiSparkline({ trend, label }: { trend: KpiTrend; label: string }) {
   const n = trend.values.length;
   if (n < 2) return null;
@@ -100,7 +100,8 @@ function KpiSparkline({ trend, label }: { trend: KpiTrend; label: string }) {
       className="h-5 w-16 shrink-0 text-primary"
     >
       <title>{`${trend.label ?? label}, last ${trend.period}`}</title>
-      <polygon points={`0,${SPARK_H} ${pts} ${SPARK_W},${SPARK_H}`} fill="currentColor" fillOpacity={0.15} />
+      {/* A flat series is a line only: an area under it would read as a filled bar, not "no change". */}
+      {max === min ? null : <polygon points={`0,${SPARK_H} ${pts} ${SPARK_W},${SPARK_H}`} fill="currentColor" fillOpacity={0.15} />}
       <polyline points={pts} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );

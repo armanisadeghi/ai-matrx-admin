@@ -181,13 +181,33 @@ function SearchDelta({ total, prior, pct }: { total: number; prior: number | nul
  * Rivals with the most evidence first: tracked social accounts and a tracked website outrank a bare
  * name (a stray "britannica.com" or a person's name never heads the list). Nothing is removed.
  */
+/** Content platforms where an account is a channel (a creator), not a business. */
+const CHANNEL_PLATFORMS = new Set(["youtube", "tiktok", "twitch", "podcast"]);
+
+/**
+ * Competitors with the most evidence of being a rival business first: a website (tracked or not), presence on
+ * several platforms, then reach. A rival known only as a YouTube/TikTok channel with no website (a creator the
+ * discovery picked up, "minutephysics" on ai-matrx) comes after every business. Nothing is removed.
+ */
 function rankedNames(rivals: readonly BrandCompetitor[]): string[] {
-  const evidence = (c: BrandCompetitor) =>
-    c.accounts.length * 3 +
-    (c.websiteTracking === "tracked" ? 2 : 0) +
-    (c.domain ? 1 : 0) +
-    Math.log10(1 + c.accounts.reduce((sum, a) => sum + (a.followers ?? 0), 0));
+  const evidence = (c: BrandCompetitor) => {
+    const platforms = new Set(c.accounts.map((a) => a.platform.toLowerCase()));
+    const channelOnly = !c.domain && platforms.size > 0 && [...platforms].every((p) => CHANNEL_PLATFORMS.has(p));
+    return (
+      (c.domain ? 4 : 0) +
+      (c.websiteTracking === "tracked" ? 2 : 0) +
+      platforms.size * 2 +
+      Math.log10(1 + c.accounts.reduce((sum, a) => sum + (a.followers ?? 0), 0)) -
+      (channelOnly ? 20 : 0)
+    );
+  };
   return [...rivals].sort((a, b) => evidence(b) - evidence(a)).map((c) => c.name).filter(Boolean);
+}
+
+/** A phrase lifted from a list rather than a name: lower-case and short, or opening with a conjunction ("and community"). */
+function isFragment(name: string): boolean {
+  const text = name.trim();
+  return /^(and|or|&|with|for|of)\b/i.test(text) || (/^[a-z]/.test(text) && text.split(/\s+/).length <= 2);
 }
 
 const CERTAINTY_RANK: Record<string, number> = { confirmed: 3, likely: 2, possible: 1 };
@@ -195,7 +215,8 @@ const CERTAINTY_RANK: Record<string, number> = { confirmed: 3, likely: 2, possib
 /**
  * Products and services with the most evidence first: confirmed, then certainty, then how many sources
  * name them. Ties go to what the brand mostly sells (its majority kind) and to proper names over a
- * lower-case phrase lifted from page text ("aesthetic results" on a swimwear brand). Nothing is removed.
+ * lower-case phrase lifted from page text ("aesthetic results" on a swimwear brand); an unconfirmed fragment
+ * ("and community", a LinkedIn specialty list) comes after every named item. Nothing is removed.
  */
 function rankedOfferings<T extends { name: string; kind: string; status: string; certainty: string; quotes: readonly unknown[]; families: readonly unknown[] }>(items: readonly T[]): T[] {
   const live = items.filter((i) => i.status !== "dismissed");
@@ -203,7 +224,9 @@ function rankedOfferings<T extends { name: string; kind: string; status: string;
   for (const i of live) kinds.set(i.kind, (kinds.get(i.kind) ?? 0) + 1);
   const score = (i: T) =>
     (i.status === "confirmed" ? 1000 : 0) +
-    (CERTAINTY_RANK[i.certainty] ?? 0) * 100 +
+    (CERTAINTY_RANK[i.certainty] ?? 0) * 100 -
+    // An unconfirmed fragment never leads a named, better-evidenced item.
+    (i.status !== "confirmed" && isFragment(i.name) ? 250 : 0) +
     (i.quotes.length + i.families.length) * 10 +
     ((kinds.get(i.kind) ?? 0) * 2 > live.length ? 2 : 0) +
     (/^[A-Z0-9]/.test(i.name) ? 1 : 0);

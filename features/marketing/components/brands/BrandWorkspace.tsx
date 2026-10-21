@@ -102,6 +102,7 @@ import {
   BrandOverviewLook,
   BrandSearchClassBar,
 } from "@/features/marketing/components/brands/BrandOverviewPanels";
+import { BrandOverviewActivity } from "@/features/marketing/components/brands/BrandOverviewActivity";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -1085,8 +1086,11 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     <PersonFollowerTotal brandId={current.id} />
                   </>
                 ) : null}
+                {/* On a phone the line has room for status and setup only: a squeezed industry chip was an empty pill. */}
                 {current.industry ? (
-                  <Badge variant="outline" className="min-w-0 truncate">{current.industry}</Badge>
+                  <Badge variant="outline" className="hidden min-w-12 truncate sm:inline-flex" title={current.industry}>
+                    {current.industry}
+                  </Badge>
                 ) : null}
                 <div className="flex shrink-0 items-center">
                   <SmartAddSetupStatus brandId={current.id} organizationId={current.organization_id} />
@@ -1234,10 +1238,19 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   />
                   <BrandOverviewContact facts={factRows} websiteUrl={publicWebsiteUrl} onOpen={() => setTab("facts")} />
                   <BrandOverviewWebsites
-                    brandId={brandId}
+                    brandId={brandSeg}
                     sites={websiteSites}
                     publicWebsiteUrl={publicWebsiteUrl}
                     onOpen={() => setTab("web")}
+                  />
+                  <BrandOverviewActivity
+                    brandId={current.id}
+                    brandSeg={brandSeg}
+                    sites={websiteSites}
+                    profileIds={(socialAccounts.data ?? [])
+                      .filter((a) => a.ownerKind !== "person" && a.profileId)
+                      .map((a) => a.profileId as string)}
+                    enabled={!socialAccounts.isLoading && !sites.isLoading}
                   />
                 </div>
               </div>

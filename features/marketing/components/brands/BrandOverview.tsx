@@ -24,6 +24,7 @@ import { businessFactValueText } from "@/features/marketing/lib/business-fact-va
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { SiteIdentityMark } from "@/features/marketing/components/shared/SiteConnectionChips";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { marketingSeg } from "@/features/marketing/lib/keys";
 import { BUSINESS_FACT_KIND_LABELS } from "@/features/marketing/types";
 import type { BrandProperty, BusinessFact, BusinessFactKind, MarketingSite } from "@/features/marketing/types";
 
@@ -182,6 +183,7 @@ export function BrandOverviewWebsites({
   publicWebsiteUrl,
   onOpen,
 }: {
+  /** The brand's address segment (its slug when it has one): doors read as names, never ids. */
   brandId: string;
   sites: MarketingSite[];
   /** A viewer who cannot read the managed site still sees the brand's public website. */
@@ -206,7 +208,7 @@ export function BrandOverviewWebsites({
             <li key={site.id}>
               <Link
                 prefetch={false}
-                href={marketingRoutes.site(brandId, site.id)}
+                href={marketingRoutes.site(brandId, marketingSeg(site))}
                 className="flex min-h-11 items-center gap-3 px-3 py-1.5 hover:bg-accent/40"
               >
                 <SiteIdentityMark site={site} size={24} />
