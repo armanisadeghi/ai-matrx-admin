@@ -8,6 +8,7 @@
 //
 // Props: noteId only (+ optional variant). Everything from Redux.
 
+import { useNoteEditorControlsRegister } from "./noteEditorControlsSlot";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import React, { useState, useCallback } from "react";
 import {
@@ -61,6 +62,7 @@ export function NoteMetadataBar({
 
   const tags = useAppSelector(selectNoteTags(noteId));
   const note = useAppSelector(selectNoteById(noteId));
+  const registerControls = useNoteEditorControlsRegister(noteId);
 
   const { labelOf } = useNoteHomes();
   const homeLabel = labelOf(note?.home_scope_id) ?? "General";
@@ -211,7 +213,9 @@ export function NoteMetadataBar({
 
         {/* Save status + counts. Clipped: in a crowded row the counts step
             down (container query) and never paint over the copy pair. */}
-        <div className="ml-auto flex shrink-0 items-center">
+        {/* The editor's mic + "…" when no tab carries them (noteEditorControlsSlot.tsx). */}
+        {registerControls ? <div ref={registerControls} className="ml-auto flex shrink-0 items-center" /> : null}
+        <div className={cn("flex shrink-0 items-center", !registerControls && "ml-auto")}>
           <NoteStatsFooter noteId={noteId} />
         </div>
 

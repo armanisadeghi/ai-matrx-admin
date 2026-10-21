@@ -125,6 +125,7 @@ import React, {
   lazy,
   Suspense,
 } from "react";
+import { createPortal } from "react-dom";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { actionsAlreadyHere } from "@ai-matrx/context-menu/engine";
 
@@ -469,6 +470,14 @@ export interface ProTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
    */
   markdownFormatting?: boolean;
   /**
+   * Draw the mic + "…" cluster INSIDE this element (the host's own bar) instead of over the
+   * field — always shown, never on hover, and no reserved row. For a full-page editor whose
+   * text scrolls: pinned to the field's corner, the cluster sat on the scrolling text (/notes
+   * Plain and Split, 2026-10-20). Null/absent: the cluster stays in the field. `"none"`: the
+   * host already carries this box's mic and "…" (the Notes tab) — no cluster, no reserved row.
+   */
+  controlsHost?: HTMLElement | null | "none";
+  /**
    * Pasting or dropping an image uploads it and writes `![name](url)` at the
    * caret (`useMarkdownImageUpload` from the rich editor). Only for a box whose
    * text is markdown (notes); absent, images are left to the browser.
@@ -580,6 +589,7 @@ export const ProTextarea = React.forwardRef<
       uploadImage,
       expandable = false,
       controls,
+      controlsHost,
       appearance = "field",
       leading,
       ...props
@@ -1340,7 +1350,7 @@ export const ProTextarea = React.forwardRef<
     // A `hero` composer is the page's one box: its mic and "…" are always shown, so a keyboard
     // user never tabs onto an invisible control (critique 2026-10-17: Tab landed on a 0-opacity mic).
     const showControls =
-      (appearance === "hero" || isHovered || isFocused || isRecording || isTranscribing) && !disabled;
+      (appearance === "hero" || controlsHost instanceof HTMLElement || isHovered || isFocused || isRecording || isTranscribing) && !disabled;
     const isVoiceDisabled =
       !isAudioAvailable || disabled || (isTranscribing && !isRecording);
 
@@ -1470,6 +1480,7 @@ export const ProTextarea = React.forwardRef<
       // space (a full-page editor's page runway) sets `--matrx-textarea-end`
       // and keeps it — the notes Plain mode lost its runway to this 44px.
       !inlineControls &&
+        !controlsHost &&
         (hasCoarseControls || onSubmit) &&
         (editor?.singleLine && !onSubmit
           ? "pr-24 pointer-coarse:pr-32"
@@ -1478,7 +1489,7 @@ export const ProTextarea = React.forwardRef<
             : "pb-[max(2.75rem,var(--matrx-textarea-end,0px))]"),
     );
     // The reserved control row exists (the leading slot shares it with the cluster).
-    const reservesRow = !inlineControls && (hasCoarseControls || !!onSubmit) && !editor?.singleLine;
+    const reservesRow = !inlineControls && !controlsHost && (hasCoarseControls || !!onSubmit) && !editor?.singleLine;
     const fieldStyle: React.CSSProperties = {
       ...style,
       minHeight:
@@ -1605,17 +1616,24 @@ export const ProTextarea = React.forwardRef<
                 {leading}
               </div>
             ) : null}
+            {/* In the host's bar (`controlsHost`) or pinned in the field's corner. */}
+            {((cluster: React.ReactNode) =>
+              controlsHost === "none" ? null : controlsHost ? createPortal(cluster, controlsHost) : cluster)(
             <div
               ref={setClusterNode}
               onMouseDown={(e) => e.preventDefault()}
               data-matrx-tap-dense={denseInline ? "" : undefined}
-              className={cn(
-                "absolute z-10 flex items-center",
-                hero && !inlineControls
-                  ? "bottom-2 right-2"
-                  : proTextareaClusterPlacement(!!onSubmit, inlineControls ? "inline" : "row").className,
-                editor?.singleLine && "top-1/2 bottom-auto -translate-y-1/2",
-              )}
+              className={
+                controlsHost
+                  ? "flex items-center"
+                  : cn(
+                      "absolute z-10 flex items-center",
+                      hero && !inlineControls
+                        ? "bottom-2 right-2"
+                        : proTextareaClusterPlacement(!!onSubmit, inlineControls ? "inline" : "row").className,
+                      editor?.singleLine && "top-1/2 bottom-auto -translate-y-1/2",
+                    )
+              }
             >
               {fit.expandInline ? (
                 // Always shown (not on hover only): it says there is more text.
@@ -1885,7 +1903,8 @@ export const ProTextarea = React.forwardRef<
                   }
                 />
               )}
-            </div>
+            </div>,
+            )}
 
             {enableVoice && isRecording && (
               <div
