@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
+    "check:tree-indent": "node scripts/check-tree-indent.mjs",
+    "check:tree-indent:self-test": "node scripts/check-tree-indent.mjs --self-test",
     "check:wired-features": "node scripts/check-wired-features.mjs",
     "check:wired-features:self-test": "node scripts/check-wired-features.mjs --self-test",
     "check:rich-document-action-ratchet": "node scripts/check-rich-document-action-ratchet.mjs",

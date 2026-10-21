@@ -27,12 +27,13 @@ import { cn } from "@/lib/utils";
 
 import { TopicTreeRenameInput } from "./TopicTreeRenameInput";
 import type { TopicTreeRow as TopicTreeRowData } from "./types";
+import { TREE_INDENT_PX, TREE_ROW_HEIGHT, treeIndentPx } from "./geometry";
 
 /** Compact is the default everywhere; comfortable is for touch and presentation. */
-export const TOPIC_TREE_ROW_HEIGHT = { compact: 28, comfortable: 36 } as const;
+export const TOPIC_TREE_ROW_HEIGHT = TREE_ROW_HEIGHT;
 
 /** One depth step. 16px is the 4px-grid step VS Code, Finder and Linear all land on. */
-export const TOPIC_TREE_INDENT_PX = 16;
+export const TOPIC_TREE_INDENT_PX = TREE_INDENT_PX;
 
 /** How long the pointer rests before a hover card opens. Never fires on touch. */
 export const TOPIC_TREE_HOVER_DELAY_MS = 350;
@@ -83,7 +84,6 @@ export function TopicTreeRow({
   const drop = useDroppable({ id: row.id, disabled: !draggable });
 
   const height = TOPIC_TREE_ROW_HEIGHT[density];
-  const indent = row.depth * TOPIC_TREE_INDENT_PX;
 
   const label = (
     <span
@@ -108,7 +108,7 @@ export function TopicTreeRow({
       data-focused={focused ? "true" : undefined}
       onClick={onRowClick}
       onDoubleClick={onRowDoubleClick}
-      style={{ height, paddingLeft: indent + 4 }}
+      style={{ height, paddingLeft: treeIndentPx(row.depth) }}
       className={cn(
         // Body size (13px), the row text Finder and VS Code use — a tree is
         // primary content, never secondary text.
