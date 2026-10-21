@@ -385,14 +385,18 @@ export function StrategyBriefWorkspace({
         <>
           <SectionCard
             title="The brief"
-            copy={webCopy({
-              label: "Brief",
-              kind: "brand_strategy_brief",
-              surface: "Brand strategy",
-              description: `The ${noun}, version ${current.versionNo}.`,
-              lines: [current.briefMarkdown],
-              data: { brief_markdown: current.briefMarkdown, version: current.versionNo },
-            })}
+            copy={{
+              ...webCopy({
+                label: "Brief",
+                kind: "brand_strategy_brief",
+                surface: "Brand strategy",
+                description: `The ${noun}, version ${current.versionNo}.`,
+                lines: [["Version", current.versionNo]],
+                data: { brief_markdown: current.briefMarkdown, version: current.versionNo },
+              }),
+              // The person copies the brief itself, exactly as written.
+              human: () => current.briefMarkdown,
+            }}
           >
             <div className="p-3">
               <RichContent
