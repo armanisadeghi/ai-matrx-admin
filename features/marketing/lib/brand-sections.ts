@@ -238,13 +238,15 @@ export const MARKETING_BRAND_SECTIONS = [
     group: "Identity",
   },
   {
-    slug: "offerings",
+    // One home under Identity (Arman, 2026-10-21); `/offerings` forwards here.
+    slug: "identity",
     name: "Products & services",
     titlePrefix: "Products & Services",
     description: "What this brand sells — the products and services Smart Add found, and the tree behind them.",
     letter: "Pq",
     iconName: "Package",
     group: "Identity",
+    subPath: "offerings",
   },
   {
     slug: "content",
@@ -437,11 +439,21 @@ export const MARKETING_BRAND_SUBROUTE_PROMISES: readonly {
   { comingSoonId: "marketing.social", subRoute: "socials" },
 ];
 
+/**
+ * Segments under `/marketing/[brandId]` that only forward to a section's home
+ * (an old address kept working). Never a menu row.
+ */
+export const MARKETING_BRAND_FORWARD_SEGMENTS = [
+  // Products & services moved under Identity (Arman, 2026-10-21).
+  "offerings",
+] as const;
+
 /** The unique filesystem segments under `/marketing/[brandId]` (drift test). */
 export function listMarketingBrandSegments(): string[] {
   return [
-    ...new Set(
-      MARKETING_BRAND_SECTIONS.map((section) => section.slug).filter(Boolean),
-    ),
+    ...new Set([
+      ...MARKETING_BRAND_SECTIONS.map((section) => section.slug).filter(Boolean),
+      ...MARKETING_BRAND_FORWARD_SEGMENTS,
+    ]),
   ].sort();
 }

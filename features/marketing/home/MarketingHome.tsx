@@ -29,6 +29,11 @@ import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-tabl
 import { useBrands } from "@/features/marketing/data/hooks";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { listMarketingBrandModeGroups } from "@/features/marketing/lib/brand-sections";
+import {
+  arrangeBrandNav,
+  brandKindOf,
+  brandNavLabel,
+} from "@/features/marketing/lib/brand-kind";
 import type { MarketingNavPillar } from "@/features/marketing/lib/marketing-nav";
 import { SiteIdentityMark } from "@/features/marketing/components/shared/SiteConnectionChips";
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";
@@ -166,8 +171,15 @@ export function MarketingHome({
   const rows = glimpse.data?.rows ?? [];
   const [pickedBrandId, setPickedBrandId] = useState<string | null>(null);
   const brandId = pickedBrandId ?? rows[0]?.id ?? null;
+  // The same arrangement the brand's sidebar shows (a person brand has no Locations, says Peers).
+  const pickedRow = rows.find((row) => row.id === brandId);
+  const kind = brandKindOf(pickedRow);
   const brandGroups = brandId
-    ? listMarketingBrandModeGroups(marketingRoutes.brand(brandId))
+    ? arrangeBrandNav(
+        listMarketingBrandModeGroups(marketingRoutes.brand(brandId)),
+        kind,
+        (pickedRow?.sites.length ?? 0) > 0,
+      )
     : [];
   // The roster pillar is the Brands band above; the map lists everything else.
   const agencyPillars = pillars.filter(
@@ -266,7 +278,7 @@ export function MarketingHome({
                 label: group.label === "Start" ? "Brand" : group.label,
                 links: group.modes.map((mode) => ({
                   href: mode.href,
-                  label: mode.slug === "" ? "Overview" : mode.name,
+                  label: mode.slug === "" ? "Overview" : brandNavLabel(kind, mode),
                   iconName: mode.iconName,
                   soon: "status" in mode && mode.status === "coming-soon",
                 })),

@@ -53,15 +53,6 @@ import {
   listMarketingWebsiteModeGroups,
 } from "@/features/marketing/lib/route-sections";
 
-/** The SEO rooms a website's own menu lists directly; the rest sit behind "All SEO". */
-const WEBSITE_MENU_SEO_SLUGS = [
-  "keywords",
-  "rankings",
-  "search-console",
-  "audit",
-  "backlinks",
-  "ai-visibility",
-] as const;
 import { listMarketingBrandModeGroups } from "@/features/marketing/lib/brand-sections";
 import {
   arrangeBrandNav,
@@ -78,6 +69,16 @@ import {
 } from "@/features/marketing/data/keys-hooks";
 import { useBrandSites } from "@/features/marketing/data/hooks";
 import { cn } from "@/lib/utils";
+
+/** The SEO rooms a website's own menu lists directly; the rest sit behind "All SEO". */
+const WEBSITE_MENU_SEO_SLUGS = [
+  "keywords",
+  "rankings",
+  "search-console",
+  "audit",
+  "backlinks",
+  "ai-visibility",
+] as const;
 
 interface MarketingSidebarMenuProps {
   expanded: boolean;

@@ -247,17 +247,21 @@ export function arrangeBrandNav<M extends { slug: string; group: string }>(
   hasWebsite: boolean,
 ): { label: string; modes: M[] }[] {
   if (kind !== "person") return groups.map((g) => ({ label: g.label, modes: g.modes }));
-  const secondary = new Set(["websites", "seo"]);
+  // Website work: the websites list, SEO, and the content plan (which plans a site).
+  const secondary = new Set(["websites", "seo", "content/plan"]);
+  const isSecondary = (m: M) =>
+    secondary.has(m.slug) ||
+    ("subPath" in m && secondary.has(`${m.slug}/${String(m.subPath)}`));
   const next = groups
     .map((g) => ({
       label: g.label,
       modes: g.modes.filter(
-        (m) => m.slug !== "locations" && (hasWebsite || !secondary.has(m.slug)),
+        (m) => m.slug !== "locations" && (hasWebsite || !isSecondary(m)),
       ),
     }))
     .filter((g) => g.modes.length > 0);
   if (hasWebsite) return next;
-  const more = groups.flatMap((g) => g.modes.filter((m) => secondary.has(m.slug)));
+  const more = groups.flatMap((g) => g.modes.filter(isSecondary));
   return more.length ? [...next, { label: "More", modes: more }] : next;
 }
 

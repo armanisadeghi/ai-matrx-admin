@@ -16,7 +16,6 @@ import { readAllRows } from "@ai-matrx/data/db";
 import { supabase } from "@/utils/supabase/client";
 import { authenticatedWebDb } from "@/utils/supabase/webDb";
 import { marketingKeys } from "@/features/marketing/data/hooks";
-import { countSites } from "@/features/marketing/data/service";
 import { readBrandSocialCounts } from "@/features/marketing/social/service";
 
 const STALE_MS = 60_000;
@@ -28,6 +27,18 @@ async function countActiveBrands(signal: AbortSignal): Promise<number> {
     .from("brand")
     .select("id", { count: "exact", head: true })
     .is("deleted_at", null)
+    .abortSignal(signal);
+  if (response.error) throw new Error(response.error.message);
+  return response.count ?? 0;
+}
+
+/** Websites on brands that are not archived (matches the Brands tile). */
+async function countActiveBrandSites(signal: AbortSignal): Promise<number> {
+  const response = await (await authenticatedWebDb(supabase))
+    .from("site")
+    .select("id, brand!inner(id)", { count: "exact", head: true })
+    .is("deleted_at", null)
+    .is("brand.deleted_at", null)
     .abortSignal(signal);
   if (response.error) throw new Error(response.error.message);
   return response.count ?? 0;
@@ -89,7 +100,7 @@ export function useMarketingHomeBrandCount() {
 export function useMarketingHomeSiteCount() {
   return useQuery({
     queryKey: homeKey("sites"),
-    queryFn: ({ signal }) => countSites(signal),
+    queryFn: ({ signal }) => countActiveBrandSites(signal),
     staleTime: STALE_MS,
   });
 }
