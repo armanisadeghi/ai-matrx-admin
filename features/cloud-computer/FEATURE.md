@@ -29,6 +29,7 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 | `service.ts` | `GET/POST /browser-manager/cloud-computer[/wake]`; `lastKnownCloudComputer()` caches the last read for the synchronous browser-opener decision. |
 | `useCloudComputer.ts` | One read on mount, 2 s poll only while waking (5 min cap). `autoWake` wakes an off/never-made machine once per mount. |
 | `ComputerView.tsx` | Waking → screen. The screen is the Cloud Browser run ON the machine (`useCloudBrowser(…, "sandbox")`). |
+| `AccountSetupPanel.tsx` | "Set up an account": the person signs up for an outside service themselves on the desktop (`POST /browser-manager/account-setup/start` opens the page on a profile kept for that account); one save (`POST /browser-manager/runs/{id}/account-setup/save`) puts the login in their Vault bound to that profile, then the authenticator key via `/api/authenticator/enroll`. What they type goes to the vault, never to an agent. |
 | `ScaledFrame.tsx` | One live Selkies iframe scaled to any box; measures on the next animation frame. `interactive` turns input on in the same frame and makes it own the keyboard (focus on control start / press; a self-focusing field elsewhere hands it back). |
 | `liveStream.ts` | Which held stream is the live picture (`liveStream`): any held stream on a watch-capable server, else only this revision's control stream. |
 | `useOpenCloudComputerCanvas.ts` | Canvas item; identity `CLOUD_COMPUTER_CANVAS_SOURCE_ID` — ONE per person, never per chat. |
