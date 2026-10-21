@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1629 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1630 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "be5abb89d597";
+export const KIND_REGISTRY_FINGERPRINT = "f5984b9f19b1";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -2414,6 +2414,30 @@ export interface ChartSpec {
    */
   __kind?: string;
   group_by: string | null;
+}
+
+/**
+ * One input that changes next time, with this chat's value.
+ *  *
+ *  * From kind `agent_studio_chat_brief`.
+ */
+export interface ChatBriefInput {
+  /**
+   * snake_case name the new agent's variable carries.
+   */
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * This chat's value for the input.
+   */
+  test_value: string;
+  /**
+   * What the value is, in one line.
+   */
+  description: string;
 }
 
 /**
@@ -15410,6 +15434,45 @@ export interface AgentStudioChatBriefOffer {
    * The conversation's title, when it has one.
    */
   conversation_title?: string;
+}
+
+/**
+ * The build brief for an agent that reaches a chat's accepted end result on the first try.
+ *  *
+ *  * Kind `agent_studio_chat_brief` (registry v1).
+ */
+export interface AgentStudioChatBrief {
+  fit: "single_agent" | "masterwork";
+  /**
+   * Title Case name of the new agent.
+   */
+  name: string;
+  /**
+   * Every requirement of the accepted result, corrections restated up front.
+   */
+  goals: string[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_studio_chat_brief";
+  /**
+   * One sentence: what the new agent does.
+   */
+  summary: string;
+  /**
+   * Inputs that change next time, with this chat's values.
+   */
+  variables: ChatBriefInput[];
+  fit_reason: string;
+  /**
+   * The concrete end result the person accepted.
+   */
+  deliverable: string;
+  response_format: "text" | "json";
+  /**
+   * Numbers of the assistant turns whose text is the accepted result; empty when no text turn holds it.
+   */
+  end_result_turns: number[];
 }
 
 /**
@@ -63951,6 +64014,7 @@ export type GeneratedKindSlug =
   | "agent_result"
   | "agent_spec_findings"
   | "agent_studio.chat_brief.offer"
+  | "agent_studio_chat_brief"
   | "agent_task_list"
   | "agent_test_case_ref"
   | "agent_test_case_state"
@@ -65583,6 +65647,7 @@ export interface KindPayloadBySlug {
   "agent_result": AgentResult;
   "agent_spec_findings": AgentSpecFindings;
   "agent_studio.chat_brief.offer": AgentStudioChatBriefOffer;
+  "agent_studio_chat_brief": AgentStudioChatBrief;
   "agent_task_list": AgentTaskList;
   "agent_test_case_ref": AgentTestCaseRef;
   "agent_test_case_state": AgentTestCaseState;
@@ -67219,6 +67284,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_result",
   "agent_spec_findings",
   "agent_studio.chat_brief.offer",
+  "agent_studio_chat_brief",
   "agent_task_list",
   "agent_test_case_ref",
   "agent_test_case_state",
