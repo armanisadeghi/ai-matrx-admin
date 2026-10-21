@@ -5,8 +5,8 @@
  * which brand it is standing in, with the PR Director beside it.
  *
  * Without the scoping the workspace defaulted to the first brand alphabetically
- * across the entire platform, so `/marketing/<client>/pr` showed a different
- * client's stories, journalists and pitches under the requested client's name.
+ * across the entire platform, so `/marketing/<brand>/pr` showed a different
+ * brand's stories, journalists and pitches under the requested brand's name.
  *
  * The brand comes from `MarketingBrandProvider` (a real UUID), never from the
  * route param — the param is an address and is usually a key.

@@ -9,7 +9,7 @@
  * typing a new number never reflows the column — the jitter that makes a
  * numbers UI feel broken.
  *
- * "Name them" is the fastest control on this screen: paste the client's real
+ * "Name them" is the fastest control on this screen: paste the brand's real
  * service list, one per line, and it sets the count AND rewrites the slugs
  * live. Eight stepper clicks plus eight renames collapse into one paste.
  */

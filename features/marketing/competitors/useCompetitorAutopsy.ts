@@ -79,7 +79,7 @@ export function useCompetitorAutopsy(
    * `/marketing/<brand>/intelligence/competitors` carries no `?siteId`, and
    * this hook used to fall back to `sites.data[0]` — the first site on the
    * PLATFORM. So every brand's competitors page silently rendered a different
-   * client's competitors and verdict (All Green, with 12 competitors, showed
+   * brand's competitors and verdict (All Green, with 12 competitors, showed
    * aimatrx.com's 3 and an aimatrx verdict about study.com/britannica.com).
    * When a brand is in scope the fallback may only ever choose one of THAT
    * brand's sites; if the brand has none, we resolve to null and the surface

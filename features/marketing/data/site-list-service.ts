@@ -61,7 +61,7 @@ const COUNT_SORT: EntityListSort = {
 
 /**
  * Build the generic entity-list service without inventing another site query.
- * `brandId` preserves the existing client-workspace narrowing when present.
+ * `brandId` preserves the existing brand-workspace narrowing when present.
  *
  * Sites deliberately expose one blended organization-browse scope. Counts use
  * a one-row `listSites` request so the number is the canonical query's exact

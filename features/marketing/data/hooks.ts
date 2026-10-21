@@ -247,7 +247,7 @@ export const marketingKeys = {
 export function useSites(
   state: MatrxDataTableQueryState,
   /** Brand scope. Inside a brand workspace this MUST be set, or the portfolio
-   * lists every client's websites — see listSites' brand-scope note. */
+   * lists every brand's websites — see listSites' brand-scope note. */
   brandId?: string | null,
 ) {
   return useQuery({
@@ -1387,7 +1387,7 @@ export function useDeleteBrandAsset() {
 }
 
 /** Light brand options (id/name) for one organization — pickers only. */
-/** Every readable brand across every org — the client switcher's list. */
+/** Every readable brand across every org — the brand switcher's list. */
 export function useAllBrandOptions() {
   return useQuery({
     queryKey: [...marketingKeys.root, "all-brand-options"] as const,

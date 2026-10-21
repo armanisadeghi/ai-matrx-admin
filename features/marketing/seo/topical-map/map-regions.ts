@@ -8,7 +8,7 @@
 // does; a region answers WHERE. `region` is a built-in facet of every map, so a
 // location page belongs on the SERVICE topic it is about, carrying its place as
 // a facet value. Measured live on 2026-09-17, a topic slugged `california` on a
-// real client's map had collected 557 location pages, and every crowding,
+// real brand's map had collected 557 location pages, and every crowding,
 // duplication and merge judgment downstream then read that company's local
 // footprint as duplicates of itself. This pass derives the brand's region
 // values from real data and binds each location page through

@@ -350,11 +350,11 @@ export async function listSites(
     .is("deleted_at", null);
 
   // 🚨 BRAND SCOPE (2026-08-30). `/marketing/<brand>/websites` mounted this
-  // portfolio unscoped, so a client's own workspace listed EVERY client's
+  // portfolio unscoped, so a brand's own workspace listed EVERY brand's
   // websites — 15 sites across 14 brands inside All Green Recycling's shell.
   // The page carried a comment acknowledging the gap ("no brand-scoped list
   // component exists") and deferring it; deferring it is what shipped one
-  // client's roster into another's workspace.
+  // brand's roster into another's workspace.
   if (brandId) query = query.eq("brand_id", brandId);
 
   const search = cleanSearch(state.search);
@@ -917,9 +917,9 @@ export async function moveSiteBrand(
 }
 
 /**
- * EVERY readable brand, across every organization — the client switcher's
+ * EVERY readable brand, across every organization — the brand switcher's
  * list. RLS is the scope; an agency's brands span orgs, and a switcher that
- * silently trims to one org reads as missing clients (Arman, 2026-08-30).
+ * silently trims to one org reads as missing brands (Arman, 2026-08-30).
  * Complete-list law: readAllRows, never a bare select.
  */
 export async function listAllBrandOptions(

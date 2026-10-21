@@ -7,7 +7,7 @@
  * mounted `CompetitorAutopsyWorkspace` with NO scope at all. The workspace
  * takes its site from `?siteId`, and the brand route never sets one, so it fell
  * back to `sites.data[0]` — the first site on the PLATFORM. Every brand's
- * competitors page therefore rendered a different client's data: All Green
+ * competitors page therefore rendered a different brand's data: All Green
  * Recycling (12 competitors) showed aimatrx.com's 3 and an executive verdict
  * about study.com and britannica.com. Nothing warned anyone; the numbers just
  * belonged to someone else.

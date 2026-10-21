@@ -1,5 +1,5 @@
 /**
- * Media desk screens: the clip view (clean, imperfect, client absent), the
+ * Media desk screens: the clip view (clean, imperfect, brand absent), the
  * headline view (pick per format, over-limit subject lines), the progress words
  * and the gallery's narrowing of stored result documents.
  */
@@ -104,13 +104,13 @@ describe("ClipView", () => {
     expect(container.textContent).not.toContain("Clean: the reviewer found nothing left to fix.");
   });
 
-  it("says no clip was made when the client is not in the article", () => {
+  it("says no clip was made when the brand is not in the article", () => {
     render(
       <ClipView
         result={{ ...finished([]), status: "client_absent", clip: null, message: "All Green is not in this article, so no clip was made." }}
       />,
     );
-    expect(container.querySelector('[data-testid="clip-client-absent"]')?.textContent).toContain(
+    expect(container.querySelector('[data-testid="clip-brand-absent"]')?.textContent).toContain(
       "All Green is not in this article, so no clip was made.",
     );
     expect(container.querySelector('a[href^="/files/f/"]')).toBeNull();
