@@ -62,7 +62,7 @@ import {
   selectRoomIdForThread,
   selectThreadTaskId,
 } from "@/features/war-room/redux/selectors";
-import { provideHostValues } from "@/features/mandates/host-values/host-values";
+import { provideHostValues } from "@ai-matrx/chat/mandates/host-values/host-values";
 import { WAR_ROOM_CONTEXT_KEY } from "@/features/war-room/service/warRoomContextXml";
 import {
   attachEntityToThread,

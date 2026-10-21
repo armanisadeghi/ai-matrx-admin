@@ -26,7 +26,7 @@ import { assistPriority } from "@/features/assists/types";
 import type { TaskWithProject } from "@/features/tasks/types";
 import { UNASSIGNED_PROJECT_ID } from "@/features/tasks/redux/selectors";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
-import type { HostValuesFor } from "@/features/mandates/host-values/host-values";
+import type { HostValuesFor } from "@ai-matrx/chat/mandates/host-values/host-values";
 
 const SOURCE_KEY = "tasks.overdue_pileup";
 

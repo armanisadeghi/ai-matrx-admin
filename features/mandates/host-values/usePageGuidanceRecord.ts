@@ -19,7 +19,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { ambientAssistantMandateChain } from "@ai-matrx/chat/agents/components/ambient-assistant/ambientAssistantMandates";
-import { provideHostValues, type HostValuesFor, type ProvideOptions } from "./host-values";
+import { provideHostValues, type HostValuesFor, type ProvideOptions } from "@ai-matrx/chat/mandates/host-values/host-values";
 
 export interface PageGuidanceRecord {
   id: string | null | undefined;

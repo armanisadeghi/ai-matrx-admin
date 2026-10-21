@@ -31,7 +31,7 @@ import { WAR_ROOM_MASTER_AGENT_MANDATE } from "@/features/war-room/constants";
 import { selectSessionsList } from "@/features/war-room/redux/selectors";
 import { useDurableAgentConversation } from "@/features/war-room/hooks/useDurableAgentConversation";
 import { reportWarRoomError } from "@/features/war-room/utils/reportWarRoomError";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
+import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import { WAR_ROOM_CONTEXT_KEY } from "@/features/war-room/service/warRoomContextXml";
 import {
   buildMasterAgentContext,
