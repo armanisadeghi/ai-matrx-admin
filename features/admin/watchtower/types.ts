@@ -1,5 +1,5 @@
 /** One feature's scorecard (`tool.feature_scorecard`) and one canary call (`tool.canary_run`). */
-export type AlarmState = "ok" | "failing" | "degraded" | "unknown";
+export type AlarmState = "ok" | "failing" | "degraded" | "paused" | "unknown";
 
 export interface ScorecardRow {
   feature_key: string;

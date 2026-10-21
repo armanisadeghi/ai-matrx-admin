@@ -6,6 +6,7 @@ export function alarmWords(state: AlarmState): { label: string; tone: Tone } {
   if (state === "failing") return { label: "Failing", tone: "danger" };
   if (state === "degraded") return { label: "Degraded", tone: "warning" };
   if (state === "ok") return { label: "OK", tone: "success" };
+  if (state === "paused") return { label: "Paused", tone: undefined };
   return { label: "Not checked", tone: undefined };
 }
 
@@ -38,7 +39,7 @@ export function seconds(value: number | null): string {
 
 /** Features first that need a person, then the rest by group. */
 export function sortScorecards(rows: readonly ScorecardRow[]): ScorecardRow[] {
-  const rank: Record<AlarmState, number> = { failing: 0, degraded: 1, ok: 2, unknown: 3 };
+  const rank: Record<AlarmState, number> = { failing: 0, degraded: 1, ok: 2, paused: 3, unknown: 4 };
   return rows
     .filter((r) => r.feature_key !== "_daily_note")
     .slice()
