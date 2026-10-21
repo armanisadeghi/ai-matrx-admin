@@ -234,7 +234,9 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
   const accounts = useQuery({ queryKey: ["marketing", "brand-work-accounts", brand.id], queryFn: () => loadAccounts(brand.id) });
   // The rows to come are the brand's sites plus its accounts: both lists are already loading for the page
   // (shared cache), so the loading box can be the height of the table that replaces it.
+  // access-errors: ok — only sizes the loading box; the table's own reads report any failure.
   const knownSites = useBrandSites(brand.id);
+  // access-errors: ok — only sizes the loading box; the table's own reads report any failure.
   const knownProperties = useBrandProperties(brand.id);
   const expectedRows =
     knownSites.data && knownProperties.data
@@ -307,7 +309,17 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
 
   const missing = (accounts.data ?? []).filter((a) => !a.trackedId);
   // Bulk, paid work: the confirm step names the points before anything runs (points law: confirm before bulk work).
+  const [bulkRunning, setBulkRunning] = useState(false);
   const fetchMissing = async () => {
+    if (bulkRunning) return;
+    setBulkRunning(true);
+    try {
+      await fetchMissingOnce();
+    } finally {
+      setBulkRunning(false);
+    }
+  };
+  const fetchMissingOnce = async () => {
     const total = defaultPosts ? spend.postsTotalText(missing.map((a) => a.kind), defaultPosts) : null;
     const ok = await confirm({
       title: `Fetch posts for ${missing.length} accounts?`,
@@ -526,10 +538,10 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
                       </li>
                     ))}
                   </ul>
-                ) : (
+                ) : defaultPosts && !accounts.isError ? (
                   <p className="px-1 py-1 text-sm text-muted-foreground">No accounts to fetch</p>
-                )}
-                {missingTotal ? (
+                ) : null}
+                {missingTotal && !accounts.isError ? (
                   <p className="mt-1 flex items-center gap-2 border-t border-border px-1 pt-1.5 text-sm">
                     <span className="flex-1">Fetch all posts ({missing.length})</span>
                     <span className="tabular-nums">{missingTotal}</span>
@@ -538,7 +550,7 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
               </PopoverContent>
             </Popover>
             {!accounts.isError && missing.length > 1 ? (
-              <Button variant="outline" onClick={() => void fetchMissing()}>
+              <Button variant="outline" disabled={bulkRunning} onClick={() => void fetchMissing()}>
                 Fetch all posts
               </Button>
             ) : null}
@@ -564,7 +576,14 @@ export function BrandBackgroundWork({ brand, canEdit }: { brand: MarketingBrand;
             <>
               <span aria-hidden="true" className="size-3.5 shrink-0" />
               <span className="font-medium">Brand setup</span>
-              <span className={setup.isLoading ? "h-5 w-24 animate-pulse rounded bg-muted" : "text-muted-foreground"}>{setup.isLoading ? "" : "No setup run"}</span>
+              {setup.isError ? (
+                <span className="flex min-w-0 items-center gap-1 text-xs text-destructive">
+                  <span className="truncate">{extractErrorMessage(setup.error)}</span>
+                  <ErrorAlchemyMenu error={extractErrorMessage(setup.error)} />
+                </span>
+              ) : (
+                <span className={setup.isLoading ? "h-5 w-24 animate-pulse rounded bg-muted" : "text-muted-foreground"}>{setup.isLoading ? "" : "No setup run"}</span>
+              )}
             </>
           )}
         </div>
