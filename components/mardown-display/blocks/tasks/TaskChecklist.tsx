@@ -48,7 +48,8 @@ import ImportTasksModal from "@/features/tasks/components/ImportTasksModal";
 import { cn } from "@/lib/utils";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { CopySourceButton } from "../common/CopySourceButton";
 import { BlockControlsButton, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
@@ -111,6 +112,8 @@ const TaskChecklist = ({
   // One frame: unless a wrapper owns the header (controlsInHeader), the checklist is its own card with ONE header row
   // that holds Copy, Controls and the host's tools (the editor's "</>", Remove, drag).
   const host = useBlockHostSlot(!controlsInHeader);
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const [saveSuccess, setSaveSuccess] = useState(false);
   const initialStateRef = useRef<CheckboxStateType>({});
   // The box each row had in the source at the last parse (to tell a source change from a person's tick).
@@ -614,10 +617,11 @@ const TaskChecklist = ({
         data-block-frame={controlsInHeader ? undefined : "tasks"}
       >
         {!controlsInHeader && (
-          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
+          <div data-block-header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-b border-border bg-muted/50 px-3 py-1.5">
             <div className="flex min-w-[9rem] flex-1 items-center gap-2">
               <CheckSquare className="h-3.5 w-3.5 shrink-0 text-primary" />
               <span className="truncate text-sm font-medium text-foreground">{headerTitle}</span>
+              {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
             </div>
             <div className="flex shrink-0 items-center gap-0.5">
               <CopySourceButton source={content} />

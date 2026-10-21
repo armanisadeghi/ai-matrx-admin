@@ -20,7 +20,8 @@ import { soleFence } from "@/lib/markdown/code-ranges";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 import { Button } from "@ai-matrx/design-system/controls";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 import { BlockControlsButton, InlineControlText, InlineRowPopover, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 
@@ -99,6 +100,8 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
   const cols = spec ? Math.min(spec.stats.length, maxCols) : Math.min(3, maxCols);
 
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   // Block Controls: shown wherever this block can be saved (Write, an editable answer).
   const controls = useBlockControls("stats", content, useBlockEdit());
   const [tileEdit, setTileEdit] = useState<{ index: number; x: number; y: number } | null>(null);
@@ -118,6 +121,7 @@ export const StatsBlock: React.FC<StatsBlockProps> = ({ content = "", isStreamAc
           <InlineControlText controls={controls} fieldKey="title" value={spec?.title ?? ""} className="truncate text-sm font-medium text-foreground">
             {spec?.title ?? "Key metrics"}
           </InlineControlText>
+          {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
           {isStreamActive && <span className="shrink-0 animate-pulse text-xs text-muted-foreground">…</span>}
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-0.5">

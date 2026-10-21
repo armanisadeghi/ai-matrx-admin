@@ -23,7 +23,8 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import { mapPlacesList } from "@ai-matrx/rich-content/display/blocks/canvas-adaptive";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
@@ -68,6 +69,8 @@ export const MapBlock: React.FC<MapBlockProps> = ({
     placesList === "side" || (placesList === "toggle" && listOpen);
 
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const controls = useBlockControls("map", content, useBlockEdit());
   const handleCopy = async () => {
     if (!(await copyText(content.trim()))) return;
@@ -91,6 +94,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
               {spec?.title ?? "Map"}
             </InlineControlText>
           </span>
+          {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
           {spec && (
             <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
               {spec.markers.length}{" "}

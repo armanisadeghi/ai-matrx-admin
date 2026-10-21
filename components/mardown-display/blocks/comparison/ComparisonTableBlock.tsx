@@ -42,7 +42,8 @@ import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artif
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { IconButton } from "@ai-matrx/design-system";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import { BlockControlsButton, InlineControlText, useBlockControls } from "@ai-matrx/rich-content/display/block-controls/BlockControls";
 import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 
@@ -100,6 +101,8 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   const controls = useBlockControls("comparison_table", source ?? "", useBlockEdit());
   const blockContentRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -579,6 +582,7 @@ const ComparisonTableBlock: React.FC<ComparisonTableBlockProps> = ({
                     {comparison.title}
                   </InlineControlText>
                 </h1>
+                {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-0.5">
                 <IconButton

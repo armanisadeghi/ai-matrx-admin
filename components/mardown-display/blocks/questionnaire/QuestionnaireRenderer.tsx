@@ -39,7 +39,8 @@ import {
 } from "./QuestionnaireContext";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { questionnaireAnswers } from "./questionnaire-answers";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 import {
   BlockControlsButton,
   type BlockControlsHandle,
@@ -1008,6 +1009,8 @@ const QuestionnaireRendererBody = ({
   controls = null,
 }: QuestionnaireRendererProps) => {
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   // Generate a unique ID for this questionnaire if not provided
   const uniqueId =
     questionnaireId ||
@@ -1159,8 +1162,9 @@ const QuestionnaireRendererBody = ({
             onClick={() => setDebugMode((prev) => !prev)}
           />
         ) : null}
-        {controls || host.actions ? (
-          <div className="flex items-center justify-end gap-0.5">
+        {controls || host.actions || typeLabel ? (
+          <div data-block-header className="flex items-center justify-end gap-0.5">
+            {typeLabel ? <BlockTypeLabel className="mr-auto">{typeLabel}</BlockTypeLabel> : null}
             <BlockControlsButton controls={controls} title="Questionnaire controls" />
             {host.actions}
           </div>

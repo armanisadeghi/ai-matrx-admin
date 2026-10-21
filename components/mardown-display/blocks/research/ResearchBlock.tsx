@@ -46,7 +46,8 @@ import { getArtifactDef } from '@/features/canvas/artifact-types/artifact-type-r
 import { cn } from '@/lib/utils';
 import { useCanvasFit } from '@ai-matrx/rich-content/display/blocks/canvas-fit';
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { useBlockHostSlot } from "@ai-matrx/rich-content/display/block-host";
+import { useBlockHostSlot, useBlockTypeLabelSlot } from "@ai-matrx/rich-content/display/block-host";
+import { BlockTypeLabel } from "@ai-matrx/rich-content/display/block-type-label";
 
 interface UnrecognizedSection {
   id: string;
@@ -136,6 +137,8 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const host = useBlockHostSlot();
+  // The kind host's type label joins this header: ONE header row (review 5, G1).
+  const typeLabel = useBlockTypeLabelSlot();
   // In the canvas the PANE sets the columns, not the viewport: the content is a
   // size container and every md:/lg: split reads the container instead, so a
   // 360px pane on a wide screen gets one column. Outside the canvas the
@@ -291,7 +294,8 @@ const ResearchBlock: React.FC<ResearchBlockProps> = ({
                   </div>
 
                   {!isFullScreen && (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div data-block-header className="flex flex-wrap items-center gap-2">
+                      {typeLabel ? <BlockTypeLabel>{typeLabel}</BlockTypeLabel> : null}
                       <Button variant="quiet" icon={<ArrowUpRight />} onClick={handleOpenCanvas}>
                         <span>Canvas</span>
                       </Button>
