@@ -1251,3 +1251,4 @@ route	tree node	how found today	note
 /registered-results	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, ASK)	+ internal viewers for workflow outputs
 /registered-results/events-viewer	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, ASK)	+ internal viewers for workflow outputs
 /registered-results/sitemap-viewer	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, ASK)	+ internal viewers for workflow outputs
+/shape-preview	Not in the app frame › Share links	signed link (screenshot browser for shape previews)	render surface for kindcomp_preview, no session

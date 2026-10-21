@@ -137,6 +137,7 @@ export {
 import type { paths, components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { heldGuestChallengeToken, primeGuestChallenge, TURNSTILE_HEADER } from "@/lib/guest/turnstile";
 
 // ============================================================================
 // SECTION 1 — UTILITY TYPE HELPERS
@@ -497,6 +498,9 @@ export function resolveAuth(state: RootState): ResolvedAuth {
 
   if (fingerprintId) {
     headers["X-Fingerprint-ID"] = fingerprintId;
+    // the human check a NEW visitor's mint needs (lib/guest/turnstile.ts; primed before dispatch)
+    const challenge = heldGuestChallengeToken();
+    if (challenge) headers[TURNSTILE_HEADER] = challenge;
     return { mode: "guest", headers };
   }
 
@@ -806,6 +810,7 @@ export function callApi<
   return async (_dispatch, getState) => {
     // ── Step 1: Wait for auth ─────────────────────────────────────────────
     await waitForAuthReady(getState);
+    if (!selectAccessToken(getState())) await primeGuestChallenge();
 
     const state = getState();
 
