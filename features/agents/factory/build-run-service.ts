@@ -14,6 +14,7 @@
 import { readAllRows } from "@ai-matrx/data/db";
 import { callApi } from "@/lib/api/call-api";
 import { startSystemRun } from "@/lib/workflows/system-runs";
+import { runScope } from "@/features/workflow-runtime/runOrganization";
 import type { AppDispatch } from "@/lib/redux/store";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
@@ -134,11 +135,14 @@ export async function listBuildRuns(): Promise<BuildRunRow[]> {
 
 /** Answer an open gate (the workflow offer, or "Keep it anyway"). */
 export async function answerBuildGate(dispatch: AppDispatch, gate: BuildGate, value: string): Promise<void> {
+  // The run's own organization: answering a run never asks for a workspace.
+  const scope = await runScope(gate.runId);
   const result = await dispatch(
     callApi({
       path: "/runs/{run_id}/resume",
       method: "POST",
       pathParams: { run_id: gate.runId },
+      ...scope,
       body: gateAnswerBody(gate, value) as never,
     }),
   );

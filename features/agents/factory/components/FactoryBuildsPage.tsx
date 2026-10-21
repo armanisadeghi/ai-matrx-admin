@@ -99,13 +99,6 @@ export function FactoryBuildsPage() {
     };
   }, [rowIds]);
 
-  const anyRunning = rows.some((r) => !spineIsOver(r.spineStatus));
-  useEffect(() => {
-    if (!anyRunning) return undefined;
-    const timer = setInterval(reload, 5000);
-    return () => clearInterval(timer);
-  }, [anyRunning, reload]);
-
   const buildRows = useMemo(
     () => rows.map((r) => ({ ...r, cost: costs ? (costs.get(r.id) ?? 0) : null })),
     [rows, costs],
