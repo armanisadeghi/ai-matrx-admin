@@ -2138,6 +2138,12 @@
       "checksum": "102bea462e25bb7623d5b14e985dd1b221cba5a40c781307965da5db14d496e9",
       "applied_at": "2026-10-21 17:09:35.142107+00"
     },
+    "migrations/campaign/close_core_a_b_a_required_column_refuses_a_blank.sql": {
+      "source": "matrx-frontend",
+      "filename": "close_core_a_b_a_required_column_refuses_a_blank.sql",
+      "checksum": "68b07dc8b8a88cde807aab7d76a71e2e3fa79ef38a5b9b2fb6222c53bd2c5b64",
+      "applied_at": "2026-10-21 18:00:12.624975+00"
+    },
     "migrations/campaign/closeperf_a_a_a_door_probe_follows_its_door_when_an_argument_is_added.sql": {
       "source": "matrx-frontend",
       "filename": "closeperf_a_a_a_door_probe_follows_its_door_when_an_argument_is_added.sql",
