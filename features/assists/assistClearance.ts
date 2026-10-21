@@ -694,8 +694,51 @@ export function applyAssistDockLift(): DockPlacement {
     lastSlot = { host, kind: region.kind, spot, viewKey, barKey: boxKey(region.band), contentKey: contentKey(host) };
     return place(region.kind, spot, host);
   }
+  // LAST BEFORE YIELDING: THE BAND JUST ABOVE THE COMPOSER (review 4 F14, 2026-10-20). With the Notes &
+  // comments panel open the chat column narrows; the thread fills it, so no lift clears the transcript,
+  // and the header has no room — the pill then faded over the composer's mic and send row. A composer
+  // always has a strip of its own scroller's padding above it: rest there, right-most spot first,
+  // left of anything that floats in it (the scroll-to-bottom button), never over a row.
+  const composerSpot = composerBandSpot(size, cache);
+  if (composerSpot) {
+    lastSlot = {
+      host: composerSpot.host,
+      kind: "footer",
+      spot: composerSpot.spot,
+      viewKey,
+      barKey: boxKey(composerSpot.band),
+      contentKey: contentKey(composerSpot.host),
+    };
+    return place("footer", composerSpot.spot, composerSpot.host);
+  }
   placeAll(docks, boxes, {}, true);
   return "yield";
+}
+
+/**
+ * The right-most free spot in the strip directly above the highest composer on screen (a box that
+ * carries `data-agent-input-shell` / `data-assist-dock-avoid`), or null. Rows count as covered here:
+ * the strip is only used where it is blank.
+ */
+function composerBandSpot(
+  size: { width: number; height: number },
+  cache: PassCache,
+): { host: Element; band: DockRect; spot: DockRect } | null {
+  let top: { host: Element; r: DOMRect } | null = null;
+  for (const el of document.querySelectorAll(COMPOSER_AVOIDANCE_SELECTOR)) {
+    if (el.closest(DOCK_SELECTOR)) continue;
+    const r = visibleRect(el);
+    if (r && (!top || r.top < top.r.top)) top = { host: el, r };
+  }
+  if (!top) return null;
+  const band = { top: top.r.top - size.height - 2 * SLOT_GAP_PX, bottom: top.r.top, left: top.r.left, right: top.r.right };
+  if (band.top < LIFT_TOP_FLOOR_PX) return null;
+  const spot = slotSpotFor({ kind: "footer", band, startRight: Math.min(top.r.right, window.innerWidth) }, size, (c) => {
+    for (const a of attentionRects(cache)) if (overlaps(c, a)) return true;
+    // The whole box is probed (top, middle and bottom rows): a floating button half inside the strip counts.
+    return hitCoverage(c, true) !== false;
+  });
+  return spot ? { host: top.host, band, spot } : null;
 }
 
 /** The slot the dock last docked into, and what that answer depended on. */
