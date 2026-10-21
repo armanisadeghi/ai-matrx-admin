@@ -12,7 +12,7 @@ import type {
   BacklinkTrendPoint,
   BacklinkWorkspaceData,
 } from "@/features/marketing/data/backlinks-types";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
+import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import {
   BACKLINK_ASSISTANT_MANDATE,
   BACKLINKS_ASSIST_SURFACE,

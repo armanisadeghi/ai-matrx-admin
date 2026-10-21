@@ -28,7 +28,7 @@ import { setContextEntries } from "@ai-matrx/chat/agents/redux/execution-system/
 import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { selectPrimaryRequest } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import type { StudioDocument } from "../types";
-import { useMandateHostValues } from "@/features/mandates/host-values/useMandateHostValues";
+import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import { TRANSCRIPT_STUDIO_ASSISTANT_MANDATE_KEY } from "../constants";
 import {
   selectAssistantConversationId,

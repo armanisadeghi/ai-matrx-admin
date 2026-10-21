@@ -27,7 +27,7 @@
 import { useNoteHomeNames } from "@/features/notes/homes/useNoteHomes";
 import { useCallback, useEffect, useRef } from "react";
 import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
-import { provideHostValues, type HostValuesFor } from "@/features/mandates/host-values/host-values";
+import { provideHostValues, type HostValuesFor } from "@ai-matrx/chat/mandates/host-values/host-values";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import type { RefObject } from "react";
 

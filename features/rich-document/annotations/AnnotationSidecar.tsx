@@ -224,12 +224,18 @@ function useAnnotatedRoot(root: HTMLElement | null, passageActions?: readonly Ac
     });
   });
 
-  /** Pin the current selection to the source text (null when it cannot be pinned). */
-  const capture = ({ silent = false }: { silent?: boolean } = {}): CapturedSelection | null => {
+  /** Pin the current selection (or the given passage) to the source text (null when it cannot be pinned). */
+  const capture = ({ silent = false, range: given = null }: { silent?: boolean; range?: Range | null } = {}): CapturedSelection | null => {
     if (!root) return null;
-    const sel = typeof window !== "undefined" ? window.getSelection() : null;
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
-    const range = sel.getRangeAt(0);
+    let range: Range;
+    if (given) {
+      if (given.collapsed || !given.startContainer.isConnected) return null;
+      range = given;
+    } else {
+      const sel = typeof window !== "undefined" ? window.getSelection() : null;
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
+      range = sel.getRangeAt(0);
+    }
     if (!root.contains(range.commonAncestorContainer)) return null;
     let current = liveProjection();
     if (!current) return null;
