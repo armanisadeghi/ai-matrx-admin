@@ -5,8 +5,13 @@
  */
 
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { pgErrorToError } from "@ai-matrx/data";
 import { supabase } from "@ai-matrx/chat/host/db";
+import {
+  listAgentVersions,
+  readAgentVersionSnapshot,
+  resolveAgentVersionId as readAgentVersionId,
+  type VersionsClient,
+} from "@ai-matrx/agents/versions";
 import type { ChatDispatch, ChatRootState } from "@ai-matrx/chat/store/root-state";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type {
@@ -20,6 +25,9 @@ import { versionSnapshotRowToAgentDefinition } from "@ai-matrx/chat/agents/redux
 export type { AgentVersionHistoryItem };
 
 type ThunkApi = { dispatch: ChatDispatch; state: ChatRootState };
+
+/** The reads go through THE versions door (@ai-matrx/agents/versions) on the web's client. */
+const versionsDb = supabase as unknown as VersionsClient;
 
 /** Same generator-vs-table reconciliation as the snapshot row's shim. */
 type AgentVersionHistoryItemDbProjection = Omit<
@@ -56,17 +64,8 @@ export const fetchAgentVersionHistory = createAsyncThunk<
   ThunkApi
 >(
   "agentDefinition/fetchVersionHistory",
-  async ({ agentId, limit = 50, offset = 0 }) => {
-    const { data, error } = await supabase.rpc("agx_get_version_history", {
-      p_agent_id: agentId,
-      p_limit: limit,
-      p_offset: offset,
-    });
-
-    if (error) throw pgErrorToError(error);
-
-    return (data ?? []) as AgentVersionHistoryItem[];
-  },
+  async ({ agentId, limit = 50, offset = 0 }) =>
+    (await listAgentVersions(versionsDb, { agentId, limit, offset })) as AgentVersionHistoryItem[],
 );
 
 /**
@@ -79,24 +78,9 @@ export const resolveAgentVersionId = createAsyncThunk<
   AgentVersionLookup | null,
   string,
   ThunkApi
->("agentDefinition/resolveVersionId", async (versionId) => {
-  const { data, error } = await supabase
-    .schema("agent")
-    .from("definition_version")
-    .select("id, agent_id, version_number, name")
-    .eq("id", versionId)
-    .maybeSingle();
-
-  if (error) throw pgErrorToError(error);
-  if (!data) return null;
-
-  return {
-    versionId: data.id,
-    agentId: data.agent_id,
-    versionNumber: data.version_number,
-    agentName: data.name,
-  };
-});
+>("agentDefinition/resolveVersionId", async (versionId) =>
+  readAgentVersionId(versionsDb, versionId),
+);
 
 /**
  * Fetches a full version snapshot for diff/preview.
@@ -110,14 +94,7 @@ export const fetchAgentVersionSnapshot = createAsyncThunk<
 >(
   "agentDefinition/fetchVersionSnapshot",
   async ({ agentId, version }, { dispatch }) => {
-    const { data, error } = await supabase.rpc("agx_get_version_snapshot", {
-      p_agent_id: agentId,
-      p_version_number: version,
-    });
-
-    if (error) throw pgErrorToError(error);
-
-    const raw = Array.isArray(data) ? data[0] : data;
+    const raw = await readAgentVersionSnapshot(versionsDb, { agentId, version });
     if (!raw) return;
     const row = parseAgentVersionSnapshot(raw);
 

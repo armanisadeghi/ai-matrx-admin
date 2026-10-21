@@ -20,7 +20,7 @@ import * as Recharts from "recharts";
 // before it made lucide lazy (2026-10-16). Moving this to an awaited prepare step
 // is the follow-up that takes the set off these paths.
 import * as Lucide from "lucide-react";
-import { provideScopeModules } from "@ai-matrx/code-runtime/scope";
+import { provideScopeModules, type ScopeModuleLoader } from "@ai-matrx/code-runtime/scope";
 import "./kind-kit-host";
 
 let provided = false;
@@ -29,13 +29,23 @@ let provided = false;
 export function provideStoredComponentScopeModules(): void {
   if (provided) return;
   provided = true;
+  provideScopeModules(webScopeTwins());
+}
+
+/**
+ * This app's own twins, under the same specifiers, of modules @ai-matrx/rich-content's one kind
+ * component scope (`provideKindComponentScope`) also supplies: the page hands them to it as
+ * replacements (app-scope.ts); the kind sandbox frame, which cannot carry that scope's async
+ * loaders, registers them directly. Every other specifier comes from the shared scope.
+ */
+export function webScopeTwins(): Readonly<Record<string, ScopeModuleLoader>> {
   // Packages (kind-kit, recharts) are static ESM imports, never `require`: a
   // require resolves a package's CommonJS build, which drags a second (CJS)
   // copy of it — and of the design system — into the frame bundle beside the
   // ESM one (measured: 6.5 MB with require, 5.7 MB with these imports).
   const kindKit = () => KindKit;
   const markdown = () => require("@ai-matrx/chat/ui/markdown-stream/MarkdownStream");
-  provideScopeModules({
+  return {
     "@/components/MarkdownStream": markdown,
     "@/components/Markdown": markdown,
     "@/components/markdown": markdown,
@@ -79,5 +89,5 @@ export function provideStoredComponentScopeModules(): void {
     // package's design-system default serves them (as the old registry did).
     recharts: () => Recharts,
     "lucide-react": () => Lucide,
-  });
+  };
 }

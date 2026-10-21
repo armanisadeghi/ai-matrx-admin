@@ -22,6 +22,7 @@ import {
   isAdminSystemAgentsContext,
 } from "@ai-matrx/chat/agents/components/shared/agent-route-context";
 import { getUserMessage } from "@ai-matrx/api";
+import { listAgentVersions, type VersionsClient } from "@ai-matrx/agents/versions";
 
 interface UseAgentDuplicateFlowOptions {
   /** The route family the copy opens in. Default: the admin system-agents base on those routes, else "/agents". */
@@ -119,11 +120,11 @@ export function useAgentDuplicateFlow(options?: UseAgentDuplicateFlowOptions) {
         .select("name, version, agent_type")
         .eq("id", next.agentId)
         .single(),
-      supabase.rpc("agx_get_version_history", {
-        p_agent_id: next.agentId,
-        p_limit: 500,
-        p_offset: 0,
-      }),
+      // THE versions read (@ai-matrx/agents/versions); a refused read keeps its sentence.
+      listAgentVersions(supabase as unknown as VersionsClient, { agentId: next.agentId, limit: 500 }).then(
+        (data) => ({ data, error: null }),
+        (error: unknown) => ({ data: null, error: { message: error instanceof Error ? error.message : String(error) } }),
+      ),
     ]);
     } catch (err) {
       if (seq !== loadSeq.current) return;

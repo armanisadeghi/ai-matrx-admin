@@ -2,11 +2,11 @@
  "generatedBy": "scripts/record-pages/generate.ts",
  "counts": {
   "list.sourceWithoutCustomFields": 2,
-  "route.pending": 915,
+  "route.pending": 927,
   "route.none": 596,
-  "route.tokens": 53,
+  "route.tokens": 52,
   "route.host": 1,
-  "window.pending": 195,
+  "window.pending": 192,
   "window.none": 1,
   "window.host": 1,
   "window.tokens": 2,
@@ -4889,6 +4889,50 @@
    "file": "app/(core)/meetings/speed-test/page.tsx",
    "pending": true
   },
+  "route:/memory": {
+   "file": "app/(core)/memory/page.tsx",
+   "none": "the Memory hub, one door per section of Matrx Memory"
+  },
+  "route:/memory/agent-memory": {
+   "file": "app/(core)/memory/agent-memory/page.tsx",
+   "pending": true
+  },
+  "route:/memory/capture": {
+   "file": "app/(core)/memory/capture/page.tsx",
+   "pending": true
+  },
+  "route:/memory/concepts": {
+   "file": "app/(core)/memory/concepts/page.tsx",
+   "pending": true
+  },
+  "route:/memory/embeddings": {
+   "file": "app/(core)/memory/embeddings/page.tsx",
+   "pending": true
+  },
+  "route:/memory/everything": {
+   "file": "app/(core)/memory/everything/page.tsx",
+   "pending": true
+  },
+  "route:/memory/lab": {
+   "file": "app/(core)/memory/lab/page.tsx",
+   "pending": true
+  },
+  "route:/memory/my-memory": {
+   "file": "app/(core)/memory/my-memory/page.tsx",
+   "pending": true
+  },
+  "route:/memory/observational": {
+   "file": "app/(core)/memory/observational/page.tsx",
+   "pending": true
+  },
+  "route:/memory/topics": {
+   "file": "app/(core)/memory/topics/page.tsx",
+   "pending": true
+  },
+  "route:/memory/trash": {
+   "file": "app/(core)/memory/trash/page.tsx",
+   "pending": true
+  },
   "route:/messages": {
    "file": "app/(core)/messages/page.tsx",
    "pending": true
@@ -5017,13 +5061,9 @@
    "file": "app/(core)/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]/page.tsx",
    "none": "an admin support view; the admin seat never edits an organization's fields"
   },
-  "route:/organizations/[orgId]/admin/users/[userId]": {
-   "file": "app/(core)/organizations/[orgId]/admin/users/[userId]/page.tsx",
+  "route:/organizations/[orgId]/admin/users/[userId]/[[...tab]]": {
+   "file": "app/(core)/organizations/[orgId]/admin/users/[userId]/[[...tab]]/page.tsx",
    "none": "an admin support view; the admin seat never edits an organization's fields"
-  },
-  "route:/organizations/[orgId]/admin/users/[userId]/resources": {
-   "file": "app/(core)/organizations/[orgId]/admin/users/[userId]/resources/page.tsx",
-   "none": "a sub-view (resources) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/applets": {
    "file": "app/(core)/organizations/[orgId]/applets/page.tsx",
@@ -5731,9 +5771,7 @@
   },
   "route:/sandbox/[id]": {
    "file": "app/(core)/sandbox/[id]/page.tsx",
-   "tokens": [
-    "sandbox_instance"
-   ]
+   "pending": true
   },
   "route:/sandbox/speed-test": {
    "file": "app/(core)/sandbox/speed-test/page.tsx",
@@ -6028,6 +6066,10 @@
    "tokens": [
     "task"
    ]
+  },
+  "route:/tasks/compare": {
+   "file": "app/(core)/tasks/compare/page.tsx",
+   "pending": true
   },
   "route:/tasks/new": {
    "file": "app/(core)/tasks/new/page.tsx",
@@ -6603,10 +6645,6 @@
    "file": "features/onboarding/meet-matrx/MeetMatrxWindow.tsx",
    "pending": true
   },
-  "window:features/overlays/components/FindReplaceOverlay.tsx": {
-   "file": "features/overlays/components/FindReplaceOverlay.tsx",
-   "pending": true
-  },
   "window:features/overlays/components/OverlayNeedsData.tsx": {
    "file": "features/overlays/components/OverlayNeedsData.tsx",
    "pending": true
@@ -6677,10 +6715,6 @@
   },
   "window:features/window-panels/windows/CanvasViewerWindow.tsx": {
    "file": "features/window-panels/windows/CanvasViewerWindow.tsx",
-   "pending": true
-  },
-  "window:features/window-panels/windows/DiffViewerWindow.tsx": {
-   "file": "features/window-panels/windows/DiffViewerWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/EmailDialogWindow.tsx": {
@@ -7101,10 +7135,6 @@
   },
   "window:features/window-panels/windows/masterwork/YourWordsWindow.tsx": {
    "file": "features/window-panels/windows/masterwork/YourWordsWindow.tsx",
-   "pending": true
-  },
-  "window:features/window-panels/windows/message-templates/QuickMessageTemplateSaveWindow.tsx": {
-   "file": "features/window-panels/windows/message-templates/QuickMessageTemplateSaveWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/messaging/MessagesWindow.tsx": {

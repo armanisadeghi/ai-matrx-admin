@@ -1,147 +1,31 @@
 "use client";
 
-import { useMemo } from "react";
-import { createAdapterRegistry } from "@ai-matrx/diff/react";
-import { DiffViewerShell } from "@ai-matrx/diff/react";
+// The web's binding of THE agent diff (@ai-matrx/agents/versions/react): the viewer, its field
+// adapters and its comparison live in the package; the web supplies its two ports — the catalogue
+// lookups that name model/tool/MCP ids, and its linked identity refs.
+
 import {
-  TextFieldAdapter,
-  BooleanFieldAdapter,
-  TagsFieldAdapter,
-  JsonObjectAdapter,
-  KeyValueAdapter,
-} from "@ai-matrx/diff/react";
-import type {
-  DiffTemporalMetadata,
-  ViewMode,
-} from "@ai-matrx/diff/structural";
-import type { AgentDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
+  AgentDiffViewer as PackageAgentDiffViewer,
+  type AgentDiffViewerProps,
+  type AgentModelRefProps,
+  type AgentToolRefProps,
+} from "@ai-matrx/agents/versions/react";
 import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment";
-import { compareAgentDefinitions } from "@/features/agents/components/diff/compare-agent-definitions";
+import { AiModelRef, AiToolRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 
-import { MessagesAdapter } from "@/features/agents/components/diff/adapters/MessagesAdapter";
-import { ModelAdapter } from "@/features/agents/components/diff/adapters/ModelAdapter";
-import { ToolsAdapter } from "@/features/agents/components/diff/adapters/ToolsAdapter";
-import { SettingsAdapter } from "@/features/agents/components/diff/adapters/SettingsAdapter";
-import { VariablesAdapter } from "@/features/agents/components/diff/adapters/VariablesAdapter";
-import { ContextPoliciesAdapter } from "@/features/agents/components/diff/adapters/ContextPoliciesAdapter";
-import { CustomToolsAdapter } from "@/features/agents/components/diff/adapters/CustomToolsAdapter";
-import { McpServersAdapter } from "@/features/agents/components/diff/adapters/McpServersAdapter";
-import { ModelTiersAdapter } from "@/features/agents/components/diff/adapters/ModelTiersAdapter";
+export { buildAgentAdapterRegistry } from "@ai-matrx/agents/versions/react";
 
-interface AgentDiffViewerProps {
-  oldAgent: Partial<AgentDefinition>;
-  newAgent: Partial<AgentDefinition>;
-  oldLabel: string;
-  newLabel: string;
-  temporalMetadata?: DiffTemporalMetadata;
-  defaultMode?: ViewMode;
-  className?: string;
+function ModelRef({ modelId, name, showId, className }: AgentModelRefProps) {
+  return <AiModelRef modelId={modelId} name={name ?? undefined} showId={showId === true} showIcon={false} className={className} />;
 }
 
-/**
- * The canonical agent field-adapter registry. Exported so the diff PAGE can
- * name and describe changed fields exactly as this viewer renders them when it
- * builds a Copy-for-AI payload — one registry, never a parallel label table.
- */
-export function buildAgentAdapterRegistry() {
-  const registry = createAdapterRegistry();
-
-  // Complex structured fields
-  registry.register("messages", MessagesAdapter);
-  registry.register("modelId", ModelAdapter);
-  registry.register("tools", ToolsAdapter);
-  registry.register("settings", SettingsAdapter);
-  registry.register("variableDefinitions", VariablesAdapter);
-  registry.register("contextPolicies", ContextPoliciesAdapter);
-  registry.register("customTools", CustomToolsAdapter);
-  registry.register("mcpServers", McpServersAdapter);
-
-  // Simple fields
-  registry.register("name", { ...TextFieldAdapter, label: "Name" });
-  registry.register("description", {
-    ...TextFieldAdapter,
-    label: "Description",
-  });
-  registry.register("category", { ...TextFieldAdapter, label: "Category" });
-  registry.register("tags", { ...TagsFieldAdapter, label: "Tags" });
-  registry.register("isActive", { ...BooleanFieldAdapter, label: "Active" });
-  registry.register("isArchived", {
-    ...BooleanFieldAdapter,
-    label: "Archived",
-  });
-  registry.register("isFavorite", {
-    ...BooleanFieldAdapter,
-    label: "Favorite",
-  });
-  registry.register("autoToolsDisabled", {
-    ...BooleanFieldAdapter,
-    label: "Automatic Tool Injection Disabled",
-  });
-  registry.register("version", { ...TextFieldAdapter, label: "Version" });
-  registry.register("changeNote", {
-    ...TextFieldAdapter,
-    label: "Change Note",
-  });
-  registry.register("defaultRagBoost", {
-    ...TextFieldAdapter,
-    label: "Default Knowledge Boost",
-  });
-  registry.register("ragAwarenessMode", {
-    ...TextFieldAdapter,
-    label: "Knowledge Awareness Mode",
-  });
-
-  // JSON fields
-  registry.register("modelTiers", ModelTiersAdapter);
-  registry.register("outputSchema", {
-    ...JsonObjectAdapter,
-    label: "Output Schema",
-  });
-  registry.register("skillConfig", {
-    ...JsonObjectAdapter,
-    label: "Skill Configuration",
-  });
-  registry.register("uiGates", {
-    ...JsonObjectAdapter,
-    label: "UI Gates",
-  });
-  registry.register("matrxDirectives", {
-    ...JsonObjectAdapter,
-    label: "Matrx Directives",
-  });
-
-  return registry;
+function ToolRef({ toolId, name, showId, className }: AgentToolRefProps) {
+  return <AiToolRef toolId={toolId} name={name ?? undefined} showId={showId === true} showIcon={false} className={className} />;
 }
 
-export function AgentDiffViewer({
-  oldAgent,
-  newAgent,
-  oldLabel,
-  newLabel,
-  temporalMetadata,
-  defaultMode = "changes-only",
-  className,
-}: AgentDiffViewerProps) {
+const WEB_REFS = { ModelRef, ToolRef };
+
+export function AgentDiffViewer(props: Omit<AgentDiffViewerProps, "enrichment" | "refs">) {
   const enrichment = useDiffEnrichment();
-  const adapters = useMemo(() => buildAgentAdapterRegistry(), []);
-
-  const diffResult = useMemo(
-    () => compareAgentDefinitions(oldAgent, newAgent).diffResult,
-    [oldAgent, newAgent],
-  );
-
-  return (
-    <DiffViewerShell
-      diffResult={diffResult}
-      oldValue={oldAgent}
-      newValue={newAgent}
-      oldLabel={oldLabel}
-      newLabel={newLabel}
-      adapters={adapters}
-      enrichment={enrichment}
-      temporalMetadata={temporalMetadata}
-      defaultMode={defaultMode}
-      className={className}
-    />
-  );
+  return <PackageAgentDiffViewer {...props} enrichment={enrichment} refs={WEB_REFS} />;
 }

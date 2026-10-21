@@ -12,6 +12,10 @@
 
 import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
 import {
+  promoteAgentVersion as promoteVersionThroughDoor,
+  type VersionsClient,
+} from "@ai-matrx/agents/versions";
+import {
   createAsyncThunk,
 } from "@reduxjs/toolkit";
 import {
@@ -422,14 +426,11 @@ export const promoteAgentVersion = createAsyncThunk<
 >(
   "agentDefinition/promoteVersion",
   async ({ agentId, version }, { dispatch }) => {
-    const { data, error } = await supabase.rpc("agx_promote_version", {
-      p_agent_id: agentId,
-      p_version_number: version,
-    });
-
-    if (error) throw pgErrorToError(error);
-
-    const result = data as unknown as PromoteVersionResult;
+    // THE restore door (@ai-matrx/agents/versions): agx_promote_version; a refusal throws its sentence.
+    const result: PromoteVersionResult = await promoteVersionThroughDoor(
+      supabase as unknown as VersionsClient,
+      { agentId, version },
+    );
 
     if (result.success) {
       await dispatch(fetchFullAgent(agentId));

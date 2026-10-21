@@ -42,8 +42,8 @@ import { AgentDiffViewer, buildAgentAdapterRegistry } from "@/features/agents/co
 import { VersionHistoryTimeline } from "@/features/agents/components/diff/VersionHistoryTimeline";
 import { useAgentDuplicateFlow } from "@/features/agents/hooks/useAgentDuplicateFlow";
 import { RecordId } from "@ai-matrx/design-system";
-import { promoteFailureMessage } from "@/features/agents/components/diff/promote-failure-message";
-import { compareAgentDefinitions } from "@/features/agents/components/diff/compare-agent-definitions";
+import { promoteFailureMessage } from "@ai-matrx/agents/versions";
+import { compareAgentDefinitions } from "@ai-matrx/agents/versions";
 import { useDiffEnrichment } from "@ai-matrx/chat/agents/hooks/useDiffEnrichment";
 import { DefaultFieldAdapter } from "@ai-matrx/diff/react";
 import { formatChangeType } from "@ai-matrx/diff/structural";
