@@ -12,7 +12,7 @@ import {  } from "lucide-react";
 import { Card } from "@/components/official/PageTemplate";
 import { MandateAgentPicker } from "@/features/mandates/components/MandateAgentPicker";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";
-import { useMandateDisplayName } from "@/features/mandates/useMandateDisplayName";
+import { useMandateDisplayName } from "@ai-matrx/chat/mandates/useMandateDisplayName";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";

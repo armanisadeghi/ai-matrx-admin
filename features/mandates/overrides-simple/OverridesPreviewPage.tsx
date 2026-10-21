@@ -8,7 +8,7 @@
 
 import { CrumbTrailHeader } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { useMandateWorkspaceData } from "@/features/mandates/workspace/useMandateWorkspaceData";
-import { useMandateDisplayName } from "@/features/mandates/useMandateDisplayName";
+import { useMandateDisplayName } from "@ai-matrx/chat/mandates/useMandateDisplayName";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { adminMandateSupportRecordHref } from "@/features/mandates/admin-routes";

@@ -15,7 +15,7 @@
 // the Rulebook read `Understudy  masterwork.understudy` on every single load
 // while the interview drawer read the scout's key. The key still travels —
 // in the href, which is where an identifier belongs — but the words a person
-// reads are words. See `features/mandates/useMandateDisplayName`.
+// reads are words. See `@ai-matrx/chat/mandates/useMandateDisplayName`.
 
 import { useContext } from "react";
 import Link from "next/link";
@@ -24,7 +24,7 @@ import { UserCog } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/slices/userSlice";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
-import { useMandateDisplayName } from "@/features/mandates/useMandateDisplayName";
+import { useMandateDisplayName } from "@ai-matrx/chat/mandates/useMandateDisplayName";
 import {
   Tooltip,
   TooltipContent,
