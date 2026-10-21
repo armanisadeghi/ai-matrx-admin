@@ -8,6 +8,8 @@ import type { ResolvedDomain } from "./host-routing";
 const HIT_TTL_MS = 60_000;
 const MISS_TTL_MS = 10_000;
 const LOOKUP_TIMEOUT_MS = 2_500;
+/** Two tries of LOOKUP_TIMEOUT_MS stay well inside the proxy's 15 s budget. */
+const LOOKUP_TRIES = 2;
 
 /** Bounded: arbitrary Host headers must never grow this instance's memory. Oldest entry leaves first. */
 const MAX_ENTRIES = 2_000;
@@ -39,15 +41,34 @@ export async function lookupDomain(host: string): Promise<ResolvedDomain | null>
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) throw new DomainLookupUnavailable("Supabase URL or publishable key is not set");
 
-  const response = await fetch(`${url}/rest/v1/rpc/org_domain_resolve`, {
-    method: "POST",
-    headers: { apikey: key, "Content-Type": "application/json", "Content-Profile": "iam" },
-    body: JSON.stringify({ p_host: host }),
-    signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    throw new DomainLookupUnavailable(`org_domain_resolve answered ${response.status}`);
+  // A passing hiccup (a timed-out first try on a cold instance, a 5xx) is asked once more before the host is
+  // called unavailable: live 2026-10-21 a business's first visitor met a 503 the very next visit did not.
+  let response: Response | null = null;
+  let failure: unknown = null;
+  for (let attempt = 0; attempt < LOOKUP_TRIES; attempt += 1) {
+    try {
+      response = await fetch(`${url}/rest/v1/rpc/org_domain_resolve`, {
+        method: "POST",
+        headers: { apikey: key, "Content-Type": "application/json", "Content-Profile": "iam" },
+        body: JSON.stringify({ p_host: host }),
+        signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
+        cache: "no-store",
+      });
+    } catch (thrown) {
+      response = null;
+      failure = thrown;
+      continue;
+    }
+    if (response.ok || response.status < 500) break;
+    failure = new DomainLookupUnavailable(`org_domain_resolve answered ${response.status}`);
+  }
+  if (!response || !response.ok) {
+    if (response && response.status < 500) {
+      throw new DomainLookupUnavailable(`org_domain_resolve answered ${response.status}`);
+    }
+    throw failure instanceof DomainLookupUnavailable
+      ? failure
+      : new DomainLookupUnavailable(`org_domain_resolve did not answer: ${failure instanceof Error ? failure.message : String(failure)}`);
   }
   const value = (await response.json()) as ResolvedDomain | null;
   const entry = { at: now, value: value && value.organization_id ? value : null };
