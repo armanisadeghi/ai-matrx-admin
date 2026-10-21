@@ -12,6 +12,7 @@
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { withAppStore } from "@/tests/helpers/WithStoreReads";
 
 const mockEvaluated: string[] = [];
 
@@ -68,11 +69,13 @@ test("the anchor-records hook loads the records reader with its first read only"
     const state = useAnchorRecords({ type: "conversation", id: "c-1" }, enabled);
     return <span data-status={state.status} />;
   }
-  act(() => root.render(<Probe enabled={false} />));
+  // useAnchorRecords reads through useStoreRead, which needs the app store (react-redux Provider).
+  const app = withAppStore(root);
+  act(() => app.render(<Probe enabled={false} />));
   await settle();
   expect(mockEvaluated).not.toContain("kind-record-service");
 
-  act(() => root.render(<Probe enabled />));
+  act(() => app.render(<Probe enabled />));
   await settle();
   expect(mockEvaluated).toContain("kind-record-service");
   expect(host.querySelector("[data-status]")?.getAttribute("data-status")).toBe("ready");
