@@ -90,6 +90,10 @@ if $STRICT; then
         # were all green. ~30s, offline, zero findings at introduction.
         # `pnpm check:matrx-imports:self-test` proves it can still fail.
         "Every @ai-matrx import exists in the installed package|pnpm check:matrx-imports"
+        # THE FRAGMENTATION LAW + BOOT GRAPH: no heavy @ai-matrx/summon entry (handles, url, window...)
+        # reachable by static imports from a layout/provider/shell root; host-only modules stay host-only.
+        "Import fan-out and summon boot graph|pnpm check:import-fanout"
+        "Import fan-out — self-test|pnpm check:import-fanout:self-test"
         # EVERY IMPORTED @ai-matrx PACKAGE IS DECLARED. 2026-10-10 v0.4.3122 imported
         # @ai-matrx/context-menu/react with no package.json entry: green locally (pnpm had it
         # beside another package), "Module not found" on Vercel's clean install.
