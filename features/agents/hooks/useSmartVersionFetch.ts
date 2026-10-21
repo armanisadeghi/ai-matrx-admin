@@ -7,14 +7,13 @@ import {
   selectVersionsByParentAgentId,
 } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import type { AgentVersionHistoryItem } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { computeDiff } from "@ai-matrx/diff/structural";
-import type { DiffResult } from "@ai-matrx/diff/structural";
-import { AGENT_DIFF_OPTIONS } from "@/features/agents/components/diff/agent-diff-constants";
+import {
+  computeVersionFetchTargets,
+  enrichVersions,
+  type EnrichedVersion,
+} from "@ai-matrx/agents/versions";
 
-export interface EnrichedVersion extends AgentVersionHistoryItem {
-  diffSummary?: DiffResult;
-  snapshotLoaded: boolean;
-}
+export type { EnrichedVersion };
 
 interface SmartVersionFetchState {
   enrichedVersions: EnrichedVersion[];
@@ -56,33 +55,10 @@ export function useSmartVersionFetch(
   const fetchedRef = useRef(false);
 
   // Compute which versions to fetch using the smart algorithm
-  const computeTargetVersions = useCallback((): number[] => {
-    if (versions.length === 0) return [];
-
-    // Sort newest first
-    const sorted = [...versions].sort((a, b) => b.version_number - a.version_number);
-    const targets = new Set<number>();
-
-    // 1. Newest 10 (or all if fewer)
-    const newestBatch = sorted.slice(0, 10);
-    for (const v of newestBatch) targets.add(v.version_number);
-
-    if (sorted.length <= 10) return [...targets];
-
-    // 2. Always include the oldest
-    targets.add(sorted[sorted.length - 1].version_number);
-
-    // 3. Every ~10th version in between
-    const remaining = sorted.slice(10, -1); // exclude newest 10 and oldest
-    if (remaining.length > 0) {
-      const step = Math.max(1, Math.floor(remaining.length / Math.ceil(remaining.length / 10)));
-      for (let i = 0; i < remaining.length; i += step) {
-        targets.add(remaining[i].version_number);
-      }
-    }
-
-    return [...targets];
-  }, [versions]);
+  const computeTargetVersions = useCallback(
+    (): number[] => computeVersionFetchTargets(versions),
+    [versions],
+  );
 
   // Fetch snapshots for the computed target versions
   const fetchEnrichedHistory = useCallback(async () => {
@@ -138,36 +114,10 @@ export function useSmartVersionFetch(
 
   // Recompute enriched versions whenever snapshots change
   useEffect(() => {
-    const sorted = [...versions].sort((a, b) => b.version_number - a.version_number);
-
-    const enriched: EnrichedVersion[] = sorted.map((v, i) => {
-      const snapshot = snapshotRecords.find((r) => r.version === v.version_number);
-      const prevVersion = sorted[i + 1];
-      const prevSnapshot = prevVersion
-        ? snapshotRecords.find((r) => r.version === prevVersion.version_number)
-        : undefined;
-
-      let diffSummary: DiffResult | undefined;
-      if (snapshot && prevSnapshot) {
-        // MATRX-EXCEPTION: computeDiff is a generic structural-diff algorithm
-        // that treats both sides as plain objects by design — it doesn't care
-        // about AgentDefinitionRecord's concrete shape. `Record<string, unknown>`
-        // has no index signature overlap with the record type, so TS requires
-        // the two-step cast; both operands are real, already-typed records.
-        diffSummary = computeDiff(
-          prevSnapshot as unknown as Record<string, unknown>,
-          snapshot as unknown as Record<string, unknown>,
-          AGENT_DIFF_OPTIONS,
-        );
-      }
-
-      return {
-        ...v,
-        snapshotLoaded: !!snapshot,
-        diffSummary,
-      };
-    });
-
+    // What changed at each version: the package's one enrichment over the snapshots in Redux.
+    const enriched: EnrichedVersion[] = enrichVersions(versions, (n) =>
+      snapshotRecords.find((r) => r.version === n),
+    );
     setState((prev) => ({ ...prev, enrichedVersions: enriched }));
   }, [versions, snapshotRecords]);
 

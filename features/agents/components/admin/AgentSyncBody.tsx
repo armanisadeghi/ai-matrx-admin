@@ -75,7 +75,7 @@ import { toast } from "@/lib/toast-service";
 import { cn } from "@/lib/utils";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { AgentDiffViewer } from "@/features/agents/components/diff/AgentDiffViewer";
-import { compareAgentDefinitions } from "@/features/agents/components/diff/compare-agent-definitions";
+import { compareAgentDefinitions } from "@ai-matrx/agents/versions";
 import { getAgentModeHref } from "@ai-matrx/chat/agents/components/shared/AgentModeController";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { fetchSavedAgentDefinition } from "@/features/agents/services/agent-definition-snapshot.service";
