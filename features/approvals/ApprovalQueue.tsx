@@ -78,6 +78,18 @@ import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ProTextarea } from "@/components/official/ProTextarea";
 type Decision = "accept" | "reject";
 
+/**
+ * WHAT BECAME OF A ROW THIS SCREEN DECIDED, kept on the screen: an open window must say "Approved" (or
+ * "Declined") the moment the decision lands, never keep the question and its buttons for a row the store has
+ * already closed. `decided` means the store found it already decided and did not say which way.
+ */
+type DecidedState = Decision | "decided";
+const DECIDED_WORD: Record<DecidedState, string> = {
+  accept: "Approved",
+  reject: "Declined",
+  decided: "Already decided",
+};
+
 interface Slot {
   source: ApprovalSource;
   decisions: ApprovalDecisions;
@@ -297,14 +309,16 @@ function DecisionButtons({
   item,
   kind,
   busy,
+  decided,
   onDecide,
 }: {
   item: ApprovalItem;
   kind: ApprovalKind;
   busy: boolean;
+  decided?: DecidedState | undefined;
   onDecide: (decision: Decision, items: ApprovalItem[]) => void;
 }) {
-  if (noDecisionControls(item)) return null;
+  if (decided || noDecisionControls(item)) return null;
   return (
     <span
       className="inline-flex items-center gap-1"
@@ -340,6 +354,7 @@ function ApprovalTable({
   busy,
   batchRejectNeedsOneKind,
   focusedKey,
+  decidedByKey,
   onDecide,
 }: {
   tableId: string;
@@ -350,6 +365,7 @@ function ApprovalTable({
   busy: boolean;
   batchRejectNeedsOneKind: boolean;
   focusedKey: string | null;
+  decidedByKey: ReadonlyMap<string, DecidedState>;
   onDecide: (decision: Decision, items: ApprovalItem[]) => void;
 }) {
   const sectionByKind = new Map(sections.map((section) => [section.kind.id, section]));
@@ -592,9 +608,10 @@ function ApprovalTable({
             <ApprovalRowDetail
               item={item}
               kindLabel={kindLabel(item)}
+              decided={decidedByKey.get(item.key)}
               decide={
                 section ? (
-                  <DecisionButtons item={item} kind={section.kind} busy={busy} onDecide={onDecide} />
+                  <DecisionButtons item={item} kind={section.kind} busy={busy} decided={decidedByKey.get(item.key)} onDecide={onDecide} />
                 ) : null
               }
             />
@@ -613,7 +630,7 @@ function ApprovalTable({
             controls={controls}
             decide={
               section ? (
-                <DecisionButtons item={item} kind={section.kind} busy={busy} onDecide={onDecide} />
+                <DecisionButtons item={item} kind={section.kind} busy={busy} decided={decidedByKey.get(item.key)} onDecide={onDecide} />
               ) : null
             }
           />
@@ -679,14 +696,17 @@ function ApprovalCard({
 }
 
 /** Everything one proposal says, in its window: nothing a row used to show is lost. */
-function ApprovalRowDetail({
+export function ApprovalRowDetail({
   item,
   kindLabel,
   decide,
+  decided,
 }: {
   item: ApprovalItem;
   kindLabel: string;
   decide: ReactNode;
+  /** Set once this screen decided the row: the window then says so, and the question and its buttons are gone. */
+  decided?: DecidedState | undefined;
 }) {
   const proposedAt = item.proposedAt ? new Date(item.proposedAt) : null;
   const proposedLabel =
@@ -697,7 +717,13 @@ function ApprovalRowDetail({
         <KindBadge className="mt-0.5 shrink-0">{item.badge ?? kindLabel}</KindBadge>
         <p className="min-w-0 flex-1 break-words type-heading text-foreground">{item.headline}</p>
       </div>
-      {decide ? <div className="flex justify-end">{decide}</div> : null}
+      {decided ? (
+        <p className="break-words type-secondary font-medium text-foreground" role="status">
+          {DECIDED_WORD[decided]}
+        </p>
+      ) : decide ? (
+        <div className="flex justify-end">{decide}</div>
+      ) : null}
 
       {/* Not yours to approve — but never hidden, and never a disabled control
           with no reason (THE NO-SILENT-FAILURE LAW). */}
@@ -749,7 +775,7 @@ function ApprovalRowDetail({
           value={proposedLabel}
           {...(proposedLabel ? {} : { missing: "Unknown" })}
         />
-        <PropertyRow label="Mode" value={<ModeLine item={item} />} />
+        <PropertyRow label="Mode" value={decided ? DECIDED_WORD[decided] : <ModeLine item={item} />} />
       </div>
 
       {item.body ? <div className="min-w-0">{item.body}</div> : null}
@@ -847,6 +873,7 @@ export function ApprovalQueue({
   } | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const [decidedByKey, setDecidedByKey] = useState<ReadonlyMap<string, DecidedState>>(() => new Map());
 
   const report = (kindId: string, slot: Slot) =>
     setSlots((previous) => ({ ...previous, [kindId]: slot }));
@@ -973,6 +1000,21 @@ export function ApprovalQueue({
       try {
         const outcome = await writer;
         applied += outcome.applied;
+        // Every item this writer did not refuse or leave unconfirmed is closed in the store: say so on the
+        // screen at once, so an open window never keeps asking about it.
+        const notClosed = new Set([
+          ...outcome.failures.map((failure) => failure.key),
+          ...(outcome.unconfirmed ?? []).map((entry) => entry.key),
+        ]);
+        const refused = new Set((outcome.alreadyDecided ?? []).map((entry) => entry.key));
+        setDecidedByKey((held) => {
+          const next = new Map(held);
+          for (const item of items) {
+            if (notClosed.has(item.key)) continue;
+            next.set(item.key, refused.has(item.key) ? "decided" : decision.decision);
+          }
+          return next;
+        });
         failures.push(...outcome.failures.map((failure) => failure.message));
         alreadyDecided.push(
           ...(outcome.alreadyDecided ?? []).map((entry) => entry.message),
@@ -1212,6 +1254,7 @@ export function ApprovalQueue({
                 busy={busy}
                 batchRejectNeedsOneKind={batchRejectNeedsOneKind}
                 focusedKey={focusedKey}
+                decidedByKey={decidedByKey}
                 onDecide={begin}
               />
             </div>
