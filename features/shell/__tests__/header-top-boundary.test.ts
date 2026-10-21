@@ -183,7 +183,12 @@ describe("the header is not glass (glass only floats; the band is solid)", () =>
       if (/<TapTargetButton[\s>]/.test(src)) offenders.push(`${file}: raw <TapTargetButton> (glass default)`);
       if (/variant="(glass|group)"/.test(src)) offenders.push(`${file}: variant glass/group`);
       if (/data-matrx-glass(?!-plane)/.test(src)) offenders.push(`${file}: data-matrx-glass`);
-      if (/matrx-glass-(thin-border|interactive)/.test(src)) offenders.push(`${file}: glass surface class`);
+      // The one allowed glass track: the approved header mode pill (Arman, 2026-10-20), declared once.
+      const withoutApprovedPill = src.replace(
+        'export const HEADER_MODE_PILL_TRACK = "matrx-glass-thin-border flex items-center gap-0 rounded-full p-0.5";',
+        "",
+      );
+      if (/matrx-glass-(thin-border|interactive)/.test(withoutApprovedPill)) offenders.push(`${file}: glass surface class`);
       // A pre-composed *TapButton must say transparent (its default is glass).
       for (const m of src.matchAll(/<([A-Z][A-Za-z]*TapButton)\b([^>]*?)\/?>/gs)) {
         if (!/variant="transparent"/.test(m[2])) offenders.push(`${file}: <${m[1]}> without variant="transparent"`);
@@ -196,5 +201,26 @@ describe("the header is not glass (glass only floats; the band is solid)", () =>
     expect(read("features/shell/components/header/HeaderControlSet.tsx")).toContain(
       '<CanvasToggle variant="transparent" />',
     );
+  });
+});
+
+describe("the approved header mode pill (Arman, 2026-10-20)", () => {
+  // The agents-header mode switch is THE header mode pill; the shell route nav must be the same
+  // object, never a look-alike (the 2026-10-03 solid-muted variant is the defect this pins).
+  const AGENT_TRACK = "matrx-glass-thin-border flex items-center gap-0 rounded-full p-0.5";
+  const AGENT_ITEM = "flex items-center justify-center gap-1 py-0.5 text-[0.6875rem] font-medium rounded-full";
+
+  it("the agents header still draws the track and item this pill copies", () => {
+    const agents = read("../aidream/apps/shared/chat/src/agents/components/shared/AgentModeController.tsx");
+    expect(agents).toContain(AGENT_TRACK);
+    expect(agents).toContain(AGENT_ITEM);
+  });
+
+  it("the route nav uses that exact track and the 11px item, never a solid muted look-alike", () => {
+    const nav = read("features/shell/components/header/RouteModeNav.tsx");
+    expect(nav).toContain(`export const HEADER_MODE_PILL_TRACK = "${AGENT_TRACK}";`);
+    expect(nav).toContain("const PILL = `${HEADER_MODE_PILL_TRACK} whitespace-nowrap`;");
+    expect(nav).not.toMatch(/"bg-muted flex items-center gap-0 rounded-full/);
+    expect(nav).toMatch(/py-0\.5 px-2\.5 text-\[0\.6875rem\] font-medium rounded-full/);
   });
 });

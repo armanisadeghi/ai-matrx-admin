@@ -131,16 +131,19 @@ interface RouteModeNavProps {
   fallbackLabel?: string;
 }
 
-// A solid track, never glass: the header band is solid, so nothing moves
-// behind it ("glass only floats" — owner, 2026-10-03).
-const PILL =
-  "bg-muted flex items-center gap-0 rounded-full p-0.5 whitespace-nowrap";
+// THE APPROVED HEADER MODE PILL (Arman, 2026-10-20): exactly the agents-header mode switch
+// (@ai-matrx/chat AgentModeController) — the thin-border glass track, 11px items. It is a shared
+// primitive approved everywhere; a look-alike variant is not. The 2026-10-03 "solid, never glass"
+// change generalised the tap-button placement rule onto this track and is reverted.
+// Guard: header-top-boundary.test.ts § the approved header mode pill.
+export const HEADER_MODE_PILL_TRACK = "matrx-glass-thin-border flex items-center gap-0 rounded-full p-0.5";
+const PILL = `${HEADER_MODE_PILL_TRACK} whitespace-nowrap`;
 // Route navigation lives inside the shell's compact fixed-height header. The
 // collapsed mobile trigger alone is a true tap control, so it reserves a 44px
 // hit target without changing the compact desktop pill geometry. Its sheet
 // owns the large route rows after activation.
 const ITEM =
-  "matrx-glyph-trim [--matrx-glyph-size:0.875rem] flex items-center justify-center gap-1 py-0.5 px-2.5 text-xs font-medium rounded-full transition-colors cursor-pointer whitespace-nowrap [&_svg]:w-3.5 [&_svg]:h-3.5";
+  "matrx-glyph-trim [--matrx-glyph-size:0.875rem] flex items-center justify-center gap-1 py-0.5 px-2.5 text-[0.6875rem] font-medium rounded-full transition-colors cursor-pointer whitespace-nowrap [&_svg]:w-3.5 [&_svg]:h-3.5";
 
 // Breathing room the nav must keep between itself and the header's left/right
 // flanks. Without it the measurement picks "full" whenever the content fits by
