@@ -172,12 +172,13 @@ export function describe(approval: StoreApproval): Pick<
   }
 
   // A BULK JOB the server runs (HOST-RUN, 2026-10-16): a mapped copy or a file import into an existing table.
-  // Approving records the yes; the agent runs exactly that job on its next step in its chat, once.
+  // Approving records the yes and wakes the agent in its chat (one database trigger, any surface); it runs
+  // exactly that job, once.
   if (kind === "host_run") {
     const summary = text(change["summary"]) ?? `A copy into ${table}`;
     return {
       headline: summary,
-      acceptEffect: "Allows this one job. It runs from its chat: Run it now.",
+      acceptEffect: "Allows this one job. Its agent runs it right away.",
       rejectEffect: "Nothing is copied. The request is closed as declined.",
       fields: [],
     };
