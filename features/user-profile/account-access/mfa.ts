@@ -1,4 +1,4 @@
-import { AuthClient } from "@supabase/auth-js";
+import { AuthClient } from "@supabase/supabase-js";
 import { createClient as createDataClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import { assertNotInSupportSession } from "@/features/admin/users/support-sessions/service";

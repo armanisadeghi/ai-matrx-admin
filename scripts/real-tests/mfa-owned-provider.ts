@@ -6,7 +6,7 @@
 import assert from "node:assert/strict";
 import { createHmac, randomBytes } from "node:crypto";
 import { createServer, request as httpRequest } from "node:http";
-import { AuthClient } from "@supabase/auth-js";
+import { AuthClient } from "@supabase/supabase-js";
 
 const target = new URL(process.env.MATRX_MFA_AUTH_URL ?? "http://refused.invalid");
 assert.equal(target.hostname, "127.0.0.1", "Only an explicitly owned loopback Auth is allowed");
