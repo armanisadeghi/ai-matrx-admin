@@ -1163,7 +1163,7 @@ const QuestionnaireRendererBody = ({
           />
         ) : null}
         {controls || host.actions || typeLabel ? (
-          <div data-block-header className="flex items-center justify-end gap-0.5">
+          <div data-block-header className="flex flex-wrap items-center justify-end gap-0.5">
             {typeLabel ? <BlockTypeLabel className="mr-auto">{typeLabel}</BlockTypeLabel> : null}
             <BlockControlsButton controls={controls} title="Questionnaire controls" />
             {host.actions}
