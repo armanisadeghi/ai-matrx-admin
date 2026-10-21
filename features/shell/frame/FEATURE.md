@@ -44,7 +44,10 @@ together. Linear is the visual reference. It is built beside the old shell and i
 - `ProductMark.tsx`: a product's mark, Google's way: the glyph itself in the product's colour
   (the design system's chip ink for its hue, light and dark values), 40px in the grid's 48px
   cell (stroke 1.5), 18px beside the sidebar's product name (stroke 1.75). No tinted tile.
-- `products.ts`: THE product list (draft names; change them only there).
+- `products.ts`: THE product list, following the owner's tree
+  (`common-docs/projects/app-frame/TREE.md`): Yours, Memory, Build, Productivity, Business,
+  Solutions, More; each sidebar mirrors the tree's second level. Memory's mark is Lucide
+  `Infinity` (never Sparkles; `BrainCircuit` is Intelligence's).
 - `frame.css`: the frame's tokens and its few structural rules.
 
 ## Ours and the page's (owner, 2026-10-20)
@@ -162,6 +165,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-20 (round 7): the lineup follows the owner's tree (Memory replaces Knowledge and
+  sits first after Yours; Home, Productivity, E-Commerce, Other and More added).
 
 - 2026-10-20 (round 6): product marks lose their tinted tile; the glyph carries the colour and
   fills the cell (grid, favorites, sidebar).

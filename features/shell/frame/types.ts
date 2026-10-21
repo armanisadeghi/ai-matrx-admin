@@ -3,7 +3,7 @@ import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { ChipHue } from "@ai-matrx/design-system/controls";
 
-export type ProductFamily = "build" | "know-make" | "business" | "yours" | "solutions";
+export type ProductFamily = "yours" | "memory" | "build" | "productivity" | "business" | "solutions" | "more";
 
 export interface FrameMenuItem {
   id: string;

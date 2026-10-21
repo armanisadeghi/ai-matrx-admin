@@ -144,7 +144,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
       // The top level as its icon alone; the record is switchable (its siblings, the current one checked).
       crumbs = [
         { id: "crm", label: "CRM", icon: product.icon, iconOnly: true, href: labHref("crm"), onSelect: () => setContactId(null) },
-        { id: "people", label: "People & Companies", href: labHref("crm", "people"), onSelect: () => { setContactId(null); setVariant("list"); } },
+        { id: "people", label: "People & companies", href: labHref("crm", "people"), onSelect: () => { setContactId(null); setVariant("list"); } },
         {
           id: record.id,
           label: record.name,
@@ -164,7 +164,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
     } else {
       crumbs = [
         { id: "crm", label: "CRM", icon: product.icon, iconOnly: true, href: labHref("crm") },
-        { id: "people", label: "People & Companies" },
+        { id: "people", label: "People & companies" },
       ];
       tabs = {
         label: "Contact views",
