@@ -15,7 +15,6 @@ import {
   Award,
   BarChart3,
   BookOpen,
-  BrainCircuit,
   Briefcase,
   CalendarClock,
   CalendarDays,
@@ -107,6 +106,7 @@ import {
   Workflow,
   Wrench,
 } from "lucide-react";
+import { INTELLIGENCE_ICON } from "@ai-matrx/icons/domain";
 import type { FrameProduct, ProductFamily } from "./types";
 
 export const PRODUCT_FAMILIES: readonly { id: ProductFamily; label: string }[] = [
@@ -189,7 +189,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     id: "memory",
     name: "Memory",
     family: "memory",
-    // Infinity: everything you know, kept and connected. Never Sparkles; BrainCircuit is Intelligence's.
+    // Infinity: everything you know, kept and connected. Never Sparkles; INTELLIGENCE_ICON is Intelligence's.
     icon: InfinityIcon,
     color: "fuchsia",
     homeHref: "/memory",
@@ -228,7 +228,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
     id: "intelligence",
     name: "Intelligence",
     family: "build",
-    icon: BrainCircuit,
+    icon: INTELLIGENCE_ICON,
     color: "violet",
     homeHref: "/intelligence",
     menu: oneSection([
