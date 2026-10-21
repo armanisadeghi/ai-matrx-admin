@@ -1,33 +1,18 @@
 "use client";
 
-import { isMessageRole } from "./controller-helpers";
-import QuickMessageTemplateSaveWindow from "@/features/window-panels/windows/message-templates/QuickMessageTemplateSaveWindow";
+// "Save as Message Template" is the chat package's window (one body on the web and Matrx 2).
+import QuickMessageTemplateSaveWindow from "@ai-matrx/chat/window-panels/windows/message-templates/QuickMessageTemplateSaveWindow";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
-export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
-
-        const isOpen = true;
-        const data = overlayData;
-        if (!isOpen) return null;
-        return (
-          <QuickMessageTemplateSaveWindow
-            isOpen
-            onClose={() =>
-              close()
-            }
-            initialContent={
-              typeof data?.initialContent === "string"
-                ? data.initialContent
-                : undefined
-            }
-            defaultName={
-              typeof data?.defaultName === "string"
-                ? data.defaultName
-                : undefined
-            }
-            defaultRole={
-              isMessageRole(data?.defaultRole) ? data.defaultRole : undefined
-            }
-          />
-        );
+export default function OverlayRender({ data: overlayData, close }: OverlayRenderProps) {
+  const data = overlayData as Record<string, unknown> | null | undefined;
+  return (
+    <QuickMessageTemplateSaveWindow
+      isOpen
+      onClose={() => close()}
+      initialContent={typeof data?.initialContent === "string" ? data.initialContent : undefined}
+      defaultName={typeof data?.defaultName === "string" ? data.defaultName : undefined}
+      defaultRole={typeof data?.defaultRole === "string" ? data.defaultRole : undefined}
+    />
+  );
 }
