@@ -27,6 +27,13 @@ import type {
   GoogleConnectionPurpose,
 } from "@/features/marketing/google/service";
 import type { GoogleConnectionOwner } from "@/features/marketing/google/types";
+import {
+  connectGoogleServiceAccount,
+  listSharedWithMe,
+  shareSearchConsole,
+  unshareSearchConsole,
+  type ShareGranteeType,
+} from "@/features/marketing/google/product-shares";
 
 export const googleConnectionKeys = {
   inventory: ["marketing", "google-connections"] as const,
@@ -176,4 +183,55 @@ export function useYouTubeAnalyticsPreview() {
 
 export function useTagManagerInventory() {
   return useMutation({ mutationFn: getTagManagerInventory });
+}
+
+export const googleShareKeys = {
+  withMe: ["marketing", "google-shares", "with-me"] as const,
+};
+
+/** Search Console properties other people shared with the signed-in person. */
+export function useSharedSearchConsole(options: { enabled?: boolean } = {}) {
+  const authReady = useAppSelector(selectAuthReady);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const userId = useAppSelector(selectUserId);
+  return useQuery({
+    queryKey: [...googleShareKeys.withMe, userId],
+    queryFn: ({ signal }) => listSharedWithMe(signal),
+    enabled:
+      (options.enabled ?? true) && authReady && isAuthenticated && Boolean(userId),
+    staleTime: 30_000,
+  });
+}
+
+export function useShareSearchConsole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      connectionId,
+      granteeType,
+      granteeId,
+      remove = false,
+    }: {
+      connectionId: string;
+      granteeType: ShareGranteeType;
+      granteeId: string;
+      remove?: boolean;
+    }) =>
+      (remove ? unshareSearchConsole : shareSearchConsole)({
+        connectionId,
+        granteeType,
+        granteeId,
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: googleConnectionKeys.inventory }),
+  });
+}
+
+export function useConnectGoogleServiceAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: connectGoogleServiceAccount,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: googleConnectionKeys.inventory }),
+  });
 }
