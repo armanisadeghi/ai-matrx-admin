@@ -116,6 +116,10 @@ const BLESSED: Record<string, string> = {
     "filters the marker only to COUNT a kindless payload's content fields and decide " +
     "whether exactly one document field exists; the reduced record never leaves — only " +
     "a plain string (or null) does.",
+  "features/proof-runs/scenarioAgentWrites.ts":
+    "not a door — field-count: parseScenarioDraft and the update planner skip `__kind` only " +
+    "to COUNT which authored fields an agent sent (and name them in the change list); the " +
+    "parsed payload itself, marker included, is what gets merged and saved.",
   "features/content-ir/react/loading/infer-loading-slug.ts":
     "not an instance — a SCHEMA field census: inferLoadingSlug skips the declared `__kind` " +
     "property when counting a kind SCHEMA's fields to pick a loading skeleton; the marker " +
