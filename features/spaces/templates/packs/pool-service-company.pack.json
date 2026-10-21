@@ -1,0 +1,4224 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0582",
+  "version": 1,
+  "title": "Pool Service Company",
+  "description": "Weekly routes, water readings at every stop, equipment repairs and truck chemicals.",
+  "forWho": "Pool cleaning and pool repair companies",
+  "icon": {
+    "emoji": "🏊"
+  },
+  "cover": {
+    "url": "gallery:trades-swimming-pool-clear-blue-water",
+    "offsetY": 50
+  },
+  "category": "trades",
+  "tags": [
+    "pool",
+    "cleaning",
+    "route",
+    "chemicals",
+    "repair",
+    "spa"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-pool-service-company",
+    "catalogueId": "SP0582",
+    "useCase": "The owner of Clearwater Bend Pool Care uses this to see which stops were missed, which pools are out of balance and which repairs are waiting on a customer.",
+    "industry": "field_home_services",
+    "vertical": "Pool service company",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Clearwater Bend Pool Care",
+      "describes": "A six-person pool company running three weekly cleaning routes for homes, an HOA and an apartment complex, plus equipment repairs.",
+      "address": {
+        "line1": "3350 Saguaro Wash Drive",
+        "city": "Scottsdale",
+        "region": "AZ",
+        "postalCode": "85251",
+        "country": "US"
+      },
+      "phone": "(480) 555-0190",
+      "website": "clearwaterbendpools.net",
+      "email": "office@clearwaterbendpools.net",
+      "timezone": "America/Phoenix"
+    },
+    "cleanupTag": "use-case:spaces-pool-service-company",
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Rafael Montoya-Hirsch",
+              "role": "Owner",
+              "work_email": "rafael@clearwaterbendpools.net",
+              "mobile": "(480) 555-0141",
+              "start_date": "@today-8y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Brielle Thornquist",
+              "role": "Office manager",
+              "work_email": "brielle@clearwaterbendpools.net",
+              "mobile": "(480) 555-0142",
+              "start_date": "@today-4y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Desmond Achterberg",
+              "role": "Route tech",
+              "work_email": "desmond@clearwaterbendpools.net",
+              "mobile": "(480) 555-0143",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Lucía Ferreira",
+              "role": "Route tech",
+              "work_email": "lucía@clearwaterbendpools.net",
+              "mobile": "(480) 555-0144",
+              "start_date": "@today-2y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Kenji Abernathy",
+              "role": "Repair tech",
+              "work_email": "kenji@clearwaterbendpools.net",
+              "mobile": "(480) 555-0145",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Noor Haddad",
+              "role": "Route tech",
+              "work_email": "noor@clearwaterbendpools.net",
+              "mobile": "(480) 555-0146",
+              "start_date": "@today-1y"
+            }
+          }
+        ]
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "visit_done",
+        "table": "visit",
+        "name": "Mark complete",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "visit_take",
+        "table": "visit",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "repair_done",
+        "table": "repair",
+        "name": "Mark complete",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "repair_take",
+        "table": "repair",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Pool Service Company assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "visit",
+          "describes": "Every stop on the route with the water readings, chemicals used and anything found."
+        },
+        {
+          "name": "related_tables",
+          "table": "pool",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many repairs are waiting on parts?",
+        "whyItMatters": "Parts on order hold up the repair tech's week.",
+        "expect": {
+          "table": "repair",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Parts ordered"
+          },
+          "answer": 1,
+          "unit": "repairs"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open service visits.",
+        "action": {
+          "kind": "open",
+          "surface": "visit_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "visit_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open pools.",
+        "action": {
+          "kind": "open",
+          "surface": "pool_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "pool_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open repairs.",
+        "action": {
+          "kind": "open",
+          "surface": "repair_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "repair_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "clearwaterbendpools.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Saguaro Wash Drive"
+      ]
+    },
+    "version": 1,
+    "tables": [
+      {
+        "token": "pool",
+        "name": "Pools",
+        "labelSingular": "Pool",
+        "labelPlural": "Pools",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "waves",
+        "titleField": "account_name",
+        "describes": "Every pool you service: size, surface, sanitizer, route and monthly rate, with open repairs.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New pool account",
+            "values": {
+              "account_status": "Prospect"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Measure the pool and work out gallons (length x width x average depth x 7.5)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Note surface, filter type and sanitizer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo of the equipment pad with model plates readable"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Water on day one"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Full test including stabilizer and calcium"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Anything green, cloudy or stained noted for the quote"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Agreement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Monthly rate and what it covers"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Chemicals included or billed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Gate code, pets and where to park"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "account_name",
+            "label": "Account",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "account_status",
+            "label": "Account status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly service",
+              "Every other week",
+              "Paused",
+              "Prospect",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Weekly service": "green",
+              "Every other week": "teal",
+              "Paused": "amber",
+              "Prospect": "blue",
+              "Cancelled": "red"
+            },
+            "default": "Weekly service"
+          },
+          {
+            "key": "route",
+            "label": "Route",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "North route",
+              "South route",
+              "Commercial route"
+            ],
+            "choiceColors": {
+              "North route": "blue",
+              "South route": "violet",
+              "Commercial route": "orange"
+            }
+          },
+          {
+            "key": "route_tech",
+            "label": "Route tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "gallons",
+            "label": "Gallons",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 2000
+              },
+              {
+                "kind": "max",
+                "value": 200000
+              }
+            ]
+          },
+          {
+            "key": "surface",
+            "label": "Surface",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Plaster",
+              "Pebble",
+              "Fiberglass",
+              "Vinyl"
+            ],
+            "choiceColors": {
+              "Plaster": "slate",
+              "Pebble": "teal",
+              "Fiberglass": "blue",
+              "Vinyl": "violet"
+            }
+          },
+          {
+            "key": "sanitizer",
+            "label": "Sanitizer",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Chlorine",
+              "Saltwater"
+            ],
+            "choiceColors": {
+              "Chlorine": "yellow",
+              "Saltwater": "blue"
+            }
+          },
+          {
+            "key": "filter_type",
+            "label": "Filter",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Cartridge",
+              "DE",
+              "Sand"
+            ],
+            "choiceColors": {
+              "Cartridge": "slate",
+              "DE": "orange",
+              "Sand": "yellow"
+            }
+          },
+          {
+            "key": "monthly_rate",
+            "label": "Monthly rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "email",
+            "label": "Email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "area",
+            "label": "Neighborhood",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "access",
+            "label": "Gate and access notes",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visits_done",
+            "label": "Visits completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "visits",
+            "pick": "visit_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "open_repairs",
+            "label": "Open repairs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "repairs",
+            "pick": "repair_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Found on route",
+                "Quoted",
+                "Approved",
+                "Parts ordered",
+                "Scheduled"
+              ]
+            }
+          },
+          {
+            "key": "repair_revenue",
+            "label": "Repair revenue (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "repairs",
+            "pick": "quote",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "annual_value",
+            "label": "Yearly service value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Account status} = \"Cancelled\", {Account status} = \"Prospect\"), \"\", {Monthly rate (USD)} * 12)"
+          },
+          {
+            "key": "add_repair_btn",
+            "label": "New repair",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "repair",
+              "template": "Repair ticket",
+              "prefill": {
+                "pool": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pool-1",
+            "values": {
+              "account_name": "Delgado residence",
+              "account_status": "Weekly service",
+              "route": "North route",
+              "route_tech": "tm-3",
+              "gallons": 18000,
+              "surface": "Pebble",
+              "sanitizer": "Saltwater",
+              "filter_type": "Cartridge",
+              "monthly_rate": 185,
+              "phone": "(480) 555-0101",
+              "email": "delgado.home@inbox-mail.net",
+              "area": "McCormick Ranch",
+              "access": "Side gate, code 4417"
+            }
+          },
+          {
+            "key": "pool-2",
+            "values": {
+              "account_name": "Whitcombe residence",
+              "account_status": "Weekly service",
+              "route": "North route",
+              "route_tech": "tm-3",
+              "gallons": 22000,
+              "surface": "Plaster",
+              "sanitizer": "Chlorine",
+              "filter_type": "Cartridge",
+              "monthly_rate": 195,
+              "phone": "(480) 555-0102",
+              "email": "whitcombe.family@inbox-mail.net",
+              "area": "Gainey Ranch",
+              "access": "Dog in yard until noon; text first"
+            }
+          },
+          {
+            "key": "pool-3",
+            "values": {
+              "account_name": "Sandoval-Price residence",
+              "account_status": "Weekly service",
+              "route": "South route",
+              "route_tech": "tm-4",
+              "gallons": 15000,
+              "surface": "Pebble",
+              "sanitizer": "Saltwater",
+              "filter_type": "DE",
+              "monthly_rate": 175,
+              "phone": "(480) 555-0103",
+              "email": "sandoval.price@inbox-mail.net",
+              "area": "Old Town",
+              "access": "Key in lockbox by the pool gate"
+            }
+          },
+          {
+            "key": "pool-4",
+            "values": {
+              "account_name": "Aldergrove HOA community pool",
+              "account_status": "Weekly service",
+              "route": "Commercial route",
+              "route_tech": "tm-3",
+              "gallons": 60000,
+              "surface": "Plaster",
+              "sanitizer": "Chlorine",
+              "filter_type": "Sand",
+              "monthly_rate": 640,
+              "phone": "(480) 555-0104",
+              "email": "aldergrove.board@inbox-mail.net",
+              "area": "Arcadia",
+              "access": "Fob from the clubhouse office"
+            }
+          },
+          {
+            "key": "pool-5",
+            "values": {
+              "account_name": "Okonjo residence",
+              "account_status": "Weekly service",
+              "route": "South route",
+              "route_tech": "tm-4",
+              "gallons": 20000,
+              "surface": "Plaster",
+              "sanitizer": "Chlorine",
+              "filter_type": "Cartridge",
+              "monthly_rate": 185,
+              "phone": "(480) 555-0105",
+              "email": "okonjo.house@inbox-mail.net",
+              "area": "Tempe Lakes",
+              "access": "Back gate unlocked on service day"
+            }
+          },
+          {
+            "key": "pool-6",
+            "values": {
+              "account_name": "Fairbanks residence",
+              "account_status": "Every other week",
+              "route": "South route",
+              "route_tech": "tm-6",
+              "gallons": 12000,
+              "surface": "Fiberglass",
+              "sanitizer": "Chlorine",
+              "filter_type": "Cartridge",
+              "monthly_rate": 125,
+              "phone": "(480) 555-0106",
+              "email": "fairbanks.pool@inbox-mail.net",
+              "area": "Chaparral",
+              "access": "Side gate, no code"
+            }
+          },
+          {
+            "key": "pool-7",
+            "values": {
+              "account_name": "Castellanos residence",
+              "account_status": "Weekly service",
+              "route": "North route",
+              "route_tech": "tm-6",
+              "gallons": 25000,
+              "surface": "Pebble",
+              "sanitizer": "Saltwater",
+              "filter_type": "Cartridge",
+              "monthly_rate": 205,
+              "phone": "(480) 555-0107",
+              "email": "castellanos.casa@inbox-mail.net",
+              "area": "Pinnacle Peak",
+              "access": "Gate code 9902; heater on a timer"
+            }
+          },
+          {
+            "key": "pool-8",
+            "values": {
+              "account_name": "Verhoeven residence",
+              "account_status": "Weekly service",
+              "route": "South route",
+              "route_tech": "tm-4",
+              "gallons": 17000,
+              "surface": "Plaster",
+              "sanitizer": "Chlorine",
+              "filter_type": "DE",
+              "monthly_rate": 180,
+              "phone": "(480) 555-0108",
+              "email": "verhoeven.home@inbox-mail.net",
+              "area": "Kierland",
+              "access": "Ring the bell; elderly owner likes a word"
+            }
+          },
+          {
+            "key": "pool-9",
+            "values": {
+              "account_name": "Mesquite Court Apartments pool",
+              "account_status": "Weekly service",
+              "route": "Commercial route",
+              "route_tech": "tm-3",
+              "gallons": 45000,
+              "surface": "Plaster",
+              "sanitizer": "Chlorine",
+              "filter_type": "Sand",
+              "monthly_rate": 520,
+              "phone": "(480) 555-0109",
+              "email": "mesquitecourt.mgmt@inbox-mail.net",
+              "area": "Downtown",
+              "access": "Leasing office opens 9:00"
+            }
+          },
+          {
+            "key": "pool-10",
+            "values": {
+              "account_name": "Lindqvist residence",
+              "account_status": "Paused",
+              "route": "North route",
+              "route_tech": "tm-6",
+              "gallons": 16000,
+              "surface": "Plaster",
+              "sanitizer": "Saltwater",
+              "filter_type": "Cartridge",
+              "monthly_rate": 175,
+              "phone": "(480) 555-0110",
+              "email": "lindqvist.az@inbox-mail.net",
+              "area": "Desert Mountain",
+              "access": "Owners away; restart on their return"
+            }
+          },
+          {
+            "key": "pool-11",
+            "values": {
+              "account_name": "Abernethy-Cole residence",
+              "account_status": "Prospect",
+              "route": "South route",
+              "route_tech": "tm-4",
+              "gallons": 21000,
+              "surface": "Pebble",
+              "sanitizer": "Chlorine",
+              "filter_type": "Cartridge",
+              "monthly_rate": 190,
+              "phone": "(480) 555-0111",
+              "email": "abernethy.cole@inbox-mail.net",
+              "area": "Ahwatukee",
+              "access": "Quote visit booked"
+            }
+          },
+          {
+            "key": "pool-12",
+            "values": {
+              "account_name": "Harlan residence",
+              "account_status": "Cancelled",
+              "route": "North route",
+              "route_tech": "tm-3",
+              "gallons": 14000,
+              "surface": "Vinyl",
+              "sanitizer": "Chlorine",
+              "filter_type": "Sand",
+              "monthly_rate": 165,
+              "phone": "(480) 555-0112",
+              "email": "harlan.res@inbox-mail.net",
+              "area": "Cactus Corridor",
+              "access": "House sold"
+            }
+          }
+        ],
+        "independentOf": {
+          "route_tech": "Either record can be created or change status before the other."
+        }
+      },
+      {
+        "token": "visit",
+        "name": "Service visits",
+        "labelSingular": "Service visit",
+        "labelPlural": "Service visits",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "droplet",
+        "titleField": "visit_name",
+        "describes": "Every stop on the route with the water readings, chemicals used and anything found.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Stop sheet",
+            "values": {
+              "status": "Scheduled",
+              "visit_name": "New visit"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Test first"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Free chlorine, pH, alkalinity"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Stabilizer and calcium once a month"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Salt on salt pools"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Clean"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Skim surface and empty skimmer and pump baskets"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Brush walls, steps and tile line"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vacuum or check the cleaner"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Dose and close"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Chemicals added and amounts written below"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pressure gauge read; clean filter if 8 to 10 psi over clean"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Gate closed and latched, photo of the clear pool sent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "visit_name",
+            "label": "Visit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Scheduled",
+            "choices": [
+              "Scheduled",
+              "In progress",
+              "Completed",
+              "Could not service",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "blue",
+              "In progress": "amber",
+              "Completed": "green",
+              "Could not service": "orange",
+              "Cancelled": "red"
+            },
+            "statusGroups": {
+              "Scheduled": "todo",
+              "In progress": "in_progress",
+              "Completed": "done",
+              "Could not service": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "pool",
+            "label": "Pool",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pool",
+            "relationMax": 1
+          },
+          {
+            "key": "tech",
+            "label": "Tech",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "visit_on",
+            "label": "Visit date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "fc",
+            "label": "Free chlorine (ppm)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ]
+          },
+          {
+            "key": "ph",
+            "label": "pH",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 6
+              },
+              {
+                "kind": "max",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "key": "alk",
+            "label": "Total alkalinity (ppm)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "cya",
+            "label": "Stabilizer (ppm)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "ch",
+            "label": "Calcium hardness (ppm)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1500
+              }
+            ]
+          },
+          {
+            "key": "salt",
+            "label": "Salt (ppm)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 6000
+              }
+            ]
+          },
+          {
+            "key": "chem_cost",
+            "label": "Chemicals used (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "filter_cleaned",
+            "label": "Filter cleaned",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fc_ratio",
+            "label": "Chlorine to stabilizer (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Stabilizer (ppm)} > 0, ROUND({Free chlorine (ppm)} / {Stabilizer (ppm)} * 100, 1), \"\")"
+          },
+          {
+            "key": "water_check",
+            "label": "Water check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Completed\", IF(OR({Free chlorine (ppm)} < 1, {pH} > 7.8, {pH} < 7.2), \"Needs attention\", \"Balanced\"), \"\")"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark complete",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "visi-1",
+            "values": {
+              "visit_name": "Delgado weekly clean",
+              "status": "Completed",
+              "pool": "pool-1",
+              "tech": "tm-3",
+              "visit_on": "@today-7d",
+              "fc": 3.5,
+              "ph": 7.6,
+              "alk": 90,
+              "cya": 70,
+              "ch": 450,
+              "salt": 3300,
+              "chem_cost": 6.4,
+              "filter_cleaned": false,
+              "completed_on": "@today-7d"
+            }
+          },
+          {
+            "key": "visi-2",
+            "values": {
+              "visit_name": "Whitcombe weekly clean",
+              "status": "Completed",
+              "pool": "pool-2",
+              "tech": "tm-3",
+              "visit_on": "@today-7d",
+              "fc": 2.0,
+              "ph": 7.8,
+              "alk": 80,
+              "cya": 50,
+              "ch": 520,
+              "chem_cost": 11.8,
+              "filter_cleaned": false,
+              "completed_on": "@today-7d"
+            }
+          },
+          {
+            "key": "visi-3",
+            "values": {
+              "visit_name": "Sandoval-Price weekly clean",
+              "status": "Completed",
+              "pool": "pool-3",
+              "tech": "tm-4",
+              "visit_on": "@today-6d",
+              "fc": 4.0,
+              "ph": 7.5,
+              "alk": 85,
+              "cya": 75,
+              "ch": 380,
+              "salt": 3500,
+              "chem_cost": 5.1,
+              "filter_cleaned": true,
+              "completed_on": "@today-6d"
+            }
+          },
+          {
+            "key": "visi-4",
+            "values": {
+              "visit_name": "Aldergrove HOA weekly service",
+              "status": "Completed",
+              "pool": "pool-4",
+              "tech": "tm-3",
+              "visit_on": "@today-6d",
+              "fc": 3.0,
+              "ph": 7.4,
+              "alk": 100,
+              "cya": 60,
+              "ch": 410,
+              "chem_cost": 38.5,
+              "filter_cleaned": false,
+              "completed_on": "@today-6d"
+            }
+          },
+          {
+            "key": "visi-5",
+            "values": {
+              "visit_name": "Okonjo weekly clean",
+              "status": "Completed",
+              "pool": "pool-5",
+              "tech": "tm-4",
+              "visit_on": "@today-5d",
+              "fc": 0.5,
+              "ph": 7.9,
+              "alk": 110,
+              "cya": 90,
+              "ch": 600,
+              "chem_cost": 14.2,
+              "filter_cleaned": false,
+              "completed_on": "@today-5d"
+            }
+          },
+          {
+            "key": "visi-6",
+            "values": {
+              "visit_name": "Fairbanks clean and leaf canister",
+              "status": "Completed",
+              "pool": "pool-6",
+              "tech": "tm-6",
+              "visit_on": "@today-5d",
+              "fc": 3.0,
+              "ph": 7.5,
+              "alk": 90,
+              "cya": 40,
+              "ch": 300,
+              "chem_cost": 7.9,
+              "filter_cleaned": false,
+              "completed_on": "@today-5d"
+            }
+          },
+          {
+            "key": "visi-7",
+            "values": {
+              "visit_name": "Castellanos weekly clean",
+              "status": "Completed",
+              "pool": "pool-7",
+              "tech": "tm-6",
+              "visit_on": "@today-4d",
+              "fc": 4.5,
+              "ph": 7.6,
+              "alk": 80,
+              "cya": 80,
+              "ch": 420,
+              "salt": 3200,
+              "chem_cost": 5.6,
+              "filter_cleaned": false,
+              "completed_on": "@today-4d"
+            }
+          },
+          {
+            "key": "visi-8",
+            "values": {
+              "visit_name": "Verhoeven weekly clean",
+              "status": "Completed",
+              "pool": "pool-8",
+              "tech": "tm-4",
+              "visit_on": "@today-4d",
+              "fc": 3.0,
+              "ph": 7.5,
+              "alk": 95,
+              "cya": 55,
+              "ch": 640,
+              "chem_cost": 9.7,
+              "filter_cleaned": true,
+              "completed_on": "@today-4d"
+            }
+          },
+          {
+            "key": "visi-9",
+            "values": {
+              "visit_name": "Mesquite Court weekly service",
+              "status": "Completed",
+              "pool": "pool-9",
+              "tech": "tm-3",
+              "visit_on": "@today-3d",
+              "fc": 2.5,
+              "ph": 7.6,
+              "alk": 90,
+              "cya": 65,
+              "ch": 500,
+              "chem_cost": 31.0,
+              "filter_cleaned": false,
+              "completed_on": "@today-3d"
+            }
+          },
+          {
+            "key": "visi-10",
+            "values": {
+              "visit_name": "Whitcombe, dog loose in yard",
+              "status": "Could not service",
+              "pool": "pool-2",
+              "tech": "tm-3",
+              "visit_on": "@today-2d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-11",
+            "values": {
+              "visit_name": "Okonjo algae recheck",
+              "status": "Scheduled",
+              "pool": "pool-5",
+              "tech": "tm-4",
+              "visit_on": "@today-1d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-12",
+            "values": {
+              "visit_name": "Delgado clean and salt cell inspection",
+              "status": "Scheduled",
+              "pool": "pool-1",
+              "tech": "tm-3",
+              "visit_on": "@today",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-13",
+            "values": {
+              "visit_name": "Whitcombe clean and filter rinse",
+              "status": "In progress",
+              "pool": "pool-2",
+              "tech": "tm-3",
+              "visit_on": "@today",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-14",
+            "values": {
+              "visit_name": "Sandoval-Price clean, DE backwash",
+              "status": "Scheduled",
+              "pool": "pool-3",
+              "tech": "tm-4",
+              "visit_on": "@today+1d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-15",
+            "values": {
+              "visit_name": "Aldergrove HOA service and health log",
+              "status": "Scheduled",
+              "pool": "pool-4",
+              "tech": "tm-3",
+              "visit_on": "@today+1d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-16",
+            "values": {
+              "visit_name": "Castellanos clean and heater check",
+              "status": "Scheduled",
+              "pool": "pool-7",
+              "tech": "tm-6",
+              "visit_on": "@today+3d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-17",
+            "values": {
+              "visit_name": "Verhoeven clean and calcium treatment",
+              "status": "Scheduled",
+              "pool": "pool-8",
+              "tech": "tm-4",
+              "visit_on": "@today+3d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-18",
+            "values": {
+              "visit_name": "Mesquite Court service and drain cover check",
+              "status": "Scheduled",
+              "pool": "pool-9",
+              "tech": "tm-3",
+              "visit_on": "@today+4d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-19",
+            "values": {
+              "visit_name": "Fairbanks clean and tile brushing",
+              "status": "Scheduled",
+              "pool": "pool-6",
+              "tech": "tm-6",
+              "visit_on": "@today+9d",
+              "filter_cleaned": false
+            }
+          },
+          {
+            "key": "visi-20",
+            "values": {
+              "visit_name": "Lindqvist clean while owners are away",
+              "status": "Cancelled",
+              "pool": "pool-10",
+              "tech": "tm-6",
+              "visit_on": "@today+2d",
+              "filter_cleaned": false
+            }
+          }
+        ],
+        "independentOf": {
+          "pool": "Either record can be created or change status before the other.",
+          "tech": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The visit date is the route plan; the completed date is stamped at the stop and can differ when a route runs late."
+      },
+      {
+        "token": "repair",
+        "name": "Repairs",
+        "labelSingular": "Repair",
+        "labelPlural": "Repairs",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wrench",
+        "titleField": "repair_name",
+        "describes": "Equipment problems found on route, from quote to fixed, with parts, labor and margin.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Repair ticket",
+            "values": {
+              "status": "Found on route",
+              "repair_name": "New repair"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the tech saw"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Noise, leak, error code or reading, with a photo of the model plate."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Quote"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Part number and price from the supplier"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Labor hours"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Warranty checked with the serial number"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "On the day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Breaker off and tagged before opening anything"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Old part shown to the customer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "System primed, running and leak-free before leaving"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "repair_name",
+            "label": "Repair",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "default": "Found on route",
+            "choices": [
+              "Found on route",
+              "Quoted",
+              "Approved",
+              "Parts ordered",
+              "Scheduled",
+              "Completed",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Found on route": "slate",
+              "Quoted": "blue",
+              "Approved": "violet",
+              "Parts ordered": "amber",
+              "Scheduled": "teal",
+              "Completed": "green",
+              "Declined": "red"
+            },
+            "statusGroups": {
+              "Found on route": "todo",
+              "Quoted": "todo",
+              "Approved": "in_progress",
+              "Parts ordered": "in_progress",
+              "Scheduled": "in_progress",
+              "Completed": "done",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "pool",
+            "label": "Pool",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pool",
+            "relationMax": 1
+          },
+          {
+            "key": "found_by",
+            "label": "Found by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "category",
+            "label": "Equipment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pump",
+              "Filter",
+              "Heater",
+              "Salt cell",
+              "Automation",
+              "Leak detection",
+              "Plumbing"
+            ],
+            "choiceColors": {
+              "Pump": "blue",
+              "Filter": "orange",
+              "Heater": "red",
+              "Salt cell": "teal",
+              "Automation": "violet",
+              "Leak detection": "yellow",
+              "Plumbing": "slate"
+            }
+          },
+          {
+            "key": "quote",
+            "label": "Quote (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30000
+              }
+            ]
+          },
+          {
+            "key": "parts_cost",
+            "label": "Parts cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "labor_cost",
+            "label": "Labor cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "warranty",
+            "label": "Manufacturer warranty",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "Parts covered by the manufacturer; the customer pays labor only."
+          },
+          {
+            "key": "scheduled_on",
+            "label": "Scheduled for",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Declined\", {Quote (USD)} = 0), \"\", {Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)})"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Declined\", {Quote (USD)} = 0), \"\", ROUND(({Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}) / {Quote (USD)} * 100, 0))"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark complete",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "repair_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "repair_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "repa-1",
+            "values": {
+              "repair_name": "Variable-speed pump replacement",
+              "status": "Completed",
+              "pool": "pool-2",
+              "found_by": "tm-3",
+              "category": "Pump",
+              "quote": 1850,
+              "parts_cost": 980,
+              "labor_cost": 320,
+              "warranty": false,
+              "scheduled_on": "@today-20d",
+              "completed_on": "@today-20d"
+            }
+          },
+          {
+            "key": "repa-2",
+            "values": {
+              "repair_name": "Salt cell replacement",
+              "status": "Completed",
+              "pool": "pool-7",
+              "found_by": "tm-6",
+              "category": "Salt cell",
+              "quote": 1150,
+              "parts_cost": 640,
+              "labor_cost": 120,
+              "warranty": false,
+              "scheduled_on": "@today-15d",
+              "completed_on": "@today-15d"
+            }
+          },
+          {
+            "key": "repa-3",
+            "values": {
+              "repair_name": "Cartridge filter element swap",
+              "status": "Completed",
+              "pool": "pool-5",
+              "found_by": "tm-4",
+              "category": "Filter",
+              "quote": 420,
+              "parts_cost": 210,
+              "labor_cost": 80,
+              "warranty": false,
+              "scheduled_on": "@today-12d",
+              "completed_on": "@today-12d"
+            }
+          },
+          {
+            "key": "repa-4",
+            "values": {
+              "repair_name": "Skimmer weir door",
+              "status": "Completed",
+              "pool": "pool-6",
+              "found_by": "tm-6",
+              "category": "Plumbing",
+              "quote": 95,
+              "parts_cost": 22,
+              "labor_cost": 35,
+              "warranty": false,
+              "scheduled_on": "@today-9d",
+              "completed_on": "@today-9d"
+            }
+          },
+          {
+            "key": "repa-5",
+            "values": {
+              "repair_name": "Pump shaft seal",
+              "status": "Completed",
+              "pool": "pool-4",
+              "found_by": "tm-3",
+              "category": "Pump",
+              "quote": 150,
+              "parts_cost": 0,
+              "labor_cost": 90,
+              "warranty": true,
+              "scheduled_on": "@today-8d",
+              "completed_on": "@today-8d"
+            }
+          },
+          {
+            "key": "repa-6",
+            "values": {
+              "repair_name": "Heater ignitor and flame sensor",
+              "status": "Approved",
+              "pool": "pool-7",
+              "found_by": "tm-6",
+              "category": "Heater",
+              "quote": 465,
+              "parts_cost": 140,
+              "labor_cost": 160,
+              "warranty": false,
+              "scheduled_on": "@today+3d"
+            }
+          },
+          {
+            "key": "repa-7",
+            "values": {
+              "repair_name": "Automation actuator on the spa valve",
+              "status": "Parts ordered",
+              "pool": "pool-1",
+              "found_by": "tm-3",
+              "category": "Automation",
+              "quote": 780,
+              "parts_cost": 410,
+              "labor_cost": 160,
+              "warranty": false,
+              "scheduled_on": "@today+5d"
+            }
+          },
+          {
+            "key": "repa-8",
+            "values": {
+              "repair_name": "Main drain cover replacement",
+              "status": "Scheduled",
+              "pool": "pool-9",
+              "found_by": "tm-3",
+              "category": "Plumbing",
+              "quote": 540,
+              "parts_cost": 190,
+              "labor_cost": 180,
+              "warranty": false,
+              "scheduled_on": "@today+4d"
+            }
+          },
+          {
+            "key": "repa-9",
+            "values": {
+              "repair_name": "Pressure test for a suspected leak",
+              "status": "Quoted",
+              "pool": "pool-8",
+              "found_by": "tm-4",
+              "category": "Leak detection",
+              "quote": 395,
+              "parts_cost": 20,
+              "labor_cost": 220,
+              "warranty": false
+            }
+          },
+          {
+            "key": "repa-10",
+            "values": {
+              "repair_name": "Pump motor bearing noise",
+              "status": "Found on route",
+              "pool": "pool-3",
+              "found_by": "tm-4",
+              "category": "Pump",
+              "warranty": false
+            }
+          },
+          {
+            "key": "repa-11",
+            "values": {
+              "repair_name": "DE grid set replacement",
+              "status": "Declined",
+              "pool": "pool-3",
+              "found_by": "tm-4",
+              "category": "Filter",
+              "quote": 690,
+              "parts_cost": 310,
+              "labor_cost": 150,
+              "warranty": false
+            }
+          }
+        ],
+        "independentOf": {
+          "pool": "Either record can be created or change status before the other.",
+          "found_by": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The scheduled date is the booking; the completed date is stamped on the day the work is finished."
+      },
+      {
+        "token": "chemical",
+        "name": "Chemicals and truck stock",
+        "labelSingular": "Chemical",
+        "labelPlural": "Chemicals",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "flask-conical",
+        "titleField": "chem_name",
+        "describes": "What is on the trucks and in the shop, what it costs and when to reorder.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "chem_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sanitizer",
+              "Balancer",
+              "Stabilizer",
+              "Salt",
+              "Algaecide",
+              "Clarifier"
+            ],
+            "choiceColors": {
+              "Sanitizer": "yellow",
+              "Balancer": "blue",
+              "Stabilizer": "violet",
+              "Salt": "slate",
+              "Algaecide": "green",
+              "Clarifier": "teal"
+            }
+          },
+          {
+            "key": "pack_size",
+            "label": "Pack size",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per pack (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "supplier",
+            "label": "Supplier",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sonoran Pool Supply",
+              "Valley Salt Co."
+            ],
+            "choiceColors": {
+              "Sonoran Pool Supply": "blue",
+              "Valley Salt Co.": "slate"
+            }
+          },
+          {
+            "key": "stock_value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{On hand} * {Cost per pack (USD)}"
+          },
+          {
+            "key": "reorder",
+            "label": "Reorder check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"Stocked\")"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "chem-1",
+            "values": {
+              "chem_name": "Liquid chlorine 12.5%",
+              "category": "Sanitizer",
+              "pack_size": "Case of four 1-gallon jugs",
+              "on_hand": 42,
+              "reorder_at": 30,
+              "unit_cost": 21.5,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-2",
+            "values": {
+              "chem_name": "Trichlor tablets, 3 inch",
+              "category": "Sanitizer",
+              "pack_size": "50 lb bucket",
+              "on_hand": 6,
+              "reorder_at": 4,
+              "unit_cost": 189,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-3",
+            "values": {
+              "chem_name": "Cal-hypo shock",
+              "category": "Sanitizer",
+              "pack_size": "1 lb bag",
+              "on_hand": 64,
+              "reorder_at": 40,
+              "unit_cost": 4.2,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-4",
+            "values": {
+              "chem_name": "Muriatic acid 31.45%",
+              "category": "Balancer",
+              "pack_size": "Case of two 1-gallon jugs",
+              "on_hand": 18,
+              "reorder_at": 20,
+              "unit_cost": 15.8,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-5",
+            "values": {
+              "chem_name": "Sodium bicarbonate",
+              "category": "Balancer",
+              "pack_size": "50 lb bag",
+              "on_hand": 5,
+              "reorder_at": 3,
+              "unit_cost": 38,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-6",
+            "values": {
+              "chem_name": "Calcium chloride",
+              "category": "Balancer",
+              "pack_size": "50 lb bag",
+              "on_hand": 4,
+              "reorder_at": 2,
+              "unit_cost": 41,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-7",
+            "values": {
+              "chem_name": "Cyanuric acid",
+              "category": "Stabilizer",
+              "pack_size": "25 lb pail",
+              "on_hand": 3,
+              "reorder_at": 2,
+              "unit_cost": 96,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-8",
+            "values": {
+              "chem_name": "Pool salt",
+              "category": "Salt",
+              "pack_size": "40 lb bag",
+              "on_hand": 22,
+              "reorder_at": 25,
+              "unit_cost": 8.4,
+              "supplier": "Valley Salt Co."
+            }
+          },
+          {
+            "key": "chem-9",
+            "values": {
+              "chem_name": "Polyquat 60 algaecide",
+              "category": "Algaecide",
+              "pack_size": "1 quart",
+              "on_hand": 14,
+              "reorder_at": 10,
+              "unit_cost": 17.9,
+              "supplier": "Sonoran Pool Supply"
+            }
+          },
+          {
+            "key": "chem-10",
+            "values": {
+              "chem_name": "Phosphate remover",
+              "category": "Clarifier",
+              "pack_size": "1 quart",
+              "on_hand": 9,
+              "reorder_at": 6,
+              "unit_cost": 24.5,
+              "supplier": "Sonoran Pool Supply"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each pool has one regular route tech.",
+        "fromTable": "pool",
+        "fromField": "route_tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "route_pools"
+      },
+      {
+        "describes": "Each visit is to one pool.",
+        "fromTable": "visit",
+        "fromField": "pool",
+        "toTable": "pool",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "visits"
+      },
+      {
+        "describes": "Each visit is done by one tech.",
+        "fromTable": "visit",
+        "fromField": "tech",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "visits"
+      },
+      {
+        "describes": "Each repair is on one pool.",
+        "fromTable": "repair",
+        "fromField": "pool",
+        "toTable": "pool",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "repairs"
+      },
+      {
+        "describes": "The tech who spotted the problem.",
+        "fromTable": "repair",
+        "fromField": "found_by",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "repairs_found"
+      }
+    ],
+    "views": [
+      {
+        "token": "all_pool",
+        "name": "All pools",
+        "table": "pool",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "pool_board",
+        "name": "Pools board",
+        "table": "pool",
+        "kind": "kanban",
+        "groupBy": "account_status"
+      },
+      {
+        "token": "all_visit",
+        "name": "All service visits",
+        "table": "visit",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "visit_board",
+        "name": "Service visits board",
+        "table": "visit",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "visit_cal",
+        "name": "Service visits calendar",
+        "table": "visit",
+        "kind": "calendar",
+        "dateField": "visit_on",
+        "allDay": true
+      },
+      {
+        "token": "visit_today",
+        "name": "Today's route",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "today"
+          }
+        }
+      },
+      {
+        "token": "visit_over",
+        "name": "Missed stops",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "In progress"
+          ]
+        }
+      },
+      {
+        "token": "visit_week",
+        "name": "This week",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "this_week"
+          }
+        }
+      },
+      {
+        "token": "visit_mine",
+        "name": "My stops",
+        "table": "visit",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_repair",
+        "name": "All repairs",
+        "table": "repair",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "repair_board",
+        "name": "Repairs board",
+        "table": "repair",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "repair_waiting",
+        "name": "Waiting on the customer",
+        "table": "repair",
+        "kind": "grid",
+        "filters": {
+          "status": "Quoted"
+        }
+      },
+      {
+        "token": "repair_next14",
+        "name": "Booked in the next 14 days",
+        "table": "repair",
+        "kind": "grid",
+        "within": {
+          "scheduled_on": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Approved",
+            "Parts ordered",
+            "Scheduled"
+          ]
+        }
+      },
+      {
+        "token": "repair_mine",
+        "name": "My repairs",
+        "table": "repair",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_chemical",
+        "name": "All chemicals",
+        "table": "chemical",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "chemical_board",
+        "name": "Chemicals board",
+        "table": "chemical",
+        "kind": "kanban",
+        "groupBy": "category"
+      }
+    ],
+    "forms": [
+      {
+        "token": "service_request",
+        "name": "Request pool service",
+        "describes": "How a homeowner or the office asks for a quote or a repair.",
+        "audience": "staff",
+        "table": "pool",
+        "fields": [
+          {
+            "fieldKey": "account_name",
+            "ask": "Whose pool is it?",
+            "required": true
+          },
+          {
+            "fieldKey": "phone",
+            "ask": "Best phone number?"
+          },
+          {
+            "fieldKey": "gallons",
+            "ask": "About how many gallons, if you know?"
+          },
+          {
+            "fieldKey": "sanitizer",
+            "ask": "Chlorine or saltwater?"
+          }
+        ],
+        "submitLabel": "Send the request",
+        "confirmation": "Thanks. The office will call to book a quote visit."
+      }
+    ]
+  },
+  "pages": [
+    {
+      "key": "pool-service-company",
+      "parent": null,
+      "title": "Pool Service Company",
+      "icon": {
+        "emoji": "🏊"
+      },
+      "cover": {
+        "url": "gallery:trades-swimming-pool-clear-blue-water",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Routes live in Service visits; each pool's details live in Pools. Techs open My stops, enter readings and press Mark complete. Missed stops and quotes waiting on a customer show on the Dashboard."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:water-chemistry"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:green-pool"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pools"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every pool you service: size, surface, sanitizer, route and monthly rate, with open repairs."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pool",
+              "view": "pool_board"
+            },
+            "inline": true,
+            "title": "Pools",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pool-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "account_status",
+                "hiddenFields": [
+                  "route_tech",
+                  "gallons",
+                  "surface",
+                  "filter_type",
+                  "phone",
+                  "email",
+                  "area",
+                  "access",
+                  "visits_done",
+                  "open_repairs",
+                  "repair_revenue",
+                  "annual_value",
+                  "add_repair_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "pool-t",
+                "name": "All pools",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pool-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every stop on the route with the water readings, chemicals used and anything found."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "visit_board"
+            },
+            "inline": true,
+            "title": "Service visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "visi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "completed_on",
+                  "fc",
+                  "ph",
+                  "alk",
+                  "cya",
+                  "ch",
+                  "salt",
+                  "chem_cost",
+                  "filter_cleaned",
+                  "fc_ratio",
+                  "water_check",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "visi-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "visit_on",
+                "hiddenFields": [
+                  "status",
+                  "completed_on",
+                  "fc",
+                  "ph",
+                  "alk",
+                  "cya",
+                  "ch",
+                  "salt",
+                  "chem_cost",
+                  "filter_cleaned",
+                  "fc_ratio",
+                  "water_check",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "visi-t",
+                "name": "All service visits",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "visi-today",
+                "name": "Today's route",
+                "layout": "list",
+                "icon": "MapPin",
+                "within": {
+                  "visit_on": {
+                    "relative": "today"
+                  }
+                }
+              },
+              {
+                "id": "visi-over",
+                "name": "Missed stops",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "visit_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              },
+              {
+                "id": "visi-week",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "visit_on": {
+                    "relative": "this_week"
+                  }
+                }
+              },
+              {
+                "id": "visi-mine",
+                "name": "My stops",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "visi-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repairs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Equipment problems found on route, from quote to fixed, with parts, labor and margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "repair",
+              "view": "repair_board"
+            },
+            "inline": true,
+            "title": "Repairs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "repa-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "found_by",
+                  "parts_cost",
+                  "labor_cost",
+                  "warranty",
+                  "scheduled_on",
+                  "completed_on",
+                  "margin",
+                  "margin_pct",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "repa-t",
+                "name": "All repairs",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "repa-waiting",
+                "name": "Waiting on the customer",
+                "layout": "list",
+                "icon": "Hourglass",
+                "filters": {
+                  "status": "Quoted"
+                }
+              },
+              {
+                "id": "repa-next14",
+                "name": "Booked in the next 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Approved",
+                    "Parts ordered",
+                    "Scheduled"
+                  ]
+                }
+              },
+              {
+                "id": "repa-mine",
+                "name": "My repairs",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "repa-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Chemicals and truck stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is on the trucks and in the shop, what it costs and when to reorder."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "chemical",
+              "view": "chemical_board"
+            },
+            "inline": true,
+            "title": "Chemicals and truck stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "chem-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "supplier",
+                  "stock_value",
+                  "reorder",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "chem-t",
+                "name": "All chemicals",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "chem-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "pool-service-company",
+      "title": "Start here: how the routes run",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every pool is an account in Pools. Every stop is a row in Service visits with the readings taken there. Anything broken becomes a row in Repairs. Chemicals tracks what the trucks carry."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A route day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each tech opens "
+            },
+            {
+              "text": "My stops",
+              "bold": true
+            },
+            {
+              "text": " on a phone. The Today's route view lists every stop for the day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At each pool: test, clean, dose, then enter the readings on the visit and press "
+            },
+            {
+              "text": "Mark complete",
+              "bold": true
+            },
+            {
+              "text": ". The Water check fills itself."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the gate is locked or a dog is out, set the visit to "
+            },
+            {
+              "text": "Could not service",
+              "bold": true
+            },
+            {
+              "text": " and say why. The office calls the customer the same afternoon."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anything broken goes in Repairs from the pool's "
+            },
+            {
+              "text": "New repair",
+              "bold": true
+            },
+            {
+              "text": " button, with a photo of the model plate."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The office's day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning: clear Missed stops on the Dashboard. A missed weekly stop in summer can turn a pool green in four days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Afternoon: price the repairs found on route and send the quotes. Quoted repairs show under Waiting on the customer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Friday: check Chemicals for anything at or below its reorder point."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Account status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Weekly service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On the route every week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every other week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lower-use pools, usually fiberglass"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Paused"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner away; restart on their return"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prospect"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quote visit booked"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "pool-service-company",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Missed stops first, then pools whose water needs attention, then repairs waiting on a yes from the customer."
+            }
+          ],
+          "background": "gray",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Service visits",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-visits-by-status",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        },
+                        "icon": "ChartPie"
+                      }
+                    ],
+                    "activeViewId": "c-visits-by-status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "repair",
+                      "view": "all_repair"
+                    },
+                    "inline": true,
+                    "title": "Repairs",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-repair-revenue-by-eq",
+                        "name": "Repair revenue by equipment",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "quote"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-repair-revenue-by-eq"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "chemical",
+                      "view": "all_chemical"
+                    },
+                    "inline": true,
+                    "title": "Chemicals and truck stock",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "c-stock-value-by-categ",
+                        "name": "Stock value by category",
+                        "layout": "chart",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "category",
+                          "op": "sum",
+                          "field": "stock_value"
+                        },
+                        "icon": "ChartColumn"
+                      }
+                    ],
+                    "activeViewId": "c-stock-value-by-categ"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Missed stops"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "all_visit"
+            },
+            "inline": true,
+            "title": "Service visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-not-done-yet",
+                "name": "Not done yet",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "visit_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "l-not-done-yet"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Today's route"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "all_visit"
+            },
+            "inline": true,
+            "title": "Service visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-on-the-route-today",
+                "name": "On the route today",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "visit_on": {
+                    "relative": "today"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "l-on-the-route-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "My stops"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "all_visit"
+            },
+            "inline": true,
+            "title": "Service visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-assigned-to-me",
+                "name": "Assigned to me",
+                "layout": "list",
+                "icon": "Table",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "l-assigned-to-me"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repairs waiting on the customer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "repair",
+              "view": "all_repair"
+            },
+            "inline": true,
+            "title": "Repairs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-quotes-out",
+                "name": "Quotes out",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Quoted"
+                }
+              }
+            ],
+            "activeViewId": "l-quotes-out"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Could not service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "all_visit"
+            },
+            "inline": true,
+            "title": "Service visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "l-skipped-stops",
+                "name": "Skipped stops",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Could not service"
+                }
+              }
+            ],
+            "activeViewId": "l-skipped-stops"
+          }
+        }
+      ]
+    },
+    {
+      "key": "water-chemistry",
+      "parent": "pool-service-company",
+      "title": "Reading the water at every stop",
+      "icon": {
+        "emoji": "🧪"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clean water is a chemistry problem first and a cleaning problem second. These are the numbers the techs aim for and what to do when a reading is off."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Target ranges"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reading"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Target"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Too low"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Too high"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Free chlorine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3 to 5 ppm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Algae, cloudy water"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Strong smell, bleached swimwear"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "pH"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "7.4 to 7.6"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Etches plaster, eats heaters"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Scale, cloudy water, weak chlorine"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Total alkalinity"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "80 to 100 ppm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "pH swings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "pH keeps rising"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stabilizer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "30 to 50 ppm (salt pools 60 to 80)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sun burns off chlorine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chlorine stops working"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Calcium hardness"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "250 to 450 ppm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plaster etching"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Scale on tile and in the salt cell"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Salt"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3,000 to 3,600 ppm"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cell stops making chlorine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Salty taste, corrosion"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The number that predicts algae"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Stabilizer protects chlorine from the sun, but too much of it slows chlorine down. The "
+            },
+            {
+              "text": "Chlorine to stabilizer",
+              "bold": true
+            },
+            {
+              "text": " column divides free chlorine by stabilizer. Keep it at "
+            },
+            {
+              "text": "7.5% or more",
+              "bold": true
+            },
+            {
+              "text": ". Below that, a pool can read some chlorine and still grow algae, which is exactly what happened at the Okonjo pool: 0.5 ppm chlorine over 90 ppm stabilizer, under 1%."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Stabilizer only leaves the water by draining. When it passes 90 ppm, quote a partial drain rather than adding more chlorine every week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dosing order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Adjust alkalinity first; it holds pH in place."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Then pH, with acid poured slowly in front of a return jet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Then chlorine. Liquid chlorine raises pH a little, so dose acid and chlorine on opposite sides of the pool."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Never mix chemicals in the same bucket, and never add water to acid."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hard water here"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Our tap water already carries a lot of calcium, so calcium hardness creeps up all year. Keep pH at the low end of the range in summer and brush the tile line every visit. Salt cells scale fastest; inspect them monthly and clean with a weak acid wash when the plates show white crust."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What gets written down"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every reading taken goes on the visit row, together with the cost of what was added. The office uses that cost to spot pools that eat chemicals, usually a sign of a leak or a stabilizer problem."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "green-pool",
+      "parent": "pool-service-company",
+      "title": "Bringing back a green pool",
+      "icon": {
+        "emoji": "🟢"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A green pool is a sales call and a job at the same time. Price it as a separate cleanup, not as part of the weekly rate, and set the customer's expectations before the first dose."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you quote"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Can you see the bottom step? If not, the cleanup will take three to five visits."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Test stabilizer. Over 90 ppm, the cleanup starts with a partial drain, or the shock will not hold."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the filter and pump. A clogged cartridge or a weak pump will keep the pool green whatever you add."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The cleanup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Skim leaves and debris first; they eat chlorine."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Lower pH to 7.2 so the shock works harder."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shock to about 40% of the stabilizer reading. At 50 ppm stabilizer that is 20 ppm free chlorine, and it must be held there until the water clears."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Brush every surface, then run the pump around the clock."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clean the filter every day until the water is blue. A dirty filter puts the algae back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Test again the next morning. If chlorine dropped by more than 1 ppm overnight with the cover off, algae is still alive; keep going."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visits and pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Starting state"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical visits"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to charge for"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hazy, bottom visible"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1 to 2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chemicals plus one hour"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Green, bottom not visible"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "3 to 4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chemicals, labor per visit, filter clean each time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Black and swampy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5 or more"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Drain and acid wash quoted separately"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In this workspace"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Create each cleanup visit as its own row titled for the work, for example Okonjo algae recheck, so the readings tell the story day by day. When the water passes the Water check two visits in a row, put the pool back on its weekly route and tell the customer what caused it so it does not happen again."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
