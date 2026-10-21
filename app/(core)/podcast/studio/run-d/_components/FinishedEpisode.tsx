@@ -185,8 +185,8 @@ function AudioPlayer({ src }: { src: string }) {
     const a = ref.current;
     if (!a) return;
     if (a.paused) {
-      void a.play();
       setPlaying(true);
+      a.play().catch(() => setPlaying(false));
     } else {
       a.pause();
       setPlaying(false);

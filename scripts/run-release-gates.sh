@@ -1021,6 +1021,10 @@ if $STRICT; then
         # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
         "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
         "Notification new-tab guard self-test|pnpm check:notice-new-tab:self-test"
+        # EVERY play() PROMISE IS HANDLED (2026-10-21): a floating HTMLMediaElement.play() rejection
+        # ("no supported sources") reached the window unnamed and left the UI showing Pause.
+        "Unhandled media play() promise|pnpm check:media-play-handled"
+        "Media play() guard self-test|pnpm check:media-play-handled:self-test"
         # POINTS ONLY WHERE SOMEONE IS DECIDING OR INVESTIGATING (Arman, 2026-10-18, law 14):
         # never a price on chat, runs, results, buttons, toasts or assists.
         "Price shown where someone is doing, not deciding (law 14)|pnpm check:cost-display"
@@ -1817,6 +1821,10 @@ else
         # toasts open a window or a new tab — lib/notice-open/openFromNotice.ts.
         "Same-tab navigation from a notification or toast action|pnpm check:notice-new-tab"
         "Notification new-tab guard self-test|pnpm check:notice-new-tab:self-test"
+        # EVERY play() PROMISE IS HANDLED (2026-10-21): a floating HTMLMediaElement.play() rejection
+        # ("no supported sources") reached the window unnamed and left the UI showing Pause.
+        "Unhandled media play() promise|pnpm check:media-play-handled"
+        "Media play() guard self-test|pnpm check:media-play-handled:self-test"
         # POINTS ONLY WHERE SOMEONE IS DECIDING OR INVESTIGATING (Arman, 2026-10-18, law 14):
         # never a price on chat, runs, results, buttons, toasts or assists.
         "Price shown where someone is doing, not deciding (law 14)|pnpm check:cost-display"

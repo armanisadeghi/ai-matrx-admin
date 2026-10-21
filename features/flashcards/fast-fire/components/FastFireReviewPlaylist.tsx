@@ -96,8 +96,13 @@ export function FastFireReviewPlaylist() {
                 el.pause();
                 setPlaying(false);
               } else {
-                void el.play();
                 setPlaying(true);
+                // A refused play (dead source) skips on like onError does.
+                el.play().catch((err: unknown) => {
+                  setPlaying(false);
+                  if (err instanceof DOMException && err.name === "NotAllowedError") return;
+                  playIndex(index + 1);
+                });
               }
             }}
           >

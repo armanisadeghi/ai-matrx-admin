@@ -53,15 +53,28 @@ export function RecordingPreview({
         return `${speed.toFixed(2)}×`;
     };
 
+    // Keyed by the src it refused, so a new recording starts clean.
+    const [failedSrc, setFailedSrc] = useState<string | null>(null);
+    const audioFailed = failedSrc === audioUrl;
+
+    // play() rejects when the element cannot play its source; the element's
+    // own play/pause events set `isPlaying`, so a refused play never shows Pause.
     const togglePlay = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
+        const el = audioRef.current;
+        if (!el) return;
+        if (isPlaying) {
+            el.pause();
+            return;
         }
+        el.play().catch((err: unknown) => {
+            setIsPlaying(false);
+            if (err instanceof DOMException && (err.name === 'NotAllowedError' || err.name === 'AbortError')) return;
+            setFailedSrc(audioUrl);
+            console.error('[transcripts] recording preview play() refused', {
+                name: err instanceof Error ? err.name : undefined,
+                message: err instanceof Error ? err.message : String(err),
+            });
+        });
     };
 
     const handleTimeUpdate = () => {
@@ -129,6 +142,9 @@ export function RecordingPreview({
             <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Audio Preview</span>
+                    {audioFailed && (
+                        <span className="text-xs text-destructive">Couldn&apos;t load the recording</span>
+                    )}
                     <span className="text-xs text-muted-foreground font-mono">
                         {formatDurationSeconds(duration, { style: "clock" })}
                     </span>
@@ -139,7 +155,17 @@ export function RecordingPreview({
                     src={audioUrl}
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
+                    onError={(event) => {
+                        setIsPlaying(false);
+                        setFailedSrc(audioUrl);
+                        console.error('[transcripts] recording preview failed to load', {
+                            code: event.currentTarget.error?.code,
+                            message: event.currentTarget.error?.message,
+                        });
+                    }}
                 />
 
                 <div className="flex items-center gap-2">
@@ -148,6 +174,7 @@ export function RecordingPreview({
                         variant="outline"
                         className="h-9 w-9 rounded-full shrink-0"
                         onClick={togglePlay}
+                        disabled={audioFailed}
                     >
                         {isPlaying ? (
                             <Pause className="h-4 w-4" />

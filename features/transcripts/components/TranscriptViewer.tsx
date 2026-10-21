@@ -49,7 +49,7 @@ import {
 import { useToastManager } from "@/hooks/useToastManager";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { useMediaResolution } from "@ai-matrx/media/core";
+import { useMediaLoadRecovery, useMediaResolution } from "@ai-matrx/media/core";
 import type { FileSource } from "@/features/files/handler/types";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -216,9 +216,17 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
 
   // Durable audio URL, resolved through the injected MediaClient.
   const audioFileId = activeTranscript?.audio_file_path ?? null;
-  const audioUrl = useMediaResolution(audioFileId).resolution?.src ?? null;
-  const isLoadingUrl = !audioUrl && !!audioFileId;
-  const urlError: string | null = null;
+  const audioResolution = useMediaResolution(audioFileId);
+  const resolvedAudioUrl = audioResolution.resolution?.src ?? null;
+  // A load error refreshes the file session and retries the same durable URL
+  // before it is terminal (and reports itself) — the canonical media machine.
+  const audioRecovery = useMediaLoadRecovery(resolvedAudioUrl, {
+    recoverable: audioResolution.resolution?.recoverable,
+    failureRef: audioFileId,
+  });
+  const audioFailed =
+    !!audioFileId && (audioResolution.status === "unavailable" || audioRecovery.failed);
+  const audioUrl = audioFailed ? null : (audioRecovery.healedSrc ?? resolvedAudioUrl);
 
   useEffect(() => {
     if (activeTranscript) {
@@ -266,16 +274,34 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
     }
   };
 
-  // Audio Player Handlers
+  // Audio Player Handlers. `play()` is a promise that rejects when the
+  // element cannot play its source; the element's own play/pause events are
+  // what set `isPlaying`, so a refused play never shows a Pause button. A
+  // dead source ("NotSupportedError") also fires the element's error event,
+  // which owns recovery and the failure report.
+  const startPlayback = (el: HTMLAudioElement) => {
+    el.play().catch((err: unknown) => {
+      setIsPlaying(false);
+      if (err instanceof DOMException && ["NotAllowedError", "AbortError", "NotSupportedError"].includes(err.name)) return;
+      console.error("[transcripts] audio play() refused", {
+        transcriptId: activeTranscript?.id,
+        audioFileId,
+        name: err instanceof Error ? err.name : undefined,
+        message: err instanceof Error ? err.message : String(err),
+      });
+    });
+  };
+
+  const handleAudioError = (event: React.SyntheticEvent<HTMLAudioElement>) => {
+    setIsPlaying(false);
+    audioRecovery.onLoadError(event);
+  };
+
   const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
+    const el = audioRef.current;
+    if (!el) return;
+    if (isPlaying) el.pause();
+    else startPlayback(el);
   };
 
   const handleTimeUpdate = () => {
@@ -323,10 +349,7 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
     if (audioRef.current) {
       audioRef.current.currentTime = seconds;
       setCurrentTime(seconds);
-      if (!isPlaying) {
-        audioRef.current.play();
-        setIsPlaying(true);
-      }
+      if (!isPlaying) startPlayback(audioRef.current);
     }
   };
 
@@ -874,11 +897,15 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
               {/* Hidden Audio Element */}
               {audioUrl && (
                 <audio
+                  key={audioRecovery.retryKey}
                   ref={audioRef}
                   src={audioUrl}
                   onTimeUpdate={handleTimeUpdate}
                   onLoadedMetadata={handleLoadedMetadata}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
                   onEnded={() => setIsPlaying(false)}
+                  onError={handleAudioError}
                 />
               )}
 
@@ -890,9 +917,7 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
                   onClick={togglePlay}
                   disabled={!audioUrl}
                 >
-                  {isLoadingUrl ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : isPlaying ? (
+                  {isPlaying ? (
                     <Pause className="h-4 w-4" />
                   ) : (
                     <Play className="h-4 w-4 ml-0.5" />
@@ -959,9 +984,7 @@ export function TranscriptViewer({ transcriptId = null }: { transcriptId?: strin
                   />
                 </div>
 
-                {activeTranscript.audio_file_path &&
-                  !audioUrl &&
-                  !isLoadingUrl && (
+                {audioFailed && (
                     <div className="text-xs text-red-500 flex items-center shrink-0">
                       <X className="h-3 w-3 mr-1" />
                       Failed to load audio
