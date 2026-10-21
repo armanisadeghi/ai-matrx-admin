@@ -1,0 +1,3012 @@
+[
+ {
+  "product": "Mandates",
+  "family": "BUILD",
+  "summary": "A mandate is a named job you hand to an agent. See every job in the app, create one, and see how well the agent does it.",
+  "entry": "/mandates",
+  "sections": [
+   {
+    "name": "My mandates",
+    "route": "/mandates",
+    "why": "The list of jobs delegated to agents; the front door.",
+    "pages": [
+     {
+      "route": "/mandates",
+      "title": "All mandates",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/mandates/[mandateKey]",
+       "/mandates/new-preview"
+      ]
+     },
+     {
+      "route": "/mandates/[mandateKey]",
+      "title": "Mandate",
+      "role": "record",
+      "reachedFrom": [
+       "/mandates"
+      ],
+      "leadsTo": [
+       "/agents/[id]",
+       "/reports/agent-drift"
+      ]
+     },
+     {
+      "route": "/mandates/new-preview",
+      "title": "New mandate",
+      "role": "create",
+      "reachedFrom": [
+       "/mandates"
+      ],
+      "leadsTo": [
+       "/mandates/[mandateKey]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "By feature",
+    "route": "/intelligence",
+    "why": "Same jobs grouped by the part of the app they serve.",
+    "pages": [
+     {
+      "route": "/intelligence",
+      "title": "By feature",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/intelligence/[feature]"
+      ]
+     },
+     {
+      "route": "/intelligence/[feature]",
+      "title": "One feature's jobs",
+      "role": "record",
+      "reachedFrom": [
+       "/intelligence"
+      ],
+      "leadsTo": [
+       "/mandates/[mandateKey]"
+      ]
+     },
+     {
+      "route": "/intelligence/go/[...slug]",
+      "title": "Opening...",
+      "role": "redirect",
+      "reachedFrom": [
+       "/intelligence"
+      ],
+      "leadsTo": [
+       "/mandates/[mandateKey]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Decisions",
+    "route": "/decisions",
+    "why": "Questions agents need a person to answer, and answers to check.",
+    "pages": [
+     {
+      "route": "/decisions",
+      "title": "Decisions",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/decisions/review"
+      ]
+     },
+     {
+      "route": "/decisions/review",
+      "title": "Review answers",
+      "role": "tool",
+      "reachedFrom": [
+       "/decisions"
+      ],
+      "leadsTo": [
+       "/mandates/[mandateKey]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Reports",
+    "route": "/reports",
+    "why": "How the agents behind each job are performing and drifting.",
+    "pages": [
+     {
+      "route": "/reports",
+      "title": "Reports",
+      "role": "report",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/reports/agent-drift"
+      ]
+     },
+     {
+      "route": "/reports/agent-drift",
+      "title": "Agent drift",
+      "role": "report",
+      "reachedFrom": [
+       "/reports"
+      ],
+      "leadsTo": [
+       "/mandates/[mandateKey]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Assists",
+    "route": "/assists",
+    "why": "Suggestion chips that offer to do a chore for the person.",
+    "pages": [
+     {
+      "route": "/assists",
+      "title": "Assists",
+      "role": "settings",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Admin",
+    "route": "/mandates",
+    "why": "Feature admin maps.",
+    "pages": [
+     {
+      "route": "/reports/admin",
+      "title": "Reports admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "/reports"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Hand a new job to an agent",
+    "steps": [
+     "/mandates",
+     "/mandates/new-preview",
+     "/mandates/[mandateKey]"
+    ]
+   },
+   {
+    "name": "Find the jobs behind one feature",
+    "steps": [
+     "/intelligence",
+     "/intelligence/[feature]",
+     "/mandates/[mandateKey]"
+    ]
+   },
+   {
+    "name": "Answer what the agents are unsure about",
+    "steps": [
+     "/decisions",
+     "/decisions/review",
+     "/mandates/[mandateKey]"
+    ]
+   },
+   {
+    "name": "Check an agent is still doing the job well",
+    "steps": [
+     "/reports",
+     "/reports/agent-drift",
+     "/mandates/[mandateKey]"
+    ]
+   },
+   {
+    "name": "Turn on or off a suggestion chip",
+    "steps": [
+     "/assists"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/mandates/list-preview",
+    "why": "Menu parent only; the sidebar has All Mandates (/mandates) beside it, so two list pages compete",
+    "proposedHome": "My mandates"
+   },
+   {
+    "route": "/mandates/record-preview/[mandateKey]",
+    "why": "Only reached from list-preview rows; the real record is /mandates/[mandateKey]",
+    "proposedHome": "My mandates"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/decisions/review",
+    "depth": 2,
+    "why": "Core human-in-the-loop task, two menus deep and separate from Hindsight review",
+    "proposal": "Show a count badge on Decisions and open Review first"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Hindsight",
+    "route": "/agents/[id]/hindsight",
+    "why": "TREE.md lists it under Intelligence but no mandate page links to it"
+   },
+   {
+    "name": "Replay",
+    "route": "(none)",
+    "why": "TREE.md lists it; no page exists"
+   },
+   {
+    "name": "Create-a-job in plain words",
+    "route": "/mandates/new-preview",
+    "why": "'preview' is still in the address of the real New Mandate page"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/mandates/id/[id]",
+    "kind": "redirect",
+    "note": "Old address by id, redirects to the key address"
+   },
+   {
+    "route": "/intelligence/[feature]/unassigned",
+    "kind": "redirect",
+    "note": "Redirects to the feature page"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/mandates",
+     "/mandates/list-preview"
+    ],
+    "note": "Two mandate lists ('preview' is the newer member list)"
+   },
+   {
+    "routes": [
+     "/mandates/[mandateKey]",
+     "/mandates/record-preview/[mandateKey]"
+    ],
+    "note": "Two record pages for one mandate"
+   },
+   {
+    "routes": [
+     "/decisions/review",
+     "/agents/[id]/answers"
+    ],
+    "note": "Both are the same review queue, one global and one per agent"
+   }
+  ]
+ },
+ {
+  "product": "Agents",
+  "family": "BUILD",
+  "summary": "Create, run, test and improve the AI agents that do your jobs. Start from a template, a conversation, or a blank agent.",
+  "entry": "/agents/all",
+  "sections": [
+   {
+    "name": "My agents",
+    "route": "/agents/all",
+    "why": "The list every agent task starts from.",
+    "pages": [
+     {
+      "route": "/agents",
+      "title": "Agents landing (guests)",
+      "role": "redirect",
+      "reachedFrom": [
+       "(signed-out visitors)"
+      ],
+      "leadsTo": [
+       "/agents/all"
+      ]
+     },
+     {
+      "route": "/agents/all",
+      "title": "All agents",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/[id]",
+       "/agents/new"
+      ]
+     },
+     {
+      "route": "/agents/[id]",
+      "title": "Agent",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/all"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build",
+       "/agents/[id]/run",
+       "/agents/[id]/test"
+      ]
+     },
+     {
+      "route": "/agents/[id]/run",
+      "title": "Run",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/runs"
+      ]
+     },
+     {
+      "route": "/agents/[id]/runs",
+      "title": "Runs",
+      "role": "list",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/workflows/runs/[runId]"
+      ]
+     },
+     {
+      "route": "/agents/[id]/test",
+      "title": "Test",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/runs"
+      ]
+     },
+     {
+      "route": "/agents/[id]/v/[version]",
+      "title": "Version",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/latest"
+      ]
+     },
+     {
+      "route": "/agents/[id]/latest",
+      "title": "Latest vs previous",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]/v/[version]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/[id]/approvals",
+      "title": "Approvals",
+      "role": "settings",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/builds/[buildId]",
+      "title": "Agent build",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/new"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     },
+     {
+      "route": "/agents/go/[...slug]",
+      "title": "Opening agent...",
+      "role": "redirect",
+      "reachedFrom": [
+       "(links)"
+      ],
+      "leadsTo": [
+       "/agents/[id]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Make an agent",
+    "route": "/agents/new",
+    "why": "Four ways in; the studio is the default.",
+    "pages": [
+     {
+      "route": "/agents/new",
+      "title": "New agent (Agent Studio)",
+      "role": "create",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/new/studio",
+       "/agents/new/generate",
+       "/agents/new/manual",
+       "/agents/new/builder"
+      ]
+     },
+     {
+      "route": "/agents/new/studio",
+      "title": "Agent Studio",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new"
+      ],
+      "leadsTo": [
+       "/agents/[id]/test"
+      ]
+     },
+     {
+      "route": "/agents/new/studio/from-claude",
+      "title": "Bring it from my Claude account",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new/studio"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/new/studio/with-claude-code",
+      "title": "Build with Claude Code",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new/studio"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/new/generate",
+      "title": "Describe it and generate",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     },
+     {
+      "route": "/agents/new/import",
+      "title": "Import an agent",
+      "role": "create",
+      "reachedFrom": [
+       "window"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/new/manual",
+      "title": "Blank agent",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     },
+     {
+      "route": "/agents/new/builder",
+      "title": "Builder picker",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new"
+      ],
+      "leadsTo": [
+       "/agents/new/builder/instant"
+      ]
+     },
+     {
+      "route": "/agents/new/builder/instant",
+      "title": "Instant assistant",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new/builder"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     },
+     {
+      "route": "/agents/new/builder/customizer",
+      "title": "Experience customizer",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new/builder"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     },
+     {
+      "route": "/agents/new/builder/tabs",
+      "title": "Comprehensive builder",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/new/builder"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     },
+     {
+      "route": "/agents/[id]/build",
+      "title": "Build",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/test"
+      ]
+     },
+     {
+      "route": "/agents/[id]/widgets",
+      "title": "Widgets",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/build"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Templates",
+    "route": "/agents/templates",
+    "why": "Start from a finished agent.",
+    "pages": [
+     {
+      "route": "/agents/templates",
+      "title": "Templates",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/templates/[id]"
+      ]
+     },
+     {
+      "route": "/agents/templates/[id]",
+      "title": "Template",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/templates"
+      ],
+      "leadsTo": [
+       "/agents/new"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Shortcuts",
+    "route": "/agents/shortcuts",
+    "why": "One-click ways to run an agent from any screen.",
+    "pages": [
+     {
+      "route": "/agents/shortcuts",
+      "title": "Shortcuts",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/shortcuts/[shortcutId]",
+       "/agents/shortcuts/new"
+      ]
+     },
+     {
+      "route": "/agents/shortcuts/all",
+      "title": "All shortcuts directory",
+      "role": "list",
+      "reachedFrom": [
+       "/agents/shortcuts"
+      ],
+      "leadsTo": [
+       "/agents/shortcuts/[shortcutId]"
+      ]
+     },
+     {
+      "route": "/agents/shortcuts/[shortcutId]",
+      "title": "Shortcut",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/shortcuts"
+      ],
+      "leadsTo": [
+       "/agents/shortcuts/edit/[id]"
+      ]
+     },
+     {
+      "route": "/agents/shortcuts/edit/[id]",
+      "title": "Edit shortcut",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/shortcuts/[shortcutId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/shortcuts/new",
+      "title": "New shortcut",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/shortcuts"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/[id]/shortcuts",
+      "title": "This agent's shortcuts",
+      "role": "list",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/shortcuts/[shortcutId]",
+       "/agents/[id]/shortcuts/new"
+      ]
+     },
+     {
+      "route": "/agents/[id]/shortcuts/[shortcutId]",
+      "title": "This agent's shortcut",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/[id]/shortcuts"
+      ],
+      "leadsTo": [
+       "/reports/agent-drift"
+      ]
+     },
+     {
+      "route": "/agents/[id]/shortcuts/new",
+      "title": "New shortcut for this agent",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/[id]/shortcuts"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Where it appears (Surfaces)",
+    "route": "/surfaces",
+    "why": "The screens an agent is attached to.",
+    "pages": [
+     {
+      "route": "/surfaces",
+      "title": "Surfaces",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/surfaces/[...name]"
+      ]
+     },
+     {
+      "route": "/surfaces/[...name]",
+      "title": "Surface",
+      "role": "record",
+      "reachedFrom": [
+       "/surfaces"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/[id]/surfaces",
+      "title": "This agent's surfaces",
+      "role": "list",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/[id]/surfaces/batch"
+      ]
+     },
+     {
+      "route": "/agents/[id]/surfaces/batch",
+      "title": "Batch surface bindings",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]/surfaces"
+      ],
+      "leadsTo": [
+       "/reports/agent-drift"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Building blocks",
+    "route": "/agent-connections/skills",
+    "why": "Reusable pieces agents are built from.",
+    "pages": [
+     {
+      "route": "/agents/prompt-blocks",
+      "title": "Prompt blocks",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/prompt-blocks/[id]",
+       "/agents/prompt-blocks/new"
+      ]
+     },
+     {
+      "route": "/agents/prompt-blocks/[id]",
+      "title": "Prompt block",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/prompt-blocks"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/prompt-blocks/new",
+      "title": "New prompt block",
+      "role": "create",
+      "reachedFrom": [
+       "/agents/prompt-blocks"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agent-connections/skills",
+      "title": "Skills",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agent-connections/render-blocks",
+      "title": "Content blocks",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/resources/term-lists",
+      "title": "Term lists",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agents/categories",
+      "title": "Categories",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/all"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Compare and choose",
+    "route": "/agents/battle",
+    "why": "Test agents head to head before picking one.",
+    "pages": [
+     {
+      "route": "/agents/battle",
+      "title": "Agent Battle",
+      "role": "tool",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/battle/conversation",
+       "/agents/battle/matrix",
+       "/agents/battle/model",
+       "/agents/battle/request-mod",
+       "/agents/battle/settings",
+       "/agents/battle/smart-add",
+       "/agents/battle/system-prompt",
+       "/agents/battle/tools",
+       "/agents/battle/tuning",
+       "/agents/battle/variations"
+      ]
+     },
+     {
+      "route": "/agents/battle/conversation",
+      "title": "Conversation battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/conversation/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/conversation/[setId]",
+      "title": "Conversation battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/conversation"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/matrix",
+      "title": "Matrix battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/matrix/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/matrix/[setId]",
+      "title": "Matrix battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/matrix"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/model",
+      "title": "Model battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/model/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/model/[setId]",
+      "title": "Model battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/model"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/request-mod",
+      "title": "Request tweaks battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/request-mod/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/request-mod/[setId]",
+      "title": "Request tweaks battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/request-mod"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/settings",
+      "title": "Settings battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/settings/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/settings/[setId]",
+      "title": "Settings battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/settings"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/smart-add",
+      "title": "Smart add battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/smart-add/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/smart-add/[setId]",
+      "title": "Smart add battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/smart-add"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/system-prompt",
+      "title": "Instructions battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/system-prompt/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/system-prompt/[setId]",
+      "title": "Instructions battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/system-prompt"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/tools",
+      "title": "Tools battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/tools/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/tools/[setId]",
+      "title": "Tools battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/tools"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/tuning",
+      "title": "Tuning battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/tuning/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/tuning/[setId]",
+      "title": "Tuning battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/tuning"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/variations",
+      "title": "Variations battle",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle/variations/[setId]"
+      ]
+     },
+     {
+      "route": "/agents/battle/variations/[setId]",
+      "title": "Variations battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle/variations"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/battle/open/[setId]",
+      "title": "Open battle run",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/battle"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     },
+     {
+      "route": "/agents/compare",
+      "title": "Compare agents",
+      "role": "tool",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/battle"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Organize",
+    "route": "/agents/org-chart",
+    "why": "See the agents as a team.",
+    "pages": [
+     {
+      "route": "/agents/org-chart",
+      "title": "Org chart",
+      "role": "report",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/[id]"
+      ]
+     },
+     {
+      "route": "/agents/orchestra-studio",
+      "title": "Orchestra Studio",
+      "role": "tool",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/orchestras"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Admin",
+    "route": "/agents/all",
+    "why": "Feature admin map.",
+    "pages": [
+     {
+      "route": "/agents/admin",
+      "title": "Agents admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "/reports/admin"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Make my first agent from a conversation",
+    "steps": [
+     "/agents/new",
+     "/agents/new/studio",
+     "/agents/[id]/test",
+     "/agents/[id]"
+    ]
+   },
+   {
+    "name": "Start from a template",
+    "steps": [
+     "/agents/templates",
+     "/agents/templates/[id]",
+     "/agents/[id]/build",
+     "/agents/[id]/run"
+    ]
+   },
+   {
+    "name": "Put an agent on a screen as a one-click shortcut",
+    "steps": [
+     "/agents/all",
+     "/agents/[id]",
+     "/agents/[id]/shortcuts",
+     "/agents/[id]/shortcuts/new"
+    ]
+   },
+   {
+    "name": "Pick the better of two agents",
+    "steps": [
+     "/agents/battle",
+     "/agents/battle/model",
+     "/agents/battle/model/[setId]",
+     "/agents/[id]"
+    ]
+   },
+   {
+    "name": "See what an agent did last week",
+    "steps": [
+     "/agents/all",
+     "/agents/[id]",
+     "/agents/[id]/runs"
+    ]
+   },
+   {
+    "name": "Roll back to an earlier version",
+    "steps": [
+     "/agents/[id]",
+     "/agents/[id]/v/[version]",
+     "/agents/[id]/latest"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/agents/[id]/shortcuts/batch",
+    "why": "Only reachable by typing the address",
+    "proposedHome": "This agent's shortcuts"
+   },
+   {
+    "route": "/agent-lists",
+    "why": "Nothing links to it; todos and plans agents write (owner: ASK)",
+    "proposedHome": "My agents"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/agents/new/studio",
+    "depth": 2,
+    "why": "The default way to make an agent is the second page after a card-picker with 4 other doors",
+    "proposal": "Make Studio the New Agent button and move the other ways under 'More ways'"
+   },
+   {
+    "route": "/agents/battle/smart-add/[setId]",
+    "depth": 3,
+    "why": "20+ battle pages are the same shell; one tab each",
+    "proposal": "One Battle workspace with a mode switch"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Hindsight tab as its own product",
+    "route": "/agents/[id]/hindsight",
+    "why": "Per-agent 'Review' tab is the only entry"
+   },
+   {
+    "name": "Replay",
+    "route": "(none)",
+    "why": "Run history exists but no way to replay a run with a changed agent"
+   },
+   {
+    "name": "Import agent in the sidebar",
+    "route": "/agents/new/import",
+    "why": "Reached only by a window item"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/agents/classic",
+    "kind": "old copy",
+    "note": "Temporary old gallery, marked for deletion mid-August 2026 and overdue"
+   },
+   {
+    "route": "/agents/browse",
+    "kind": "redirect",
+    "note": "Old address, redirects to /agents/all"
+   },
+   {
+    "route": "/agents/battle/open",
+    "kind": "redirect",
+    "note": "Old address, redirects to /agents/battle"
+   },
+   {
+    "route": "/agents/[id]/shortcuts/old/edit/[shortcutId]",
+    "kind": "old copy",
+    "note": "Legacy shortcut editor, owner says KILL"
+   },
+   {
+    "route": "/agents/[id]/shortcuts/old/new",
+    "kind": "old copy",
+    "note": "Legacy shortcut editor, owner says KILL"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/agents/shortcuts",
+     "/agents/shortcuts/all"
+    ],
+    "note": "Shortcut list and shortcut directory"
+   },
+   {
+    "routes": [
+     "/agents/new/studio",
+     "/agents/new/builder",
+     "/agents/new/generate",
+     "/agents/new/manual"
+    ],
+    "note": "Four ways to make an agent"
+   },
+   {
+    "routes": [
+     "/agents/compare",
+     "/agents/battle"
+    ],
+    "note": "Two compare tools"
+   },
+   {
+    "routes": [
+     "/agents/[id]/shortcuts/[shortcutId]",
+     "/agents/shortcuts/[shortcutId]",
+     "/agents/shortcuts/edit/[id]"
+    ],
+    "note": "Three shortcut record pages"
+   }
+  ]
+ },
+ {
+  "product": "Workflows",
+  "family": "BUILD",
+  "summary": "Multi-step jobs that run on their own. Pick one, run it, watch every step, and answer when it needs you. Workflow Studio, where you design them, is its own app and opens in a new tab.",
+  "entry": "/workflows/all",
+  "sections": [
+   {
+    "name": "All workflows",
+    "route": "/workflows/all",
+    "why": "The catalog; run any workflow from here.",
+    "pages": [
+     {
+      "route": "/workflows/all",
+      "title": "All workflows",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/workflows/[id]"
+      ]
+     },
+     {
+      "route": "/workflows",
+      "title": "Workflows landing (guests)",
+      "role": "redirect",
+      "reachedFrom": [
+       "(signed-out visitors)"
+      ],
+      "leadsTo": [
+       "/workflows/all"
+      ]
+     },
+     {
+      "route": "/workflows/[id]",
+      "title": "Run a workflow",
+      "role": "tool",
+      "reachedFrom": [
+       "/workflows/all"
+      ],
+      "leadsTo": [
+       "/workflows/runs/[runId]",
+       "/workflows/[id]/runs"
+      ]
+     },
+     {
+      "route": "/workflows/[id]/design",
+      "title": "Design the run screen",
+      "role": "tool",
+      "reachedFrom": [
+       "/workflows/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workflows/[id]/triggers",
+      "title": "Run it without me",
+      "role": "settings",
+      "reachedFrom": [
+       "/workflows/[id]"
+      ],
+      "leadsTo": [
+       "/schedules/new"
+      ]
+     },
+     {
+      "route": "/workflows/[id]/runs",
+      "title": "This workflow's runs",
+      "role": "list",
+      "reachedFrom": [
+       "/workflows/[id]"
+      ],
+      "leadsTo": [
+       "/workflows/runs/[runId]"
+      ]
+     },
+     {
+      "route": "/workflows/[id]/review",
+      "title": "Review this workflow",
+      "role": "report",
+      "reachedFrom": [
+       "/workflows/[id]"
+      ],
+      "leadsTo": [
+       "/workflows/[id]/review/[issueId]"
+      ]
+     },
+     {
+      "route": "/workflows/[id]/review/[issueId]",
+      "title": "Review issue",
+      "role": "record",
+      "reachedFrom": [
+       "/workflows/[id]/review"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Waiting on you",
+    "route": "/workflows/waiting",
+    "why": "Steps paused for a person; the most urgent screen.",
+    "pages": [
+     {
+      "route": "/workflows/waiting",
+      "title": "Waiting on you",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/workflows/runs/[runId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Runs",
+    "route": "/workflows/runs",
+    "why": "Everything that ran, live and past.",
+    "pages": [
+     {
+      "route": "/workflows/runs",
+      "title": "Workflow runs",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/workflows/runs/[runId]"
+      ]
+     },
+     {
+      "route": "/workflows/runs/[runId]",
+      "title": "Workflow run",
+      "role": "record",
+      "reachedFrom": [
+       "/workflows/runs"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workflows/runs/analyze",
+      "title": "Analyze runs",
+      "role": "report",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Review",
+    "route": "/workflows/review",
+    "why": "Problems found in finished runs.",
+    "pages": [
+     {
+      "route": "/workflows/review",
+      "title": "Review",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/workflows/[id]/review/[issueId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Schedules",
+    "route": "/schedules",
+    "why": "When workflows start by themselves.",
+    "pages": [
+     {
+      "route": "/schedules",
+      "title": "Schedules",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/schedules/[id]",
+       "/schedules/new"
+      ]
+     },
+     {
+      "route": "/schedules/new",
+      "title": "New schedule",
+      "role": "create",
+      "reachedFrom": [
+       "/schedules"
+      ],
+      "leadsTo": [
+       "/schedules/[id]"
+      ]
+     },
+     {
+      "route": "/schedules/[id]",
+      "title": "Schedule",
+      "role": "record",
+      "reachedFrom": [
+       "/schedules"
+      ],
+      "leadsTo": [
+       "/schedules/[id]/edit"
+      ]
+     },
+     {
+      "route": "/schedules/[id]/edit",
+      "title": "Edit schedule",
+      "role": "record",
+      "reachedFrom": [
+       "/schedules/[id]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Orchestras and compare",
+    "route": "/agents/orchestras",
+    "why": "Teams of agents under a conductor, and head-to-head runs.",
+    "pages": [
+     {
+      "route": "/agents/orchestras",
+      "title": "Orchestras",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/agents/orchestras/[conductorId]"
+      ]
+     },
+     {
+      "route": "/agents/orchestras/[conductorId]",
+      "title": "Orchestra set builder",
+      "role": "record",
+      "reachedFrom": [
+       "/agents/orchestras"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workflows/battle",
+      "title": "Workflow Battle",
+      "role": "tool",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Run a workflow and watch it",
+    "steps": [
+     "/workflows/all",
+     "/workflows/[id]",
+     "/workflows/runs/[runId]"
+    ]
+   },
+   {
+    "name": "Answer a step that is waiting",
+    "steps": [
+     "/workflows/waiting",
+     "/workflows/runs/[runId]"
+    ]
+   },
+   {
+    "name": "Make a workflow run every Monday",
+    "steps": [
+     "/workflows/all",
+     "/workflows/[id]",
+     "/workflows/[id]/triggers",
+     "/schedules/new"
+    ]
+   },
+   {
+    "name": "Find out why runs fail",
+    "steps": [
+     "/workflows/runs",
+     "/workflows/runs/analyze",
+     "/workflows/review"
+    ]
+   },
+   {
+    "name": "Pick the better of two workflows",
+    "steps": [
+     "/workflows/battle"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/workflows/builder/[tableId]",
+    "why": "Old in-app builder reached only from a table record; Studio replaced it",
+    "proposedHome": "Workflows landing"
+   },
+   {
+    "route": "/registered-results",
+    "why": "Internal viewer index, nothing links to it (owner: ASK)",
+    "proposedHome": "(admin)"
+   },
+   {
+    "route": "/registered-results/events-viewer",
+    "why": "Internal viewer, nothing links (owner: ASK)",
+    "proposedHome": "(admin)"
+   },
+   {
+    "route": "/registered-results/sitemap-viewer",
+    "why": "Internal viewer, nothing links (owner: ASK)",
+    "proposedHome": "(admin)"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/workflows/[id]/design",
+    "depth": 3,
+    "why": "Design the run screen is three clicks deep and unlabeled",
+    "proposal": "Add a Design tab beside Runs and Triggers"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Workflow Studio tile as in-app link",
+    "route": "https://workflows.aimatrx.com",
+    "why": "Opens in a new tab from the menu but no page in the app mentions it; a workflow record has no 'Open in Studio' button"
+   },
+   {
+    "name": "Replay",
+    "route": "(none)",
+    "why": "Run records cannot be replayed"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/workflows/runs",
+     "/workflows/[id]/runs"
+    ],
+    "note": "Same list component, all vs one workflow"
+   },
+   {
+    "routes": [
+     "/workflows/runs/[runId]",
+     "/workflows/[id]"
+    ],
+    "note": "Both render WorkflowRunPage"
+   },
+   {
+    "routes": [
+     "/workflows/review",
+     "/workflows/waiting"
+    ],
+    "note": "Two inboxes of things needing a person"
+   }
+  ]
+ },
+ {
+  "product": "Hindsight",
+  "family": "BUILD",
+  "summary": "A reviewer that watches an agent's work and proposes better instructions, with you telling it what was right or wrong.",
+  "entry": "/agents/[id]/hindsight",
+  "sections": [
+   {
+    "name": "Review an agent",
+    "route": "/agents/[id]/hindsight",
+    "why": "The improvement workspace for one agent.",
+    "pages": [
+     {
+      "route": "/agents/[id]/hindsight",
+      "title": "Review (improvement workspace)",
+      "role": "tool",
+      "reachedFrom": [
+       "/agents/[id]"
+      ],
+      "leadsTo": [
+       "/agents/go/[...slug]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Answers to check",
+    "route": "/agents/[id]/answers",
+    "why": "The queue of answers a person confirms or corrects.",
+    "pages": []
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Tell the reviewer what an agent got wrong",
+    "steps": [
+     "/agents/all",
+     "/agents/[id]",
+     "/agents/[id]/hindsight"
+    ]
+   },
+   {
+    "name": "Confirm or correct recent answers",
+    "steps": [
+     "/agents/[id]/answers",
+     "/agents/[id]/answers/calibration"
+    ]
+   },
+   {
+    "name": "See if reviewing made the agent better",
+    "steps": [
+     "/agents/[id]/hindsight",
+     "/agents/[id]/v/[version]"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/agents/[id]/answers",
+    "why": "No tab or link reaches it",
+    "proposedHome": "Answers to check"
+   },
+   {
+    "route": "/agents/[id]/answers/calibration",
+    "why": "No tab or link reaches it",
+    "proposedHome": "Answers to check"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/agents/[id]/hindsight",
+    "depth": 3,
+    "why": "Review is one of 11 tabs on an agent, shown as 'Review'; no top-level door",
+    "proposal": "Make Hindsight a tile with an 'Agents under review' list"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Hindsight home (all agents under review)",
+    "route": "(none)",
+    "why": "Only a per-agent tab exists; no list across agents"
+   },
+   {
+    "name": "Workflow Hindsight",
+    "route": "(none)",
+    "why": "Reviewing workflows is admin-only today"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/agents/[id]/answers",
+     "/decisions/review"
+    ],
+    "note": "Same review queue"
+   }
+  ]
+ },
+ {
+  "product": "Replay",
+  "family": "BUILD",
+  "summary": "Play a past run back with a changed agent or model to see if the answer gets better. No screen exists yet.",
+  "entry": "(none)",
+  "sections": [
+   {
+    "name": "Runs to replay",
+    "route": "/agents/[id]/runs",
+    "why": "Closest existing pages: agent runs and workflow runs.",
+    "pages": []
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Replay a bad answer with the improved agent",
+    "steps": [
+     "/agents/[id]/runs",
+     "/agents/[id]/hindsight"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Replay",
+    "route": "(none)",
+    "why": "In TREE.md, but no route or tab; replay is server-side and admin-only today"
+   },
+   {
+    "name": "Replay button on a run",
+    "route": "/workflows/runs/[runId]",
+    "why": "Natural home is the run page"
+   }
+  ],
+  "legacy": [],
+  "duplicates": []
+ },
+ {
+  "product": "Shapes",
+  "family": "BUILD",
+  "summary": "A shape is a reusable structure for AI results (a table, a form, a chart). Browse them, try one, make a new one.",
+  "entry": "/shapes/all",
+  "sections": [
+   {
+    "name": "All shapes",
+    "route": "/shapes/all",
+    "why": "Browse every shape.",
+    "pages": [
+     {
+      "route": "/shapes/all",
+      "title": "All shapes",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/shapes/[kind]",
+       "/shapes/new"
+      ]
+     },
+     {
+      "route": "/shapes",
+      "title": "Shapes landing",
+      "role": "redirect",
+      "reachedFrom": [
+       "(links)"
+      ],
+      "leadsTo": [
+       "/shapes/all"
+      ]
+     },
+     {
+      "route": "/shapes/new",
+      "title": "New shape",
+      "role": "create",
+      "reachedFrom": [
+       "/shapes/all"
+      ],
+      "leadsTo": [
+       "/shapes/[kind]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "One shape",
+    "route": "/shapes/[kind]",
+    "why": "Preview first, then its parts.",
+    "pages": [
+     {
+      "route": "/shapes/[kind]",
+      "title": "Shape preview",
+      "role": "record",
+      "reachedFrom": [
+       "/shapes/all"
+      ],
+      "leadsTo": [
+       "/shapes/[kind]/schema"
+      ]
+     },
+     {
+      "route": "/shapes/[kind]/examples",
+      "title": "Examples",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/gate",
+      "title": "Gate",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/inputs",
+      "title": "Inputs",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/instances",
+      "title": "Instances",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/schema",
+      "title": "Schema",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/stream",
+      "title": "Stream",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/table",
+      "title": "Table",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/template",
+      "title": "Template",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/[kind]/test",
+      "title": "Test",
+      "role": "tool",
+      "reachedFrom": [
+       "/shapes/[kind]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/shapes/instances/[id]",
+      "title": "Saved result",
+      "role": "record",
+      "reachedFrom": [
+       "/shapes/[kind]/instances"
+      ],
+      "leadsTo": [
+       "/shapes/[kind]/instances"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Try it",
+    "route": "/shapes/playground",
+    "why": "Paste or stream content and see it rendered.",
+    "pages": []
+   },
+   {
+    "name": "Admin",
+    "route": "/shapes/all",
+    "why": "Feature admin map.",
+    "pages": [
+     {
+      "route": "/shapes/admin",
+      "title": "Shapes admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "(links)"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Find how a result type looks",
+    "steps": [
+     "/shapes/all",
+     "/shapes/[kind]",
+     "/shapes/[kind]/examples"
+    ]
+   },
+   {
+    "name": "Make a new shape",
+    "steps": [
+     "/shapes/all",
+     "/shapes/new",
+     "/shapes/[kind]/schema",
+     "/shapes/[kind]/test"
+    ]
+   },
+   {
+    "name": "Check what an agent produced",
+    "steps": [
+     "/shapes/[kind]/instances",
+     "/shapes/instances/[id]"
+    ]
+   },
+   {
+    "name": "Try messy content in a shape",
+    "steps": [
+     "/shapes/playground"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/shapes/playground",
+    "why": "No menu and no link found",
+    "proposedHome": "Try it"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/shapes/[kind]/gate",
+    "depth": 3,
+    "why": "9 sub-tabs per shape with technical names (gate, inputs, stream)",
+    "proposal": "Group as Preview, Build, Test, Data"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Shapes in the tree",
+    "route": "/shapes/all",
+    "why": "Menu puts it under Data, TREE.md under Intelligence; no Intelligence entry"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/shapes/id/[id]",
+    "kind": "redirect",
+    "note": "Old address by id"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/shapes/[kind]/table",
+     "/shapes/[kind]/instances"
+    ],
+    "note": "Both list stored results"
+   }
+  ]
+ },
+ {
+  "product": "Masterwork",
+  "family": "BUILD",
+  "summary": "Turn what an expert knows into a rulebook through interviews and their own work, then build agents from it.",
+  "entry": "/masterwork",
+  "sections": [
+   {
+    "name": "Rulebooks",
+    "route": "/masterwork",
+    "why": "Your expertise captured as rulebooks.",
+    "pages": [
+     {
+      "route": "/masterwork",
+      "title": "Masterwork home",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/masterwork/all",
+       "/masterwork/new"
+      ]
+     },
+     {
+      "route": "/masterwork/all",
+      "title": "All rulebooks",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]"
+      ]
+     },
+     {
+      "route": "/masterwork/new",
+      "title": "New rulebook",
+      "role": "create",
+      "reachedFrom": [
+       "/masterwork"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "One rulebook",
+    "route": "/masterwork/[id]",
+    "why": "Capture lanes, in the order an expert works.",
+    "pages": [
+     {
+      "route": "/masterwork/[id]",
+      "title": "Rulebook",
+      "role": "record",
+      "reachedFrom": [
+       "/masterwork/all"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]/plan"
+      ]
+     },
+     {
+      "route": "/masterwork/[id]/interview",
+      "title": "Scout interview",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/drive",
+      "title": "Driving interview",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/record",
+      "title": "Expert record",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/import",
+      "title": "Import chats",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/sort",
+      "title": "Sorting table",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/triad",
+      "title": "Triad game",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/probe",
+      "title": "Bad-example probe",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/teach-back",
+      "title": "Teach-back",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/inbox",
+      "title": "Shadow inbox",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/plan",
+      "title": "Capture plan",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/conduct",
+      "title": "Conductor",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/body-of-work",
+      "title": "Body of work",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/masterworks",
+      "title": "Masterworks",
+      "role": "tool",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/masterwork/[id]/sources",
+      "title": "Sources",
+      "role": "list",
+      "reachedFrom": [
+       "/masterwork/[id]"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]/sources/kept"
+      ]
+     },
+     {
+      "route": "/masterwork/[id]/sources/kept",
+      "title": "Kept sources",
+      "role": "list",
+      "reachedFrom": [
+       "/masterwork/[id]/sources"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]/sources/kept/[sourceKey]"
+      ]
+     },
+     {
+      "route": "/masterwork/[id]/sources/kept/[sourceKey]",
+      "title": "Kept source",
+      "role": "record",
+      "reachedFrom": [
+       "/masterwork/[id]/sources/kept"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Vision interviews",
+    "route": "/masterwork/vision-interview",
+    "why": "Talk through what you want to build.",
+    "pages": [
+     {
+      "route": "/masterwork/vision-interview",
+      "title": "Vision interviews",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/masterwork/vision-interview/new"
+      ]
+     },
+     {
+      "route": "/masterwork/vision-interview/new",
+      "title": "New interview",
+      "role": "create",
+      "reachedFrom": [
+       "/masterwork/vision-interview"
+      ],
+      "leadsTo": [
+       "/masterwork/vision-interview/[sessionId]"
+      ]
+     },
+     {
+      "route": "/masterwork/vision-interview/[sessionId]",
+      "title": "Interview",
+      "role": "record",
+      "reachedFrom": [
+       "/masterwork/vision-interview"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Ways to build one",
+    "route": "/masterwork/approaches",
+    "why": "Pick a capture approach.",
+    "pages": [
+     {
+      "route": "/masterwork/approaches",
+      "title": "Ways to build one",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/masterwork/new"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Encore",
+    "route": "/masterwork/encore",
+    "why": "Rerun a captured style on new work.",
+    "pages": [
+     {
+      "route": "/masterwork/encore",
+      "title": "Encore",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/masterwork/encore/[id]"
+      ]
+     },
+     {
+      "route": "/masterwork/encore/[id]",
+      "title": "Encore run",
+      "role": "record",
+      "reachedFrom": [
+       "/masterwork/encore"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Bring your work in",
+    "route": "/import/ai-chats",
+    "why": "Past AI chats as source material.",
+    "pages": [
+     {
+      "route": "/import/ai-chats",
+      "title": "Import your AI chats",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/import/ai-chats/[provider]"
+      ]
+     },
+     {
+      "route": "/import/ai-chats/[provider]",
+      "title": "Import from one provider",
+      "role": "tool",
+      "reachedFrom": [
+       "/import/ai-chats"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]/import"
+      ]
+     },
+     {
+      "route": "/drive",
+      "title": "Driving interview short link",
+      "role": "redirect",
+      "reachedFrom": [
+       "(texted link)"
+      ],
+      "leadsTo": [
+       "/masterwork/[id]/drive"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Admin",
+    "route": "/masterwork",
+    "why": "Feature admin map.",
+    "pages": [
+     {
+      "route": "/masterwork/admin",
+      "title": "Masterwork admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "/masterwork"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Capture my expertise from scratch",
+    "steps": [
+     "/masterwork",
+     "/masterwork/new",
+     "/masterwork/[id]",
+     "/masterwork/[id]/interview"
+    ]
+   },
+   {
+    "name": "Interview by phone while driving",
+    "steps": [
+     "/drive",
+     "/masterwork/[id]/drive"
+    ]
+   },
+   {
+    "name": "Bring in my old AI chats",
+    "steps": [
+     "/import/ai-chats",
+     "/import/ai-chats/[provider]",
+     "/masterwork/[id]/sort"
+    ]
+   },
+   {
+    "name": "Check the rulebook is right",
+    "steps": [
+     "/masterwork/[id]",
+     "/masterwork/[id]/teach-back",
+     "/masterwork/[id]/probe"
+    ]
+   },
+   {
+    "name": "Find my best examples",
+    "steps": [
+     "/masterwork/[id]/sources",
+     "/masterwork/[id]/sources/kept"
+    ]
+   },
+   {
+    "name": "Draft the agent from the rulebook",
+    "steps": [
+     "/masterwork/[id]",
+     "/masterwork/[id]/masterworks",
+     "/agents/new"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/masterwork/[id]/drip",
+    "why": "Nothing links to it (owner: ASK)",
+    "proposedHome": "One rulebook"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/masterwork/[id]/probe",
+    "depth": 3,
+    "why": "15 lanes under a rulebook with no suggested order",
+    "proposal": "Show as a numbered path: Capture, Sort, Check, Build"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Vision Interviews",
+    "route": "/masterwork/vision-interview",
+    "why": "In menu but TREE.md lists it first; it is a separate flow from rulebooks"
+   },
+   {
+    "name": "Import AI chats",
+    "route": "/import/ai-chats",
+    "why": "TREE puts it under Chat as well"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/masterwork",
+     "/masterwork/all"
+    ],
+    "note": "Landing and list both show rulebooks"
+   },
+   {
+    "routes": [
+     "/drive",
+     "/masterwork/[id]/drive"
+    ],
+    "note": "Short link and real lane"
+   }
+  ]
+ },
+ {
+  "product": "Applets",
+  "family": "BUILD",
+  "summary": "Small apps your customers use, built from an agent. Start from a template or a layout, preview it, publish a link.",
+  "entry": "/applets",
+  "sections": [
+   {
+    "name": "My applets",
+    "route": "/applets",
+    "why": "Everything you built.",
+    "pages": [
+     {
+      "route": "/applets",
+      "title": "All applets",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/applets/manage/[id]",
+       "/applets/build"
+      ]
+     },
+     {
+      "route": "/applets/manage/[id]",
+      "title": "Applet",
+      "role": "record",
+      "reachedFrom": [
+       "/applets"
+      ],
+      "leadsTo": [
+       "/applets/manage/[id]/run"
+      ]
+     },
+     {
+      "route": "/applets/manage/[id]/run",
+      "title": "Run",
+      "role": "tool",
+      "reachedFrom": [
+       "/applets/manage/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/applets/manage/[id]/code",
+      "title": "Code",
+      "role": "tool",
+      "reachedFrom": [
+       "/applets/manage/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/applets/manage/[id]/settings",
+      "title": "Settings",
+      "role": "settings",
+      "reachedFrom": [
+       "/applets/manage/[id]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/applets/manage/[id]/versions",
+      "title": "Versions",
+      "role": "list",
+      "reachedFrom": [
+       "/applets/manage/[id]"
+      ],
+      "leadsTo": [
+       "/applets/manage/[id]/v/[version]"
+      ]
+     },
+     {
+      "route": "/applets/manage/[id]/v/[version]",
+      "title": "Version",
+      "role": "record",
+      "reachedFrom": [
+       "/applets/manage/[id]/versions"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Build an applet",
+    "route": "/applets/build",
+    "why": "Start with a layout, then edit.",
+    "pages": [
+     {
+      "route": "/applets/build",
+      "title": "Build an applet",
+      "role": "create",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/applets/build/layout",
+       "/applets/build/[id]"
+      ]
+     },
+     {
+      "route": "/applets/build/layout",
+      "title": "Start from a layout",
+      "role": "create",
+      "reachedFrom": [
+       "/applets/build"
+      ],
+      "leadsTo": [
+       "/applets/build/[id]"
+      ]
+     },
+     {
+      "route": "/applets/build/[id]",
+      "title": "Build",
+      "role": "tool",
+      "reachedFrom": [
+       "/applets/build"
+      ],
+      "leadsTo": [
+       "/applets/manage/[id]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Templates",
+    "route": "/templates/applets",
+    "why": "Finished applets to copy.",
+    "pages": [
+     {
+      "route": "/templates/applets",
+      "title": "Applet templates",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/applets/build"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Published link",
+    "route": "/applets/[slug]/[[...path]]",
+    "why": "What your customer opens; outside the app frame on purpose.",
+    "pages": [
+     {
+      "route": "/applets/[slug]/[[...path]]",
+      "title": "Published applet",
+      "role": "tool",
+      "reachedFrom": [
+       "(shared link)"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Admin",
+    "route": "/applets",
+    "why": "Feature admin map.",
+    "pages": [
+     {
+      "route": "/applets/admin",
+      "title": "Applets admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "/applets"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Build an applet from a template",
+    "steps": [
+     "/templates/applets",
+     "/applets/build",
+     "/applets/build/[id]",
+     "/applets/manage/[id]/run"
+    ]
+   },
+   {
+    "name": "Start from a layout",
+    "steps": [
+     "/applets/build",
+     "/applets/build/layout",
+     "/applets/build/[id]"
+    ]
+   },
+   {
+    "name": "Share an applet with a customer",
+    "steps": [
+     "/applets",
+     "/applets/manage/[id]",
+     "/applets/manage/[id]/settings",
+     "/applets/[slug]/[[...path]]"
+    ]
+   },
+   {
+    "name": "Roll back to a version",
+    "steps": [
+     "/applets/manage/[id]/versions",
+     "/applets/manage/[id]/v/[version]"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/applets/manage/[id]/settings",
+    "depth": 3,
+    "why": "Publishing lives in settings, not on the applet overview",
+    "proposal": "Put a Publish and Copy link button on the overview"
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Preview before publish",
+    "route": "/applets/manage/[id]/run",
+    "why": "Run is a tab, not an obvious Preview"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/applets/build/[id]",
+     "/applets/manage/[id]/code"
+    ],
+    "note": "Two editors for one applet"
+   }
+  ]
+ },
+ {
+  "product": "Code",
+  "family": "BUILD",
+  "summary": "A coding workspace with sandboxes, where agents and you work on the same files.",
+  "entry": "/code",
+  "sections": [
+   {
+    "name": "Workspace",
+    "route": "/code",
+    "why": "The editor.",
+    "pages": [
+     {
+      "route": "/code",
+      "title": "Code workspace",
+      "role": "tool",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/sandbox"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Sandboxes",
+    "route": "/sandbox",
+    "why": "Isolated machines to run code.",
+    "pages": [
+     {
+      "route": "/sandbox",
+      "title": "Sandboxes",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/sandbox/[id]"
+      ]
+     },
+     {
+      "route": "/sandbox/[id]",
+      "title": "Sandbox",
+      "role": "record",
+      "reachedFrom": [
+       "/sandbox"
+      ],
+      "leadsTo": [
+       "/code"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Coding connections",
+    "route": "/agent-connections/plugins",
+    "why": "Which coding tools are linked.",
+    "pages": [
+     {
+      "route": "/agent-connections/plugins",
+      "title": "Coding platforms",
+      "role": "settings",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Write code with an agent",
+    "steps": [
+     "/code"
+    ]
+   },
+   {
+    "name": "Start a sandbox",
+    "steps": [
+     "/sandbox",
+     "/sandbox/[id]",
+     "/code"
+    ]
+   },
+   {
+    "name": "Link Claude Code",
+    "steps": [
+     "/agent-connections/plugins",
+     "/code"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Devices",
+    "route": "/devices",
+    "why": "In the Code menu but not in this family's route list"
+   },
+   {
+    "name": "Editor",
+    "route": "(window)",
+    "why": "TREE lists an editor; it is windows only"
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/agent-connections/plugins",
+     "/agent-connections"
+    ],
+    "note": "Coding connections live inside the agent-connections shell"
+   }
+  ]
+ },
+ {
+  "product": "Connectors",
+  "family": "BUILD",
+  "summary": "Connect outside tools, accounts and AI services to your agents.",
+  "entry": "/connected-sources",
+  "sections": [
+   {
+    "name": "Connected sources",
+    "route": "/connected-sources",
+    "why": "What is already linked.",
+    "pages": [
+     {
+      "route": "/connected-sources",
+      "title": "Connected sources",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Connect your AI",
+    "route": "/bring-your-work",
+    "why": "Bring ChatGPT, Claude and others in.",
+    "pages": [
+     {
+      "route": "/bring-your-work",
+      "title": "Connect your AI",
+      "role": "tool",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": [
+       "/import/ai-chats"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Agent connections",
+    "route": "/agent-connections",
+    "why": "What an agent can reach.",
+    "pages": [
+     {
+      "route": "/agent-connections",
+      "title": "Overview",
+      "role": "list",
+      "reachedFrom": [
+       "sidebar"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agent-connections/agents",
+      "title": "Agents",
+      "role": "list",
+      "reachedFrom": [
+       "/agent-connections"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agent-connections/mcp-servers",
+      "title": "MCP servers",
+      "role": "list",
+      "reachedFrom": [
+       "/agent-connections"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/agent-connections/preferences",
+      "title": "Preferences",
+      "role": "settings",
+      "reachedFrom": [
+       "/agent-connections"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "See what is connected",
+    "steps": [
+     "/connected-sources"
+    ]
+   },
+   {
+    "name": "Add an outside tool to an agent",
+    "steps": [
+     "/agent-connections",
+     "/agent-connections/mcp-servers"
+    ]
+   },
+   {
+    "name": "Bring in my other AI",
+    "steps": [
+     "/bring-your-work"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/agent-connections/commands",
+    "why": "Empty placeholder, no menu entry",
+    "proposedHome": "Agent connections"
+   },
+   {
+    "route": "/agent-connections/hooks",
+    "why": "Empty placeholder, no menu entry",
+    "proposedHome": "Agent connections"
+   },
+   {
+    "route": "/agent-connections/instructions",
+    "why": "Empty placeholder, no menu entry",
+    "proposedHome": "Agent connections"
+   },
+   {
+    "route": "/agent-connections/registries",
+    "why": "Empty placeholder, no menu entry",
+    "proposedHome": "Agent connections"
+   },
+   {
+    "route": "/agent-connections/resources",
+    "why": "Empty placeholder, no menu entry",
+    "proposedHome": "Agent connections"
+   },
+   {
+    "route": "/agent-connections/sub-agents",
+    "why": "Empty placeholder, no menu entry",
+    "proposedHome": "Agent connections"
+   }
+  ],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "2,000+ catalog",
+    "route": "/user-settings/integrations",
+    "why": "Lives in settings, not in Connectors"
+   },
+   {
+    "name": "Connectors tile",
+    "route": "(none)",
+    "why": "Hub only exists in Integrations menu"
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/agent-connections/prompts",
+    "kind": "old copy",
+    "note": "Superseded by agents + shortcuts + applets"
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/connected-sources",
+     "/agent-connections"
+    ],
+    "note": "Two hubs for what is connected"
+   }
+  ]
+ }
+]
