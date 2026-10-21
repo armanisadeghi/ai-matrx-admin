@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Swords } from "lucide-react";
 import { Badge, Button, EmptyState, RegionSkeleton, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
-import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
+import { ErrorNotice, ReadFailure, RecordId } from "@ai-matrx/design-system";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { Cost } from "@/components/cost/Cost";
 import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
@@ -20,6 +20,8 @@ import { DEFAULT_RUN_OPTIONS, type TestResultView } from "@/features/agent-tests
 import { TestRunPanel } from "@/features/agent-tests/components/AgentTestPage";
 import { BattleOutcome } from "@/features/agent-tests/components/BattleOutcome";
 import { createClient } from "@/utils/supabase/client";
+import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
+import { useRunChanges } from "@/features/agent-tests/useRunChanges";
 import { toast } from "@/lib/toast";
 import {
   battleScore,
@@ -74,7 +76,13 @@ export function StudioBattle({
   const [kept, setKept] = useState(false);
   /** Runs per case per side; null = the organization's default (knob agent_tests.battle_repeats). */
   const [repeats, setRepeats] = useState<number | null>(null);
-  const [defaultRepeats, setDefaultRepeats] = useState<number | null>(null);
+  /** The organization's default for runs per case, from the knob register (no read of its own). */
+  const knobRepeats = Number(useSessionKnob("agent_tests.battle_repeats"));
+  const defaultRepeats = Number.isInteger(knobRepeats) && knobRepeats > 0 ? knobRepeats : null;
+  /** A read that failed but does not stop the form (history, versions, the restored battle, live results). */
+  const [loadNotices, setLoadNotices] = useState<{ what: string; error: unknown }[]>([]);
+  const noteFailure = (what: string, error: unknown) => setLoadNotices((cur) => [...cur.filter((n) => n.what !== what), { what, error }]);
+  const clearFailure = (what: string) => setLoadNotices((cur) => cur.filter((n) => n.what !== what));
   const [votes, setVotes] = useState<BattleVotes>({});
   /** The eval's own run view: open while the battle runs, folded away once it settles (null = follow that). */
   const [detailOpen, setDetailOpen] = useState<boolean | null>(null);
@@ -105,8 +113,9 @@ export function StudioBattle({
           setResults(past);
           return latest.run.id;
         });
-      } catch {
-        // The setup form still works; a failed read is not a failed battle.
+      } catch (e) {
+        // The setup form still works; a failed read is not a failed battle, but it is told.
+        if (live) noteFailure("the last battle", e);
       }
     })();
     return () => {
@@ -126,20 +135,13 @@ export function StudioBattle({
       }
       if (!live) return;
       setCases(rows);
-      const past = await fetchCaseResults(rows.map((r) => r.id)).catch(() => [] as TestResultView[]);
-      if (live) setHistory(past);
+      try {
+        const past = await fetchCaseResults(rows.map((r) => r.id));
+        if (live) setHistory(past);
+      } catch (e) {
+        if (live) noteFailure("the cost history", e);
+      }
     })();
-    void createClient()
-      .schema("platform")
-      .from("feature_knob")
-      .select("value")
-      .eq("feature", "agent_tests")
-      .eq("key", "battle_repeats")
-      .maybeSingle()
-      .then(({ data }) => {
-        const n = Number((data as { value?: unknown } | null)?.value);
-        if (live && Number.isInteger(n) && n > 0) setDefaultRepeats(n);
-      });
     void createClient()
       .schema("agent")
       .from("definition_version")
@@ -147,8 +149,12 @@ export function StudioBattle({
       .eq("agent_id", agentId)
       .order("version_number", { ascending: false })
       .limit(30)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (!live) return;
+        if (error) {
+          noteFailure("the saved versions", error);
+          return;
+        }
         const rows = (data ?? []) as VersionOption[];
         setVersions(rows);
         if (rows[1]) setVersionId(rows[1].id);
@@ -199,9 +205,14 @@ export function StudioBattle({
   const readResults = () => {
     if (!runId) return;
     void fetchRunResults(runId)
-      .then(setResults)
-      .catch(() => undefined);
+      .then((rows) => {
+        setResults(rows);
+        clearFailure("the battle's results");
+      })
+      .catch((e: unknown) => noteFailure("the battle's results", e));
   };
+  // Every answer and every pairwise verdict arrives over realtime: the verdict is live, no reload.
+  useRunChanges({ scope: "studio-battle", runId, onResults: readResults });
 
   const keep = async () => {
     setKeeping(true);
@@ -328,11 +339,15 @@ export function StudioBattle({
           data-testid="studio-battle-repeats"
         />
       </div>
+      {loadNotices.map((n) => (
+        <ErrorNotice key={n.what} size="inline" title={`Could not read ${n.what}`} error={n.error} operation="Battle on cases" />
+      ))}
       {launchError ? (
         <ErrorNotice size="inline" title="The battle did not start" error={launchError} operation="Battle on cases" />
       ) : null}
       {runId ? (
         <>
+          <RecordId value={runId} label="Battle run" token="agent_test_run" />
           {results.length === 0 ? (
             <Waiting text="Running the battle" />
           ) : (

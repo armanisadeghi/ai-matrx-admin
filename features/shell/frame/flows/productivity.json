@@ -1,0 +1,1560 @@
+[
+ {
+  "product": "Docs",
+  "family": "Productivity",
+  "summary": "Write notes, documents, slides and visual maps, and keep them together. Slides live here, not under Media.",
+  "entry": "/notes",
+  "sections": [
+   {
+    "name": "Notes",
+    "route": "/notes",
+    "why": "Quick personal writing, the most used Docs door.",
+    "pages": [
+     {
+      "route": "/notes",
+      "title": "Notes",
+      "role": "list",
+      "reachedFrom": [
+       "/notes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/notes/[id]",
+      "title": "Note",
+      "role": "record",
+      "reachedFrom": [
+       "/notes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/notes/[id]/diff",
+      "title": "Note history",
+      "role": "report",
+      "reachedFrom": [
+       "/notes/[id]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Documents",
+    "route": "/documents",
+    "why": "Longer documents and the AI-rendered ones.",
+    "pages": [
+     {
+      "route": "/documents",
+      "title": "Documents",
+      "role": "list",
+      "reachedFrom": [
+       "/documents"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/documents/[id]",
+      "title": "Document",
+      "role": "record",
+      "reachedFrom": [
+       "/documents"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/documents/templates",
+      "title": "Document templates",
+      "role": "list",
+      "reachedFrom": [
+       "/documents"
+      ],
+      "leadsTo": [
+       "/documents/[id]"
+      ]
+     },
+     {
+      "route": "/d/[renderId]",
+      "title": "Rendered document",
+      "role": "record",
+      "reachedFrom": [
+       "/chat/[conversationId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Slides",
+    "route": "/presentations",
+    "why": "Presentations, moved here from Media.",
+    "pages": [
+     {
+      "route": "/presentations",
+      "title": "Slides",
+      "role": "list",
+      "reachedFrom": [
+       "/presentations"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/presentations/[id]",
+      "title": "Presentation",
+      "role": "record",
+      "reachedFrom": [
+       "/presentations"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/presentations/templates",
+      "title": "Slide templates",
+      "role": "list",
+      "reachedFrom": [
+       "/presentations"
+      ],
+      "leadsTo": [
+       "/presentations/[id]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Visual maps",
+    "route": "/maps",
+    "why": "Diagrams and idea maps.",
+    "pages": [
+     {
+      "route": "/maps",
+      "title": "Visual maps",
+      "role": "list",
+      "reachedFrom": [
+       "/maps"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/maps/[id]",
+      "title": "Map editor",
+      "role": "record",
+      "reachedFrom": [
+       "/maps"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Markdown studio",
+    "route": "/markdown-studio",
+    "why": "Paste or write markdown and see it rendered.",
+    "pages": [
+     {
+      "route": "/markdown-studio",
+      "title": "Markdown studio",
+      "role": "tool",
+      "reachedFrom": [
+       "Menu: Utilities"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Jot a note and share it",
+    "steps": [
+     "/notes",
+     "/notes/[id]"
+    ]
+   },
+   {
+    "name": "Start a document from a template",
+    "steps": [
+     "/documents",
+     "/documents/templates",
+     "/documents/[id]"
+    ]
+   },
+   {
+    "name": "Build a deck",
+    "steps": [
+     "/presentations",
+     "/presentations/templates",
+     "/presentations/[id]"
+    ]
+   },
+   {
+    "name": "See what changed in a note",
+    "steps": [
+     "/notes",
+     "/notes/[id]",
+     "/notes/[id]/diff"
+    ]
+   },
+   {
+    "name": "Draw how an idea fits together",
+    "steps": [
+     "/maps",
+     "/maps/[id]"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/notes/[id]/diff",
+    "depth": 3,
+    "why": "note history only reachable from inside a note",
+    "proposal": "Add a History action in the note header and the list row menu."
+   },
+   {
+    "route": "/d/[renderId]",
+    "depth": 3,
+    "why": "AI-rendered documents live at their own address and never appear in Documents",
+    "proposal": "List them under Documents as 'Rendered' so they can be found again."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Docs home",
+    "route": "/notes",
+    "why": "Docs has five parts and no landing; the tile opens Notes only. Propose a thin Docs home showing recents across all five."
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/documents/templates",
+     "/presentations/templates",
+     "/workbooks/templates",
+     "/templates"
+    ],
+    "note": "Four template galleries (three share one component). Fold into one Templates door with Docs/Slides/Sheets filters."
+   },
+   {
+    "routes": [
+     "/notes",
+     "/organizations/[orgId]/notes"
+    ],
+    "note": "The organization's own notes list is a second way to the same notes; the main list should carry an org filter instead."
+   }
+  ]
+ },
+ {
+  "product": "Data",
+  "family": "Productivity",
+  "summary": "Build and use your own databases: tables, views, forms, pick lists, and the ready-made data library. A database system, not spreadsheets.",
+  "entry": "/data",
+  "sections": [
+   {
+    "name": "Bases & tables",
+    "route": "/data",
+    "why": "The core: every base and table, with its records and views.",
+    "pages": [
+     {
+      "route": "/data",
+      "title": "Tables",
+      "role": "list",
+      "reachedFrom": [
+       "/data"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/bases",
+      "title": "Bases",
+      "role": "list",
+      "reachedFrom": [
+       "/data"
+      ],
+      "leadsTo": [
+       "/data/bases/[homeId]"
+      ]
+     },
+     {
+      "route": "/data/bases/[homeId]",
+      "title": "Base",
+      "role": "record",
+      "reachedFrom": [
+       "/data/bases"
+      ],
+      "leadsTo": [
+       "/data/[tableId]"
+      ]
+     },
+     {
+      "route": "/data/[tableId]",
+      "title": "Table",
+      "role": "record",
+      "reachedFrom": [
+       "/data",
+       "/data/bases/[homeId]"
+      ],
+      "leadsTo": [
+       "/data/[tableId]/r/[recordId]",
+       "/data/interfaces/[interfaceId]"
+      ]
+     },
+     {
+      "route": "/data/[tableId]/r/[recordId]",
+      "title": "Record",
+      "role": "record",
+      "reachedFrom": [
+       "/data/[tableId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/connect",
+      "title": "Connect a database",
+      "role": "create",
+      "reachedFrom": [
+       "/data"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/custom-fields/[token]",
+      "title": "Custom fields",
+      "role": "settings",
+      "reachedFrom": [
+       "/data/[tableId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/interfaces/[interfaceId]",
+      "title": "Interface (app over a table)",
+      "role": "record",
+      "reachedFrom": [
+       "/data/[tableId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/v/[slug]",
+      "title": "Published table view",
+      "role": "record",
+      "reachedFrom": [
+       "Shared link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Data library",
+    "route": "/data/library",
+    "why": "Ready-to-fetch data (reviews, places, products) and tools that fetch it.",
+    "pages": [
+     {
+      "route": "/data/library",
+      "title": "Data library",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Data > Data Library"
+      ],
+      "leadsTo": [
+       "/data/library/unlock",
+       "/data/library/lab"
+      ]
+     },
+     {
+      "route": "/data/library/unlock",
+      "title": "Unlock a source",
+      "role": "create",
+      "reachedFrom": [
+       "/data/library"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/library/lab",
+      "title": "Data to model",
+      "role": "tool",
+      "reachedFrom": [
+       "Menu: Data > Data to Model"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Sheets",
+    "route": "/workbooks",
+    "why": "Spreadsheets for people who want a grid, not a database.",
+    "pages": [
+     {
+      "route": "/workbooks",
+      "title": "Sheets",
+      "role": "list",
+      "reachedFrom": [
+       "/workbooks"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workbooks/[id]",
+      "title": "Sheet",
+      "role": "record",
+      "reachedFrom": [
+       "/workbooks"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/workbooks/templates",
+      "title": "Sheet templates",
+      "role": "list",
+      "reachedFrom": [
+       "/workbooks"
+      ],
+      "leadsTo": [
+       "/workbooks/[id]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Forms",
+    "route": "/f/[formId]",
+    "why": "Forms are built on a table; this is the page a stranger fills in.",
+    "pages": [
+     {
+      "route": "/f/[formId]",
+      "title": "Public form",
+      "role": "record",
+      "reachedFrom": [
+       "Shared link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Pick lists",
+    "route": "/pick-lists",
+    "why": "Reusable option lists used by fields and forms.",
+    "pages": [
+     {
+      "route": "/pick-lists",
+      "title": "Pick lists",
+      "role": "list",
+      "reachedFrom": [
+       "/pick-lists"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/pick-lists/[id]",
+      "title": "Pick list",
+      "role": "record",
+      "reachedFrom": [
+       "/pick-lists"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Templates & compare",
+    "route": "/templates",
+    "why": "Ready-made tables and side-by-side comparisons.",
+    "pages": [
+     {
+      "route": "/templates",
+      "title": "Templates",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Data > Templates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/templates/[slug]",
+      "title": "Template",
+      "role": "record",
+      "reachedFrom": [
+       "/templates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/templates/category/[industry]",
+      "title": "Templates by industry",
+      "role": "list",
+      "reachedFrom": [
+       "/templates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/templates/job/[job]",
+      "title": "Templates by job",
+      "role": "list",
+      "reachedFrom": [
+       "/templates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/compare",
+      "title": "Compare",
+      "role": "tool",
+      "reachedFrom": [
+       "Menu: Data > Compare"
+      ],
+      "leadsTo": [
+       "/compare/s/[slug]"
+      ]
+     },
+     {
+      "route": "/compare/s/[slug]",
+      "title": "Shared comparison",
+      "role": "record",
+      "reachedFrom": [
+       "Shared link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Scopes & context",
+    "route": "/scopes",
+    "why": "The labels and facts that tell agents what a record is about.",
+    "pages": [
+     {
+      "route": "/scopes",
+      "title": "Scopes",
+      "role": "list",
+      "reachedFrom": [
+       "/scopes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/scopes/s/[scopeId]",
+      "title": "Scope",
+      "role": "record",
+      "reachedFrom": [
+       "/scopes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/scopes/settings",
+      "title": "Scope settings",
+      "role": "settings",
+      "reachedFrom": [
+       "/scopes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/scopes/templates",
+      "title": "Scope templates",
+      "role": "list",
+      "reachedFrom": [
+       "/scopes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/context-items",
+      "title": "Context items",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Data > Context Items"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Make a table and add records",
+    "steps": [
+     "/data",
+     "/data/[tableId]",
+     "/data/[tableId]/r/[recordId]"
+    ]
+   },
+   {
+    "name": "Start from a template",
+    "steps": [
+     "/templates",
+     "/templates/[slug]",
+     "/data/[tableId]"
+    ]
+   },
+   {
+    "name": "Collect answers with a form",
+    "steps": [
+     "/data",
+     "/data/[tableId]",
+     "/f/[formId]"
+    ]
+   },
+   {
+    "name": "Pull in outside data",
+    "steps": [
+     "/data/library",
+     "/data/library/unlock",
+     "/data",
+     "/data/[tableId]"
+    ]
+   },
+   {
+    "name": "Compare three companies and share it",
+    "steps": [
+     "/compare",
+     "/compare/s/[slug]"
+    ]
+   },
+   {
+    "name": "Teach agents about a client",
+    "steps": [
+     "/scopes",
+     "/scopes/s/[scopeId]",
+     "/context-items"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/data/custom-fields/[token]",
+    "depth": 3,
+    "why": "custom fields only found by clicking into a table first",
+    "proposal": "Surface as 'Fields' in the table's own toolbar and in Bases."
+   },
+   {
+    "route": "/data/connect",
+    "depth": 2,
+    "why": "connecting an outside database is a big capability with no menu row",
+    "proposal": "Add a 'Connect a database' action beside New Table."
+   },
+   {
+    "route": "/scopes/templates",
+    "depth": 2,
+    "why": "only linked from the Scopes page",
+    "proposal": "Keep, but show on first run of Scopes."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Data library",
+    "route": "/data/library",
+    "why": "TREE.md files it under Bases & tables; the menu sells it as its own row (with Tools and Data to Model)."
+   },
+   {
+    "name": "Forms list",
+    "route": "/f/[formId]",
+    "why": "TREE.md has Forms as a section but only the stranger-facing page exists; there is no 'my forms' list."
+   },
+   {
+    "name": "Interfaces",
+    "route": "/data/interfaces/[interfaceId]",
+    "why": "Full-screen apps over a table exist with no list or tree entry."
+   },
+   {
+    "name": "Scopes placement",
+    "route": "/scopes",
+    "why": "TREE.md marks Scopes & context 'or Settings?'; org scopes also live under Account. Owner ruling needed."
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/scopes/manage",
+    "kind": "redirect",
+    "note": "Old address, redirects to /scopes."
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/data/dashboards",
+     "/data/pages"
+    ],
+    "note": "Live under /data but belong to Workspace > Pages & Dashboards (see yours.json); address and home disagree."
+   },
+   {
+    "routes": [
+     "/scopes",
+     "/organizations/[orgId]/scopes",
+     "/organizations/[orgId]/settings/scopes"
+    ],
+    "note": "Same scopes reached by three addresses."
+   },
+   {
+    "routes": [
+     "/scopes",
+     "/context-items",
+     "/organizations/[orgId]/context-items"
+    ],
+    "note": "Scopes and context items are two hubs for one idea."
+   },
+   {
+    "routes": [
+     "/data",
+     "/organizations/[orgId]/tables"
+    ],
+    "note": "Org tables list duplicates the Tables list."
+   }
+  ]
+ },
+ {
+  "product": "Drive",
+  "family": "Productivity",
+  "summary": "Your files in one place: browse, search, share, and bring in Google Drive.",
+  "entry": "/files/all",
+  "sections": [
+   {
+    "name": "Browse",
+    "route": "/files/all",
+    "why": "The main file browser and its filtered views.",
+    "pages": [
+     {
+      "route": "/files/all/[[...path]]",
+      "title": "All files",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Files > All Files"
+      ],
+      "leadsTo": [
+       "/files/f/[fileId]"
+      ]
+     },
+     {
+      "route": "/files/recents",
+      "title": "Recents",
+      "role": "list",
+      "reachedFrom": [
+       "/files/all"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/starred",
+      "title": "Starred",
+      "role": "list",
+      "reachedFrom": [
+       "/files/all"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/shared",
+      "title": "Shared",
+      "role": "list",
+      "reachedFrom": [
+       "/files/all"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/folders",
+      "title": "Folders",
+      "role": "list",
+      "reachedFrom": [
+       "/files/all"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/photos",
+      "title": "Photos",
+      "role": "list",
+      "reachedFrom": [
+       "/files/all"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/f/[fileId]",
+      "title": "File",
+      "role": "record",
+      "reachedFrom": [
+       "/files/all/[[...path]]"
+      ],
+      "leadsTo": [
+       "/files/f/[fileId]/studio"
+      ]
+     },
+     {
+      "route": "/files/f/[fileId]/studio",
+      "title": "File studio",
+      "role": "tool",
+      "reachedFrom": [
+       "/files/f/[fileId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Connected",
+    "route": "/files/google-drive",
+    "why": "Files that live in Google Drive.",
+    "pages": [
+     {
+      "route": "/files/google-drive",
+      "title": "Google Drive",
+      "role": "list",
+      "reachedFrom": [
+       "/files/google-drive"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Requests & automation",
+    "route": "/files/requests",
+    "why": "Ask others for files, and see what moved.",
+    "pages": [
+     {
+      "route": "/files/requests",
+      "title": "File requests",
+      "role": "list",
+      "reachedFrom": [
+       "/files/requests"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/activity",
+      "title": "Activity",
+      "role": "report",
+      "reachedFrom": [
+       "/files/requests"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/files/webhooks",
+      "title": "Webhooks",
+      "role": "settings",
+      "reachedFrom": [
+       "/files/requests"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Trash",
+    "route": "/files/trash",
+    "why": "Deleted files, restorable.",
+    "pages": [
+     {
+      "route": "/files/trash",
+      "title": "File trash",
+      "role": "list",
+      "reachedFrom": [
+       "/files/trash"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Admin map",
+    "route": "/files/admin",
+    "why": "Feature map for builders.",
+    "pages": [
+     {
+      "route": "/files/admin",
+      "title": "Files admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "In-page link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Upload and find a file again",
+    "steps": [
+     "/files/all/[[...path]]",
+     "/files/recents",
+     "/files/f/[fileId]"
+    ]
+   },
+   {
+    "name": "Ask a client for documents",
+    "steps": [
+     "/files/requests",
+     "/files/shared",
+     "/files/f/[fileId]"
+    ]
+   },
+   {
+    "name": "Bring in Google Drive",
+    "steps": [
+     "/files/google-drive",
+     "/files/all/[[...path]]"
+    ]
+   },
+   {
+    "name": "Restore a deleted file",
+    "steps": [
+     "/files/trash",
+     "/files/all/[[...path]]"
+    ]
+   },
+   {
+    "name": "Analyze a PDF",
+    "steps": [
+     "/files/all/[[...path]]",
+     "/files/f/[fileId]",
+     "/files/f/[fileId]/studio"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/files/f/[fileId]/studio",
+    "depth": 3,
+    "why": "the analysis studio is only offered from a file's page",
+    "proposal": "Add an 'Analyze' action to the file row menu."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Drive home",
+    "route": "/files",
+    "why": "/files is only a redirect; the tile lands straight in All files."
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/files",
+    "kind": "redirect",
+    "note": "Redirects to /files/all (signed-out visitors see a landing)."
+   },
+   {
+    "route": "/files/[...path]",
+    "kind": "redirect",
+    "note": "Old file address, redirects to /files/all/<path>."
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/files/trash",
+     "/trash"
+    ],
+    "note": "File trash and the account-wide Trash both list deleted files."
+   },
+   {
+    "routes": [
+     "/files/photos",
+     "/images/my-cloud",
+     "/images/library",
+     "/images/all-files"
+    ],
+    "note": "Four ways to browse your pictures; Media and Drive overlap."
+   },
+   {
+    "routes": [
+     "/files/all/[[...path]]",
+     "/organizations/[orgId]/files"
+    ],
+    "note": "Organization files list duplicates the browser with an org filter."
+   }
+  ]
+ },
+ {
+  "product": "Media",
+  "family": "Productivity",
+  "summary": "Make, edit and manage pictures; capture with the camera; catalog video libraries.",
+  "entry": "/images",
+  "sections": [
+   {
+    "name": "Images",
+    "route": "/images",
+    "why": "Browse, upload and organize your pictures.",
+    "pages": [
+     {
+      "route": "/images",
+      "title": "Images home",
+      "role": "list",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/manager",
+      "title": "Manager",
+      "role": "list",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/my-cloud",
+      "title": "My cloud",
+      "role": "list",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/all-files",
+      "title": "All files",
+      "role": "list",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/library",
+      "title": "Library",
+      "role": "list",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/public-search",
+      "title": "Public search",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/upload",
+      "title": "Upload",
+      "role": "create",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/branded",
+      "title": "Branded upload",
+      "role": "create",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/tools",
+      "title": "Tools",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Studio",
+    "route": "/images/studio",
+    "why": "Create and edit pictures.",
+    "pages": [
+     {
+      "route": "/images/studio",
+      "title": "Studio",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/studio-light",
+      "title": "Studio light",
+      "role": "tool",
+      "reachedFrom": [
+       "/images/studio"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/studio-library",
+      "title": "Studio library",
+      "role": "list",
+      "reachedFrom": [
+       "/images/studio"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/ai-generate",
+      "title": "AI generate",
+      "role": "create",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/generate",
+      "title": "Generate",
+      "role": "create",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/edit",
+      "title": "Edit",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/edit/[id]",
+      "title": "Edit image",
+      "role": "record",
+      "reachedFrom": [
+       "/images/edit"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/annotate",
+      "title": "Annotate",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/avatar",
+      "title": "Avatar",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/convert",
+      "title": "Convert",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/from-base64",
+      "title": "From base64",
+      "role": "tool",
+      "reachedFrom": [
+       "/images"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/images/presets",
+      "title": "Presets",
+      "role": "list",
+      "reachedFrom": [
+       "/images/studio"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Camera",
+    "route": "/camera",
+    "why": "Capture photos and scans straight into your files.",
+    "pages": [
+     {
+      "route": "/camera",
+      "title": "Camera",
+      "role": "tool",
+      "reachedFrom": [
+       "/camera"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/camera/admin",
+      "title": "Camera admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "In-page link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Libraries",
+    "route": "/libraries",
+    "why": "Catalog a video channel or playlist and search inside it.",
+    "pages": [
+     {
+      "route": "/libraries",
+      "title": "Libraries",
+      "role": "list",
+      "reachedFrom": [
+       "/libraries"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/libraries/[id]",
+      "title": "Library",
+      "role": "record",
+      "reachedFrom": [
+       "/libraries"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Generate a picture and keep it",
+    "steps": [
+     "/images/ai-generate",
+     "/images/studio-library"
+    ]
+   },
+   {
+    "name": "Fix up a photo",
+    "steps": [
+     "/images/library",
+     "/images/edit/[id]"
+    ]
+   },
+   {
+    "name": "Snap a photo on the phone",
+    "steps": [
+     "/camera",
+     "/files/f/[fileId]"
+    ]
+   },
+   {
+    "name": "Catalog a YouTube channel",
+    "steps": [
+     "/libraries",
+     "/libraries/[id]"
+    ]
+   },
+   {
+    "name": "Convert files for a website",
+    "steps": [
+     "/images/convert",
+     "/images/upload"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/images/edit/[id]",
+    "depth": 3,
+    "why": "editing one picture requires going through Library first",
+    "proposal": "Open from any picture anywhere via the shared peek."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Video",
+    "route": "/libraries",
+    "why": "TREE.md lists video; the only video page is Libraries (a channel catalog). No video editor or player home."
+   },
+   {
+    "name": "Gallery and Crop",
+    "route": "/images",
+    "why": "Exist only as floating windows, not pages."
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/images/ai-generate",
+     "/images/generate"
+    ],
+    "note": "Two generate pages."
+   },
+   {
+    "routes": [
+     "/images/studio",
+     "/images/studio-light"
+    ],
+    "note": "Studio and Studio light are the same job at two sizes. Studio light is the likely old copy."
+   },
+   {
+    "routes": [
+     "/images/manager",
+     "/images/my-cloud",
+     "/images/all-files",
+     "/images/library",
+     "/files/photos"
+    ],
+    "note": "Five lists of the same pictures."
+   }
+  ]
+ },
+ {
+  "product": "Audio",
+  "family": "Productivity",
+  "summary": "Turn speech into text, clean it up, and speak text back in your voices.",
+  "entry": "/transcripts",
+  "sections": [
+   {
+    "name": "Transcripts",
+    "route": "/transcripts",
+    "why": "All transcripts and ways to make one.",
+    "pages": [
+     {
+      "route": "/transcripts",
+      "title": "Transcripts",
+      "role": "list",
+      "reachedFrom": [
+       "/transcripts"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/new",
+      "title": "New transcript",
+      "role": "create",
+      "reachedFrom": [
+       "/transcripts"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/processor",
+      "title": "Processor",
+      "role": "tool",
+      "reachedFrom": [
+       "/transcripts"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/admin",
+      "title": "Transcripts admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "In-page link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Scribe",
+    "route": "/transcripts/scribe",
+    "why": "Live note-taking sessions.",
+    "pages": [
+     {
+      "route": "/transcripts/scribe",
+      "title": "Scribe sessions",
+      "role": "list",
+      "reachedFrom": [
+       "/transcripts/scribe"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/scribe/[sessionId]",
+      "title": "Scribe session",
+      "role": "record",
+      "reachedFrom": [
+       "/transcripts/scribe"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/scribe/unsorted",
+      "title": "Unsorted scribe",
+      "role": "list",
+      "reachedFrom": [
+       "/transcripts/scribe"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Studio & cleanup",
+    "route": "/transcripts/studio",
+    "why": "Edit and tidy a transcript.",
+    "pages": [
+     {
+      "route": "/transcripts/studio",
+      "title": "Transcript studio",
+      "role": "tool",
+      "reachedFrom": [
+       "/transcripts/studio"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/transcripts/cleanup",
+      "title": "Cleanup",
+      "role": "tool",
+      "reachedFrom": [
+       "/transcripts/studio"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Voices",
+    "route": "/voice",
+    "why": "Text to speech and trying voices.",
+    "pages": [
+     {
+      "route": "/voice",
+      "title": "Voice",
+      "role": "tool",
+      "reachedFrom": [
+       "/voice"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/voice/playground",
+      "title": "Voice playground",
+      "role": "tool",
+      "reachedFrom": [
+       "/voice"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/voice/tester",
+      "title": "Voice tester",
+      "role": "tool",
+      "reachedFrom": [
+       "/voice"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Dictionary",
+    "route": "/dictionary/admin",
+    "why": "Your custom words and pronunciations.",
+    "pages": [
+     {
+      "route": "/dictionary/admin",
+      "title": "Custom dictionary",
+      "role": "settings",
+      "reachedFrom": [
+       "In-page link (3 places)"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Transcribe a recording",
+    "steps": [
+     "/transcripts/new",
+     "/transcripts",
+     "/transcripts/studio"
+    ]
+   },
+   {
+    "name": "Take notes in a live meeting",
+    "steps": [
+     "/transcripts/scribe",
+     "/transcripts/scribe/[sessionId]",
+     "/transcripts/scribe/unsorted"
+    ]
+   },
+   {
+    "name": "Clean a messy transcript",
+    "steps": [
+     "/transcripts",
+     "/transcripts/cleanup"
+    ]
+   },
+   {
+    "name": "Hear a script in different voices",
+    "steps": [
+     "/voice",
+     "/voice/playground",
+     "/voice/tester"
+    ]
+   },
+   {
+    "name": "Teach it a client's jargon",
+    "steps": [
+     "/dictionary/admin",
+     "/transcripts"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/dictionary/admin",
+    "depth": 3,
+    "why": "custom dictionary is named 'admin' and linked from only 3 places",
+    "proposal": "Add Dictionary to the Audio sidebar."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Voices list",
+    "route": "/voice",
+    "why": "TREE.md lists Voices; voice management is a settings tab (/user-settings/voice/voices), not a page here."
+   }
+  ],
+  "legacy": [],
+  "duplicates": [
+   {
+    "routes": [
+     "/voice/playground",
+     "/chat/voice/playground",
+     "/chat/voice"
+    ],
+    "note": "Voice appears in Audio and in Chat; the chat one is a live agent, the Audio one is text to speech - names collide."
+   },
+   {
+    "routes": [
+     "/transcripts/new",
+     "/transcripts/processor",
+     "/transcripts/studio",
+     "/transcripts/cleanup"
+    ],
+    "note": "Four overlapping entry points to the same transcribing work."
+   }
+  ]
+ }
+]

@@ -13,13 +13,14 @@ import { useEffect, useState } from "react";
 import { ExternalLink, FlaskConical, Play, Plus, SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 import { Badge, Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
-import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
+import { ErrorNotice, Peek, PeekHoverCard, ReadFailure, RecordId } from "@ai-matrx/design-system";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import { Cost } from "@/components/cost/Cost";
 import { fetchAgentContractHead, type AgentContractHead } from "@/features/agents/samples/service";
 import { fetchTestCaseRows, type TestCaseRow } from "@/features/agent-tests/cases";
-import { fetchCaseResults, launchRun, toCaseView } from "@/features/agent-tests/service";
-import { latestByCase } from "@/features/agent-tests/case-grid";
-import { VERDICT_META } from "@/features/agent-tests/verdicts";
+import { fetchAgentRuns, fetchCaseResults, launchRun, toCaseView } from "@/features/agent-tests/service";
+import { failReason, latestByCase } from "@/features/agent-tests/case-grid";
+import { VERDICT_META, caseDecidersLine, runStatusMeta } from "@/features/agent-tests/verdicts";
 import { DEFAULT_RUN_OPTIONS, type TestResultView } from "@/features/agent-tests/types";
 import { TestCaseForm } from "@/features/agent-tests/components/TestCaseForm";
 import { TestRunPanel } from "@/features/agent-tests/components/AgentTestPage";
@@ -70,6 +71,23 @@ export function StudioCases({
   }, [agentId, casesVersion, nonce]);
 
   const reread = () => setNonce((n) => n + 1);
+
+  // After a reload the newest run that is still going comes back, and its panel rejoins it.
+  const [restoreError, setRestoreError] = useState<unknown>(null);
+  useEffect(() => {
+    let live = true;
+    void fetchAgentRuns(agentId, { purpose: "user", limit: 5 })
+      .then((runs) => {
+        const going = runs.find((r) => r.pairwiseRounds === 0 && runStatusMeta(r.status).live);
+        if (live && going) setRunId((cur) => cur ?? going.id);
+      })
+      .catch((e: unknown) => {
+        if (live) setRestoreError(e);
+      });
+    return () => {
+      live = false;
+    };
+  }, [agentId]);
 
   const run = async (key: string, caseIds?: string[]) => {
     setLaunching(key);
@@ -133,6 +151,9 @@ export function StudioCases({
       {launchError ? (
         <ErrorNotice size="inline" title="The run did not start" error={launchError} operation="Run agent tests" />
       ) : null}
+      {restoreError ? (
+        <ErrorNotice size="inline" title="Could not look for a run in progress" error={restoreError} operation="Find the running test run" />
+      ) : null}
       {adding ? (
         <TestCaseForm
           agentId={agentId}
@@ -156,45 +177,74 @@ export function StudioCases({
           }
         />
       ) : (
-        <ul className="flex flex-col gap-1">
-          {rows.map((row) => {
+        <RecordList
+          items={rows}
+          getKey={(row) => row.id}
+          title={(row) => row.label || "Untitled case"}
+          sourceFeature="agent_studio_cases"
+          ariaLabel="Test cases"
+          size="sm"
+          leading={(row) => {
+            const view = toCaseView(row);
+            const preview = view.userInput.trim();
+            return (
+              <PeekHoverCard label={view.label} trigger={<FlaskConical className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />}>
+                <Peek
+                  record={{
+                    kind: "Test case",
+                    id: view.id,
+                    title: view.label,
+                    subtitle: caseDecidersLine(view),
+                    body: [
+                      ...(preview ? [{ section: "Message", text: preview, clamp: 4 as const }] : []),
+                      ...(Object.keys(view.variables).length ? [{ section: "Variables", items: Object.keys(view.variables) }] : []),
+                    ],
+                  }}
+                />
+              </PeekHoverCard>
+            );
+          }}
+          subtitle={(row) => {
             const result = latest.get(row.id);
-            const meta = result?.verdict ? VERDICT_META[result.verdict] : null;
+            const why = failReason(result);
             const inputs = caseInputs(row.variables, declarations);
             return (
-              <li
-                key={row.id}
-                className="flex min-h-8 flex-col justify-center gap-1 rounded-md border border-border px-2 py-0.5"
-                data-testid="studio-case"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="min-w-0 flex-1 truncate text-xs text-foreground">{row.label || "Untitled case"}</span>
-                  {meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : <span className="text-[11px] text-muted-foreground">Not run</span>}
-                  <Button
-                    variant="quiet"
-                    icon={<SquareArrowOutUpRight />}
-                    aria-label="Open in the center"
-                    title="Open in the center"
-                    onClick={() => onUseCase(row)}
-                  />
-                  <Button
-                    variant="quiet"
-                    icon={<Play />}
-                    aria-label="Run this case"
-                    title="Run this case"
-                    disabled={launching !== null}
-                    onClick={() => void run(row.id, [row.id])}
-                  />
-                </div>
-                {inputs.length > 0 ? (
-                  <div className="pb-0.5">
-                    <StudioInputPills definitions={inputs} />
-                  </div>
+              <span className="flex flex-col gap-1 font-sans" data-testid="studio-case">
+                {why ? (
+                  <span className="line-clamp-2 text-muted-foreground" data-testid="studio-case-fail-reason" title={why}>
+                    {why}
+                  </span>
                 ) : null}
-              </li>
+                {inputs.length > 0 ? <StudioInputPills definitions={inputs} /> : null}
+                <RecordId value={row.id} label="Test case" />
+              </span>
             );
-          })}
-        </ul>
+          }}
+          trailing={(row) => {
+            const result = latest.get(row.id);
+            const meta = result?.verdict ? VERDICT_META[result.verdict] : null;
+            return meta ? <Badge tone={meta.tone}>{meta.label}</Badge> : <span className="text-[11px] text-muted-foreground">Not run</span>;
+          }}
+          actions={(row) => (
+            <>
+              <Button
+                variant="quiet"
+                icon={<SquareArrowOutUpRight />}
+                aria-label="Open in the center"
+                title="Open in the center"
+                onClick={() => onUseCase(row)}
+              />
+              <Button
+                variant="quiet"
+                icon={<Play />}
+                aria-label="Run this case"
+                title="Run this case"
+                disabled={launching !== null}
+                onClick={() => void run(row.id, [row.id])}
+              />
+            </>
+          )}
+        />
       )}
       {launching && runId === null ? <Waiting text="Starting the run" /> : null}
       {runId ? (
