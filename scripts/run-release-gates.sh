@@ -367,6 +367,11 @@ if $STRICT; then
         # by a variable floating chrome publishes; chrome never styles the page. Offline, ~2 s.
         "Overlays never move the page|pnpm check:overlays-never-move-page:strict"
         "Overlays never move the page — self-test|pnpm check:overlays-never-move-page:self-test"
+        # NO PAGE-WIDE :has() (review 6b, 2026-10-21): a :has() on the page root, an unscoped anchor, or
+        # above a broad subject restyles the whole page on every DOM insertion (phone notes page 114 ms
+        # against 8 ms). Reads our CSS, Tailwind variants and the @ai-matrx packages' dist. Offline, ~3 s.
+        "No page-wide :has()|pnpm check:page-wide-has"
+        "No page-wide :has() — self-test|pnpm check:page-wide-has:self-test"
         # SSR ZERO LAYOUT SHIFT (skill ssr-zero-layout-shift): a viewport hook choosing between JSX
         # trees paints the wrong tree first on phones; shrink-only baseline. Offline, ~2 s.
         "SSR viewport branch|pnpm check:ssr-viewport-branch:strict"
