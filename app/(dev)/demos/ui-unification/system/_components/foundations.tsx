@@ -89,18 +89,14 @@ export function Foundations() {
             <span className="text-xs text-muted-foreground">8px · cards, panels</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-7 w-14 rounded-full border border-border bg-card" aria-hidden />
-            <span className="text-xs text-muted-foreground">Capsule · controls</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-[1.125rem] w-12 rounded-md border border-border bg-muted" aria-hidden />
-            <span className="text-xs text-muted-foreground">6px · badges</span>
+            <span className="h-7 w-14 rounded-md border border-border bg-card" aria-hidden />
+            <span className="text-xs text-muted-foreground">6px · controls, badges</span>
           </div>
         </div>
       </Group>
 
-      <Group label="The one control · 28px, 3px half-gap each">
-        <MeasuredBare>
+      <Group label="Controls in a row">
+        <MeasuredBare readout={false}>
           <Button variant="primary">
             <Plus aria-hidden /> New
           </Button>

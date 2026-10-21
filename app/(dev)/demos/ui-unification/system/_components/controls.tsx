@@ -5,7 +5,7 @@ import { TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
 import { ArrowDownUpTapButton, LayoutGridTapButton, ListTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { MeasuredBare, UnifiedToolbar } from "../../_components/one-control";
 import { Group, Section } from "./kit";
-import { Button, ControlRow, Field, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { Button, ControlRow, DateField, Field, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -21,6 +21,7 @@ const FULL = { width: "calc(100% - var(--matrx-control-gap))" } as const;
 function SystemForm() {
   const [owner, setOwner] = useState("ana");
   const [visibility, setVisibility] = useState<"private" | "team" | "org">("team");
+  const [due, setDue] = useState<string | null>("2026-10-30");
   return (
     <form className="flex w-full max-w-md flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
       <FormField label="Project name">
@@ -41,7 +42,7 @@ function SystemForm() {
           />
         </FormField>
         <FormField label="Due">
-          <Field style={FULL} type="date" defaultValue="2026-10-30" aria-label="Due" />
+          <DateField style={FULL} value={due} onValueChange={setDue} aria-label="Due" />
         </FormField>
       </div>
       <FormField label="Visible to">
@@ -58,7 +59,7 @@ function SystemForm() {
           />
         </ControlRow>
       </FormField>
-      <MeasuredBare>
+      <MeasuredBare readout={false}>
         <span className="flex-1" />
         <Button variant="quiet">
           Cancel
@@ -76,7 +77,7 @@ function FilterBar() {
   const [status, setStatus] = useState("any");
   const [view, setView] = useState<"list" | "grid">("list");
   return (
-    <MeasuredBare className="rounded-lg border border-border bg-card px-[3px] py-[3px]">
+    <MeasuredBare readout={false} className="rounded-lg border border-border bg-card px-[3px] py-[3px]">
         <SegmentedControl
           aria-label="Access"
           value={lane}
@@ -114,7 +115,7 @@ export function Controls() {
   return (
     <Section id="controls" title="Controls">
       <Group label="Toolbar">
-        <UnifiedToolbar />
+        <UnifiedToolbar readout={false} />
       </Group>
       <Group label="Filter bar">
         <FilterBar />

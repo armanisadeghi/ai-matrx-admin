@@ -11,7 +11,7 @@
  * matched inner padding.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controls } from "./controls";
 import { Data } from "./data";
 import { Feedback } from "./feedback";
@@ -34,12 +34,32 @@ type SectionId = (typeof SECTIONS)[number]["value"];
 
 export function SystemPage() {
   const [active, setActive] = useState<SectionId>("foundations");
+  const scroller = useRef<HTMLDivElement>(null);
+  // The tabs follow the reading position: the section whose top last passed under the sticky
+  // header is the active one (they stayed on Foundations for the whole page before).
+  useEffect(() => {
+    const root = scroller.current;
+    if (!root) return;
+    const onScroll = () => {
+      const header = root.querySelector("header")?.getBoundingClientRect().bottom ?? 0;
+      let current: SectionId = SECTIONS[0].value;
+      for (const s of SECTIONS) {
+        const top = document.getElementById(s.value)?.getBoundingClientRect().top;
+        if (top !== undefined && top - header <= 24) current = s.value;
+      }
+      if (root.scrollTop + root.clientHeight >= root.scrollHeight - 2) current = SECTIONS[SECTIONS.length - 1].value;
+      setActive(current);
+    };
+    onScroll();
+    root.addEventListener("scroll", onScroll, { passive: true });
+    return () => root.removeEventListener("scroll", onScroll);
+  }, []);
   const jump = (id: SectionId) => {
     setActive(id);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
   return (
-    <div className="h-full w-full overflow-y-auto overflow-x-hidden bg-background">
+    <div ref={scroller} className="h-full w-full overflow-y-auto overflow-x-hidden bg-background">
       <ControlScope>
         <header className="sticky top-0 z-10 bg-background/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-baseline gap-2 px-3 pt-2 sm:px-6">
