@@ -3,10 +3,11 @@
 // Moved out of app/(dev)/demos/resizables/_lib/ into features/resizable-panels/
 // so the (dev) route group can be parked. (dev)-helper-leak audit, 2026-07-28.
 
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, type RefObject } from "react";
 import {
   Group,
   useGroupRef,
+  type GroupImperativeHandle,
   type GroupProps,
   type Layout,
 } from "react-resizable-panels";
@@ -23,6 +24,12 @@ export function useGroupDefaultLayout(): Layout | undefined {
 
 type Props = Omit<GroupProps, "onLayoutChange" | "onLayoutChanged" | "groupRef"> & {
   cookieName: string;
+  /** Optional — the caller's own ref (from `useGroupRef()`), for a group whose
+   *  owner sets its layout imperatively (e.g. a page that collapses panes on a
+   *  layout change). Omitted → an internal ref. */
+  groupRef?: RefObject<GroupImperativeHandle | null>;
+  /** Optional — called with every SETTLED layout, after the cookie is written. */
+  onLayoutChanged?: GroupProps["onLayoutChanged"];
   /** Optional — when provided AND a <PanelControlProvider> is above, the
    *  group's groupRef is registered so cross-portal toggle buttons can call
    *  setLayout() on it. Demos that don't need cross-portal toggling can
@@ -38,8 +45,9 @@ type Props = Omit<GroupProps, "onLayoutChange" | "onLayoutChanged" | "groupRef">
 //   open size (a drag-collapse then reopens at the width before the drag).
 // - Shares its defaultLayout with the RegisteredPanels inside it (see
 //   useGroupDefaultLayout).
-export function ClientGroup({ cookieName, groupKey, children, ...props }: Props) {
-  const groupRef = useGroupRef();
+export function ClientGroup({ cookieName, groupKey, groupRef: callerRef, onLayoutChanged, children, ...props }: Props) {
+  const ownRef = useGroupRef();
+  const groupRef = callerRef ?? ownRef;
   const controls = usePanelControlsOptional();
 
   useEffect(() => {
@@ -52,13 +60,14 @@ export function ClientGroup({ cookieName, groupKey, children, ...props }: Props)
     <Group
       {...props}
       groupRef={groupRef}
-      onLayoutChanged={(layout) => {
+      onLayoutChanged={(layout, meta) => {
         document.cookie =
           `${cookieName}=${encodeURIComponent(JSON.stringify(layout))}` +
           `; path=/; max-age=31536000; SameSite=Lax`;
         if (groupKey && controls) {
           controls.notifyLayoutChanged(groupKey, layout);
         }
+        onLayoutChanged?.(layout, meta);
       }}
     >
       <GroupDefaultLayoutContext value={props.defaultLayout}>

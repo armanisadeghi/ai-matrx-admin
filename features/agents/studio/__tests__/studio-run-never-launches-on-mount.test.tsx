@@ -4,8 +4,9 @@
  *
  *  1. ONE PANE TREE. An agent arriving or a layout change never remounts a pane: the page has one stable
  *     surface root (no `agentId ? <BuilderSurface> : <StudioSurface>` swap, no `key={state.mode}`) and one
- *     set of pane slots that the layout only re-styles. Proven on a real DOM: the same four nodes survive
- *     three → two → tabs → three.
+ *     resizable group (StudioPanes) whose panels never unmount. Proven on a real DOM: the same four nodes
+ *     survive three → two → tabs → three, and the drag handles exist between shown panes (lane 5A-b:
+ *     5A had dropped them; RED on 5A's `a4c1…` tree, which has no StudioPanes).
  *  2. AN IDLE PANE MAKES 0 READS. The workspace reads once on open and then follows the row's realtime
  *     UPDATEs; 30 s of idle makes no read (the old 2.5 s poll made 12).
  *  3. NOTHING IS SWALLOWED. No `.catch(() => undefined)`, `.catch(() => [])`, `() => undefined` rejection
@@ -57,37 +58,51 @@ describe("guard 1: one pane tree survives an agent arriving and a layout change"
   it("has ONE surface root whose props change, never a root swap or a mode key", () => {
     expect(page).not.toMatch(/\?\s*<BuilderSurface/);
     expect(page).not.toMatch(/key=\{state\.mode\}/);
-    expect(page).not.toMatch(/ResizablePanelGroup/);
     expect(page.match(/<StudioSurfaceRoot\b/g) ?? []).toHaveLength(1);
-    expect(page).toMatch(/studioSlot\(layout, pane/);
-    for (const pane of ["switch", "assistant", "agent", "controls"]) {
-      expect(page.match(new RegExp(`paneProps\\("${pane}"\\)`, "g")) ?? []).toHaveLength(1);
+    expect(page.match(/<StudioPanes\b/g) ?? []).toHaveLength(1);
+  });
+
+  // The real pane tree (react-resizable-panels v4 group) across every layout and an agent arriving.
+  function renderPanes() {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { StudioPanes } = require(process.env.STUDIO_PANES_UNDER_TEST ?? "../components/StudioPanes") as typeof import("../components/StudioPanes");
+    type L = "three" | "two" | "tabs";
+    const Tree = ({ layout, agentId }: { layout: L; agentId: string | null }) => (
+      <StudioPanes
+        layout={layout}
+        ui={{ side: "assistant", tab: "agent" }}
+        saved={{}}
+        switchBar={<span>switch</span>}
+        panes={{ assistant: <span>a{agentId}</span>, agent: <span>b{agentId}</span>, controls: <span>c{agentId}</span> }}
+      />
+    );
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const root = createRoot(host);
+    return { host, render: (layout: L, agentId: string | null) => act(() => root.render(<Tree layout={layout} agentId={agentId} />)) };
+  }
+
+  it("the same four DOM nodes survive three → two → tabs → three and an agent arriving", () => {
+    const panes = ["switch", "assistant", "agent", "controls"] as const;
+    const { host, render } = renderPanes();
+    render("three", null);
+    const before = panes.map((p) => host.querySelector(`[data-studio-pane="${p}"]`));
+    before.forEach((n) => expect(n).not.toBeNull());
+    for (const [layout, agentId] of [["two", null], ["tabs", "a1"], ["three", "a1"]] as const) {
+      render(layout, agentId);
+      panes.forEach((p, i) => expect(host.querySelector(`[data-studio-pane="${p}"]`)).toBe(before[i]));
     }
   });
 
-  it("the same four DOM nodes survive three → two → tabs → three and an agent arriving", () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { studioSlot, studioGrid } = require(process.env.STUDIO_LAYOUT_UNDER_TEST ?? "../studio-layout") as typeof import("../studio-layout");
-    type L = "three" | "two" | "tabs";
-    const panes = ["switch", "assistant", "agent", "controls"] as const;
-    function Tree({ layout, agentId }: { layout: L; agentId: string | null }) {
-      return (
-        <div style={studioGrid(layout)} data-agent={agentId ?? ""}>
-          {panes.map((p) => {
-            const slot = studioSlot(layout, p, { side: "assistant", tab: "agent" });
-            return <div key={p} data-pane={p} style={slot.style} hidden={!slot.shown} />;
-          })}
-        </div>
-      );
-    }
-    const host = document.createElement("div");
-    const root = createRoot(host);
-    act(() => root.render(<Tree layout="three" agentId={null} />));
-    const before = panes.map((p) => host.querySelector(`[data-pane="${p}"]`));
-    for (const [layout, agentId] of [["two", null], ["tabs", "a1"], ["three", "a1"]] as const) {
-      act(() => root.render(<Tree layout={layout} agentId={agentId} />));
-      panes.forEach((p, i) => expect(host.querySelector(`[data-pane="${p}"]`)).toBe(before[i]));
-    }
+  it("the panes are resizable: a drag handle between each pair of shown panes, none beside a hidden one", () => {
+    const { host, render } = renderPanes();
+    const handles = () => [...host.querySelectorAll('[role="separator"]')].map((n) => n.id);
+    render("three", null);
+    expect(handles()).toEqual(["studio-resize-assistant-agent", "studio-resize-agent-controls"]);
+    render("two", null);
+    expect(handles()).toEqual(["studio-resize-assistant-agent"]);
+    render("tabs", null);
+    expect(handles()).toEqual([]);
   });
 });
 

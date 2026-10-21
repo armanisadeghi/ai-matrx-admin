@@ -53,7 +53,8 @@ import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/se
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
-import { studioGrid, studioLayoutFor, studioSlot, type StudioLayout } from "../studio-layout";
+import { studioLayoutFor, type StudioLayout, type StudioSavedSizes } from "../studio-layout";
+import { StudioPanes } from "./StudioPanes";
 import { studioStage } from "../studio-stage";
 import { useStudioUnsavedEdits } from "../unsaved-edits";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -93,7 +94,6 @@ import { useStudioBuilderFeed } from "../studio-builder-feed";
 import { useMandateHostValues } from "@ai-matrx/chat/mandates/host-values/useMandateHostValues";
 import { StudioStart, keepStudioDraft } from "./StudioStart";
 import { StudioRun } from "./StudioRun";
-import type { CSSProperties } from "react";
 import { StudioControls, type ControlsTab } from "./StudioControls";
 import { StudioTurnModel } from "./StudioTurnModel";
 import { PaneBar, PaneLabel } from "./PaneBar";
@@ -117,7 +117,8 @@ type MakePhase =
   | { kind: "suggest"; suggestions: WorkspaceInput[] }
   | { kind: "building" };
 
-export function AgentStudioPage() {
+/** `savedPaneSizes`: the pane sizes the person last dragged, read from their cookies by the route. */
+export function AgentStudioPage({ savedPaneSizes }: { savedPaneSizes?: StudioSavedSizes } = {}) {
   const router = useRouter();
   const params = useSearchParams();
   const state = readStudioState(new URLSearchParams(params.toString()));
@@ -830,13 +831,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
     </div>
   );
 
-  // ── ONE pane tree; the layout only re-styles its slots (no pane ever remounts on a resize) ──
-  const slot = (pane: "switch" | "assistant" | "agent" | "controls"): { style: CSSProperties; shown: boolean } =>
-    studioSlot(layout, pane, { side, tab: paneTab });
-  const paneProps = (pane: "switch" | "assistant" | "agent" | "controls") => {
-    const { style, shown } = slot(pane);
-    return { style, hidden: !shown, "data-studio-pane": pane, "data-assist-dock-avoid": true, className: "min-h-0 min-w-0 overflow-hidden" };
-  };
+  // ── ONE pane tree: one resizable group whose panels never unmount; a layout change only sets sizes ──
   const body = (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className={layout === "tabs" ? "shrink-0 border-b border-border px-2" : "hidden"}>
@@ -851,8 +846,11 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
           aria-label="Studio panes"
         />
       </div>
-      <div className="grid min-h-0 flex-1 divide-x divide-border" style={studioGrid(layout)} data-testid="studio-panes">
-        <div {...paneProps("switch")}>
+      <StudioPanes
+        layout={layout}
+        ui={{ side, tab: paneTab }}
+        saved={savedPaneSizes ?? {}}
+        switchBar={
           <PaneBar>
             <SegmentedControl
               aria-label="Beside your agent"
@@ -864,17 +862,13 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
               ]}
             />
           </PaneBar>
-        </div>
-        <div {...paneProps("assistant")} data-testid="studio-pane-assistant">
-          {layout === "two" ? <div className="h-full min-h-0">{left}</div> : assistantPane}
-        </div>
-        <div {...paneProps("agent")} data-testid="studio-pane-agent">
-          {centerPane}
-        </div>
-        <div {...paneProps("controls")} data-testid="studio-pane-controls">
-          {right}
-        </div>
-      </div>
+        }
+        panes={{
+          assistant: layout === "two" ? <div className="h-full min-h-0">{left}</div> : assistantPane,
+          agent: centerPane,
+          controls: right,
+        }}
+      />
     </div>
   );
 
