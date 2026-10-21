@@ -872,7 +872,7 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   );
 
   return (
-    <StudioSurfaceRoot agentId={state.agentId ?? null} assistantId={assistant.conversationId} runId={runConversation} values={surfaceValues}>
+    <StudioSurfaceRoot agentId={state.agentId ?? null} runId={runConversation} values={surfaceValues}>
       <div className="flex h-full min-h-0 flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]" data-testid="agent-studio">
         {header}
         <div ref={bodyRef} className="flex min-h-0 flex-1 flex-col" data-studio-layout={layout}>
@@ -885,18 +885,16 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
 
 /**
  * ONE stable surface root for the whole page: its props change when an agent arrives (the Agent Builder's
- * surface, scope and write targets; its client tools), the element never does. Both of the page's own
- * conversations (the assistant, the agent's run) are marked own: they never receive the page.
+ * surface, scope and write targets; its client tools), the element never does. The agent's run is the
+ * page's own conversation (it never receives the page); the assistant follows the page.
  */
 function StudioSurfaceRoot({
   agentId,
-  assistantId,
   runId,
   values,
   children,
 }: {
   agentId: string | null;
-  assistantId: string | null;
   runId: string | null;
   values: Parameters<typeof studioScope>[0];
   children: React.ReactNode;
@@ -904,7 +902,11 @@ function StudioSurfaceRoot({
   const builderScope = useAgentBuilderPageScope(agentId ?? undefined);
   const builderWrites = useAgentBuilderWriteHandlers(agentId ?? "");
   const getScope = async () => ({ ...(agentId ? await builderScope() : {}), ...studioScope(values) });
-  const isOwnConversation = (id: string) => id === assistantId || id === runId;
+  // Only the agent's RUN is the page's own conversation. The assistant FOLLOWS the page: a conversation
+  // marked own has its surface stamp cleared by the composer (useConversationFollowsPage), so its turns
+  // went out as the route's guess (`matrx-user/agents`) and lost the surface's `studio_workspace` tool
+  // (live, 2026-10-21, conversation c855c05b). Its facts also ride the mandate's host values every turn.
+  const isOwnConversation = (id: string) => id === runId;
   return (
     <SurfaceRuntimeProvider
       surfaceName={agentId ? AGENT_BUILDER_CONTEXT_MENU_PROPS.surfaceName : STUDIO_SURFACE_NAME}
