@@ -18,7 +18,7 @@ import tseslint from "typescript-eslint";
 import { noNavigationForQueryState } from "./scripts/lint-rules/no-navigation-for-query-state.mjs";
 import { emptyStateNeedsReadGate, errorRenderCarriesAlchemy } from "./scripts/lint-rules/error-render-carries-alchemy.mjs";
 import { noCanonicalComponentOverride } from "./scripts/lint-rules/no-canonical-component-override.mjs";
-import { noRawSelect, noStyledRawButton, oneControl } from "./scripts/lint-rules/one-control-rule.mjs";
+import { noRawDateInput, noRawSelect, noStyledRawButton, oneControl } from "./scripts/lint-rules/one-control-rule.mjs";
 import { alchemyDataIn } from "./scripts/lint-rules/alchemy-data-in.mjs";
 import { noHandBuiltChip } from "./scripts/lint-rules/hand-built-chip.mjs";
 import { noCodeAuthoredUserInput } from "./scripts/lint-rules/no-code-authored-user-input.mjs";
@@ -212,6 +212,7 @@ const matrxLintPlugin = {
     "no-hand-built-chip": noHandBuiltChip,
     "no-styled-raw-button": noStyledRawButton,
     "no-raw-select": noRawSelect,
+    "no-raw-date-input": noRawDateInput,
     // Alchemy takes data, not hand-built human/json/agent strings (Arman, 2026-10-14).
     "alchemy-data-in": alchemyDataIn,
     // The person's message is the person's words — code never writes into it (Arman, 2026-10-17).
@@ -1722,6 +1723,9 @@ export default [
       "matrx/no-styled-raw-button": "warn",
       // A native <select> is a hand-rolled control (owner, 2026-10-14): Select / OptionCombobox.
       "matrx/no-raw-select": "error",
+      // A native date/time input is a hand-rolled control (Arman, 2026-10-19 class ruling):
+      // DateField / TimeField / DateTimeField. Census + shrink-only baseline: check:one-control.
+      "matrx/no-raw-date-input": "error",
       // ALCHEMY TAKES DATA (Arman, 2026-10-14: "a linter that screams until they're fixed"): an
       // Alchemy host handed human/json/agent strings without `data`. The agent who touches the line
       // converts it (lint-guard holds touched lines only, never a release). Census: grep the eslint output for alchemy-data-in.

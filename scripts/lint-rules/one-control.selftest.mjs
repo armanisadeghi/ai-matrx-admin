@@ -3,7 +3,7 @@
 import test from "node:test";
 import { RuleTester } from "eslint";
 import tsParser from "@typescript-eslint/parser";
-import { noRawSelect, noStyledRawButton, oneControl } from "./one-control-rule.mjs";
+import { noRawDateInput, noRawSelect, noStyledRawButton, oneControl } from "./one-control-rule.mjs";
 
 const tester = new RuleTester({ languageOptions: { parser: tsParser, parserOptions: { ecmaFeatures: { jsx: true } } } });
 const IMPORT = 'import { Button, Field } from "@ai-matrx/design-system/controls";\n';
@@ -37,5 +37,22 @@ test("matrx/no-raw-select", () => {
   tester.run("no-raw-select", noRawSelect, {
     valid: [{ code: `${IMPORT}<Select value="a" options={[]} onValueChange={() => {}} aria-label="x" />` }, { code: "<Select />" }],
     invalid: [{ code: '<select value="a" onChange={() => {}}><option value="a">A</option></select>', errors: [{ messageId: "raw" }] }],
+  });
+});
+
+test("matrx/no-raw-date-input", () => {
+  tester.run("no-raw-date-input", noRawDateInput, {
+    valid: [
+      { code: 'import { DateField } from "@ai-matrx/design-system/controls";\n<DateField value="2026-10-21" onValueChange={() => {}} />' },
+      { code: '<input type="text" />' },
+      { code: '<Input type={show ? "text" : "password"} />' },
+      { code: '<Button type="submit">Go</Button>' },
+    ],
+    invalid: [
+      { code: '<input type="date" value="" onChange={() => {}} />', errors: [{ messageId: "raw" }] },
+      { code: '<Input type="datetime-local" />', errors: [{ messageId: "raw" }] },
+      { code: '<input type={allDay ? "date" : "time"} />', errors: [{ messageId: "raw" }] },
+      { code: "<ProInput type={`time`} />", errors: [{ messageId: "raw" }] },
+    ],
   });
 });

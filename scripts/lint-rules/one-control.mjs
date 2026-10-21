@@ -24,6 +24,12 @@ export const RAW_BUTTON_FIX =
 export const RAW_SELECT_FIX =
   "A native <select> is a hand-rolled control. Use Select from @ai-matrx/design-system/controls (options array), or OptionCombobox for long/grouped/searchable lists.";
 
+export const RAW_DATE_FIX =
+  "A date/time <input type=\"date|time|datetime-local\"> is a hand-rolled control. Use DateField / TimeField / DateTimeField from @ai-matrx/design-system/controls (value is the same ISO string: yyyy-mm-dd, HH:mm, yyyy-mm-ddTHH:mm; onValueChange gets string | null). A missing mode (month, week, min/max) is an option added IN the package.";
+
+/** The native input types that DateField / TimeField / DateTimeField replace. */
+export const RAW_DATE_TYPES = new Set(["date", "time", "datetime-local", "month", "week"]);
+
 export const isControlsModule = (src) => src === CONTROLS_MODULE;
 
 /** Layout containers from the controls module: they hold controls and may carry a row's own

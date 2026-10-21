@@ -9,6 +9,8 @@
  *      `@ai-matrx/design-system/controls` (the package locks it anyway — the class is a lie).
  * matrx/no-styled-raw-button (warn): a raw <button> whose className carries visual classes.
  * matrx/no-raw-select (error): any native <select> — the package Select / OptionCombobox replace it.
+ * matrx/no-raw-date-input (error): any element with type="date|time|datetime-local|month|week"
+ *   (a raw <input>, the shadcn <Input>, ProInput …) — DateField / TimeField / DateTimeField replace it.
  *
  * Never an eslint-disable: the census of what is left is `pnpm findings`.
  * Self-test: node --test scripts/lint-rules/one-control.selftest.mjs
@@ -17,6 +19,8 @@ import {
   ONE_CONTROL_FIX,
   PROTOTYPE_FIX,
   RAW_BUTTON_FIX,
+  RAW_DATE_FIX,
+  RAW_DATE_TYPES,
   RAW_SELECT_FIX,
   controlVisualTokens,
   isControlsModule,
@@ -136,6 +140,29 @@ export const noRawSelect = {
     return {
       JSXOpeningElement(node) {
         if (elementName(node) === "select") context.report({ node, messageId: "raw" });
+      },
+    };
+  },
+};
+
+export const noRawDateInput = {
+  meta: {
+    type: "problem",
+    docs: { description: "A native date/time input is a hand-rolled control; use DateField / TimeField / DateTimeField." },
+    schema: [],
+    messages: { raw: `<{{component}} type="{{type}}"> — ${RAW_DATE_FIX}` },
+  },
+  create(context) {
+    const filename = context.filename ?? context.getFilename?.() ?? "";
+    if (isExemptFile(filename)) return {};
+    return {
+      JSXOpeningElement(node) {
+        const attr = node.attributes.find((a) => a.type === "JSXAttribute" && a.name.type === "JSXIdentifier" && a.name.name === "type");
+        if (!attr?.value) return;
+        const hit = strings(attr.value).find((v) => RAW_DATE_TYPES.has(v.trim()));
+        if (!hit) return;
+        const component = node.name.type === "JSXIdentifier" ? node.name.name : node.name.type === "JSXMemberExpression" ? `${node.name.object.name}.${node.name.property.name}` : "input";
+        context.report({ node: attr, messageId: "raw", data: { component, type: hit.trim() } });
       },
     };
   },
