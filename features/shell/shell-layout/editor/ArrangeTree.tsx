@@ -22,8 +22,6 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpToLine,
-  ChevronDown,
-  ChevronRight,
   FolderInput,
   GripVertical,
   MoreHorizontal,
@@ -43,6 +41,7 @@ import {
   cn,
 } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
+import { TREE_INDENT_PX, TreeDisclosure, treeIndentStyle } from "@/components/official/topic-tree/geometry";
 import ShellIcon from "@/features/shell/components/ShellIcon";
 import { getCatalogEntry } from "../catalog";
 import type { ShellNode } from "../contract";
@@ -201,7 +200,7 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
           "group relative flex min-h-9 items-center gap-1 rounded-md pr-1 hover:bg-accent",
           mark === "inside" && "bg-accent ring-1 ring-primary",
         )}
-        style={{ paddingLeft: `${(depth - 1) * 20 + 2}px` }}
+        style={treeIndentStyle(depth - 1)}
         data-layout-row={node.id}
       >
         {mark === "before" ? <span className="pointer-events-none absolute inset-x-1 top-0 h-0.5 rounded bg-primary" /> : null}
@@ -215,19 +214,7 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
         >
           <GripVertical className="h-4 w-4" aria-hidden />
         </span>
-        {hasChildren ? (
-          <button
-            type="button"
-            aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
-            aria-expanded={open}
-            className="flex h-7 w-5 shrink-0 items-center justify-center text-muted-foreground"
-            onClick={() => onToggle(node.id)}
-          >
-            {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-          </button>
-        ) : (
-          <span className="w-5 shrink-0" />
-        )}
+        <TreeDisclosure expandable={hasChildren} expanded={open} onToggle={() => onToggle(node.id)} label={label} />
         <IconPicker value={icon} onChange={(next) => onChange(updateNode(all, node.id, { icon: next }))} />
         {renaming ? (
           // ui-exception: a menu row's name is a short raw label, not prose
@@ -257,9 +244,9 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
             {label}
           </button>
         )}
-        {hasChildren && !open ? <span className="type-meta shrink-0 text-muted-foreground">{children?.length}</span> : null}
-        {kindWord ? <span className="type-meta shrink-0 text-muted-foreground">{kindWord}</span> : null}
-        {custom ? <span className="type-meta shrink-0 text-muted-foreground">Renamed</span> : null}
+        {hasChildren && !open ? <span className="type-body shrink-0 text-muted-foreground">{children?.length}</span> : null}
+        {kindWord ? <span className="type-body shrink-0 text-muted-foreground">{kindWord}</span> : null}
+        {custom ? <span className="type-body shrink-0 text-muted-foreground">Renamed</span> : null}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="quiet" aria-label={`Options for ${label}`} icon={<MoreHorizontal />} />
@@ -292,7 +279,7 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
                 <DropdownMenuSubContent className="max-h-72 overflow-y-auto">
                   {into.map((c) => (
                     <DropdownMenuItem key={c.id} onClick={() => onChange(moveNode(all, node.id, { kind: "inside", id: c.id }, region) ?? all)}>
-                      <span style={{ paddingLeft: `${(c.depth - 1) * 12}px` }}>{c.label}</span>
+                      <span style={{ paddingLeft: (c.depth - 1) * TREE_INDENT_PX }}>{c.label}</span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuSubContent>
@@ -313,7 +300,9 @@ function Row({ node, depth, all, region, target, dragging, onChange, openIds, on
         </ul>
       ) : null}
       {node.kind === "group" && children?.length === 0 ? (
-        <p className="type-meta py-1 text-muted-foreground" style={{ paddingLeft: `${depth * 20 + 30}px` }}>
+        <p className="type-body flex items-center gap-1 py-1 text-muted-foreground" style={treeIndentStyle(depth)}>
+          <span aria-hidden="true" className="w-5 shrink-0" />
+          <TreeDisclosure expandable={false} />
           Drop rows here
         </p>
       ) : null}

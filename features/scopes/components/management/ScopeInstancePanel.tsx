@@ -2,14 +2,12 @@
 
 import { createElement, useState } from "react";
 import { resolveIcon } from "@/features/scopes/utils/resolveIcon";
+import { FileText, Plus, Pencil, Trash2 } from "lucide-react";
 import {
-  Plus,
-  Folder,
-  ChevronRight,
-  ChevronDown,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+  TreeDisclosure,
+  TreeFolderIcon,
+  treeIndentStyle,
+} from "@/components/official/topic-tree/geometry";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
@@ -174,6 +172,7 @@ export function ScopeInstancePanel({
                 node={node}
                 depth={0}
                 color={scopeType.color}
+                iconName={scopeType.icon}
                 singularLabel={scopeType.label_singular}
                 onEdit={handleEdit}
                 onDelete={setDeleteTarget}
@@ -224,6 +223,7 @@ function ScopeTreeItem({
   node,
   depth,
   color,
+  iconName,
   singularLabel,
   onEdit,
   onDelete,
@@ -232,6 +232,7 @@ function ScopeTreeItem({
   node: ScopeTreeNode;
   depth: number;
   color: string;
+  iconName: string | null | undefined;
   singularLabel: string;
   onEdit: (scope: Scope) => void;
   onDelete: (scope: Scope) => void;
@@ -244,35 +245,32 @@ function ScopeTreeItem({
     <div>
       <div
         className={cn(
-          "flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/60 transition-colors group",
+          "flex h-7 items-center gap-1 pr-2 rounded-md hover:bg-muted/60 transition-colors group",
         )}
-        style={{ paddingLeft: `${depth * 20 + 8}px` }}
+        style={treeIndentStyle(depth)}
       >
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          className={cn(
-            "h-5 w-5 flex items-center justify-center rounded",
-            hasChildren ? "hover:bg-muted" : "invisible",
-          )}
-        >
-          {hasChildren &&
-            (expanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            ))}
-        </button>
-
-        <div
-          className="h-2 w-2 rounded-full flex-shrink-0 bg-muted-foreground"
-          style={{ backgroundColor: color || undefined }}
+        <TreeDisclosure
+          expandable={hasChildren}
+          expanded={expanded}
+          onToggle={() => setExpanded(!expanded)}
+          label={node.name}
         />
 
+        {iconName ? (
+          createElement(resolveIcon(iconName), {
+            className: "h-4 w-4 shrink-0",
+            style: { color: color || undefined },
+          })
+        ) : hasChildren ? (
+          <TreeFolderIcon open={expanded} />
+        ) : (
+          <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
+
         <div className="flex-1 min-w-0">
-          <span className="text-sm">{node.name}</span>
+          <span className="type-body">{node.name}</span>
           {node.description && (
-            <span className="text-[11px] text-muted-foreground ml-2 hidden sm:inline">
+            <span className="type-body text-muted-foreground ml-2 hidden sm:inline">
               {node.description}
             </span>
           )}
@@ -312,6 +310,7 @@ function ScopeTreeItem({
               node={child}
               depth={depth + 1}
               color={color}
+              iconName={iconName}
               singularLabel={singularLabel}
               onEdit={onEdit}
               onDelete={onDelete}
