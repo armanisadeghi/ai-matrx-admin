@@ -28,7 +28,20 @@ export interface FollowOptions {
   signal?: AbortSignal;
   read?: Read;
   sleep?: (ms: number) => Promise<void>;
+  /** The longest the bar follows before it says so (the import it waits for may itself run 2 h). Default 3 h. */
+  ceilingMs?: number;
+  now?: () => number;
 }
+
+/** The follow ran out of time with no settled run for this press: the bar must stop spinning and say so. */
+export class SyncFollowTimedOut extends Error {
+  constructor() {
+    super("The sync has not reported back. Reload to look again, or press Sync now.");
+    this.name = "SyncFollowTimedOut";
+  }
+}
+
+export const SYNC_FOLLOW_CEILING_MS = 3 * 60 * 60 * 1000;
 
 /** Runs and the browser keep clocks a little apart; a run made this long before the press still counts. */
 const SKEW_MS = 30_000;
@@ -48,11 +61,12 @@ export async function runningSync(tableId: string, read: Read = fetchOperationsB
 
 /**
  * Follow the background sync this press started until it settles; answers the settled run, or
- * null when the follow was stopped (the bar left the page). A failed read is retried at the
+ * null when the follow was stopped (the bar left the page); throws SyncFollowTimedOut at the ceiling. A failed read is retried at the
  * next look: a blip never ends the wait.
  */
 export async function followSyncRun(tableId: string, options: FollowOptions): Promise<LinkedOperation | null> {
-  const { since, every = 4000, signal, read = fetchOperationsByLink, sleep = nap } = options;
+  const { since, every = 4000, signal, read = fetchOperationsByLink, sleep = nap, ceilingMs = SYNC_FOLLOW_CEILING_MS, now = Date.now } = options;
+  const began = now();
   while (!signal?.aborted) {
     try {
       const found = await read(SYNC_LINK_KIND, tableId);
@@ -63,6 +77,7 @@ export async function followSyncRun(tableId: string, options: FollowOptions): Pr
     } catch {
       // keep waiting: the next look asks again
     }
+    if (now() - began >= ceilingMs) throw new SyncFollowTimedOut();
     await sleep(every);
   }
   return null;
