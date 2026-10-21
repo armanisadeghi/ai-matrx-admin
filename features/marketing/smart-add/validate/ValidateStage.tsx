@@ -790,7 +790,7 @@ export function ValidateStage({
                             </a>
                           </Button>
                           <Button asChild variant="outline">
-                            <a href={`${brandHref.replace(/\/$/, "")}/offerings`} data-testid="validate-open-offerings">
+                            <a href={`${brandHref.replace(/\/$/, "")}/identity/offerings`} data-testid="validate-open-offerings">
                               Products &amp; services
                             </a>
                           </Button>

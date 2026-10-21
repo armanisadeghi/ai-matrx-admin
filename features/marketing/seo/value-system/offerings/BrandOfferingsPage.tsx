@@ -1,6 +1,9 @@
 "use client";
 
-/** Offerings room: the brand-level editor with no website, the site view once one exists. */
+/**
+ * The catalog view of Identity › Products & services: the brand-level editor with no website, the site
+ * view once one exists. Its host (`ProductsAndServicesPage`) clears the shell header and draws the tab row.
+ */
 
 import { BrandIdentitySiteSurface } from "@/features/marketing/components/brand/BrandIdentitySiteSurface";
 import {
@@ -26,7 +29,7 @@ export function BrandOfferingsPage() {
       </BrandOfferingsSurface>
     );
   return (
-    <BrandIdentitySiteSurface>
+    <BrandIdentitySiteSurface headerOffset={false}>
       <BrandOfferingsSurface>
         <OfferingsWorkbench />
       </BrandOfferingsSurface>

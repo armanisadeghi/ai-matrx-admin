@@ -584,7 +584,7 @@ function MarketingConnectionsContent({ reviewMode }: { reviewMode: boolean }) {
                 </Button>
               ) : (
                 <Button asChild variant="outline">
-                  <Link href="/marketing/sites/new">Add a site first</Link>
+                  <Link href={marketingRoutes.newSite()}>Add a site first</Link>
                 </Button>
               )}
             </div>

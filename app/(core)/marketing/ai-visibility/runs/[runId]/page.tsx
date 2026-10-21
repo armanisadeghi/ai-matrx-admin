@@ -2,6 +2,7 @@
 import { notFound } from "next/navigation";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { CollectionRunView } from "@/features/marketing/seo/ai-visibility/CollectionRunView";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { createClient } from "@/utils/supabase/server";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
@@ -35,8 +36,8 @@ export default async function MarketingCollectionRunPage({
         token="seo_collection_run"
         id={runId}
         error={response.error}
-        fallbackHref="/marketing/sites"
-        fallbackLabel="AI Visibility"
+        fallbackHref={marketingRoutes.brands()}
+        fallbackLabel="Brands"
       />
     );
   }

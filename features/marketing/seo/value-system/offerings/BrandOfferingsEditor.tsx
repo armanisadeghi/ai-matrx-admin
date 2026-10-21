@@ -150,7 +150,7 @@ export function BrandOfferingsEditor() {
   const tree = buildCatalogTree(offerings, new Map());
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto overscroll-contain bg-textured pt-[var(--shell-header-h)]">
+    <div className="h-full min-h-0 overflow-y-auto overscroll-contain bg-textured">
       <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
         <SectionCard
           title="Offerings"

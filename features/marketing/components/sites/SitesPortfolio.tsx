@@ -223,7 +223,7 @@ export function SitesPortfolio({
     copy: {
       label: "Site",
       listLabel: "Sites",
-      location: "/marketing/sites",
+      location: marketingRoutes.brands(),
       rowKind: "web-site",
       listKind: "web-sites-list",
       rowDescription: "One managed website row from the Marketing sites list.",
@@ -298,7 +298,7 @@ export function SitesPortfolio({
 
   const addSiteButton = (
     <ControlButton variant="primary"
-      onClick={() => router.push("/marketing/sites/new")}
+      onClick={() => router.push(marketingRoutes.newSite())}
       icon={<Plus className="h-3.5 w-3.5" />}
       collapse="container"
     >

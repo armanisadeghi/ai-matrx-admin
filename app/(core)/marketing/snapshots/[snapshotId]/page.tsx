@@ -1,6 +1,6 @@
 // record-view: none — an immutable page capture (a ledger record) that takes no custom fields
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,16 @@ import { createClient } from "@/utils/supabase/server";
 import { webDb } from "@/utils/supabase/webDb";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { RecordId } from "@ai-matrx/design-system";
+import { marketingSeg } from "@/features/marketing/lib/keys";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
+
+/**
+ * A page capture by its id alone: /marketing/snapshots/[snapshotId].
+ *
+ * When the caller can read the capture's site AND brand, this forwards to the full snapshot screen under its
+ * website (`…/websites/<site>/pages/<page>/snapshots/<id>`) — the same lanes as /marketing/pages/[pageId].
+ * The minimal view below stays only for a capture-only grantee, who must never be sent to a site they lack.
+ */
 
 export default async function MarketingSnapshotPage({
   params,
@@ -22,7 +32,7 @@ export default async function MarketingSnapshotPage({
   const response = await db
     .from("snapshot")
     .select(
-      "id, captured_at, final_url, http_status, word_count, content_hash, body_file_id, markdown_file_id",
+      "id, page_id, site_id, captured_at, final_url, http_status, word_count, content_hash, body_file_id, markdown_file_id",
     )
     .eq("id", snapshotId)
     .is("deleted_at", null)
@@ -41,6 +51,27 @@ export default async function MarketingSnapshotPage({
   }
 
   const snapshot = response.data;
+
+  // Probe the parents under the caller's JWT; nothing from them renders in the fallback lane.
+  const siteResponse = await db
+    .from("site")
+    .select("id, slug, brand_id")
+    .eq("id", snapshot.site_id)
+    .maybeSingle();
+  const site = siteResponse.error ? null : siteResponse.data;
+  if (site?.brand_id) {
+    const brandResponse = await db
+      .from("brand")
+      .select("id, slug")
+      .eq("id", site.brand_id)
+      .maybeSingle();
+    if (!brandResponse.error && brandResponse.data) {
+      redirect(
+        `${marketingRoutes.sitePage(marketingSeg(brandResponse.data), marketingSeg(site), snapshot.page_id)}/snapshots/${snapshot.id}`,
+      );
+    }
+  }
+
   const screenshots = await db
     .from("screenshot")
     .select("id, kind, file_id, captured_at, width, height")

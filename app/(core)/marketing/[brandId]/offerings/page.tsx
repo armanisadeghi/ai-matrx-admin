@@ -1,14 +1,17 @@
-// record-view: none — a sub-view (offerings) inside a record or scope, not the record page; the record's own page carries the section
-import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";
-import { BrandOfferingsWorkspace } from "@/features/marketing/offerings/BrandOfferingsWorkspace";
-import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
+// record-view: none — a forward, not a page: Products & services lives under Identity (Arman, 2026-10-21)
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Products & services" };
+import { withForwardedQuery } from "@/features/marketing/lib/forward-query";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
-/** /marketing/<brand>/offerings — the brand's products and services, filling live while its run goes. */
-export default async function BrandOfferingsPage({ params }: { params: Promise<{ brandId: string }> }) {
-  const { brandId } = await params;
-  const brand = await resolveBrandParam(brandId);
-  if (!brand) return <MarketingAddressUnavailable token="web_brand" address={brandId} />;
-  return <BrandOfferingsWorkspace brand={{ id: brand.id, name: brand.name, organizationId: brand.organization_id }} />;
+/** /marketing/<brand>/offerings → Identity › Products & services, query string kept (307, never cached). */
+export default async function BrandOfferingsForward({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ brandId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ brandId }, query] = await Promise.all([params, searchParams]);
+  redirect(withForwardedQuery(marketingRoutes.brandOfferings(brandId), query));
 }

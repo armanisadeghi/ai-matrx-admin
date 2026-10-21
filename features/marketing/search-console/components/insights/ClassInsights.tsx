@@ -773,7 +773,7 @@ export function QualityView({
             data={levelRows}
             columns={[...(levelColumns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
               <Link
-                href={`/marketing/sites/${siteId}/value?band=${encodeURIComponent(row.value_band)}`}
+                href={marketingRoutes.site(null, siteId, `/value?band=${encodeURIComponent(row.value_band)}`)}
                 className="whitespace-nowrap text-[11px] text-primary hover:underline"
                 title={`Review the keywords sitting at ${levelLabel(row.value_band)}`}
               >

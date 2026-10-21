@@ -46,8 +46,11 @@ import { pushAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavi
 
 export function BrandIdentitySiteSurface({
   children,
+  headerOffset = true,
 }: {
   children: ReactNode;
+  /** False when the host page already clears the shell header (a room under its own tab row). */
+  headerOffset?: boolean;
 }) {
   const brand = useMarketingBrand();
   const router = useRouter();
@@ -119,7 +122,7 @@ export function BrandIdentitySiteSurface({
   const roomTitle = pathname.endsWith("/guidelines") ? "Guidelines" : "Knowledge";
   if (!site) {
     return (
-      <div className="mx-auto w-full max-w-6xl space-y-3 px-3 pb-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:px-4">
+      <div className={`mx-auto w-full max-w-6xl space-y-3 px-3 pb-3 sm:px-4 ${headerOffset ? "pt-[calc(var(--shell-header-h)+0.75rem)]" : "pt-3"}`}>
         <h1 className="sr-only">
           {brand.name} · {roomTitle}
         </h1>
@@ -158,7 +161,7 @@ export function BrandIdentitySiteSurface({
         crawlActivity,
       }}
     >
-      <div className="flex h-full min-h-0 flex-col overflow-hidden pt-[var(--shell-header-h)]">
+      <div className={`flex h-full min-h-0 flex-col overflow-hidden ${headerOffset ? "pt-[var(--shell-header-h)]" : ""}`}>
         {rows.length > 0 ? (
           <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card/40 px-3 py-1.5">
             <span className="text-xs text-muted-foreground">Website</span>

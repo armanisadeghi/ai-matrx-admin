@@ -5,8 +5,7 @@
  *
  *   CROSS-BRAND (small by design — only what concerns no single brand)
  *     /marketing                       — Marketing home / hub
- *     /marketing/brands                — Brands front door (guests: landing; signed in: → /all)
- *     /marketing/brands/{all,new}      — brands list, add a brand (+ /brands/new-website)
+ *     /marketing/brands                — brands list (+ /brands/new-website)
  *     /marketing/reports               — cross-brand roll-ups (+ /cost, /ranks)
  *     /marketing/operations/…          — connections, automations, approvals, data-quality
  *     /marketing/tools/…               — public analyzers index, YouTube research
@@ -155,12 +154,7 @@ function mapLegacySiteSub(brandSeg: string, siteSeg: string, sub: string): strin
 export const marketingRoutes = {
   // ── Agency plane ───────────────────────────────────────────────────────
   home: () => "/marketing",
-  /** Brands front door (menus point at front doors): guests get the landing, signed in forwards to {@link brandsAll}. */
   brands: () => "/marketing/brands",
-  /** The brands list (feature-pages contract: the list lives at /all). */
-  brandsAll: () => "/marketing/brands/all",
-  /** Add a brand: the full-page create (the same body the "Add brand" window opens). */
-  brandsNew: () => "/marketing/brands/new",
   /** New-website intake (static child of /brands so it can't collide with a brand key). */
   /** Smart Add (/smart-add/company | /person). A prefill makes a deep link that starts on open (smart-add/smartAddUrl.ts). */
   smartAddBrand: (link?: SmartAddLink) => smartAddHref(link),

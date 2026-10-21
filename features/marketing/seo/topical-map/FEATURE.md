@@ -116,6 +116,7 @@ reader falls back to that row's own `default_value`.
 
 ## Change log
 
+- **2026-10-21** — `/marketing/<brand>/content` is a 307 forward (`redirect`, query kept) to `/content/map`; it rendered the same screen. `marketingRoutes.brandContent` now emits the `/content/map` form.
 - **2026-09-30** — The topic panel PAGES its attachments. After 14,303 keyword homes moved onto
   `seo.site_keyword_value.topic_id`, All Green's "Consumer Electronics Recycling" panel (2,857
   keywords + 3,779 pages) took 36 s on the clone (45 s live): `seo.map_topic_associations`
