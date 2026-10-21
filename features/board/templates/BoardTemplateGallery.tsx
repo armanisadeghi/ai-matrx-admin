@@ -75,6 +75,8 @@ export function BoardTemplateGallery({
       return;
     }
     setUsing(true);
+    // The gallery may close under the start dialog: the work in progress stays said until the board opens.
+    const progress = start ? toast.loading(start.mode === "style" ? `Making ${name} from ${start.styleName}…` : `Making ${name}…`) : null;
     try {
       const styleTemplateId = start?.mode === "style" ? start.styleTemplateId : undefined;
       const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage, styleTemplateId });
@@ -89,6 +91,7 @@ export function BoardTemplateGallery({
     } catch (e) {
       toast.error(isBoardError(e) ? e.message : e instanceof Error ? e.message : "The template could not be used. Try again.");
     } finally {
+      if (progress !== null) toast.dismiss(progress);
       setUsing(false);
       setStage(null);
     }
