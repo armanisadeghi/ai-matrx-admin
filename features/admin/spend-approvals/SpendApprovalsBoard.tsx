@@ -25,7 +25,9 @@ import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMo
 import { ApprovalStatusText } from "./RunApprovalCell";
 import { ApprovalStatusSelect, dateInputValue, endOfLocalDayIso } from "./ApprovalStatusSelect";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import type { MatrxColumnDef, MatrxTableRowActionDef } from "@ai-matrx/design-system/data-table/types";
+import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -40,7 +42,6 @@ import {
   SUBJECT_KIND_LABEL,
   costTone,
   decideSpendApproval,
-  decideSpendApprovalsBatch,
   expiryLabel,
   expiryTone,
   resetSpendApprovalTracking,
@@ -151,36 +152,6 @@ export function HistoryList({ id }: { id: string }) {
     </ol>
   );
 }
-
-// Every decision a row can take in bulk: the same set as the row's own actions (minus History).
-type BulkDecision = "approve" | "approve_temporary" | "reject" | "reopen" | "reset";
-const BULK_ACTIONS: { decision: BulkDecision; label: string; icon: typeof Check }[] = [
-  { decision: "approve", label: "Approve", icon: Check },
-  { decision: "approve_temporary", label: "Temporary", icon: CalendarClock },
-  { decision: "reject", label: "Reject", icon: X },
-  { decision: "reopen", label: "Reopen", icon: RotateCcw },
-  { decision: "reset", label: "Reset tracking", icon: TimerReset },
-];
-const BULK_NEXT_STATUS: Record<Exclude<BulkDecision, "reset">, ApprovalStatus> = {
-  approve: "approved",
-  approve_temporary: "temporary",
-  reject: "rejected",
-  reopen: "waiting",
-};
-const BULK_TITLE: Record<BulkDecision, string> = {
-  approve: "Approve",
-  approve_temporary: "Approve temporarily",
-  reject: "Reject",
-  reopen: "Reopen",
-  reset: "Reset tracking for",
-};
-const BULK_CONFIRM: Record<BulkDecision, string> = {
-  approve: "Approve",
-  approve_temporary: "Approve until",
-  reject: "Reject",
-  reopen: "Reopen",
-  reset: "Reset tracking",
-};
 
 export interface Pending {
   row: SpendApprovalRow;
@@ -424,10 +395,6 @@ export function SpendApprovalsBoard({
   const [groupBy, setGroupBy] = useUrlState(`table.${spendApprovalsTableId(seat)}.group`, stringUrlCodec());
   const setStatus = (next: StatusFilter) => (subject ? setLocalStatus(next) : setUrlStatus(next));
   const [pending, setPending] = useState<Pending | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulk, setBulk] = useState<{ decision: BulkDecision; rows: SpendApprovalRow[] } | null>(null);
-  const [bulkBusy, setBulkBusy] = useState(false);
-  const [bulkUntil, setBulkUntil] = useState("");
 
   const own = subject ? rows.filter((r) => rowMatchesSubject(r, subject)) : rows;
   const activeRowId = activeSubject
@@ -445,54 +412,6 @@ export function SpendApprovalsBoard({
   const rowTone = (t: Tone) => t ?? undefined;
 
   const decideInline = decide;
-
-  const decideBulk = async () => {
-    if (!bulk) return;
-    const { decision, rows: targets } = bulk;
-    setBulkBusy(true);
-    if (decision === "reset") {
-      try {
-        const n = await resetSpendApprovalTracking(targets.map((t) => t.id), "Batch reset");
-        toast.success(`Tracking reset: ${n}`);
-        setSelectedIds([]);
-        reload();
-      } catch (e: unknown) {
-        toast.error(e instanceof Error ? e.message : String(e));
-      }
-      setBulkBusy(false);
-      setBulk(null);
-      return;
-    }
-    const expiresAt = decision === "approve_temporary" ? endOfLocalDayIso(bulkUntil) : null;
-    if (decision === "approve_temporary" && (expiresAt == null || Date.parse(expiresAt) <= Date.now())) {
-      setBulkBusy(false);
-      toast.error("Pick an expiry date after today");
-      return;
-    }
-    const next = BULK_NEXT_STATUS[decision];
-    const before = new Map(targets.map((t) => [t.id, { status: t.status, expires_at: t.expires_at }]));
-    setRows((rs) => rs.map((x) => (before.has(x.id) ? { ...x, status: next, expires_at: expiresAt } : x)));
-    const res = await decideSpendApprovalsBatch(targets.map((t) => t.id), decision, { expiresAt });
-    if (res.failed.length) {
-      const failed = new Set(res.failed.map((f) => f.id));
-      setRows((rs) => rs.map((x) => (failed.has(x.id) ? { ...x, ...(before.get(x.id) ?? {}) } : x)));
-      toast.error(`${res.failed.length} of ${targets.length} failed: ${res.failed[0].message}`);
-    }
-    if (res.ok.length) toast.success(`${APPROVAL_STATUS_LABEL[next]}: ${res.ok.length}`);
-    setSelectedIds(res.failed.map((f) => f.id));
-    setBulkBusy(false);
-    setBulk(null);
-  };
-  // The same "can this row take it" rule as the row's own action (rowActionDefs below).
-  const bulkTargets = (selected: SpendApprovalRow[], decision: BulkDecision) =>
-    selected.filter(
-      (r) => r.can_decide && (decision === "reset" || decision === "approve_temporary" || r.status !== BULK_NEXT_STATUS[decision]),
-    );
-  const openBulk = (selected: SpendApprovalRow[], decision: BulkDecision) => {
-    if (decision === "approve_temporary") setBulkUntil(dateInputValue(knobs?.temporaryDefaultDays ?? 7));
-    setBulk({ decision, rows: bulkTargets(selected, decision) });
-  };
-  const bulkMonthly = bulk ? bulk.rows.reduce((s, r) => s + (r.est_monthly_cost ?? 0), 0) : 0;
 
   const columns: MatrxColumnDef<SpendApprovalRow>[] = [
     // ── the default columns, in Arman's order (2026-10-10) ──
@@ -833,14 +752,113 @@ export function SpendApprovalsBoard({
 
   // Approve and Reject stay inline (the two most used); the rest sit in the row's overflow menu.
   // Declared once, so an action a row cannot take is drawn disabled in its slot and the column lines up.
-  const rowActionDefs: MatrxTableRowActionDef<SpendApprovalRow>[] = [
-    { id: "approve", icon: Check, label: "Approve", tone: "success", appliesTo: (r) => r.can_decide && r.status !== "approved", onClick: (r) => setPending({ row: r, decision: "approve" }) },
-    { id: "reject", icon: X, label: "Reject", tone: "destructive", appliesTo: (r) => r.can_decide && r.status !== "rejected", onClick: (r) => setPending({ row: r, decision: "reject" }) },
-    { id: "approve_temporary", icon: CalendarClock, label: "Approve temporarily", appliesTo: (r) => r.can_decide, unavailableTooltip: "Platform decides", onClick: (r) => setPending({ row: r, decision: "approve_temporary" }) },
-    { id: "reopen", icon: RotateCcw, label: "Reopen", appliesTo: (r) => r.can_decide && r.status !== "waiting", onClick: (r) => setPending({ row: r, decision: "reopen" }) },
-    { id: "reset", icon: TimerReset, label: "Reset tracking", appliesTo: (r) => r.can_decide, unavailableTooltip: "Platform decides", onClick: (r) => setPending({ row: r, decision: "reset" }) },
-    { id: "history", icon: History, label: "History", onClick: (r) => setPending({ row: r, decision: "history" }) },
-  ];
+  // THE BULK TWIN RULE: each verb's bulk twin comes from the same declaration (lib/entity-list/rowVerbs.ts),
+  // so the bar can never offer fewer decisions than a row; a selected row a verb does not apply to is
+  // skipped and named. Each row decides on the status it SHOWED (`expectedStatus`).
+  const monthlyOf = (rows: SpendApprovalRow[]) => cents(rows.reduce((sum, r) => sum + (r.est_monthly_cost ?? 0), 0));
+  const decideOne =
+    (decision: ApprovalDecision) =>
+    async (id: string, row: SpendApprovalRow | undefined, input: { value?: string }) => {
+      const expiresAt = decision === "approve_temporary" ? endOfLocalDayIso(input.value ?? "") : null;
+      await decideSpendApproval(id, decision, {
+        note: "Batch decision",
+        expiresAt,
+        ...(row ? { expectedStatus: row.status } : {}),
+      });
+    };
+  // The sentence a selected row is skipped with (the row's own icon is simply disabled).
+  const notFor = (r: SpendApprovalRow) => (r.can_decide ? null : "Platform decides");
+  const approvalsLabel = (n: number) => `${n} ${n === 1 ? "approval" : "approvals"}`;
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SpendApprovalRow>(
+    [
+      {
+        id: "approve", icon: Check, label: "Approve", tone: "success",
+        appliesTo: (r) => r.can_decide && r.status !== "approved",
+        onClick: (r) => setPending({ row: r, decision: "approve" }),
+        bulk: {
+          done: "Approved",
+          skipReason: (r) => notFor(r) ?? (r.status === "approved" ? "Already approved" : null),
+          confirm: (t) => ({ title: `Approve ${approvalsLabel(t.ids.length)}?`, description: `${monthlyOf(t.rows)} a month combined.`, confirmLabel: "Approve" }),
+          runOne: decideOne("approve"),
+        },
+      },
+      {
+        id: "reject", icon: X, label: "Reject", tone: "destructive",
+        appliesTo: (r) => r.can_decide && r.status !== "rejected",
+        onClick: (r) => setPending({ row: r, decision: "reject" }),
+        bulk: {
+          done: "Rejected",
+          skipReason: (r) => notFor(r) ?? (r.status === "rejected" ? "Already rejected" : null),
+          confirm: (t) => ({ title: `Reject ${approvalsLabel(t.ids.length)}?`, description: `${monthlyOf(t.rows)} a month combined.`, confirmLabel: "Reject", variant: "destructive" }),
+          runOne: decideOne("reject"),
+        },
+      },
+      {
+        id: "approve_temporary", icon: CalendarClock, label: "Approve temporarily",
+        appliesTo: (r) => r.can_decide, unavailableTooltip: "Platform decides",
+        onClick: (r) => setPending({ row: r, decision: "approve_temporary" }),
+        bulk: {
+          label: "Temporary",
+          done: "Approved temporarily",
+          confirm: (t) => ({
+            title: `Approve ${approvalsLabel(t.ids.length)} temporarily?`,
+            description: `${monthlyOf(t.rows)} a month combined, then Rejected.`,
+            confirmLabel: "Approve until",
+            ask: {
+              kind: "date",
+              label: "Expires on",
+              defaultValue: dateInputValue(knobs?.temporaryDefaultDays ?? 7),
+              min: dateInputValue(0),
+              validate: (v) => {
+                const iso = endOfLocalDayIso(v);
+                return iso && Date.parse(iso) > Date.now() ? null : "Pick an expiry date after today";
+              },
+            },
+          }),
+          runOne: decideOne("approve_temporary"),
+        },
+      },
+      {
+        id: "reopen", icon: RotateCcw, label: "Reopen",
+        appliesTo: (r) => r.can_decide && r.status !== "waiting",
+        onClick: (r) => setPending({ row: r, decision: "reopen" }),
+        bulk: {
+          done: "Reopened",
+          skipReason: (r) => notFor(r) ?? (r.status === "waiting" ? "Already waiting" : null),
+          confirm: (t) => ({ title: `Reopen ${approvalsLabel(t.ids.length)}?`, description: "Back to waiting.", confirmLabel: "Reopen" }),
+          runOne: decideOne("reopen"),
+        },
+      },
+      {
+        id: "reset", icon: TimerReset, label: "Reset tracking",
+        appliesTo: (r) => r.can_decide, unavailableTooltip: "Platform decides",
+        onClick: (r) => setPending({ row: r, decision: "reset" }),
+        bulk: {
+          done: "Tracking reset",
+          confirm: (t) => ({
+            title: `Reset tracking for ${approvalsLabel(t.ids.length)}?`,
+            description: "Runs since, avg, max and est./month restart from now. History is kept.",
+            confirmLabel: "Reset tracking",
+          }),
+          // One batch door: the reset RPC takes every id at once.
+          run: async (t) => {
+            await resetSpendApprovalTracking(t.ids, "Batch reset");
+            return {};
+          },
+        },
+      },
+      { id: "history", icon: History, label: "History", onClick: (r) => setPending({ row: r, decision: "history" }), bulk: false, noBulk: "single" },
+    ],
+    { noun: "approval", getRowId: (r) => r.id, getRowName: (r) => r.subject_name ?? r.subject_id },
+  );
+  const bulk = useTableBulkSelection<SpendApprovalRow>({
+    noun: "approval",
+    rows: visible,
+    getRowId: (r) => r.id,
+    getRowName: (r) => r.subject_name ?? r.subject_id,
+    actions: bulkActions,
+    onRefresh: reload,
+  });
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
@@ -893,27 +911,14 @@ export function SpendApprovalsBoard({
           headerWrap="two-lines"
           read={readOf({ loading, error }, { what: "spend approvals" })}
           emptyState={{ title: subject ? "No spend approval for this" : "No spend approvals" }}
-          selection={{
-            selectedIds,
-            onSelectedIdsChange: setSelectedIds,
-            scopeKey: orgId ?? "all",
-            isRowSelectable: (r) => r.can_decide,
-            noun: "approval",
-            actions: (selected) => (
-              <>
-                {BULK_ACTIONS.map(({ decision, label, icon: Icon }) => (
-                  <Button
-                    key={decision}
-                    variant="outline"
-                    disabled={bulkBusy || !bulkTargets(selected, decision).length}
-                    onClick={() => openBulk(selected, decision)}
-                  >
-                    <Icon className="h-4 w-4" /> {label}
-                  </Button>
-                ))}
-              </>
-            ),
-          }}
+          selection={
+            bulk.selection && {
+              ...bulk.selection,
+              scopeKey: orgId ?? "all",
+              // No decision can touch a platform-decided row, so it gets no checkbox.
+              isRowSelectable: (r) => r.can_decide,
+            }
+          }
           toolbar={{
             title: "People's own chats are never held. Agent and automated runs are.",
             search: true,
@@ -965,43 +970,6 @@ export function SpendApprovalsBoard({
           }}
         />
       </div>
-      {bulk && (
-        <ConfirmDialog
-          open
-          onOpenChange={(o) => !o && !bulkBusy && setBulk(null)}
-          // read-gate-exempt: counts the rows the admin selected for this bulk action
-          title={`${BULK_TITLE[bulk.decision]} ${bulk.rows.length} ${bulk.rows.length === 1 ? "approval" : "approvals"}?`}
-          description={
-            bulk.decision === "reset"
-              ? "Runs since, avg, max and est./month restart from now. History is kept."
-              : bulk.decision === "reopen"
-                ? "Back to waiting."
-                : bulk.decision === "approve_temporary"
-                  ? `${cents(bulkMonthly)} a month combined. ${endOfLocalDayIso(bulkUntil) ? `${expiryLabel(endOfLocalDayIso(bulkUntil))}, then Rejected.` : ""}`
-                  : `${cents(bulkMonthly)} a month combined.`
-          }
-          variant={bulk.decision === "reject" ? "destructive" : "default"}
-          confirmLabel={BULK_CONFIRM[bulk.decision]}
-          cancelLabel="Cancel"
-          busy={bulkBusy}
-          onConfirm={decideBulk}
-          content={
-            bulk.decision === "approve_temporary" ? (
-              <label className="flex flex-col gap-1 text-sm">
-                <span className="text-xs text-muted-foreground">Expires on</span>
-                {/* ui-exception: a date value, not prose */}
-                <input
-                  type="date"
-                  value={bulkUntil}
-                  min={dateInputValue(0)}
-                  onChange={(e) => setBulkUntil(e.target.value)}
-                  className="h-7 rounded-md border border-border bg-background px-2 text-sm"
-                />
-              </label>
-            ) : undefined
-          }
-        />
-      )}
       <DecisionDialog pending={pending} knobs={knobs} onClose={() => setPending(null)} onDone={reload} />
     </div>
   );
