@@ -1,0 +1,4320 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0573",
+  "version": 1,
+  "title": "Pediatric Practice Desk",
+  "description": "Well-child visits, shot schedules, vaccine stock and families in one pediatric workspace.",
+  "forWho": "Pediatric and family medicine practices caring for children",
+  "icon": {
+    "emoji": "🧸"
+  },
+  "cover": {
+    "url": "gallery:healthcare-stethoscope-desk",
+    "offsetY": 50
+  },
+  "category": "healthcare",
+  "tags": [
+    "pediatrics",
+    "pediatrician",
+    "children",
+    "vaccines",
+    "immunizations",
+    "kids doctor"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-pediatric-practice-desk",
+    "catalogueId": "SP0573",
+    "useCase": "The practice manager at Hollowbrook Pediatrics uses this to keep every child on schedule for well visits and shots and the fridge stocked.",
+    "industry": "healthcare",
+    "vertical": "Pediatric practice",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Hollowbrook Pediatrics",
+      "describes": "A three-provider pediatric practice seeing newborns to young adults, with same-day sick visits and a vaccine clinic.",
+      "address": {
+        "line1": "61 Pecan Mill Drive",
+        "city": "Austin",
+        "region": "TX",
+        "postalCode": "78704",
+        "country": "US"
+      },
+      "phone": "(512) 555-0130",
+      "website": "hollowbrookpeds.net",
+      "email": "frontdesk@hollowbrookpeds.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-pediatric-practice-desk",
+    "tables": [
+      {
+        "token": "visit",
+        "name": "Visits",
+        "labelSingular": "Visit",
+        "labelPlural": "Visits",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "visit_name",
+        "describes": "Every well-child check, sick visit and shot appointment, with screenings done and what is still owed.",
+        "subject": "thing",
+        "independentOf": {
+          "child": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Visit note",
+            "values": {
+              "status": "Scheduled",
+              "visit_name": "New visit"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the child is roomed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Growth taken: weight, length or height, head size under 2"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shots due today pulled from the child's record"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Screening forms for this age handed to the parent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "In the room"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Concerns from the parent, in their words."
+                    }
+                  ]
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Development and behaviour reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shots given, lot numbers written, info sheets handed over"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before they leave"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Next well visit booked"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "School, camp or sports forms signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Visit date is booked ahead; Completed on is stamped when the provider closes the visit.",
+        "fields": [
+          {
+            "key": "visit_name",
+            "label": "Visit",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Confirmed",
+              "Checked in",
+              "Completed",
+              "No-show",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Confirmed": "blue",
+              "Checked in": "teal",
+              "Completed": "green",
+              "No-show": "red",
+              "Cancelled": "pink"
+            },
+            "required": true,
+            "default": "Scheduled",
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Confirmed": "todo",
+              "Checked in": "in_progress",
+              "Completed": "done",
+              "No-show": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "child",
+            "label": "Child",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "child",
+            "relationMax": 1
+          },
+          {
+            "key": "visit_type",
+            "label": "Visit type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Well-child check",
+              "Sick visit",
+              "Vaccine only",
+              "Sports physical",
+              "ADHD follow-up",
+              "Newborn weight check"
+            ],
+            "choiceColors": {
+              "Well-child check": "green",
+              "Sick visit": "red",
+              "Vaccine only": "blue",
+              "Sports physical": "teal",
+              "ADHD follow-up": "violet",
+              "Newborn weight check": "pink"
+            }
+          },
+          {
+            "key": "provider",
+            "label": "Provider",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "visit_on",
+            "label": "Visit date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "completed_on",
+            "label": "Completed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "screenings",
+            "label": "Screenings done",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Development (ASQ)",
+              "Autism (M-CHAT)",
+              "Depression (PHQ-A)",
+              "Vision",
+              "Hearing",
+              "Lead",
+              "Hemoglobin"
+            ],
+            "choiceColors": {
+              "Development (ASQ)": "blue",
+              "Autism (M-CHAT)": "violet",
+              "Depression (PHQ-A)": "amber",
+              "Vision": "teal",
+              "Hearing": "green",
+              "Lead": "red",
+              "Hemoglobin": "pink"
+            }
+          },
+          {
+            "key": "shots",
+            "label": "Shots given",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 8
+              }
+            ]
+          },
+          {
+            "key": "allowed",
+            "label": "Allowed amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "copay",
+            "label": "Family paid (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "ins_paid",
+            "label": "Plan paid (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "balance",
+            "label": "Balance due (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Completed\", {Allowed amount (USD)} - {Family paid (USD)} - {Plan paid (USD)}, \"\")"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Front desk owner",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "in_btn",
+            "label": "Check in",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_checkin"
+            }
+          },
+          {
+            "key": "done_btn",
+            "label": "Mark completed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_done"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "visit_take"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "vi-1",
+            "values": {
+              "visit_name": "2-month well visit, first vaccine series",
+              "status": "Completed",
+              "child": "ch-1",
+              "visit_type": "Well-child check",
+              "provider": "tm-1",
+              "visit_on": "@today-12d",
+              "completed_on": "@today-12d",
+              "screenings": [
+                "Development (ASQ)"
+              ],
+              "shots": 4,
+              "allowed": 228,
+              "copay": 0,
+              "ins_paid": 228
+            }
+          },
+          {
+            "key": "vi-2",
+            "values": {
+              "visit_name": "Ear pain and fever, two days",
+              "status": "Completed",
+              "child": "ch-2",
+              "visit_type": "Sick visit",
+              "provider": "tm-2",
+              "visit_on": "@today-9d",
+              "completed_on": "@today-9d",
+              "shots": 0,
+              "allowed": 118,
+              "copay": 25,
+              "ins_paid": 93
+            }
+          },
+          {
+            "key": "vi-3",
+            "values": {
+              "visit_name": "18-month well visit",
+              "status": "Completed",
+              "child": "ch-3",
+              "visit_type": "Well-child check",
+              "provider": "tm-1",
+              "visit_on": "@today-7d",
+              "completed_on": "@today-7d",
+              "screenings": [
+                "Development (ASQ)",
+                "Autism (M-CHAT)"
+              ],
+              "shots": 2,
+              "allowed": 196,
+              "copay": 0,
+              "ins_paid": 150
+            }
+          },
+          {
+            "key": "vi-4",
+            "values": {
+              "visit_name": "Fall sports physical, soccer",
+              "status": "Completed",
+              "child": "ch-4",
+              "visit_type": "Sports physical",
+              "provider": "tm-3",
+              "visit_on": "@today-6d",
+              "completed_on": "@today-6d",
+              "screenings": [
+                "Vision"
+              ],
+              "shots": 0,
+              "allowed": 85,
+              "copay": 85,
+              "ins_paid": 0
+            }
+          },
+          {
+            "key": "vi-5",
+            "values": {
+              "visit_name": "12-year well visit, Tdap and HPV",
+              "status": "Completed",
+              "child": "ch-5",
+              "visit_type": "Well-child check",
+              "provider": "tm-2",
+              "visit_on": "@today-5d",
+              "completed_on": "@today-5d",
+              "screenings": [
+                "Depression (PHQ-A)",
+                "Vision",
+                "Hearing"
+              ],
+              "shots": 3,
+              "allowed": 214,
+              "copay": 0,
+              "ins_paid": 214
+            }
+          },
+          {
+            "key": "vi-6",
+            "values": {
+              "visit_name": "ADHD medication check",
+              "status": "Completed",
+              "child": "ch-6",
+              "visit_type": "ADHD follow-up",
+              "provider": "tm-1",
+              "visit_on": "@today-2d",
+              "completed_on": "@today-2d",
+              "shots": 0,
+              "allowed": 132,
+              "copay": 30,
+              "ins_paid": 0
+            }
+          },
+          {
+            "key": "vi-7",
+            "values": {
+              "visit_name": "Flu shot, catch-up dose",
+              "status": "No-show",
+              "child": "ch-7",
+              "visit_type": "Vaccine only",
+              "provider": "tm-3",
+              "visit_on": "@today-3d",
+              "shots": 0
+            }
+          },
+          {
+            "key": "vi-8",
+            "values": {
+              "visit_name": "4-year well visit, kindergarten forms",
+              "status": "Confirmed",
+              "child": "ch-8",
+              "visit_type": "Well-child check",
+              "provider": "tm-1",
+              "visit_on": "@today",
+              "screenings": [
+                "Vision",
+                "Hearing"
+              ],
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "vi-9",
+            "values": {
+              "visit_name": "Newborn weight check, day 5",
+              "status": "Checked in",
+              "child": "ch-9",
+              "visit_type": "Newborn weight check",
+              "provider": "tm-2",
+              "visit_on": "@today",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "vi-10",
+            "values": {
+              "visit_name": "Cough three weeks, recheck",
+              "status": "Scheduled",
+              "child": "ch-2",
+              "visit_type": "Sick visit",
+              "provider": "tm-2",
+              "visit_on": "@today-1d"
+            }
+          },
+          {
+            "key": "vi-11",
+            "values": {
+              "visit_name": "9-month well visit",
+              "status": "Scheduled",
+              "child": "ch-10",
+              "visit_type": "Well-child check",
+              "provider": "tm-1",
+              "visit_on": "@today+2d",
+              "screenings": [
+                "Development (ASQ)"
+              ]
+            }
+          },
+          {
+            "key": "vi-12",
+            "values": {
+              "visit_name": "MMR and varicella catch-up",
+              "status": "Scheduled",
+              "child": "ch-7",
+              "visit_type": "Vaccine only",
+              "provider": "tm-3",
+              "visit_on": "@today+4d",
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "vi-13",
+            "values": {
+              "visit_name": "16-year well visit, MenACWY booster",
+              "status": "Confirmed",
+              "child": "ch-11",
+              "visit_type": "Well-child check",
+              "provider": "tm-2",
+              "visit_on": "@today+6d"
+            }
+          },
+          {
+            "key": "vi-14",
+            "values": {
+              "visit_name": "Rash recheck, moved to telehealth",
+              "status": "Cancelled",
+              "child": "ch-6",
+              "visit_type": "Sick visit",
+              "provider": "tm-1",
+              "visit_on": "@today-4d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "child",
+        "name": "Children",
+        "labelSingular": "Child",
+        "labelPlural": "Children",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "child_name",
+        "describes": "Every child in the practice with guardian, coverage, next well visit and how many shots are still due.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New child",
+            "values": {
+              "chart_status": "New to practice",
+              "child_name": "New child"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the first visit"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shot record from the last practice or the state registry"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Guardian and who else may bring the child, in writing"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Coverage checked, including state program eligibility"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Alerts"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Allergies, birth history, anything the nurse must see first."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "child_name",
+            "label": "Child",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true,
+            "description": "First name and last initial only."
+          },
+          {
+            "key": "chart_status",
+            "label": "Chart status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Up to date",
+              "Well visit due",
+              "Vaccines behind",
+              "New to practice",
+              "Transferred out"
+            ],
+            "choiceColors": {
+              "Up to date": "green",
+              "Well visit due": "amber",
+              "Vaccines behind": "red",
+              "New to practice": "blue",
+              "Transferred out": "gray"
+            }
+          },
+          {
+            "key": "age_band",
+            "label": "Age band",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Newborn",
+              "2 to 6 months",
+              "9 to 18 months",
+              "2 to 5 years",
+              "6 to 10 years",
+              "11 to 17 years",
+              "18 to 21 years"
+            ],
+            "choiceColors": {
+              "Newborn": "pink",
+              "2 to 6 months": "violet",
+              "9 to 18 months": "blue",
+              "2 to 5 years": "teal",
+              "6 to 10 years": "green",
+              "11 to 17 years": "amber",
+              "18 to 21 years": "slate"
+            }
+          },
+          {
+            "key": "guardian",
+            "label": "Parent or guardian",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "guardian_phone",
+            "label": "Guardian phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan",
+            "label": "Coverage",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Medicaid or CHIP",
+              "Commercial plan",
+              "Self-pay"
+            ],
+            "choiceColors": {
+              "Medicaid or CHIP": "teal",
+              "Commercial plan": "blue",
+              "Self-pay": "orange"
+            }
+          },
+          {
+            "key": "next_well",
+            "label": "Next well visit due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "allergies",
+            "label": "Allergies and alerts",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "forms",
+            "label": "School or camp forms pending",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "visits_done",
+            "label": "Visits completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "visits",
+            "pick": "visit_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "visits_next",
+            "label": "Visits booked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "visits",
+            "pick": "visit_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Scheduled",
+                "Confirmed"
+              ]
+            }
+          },
+          {
+            "key": "doses_given",
+            "label": "Doses given",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "doses",
+            "pick": "dose_name",
+            "agg": "count",
+            "filter": {
+              "status": "Given"
+            }
+          },
+          {
+            "key": "doses_due",
+            "label": "Doses due or overdue",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "doses",
+            "pick": "dose_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Due",
+                "Overdue",
+                "Scheduled"
+              ]
+            }
+          },
+          {
+            "key": "owed",
+            "label": "Balance due (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "visits",
+            "pick": "balance",
+            "agg": "sum",
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "book_btn",
+            "label": "Book a visit",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "visit",
+              "template": "Visit note",
+              "prefill": {
+                "child": "@row"
+              }
+            }
+          },
+          {
+            "key": "dose_btn",
+            "label": "Add a dose due",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "dose",
+              "template": "Dose record",
+              "prefill": {
+                "child": "@row"
+              }
+            }
+          },
+          {
+            "key": "call_btn",
+            "label": "Call guardian",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{guardian_phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ch-1",
+            "values": {
+              "child_name": "Ezra P.",
+              "chart_status": "Up to date",
+              "age_band": "2 to 6 months",
+              "guardian": "Danielle Pruett",
+              "guardian_phone": "(512) 555-0110",
+              "plan": "Commercial plan",
+              "next_well": "@today+7w"
+            }
+          },
+          {
+            "key": "ch-2",
+            "values": {
+              "child_name": "Sofia R.",
+              "chart_status": "Up to date",
+              "age_band": "2 to 5 years",
+              "guardian": "Marco Rinaldi",
+              "guardian_phone": "(512) 555-0111",
+              "plan": "Commercial plan",
+              "next_well": "@today+5m",
+              "allergies": "Amoxicillin (hives)."
+            }
+          },
+          {
+            "key": "ch-3",
+            "values": {
+              "child_name": "Kaiden M.",
+              "chart_status": "Vaccines behind",
+              "age_band": "9 to 18 months",
+              "guardian": "Tasha Monroe",
+              "guardian_phone": "(512) 555-0112",
+              "plan": "Medicaid or CHIP",
+              "next_well": "@today+5m"
+            }
+          },
+          {
+            "key": "ch-4",
+            "values": {
+              "child_name": "Lucia F.",
+              "chart_status": "Up to date",
+              "age_band": "11 to 17 years",
+              "guardian": "Benedikt Fischer",
+              "guardian_phone": "(512) 555-0113",
+              "plan": "Self-pay",
+              "next_well": "@today+11m",
+              "forms": true
+            }
+          },
+          {
+            "key": "ch-5",
+            "values": {
+              "child_name": "Owen T.",
+              "chart_status": "Up to date",
+              "age_band": "11 to 17 years",
+              "guardian": "Keiko Takahashi",
+              "guardian_phone": "(512) 555-0114",
+              "plan": "Commercial plan",
+              "next_well": "@today+12m"
+            }
+          },
+          {
+            "key": "ch-6",
+            "values": {
+              "child_name": "Jalen W.",
+              "chart_status": "Well visit due",
+              "age_band": "6 to 10 years",
+              "guardian": "Andre Whitfield",
+              "guardian_phone": "(512) 555-0115",
+              "plan": "Commercial plan",
+              "next_well": "@today-10d"
+            }
+          },
+          {
+            "key": "ch-7",
+            "values": {
+              "child_name": "Amira H.",
+              "chart_status": "Vaccines behind",
+              "age_band": "2 to 5 years",
+              "guardian": "Leila Haddad",
+              "guardian_phone": "(512) 555-0116",
+              "plan": "Medicaid or CHIP",
+              "next_well": "@today+2m",
+              "allergies": "Egg allergy, mild; flu shot given in office with observation."
+            }
+          },
+          {
+            "key": "ch-8",
+            "values": {
+              "child_name": "Noah B.",
+              "chart_status": "Well visit due",
+              "age_band": "2 to 5 years",
+              "guardian": "Corinne Baptiste",
+              "guardian_phone": "(512) 555-0117",
+              "plan": "Medicaid or CHIP",
+              "next_well": "@today",
+              "forms": true
+            }
+          },
+          {
+            "key": "ch-9",
+            "values": {
+              "child_name": "Baby girl V.",
+              "chart_status": "New to practice",
+              "age_band": "Newborn",
+              "guardian": "Rosa Villanueva",
+              "guardian_phone": "(512) 555-0118",
+              "plan": "Medicaid or CHIP",
+              "next_well": "@today+3w"
+            }
+          },
+          {
+            "key": "ch-10",
+            "values": {
+              "child_name": "Theo K.",
+              "chart_status": "Well visit due",
+              "age_band": "9 to 18 months",
+              "guardian": "Ingrid Kowalski",
+              "guardian_phone": "(512) 555-0119",
+              "plan": "Commercial plan",
+              "next_well": "@today+2d"
+            }
+          },
+          {
+            "key": "ch-11",
+            "values": {
+              "child_name": "Maya S.",
+              "chart_status": "Up to date",
+              "age_band": "11 to 17 years",
+              "guardian": "Priya Subramanian",
+              "guardian_phone": "(512) 555-0120",
+              "plan": "Commercial plan",
+              "next_well": "@today+6d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "dose",
+        "name": "Immunizations",
+        "labelSingular": "Dose",
+        "labelPlural": "Doses",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "dose_name",
+        "describes": "Each vaccine dose a child is due, has been given, or is waiting on, with lot and registry reporting.",
+        "subject": "thing",
+        "independentOf": {
+          "child": "Either record can be created or change status before the other.",
+          "lot": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Given"
+            ],
+            "filled": [
+              "given_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Dose record",
+            "values": {
+              "status": "Due",
+              "dose_name": "New dose"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Giving the dose"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Right child, right vaccine, right dose number checked by two people"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Info sheet handed to the parent"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lot number and site written down"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reported to the state registry the same day"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Due by comes from the schedule; Given on is stamped on the day the shot is given, early or late.",
+        "fields": [
+          {
+            "key": "dose_name",
+            "label": "Dose",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Due",
+              "Overdue",
+              "Scheduled",
+              "Deferred",
+              "Given",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Due": "slate",
+              "Overdue": "red",
+              "Scheduled": "blue",
+              "Deferred": "amber",
+              "Given": "green",
+              "Declined": "pink"
+            },
+            "required": true,
+            "default": "Due",
+            "statusGroups": {
+              "Due": "todo",
+              "Overdue": "todo",
+              "Scheduled": "in_progress",
+              "Deferred": "in_progress",
+              "Given": "done",
+              "Declined": "done"
+            }
+          },
+          {
+            "key": "child",
+            "label": "Child",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "child",
+            "relationMax": 1
+          },
+          {
+            "key": "vaccine",
+            "label": "Vaccine",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "DTaP",
+              "IPV (polio)",
+              "MMR",
+              "Varicella",
+              "Hepatitis B",
+              "Hepatitis A",
+              "PCV",
+              "Hib",
+              "Rotavirus",
+              "Tdap",
+              "HPV",
+              "MenACWY",
+              "Influenza"
+            ],
+            "choiceColors": {
+              "DTaP": "blue",
+              "IPV (polio)": "teal",
+              "MMR": "red",
+              "Varicella": "orange",
+              "Hepatitis B": "violet",
+              "Hepatitis A": "pink",
+              "PCV": "amber",
+              "Hib": "slate",
+              "Rotavirus": "green",
+              "Tdap": "brown",
+              "HPV": "purple",
+              "MenACWY": "yellow",
+              "Influenza": "gray"
+            }
+          },
+          {
+            "key": "dose_no",
+            "label": "Dose number",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 6
+              }
+            ]
+          },
+          {
+            "key": "lot",
+            "label": "Lot used",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "lot",
+            "relationMax": 1
+          },
+          {
+            "key": "due_on",
+            "label": "Due by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "given_on",
+            "label": "Given on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "vis_given",
+            "label": "Info sheet given",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "registry",
+            "label": "Reported to state registry",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owner",
+            "label": "Nurse following up",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "given_btn",
+            "label": "Mark given",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "dose_given"
+            }
+          },
+          {
+            "key": "dose_take",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "dose_take_it"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "do-1",
+            "values": {
+              "dose_name": "DTaP dose 1",
+              "status": "Given",
+              "child": "ch-1",
+              "vaccine": "DTaP",
+              "dose_no": 1,
+              "lot": "lt-1",
+              "due_on": "@today-12d",
+              "given_on": "@today-12d",
+              "vis_given": true,
+              "registry": true
+            }
+          },
+          {
+            "key": "do-2",
+            "values": {
+              "dose_name": "Rotavirus dose 1",
+              "status": "Given",
+              "child": "ch-1",
+              "vaccine": "Rotavirus",
+              "dose_no": 1,
+              "lot": "lt-2",
+              "due_on": "@today-12d",
+              "given_on": "@today-12d",
+              "vis_given": true,
+              "registry": true
+            }
+          },
+          {
+            "key": "do-3",
+            "values": {
+              "dose_name": "Hepatitis A dose 2",
+              "status": "Given",
+              "child": "ch-3",
+              "vaccine": "Hepatitis A",
+              "dose_no": 2,
+              "lot": "lt-3",
+              "due_on": "@today-7d",
+              "given_on": "@today-7d",
+              "vis_given": true,
+              "registry": true
+            }
+          },
+          {
+            "key": "do-4",
+            "values": {
+              "dose_name": "Tdap adolescent dose",
+              "status": "Given",
+              "child": "ch-5",
+              "vaccine": "Tdap",
+              "dose_no": 1,
+              "lot": "lt-4",
+              "due_on": "@today-5d",
+              "given_on": "@today-5d",
+              "vis_given": true,
+              "registry": false
+            }
+          },
+          {
+            "key": "do-5",
+            "values": {
+              "dose_name": "HPV dose 1",
+              "status": "Given",
+              "child": "ch-5",
+              "vaccine": "HPV",
+              "dose_no": 1,
+              "lot": "lt-5",
+              "due_on": "@today-5d",
+              "given_on": "@today-5d",
+              "vis_given": true,
+              "registry": false
+            }
+          },
+          {
+            "key": "do-6",
+            "values": {
+              "dose_name": "DTaP dose 4",
+              "status": "Overdue",
+              "child": "ch-3",
+              "vaccine": "DTaP",
+              "dose_no": 4,
+              "due_on": "@today-20d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "do-7",
+            "values": {
+              "dose_name": "MMR dose 1 catch-up",
+              "status": "Scheduled",
+              "child": "ch-7",
+              "vaccine": "MMR",
+              "dose_no": 1,
+              "due_on": "@today+4d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "do-8",
+            "values": {
+              "dose_name": "Varicella dose 1 catch-up",
+              "status": "Scheduled",
+              "child": "ch-7",
+              "vaccine": "Varicella",
+              "dose_no": 1,
+              "due_on": "@today+4d"
+            }
+          },
+          {
+            "key": "do-9",
+            "values": {
+              "dose_name": "Influenza, this season",
+              "status": "Overdue",
+              "child": "ch-7",
+              "vaccine": "Influenza",
+              "dose_no": 1,
+              "due_on": "@today-3d",
+              "owner": "@installer"
+            }
+          },
+          {
+            "key": "do-10",
+            "values": {
+              "dose_name": "DTaP dose 5, before kindergarten",
+              "status": "Due",
+              "child": "ch-8",
+              "vaccine": "DTaP",
+              "dose_no": 5,
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "do-11",
+            "values": {
+              "dose_name": "IPV dose 4, before kindergarten",
+              "status": "Due",
+              "child": "ch-8",
+              "vaccine": "IPV (polio)",
+              "dose_no": 4,
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "do-12",
+            "values": {
+              "dose_name": "Hepatitis B dose 3",
+              "status": "Due",
+              "child": "ch-10",
+              "vaccine": "Hepatitis B",
+              "dose_no": 3,
+              "due_on": "@today+2d"
+            }
+          },
+          {
+            "key": "do-13",
+            "values": {
+              "dose_name": "MenACWY booster",
+              "status": "Due",
+              "child": "ch-11",
+              "vaccine": "MenACWY",
+              "dose_no": 2,
+              "due_on": "@today+6d"
+            }
+          },
+          {
+            "key": "do-14",
+            "values": {
+              "dose_name": "Influenza, family asked to wait",
+              "status": "Deferred",
+              "child": "ch-2",
+              "vaccine": "Influenza",
+              "dose_no": 1,
+              "due_on": "@today+3w"
+            }
+          }
+        ]
+      },
+      {
+        "token": "lot",
+        "name": "Vaccine stock",
+        "labelSingular": "Vaccine lot",
+        "labelPlural": "Vaccine lots",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "package",
+        "titleField": "lot_name",
+        "describes": "Every vaccine lot in the fridge and freezer, state-supplied or private, with expiry and par level.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New lot",
+            "values": {
+              "status": "In date",
+              "lot_name": "New lot"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Receiving"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Cold chain checked on arrival; temperature logger read"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "State-supplied and private stock shelved apart and labelled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Lot number and expiry entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "lot_name",
+            "label": "Vaccine lot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "In date",
+              "Low",
+              "Expires within 60 days",
+              "Expired, return"
+            ],
+            "choiceColors": {
+              "In date": "green",
+              "Low": "amber",
+              "Expires within 60 days": "orange",
+              "Expired, return": "red"
+            },
+            "required": true,
+            "default": "In date",
+            "statusGroups": {
+              "In date": "done",
+              "Low": "in_progress",
+              "Expires within 60 days": "in_progress",
+              "Expired, return": "todo"
+            }
+          },
+          {
+            "key": "vaccine",
+            "label": "Vaccine",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "DTaP",
+              "IPV (polio)",
+              "MMR",
+              "Varicella",
+              "Hepatitis B",
+              "Hepatitis A",
+              "PCV",
+              "Hib",
+              "Rotavirus",
+              "Tdap",
+              "HPV",
+              "MenACWY",
+              "Influenza"
+            ],
+            "choiceColors": {
+              "DTaP": "blue",
+              "IPV (polio)": "teal",
+              "MMR": "red",
+              "Varicella": "orange",
+              "Hepatitis B": "violet",
+              "Hepatitis A": "pink",
+              "PCV": "amber",
+              "Hib": "slate",
+              "Rotavirus": "green",
+              "Tdap": "brown",
+              "HPV": "purple",
+              "MenACWY": "yellow",
+              "Influenza": "gray"
+            }
+          },
+          {
+            "key": "stock_type",
+            "label": "Stock",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "State-supplied (VFC)",
+              "Private stock"
+            ],
+            "choiceColors": {
+              "State-supplied (VFC)": "teal",
+              "Private stock": "blue"
+            },
+            "description": "State-supplied doses go only to eligible children and are counted separately."
+          },
+          {
+            "key": "lot_no",
+            "label": "Lot number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "on_hand",
+            "label": "Doses on hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "par",
+            "label": "Par level",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "cost",
+            "label": "Cost per dose (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400
+              }
+            ]
+          },
+          {
+            "key": "value",
+            "label": "Stock value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Doses on hand} * {Cost per dose (USD)}, 2)"
+          },
+          {
+            "key": "order_flag",
+            "label": "Order check",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Doses on hand} <= {Par level}, \"Order\", \"OK\")"
+          },
+          {
+            "key": "given_from",
+            "label": "Doses given from lot",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "doses_from_lot",
+            "pick": "dose_name",
+            "agg": "count",
+            "filter": {
+              "status": "Given"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "lt-1",
+            "values": {
+              "lot_name": "DTaP, private",
+              "status": "In date",
+              "vaccine": "DTaP",
+              "stock_type": "Private stock",
+              "lot_no": "DT4471A",
+              "expires_on": "@today+9m",
+              "on_hand": 28,
+              "par": 10,
+              "cost": 31.5
+            }
+          },
+          {
+            "key": "lt-2",
+            "values": {
+              "lot_name": "Rotavirus, private",
+              "status": "Low",
+              "vaccine": "Rotavirus",
+              "stock_type": "Private stock",
+              "lot_no": "RV2093C",
+              "expires_on": "@today+7m",
+              "on_hand": 6,
+              "par": 8,
+              "cost": 96.4
+            }
+          },
+          {
+            "key": "lt-3",
+            "values": {
+              "lot_name": "Hepatitis A, VFC",
+              "status": "In date",
+              "vaccine": "Hepatitis A",
+              "stock_type": "State-supplied (VFC)",
+              "lot_no": "HA7710B",
+              "expires_on": "@today+11m",
+              "on_hand": 22,
+              "par": 10,
+              "cost": 0
+            }
+          },
+          {
+            "key": "lt-4",
+            "values": {
+              "lot_name": "Tdap, private",
+              "status": "In date",
+              "vaccine": "Tdap",
+              "stock_type": "Private stock",
+              "lot_no": "TD5532K",
+              "expires_on": "@today+14m",
+              "on_hand": 18,
+              "par": 8,
+              "cost": 41.2
+            }
+          },
+          {
+            "key": "lt-5",
+            "values": {
+              "lot_name": "HPV, private",
+              "status": "In date",
+              "vaccine": "HPV",
+              "stock_type": "Private stock",
+              "lot_no": "HP0918M",
+              "expires_on": "@today+10m",
+              "on_hand": 15,
+              "par": 6,
+              "cost": 268.75
+            }
+          },
+          {
+            "key": "lt-6",
+            "values": {
+              "lot_name": "MMR, VFC",
+              "status": "Expires within 60 days",
+              "vaccine": "MMR",
+              "stock_type": "State-supplied (VFC)",
+              "lot_no": "MM3381D",
+              "expires_on": "@today+45d",
+              "on_hand": 9,
+              "par": 6,
+              "cost": 0
+            }
+          },
+          {
+            "key": "lt-7",
+            "values": {
+              "lot_name": "Influenza, private",
+              "status": "In date",
+              "vaccine": "Influenza",
+              "stock_type": "Private stock",
+              "lot_no": "FL2526Q",
+              "expires_on": "@today+6m",
+              "on_hand": 64,
+              "par": 25,
+              "cost": 19.6
+            }
+          },
+          {
+            "key": "lt-8",
+            "values": {
+              "lot_name": "Varicella, VFC (returned)",
+              "status": "Expired, return",
+              "vaccine": "Varicella",
+              "stock_type": "State-supplied (VFC)",
+              "lot_no": "VA1147R",
+              "expires_on": "@today-6d",
+              "on_hand": 3,
+              "par": 0,
+              "cost": 0
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each visit is for one child.",
+        "fromTable": "visit",
+        "fromField": "child",
+        "toTable": "child",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "visits"
+      },
+      {
+        "describes": "Each visit is seen by one provider.",
+        "fromTable": "visit",
+        "fromField": "provider",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "visits_seen"
+      },
+      {
+        "describes": "Each dose is for one child.",
+        "fromTable": "dose",
+        "fromField": "child",
+        "toTable": "child",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "doses"
+      },
+      {
+        "describes": "Each dose given comes from one lot.",
+        "fromTable": "dose",
+        "fromField": "lot",
+        "toTable": "lot",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "doses_from_lot"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Dr. Adaeze Morrow",
+              "role": "Pediatrician",
+              "work_email": "dr.@hollowbrookpeds.net",
+              "mobile": "(512) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Dr. Felix Lindgren",
+              "role": "Pediatrician",
+              "work_email": "dr.@hollowbrookpeds.net",
+              "mobile": "(512) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Carmen Ibarra",
+              "role": "Pediatric nurse practitioner",
+              "work_email": "carmen@hollowbrookpeds.net",
+              "mobile": "(512) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Whitney Galloway",
+              "role": "Lead nurse",
+              "work_email": "whitney@hollowbrookpeds.net",
+              "mobile": "(512) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Dominic Reyes",
+              "role": "Front desk",
+              "work_email": "dominic@hollowbrookpeds.net",
+              "mobile": "(512) 555-0144",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Harriet Osei",
+              "role": "Practice manager",
+              "work_email": "harriet@hollowbrookpeds.net",
+              "mobile": "(512) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "appointment_request",
+        "name": "Appointment request",
+        "describes": "How a parent asks for a visit.",
+        "audience": "staff",
+        "table": "visit",
+        "fields": [
+          {
+            "fieldKey": "visit_name",
+            "ask": "What is the visit for?",
+            "required": true
+          },
+          {
+            "fieldKey": "child",
+            "ask": "Which child?",
+            "required": true
+          },
+          {
+            "fieldKey": "visit_type",
+            "ask": "Is it a check-up, a sick visit or shots only?"
+          },
+          {
+            "fieldKey": "visit_on",
+            "ask": "What day works best?"
+          }
+        ],
+        "submitLabel": "Ask for the visit",
+        "confirmation": "Thanks. The front desk will call to confirm a time."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "visit_checkin",
+        "table": "visit",
+        "name": "Check in",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Checked in"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "visit_done",
+        "table": "visit",
+        "name": "Mark completed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Completed"
+          },
+          {
+            "field": "completed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "visit_take",
+        "table": "visit",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "dose_given",
+        "table": "dose",
+        "name": "Mark given",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Given"
+          },
+          {
+            "field": "given_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "dose_take_it",
+        "table": "dose",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_visit",
+        "name": "All visits",
+        "table": "visit",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "visit_board",
+        "name": "Visits board",
+        "table": "visit",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "visit_cal",
+        "name": "Visits calendar",
+        "table": "visit",
+        "kind": "calendar",
+        "dateField": "visit_on",
+        "allDay": true
+      },
+      {
+        "token": "visit_over",
+        "name": "Overdue",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "visit_week",
+        "name": "Due this week",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "visit_next7",
+        "name": "Next 7 days",
+        "table": "visit",
+        "kind": "grid",
+        "within": {
+          "visit_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Scheduled",
+            "Confirmed",
+            "Checked in"
+          ]
+        }
+      },
+      {
+        "token": "visit_mine",
+        "name": "My visits",
+        "table": "visit",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_child",
+        "name": "All children",
+        "table": "child",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "child_board",
+        "name": "Children board",
+        "table": "child",
+        "kind": "kanban",
+        "groupBy": "chart_status"
+      },
+      {
+        "token": "all_dose",
+        "name": "All doses",
+        "table": "dose",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "dose_board",
+        "name": "Doses board",
+        "table": "dose",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "dose_cal",
+        "name": "Doses calendar",
+        "table": "dose",
+        "kind": "calendar",
+        "dateField": "due_on",
+        "allDay": true
+      },
+      {
+        "token": "dose_over",
+        "name": "Overdue",
+        "table": "dose",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due",
+            "Overdue",
+            "Scheduled",
+            "Deferred"
+          ]
+        }
+      },
+      {
+        "token": "dose_week",
+        "name": "Due this week",
+        "table": "dose",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due",
+            "Overdue",
+            "Scheduled",
+            "Deferred"
+          ]
+        }
+      },
+      {
+        "token": "dose_next7",
+        "name": "Next 7 days",
+        "table": "dose",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Due",
+            "Overdue",
+            "Scheduled",
+            "Deferred"
+          ]
+        }
+      },
+      {
+        "token": "dose_mine",
+        "name": "My doses",
+        "table": "dose",
+        "kind": "grid",
+        "me": [
+          "owner"
+        ]
+      },
+      {
+        "token": "all_lot",
+        "name": "All vaccine lots",
+        "table": "lot",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "lot_board",
+        "name": "Vaccine lots board",
+        "table": "lot",
+        "kind": "kanban",
+        "groupBy": "status"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Pediatric Practice Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "visit",
+          "describes": "Every well-child check, sick visit and shot appointment, with screenings done and what is still owed."
+        },
+        {
+          "name": "related_tables",
+          "table": "child",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many vaccine doses are overdue right now?",
+        "whyItMatters": "Overdue doses are called first every morning.",
+        "expect": {
+          "table": "dose",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Overdue"
+          },
+          "answer": 2,
+          "unit": "doses"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open visits.",
+        "action": {
+          "kind": "open",
+          "surface": "visit_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "visit_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open children.",
+        "action": {
+          "kind": "open",
+          "surface": "child_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "child_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open doses.",
+        "action": {
+          "kind": "open",
+          "surface": "dose_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "dose_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "hollowbrookpeds.net",
+        "inbox-mail.net"
+      ],
+      "fictionalStreets": [
+        "Pecan Mill Drive"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "pediatric-practice-desk",
+      "parent": null,
+      "title": "Pediatric Practice Desk",
+      "icon": {
+        "emoji": "🧸"
+      },
+      "cover": {
+        "url": "gallery:healthcare-stethoscope-desk",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start the day on the Dashboard: who is coming in, which shots are overdue, and what in the fridge is low or expiring. Every visit moves Scheduled to Completed on the Visits board; Mark completed stamps the day. Each dose lives in Immunizations until it is Given, with lot and registry boxes."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:well-child-visit-flow"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:vaccine-fridge-and-catch-up"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every well-child check, sick visit and shot appointment, with screenings done and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit",
+              "view": "visit_board"
+            },
+            "inline": true,
+            "title": "Visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "visi-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "visit_on",
+                  "completed_on",
+                  "screenings",
+                  "shots",
+                  "allowed",
+                  "copay",
+                  "ins_paid",
+                  "balance",
+                  "assigned_to",
+                  "in_btn",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "visi-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "visit_on",
+                "hiddenFields": [
+                  "status",
+                  "visit_on",
+                  "completed_on",
+                  "screenings",
+                  "shots",
+                  "allowed",
+                  "copay",
+                  "ins_paid",
+                  "balance",
+                  "assigned_to",
+                  "in_btn",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "visi-t",
+                "name": "All visits",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "visi-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "visit_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "visi-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "visit_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "visi-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "visit_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Scheduled",
+                    "Confirmed",
+                    "Checked in"
+                  ]
+                }
+              },
+              {
+                "id": "visi-m",
+                "name": "My visits",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "visi-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Children"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every child in the practice with guardian, coverage, next well visit and how many shots are still due."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "child",
+              "view": "child_board"
+            },
+            "inline": true,
+            "title": "Children",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "chil-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "chart_status",
+                "hiddenFields": [
+                  "guardian",
+                  "guardian_phone",
+                  "allergies",
+                  "forms",
+                  "visits_done",
+                  "visits_next",
+                  "doses_given",
+                  "doses_due",
+                  "owed",
+                  "book_btn",
+                  "dose_btn",
+                  "call_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "chil-t",
+                "name": "All children",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "chil-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Immunizations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each vaccine dose a child is due, has been given, or is waiting on, with lot and registry reporting."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dose",
+              "view": "dose_board"
+            },
+            "inline": true,
+            "title": "Immunizations",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dose-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "dose_no",
+                  "due_on",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "dose-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "status",
+                  "dose_no",
+                  "due_on",
+                  "given_on",
+                  "vis_given",
+                  "registry",
+                  "owner",
+                  "given_btn",
+                  "dose_take",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "dose-t",
+                "name": "All doses",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "dose-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Overdue",
+                    "Scheduled",
+                    "Deferred"
+                  ]
+                }
+              },
+              {
+                "id": "dose-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Overdue",
+                    "Scheduled",
+                    "Deferred"
+                  ]
+                }
+              },
+              {
+                "id": "dose-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Overdue",
+                    "Scheduled",
+                    "Deferred"
+                  ]
+                }
+              },
+              {
+                "id": "dose-m",
+                "name": "My doses",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner"
+                ]
+              }
+            ],
+            "activeViewId": "dose-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vaccine stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every vaccine lot in the fridge and freezer, state-supplied or private, with expiry and par level."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lot",
+              "view": "lot_board"
+            },
+            "inline": true,
+            "title": "Vaccine stock",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "lot-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "lot_no",
+                  "on_hand",
+                  "par",
+                  "cost",
+                  "value",
+                  "order_flag",
+                  "given_from",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "lot-t",
+                "name": "All vaccine lots",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "lot-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "pediatric-practice-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace keeps every child on the well-visit and vaccine schedule, and keeps the vaccine fridge honest. It is built around how a pediatric office actually works: visits, the child's chart, each dose, and each lot."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visits",
+              "bold": true
+            },
+            {
+              "text": ": well-child checks, sick visits, shot-only appointments and sports physicals. Status runs Scheduled, Confirmed, Checked in, Completed. Check in and Mark completed are buttons on each row; Mark completed stamps the day. Screenings done records which age-based screens were given."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Children",
+              "bold": true
+            },
+            {
+              "text": ": one row per child, first name and last initial only, with guardian, coverage and the next well visit due. Each child shows visits completed, visits booked, doses given and doses still due."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Immunizations",
+              "bold": true
+            },
+            {
+              "text": ": one row per dose. A dose is Due, Overdue, Scheduled, Deferred, Given or Declined. Mark given stamps the day; two boxes record the information sheet and the state registry report."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vaccine stock",
+              "bold": true
+            },
+            {
+              "text": ": every lot, state-supplied or private, with lot number, expiry, doses on hand and a par level."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "7:45: the lead nurse reads the fridge temperature and checks the Fridge check list on the Dashboard."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Front desk opens Visits, This week view, and confirms tomorrow's families by text."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before each well visit, the nurse opens the child and looks at Doses due or overdue. Every shot due is given today unless the parent declines; write the reason."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each dose, choose the lot used. The lot's Doses given count is your audit trail."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At close, the nurse works the Doses to chase list and books catch-up visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visit schedule and confirmations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Front desk"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Dose follow-up and registry"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Lead nurse"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vaccine ordering and returns"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Practice manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Screenings and forms"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Provider seeing the child"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two rules that keep you out of trouble"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "State-supplied doses go only to eligible children. Keep them on their own shelf and their own lot rows."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A declined dose is recorded, never deleted. The parent's reason and the date matter at the next visit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "pediatric-practice-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Visits by type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Visits by type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "visit_type",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Visits by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Visits by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "dose",
+                      "view": "all_dose"
+                    },
+                    "inline": true,
+                    "title": "Doses by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Doses by status",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "status",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "child",
+                      "view": "all_child"
+                    },
+                    "inline": true,
+                    "title": "Children by coverage",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Children by coverage",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "plan",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "lot",
+                      "view": "all_lot"
+                    },
+                    "inline": true,
+                    "title": "Stock value by vaccine",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Stock value by vaccine",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "vaccine",
+                          "op": "sum",
+                          "field": "value"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "visit",
+                      "view": "all_visit"
+                    },
+                    "inline": true,
+                    "title": "Plan paid by visit type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Plan paid by visit type",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "visit_type",
+                          "op": "sum",
+                          "field": "ins_paid"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Doses to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "dose",
+              "view": "all_dose"
+            },
+            "inline": true,
+            "title": "Doses to chase",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "Overdue or due",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Overdue",
+                    "Due"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Charts needing attention"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "child",
+              "view": "all_child"
+            },
+            "inline": true,
+            "title": "Charts needing attention",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Behind or due",
+                "layout": "list",
+                "anyOf": {
+                  "chart_status": [
+                    "Vaccines behind",
+                    "Well visit due"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fridge check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "lot",
+              "view": "all_lot"
+            },
+            "inline": true,
+            "title": "Fridge check",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Low or expiring",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Expires within 60 days",
+                    "Expired, return"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Doses due or overdue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Due, Overdue and Scheduled doses on the child"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Book them at the next visit of any kind"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Balance due (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Allowed amount less family and plan payments, completed visits only"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send the statement within a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Order check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Doses on hand against the par level"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order private stock; request state stock on the program's form"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Doses given from lot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Given doses linked to that lot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Must match the count when the lot runs out"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "well-child-visit-flow",
+      "parent": "pediatric-practice-desk",
+      "title": "Running a well-child visit",
+      "icon": {
+        "emoji": "🩺"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A well-child visit is a checklist that changes with age. This page is the order of work the team follows so nothing age-specific is missed and the family leaves with the next visit booked."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What each age needs (our house list)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Age"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Screens we do"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shots usually due"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2, 4, 6 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Development questions, growth"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "DTaP, IPV, Hib, PCV, rotavirus, hepatitis B"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "9 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Development screen (ASQ)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Catch-up only"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "12 to 18 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Autism screen at 18 months, lead and hemoglobin at 12"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "MMR, varicella, hepatitis A, boosters"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4 to 5 years"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vision, hearing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "DTaP and IPV before kindergarten"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "11 to 12 years"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Depression screen, vision"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tdap, HPV, MenACWY"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "16 years"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Depression screen"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "MenACWY booster"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check your state's and the national schedule each year; this table is a starting point."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order of work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Front desk confirms coverage and hands the age's screening form at check-in. Press Check in."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Nurse rooms the child, takes growth, and opens the child's row to see Doses due or overdue."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Provider reviews the screen, examines, and talks through shots with the parent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Nurse gives the doses, chooses the lot used on each, and ticks Info sheet given."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Provider presses Mark completed and ticks the Screenings done."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Front desk books the next well visit before the family leaves and sets Next well visit due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a parent hesitates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"These are the shots due at this age. Which questions can I answer for you?\""
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Listen first. Most hesitation is about one specific worry, such as fever afterwards or too many shots in one day, and it is answered better by the provider than by a handout. If they choose to wait, mark the dose Deferred with a date to revisit, or Declined with their reason. Never leave it blank."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Close-out checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every dose given today is reported to the state registry"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Forms for school or sports signed and scanned"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next visit booked or a reminder set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balance due checked against what the family paid at the desk"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "vaccine-fridge-and-catch-up",
+      "parent": "pediatric-practice-desk",
+      "title": "Vaccine stock and catch-up calls",
+      "icon": {
+        "emoji": "🧊"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Vaccines are the most expensive thing in the building and the easiest to waste. This page covers the fridge routine, the separate state-supplied stock, and the weekly calls that bring behind children back."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fridge routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Read and write the minimum and maximum temperature at open and close. Fridge 2 to 8 C, freezer minus 50 to minus 15 C."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Out of range: do not use the doses. Mark the lots, call the state program or the maker, and wait for an answer before using them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Oldest expiry at the front. Lots expiring within 60 days get that status so they are used first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two kinds of stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stock"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who gets it"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "State-supplied (VFC)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Children on Medicaid or CHIP, uninsured or under-insured"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Never borrowed for a privately insured child; counted monthly for the program"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Private stock"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Children on commercial plans"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cost per dose drives Stock value; order to par weekly"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ordering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every Monday the practice manager opens Vaccine stock and looks at Order check."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Private lots marked Order are reordered to twice the par level."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "State-supplied lots are requested on the program's own form; enter the new lot on arrival."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Expired lots go to Expired, return and are sent back, never thrown away."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Catch-up calls (Thursday afternoon)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open Immunizations and the Overdue view."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the guardian, offer a nurse-only shot visit (ten minutes, no exam)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book it from the child's row with Book a visit, and move the dose to Scheduled."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After three tries over a month, send a letter and note it in the dose's page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Amira H. missed her flu shot and is behind on MMR. The nurse books a vaccine-only visit, uses state-supplied MMR because Amira is on CHIP, and gives the flu shot from private stock only because the state flu lot ran out, noting the swap for the monthly count."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}
