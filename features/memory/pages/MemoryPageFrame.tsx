@@ -14,11 +14,14 @@ export function MemoryPageFrame({
   actions,
   children,
   wide = false,
+  fill = false,
 }: {
   name: string;
   actions?: RecordPageAction[];
   children: ReactNode;
   wide?: boolean;
+  /** A workspace body that owns its own scrolling (list + editor panes). */
+  fill?: boolean;
 }) {
   return (
     <>
@@ -30,8 +33,8 @@ export function MemoryPageFrame({
       />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <div
-          className={`mx-auto flex min-h-0 w-full flex-1 flex-col overflow-y-auto p-4 md:p-6 ${
-            wide ? "max-w-5xl" : "max-w-3xl"
+          className={`mx-auto flex min-h-0 w-full flex-1 flex-col p-4 md:p-6 ${
+            fill ? "max-w-7xl overflow-hidden" : `overflow-y-auto ${wide ? "max-w-5xl" : "max-w-3xl"}`
           }`}
         >
           {children}

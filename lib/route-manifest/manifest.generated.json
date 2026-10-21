@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1577,
+  "routeCount": 1576,
   "routes": [
     {
       "pattern": "/",
@@ -6155,14 +6155,9 @@
       "source": "app/(core)/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]/page.tsx"
     },
     {
-      "pattern": "/organizations/[orgId]/admin/users/[userId]",
+      "pattern": "/organizations/[orgId]/admin/users/[userId]/[[...tab]]",
       "status": "live",
-      "source": "app/(core)/organizations/[orgId]/admin/users/[userId]/page.tsx"
-    },
-    {
-      "pattern": "/organizations/[orgId]/admin/users/[userId]/resources",
-      "status": "live",
-      "source": "app/(core)/organizations/[orgId]/admin/users/[userId]/resources/page.tsx"
+      "source": "app/(core)/organizations/[orgId]/admin/users/[userId]/[[...tab]]/page.tsx"
     },
     {
       "pattern": "/organizations/[orgId]/applets",
