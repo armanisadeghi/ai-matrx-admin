@@ -34,7 +34,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/lib/toast";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -416,13 +416,7 @@ export function LeaveEnrollmentSurface({ policyId }: { policyId: string }) {
                   <Label htmlFor="leave-enrol-from" className="text-xs">
                     Effective from
                   </Label>
-                  <Input
-                    id="leave-enrol-from"
-                    type="date"
-                    value={effectiveFrom}
-                    onChange={(e) => setEffectiveFrom(e.target.value)}
-                    className="w-40"
-                  />
+                  <DateField id="leave-enrol-from" value={effectiveFrom} onValueChange={(v) => setEffectiveFrom(v ?? "")} className="w-40" />
                 </div>
                 <Button
                   icon={busy ? (

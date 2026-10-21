@@ -12,7 +12,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateTimeField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   CREDENTIAL_ID_REGEX,
@@ -277,13 +277,12 @@ export function CredentialMaintenanceEditor({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor={`${id}-generated-at`}>Generated at</Label>
-                <Input
+                <DateTimeField
                   id={`${id}-generated-at`}
-                  type="datetime-local"
                   value={isoToLocalInput(entry.generated_at)}
-                  onChange={(event) =>
+                  onValueChange={(v) =>
                     updateEntry(id, {
-                      generated_at: localInputToIso(event.target.value),
+                      generated_at: localInputToIso(v ?? ""),
                     })
                   }
                 />
@@ -296,13 +295,12 @@ export function CredentialMaintenanceEditor({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor={`${id}-expires-at`}>Expires at</Label>
-                <Input
+                <DateTimeField
                   id={`${id}-expires-at`}
-                  type="datetime-local"
                   value={isoToLocalInput(entry.expires_at)}
-                  onChange={(event) =>
+                  onValueChange={(v) =>
                     updateEntry(id, {
-                      expires_at: localInputToIso(event.target.value),
+                      expires_at: localInputToIso(v ?? ""),
                     })
                   }
                 />

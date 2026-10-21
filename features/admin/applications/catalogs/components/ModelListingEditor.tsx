@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, Select } from "@ai-matrx/design-system/controls";
 import type { ListingEdit } from "@/features/ai-models/discovery/api";
 import { factControl, factControlsFor, type FactControl } from "@/features/admin/applications/catalogs/schemas";
 
@@ -91,21 +91,14 @@ function FactInput({ name, control, value, suggestions, onChange }: { name: stri
       return <Switch aria-label={name} data-fact-control="boolean" checked={value === true} onCheckedChange={(v) => onChange(Boolean(v))} />;
     case "choice":
       return (
-        <select
-          aria-label={name}
-          data-fact-control="choice"
-          data-options={control.options.join(",")}
-          className="h-9 rounded-md border border-border bg-background px-2 text-sm text-foreground"
-          value={typeof value === "string" ? value : ""}
-          onChange={(e) => onChange(e.target.value === "" ? null : e.target.value)}
-        >
-          <option value="">Not set</option>
-          {control.options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
+        <span data-fact-control="choice" data-options={control.options.join(",")} className="contents">
+          <Select
+            aria-label={name}
+            value={typeof value === "string" ? value : ""}
+            options={[{ value: "", label: "Not set" }, ...control.options.map((o) => ({ value: o, label: o }))]}
+            onValueChange={(v) => onChange(v === "" ? null : v)}
+          />
+        </span>
       );
     case "json":
       return (

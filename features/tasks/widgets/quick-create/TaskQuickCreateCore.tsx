@@ -26,7 +26,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -698,11 +698,10 @@ export function TaskQuickCreateCore({
             >
               <Calendar className="w-3 h-3" /> Due
             </Label>
-            <Input
+            <DateField
               id="tqc-due"
-              type="date"
               value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              onValueChange={(v) => setDueDate(v ?? "")}
             />
           </div>
         </div>

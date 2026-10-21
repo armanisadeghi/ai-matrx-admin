@@ -7,6 +7,7 @@
 // more. Reads/writes the membership-gated edu_class_* RPCs via useClassAssignments
 // (the owner check is the SERVER's, not this component's isOwner prop).
 
+import { DateField } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { ClipboardList, Plus, Trash2, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
@@ -109,19 +110,18 @@ export function ClassAssignmentsPanel({
                   </div>
                   <DueDateLabel dueDate={a.dueDate} />
                 </div>
-                <input
-                  type="date"
+                <DateField
                   value={a.dueDate ?? ""}
                   disabled={assignments.acting}
-                  onChange={(e) =>
+                  onValueChange={(v) =>
                     assignments.setDueDate(
                       a.token as AssignableToken,
                       a.resourceId,
-                      e.target.value || null,
+                      v || null,
                     )
                   }
                   aria-label={`Due date for ${a.title}`}
-                  className="h-7 shrink-0 rounded-md border border-border bg-background px-2 text-xs text-foreground [color-scheme:light] dark:[color-scheme:dark] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="shrink-0"
                 />
                 <Button
                   icon={<Trash2 />}

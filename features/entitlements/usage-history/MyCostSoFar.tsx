@@ -17,7 +17,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { Skeleton } from "@ai-matrx/design-system";
 import { formatPoints, formatCount } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
@@ -62,7 +62,6 @@ function Money({ usd, points, big }: { usd: number | null; points: number; big?:
     </span>
   );
 }
-
 
 function sumRows(rows: MyCostGroupRow[] | null) {
   const r = rows ?? [];
@@ -223,11 +222,11 @@ export function MyCostSoFar() {
         ))}
         <label className="flex items-center gap-1.5 type-secondary text-muted-foreground">
           From
-          <Input type="date" aria-label="From date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} width="md" />
+          <DateField aria-label="From date" value={customFrom} onValueChange={(v) => setCustomFrom(v ?? "")} width="md" />
         </label>
         <label className="flex items-center gap-1.5 type-secondary text-muted-foreground">
           To
-          <Input type="date" aria-label="To date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} width="md" />
+          <DateField aria-label="To date" value={customTo} onValueChange={(v) => setCustomTo(v ?? "")} width="md" />
         </label>
         <Button variant={period.key === "custom" ? "primary" : "outline"} disabled={!customFrom && !customTo} onClick={applyCustom}>Custom range</Button>
         <Select value={orgId ?? ALL_ORGS} onValueChange={(v) => { setOrg(v === ALL_ORGS ? null : { id: v, label: orgOptions.find((o) => o.key === v)?.label ?? "" }); setDrill(NO_DRILL); }}>

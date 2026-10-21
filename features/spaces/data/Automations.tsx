@@ -17,7 +17,7 @@ import { ProInput } from "@/components/official/ProInput";
  */
 import { createContext, useContext, useEffect, useState } from "react";
 import { Copy, FlaskConical, History, Plus, RotateCcw, Trash2, Undo2, X } from "lucide-react";
-import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
+import { Button, Input, Switch, TimeField } from "@ai-matrx/design-system/controls";
 import { automationWebhookUrl, isAutomationAppTrigger, isButtonField } from "@ai-matrx/records";
 import { getJson, postJson, resolveBaseUrl } from "@/lib/python-client";
 import type { AutomationAction, AutomationAppTriggerTerms, AutomationItem, AutomationRun, AutomationSpec, AutomationTrigger, AutomationValue, AutomationWeekday, ReadRow, SavedViewRow } from "@ai-matrx/records";
@@ -809,7 +809,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
               <Pill on={dateWhen === "after"} onClick={() => setDateWhen("after")}>After</Pill>
               {dateWhen !== "on" ? <Input aria-label="Days" type="number" min={0} max={365} className="w-16" value={dateDays} onChange={(e) => setDateDays(e.target.value)} /> : null}
               {dateWhen !== "on" ? <span className="type-secondary">days at</span> : <span className="type-secondary">at</span>}
-              <Input aria-label="Time" type="time" className="w-28" value={at} onChange={(e) => setAt(e.target.value)} />
+              <TimeField aria-label="Time" className="w-28" value={at} onValueChange={(v) => setAt(v ?? "")} />
             </div>
           ) : null}
           {on === "schedule" ? (
@@ -846,7 +846,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
               ) : (
                 <>
                   <span className="type-secondary">at</span>
-                  <Input aria-label="Time" type="time" className="w-28" value={at} onChange={(e) => setAt(e.target.value)} />
+                  <TimeField aria-label="Time" className="w-28" value={at} onValueChange={(v) => setAt(v ?? "")} />
                 </>
               )}
             </div>

@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Field, Select } from "@ai-matrx/design-system/controls";
+import { Button, DateField, Select } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 
 import { hrPerformanceCycleHref, type HrOrgRef } from "@/features/hr/routes";
@@ -75,6 +75,7 @@ function NewCycleForm({
   const { knobs } = useHrKnobs({ organizationId });
   const prefilled = useRef(false);
   const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setDate = (key: keyof typeof form) => (v: string | null) => setForm((f) => ({ ...f, [key]: v ?? "" }));
 
   useEffect(() => {
     let live = true;
@@ -132,23 +133,23 @@ function NewCycleForm({
           <div className="grid grid-cols-2 gap-3">
             <label className="grid gap-1 text-xs text-muted-foreground">
               Period starts
-              <Field type="date" aria-label="Period starts" value={form.periodStart} onChange={set("periodStart")} />
+              <DateField aria-label="Period starts" value={form.periodStart} onValueChange={setDate("periodStart")} />
             </label>
             <label className="grid gap-1 text-xs text-muted-foreground">
               Period ends
-              <Field type="date" aria-label="Period ends" value={form.periodEnd} onChange={set("periodEnd")} />
+              <DateField aria-label="Period ends" value={form.periodEnd} onValueChange={setDate("periodEnd")} />
             </label>
             <label className="grid gap-1 text-xs text-muted-foreground">
               Self reviews due
-              <Field type="date" aria-label="Self reviews due" value={form.selfDueOn} onChange={set("selfDueOn")} />
+              <DateField aria-label="Self reviews due" value={form.selfDueOn} onValueChange={setDate("selfDueOn")} />
             </label>
             <label className="grid gap-1 text-xs text-muted-foreground">
               Manager reviews due
-              <Field type="date" aria-label="Manager reviews due" value={form.managerDueOn} onChange={set("managerDueOn")} />
+              <DateField aria-label="Manager reviews due" value={form.managerDueOn} onValueChange={setDate("managerDueOn")} />
             </label>
             <label className="grid gap-1 text-xs text-muted-foreground">
               Share with employees by
-              <Field type="date" aria-label="Share with employees by" value={form.shareDueOn} onChange={set("shareDueOn")} />
+              <DateField aria-label="Share with employees by" value={form.shareDueOn} onValueChange={setDate("shareDueOn")} />
             </label>
           </div>
           {error ? (

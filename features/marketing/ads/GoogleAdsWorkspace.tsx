@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import { DateField, Select } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { MarketingComingSoon } from "@/features/marketing/components/MarketingComingSoon";
 import { assertGoogleAdsCampaignActive } from "@/features/marketing/google/ads-campaign";
@@ -332,20 +332,18 @@ export function GoogleAdsWorkspace() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="google-ads-start">Start</Label>
-              <Input
+              <DateField
                 id="google-ads-start"
-                type="date"
                 value={startDate}
-                onChange={(event) => setStartDate(event.target.value)}
+                onValueChange={(v) => setStartDate(v ?? "")}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="google-ads-end">End</Label>
-              <Input
+              <DateField
                 id="google-ads-end"
-                type="date"
                 value={endDate}
-                onChange={(event) => setEndDate(event.target.value)}
+                onValueChange={(v) => setEndDate(v ?? "")}
               />
             </div>
             <Button

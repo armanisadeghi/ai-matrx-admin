@@ -33,7 +33,7 @@ import type { Project, ProjectMemberWithUser, ProjectPriority, ProjectRole, Proj
 import { toast } from "@/lib/toast";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { SampleTitle } from "../../_components/kit";
-import { Badge, Button, ControlRow, ControlScope, DeleteButton, EmptyState, Field, RegionSkeleton, RowGroup, Select, SettingRow, Tabs, Textarea, type BadgeTone } from "@ai-matrx/design-system/controls";
+import { Badge, Button, ControlRow, ControlScope, DeleteButton, EmptyState, Field, RegionSkeleton, RowGroup, Select, SettingRow, Tabs, Textarea, type BadgeTone, DateField } from "@ai-matrx/design-system/controls";
 
 type Section = "general" | "members" | "invitations" | "references";
 
@@ -251,10 +251,10 @@ function General({
             <Select value={form.priority} options={PRIORITY_OPTIONS} onValueChange={(v) => set("priority", v)} aria-label="Priority" style={{ width: "calc(100% - var(--matrx-control-gap))" }} />
           </FormField>
           <FormField label="Start date" htmlFor="ps-start">
-            <Field className="flex-1" id="ps-start" type="date" value={form.startDate} disabled={!canEdit} onChange={(e) => set("startDate", e.target.value)} />
+            <DateField className="flex-1" id="ps-start" value={form.startDate} disabled={!canEdit} onValueChange={(v) => set("startDate", v ?? "")} />
           </FormField>
           <FormField label="Target date" htmlFor="ps-target">
-            <Field className="flex-1" id="ps-target" type="date" value={form.targetDate} disabled={!canEdit} onChange={(e) => set("targetDate", e.target.value)} />
+            <DateField className="flex-1" id="ps-target" value={form.targetDate} disabled={!canEdit} onValueChange={(v) => set("targetDate", v ?? "")} />
           </FormField>
         </div>
         {dirty ? (

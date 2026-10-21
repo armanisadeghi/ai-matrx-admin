@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system/controls";
+import { Button, DateField } from "@ai-matrx/design-system/controls";
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { useAdminCost } from "@/components/cost/useAdminCost";
 import { useSeesDollars } from "@/components/cost/useCostDisplay";
@@ -153,14 +153,14 @@ export function ApprovalStatusSelect({
             {next === "temporary" && (
               <label className="flex items-center justify-between gap-2">
                 <span className="text-muted-foreground">Until</span>
-                {/* ui-exception: a date value, not prose */}
-                <input
-                  type="date"
+                <DateField
                   value={until}
-                  min={dateInputValue(0)}
-                  onChange={(e) => setUntil(e.target.value)}
+                  onValueChange={(v) => {
+                    const next = v ?? "";
+                    if (next && next < dateInputValue(0)) return;
+                    setUntil(next);
+                  }}
                   aria-label="Expires on"
-                  className="h-7 rounded-md border border-border bg-background px-2 text-xs"
                 />
               </label>
             )}

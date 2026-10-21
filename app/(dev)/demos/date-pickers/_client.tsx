@@ -1,5 +1,6 @@
 "use client";
 
+import { TimeField } from "@ai-matrx/design-system/controls";
 import * as React from "react";
 import { format, isValid, parse } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
@@ -434,15 +435,11 @@ function CanonicalDateTime() {
             </PopoverContent>
           </Popover>
         </div>
-        <input
-          type="time"
+        <TimeField
           aria-label="Time"
           value={time}
-          onChange={(e) => setTime(e.target.value)}
-          // No `step={1}` — we don't need seconds, which is what was causing
-          // the AM/PM portion to get clipped at this width. Default step is
-          // 60 (minutes), giving HH:MM (+ AM/PM where the browser shows it).
-          className="h-10 w-32 rounded-lg border border-border bg-background px-3 text-base font-medium tabular-nums outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 sm:text-sm [&::-webkit-calendar-picker-indicator]:hidden"
+          onValueChange={(v) => setTime(v ?? "")}
+          className="w-32"
         />
       </div>
       <ValueLine

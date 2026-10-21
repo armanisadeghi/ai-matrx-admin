@@ -1,5 +1,6 @@
 "use client";
 
+import { DateField, DateTimeField } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useTransition } from "react";
@@ -256,26 +257,7 @@ function ArgRow({
         className="flex-1 w-full resize-y"
       />
     );
-  } else {
-    inputEl = (
-      <Input
-        type={
-          isDateTime
-            ? "datetime-local"
-            : isDate
-              ? "date"
-              : isNumeric
-                ? "number"
-                : "text"
-        }
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={isNull}
-        placeholder={placeholderText}
-        className="h-7 text-xs flex-1 border-slate-300 dark:border-slate-600 font-mono"
-      />
-    );
-  }
+  } else if (isDateTime) { inputEl = ( <DateTimeField value={value} onValueChange={(v) => onChange(v ?? "")} disabled={isNull} emptyLabel={placeholderText} className="flex-1" /> ); } else if (isDate) { inputEl = ( <DateField value={value} onValueChange={(v) => onChange(v ?? "")} disabled={isNull} emptyLabel={placeholderText} className="flex-1" /> ); } else { inputEl = ( <Input type={isNumeric ? "number" : "text"} value={value} onChange={(e) => onChange(e.target.value)} disabled={isNull} placeholder={placeholderText} className="h-7 text-xs flex-1 border-slate-300 dark:border-slate-600 font-mono" /> ); }
 
   return (
     <div className="flex items-start gap-2">

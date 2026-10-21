@@ -71,6 +71,7 @@ import { SocialHandleListEditor } from "./SocialHandleListEditor";
 import { EmergencyContactListEditor } from "./EmergencyContactListEditor";
 import { AddressFields, type AddressValues } from "./AddressFields";
 import { ErrorNotice } from "@ai-matrx/design-system";
+import { DateField as PackageDateField } from "@ai-matrx/design-system/controls";
 import { AccountAccessSection } from "@/features/user-profile/account-access/AccountAccessSection";
 import { AuthenticatorSection } from "@/features/user-profile/account-access/AuthenticatorSection";
 import { AccountExportSection } from "@/features/user-profile/account-export/AccountExportSection";
@@ -1027,12 +1028,11 @@ function DateField({ label, value, onChange }: DateFieldProps) {
   return (
     <label className="flex flex-col gap-1 text-xs">
       <span className="text-muted-foreground">{label}</span>
-      <input
-        type="date"
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value || null)}
-        className="h-8 w-fit min-w-44 rounded-md border border-border bg-card px-2.5 text-sm text-foreground shadow-sm transition-colors hover:bg-accent/50 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40"
-        style={{ fontSize: "16px" }}
+      <PackageDateField
+        aria-label={label}
+        value={value}
+        onValueChange={(v) => onChange(v || null)}
+        className="w-fit min-w-44"
       />
     </label>
   );

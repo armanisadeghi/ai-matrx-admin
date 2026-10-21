@@ -52,7 +52,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -687,10 +687,10 @@ export function HrNewEmployee({
                       : undefined
                   }
                 >
-                  <Input
-                    type="date"
+                  <DateField
+                    aria-label="Start date"
                     value={form.hire_date}
-                    onChange={(event) => set({ hire_date: event.target.value })}
+                    onValueChange={(v) => set({ hire_date: v ?? "" })}
                   />
                 </Field>
                 <Field label="Worker class">

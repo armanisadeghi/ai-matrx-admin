@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { CalendarClock, Check, History, RefreshCw, RotateCcw, TimerReset, X } from "lucide-react";
-import { Button, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { Button, SegmentedControl, Select, DateField } from "@ai-matrx/design-system/controls";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMore";
 import { ApprovalStatusText } from "./RunApprovalCell";
@@ -279,13 +279,7 @@ export function DecisionDialog({
             <label className="flex flex-col gap-1">
               <span className="text-xs text-muted-foreground">Expires on</span>
               {/* ui-exception: a date value, not prose */}
-              <input
-                type="date"
-                value={until}
-                min={dateInputValue(0)}
-                onChange={(e) => setUntil(e.target.value)}
-                className="h-7 rounded-md border border-border bg-background px-2 text-sm"
-              />
+              <DateField aria-label="Expires on" value={until} onValueChange={(v) => { if (v && v < dateInputValue(0)) return; setUntil(v ?? ""); }} />
             </label>
           )}
           {approving && (

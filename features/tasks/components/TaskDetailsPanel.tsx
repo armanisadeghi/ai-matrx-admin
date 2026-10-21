@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEnsureTaskLoaded } from "@/features/tasks/hooks/useEnsureTaskLoaded";
-import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { RegionSkeleton, DateField } from "@ai-matrx/design-system/controls";
 import { selectUser } from "@/lib/redux/slices/userSlice";
 import {
   createSubtaskThunk,
@@ -664,11 +664,9 @@ export default function TaskDetailsPanel({
             <Calendar size={14} />
             Due Date
           </label>
-          <Input
-            type="date"
+          <DateField
             value={dueDate}
-            onChange={(e) => handleDueDateChange(e.target.value)}
-            className="text-sm"
+            onValueChange={(v) => handleDueDateChange(v ?? "")}
           />
         </div>
 

@@ -17,7 +17,7 @@ import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { AssociationCardGrid } from "@ai-matrx/associations/react";
@@ -305,13 +305,7 @@ export function DealRecordPage({ dealId }: Props) {
                         Expected close
                       </dt>
                       <dd>
-                        <input
-                          type="date"
-                          aria-label="Expected close date"
-                          className="h-7 rounded border border-transparent bg-transparent px-1 text-right text-sm hover:border-border"
-                          value={deal.expected_close_date ?? ""}
-                          onChange={(e) => void saveExpectedClose(e.target.value)}
-                        />
+                        <DateField aria-label="Expected close date" value={deal.expected_close_date ?? ""} onValueChange={(v) => void saveExpectedClose(v ?? "")} />
                       </dd>
                     </div>
                     {deal.closed_at && (

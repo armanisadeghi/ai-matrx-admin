@@ -67,7 +67,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { InfoHint } from "@/components/official/InfoHint";
 import {
@@ -713,12 +713,7 @@ export function HrActivationWizard({
                 <Label htmlFor="hire-date" className="text-sm font-medium">
                   Hire date
                 </Label>
-                <Input
-                  id="hire-date"
-                  type="date"
-                  value={draft.hireDate}
-                  onChange={(event) => set("hireDate", event.target.value)}
-                />
+                <DateField id="hire-date" value={draft.hireDate} onValueChange={(v) => set("hireDate", v ?? "")} />
                 <p className="text-sm text-muted-foreground">
                   Leave blank for today.
                 </p>

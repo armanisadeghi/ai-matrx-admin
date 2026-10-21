@@ -11,7 +11,7 @@
 
 import { ArrowRight, Check, PenLine } from "lucide-react";
 
-import { Select } from "@ai-matrx/design-system/controls";
+import { Select, DateField } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 import type { FieldValue } from "../../contract/fieldModel";
@@ -253,18 +253,31 @@ function InlineInput({ field, value, dateFormat, compact, onChange, onBlur, onAc
       />
     );
   }
+  if (field.kind === "date") {
+    return (
+      <div className="h-full w-full" title={field.tooltip ?? `Format ${field.date_format ?? dateFormat}`} onFocus={() => onActivate(field)} onBlur={onBlur}>
+        <DateField
+          id={domId}
+          aria-label={field.label}
+          disabled={field.read_only === true}
+          value={typeof value === "string" ? value : ""}
+          onValueChange={(v) => onChange(field.id, v ?? "")}
+        />
+      </div>
+    );
+  }
   return (
     // ui-exception: a form value typed onto the paper page inside the field's own box — a raw value
     <input
       {...common}
-      type={field.kind === "date" ? "date" : field.kind === "email" ? "email" : "text"}
+      type={field.kind === "email" ? "email" : "text"}
       inputMode={field.kind === "number" ? "decimal" : undefined}
       readOnly={field.read_only === true}
       value={typeof value === "string" ? value : ""}
       maxLength={field.kind === "text" ? (field.max_length ?? 4000) : undefined}
       placeholder={field.placeholder ?? (chipText(field) || KIND_LABEL[field.kind])}
       aria-invalid={looksNotNumeric(field.kind, value) || undefined}
-      title={looksNotNumeric(field.kind, value) ? "This does not look like a number. You can still use it." : (field.tooltip ?? (field.kind === "date" ? `Format ${field.date_format ?? dateFormat}` : undefined))}
+      title={looksNotNumeric(field.kind, value) ? "This does not look like a number. You can still use it." : (field.tooltip ?? undefined)}
       onChange={(e) => onChange(field.id, e.target.value)}
     />
   );

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, TimeField } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -113,18 +113,15 @@ export function MoveOccurrenceDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Input
-              type="date"
+            <DateField
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onValueChange={(v) => setDate(v ?? "")}
               className="w-40"
               aria-label="New date"
             />
-            <Input
-              type="time"
-              step={300}
+            <TimeField
               value={time}
-              onChange={(e) => setTime(e.target.value)}
+              onValueChange={(v) => setTime(v ?? "")}
               className="w-32"
               aria-label="New start time"
             />

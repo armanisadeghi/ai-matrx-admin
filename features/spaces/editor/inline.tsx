@@ -8,7 +8,7 @@ import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
 import { createReactInlineContentSpec } from "@blocknote/react";
 import { ArrowUpRight, Bell, FileText } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { Field, Select } from "@ai-matrx/design-system/controls";
+import { Select, DateField, TimeField } from "@ai-matrx/design-system/controls";
 import { useEffect } from "react";
 import { useLinkPreview } from "@/lib/link-preview";
 
@@ -128,8 +128,8 @@ function DateMention({ span, editable, onChange }: { span: DateSpan; editable: b
       </PopoverTrigger>
       <PopoverContent surface="solid" side="bottom" align="start" width="sm" padding="xs">
         <div className="flex flex-col gap-1.5" data-spaces-date-card>
-          <Field type="date" aria-label="Date" value={day} onChange={(e) => e.target.value && set({ iso: joinDayTime(e.target.value, time) })} />
-          <Field type="time" aria-label="Time" value={time} onChange={(e) => set({ iso: joinDayTime(day, e.target.value) })} />
+          <DateField aria-label="Date" value={day} clearable={false} onValueChange={(v) => { if (v) set({ iso: joinDayTime(v, time) }); }} />
+          <TimeField aria-label="Time" value={time} onValueChange={(v) => set({ iso: joinDayTime(day, v ?? "") })} />
           <Select<SpaceRemindOffset | "none">
             aria-label="Remind"
             icon={<Bell size={14} />}

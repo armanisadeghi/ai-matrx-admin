@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Skeleton, } from "@ai-matrx/design-system";
-import { Button as ControlButton, Input, Tile } from "@ai-matrx/design-system/controls";
+import { Button as ControlButton, Input, Tile, DateTimeField } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { GoogleAccountSelect } from "@/features/google-workspace/GoogleAccountSelect";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
@@ -345,27 +345,11 @@ function MeetReviewBodyInner({
           <div className="grid gap-2 sm:grid-cols-2">
             <label className="grid gap-1 text-sm">
               From
-              <Input
-                type="datetime-local"
-                value={startLocal}
-                onChange={(event) => {
-                  invalidate();
-                  setStartLocal(event.target.value);
-                }}
-                disabled={busy !== null}
-              />
+              <DateTimeField value={startLocal} onValueChange={(v) => { invalidate(); setStartLocal(v ?? ""); }} disabled={busy !== null} />
             </label>
             <label className="grid gap-1 text-sm">
               To
-              <Input
-                type="datetime-local"
-                value={endLocal}
-                onChange={(event) => {
-                  invalidate();
-                  setEndLocal(event.target.value);
-                }}
-                disabled={busy !== null}
-              />
+              <DateTimeField value={endLocal} onValueChange={(v) => { invalidate(); setEndLocal(v ?? ""); }} disabled={busy !== null} />
             </label>
           </div>
           <label className="grid gap-1 text-sm">

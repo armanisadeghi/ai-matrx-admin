@@ -33,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -236,21 +236,19 @@ export function NewCorrectiveActionDialog({
               <Label htmlFor="ca-issued">
                 {coaching ? "Date of the conversation" : "Issued on"}
               </Label>
-              <Input
+              <DateField
                 id="ca-issued"
-                type="date"
                 value={issuedOn}
-                onChange={(e) => setIssuedOn(e.target.value)}
+                onValueChange={(v) => setIssuedOn(v ?? "")}
               />
             </div>
             {!coaching ? (
               <div className="space-y-1.5">
                 <Label htmlFor="ca-incident">Incident date</Label>
-                <Input
+                <DateField
                   id="ca-incident"
-                  type="date"
                   value={incidentOn}
-                  onChange={(e) => setIncidentOn(e.target.value)}
+                  onValueChange={(v) => setIncidentOn(v ?? "")}
                 />
                 {dateOrderBroken ? (
                   <p className="text-xs text-destructive">
@@ -302,11 +300,10 @@ export function NewCorrectiveActionDialog({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="ca-followup">Follow up on</Label>
-                <Input
+                <DateField
                   id="ca-followup"
-                  type="date"
                   value={followUpOn}
-                  onChange={(e) => setFollowUpOn(e.target.value)}
+                  onValueChange={(v) => setFollowUpOn(v ?? "")}
                 />
               </div>
             </>

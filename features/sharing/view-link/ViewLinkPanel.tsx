@@ -7,6 +7,7 @@
 // that view's own filter and shown fields, read-only, no account. Who may make a link is the store's rule
 // on the view; its refusal is shown as the sentence it sent.
 
+import { DateField } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 import { Check, Copy, CopyX, Link2, Loader2, Lock } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
@@ -206,13 +207,11 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
                   ) : null}
                 </div>
                 <div className="flex items-center gap-1">
-                  <input
-                    type="date"
+                  <DateField
                     aria-label="Link ends on"
                     value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="h-7 min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 text-base"
-                    data-view-link-end=""
+                    onValueChange={(v) => setEndDate(v ?? "")}
+                    className="min-w-0 flex-1"
                   />
                   <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || endDate === ""} onClick={() => void protect(link.id, { expiresAt: new Date(`${endDate}T23:59:59`) })} data-view-link-end-set="">
                     Set end

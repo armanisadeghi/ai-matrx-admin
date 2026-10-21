@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system";
+import { DateField, TimeField } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -543,19 +544,16 @@ export function MeetingFormDialog({
                   className="h-4 w-4 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <Input
-                  type="date"
+                <DateField
                   value={draft.date}
-                  onChange={(e) => set({ date: e.target.value })}
-                  className="h-9 w-40"
+                  onValueChange={(v) => set({ date: v ?? "" })}
+                  className="w-40"
                   aria-label="Date"
                 />
-                <Input
-                  type="time"
-                  step={300}
+                <TimeField
                   value={draft.time}
-                  onChange={(e) => set({ time: e.target.value })}
-                  className="h-9 w-32"
+                  onValueChange={(v) => set({ time: v ?? "" })}
+                  className="w-32"
                   aria-label="Start time"
                 />
                 <Select

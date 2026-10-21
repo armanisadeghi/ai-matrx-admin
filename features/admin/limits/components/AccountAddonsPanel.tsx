@@ -57,7 +57,7 @@ import {
   PopoverTrigger,
   Skeleton,
 } from "@ai-matrx/design-system";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateTimeField } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -1016,11 +1016,10 @@ function GrantAddonDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="addon-expires">Expires</Label>
-              <Input
+              <DateTimeField
                 id="addon-expires"
-                type="datetime-local"
                 value={expiresAt}
-                onChange={(event) => setExpiresAt(event.target.value)}
+                onValueChange={(v) => setExpiresAt(v ?? "")}
               />
               <p className="text-xs text-muted-foreground">
                 Blank = never expires.

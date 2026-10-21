@@ -27,7 +27,7 @@ import {
   DrawerDescription,
   DrawerFooter,
 } from "@/components/ui/drawer";
-import { Input, Select } from "@ai-matrx/design-system/controls";
+import { DateField, Input, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -330,14 +330,11 @@ export default function TaskPreviewWindow({
                     { value: "low", label: "Low" },
                   ]}
                 />
-                <input
-                  type="date"
+                <DateField
+                  aria-label="Due date"
                   value={row.due_date}
-                  onChange={(e) =>
-                    patchRow(row.key, "due_date", e.target.value)
-                  }
+                  onValueChange={(v) => patchRow(row.key, "due_date", v ?? "")}
                   disabled={!row.include}
-                  className="h-7 bg-card border border-border rounded px-1 text-[11px] outline-none"
                 />
               </div>
             );

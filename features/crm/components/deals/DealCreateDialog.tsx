@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Building2, Loader2, Search, User, X } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -364,11 +364,10 @@ export function DealCreateDialog({
             <Label htmlFor="deal-close" className="text-xs">
               Expected close
             </Label>
-            <Input
+            <DateField
               id="deal-close"
-              type="date"
               value={expectedClose}
-              onChange={(e) => setExpectedClose(e.target.value)}
+              onValueChange={(v) => setExpectedClose(v ?? "")}
             />
           </div>
         </div>

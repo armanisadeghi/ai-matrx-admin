@@ -5,10 +5,9 @@ import React, { useState, useEffect } from "react";
 import { Loader2, Maximize2 } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { useEnsureTaskLoaded } from "@/features/tasks/hooks/useEnsureTaskLoaded";
-import { RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { RegionSkeleton, DateField } from "@ai-matrx/design-system/controls";
 import { updateTaskFieldThunk } from "@/features/tasks/redux/thunks";
 import { useDebounce } from "../hooks/useDebounce";
-import { Input } from "@ai-matrx/design-system/controls";
 import {
   Dialog,
   DialogContent,
@@ -108,11 +107,7 @@ export default function TaskDetails({ task }: { task: TaskWithProject }) {
         <label className="block text-xs font-medium text-foreground mb-1">
           Due Date
         </label>
-        <Input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
+        <DateField aria-label="Due Date" value={dueDate} onValueChange={(v) => setDueDate(v ?? "")} />
       </div>
 
       <div>

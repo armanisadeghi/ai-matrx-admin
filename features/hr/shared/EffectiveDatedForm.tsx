@@ -42,7 +42,7 @@ import {
 import { CalendarClock } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
@@ -302,13 +302,15 @@ export function EffectiveDateField({
         <Label htmlFor={dateId} className="text-xs font-medium">
           {label}
         </Label>
-        <Input
+        <DateField
           id={dateId}
-          type="date"
           value={value.effectiveFrom}
-          max={max}
           disabled={disabled}
-          onChange={(event) => onChange(event.target.value)}
+          onValueChange={(v) => {
+            const next = v ?? "";
+            if (next && max && next > max) return;
+            onChange(next);
+          }}
           className="w-full max-w-[16rem]"
         />
         {beyondCeiling && max ? (

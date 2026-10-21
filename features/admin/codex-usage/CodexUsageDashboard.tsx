@@ -1,8 +1,8 @@
 "use client";
 
+import { DateField } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  CalendarDays,
   CircleAlert,
   Laptop,
   Loader2,
@@ -353,33 +353,9 @@ export function CodexUsageDashboard() {
         <div className="flex flex-wrap items-center gap-2">
           {preset === "custom" ? (
             <>
-              <CalendarDays
-                className="h-4 w-4 text-muted-foreground"
-                aria-hidden
-              />
-              <input
-                aria-label="Start date"
-                type="date"
-                value={startDate}
-                max={endDate}
-                onChange={(event) => {
-                  setResumeRange(null);
-                  setStartDate(event.target.value);
-                }}
-                className="h-8 rounded-md border bg-background px-2 text-xs"
-              />
+              <DateField aria-label="Start date" value={startDate} onValueChange={(v) => { if (v && endDate && v > endDate) return; setResumeRange(null); setStartDate(v ?? ""); }} />
               <span className="text-xs text-muted-foreground">to</span>
-              <input
-                aria-label="End date"
-                type="date"
-                value={endDate}
-                min={startDate}
-                onChange={(event) => {
-                  setResumeRange(null);
-                  setEndDate(event.target.value);
-                }}
-                className="h-8 rounded-md border bg-background px-2 text-xs"
-              />
+              <DateField aria-label="End date" value={endDate} onValueChange={(v) => { if (v && startDate && v < startDate) return; setResumeRange(null); setEndDate(v ?? ""); }} />
             </>
           ) : null}
           <Button

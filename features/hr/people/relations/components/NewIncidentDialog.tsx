@@ -42,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateTimeField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -220,11 +220,10 @@ export function NewIncidentDialog({
 
           <div className="space-y-1.5">
             <Label htmlFor="in-occurred">When it happened</Label>
-            <Input
+            <DateTimeField
               id="in-occurred"
-              type="datetime-local"
               value={occurredAt}
-              onChange={(e) => setOccurredAt(e.target.value)}
+              onValueChange={(v) => setOccurredAt(v ?? "")}
             />
           </div>
 

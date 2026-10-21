@@ -1,6 +1,7 @@
 "use client";
 
 import { ProInput } from "@/components/official/ProInput";
+import { DateField } from "@ai-matrx/design-system/controls";
 
 // features/spaces/page/PageProperties.tsx — N13: Notion's page properties on a normal page.
 //
@@ -152,10 +153,24 @@ function PropertyValue({ spaceId, p, editable, onChange }: { spaceId: string; p:
 function InlineValue({ type, value, onCommit }: { type: PagePropertyType; value: string; onCommit: (v: string) => void }) {
   const [draft, setDraft] = useState(value);
   useEffect(() => setDraft(value), [value]);
+  if (type === "date") {
+    return (
+      <DateField
+        aria-label="Property value"
+        emptyLabel="Empty"
+        value={draft}
+        onValueChange={(v) => {
+          const next = v ?? "";
+          setDraft(next);
+          if (next !== value) onCommit(next);
+        }}
+      />
+    );
+  }
   return (
     <input
       className="spaces-page-prop-input"
-      type={type === "number" ? "number" : type === "date" ? "date" : "text"}
+      type={type === "number" ? "number" : "text"}
       placeholder="Empty"
       value={draft}
       aria-label="Property value"

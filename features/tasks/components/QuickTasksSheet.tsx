@@ -1,6 +1,7 @@
 // features/tasks/components/QuickTasksSheet.tsx
 "use client";
 
+import { DateField } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import React, {
   useState,
@@ -438,11 +439,11 @@ function QuickTasksSheetContent({ className, prePopulate, onPrePopulated }: Quic
                       <div className="flex gap-2">
                         {/* Due date */}
                         <div className="flex items-center gap-1.5 flex-1">
-                          <input
-                            type="date"
+                          <DateField
                             value={quickAddDueDate}
-                            onChange={(e) => setQuickAddDueDate(e.target.value)}
-                            className="flex-1 h-7 text-xs bg-transparent border border-border rounded-md px-1.5 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                            onValueChange={(v) => setQuickAddDueDate(v ?? "")}
+                            className="flex-1"
+                            aria-label="Due date"
                           />
                         </div>
                         {/* Priority */}

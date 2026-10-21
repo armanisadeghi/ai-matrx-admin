@@ -23,7 +23,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CalendarDays, Info, Loader2, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -367,13 +367,13 @@ export function LeaveRequestForm({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="leave-starts-on">First day</Label>
-          <Input
+          <DateField
             id="leave-starts-on"
-            type="date"
             value={startsOn}
-            onChange={(e) => {
-              setStartsOn(e.target.value);
-              if (e.target.value > endsOn) setEndsOn(e.target.value);
+            onValueChange={(v) => {
+              const next = v ?? "";
+              setStartsOn(next);
+              if (next > endsOn) setEndsOn(next);
               setDayHours({});
               idempotencyKey.current = mintKey();
             }}
@@ -382,13 +382,13 @@ export function LeaveRequestForm({
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="leave-ends-on">Last day</Label>
-          <Input
+          <DateField
             id="leave-ends-on"
-            type="date"
-            min={startsOn}
             value={endsOn}
-            onChange={(e) => {
-              setEndsOn(e.target.value);
+            onValueChange={(v) => {
+              const next = v ?? "";
+              if (next && next < startsOn) return;
+              setEndsOn(next);
               setDayHours({});
               idempotencyKey.current = mintKey();
             }}

@@ -5,7 +5,7 @@
 import { InfoHint } from "@/components/official/InfoHint";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -682,13 +682,7 @@ export default function PerformanceReviewApp({
                       />
                     </Field>
                     <Field label={L.date_of_hire} anchor="date_of_hire">
-                      <Input
-                        type="date"
-                        value={r.dateOfHire}
-                        onChange={(e) =>
-                          store.updateField("dateOfHire", e.target.value)
-                        }
-                      />
+                      <DateField value={r.dateOfHire} onValueChange={(v) => store.updateField("dateOfHire", v ?? "")} />
                     </Field>
                     <Field label={L.review_period} anchor="review_period">
                       <Input
@@ -703,13 +697,7 @@ export default function PerformanceReviewApp({
                       label={L.date_of_evaluation}
                       anchor="date_of_evaluation"
                     >
-                      <Input
-                        type="date"
-                        value={r.dateOfEvaluation}
-                        onChange={(e) =>
-                          store.updateField("dateOfEvaluation", e.target.value)
-                        }
-                      />
+                      <DateField value={r.dateOfEvaluation} onValueChange={(v) => store.updateField("dateOfEvaluation", v ?? "")} />
                     </Field>
                   </div>
                 </SectionCard>

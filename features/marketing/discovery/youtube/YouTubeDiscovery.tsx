@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
-import { Chip, Input } from "@ai-matrx/design-system/controls";
+import { Chip, DateTimeField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -711,18 +711,22 @@ function AdvancedFilters({
         <h2 className="font-medium">Advanced discovery</h2>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <TextFilter
-          label="Published after"
-          type="datetime-local"
-          value={form.published_after}
-          onChange={(value) => update("published_after", value)}
-        />
-        <TextFilter
-          label="Published before"
-          type="datetime-local"
-          value={form.published_before}
-          onChange={(value) => update("published_before", value)}
-        />
+        <div>
+          <Label className="mb-1.5 block text-xs text-muted-foreground dark:text-zinc-400">Published after</Label>
+          <DateTimeField
+            aria-label="Published after"
+            value={form.published_after}
+            onValueChange={(v) => update("published_after", v ?? "")}
+          />
+        </div>
+        <div>
+          <Label className="mb-1.5 block text-xs text-muted-foreground dark:text-zinc-400">Published before</Label>
+          <DateTimeField
+            aria-label="Published before"
+            value={form.published_before}
+            onValueChange={(v) => update("published_before", v ?? "")}
+          />
+        </div>
         <TextFilter
           label="Region"
           placeholder="US"

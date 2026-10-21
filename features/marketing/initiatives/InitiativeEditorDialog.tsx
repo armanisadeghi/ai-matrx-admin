@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField as PackageDateField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -272,11 +272,10 @@ function DateField({
   return (
     <div className="space-y-1">
       <Label htmlFor={id}>{label}</Label>
-      <Input
+      <PackageDateField
         id={id}
-        type="date"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onValueChange={(v) => onChange(v ?? "")}
       />
     </div>
   );

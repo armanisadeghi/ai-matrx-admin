@@ -13,7 +13,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateTimeField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -810,11 +810,10 @@ export function ScheduleForm({
             </Field>
           </div>
           <Field label="Expires at" htmlFor="expires" optional>
-            <Input
+            <DateTimeField
               id="expires"
-              type="datetime-local"
               value={form.expiresAt}
-              onChange={(e) => patch("expiresAt", e.target.value)}
+              onValueChange={(v) => patch("expiresAt", v ?? "")}
               className="max-w-xs"
             />
             <p className="text-xs text-muted-foreground mt-1">

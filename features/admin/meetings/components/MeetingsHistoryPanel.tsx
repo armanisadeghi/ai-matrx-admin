@@ -16,7 +16,7 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatAbsoluteDate, formatCount, formatDurationMinutes } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -208,11 +208,11 @@ export function MeetingsHistoryPanel({
         </Select>
         <label className="flex items-center gap-1 text-xs text-muted-foreground">
           From
-          <Input type="date" value={search.from ?? ""} onChange={(event) => setSearch((current) => ({ ...current, from: event.target.value || null }))} className="w-36" />
+          <DateField value={search.from} aria-label="From" className="w-36" onValueChange={(v) => setSearch((current) => ({ ...current, from: v }))} />
         </label>
         <label className="flex items-center gap-1 text-xs text-muted-foreground">
           To
-          <Input type="date" value={search.to ?? ""} onChange={(event) => setSearch((current) => ({ ...current, to: event.target.value || null }))} className="w-36" />
+          <DateField value={search.to} aria-label="To" className="w-36" onValueChange={(v) => setSearch((current) => ({ ...current, to: v }))} />
         </label>
         {organizationId ? (
           <span className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-muted/50 pl-2 text-xs">

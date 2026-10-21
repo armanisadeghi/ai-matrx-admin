@@ -39,7 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateTimeField, Input } from "@ai-matrx/design-system/controls";
 import { KeywordInput } from "@/features/marketing/seo/keyword/KeywordInput";
 import { Label } from "@/components/ui/label";
 import {
@@ -421,10 +421,9 @@ function ChangeComposer({
               />
             </Field>
             <Field label="Deployment time">
-              <Input
-                type="datetime-local"
+              <DateTimeField
                 value={draft.deployedAt}
-                onChange={(event) => set("deployedAt", event.target.value)}
+                onValueChange={(v) => set("deployedAt", v ?? "")}
                 disabled={Boolean(seed.observedSnapshot)}
               />
             </Field>
@@ -1680,10 +1679,9 @@ function ChangeEditForm({
         </Select>
       </Field>
       <Field label="Deployment time">
-        <Input
-          type="datetime-local"
+        <DateTimeField
           value={deployedAt}
-          onChange={(event) => setDeployedAt(event.target.value)}
+          onValueChange={(v) => setDeployedAt(v ?? "")}
         />
       </Field>
       <Button

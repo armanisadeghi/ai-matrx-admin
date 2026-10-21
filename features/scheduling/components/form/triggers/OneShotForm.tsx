@@ -2,7 +2,7 @@
 
 "use client";
 
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateTimeField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -16,11 +16,10 @@ export function OneShotForm({ value, onChange, error }: Props) {
   return (
     <div className="space-y-2">
       <Label htmlFor="oneshot-at">Run at</Label>
-      <Input
+      <DateTimeField
         id="oneshot-at"
-        type="datetime-local"
         value={toLocalInput(value.at)}
-        onChange={(e) => onChange({ at: fromLocalInput(e.target.value) })}
+        onValueChange={(v) => onChange({ at: fromLocalInput(v ?? "") })}
         className="max-w-xs"
       />
       {error && <p className="text-xs text-destructive">{error} <ErrorAlchemyMenu /></p>}

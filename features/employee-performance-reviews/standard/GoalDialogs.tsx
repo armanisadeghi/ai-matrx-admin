@@ -5,7 +5,7 @@
 // picker over the goals this page knows, minus the goal itself and everything below it.
 
 import { useState } from "react";
-import { Button, Select } from "@ai-matrx/design-system/controls";
+import { Button, DateField, Select } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 
 import { ProInput } from "@/components/official/ProInput";
@@ -119,11 +119,11 @@ function GoalForm({ employmentId, goal, alignable, onClose, onSaved }: { employm
         <div className="grid grid-cols-2 gap-3">
           <label className="grid gap-1 text-xs text-muted-foreground">
             Starts
-            <ProInput type="date" aria-label="Start date" value={f.startOn} onChange={set("startOn")} />
+            <DateField aria-label="Start date" value={f.startOn} onValueChange={(v) => setF((x) => ({ ...x, startOn: v ?? "" }))} />
           </label>
           <label className="grid gap-1 text-xs text-muted-foreground">
             Due
-            <ProInput type="date" aria-label="Due date" value={f.dueOn} onChange={set("dueOn")} />
+            <DateField aria-label="Due date" value={f.dueOn} onValueChange={(v) => setF((x) => ({ ...x, dueOn: v ?? "" }))} />
           </label>
         </div>
         <div className="grid grid-cols-2 gap-3">

@@ -31,7 +31,7 @@ import { useState } from "react";
 import { AlertTriangle, CalendarPlus, CheckCircle2, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -186,13 +186,7 @@ export function GeneratePeriodsPanel({
           >
             Through
           </label>
-          <Input
-            id="generate-through"
-            type="date"
-            value={throughDate}
-            onChange={(e) => setThroughDate(e.target.value)}
-            className="mt-1 w-[11rem]"
-          />
+          <DateField id="generate-through" value={throughDate} onValueChange={(v) => setThroughDate(v ?? "")} className="mt-1 w-[11rem]" />
         </div>
 
         <Button

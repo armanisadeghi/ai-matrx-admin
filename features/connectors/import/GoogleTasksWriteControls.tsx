@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { BackendApiError, getUserMessage } from "@ai-matrx/api";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -298,7 +298,7 @@ export function GoogleTasksWriteControls({
           <div className="space-y-2">
             <label className="block text-xs">Title<Input value={title} maxLength={1024} disabled={createBlocked || busy !== null} onChange={(event) => setTitle(event.target.value)} /></label>
             <label className="block text-xs">Notes<textarea className="mt-1 min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={notes} maxLength={8192} disabled={createBlocked || busy !== null} onChange={(event) => setNotes(event.target.value)} /></label>
-            <label className="block text-xs">Due date<Input type="date" value={dueDate} disabled={createBlocked || busy !== null} onChange={(event) => setDueDate(event.target.value)} /></label>
+            <label className="block text-xs">Due date<DateField value={dueDate} aria-label="Due date" disabled={createBlocked || busy !== null} onValueChange={(v) => setDueDate(v ?? "")} /></label>
             <Button variant="outline" disabled={busy !== null || !title.trim()} onClick={reviewCreate}>Review create</Button>
           </div>
         )}

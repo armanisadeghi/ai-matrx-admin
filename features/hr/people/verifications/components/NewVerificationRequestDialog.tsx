@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { DateField, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -253,11 +253,10 @@ export function NewVerificationRequestDialog({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="ver-asof">As of</Label>
-              <Input
+              <DateField
                 id="ver-asof"
-                type="date"
                 value={asOf}
-                onChange={(e) => setAsOf(e.target.value)}
+                onValueChange={(v) => setAsOf(v ?? "")}
               />
               <p className="text-xs text-muted-foreground">
                 Everything the letter asserts is resolved as of this date and

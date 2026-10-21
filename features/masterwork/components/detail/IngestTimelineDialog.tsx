@@ -45,7 +45,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, DateField } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { cn } from "@/lib/utils";
@@ -573,12 +573,7 @@ export function IngestTimelineDialog({
                 <Label htmlFor="timeline-published">
                   When was it published? (optional)
                 </Label>
-                <Input
-                  id="timeline-published"
-                  type="date"
-                  value={published}
-                  onChange={(e) => setPublished(e.target.value)}
-                />
+                <DateField id="timeline-published" value={published} onValueChange={(v) => setPublished(v ?? "")} />
               </div>
             </div>
             <div className="space-y-1.5">
