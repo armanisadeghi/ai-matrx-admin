@@ -98,6 +98,7 @@ import {
   BrandOverviewActions,
   BrandOverviewKnown,
   BrandOverviewKpis,
+  BrandOverviewNext,
   BrandOverviewLook,
 } from "@/features/marketing/components/brands/BrandOverviewPanels";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
@@ -980,7 +981,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                         Share
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link prefetch={false} href={marketingRoutes.brandDiscovery(brandId)}>
+                        <Link prefetch={false} href={marketingRoutes.brandDiscovery(marketingSeg(current))}>
                           <Inbox />
                           To review
                           <DropdownMenuShortcut className="tabular-nums">
@@ -1013,7 +1014,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                   <Button asChild variant="outline" className="min-w-[3.5rem] tabular-nums">
                     <Link
                       prefetch={false}
-                      href={marketingRoutes.brandDiscovery(brandId)}
+                      href={marketingRoutes.brandDiscovery(marketingSeg(current))}
                       aria-label={`${(pending.data ?? 0).toLocaleString()} to review`}
                       title={`${(pending.data ?? 0).toLocaleString()} to review`}
                     >
@@ -1131,13 +1132,23 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
 
           {tab === "overview" ? (
             <div className="grid gap-3">
+              <BrandOverviewNext
+                brandId={current.id}
+                brandSeg={brandSeg}
+                siteIds={websiteSites.map((site) => site.id)}
+                accounts={socialAccounts.data ?? []}
+                accountsLoading={socialAccounts.isLoading}
+                pending={pending.isLoading ? null : (pending.data ?? 0)}
+                factCount={factRows.length}
+                canEdit={canEdit}
+                tabHref={tabHref}
+              />
               <BrandOverviewKpis
                 brandId={current.id}
                 brandSeg={brandSeg}
                 siteIds={websiteSites.map((site) => site.id)}
                 accounts={socialAccounts.data ?? []}
                 accountsLoading={socialAccounts.isLoading}
-                competitors={(parseBrandProfile(current.profile).competitors ?? []).length}
                 tabHref={tabHref}
               />
               <div className="grid items-start gap-3 lg:grid-cols-3">
@@ -1159,12 +1170,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     brandId={current.id}
                     brandSeg={brandSeg}
                     organizationId={current.organization_id}
+                    siteIds={websiteSites.map((site) => site.id)}
                     profile={parseBrandProfile(current.profile)}
                     personas={personas.data ?? []}
                   />
                   <BrandOverviewAbout
                     facts={factRows}
-                    description={current.description}
                     industry={current.industry}
                     websiteUrl={publicWebsiteUrl}
                     canEdit={canEdit}
@@ -1212,7 +1223,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
             </div>
           ) : null}
 
-          {tab === "overview" ? (
+          {/* Custom fields and linked records are profile data: they live on the Profile tab, not the headline page. */}
+          {tab === "profile" ? (
             <EntityCustomFields entityToken="web_brand" recordId={current.id} organizationId={current.organization_id} />
           ) : null}
 

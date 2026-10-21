@@ -19,9 +19,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import type { LucideIcon } from "lucide-react";
 import {
   ChevronRight,
+  ExternalLink,
   Compass,
   FolderOpen,
   ImagePlus,
@@ -47,13 +49,13 @@ import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { AssetTile, type OverviewAsset } from "@/features/marketing/components/brands/BrandOverview";
-import { contactFactValue } from "@/features/marketing/lib/ContactFactValue";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useGscPortfolioRollup } from "@/features/marketing/search-console/components/ambassador/useGscPortfolioRollup";
-import { useBrandChecks } from "@/features/marketing/seo/ai-visibility/brand/hooks";
+import { useBrandCheckEstimate, useBrandChecks } from "@/features/marketing/seo/ai-visibility/brand/hooks";
 import { RunCheckButton } from "@/features/marketing/seo/ai-visibility/brand/RunCheckButton";
 import { useStrategyBrief } from "@/features/marketing/strategy/hooks";
 import { fetchOfferingItems } from "@/features/marketing/offerings/data";
+import { listBrandCompetitors } from "@/features/marketing/competitors/brand-competitors";
 import { brandAccountHref } from "@/features/marketing/social/property-account-href";
 import { accountLabels, formatGrowth, lastPostLabel } from "@/features/marketing/social/mappers";
 import { formatCompact } from "@/features/marketing/social/outlier";
@@ -92,16 +94,22 @@ function followerDelta(accounts: readonly AccountRow[]): number | null {
 
 function Delta({ value, suffix }: { value: number; suffix: string }) {
   if (Math.abs(value) < (suffix === "%" ? 0.0005 : 0.5)) {
-    return <span className="text-muted-foreground">No change {suffix === "%" ? "vs prior 28d" : suffix}</span>;
+    return <span className="text-muted-foreground">No change {suffix === "%" ? "vs prior" : suffix}</span>;
   }
   const tone = value > 0 ? "text-success-ink" : value < 0 ? "text-destructive-ink" : "text-muted-foreground";
   return (
     <span className={tone}>
       {value > 0 ? "+" : ""}
       {suffix === "%" ? `${Math.round(value * 1000) / 10}%` : formatCompact(value)}
-      <span className="text-muted-foreground"> {suffix === "%" ? "vs prior 28d" : suffix}</span>
+      <span className="text-muted-foreground"> {suffix === "%" ? "vs prior" : suffix}</span>
     </span>
   );
+}
+
+/** A last post older than this reads as a warning: the account has gone quiet. */
+const STALE_POST_DAYS = 90;
+function isStale(iso: string | null): boolean {
+  return Boolean(iso) && Date.now() - Date.parse(iso as string) > STALE_POST_DAYS * 86_400_000;
 }
 
 /** A KPI hint that is a door: the one click that gets the missing number. */
@@ -113,13 +121,30 @@ function HintDoor({ href, children }: { href: string; children: ReactNode }) {
   );
 }
 
+/** The brand's ONE competitor list (seo + social + profile + CRM, merged): the competitors page's own query. */
+export function useBrandCompetitorList(brandId: string, siteIds: readonly string[]) {
+  const ids = [...siteIds];
+  return useQuery({
+    queryKey: ["marketing", "brand", brandId, "competitor-directory", ids],
+    queryFn: ({ signal }) => listBrandCompetitors(brandId, ids, signal),
+  });
+}
+
+/** Brand-owned vs person-owned accounts (a person's own following is never the brand's audience). */
+function splitAudience(accounts: readonly AccountRow[]) {
+  const sum = (list: readonly AccountRow[]) =>
+    list.some((a) => a.followers !== null) ? list.reduce((s, a) => s + (a.followers ?? 0), 0) : null;
+  const brand = accounts.filter((a) => a.ownerKind !== "person");
+  const people = accounts.filter((a) => a.ownerKind === "person");
+  return { brand, people, brandFollowers: sum(brand), peopleFollowers: sum(people) };
+}
+
 export function BrandOverviewKpis({
   brandId,
   brandSeg,
   siteIds,
   accounts,
   accountsLoading,
-  competitors,
   tabHref,
 }: {
   brandId: string;
@@ -127,68 +152,76 @@ export function BrandOverviewKpis({
   siteIds: readonly string[];
   accounts: readonly AccountRow[];
   accountsLoading: boolean;
-  competitors: number;
   /** The brand home with another tab open (`?tab=`). */
   tabHref: (tab: string) => string;
 }) {
   const gsc = useGscPortfolioRollup(siteIds, "28d");
   const checks = useBrandChecks(brandId);
   const offerings = useOfferingItems(brandId);
+  const competitors = useBrandCompetitorList(brandId, siteIds);
 
-  const read = accounts.filter((a) => a.followers !== null);
-  const followers = read.length ? read.reduce((sum, a) => sum + (a.followers ?? 0), 0) : null;
-  const delta = followerDelta(accounts);
+  const audience = splitAudience(accounts);
+  const brandDelta = followerDelta(audience.brand);
   const posts = accounts.reduce((sum, a) => sum + a.postsTracked, 0);
   const lastPost = accounts.map((a) => a.lastPostAt).filter((d): d is string => Boolean(d)).sort().at(-1) ?? null;
   const latestCheck = checks.data?.[0] ?? null;
   const items = offerings.data ?? null;
   const confirmed = (items ?? []).filter((i) => i.status === "confirmed").length;
+  const rivals = competitors.data ?? null;
   const rollup = gsc.rollup;
+  const social = tabHref("social");
+  // A hint shows only once its read has settled: never a false "connect" or "none" while loading.
+  const settled = (loading: boolean, hint: ReactNode) => (loading ? undefined : hint);
 
   return (
     <KpiGrid>
       <KpiTile
         className="min-h-[76px]"
         label="Audience"
-        title="Followers across the brand's social accounts we have read."
+        title="Followers of the brand's own accounts; people's personal accounts are counted apart."
         loading={accountsLoading}
-        value={followers === null ? null : formatCompact(followers)}
-        href={tabHref("social")}
-        hint={
-          followers === null ? (
-            <HintDoor href={tabHref("social")}>{accounts.length ? "Fetch accounts" : "Add an account"}</HintDoor>
-          ) : delta !== null ? (
-            <Delta value={delta} suffix="in 30d" />
+        value={audience.brandFollowers === null ? null : formatCompact(audience.brandFollowers)}
+        href={social}
+        hint={settled(
+          accountsLoading,
+          audience.brandFollowers === null ? (
+            <HintDoor href={social}>{accounts.length ? "Fetch accounts" : "Add an account"}</HintDoor>
+          ) : audience.peopleFollowers ? (
+            `+ ${formatCompact(audience.peopleFollowers)} on people's accounts`
+          ) : brandDelta !== null ? (
+            <Delta value={brandDelta} suffix="in 30d" />
           ) : (
-            `${read.length} account${read.length === 1 ? "" : "s"}`
-          )
-        }
+            `${audience.brand.length} account${audience.brand.length === 1 ? "" : "s"}`
+          ),
+        )}
       />
       <KpiTile
         className="min-h-[76px]"
         label="Posts"
         title="Posts we hold across the brand's social accounts."
         loading={accountsLoading}
-        value={accounts.length ? posts.toLocaleString() : null}
-        href={marketingRoutes.brandSocials(brandSeg)}
-        hint={
+        value={posts ? posts.toLocaleString() : null}
+        href={social}
+        hint={settled(
+          accountsLoading,
           !accounts.length ? (
-            <HintDoor href={tabHref("social")}>Add an account</HintDoor>
+            <HintDoor href={social}>Add an account</HintDoor>
           ) : lastPost ? (
-            `Last post ${lastPostLabel(lastPost, posts)}`
+            <span className={isStale(lastPost) ? "text-warning-ink" : undefined}>Last post {lastPostLabel(lastPost, posts)}</span>
           ) : (
-            "No posts fetched yet"
-          )
-        }
+            <HintDoor href={social}>Fetch posts</HintDoor>
+          ),
+        )}
       />
       <KpiTile
         className="min-h-[76px]"
-        label="Search clicks"
+        label="Search clicks · 28d"
         title="Google Search clicks to the brand's websites in the last 28 days."
         loading={gsc.isLoading}
         value={rollup?.hasData ? rollup.totalClicks.toLocaleString() : null}
         href={tabHref("web")}
-        hint={
+        hint={settled(
+          gsc.isLoading,
           siteIds.length === 0 ? (
             <HintDoor href={tabHref("web")}>Add a website</HintDoor>
           ) : !rollup?.hasData ? (
@@ -196,9 +229,9 @@ export function BrandOverviewKpis({
           ) : rollup.totalDeltaPct !== null ? (
             <Delta value={rollup.totalDeltaPct} suffix="%" />
           ) : (
-            "Last 28 days"
-          )
-        }
+            "No earlier period"
+          ),
+        )}
       />
       <KpiTile
         className="min-h-[76px]"
@@ -208,23 +241,31 @@ export function BrandOverviewKpis({
         read={checks.isError ? { status: "error", error: checks.error } : null}
         value={latestCheck?.score == null ? null : `${latestCheck.score}%`}
         href={marketingRoutes.brandAiVisibility(brandSeg)}
-        hint={
+        hint={settled(
+          checks.isPending,
           latestCheck ? (
             `Checked ${formatRelativeTime(latestCheck.checked_at)}`
           ) : (
             <HintDoor href={marketingRoutes.brandAiVisibility(brandSeg)}>Run a check</HintDoor>
-          )
-        }
+          ),
+        )}
       />
       <KpiTile
         className="min-h-[76px]"
         label="Competitors"
-        title="Rivals on the brand's competitor list."
-        value={competitors.toLocaleString()}
+        title="Rivals tracked for this brand: websites, social accounts and the brand's own list."
+        loading={competitors.isPending}
+        read={competitors.isError ? { status: "error", error: competitors.error } : null}
+        value={rivals && rivals.length ? rivals.length.toLocaleString() : null}
         href={marketingRoutes.brandCompetitors(brandSeg)}
-        hint={
-          competitors ? "On the list" : "None added yet"
-        }
+        hint={settled(
+          competitors.isPending,
+          rivals && rivals.length ? (
+            <span title={rivals.map((r) => r.name).join(", ")}>{rivals.slice(0, 2).map((r) => r.name).join(" · ")}</span>
+          ) : (
+            <HintDoor href={marketingRoutes.brandCompetitors(brandSeg)}>Add competitors</HintDoor>
+          ),
+        )}
       />
       <KpiTile
         className="min-h-[76px]"
@@ -232,11 +273,16 @@ export function BrandOverviewKpis({
         title="Products and services found for this brand."
         loading={offerings.isPending}
         read={offerings.isError ? { status: "error", error: offerings.error } : null}
-        value={items ? items.length.toLocaleString() : null}
+        value={items && items.length ? items.length.toLocaleString() : null}
         href={marketingRoutes.brandOfferings(brandSeg)}
-        hint={
-          items && items.length ? `${confirmed.toLocaleString()} confirmed` : "None found yet"
-        }
+        hint={settled(
+          offerings.isPending,
+          items && items.length ? (
+            `${confirmed.toLocaleString()} confirmed`
+          ) : (
+            <HintDoor href={marketingRoutes.brandOfferings(brandSeg)}>Find them</HintDoor>
+          ),
+        )}
       />
     </KpiGrid>
   );
@@ -296,7 +342,9 @@ export function BrandOverviewAccounts({
   allHref: string;
   onAdd: () => void;
 }) {
-  const { busyRow, progress, trackOwn, trackAllOwn, refreshOwn } = useTrackOwn(organizationId, brandId);
+  const { busyRow, progress, trackOwn, trackAllOwn, refreshOwn, refreshAllOwn } = useTrackOwn(organizationId, brandId);
+  const tracked = accounts.filter((a) => a.trackedAccountId && a.profileId);
+  const refreshedAt = accounts.map((a) => a.lastRefreshedAt).filter((d): d is string => Boolean(d)).sort().at(-1) ?? null;
   const untracked = accounts.filter(trackableOwn);
   const sorted = [...accounts].sort((a, b) => (b.followers ?? -1) - (a.followers ?? -1));
   const shown = sorted.slice(0, ACCOUNT_PREVIEW);
@@ -314,17 +362,35 @@ export function BrandOverviewAccounts({
       count={accounts.length || undefined}
       about="The brand's own accounts with their latest numbers. Track an account to keep its numbers and posts current."
       headerExtra={
-        canEdit && untracked.length ? (
-          <Button
-            variant="outline"
-            icon={<RefreshCw />}
-            disabled={busyRow !== null}
-            title="Track every account not tracked yet and fetch its posts"
-            onClick={() => void trackAllOwn(untracked)}
-          >
-            {busyRow === "bulk" ? "Fetching…" : `Fetch all posts (${untracked.length})`}
-          </Button>
-        ) : null
+        <>
+          {refreshedAt ? (
+            <span className="hidden whitespace-nowrap type-meta text-muted-foreground md:inline" title={refreshedAt}>
+              Updated {formatRelativeTime(refreshedAt)}
+            </span>
+          ) : null}
+          {canEdit && untracked.length ? (
+            <Button
+              variant="outline"
+              icon={<UserPlus />}
+              disabled={busyRow !== null}
+              title="Track the accounts not tracked yet and fetch their posts"
+              onClick={() => void trackAllOwn(untracked)}
+            >
+              {busyRow === "bulk" ? "Tracking…" : `Track ${untracked.length}`}
+            </Button>
+          ) : null}
+          {canEdit && tracked.length ? (
+            <Button
+              variant="outline"
+              icon={<RefreshCw />}
+              disabled={busyRow !== null}
+              title="Fetch new posts for every tracked account"
+              onClick={() => void refreshAllOwn(tracked)}
+            >
+              {busyRow === "bulk-refresh" ? "Refreshing…" : "Refresh all"}
+            </Button>
+          ) : null}
+        </>
       }
       action={{ label: accounts.length > ACCOUNT_PREVIEW ? `All ${accounts.length}` : "Open", href: allHref }}
     >
@@ -362,7 +428,7 @@ export function BrandOverviewAccounts({
             {shown.map((a) => {
               const labels = accountLabels(a.displayName, a.handle, a.platform);
               const href = brandAccountHref(brandSeg, a);
-              const profileValue = a.profileUrl || a.externalUrl || a.handle;
+              const externalUrl = a.profileUrl || a.externalUrl || null;
               const handleText = a.handle
                 ? formatSocialHandle({ platform: a.platform, handle: a.handle, url: a.profileUrl })
                 : null;
@@ -392,10 +458,18 @@ export function BrandOverviewAccounts({
                           <span className="truncate text-primary">{progress}</span>
                         ) : (
                           <>
-                            <span className="shrink-0">{platformLabel(a.platform)} ·</span>
-                            {profileValue && handleText
-                              ? contactFactValue({ kind: "social_profile", value: profileValue, platform: a.platform, className: "inline-flex min-w-0 text-xs" })
-                              : <span className="truncate">{handleText ?? "No handle"}</span>}
+                            {externalUrl && handleText ? (
+                              <OutboundLink
+                                href={externalUrl}
+                                className="inline-flex min-w-0 items-center gap-1 hover:text-foreground"
+                                title={`Open on ${platformLabel(a.platform)}`}
+                              >
+                                <span className="truncate">{handleText}</span>
+                                <ExternalLink className="size-3 shrink-0" aria-hidden="true" />
+                              </OutboundLink>
+                            ) : (
+                              <span className="truncate">{handleText ?? platformLabel(a.platform)}</span>
+                            )}
                           </>
                         )}
                       </span>
@@ -417,7 +491,7 @@ export function BrandOverviewAccounts({
                       <span className="sm:hidden">Posts </span>
                       {a.postsTracked.toLocaleString()}
                     </span>
-                    <span className="whitespace-nowrap sm:text-right" title={a.lastPostAt ?? undefined}>
+                    <span className={`whitespace-nowrap sm:text-right${isStale(a.lastPostAt) ? " text-warning-ink" : ""}`} title={a.lastPostAt ?? undefined}>
                       {a.lastPostAt ? <span className="sm:hidden">Last </span> : null}
                       {lastPostLabel(a.lastPostAt, a.postsTracked)}
                     </span>
@@ -488,6 +562,7 @@ export function BrandOverviewActions({
   onAddAccount: () => void;
   onOpenActivity: () => void;
 }) {
+  const aiEstimate = useBrandCheckEstimate(brandId, organizationId, canEdit);
   const identity = marketingRoutes.brandIdentity(brandSeg);
   const link = (href: string, icon: ReactNode, label: string, meta?: ReactNode) => (
     <Button asChild variant="outline" icon={icon} meta={meta} className="w-full">
@@ -502,10 +577,21 @@ export function BrandOverviewActions({
       anchor="overview-actions"
       about="The jobs people run most on a brand. Anything that spends points names its cost before it starts."
     >
-      <div className="grid grid-cols-2 gap-2 p-3">
+      <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-1 xl:grid-cols-2">
         {canEdit ? link(marketingRoutes.smartAddEnrich(brandId), <ScanSearch />, "Enrich brand") : null}
         {link(marketingRoutes.brandDiscovery(brandSeg), <Inbox />, "Review inbox", pending === null ? "…" : pending.toLocaleString())}
-        {canEdit ? <RunCheckButton brandId={brandId} organizationId={organizationId} /> : null}
+        {canEdit ? (
+          aiEstimate.data && !aiEstimate.data.can_compare ? (
+            // The AI check compares the brand with the rivals named for it; with none, the door is naming them.
+            <Button asChild variant="outline" icon={<Swords />} className="w-full" title="Name the rivals to compare with, then run the check">
+              <Link prefetch={false} href={marketingRoutes.brandAiVisibility(brandSeg)}>
+                Set up AI check
+              </Link>
+            </Button>
+          ) : (
+            <RunCheckButton brandId={brandId} organizationId={organizationId} />
+          )
+        ) : null}
         {link(`${identity}/voice`, <Mic />, "Measure voice")}
         {link(marketingRoutes.brandCompetitors(brandSeg), <Swords />, "Add competitor")}
         {link(marketingRoutes.brandAssets(brandSeg, "generate"), <ImagePlus />, "Generate image")}
@@ -553,15 +639,18 @@ export function BrandOverviewKnown({
   brandId,
   brandSeg,
   organizationId,
+  siteIds,
   profile,
   personas,
 }: {
   brandId: string;
   brandSeg: string;
   organizationId: string;
+  siteIds: readonly string[];
   profile: BrandProfile;
   personas: readonly BrandPersona[];
 }) {
+  const rivals = useBrandCompetitorList(brandId, siteIds);
   const brief = useStrategyBrief("brand", brandId, organizationId);
   const offerings = useOfferingItems(brandId);
   const identity = marketingRoutes.brandIdentity(brandSeg);
@@ -571,8 +660,10 @@ export function BrandOverviewKnown({
   const lines = brief.data?.serviceLines.map((line) => line.name).filter(Boolean) ?? [];
   const strategyValue = profile.positioning?.trim() || join(lines) || null;
   const sortedPersonas = [...personas].sort((a, b) => Number(b.is_primary) - Number(a.is_primary));
-  const voice = profile.voice_tone?.trim() || join(profile.personality ?? [], 4);
-  const competitors = (profile.competitors ?? []).map((c) => c.name).filter(Boolean);
+  // Tone words only: a measured voice line ("mixed sentence lengths of about 31 words…") is a report, not a trait.
+  const toneLine = profile.voice_tone?.trim() ?? "";
+  const voice = join(profile.personality ?? [], 4) || (toneLine && toneLine.length <= 60 && !/\d/.test(toneLine) ? toneLine : toneLine ? "Measured" : null);
+  const competitors = (rivals.data ?? []).map((c) => c.name).filter(Boolean);
   const items = [...(offerings.data ?? [])]
     .filter((i) => i.status !== "dismissed")
     .sort((a, b) => Number(b.status === "confirmed") - Number(a.status === "confirmed"));
@@ -611,7 +702,7 @@ export function BrandOverviewKnown({
       value: join(competitors),
       meta: competitors.length ? String(competitors.length) : undefined,
       href: marketingRoutes.brandCompetitors(brandSeg),
-      emptyLabel: "Add competitors",
+      emptyLabel: rivals.isPending ? "" : "Add competitors",
     },
     {
       key: "offerings",
@@ -669,6 +760,18 @@ export function BrandOverviewKnown({
 
 /* ------------------------------------------------------------------------------------------------ */
 
+/** The same picture at several sizes (logo-150x150.png, logo.png) shows once. */
+function dedupeLogos(logos: OverviewAsset[]): OverviewAsset[] {
+  const seen = new Set<string>();
+  return logos.filter((asset) => {
+    const file = (asset.preview ?? asset.id).split("?")[0].split("/").pop() ?? asset.id;
+    const key = file.toLowerCase().replace(/[-_@]?\d+x\d+(?=\.)/, "").replace(/[-_]?(scaled|small|large|thumb)(?=\.)/, "");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export interface OverviewSwatch {
   id: string;
   value: string;
@@ -707,29 +810,22 @@ export function BrandOverviewLook({
       <div className="grid gap-3 p-3">
         {logos.length ? (
           <div className="grid grid-cols-4 gap-2">
-            {logos.slice(0, 4).map((asset) => (
+            {dedupeLogos(logos).slice(0, 4).map((asset) => (
               <AssetTile key={asset.id} asset={asset} onOpen={onOpen} />
             ))}
           </div>
         ) : null}
         {colors.length ? (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-2">
-            {colors.slice(0, 8).map((swatch) => (
-              <div key={swatch.id} className="flex min-w-0 flex-col items-stretch gap-1">
-                <span
-                  className="h-11 rounded-md border border-border shadow-sm"
-                  style={{ background: swatch.value }}
-                  title={swatch.name && swatch.name !== swatch.value ? `${swatch.name} · ${swatch.value}` : swatch.value}
-                />
-                <Button
-                  variant="quiet"
-                  aria-label={`Copy color ${swatch.value}`}
-                  title={`Copy ${swatch.value}`}
-                  onClick={() => void copyText(swatch.value, `${swatch.value} copied`)}
-                >
-                  {swatch.value.toUpperCase()}
-                </Button>
-              </div>
+          <div className="flex flex-wrap items-center gap-1">
+            {colors.slice(0, 10).map((swatch) => (
+              <Button
+                key={swatch.id}
+                variant="quiet"
+                aria-label={`Copy color ${swatch.value}`}
+                title={`${swatch.name && swatch.name !== swatch.value ? `${swatch.name} · ` : ""}${swatch.value.toUpperCase()} · click to copy`}
+                onClick={() => void copyText(swatch.value, `${swatch.value} copied`)}
+                icon={<span className="block size-5 rounded-full border border-border" style={{ background: swatch.value }} />}
+              />
             ))}
           </div>
         ) : null}
@@ -759,3 +855,75 @@ export function BrandOverviewLook({
   );
 }
 
+
+/* ------------------------------------------------------------------------------------------------ */
+
+interface NextStep {
+  key: string;
+  icon: ReactNode;
+  label: string;
+  href: string;
+  primary?: boolean;
+}
+
+/**
+ * "What to do next": the top three moves the brand's real state calls for (findings waiting, accounts
+ * not tracked or gone quiet, no rivals, Search Console not connected, sparse facts). One fixed-height
+ * line from first paint — a shimmer until every read it judges has settled — so nothing below moves.
+ */
+export function BrandOverviewNext({
+  brandId,
+  brandSeg,
+  siteIds,
+  accounts,
+  accountsLoading,
+  pending,
+  factCount,
+  canEdit,
+  tabHref,
+}: {
+  brandId: string;
+  brandSeg: string;
+  siteIds: readonly string[];
+  accounts: readonly AccountRow[];
+  accountsLoading: boolean;
+  pending: number | null;
+  factCount: number;
+  canEdit: boolean;
+  tabHref: (tab: string) => string;
+}) {
+  const rivals = useBrandCompetitorList(brandId, siteIds);
+  const gsc = useGscPortfolioRollup(siteIds, "28d");
+  const settling = accountsLoading || pending === null || rivals.isPending || gsc.isLoading;
+  const untracked = accounts.filter(trackableOwn);
+  const quiet = accounts.filter((a) => a.trackedAccountId && a.lastPostAt && isStale(a.lastPostAt));
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
+  const steps: NextStep[] = [];
+  if (pending) steps.push({ key: "inbox", icon: <Inbox />, label: `Review ${plural(pending, "finding")}`, href: marketingRoutes.brandDiscovery(brandSeg), primary: true });
+  if (canEdit && factCount < 5) steps.push({ key: "enrich", icon: <ScanSearch />, label: "Enrich the brand", href: marketingRoutes.smartAddEnrich(brandId), primary: !pending });
+  if (!accounts.length) steps.push({ key: "accounts", icon: <UserPlus />, label: "Add social accounts", href: tabHref("social") });
+  if (canEdit && untracked.length) steps.push({ key: "track", icon: <UserPlus />, label: `Track ${plural(untracked.length, "account")}`, href: tabHref("social") });
+  if (rivals.isSuccess && !rivals.data.length) steps.push({ key: "rivals", icon: <Swords />, label: "Add competitors", href: marketingRoutes.brandCompetitors(brandSeg) });
+  if (siteIds.length && gsc.rollup && !gsc.rollup.hasData) steps.push({ key: "gsc", icon: <ScanSearch />, label: "Connect Search Console", href: marketingRoutes.connectionsGoogle() });
+  if (quiet.length) steps.push({ key: "quiet", icon: <RefreshCw />, label: `${plural(quiet.length, "account")} quiet 90+ days`, href: tabHref("social") });
+
+  return (
+    <div className="flex h-11 min-w-0 items-center gap-2 overflow-x-auto rounded-lg border border-border bg-card px-3" data-surface-value="overview-next">
+      <span className="shrink-0 type-label">Next</span>
+      {settling ? (
+        <Skeleton motion="shimmer" className="h-6 w-80 max-w-full" />
+      ) : steps.length ? (
+        steps.slice(0, 3).map((step) => (
+          <Button key={step.key} asChild variant={step.primary ? "primary" : "outline"} icon={step.icon} className="shrink-0">
+            <Link prefetch={false} href={step.href}>
+              {step.label}
+            </Link>
+          </Button>
+        ))
+      ) : (
+        <span className="type-secondary text-muted-foreground">Nothing waiting</span>
+      )}
+    </div>
+  );
+}

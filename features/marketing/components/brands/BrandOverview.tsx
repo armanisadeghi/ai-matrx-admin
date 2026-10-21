@@ -66,14 +66,12 @@ function firstOfKind(facts: BusinessFact[], kind: BusinessFactKind): BusinessFac
 
 export function BrandOverviewAbout({
   facts,
-  description,
   industry,
   websiteUrl,
   canEdit,
   onAdd,
 }: {
   facts: BusinessFact[];
-  description: string | null;
   industry: string | null;
   websiteUrl: string | null;
   canEdit: boolean;
@@ -86,15 +84,6 @@ export function BrandOverviewAbout({
   };
   const fields: ReadonlyArray<{ label: string; value: ReactNode | null; wide?: boolean }> = [
     { label: "Tagline", value: textOf("tagline") || null, wide: true },
-    {
-      label: "Description",
-      wide: true,
-      value: description ? (
-        <span className="line-clamp-4" title={description}>
-          {description}
-        </span>
-      ) : null,
-    },
     { label: "Industry", value: industry || null },
     { label: "Founded", value: textOf("founded") || null },
     { label: "Legal name", value: textOf("legal_name") || null },
@@ -138,7 +127,8 @@ export function BrandOverviewContact({
   onOpen: () => void;
 }) {
   const rows = CONTACT_KINDS.map(({ kind, label }) => {
-    const matches = facts.filter((fact) => fact.kind === kind);
+    // One row per distinct value (the same fact kept from two sources counts once, as on the Facts tab).
+    const matches = [...new Map(facts.filter((fact) => fact.kind === kind).map((fact) => [businessFactValueText(fact.value).trim().toLowerCase().replace(/\s+/g, " "), fact])).values()];
     const first = matches[0];
     const value = first
       ? businessFactValueText(first.value)
@@ -270,7 +260,9 @@ export function AssetTile({ asset, onOpen }: { asset: OverviewAsset; onOpen: () 
       onClick={onOpen}
       title={asset.label}
       aria-label={asset.label}
-      className="relative aspect-square overflow-hidden rounded-md border border-border bg-background"
+      className="relative aspect-square overflow-hidden rounded-md border border-border"
+      /* ui-exception: a logo sits on a neutral checkerboard, so a white mark and a dark outline both show in either theme */
+      style={{ background: "repeating-conic-gradient(rgb(128 128 128 / 0.18) 0 25%, rgb(128 128 128 / 0.06) 0 50%) 0 0 / 12px 12px" }}
     >
       {image.src ? (
         <img
@@ -312,6 +304,7 @@ export function BrandHomeSkeleton() {
           </div>
         </div>
         <div className="h-[33px] rounded-lg border border-border bg-card" />
+        <div className="h-11 rounded-lg border border-border bg-card" />
         {/* The Overview's KPI band (KpiGrid: 2 / 3 / 6 across), each tile its loaded height. */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {Array.from({ length: 6 }, (_, i) => (
