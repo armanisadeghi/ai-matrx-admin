@@ -322,6 +322,8 @@ On a phone, logged into an org:
 
 ## Change log
 
+
+- 2026-10-21 — **Bulk twins.** Label batches: Void batches (`labels/bulkVerbs.ts`); certified printers: Re-check printers and Delete certifications (`labels/printers/bulkVerbs.ts`), both from the row menus' own ids and doors.
 - 2026-09-19 — **THE FOURTH ORGANIZATION STATE (R37).** The "choose an organization" state on `AssetsList`, `IntakeAnswerQueue`, `LabelBatchesPage` and `CertifiedPrintersPage` was gated on `selectOrgBootstrapResolved`, which `setOrgBootstrapFailure` sets TRUE — so a FAILED organization read showed the refusal. All four now read `useOrganizationRequired().organizationState` and render `OrganizationContextNotice`: `required` carries the picker, `unavailable` says we could not check and carries Try again. Guard: `pnpm check:org-three-states` rule 5.
 - 2026-09-17 — **Removed a double `decodeURIComponent` on `code`** in `app/(public)/l/[code]/page.tsx` (the label resolver) — the App Router already decodes the value, so a code carrying a literal `%` threw `URIError` on the second decode. Part of the repo-wide `pnpm check:route-param-decode` census/guard; see `lib/detail/FEATURE.md` Change Log.
 - 2026-09-11 — **The failed-printer gate is a knob, not a refusal in code** (ruling the
