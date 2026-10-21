@@ -154,7 +154,12 @@ function mapLegacySiteSub(brandSeg: string, siteSeg: string, sub: string): strin
 export const marketingRoutes = {
   // ── Agency plane ───────────────────────────────────────────────────────
   home: () => "/marketing",
+  /** Brands front door (menus point at front doors): guests get the landing, signed in forwards to {@link brandsAll}. */
   brands: () => "/marketing/brands",
+  /** The brands list (feature-pages contract: the list lives at /all). */
+  brandsAll: () => "/marketing/brands/all",
+  /** Add a brand: the full-page create (the same body the "Add brand" window opens). */
+  brandsNew: () => "/marketing/brands/new",
   /** New-website intake (static child of /brands so it can't collide with a brand key). */
   /** Smart Add (/smart-add/company | /person). A prefill makes a deep link that starts on open (smart-add/smartAddUrl.ts). */
   smartAddBrand: (link?: SmartAddLink) => smartAddHref(link),
