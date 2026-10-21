@@ -40,6 +40,10 @@ plan — then challenge his assumptions too, still never ask facts.
 
 - **Frontier** = surviving nodes whose prerequisites are settled. A question whose answer depends on
   another question open this round waits for a later round.
+- **Each round goes out through the question tool** (`AskUserQuestion`): one call per round, up to
+  four quick questions or one complex one, recommendation as the first option marked "(Recommended)",
+  background and what the best do in the question and option descriptions. The `Q<n>` shape below is
+  what goes into those fields. No question tool, or the owner is not in the chat → the Question Desk.
 - **Round size:** per [talk to Arman like a person](/policies/talk-to-arman-like-a-person.md); the
   rest wait on the Question Desk ([ask-arman](/skills/ask-arman/SKILL.md)), ordered by how much of
   the tree each answer unblocks.
@@ -53,7 +57,7 @@ plan — then challenge his assumptions too, still never ask facts.
 emojis. Then the question, in one sentence.
 - **Closed:** options only where they differ in approach, never just in magnitude; the best practice in
   one sentence; **Rec:** one recommendation + the companion work that makes it true + why.
-- **Open (vision):** ask open, no rec; capture his words verbatim.
+- **Open (vision):** ask open in plain chat (not the question tool), no rec; capture his words verbatim.
 - **About a flow, surface, or behavior:** attach the clickable URL + where to look, OR a mermaid
   diagram of what actually happens, OR a throwaway prototype (Artifact or demo route) labeled
   PROTOTYPE. A question he cannot answer from what you gave him is a defect in the question — and often

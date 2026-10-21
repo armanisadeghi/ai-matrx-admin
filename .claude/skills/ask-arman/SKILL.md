@@ -3,7 +3,7 @@ name: ask-arman
 subject: platform/question-desk
 type: Skill
 title: "ask-arman — the homework gate, the Question Desk, and the interview"
-description: "The gate and path for any question an agent wants Arman to decide. Use when about to ask him anything, ending a turn on a question for him, writing 'needs Arman's decision', marking work blocked on him, or on /ask-arman. NOT for a step only he can perform (use a guided session)."
+description: "The gate and path for any question an agent wants Arman to decide: homework first, then the question tool in chat. Use when about to ask him anything, ending a turn on a question for him, writing 'needs Arman's decision', marking work blocked on him, or on /ask-arman. NOT for a step only he can perform (use a guided session)."
 tags: [questions, decisions, arman, discipline, operations]
 timestamp: 2026-10-02T00:00:00Z
 ---
@@ -17,8 +17,9 @@ timestamp: 2026-10-02T00:00:00Z
 # ask-arman — the homework gate, the desk, the interview
 
 How every sentence to him is shaped: [talk to Arman like a person](/policies/talk-to-arman-like-a-person.md).
-Default to stating numbered
-decisions, then one "confirm and I start". This skill is the path a real question travels.
+What you can decide, state as numbered decisions with one "confirm and I start". What survives
+the gate below is truly his: ask it with the question tool (§2). This skill is the path a real
+question travels.
 
 ## 1. The homework gate — run in order, record each result
 
@@ -40,10 +41,26 @@ decisions, then one "confirm and I start". This skill is the path a real questio
 5. **A human step?** His account, his screen, money, a credential → one guided session in chat
    ([rule 11](/policies/talk-to-arman-like-a-person.md)), not a question.
 
+## 2. Ask it in chat with the question tool
 
-## 3. File it on the Question Desk
+A question that survives §1 is his to answer, and asking it is the right move, not a failure.
 
-The desk is the in-app surface `/administration/question-desk/<interview id>`, driven by the
+1. Use the question tool (`AskUserQuestion`) in the chat he is in. Never bury it in a long
+   message, and never send it only to the Question Desk while he is talking with you.
+2. **Shape:** the question names the thing in plain words with one line of background and what he
+   ruled before (or "never ruled"); each option's description says its effect and what the best
+   companies do; your recommendation is the first option, labelled "(Recommended)". A question
+   about a screen carries the page's full link ([rule 22](/policies/talk-to-arman-like-a-person.md)).
+3. Up to four quick questions may share one call; a complex one goes alone.
+4. Keep building everything that does not depend on the answer; say what ships with your
+   recommendation if he skips it. Record his answer verbatim in the owning `VISION.md` the same turn.
+5. No question tool in your harness, or he is not in this conversation (a scheduled or background
+   run) → file it on the Question Desk (§3) and keep working.
+
+## 3. File it on the Question Desk (when it can wait)
+
+For a question that can wait while you finish other work, or when he is not in the chat. The desk is the in-app surface `https://manage.aimatrx.com/administration/question-desk/<interview id>`
+(send him the tool's full `url`), driven by the
 AI Dream MCP tool `question_desk`. There is no markdown ledger.
 
 1. `question_desk(action='list_interviews')`, then `get_interview` on the open ones; a question
@@ -91,11 +108,12 @@ read it verbatim, apply it, reverse the default where it differs.
 | "This needs Arman's decision" | Tests 1–4 were not run. |
 | "It's blocked on him" | Only a one-way door blocks. |
 | "I don't guess on a permissions question" | Champions decide it; the default is reversible. |
-| "I end my turn there on that one question" | File it, say it, keep building. |
+| "I end my turn there on that one question" | Ask it with the question tool, keep building what does not depend on it. |
+| "Asking him looks like I didn't do my homework" | After §1, not asking is the failure. Use the question tool. |
 | "Which one do you want?" | A fork without a recommendation is homework handed to him. |
 
 ## Red flags
 
 - "Let me check with Arman before I…" before grepping `DECISIONS.md`.
 - "Blocked" in your status with no one-way door.
-- A question containing a path, a code, or "see".
+- A question containing a file path, a code, or "see" (a page it is about carries its full link instead).
