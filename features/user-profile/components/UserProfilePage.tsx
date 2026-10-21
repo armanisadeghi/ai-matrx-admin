@@ -72,6 +72,7 @@ import { EmergencyContactListEditor } from "./EmergencyContactListEditor";
 import { AddressFields, type AddressValues } from "./AddressFields";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { AccountAccessSection } from "@/features/user-profile/account-access/AccountAccessSection";
+import { AuthenticatorSection } from "@/features/user-profile/account-access/AuthenticatorSection";
 import { AccountExportSection } from "@/features/user-profile/account-export/AccountExportSection";
 import { AccountLifecycleSection } from "@/features/account-lifecycle/AccountLifecycleSection";
 
@@ -205,6 +206,7 @@ export function UserProfilePage({
     >
       <HeaderSection account={account.data} />
       <AccountAccessSection />
+      <AuthenticatorSection />
       <AccountExportSection />
       <AccountLifecycleSection />
       <DisplaySection

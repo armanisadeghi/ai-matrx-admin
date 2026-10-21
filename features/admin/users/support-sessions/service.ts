@@ -114,8 +114,8 @@ export async function listSupportSessionsForTarget(targetUserId: string, limit =
   }));
 }
 
-export async function currentSupportSession(): Promise<CurrentSupportSession | null> {
-  const { data, error } = await createClient().schema("admin").rpc("support_session_current");
+export async function currentSupportSession(client: Pick<ReturnType<typeof createClient>, "schema"> = createClient()): Promise<CurrentSupportSession | null> {
+  const { data, error } = await client.schema("admin").rpc("support_session_current");
   if (error) throw error;
   return data?.[0] ?? null;
 }
@@ -156,8 +156,8 @@ export function clearSupportSessionCookie(): void {
  * Login details belong to the person: inside a support session, changing the email or signing out
  * their other devices is refused. Asks the database (the sign-in's own session id), not the cookie.
  */
-export async function assertNotInSupportSession(): Promise<void> {
-  const current = await currentSupportSession();
+export async function assertNotInSupportSession(client: Pick<ReturnType<typeof createClient>, "schema"> = createClient()): Promise<void> {
+  const current = await currentSupportSession(client);
   if (current?.status === "active") {
     throw new Error("Login details can't be changed during a support session.");
   }
