@@ -42,15 +42,21 @@ jest.mock("@/features/sharing/service/tableTransfer", () => ({
 let role: { isAdmin: boolean; loading: boolean } = { isAdmin: true, loading: false };
 jest.mock("@/features/organizations/hooks", () => ({
   useUserRole: () => role,
-  useOrganizationMembers: () => ({
+  useOrganizationMembers: (orgId: string | undefined) => {
+    mockMemberReads.push(orgId ?? null);
+    return {
     members: [
       { userId: ME, role: "owner", user: { id: ME, email: "admin@admin.com", displayName: "Morgan Hale" } },
       { userId: DR, role: "admin", user: { id: DR, email: "test@test.com", displayName: "Dr. Reyes" } },
     ],
     loading: false,
     error: null,
-  }),
+    };
+  },
 }));
+// Which organization's roster each render asked for (null = none): the offer reads it only once
+// its transfer dialog opens.
+const mockMemberReads: (string | null)[] = [];
 jest.mock("@/features/access-gate/service/accessDeniedContext", () => ({
   fetchAccessDeniedContext: async () => ({
     status: "denied",
@@ -214,8 +220,11 @@ describe("a Table's no-access page", () => {
     const offer = q("[data-table-transfer-offer]")!;
     expect(offer.textContent).toContain("You are not named on this table.");
     expect(offer.textContent).toContain("does not open for the owners and admins of Cedar Hollow Veterinary");
+    // A closed offer reads no roster.
+    expect(mockMemberReads.filter(Boolean)).toEqual([]);
     act(() => (q("[data-table-transfer-open]") as HTMLButtonElement).click());
     await flush();
+    expect(mockMemberReads).toContain(ORG);
     expect(q("[data-table-transfer]")?.textContent).toContain("Dr. Reyes keeps 1 personal table");
     expect(fetchMemberPersonalTables).not.toHaveBeenCalled();
   });
