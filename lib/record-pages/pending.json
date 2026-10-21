@@ -1252,7 +1252,6 @@
   "features/ai-models/components/settings/SettingTable.tsx",
   "features/ai-models/translation/components/TranslationGrid.tsx",
   "features/ai-test-mode/admin/AiTestModeDesk.tsx",
-  "features/ai-work/components/ClaudeAccountsPanel.tsx",
   "features/ai-work/components/CodingProjectOrganizations.tsx",
   "features/ai-work/components/CursorAccountsPanel.tsx",
   "features/ai-work/components/connections/CodingAppsSection.tsx",

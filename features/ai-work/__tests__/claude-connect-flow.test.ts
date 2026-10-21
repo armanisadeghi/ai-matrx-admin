@@ -166,4 +166,30 @@ describe("runClaudeConnect", () => {
     const h = harness({ starts: [done] });
     expect((await runClaudeConnect(h.deps)).kind).toBe("signed_in");
   });
+
+  /**
+   * FORCING GUARD — Arman, 2026-10-21: his sandbox took 3 min 42 s from create to ready
+   * (sbx-efe54f2726a4, 16:09:20 → 16:13:02 UTC) and the old 3-minute cut gave up on it. A real
+   * cold start must end with the link, and the screen must be told each step as it happens.
+   */
+  it("a 3 min 42 s cold start still ends with the link, and every step is reported", async () => {
+    const h = harness({ starts: [starting, link] });
+    let clock = 0;
+    h.deps.now = () => clock;
+    h.deps.sleep = jest.fn(async (ms: number) => {
+      clock += ms;
+    });
+    h.deps.readiness = jest.fn(async () =>
+      clock < 150_000
+        ? { state: "provisionable" as const, box_status: "creating" }
+        : clock < 222_000
+          ? { state: "provisionable" as const, box_status: "running", reason: "app not answering yet" }
+          : { state: "ready" as const, box_status: "ready" },
+    );
+    const phases: string[] = [];
+    h.deps.onPhase = (phase) => phases.push(phase);
+    h.deps.timeoutMs = undefined;
+    expect(await runClaudeConnect(h.deps)).toEqual({ kind: "awaiting", status: link });
+    expect(phases).toEqual(["sandbox", "app", "link"]);
+  });
 });

@@ -22,7 +22,31 @@ import type { OwnPlanStatus } from "@/features/ai-work/lib/ownPlan";
 export type ConnectReadiness = {
   state: "ready" | "provisionable" | "unavailable";
   reason?: string | null;
+  /** The box's own ledger status ("creating", "starting", "running", "ready"), when it has one. */
+  box_status?: string | null;
 };
+
+/**
+ * Where a Connect stands, so the screen can say what is happening instead of
+ * one spinner: the sandbox is being created, it is up and its app is starting,
+ * or Claude's sign-in link is being asked for.
+ */
+export type ConnectPhase = "sandbox" | "app" | "link";
+
+const BOX_UP = new Set(["running", "ready"]);
+
+/** The phase a readiness answer means. */
+export function phaseOf(verdict: ConnectReadiness): ConnectPhase {
+  if (verdict.state === "ready") return "link";
+  return verdict.box_status && BOX_UP.has(verdict.box_status) ? "app" : "sandbox";
+}
+
+/** The plain words for a phase, numbered so the person sees how far along it is. */
+export function phaseWords(phase: ConnectPhase): string {
+  if (phase === "sandbox") return "Step 1 of 3: starting your cloud sandbox";
+  if (phase === "app") return "Step 2 of 3: sandbox is up, its app is starting";
+  return "Step 3 of 3: asking Claude for the sign-in link";
+}
 
 export type ConnectOutcome =
   | { kind: "signed_in"; status: OwnPlanStatus }
@@ -47,9 +71,19 @@ export type ConnectDeps = {
   signal: AbortSignal;
   timeoutMs?: number;
   callTimeoutMs?: number;
+  /** Told each time the flow learns it moved to another phase (with the server's own sentence). */
+  onPhase?: (phase: ConnectPhase, detail: string | null) => void;
 };
 
-export const CONNECT_TIMEOUT_MS = 180_000;
+/**
+ * The longest a Connect waits for the link. A cold sandbox is slow: on
+ * 2026-10-21 Arman's box took 3 min 42 s from create to ready, past the old
+ * 3-minute cut, so the flow gave up on a box that was about to answer. Six
+ * minutes covers a real cold start with room to spare.
+ */
+export const CONNECT_TIMEOUT_MS = 360_000;
+/** What the screen says to expect while the sandbox starts (measured, not hoped). */
+export const COLD_START_EXPECTATION = "A cold start takes up to about 4 minutes.";
 /** One request's longest wait. The server answers every connect call at once. */
 export const CONNECT_CALL_TIMEOUT_MS = 25_000;
 /** Consecutive unreachable answers before the flow says so instead of waiting. */
@@ -58,7 +92,7 @@ const FIRST_DELAY_MS = 1_500;
 const MAX_DELAY_MS = 6_000;
 
 export const SANDBOX_TIMEOUT_MESSAGE =
-  "Your sandbox did not finish starting. Try again in a moment.";
+  "Your cloud sandbox did not finish starting within 6 minutes. Try again; if it fails twice, the sandbox service is having trouble.";
 export const OFFLINE_MESSAGE =
   "Could not reach AI Matrx. Check your connection, then try again.";
 
@@ -102,6 +136,12 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
   let lastReason: string | null = null;
   let unreachable = 0;
   let readyStarts = 0;
+  let phase: ConnectPhase | null = null;
+  const moveTo = (next: ConnectPhase, detail: string | null) => {
+    if (next === phase) return;
+    phase = next;
+    deps.onPhase?.(next, detail);
+  };
 
   /** A failed call: rethrow what ends the flow, else remember why and go on. */
   const absorb = (cause: unknown): ConnectOutcome | null => {
@@ -122,6 +162,7 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
       if (status.signed_in) return { kind: "signed_in", status };
       if (status.sign_in_url) return { kind: "awaiting", status };
       lastReason = status.detail ?? null;
+      if (phase === null) moveTo("sandbox", lastReason);
       return null;
     } catch (cause) {
       return absorb(cause);
@@ -153,6 +194,7 @@ export async function runClaudeConnect(deps: ConnectDeps): Promise<ConnectOutcom
     if (verdict.state === "unavailable") {
       return { kind: "failed", message: verdict.reason || lastReason || SANDBOX_TIMEOUT_MESSAGE };
     }
+    moveTo(phaseOf(verdict), verdict.reason ?? null);
     if (verdict.state !== "ready") continue;
 
     // The box answers: the sign-in can now give its link. Twice without one is
@@ -295,6 +337,8 @@ export type PendingConnect = {
   slot: string;
   /** When Connect was pressed (ms): the elapsed-time line counts from here. */
   startedAt: number;
+  /** The account row it was started from (its email), so the reload shows the same row busy. */
+  forEmail?: string | null;
 };
 
 export const PENDING_CONNECT_KEY = "matrx:claude-connect-pending";
@@ -308,7 +352,8 @@ export function parsePendingConnect(raw: string | null): PendingConnect | null {
     if (typeof slot !== "string" || !slot || typeof startedAt !== "number" || !Number.isFinite(startedAt)) {
       return null;
     }
-    return { slot, startedAt };
+    const forEmail = (value as Record<string, unknown>).forEmail;
+    return typeof forEmail === "string" && forEmail ? { slot, startedAt, forEmail } : { slot, startedAt };
   } catch {
     return null;
   }

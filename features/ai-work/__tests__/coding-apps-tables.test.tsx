@@ -16,11 +16,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
-jest.mock("@/lib/python-client", () => ({ getAccessTokenOrNull: async () => null }));
+jest.mock("@/lib/python-client", () => ({ getAccessTokenOrNull: async () => null, resolveBaseUrl: () => "https://server.test/" }));
 jest.mock("@/features/files/devices/console/useDeviceClient", () => ({ useDeviceClient: () => { throw new Error("not in this test"); } }));
 jest.mock("@/features/ai-work/lib/computerChooser", () => ({ listChooserComputers: async () => [] }));
 
 import { AppsTables, type AppsTablesProps } from "@/features/ai-work/components/connections/CodingAppsSection";
+import type { ClaudeCloudDelivery } from "@/features/ai-work/components/connections/ClaudeCloudDelivery";
 import { awayCount, chatCount, compareNext, nextGroup, nextRanks, statusWords, type AppChats } from "@/features/ai-work/lib/codingApps";
 
 const NOW = Date.now();
@@ -143,3 +144,57 @@ describe("the desktop's rules, mirrored", () => {
     expect(statusWords({ status: "folder_missing", first_launch_ms: 1, running: false }).word).toBe("Folder missing");
   });
 });
+
+/**
+ * FORCING GUARD — Arman, 2026-10-21: "I can see 10+ of my Claude accounts … isn't the system smart
+ * enough to know that these are the same account?" Cloud delivery is drawn ON the Claude account
+ * rows the computer already lists (matched by email), with a per-row action; a cloud account the
+ * computer has not seen still gets a row. There is no second, disconnected list.
+ */
+describe("Claude cloud delivery on the account rows", () => {
+  function cloud(over: Partial<ClaudeCloudDelivery> = {}): ClaudeCloudDelivery {
+    return {
+      rows: [
+        { id: "c1", label: "A@Example.com", email: "A@Example.com", status: "connected", slot: "primary" },
+        { id: "c9", label: "far@example.com", email: "far@example.com", status: "connected", slot: "x1acct" },
+      ],
+      loadError: null, reload: jest.fn(), running: null, resuming: false, failure: null, capacity: null, note: null, signingOut: null,
+      start: jest.fn(), finish: jest.fn(), cancel: jest.fn(), signOut: jest.fn(), dismiss: jest.fn(), retryAfterStop: jest.fn(),
+      ...over,
+    };
+  }
+  const acctTable = () => tables()[1]!;
+  const rowOf = (email: string) => [...acctTable().querySelectorAll("tbody tr")].find((tr) => tr.textContent?.includes(email));
+
+  it("each Claude row says whether its cloud sessions get messages; the unseen cloud account gets its own row", () => {
+    render(<AppsTables {...props({ cloud: cloud() })} />);
+    expect(headers(acctTable())).toContain("Cloud sessions");
+    expect(rowOf("a@example.com")?.textContent).toContain("Ready");
+    expect(rowOf("b@example.com")?.textContent).toContain("Needs one sign-in");
+    expect(rowOf("far@example.com")?.textContent).toContain("Ready");
+    // One concept, one place: no separate "Claude cloud accounts" table.
+    expect(tables()).toHaveLength(2);
+  });
+
+  it("the row's cloud action starts the sign-in FOR that account; a ready account's action is dimmed", () => {
+    const c = cloud();
+    render(<AppsTables {...props({ cloud: c })} />);
+    const action = (email: string) =>
+      [...(rowOf(email)?.querySelectorAll("button") ?? [])].find((b) => (b.getAttribute("aria-label") ?? "").includes("cloud sessions"))!;
+    expect(action("b@example.com").disabled).toBe(false);
+    act(() => action("b@example.com").click());
+    expect(c.start).toHaveBeenCalledWith("b@example.com");
+    expect(action("a@example.com").disabled).toBe(true);
+  });
+
+  it("a running sign-in is shown on its own row and names the account, step and time", () => {
+    const c = cloud({ running: { forEmail: "b@example.com", slot: "s", startedAt: Date.now() - 65_000, step: "starting", phase: "app", phaseDetail: null, link: null } });
+    render(<AppsTables {...props({ cloud: c })} />);
+    expect(rowOf("b@example.com")?.textContent).toContain("Signing in");
+    const panel = host.querySelector("[data-cloud-sign-in=starting]")!;
+    expect(panel.textContent).toContain("Connecting b@example.com for cloud sessions");
+    expect(panel.textContent).toContain("Step 2 of 3");
+    expect(panel.textContent).toContain("up to about 4 minutes");
+  });
+});
+

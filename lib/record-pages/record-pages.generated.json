@@ -7558,7 +7558,6 @@
   "features/ai-models/translation/components/NeedsYouQueue.tsx": "none — rows are translation settings awaiting a decision, not records of a registry token",
   "features/ai-models/translation/components/TranslationGrid.tsx": "pending",
   "features/ai-test-mode/admin/AiTestModeDesk.tsx": "pending",
-  "features/ai-work/components/ClaudeAccountsPanel.tsx": "pending",
   "features/ai-work/components/CodingProjectOrganizations.tsx": "pending",
   "features/ai-work/components/CursorAccountsPanel.tsx": "pending",
   "features/ai-work/components/connections/CodingAppsSection.tsx": "pending",
