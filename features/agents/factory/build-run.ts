@@ -25,6 +25,7 @@ export const BUILD_WORKFLOW_KEY = "agent_build";
 /** The columns of `workflow.run` the build view reads. */
 export interface BuildRunRow {
   id: string;
+  definition_id: string | null;
   status: string;
   input: Record<string, unknown> | null;
   output: Record<string, unknown> | null;
@@ -37,7 +38,7 @@ export interface BuildRunRow {
 }
 
 export const BUILD_RUN_COLUMNS =
-  "id, status, input, output, error, interrupt_payload, last_checkpoint_id, created_at, started_at, completed_at";
+  "id, definition_id, status, input, output, error, interrupt_payload, last_checkpoint_id, created_at, started_at, completed_at";
 
 /** One node's lifecycle event, kept from the run's event feed (only the nodes a step maps to). */
 export interface NodeLogEntry {
@@ -266,7 +267,7 @@ export function buildDetailFromRun(row: BuildRunRow, log: NodeLogEntry[] = []): 
     facts: output.jv_contract || output.intake ? { greenfield: !mandateKey } : null,
     agent_id: savedAgent,
     send_backs: typeof final.send_backs === "number" ? final.send_backs : 0,
-    outcome,
+    outcome: outcome as FactoryBuildState["outcome"],
     proof: [],
   };
   // The engine's own sentence for a run that stopped on an error is already plain ("Save the agent was
@@ -291,6 +292,7 @@ export function buildDetailFromRun(row: BuildRunRow, log: NodeLogEntry[] = []): 
 
 export interface BuildRunListItem {
   id: string;
+  definitionId: string | null;
   status: string;
   spineStatus: string;
   createdAt: string;
@@ -306,6 +308,7 @@ export function listItemFromRun(row: BuildRunRow): BuildRunListItem {
   const state = detail.state ?? {};
   return {
     id: row.id,
+    definitionId: row.definition_id,
     status: row.status,
     spineStatus: detail.spineStatus,
     createdAt: row.created_at,

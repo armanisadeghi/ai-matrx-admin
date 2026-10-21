@@ -36,6 +36,7 @@ import {
 } from "../types";
 import { StartBuildDialog } from "./StartBuildDialog";
 import { SpineStatusChip, formatDuration } from "./factory-shared";
+import { BuildRunsSection } from "./BuildRunsSection";
 import { FactoryDoorsTable } from "./FactoryDoorsTable";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { Cost } from "@/components/cost/Cost";
@@ -314,6 +315,7 @@ export function FactoryBuildsPage() {
       <div className="flex h-[36rem] shrink-0 flex-col overflow-hidden">
         <FactoryDoorsTable />
       </div>
+      <BuildRunsSection />
       <div className="flex h-[calc(100dvh-4rem)] min-h-[28rem] shrink-0 flex-col overflow-hidden">
         <MatrxDataTable
           {...tableProps}
