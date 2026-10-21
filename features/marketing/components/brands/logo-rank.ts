@@ -48,15 +48,42 @@ export function logoScore(url: string, kind: string): number {
   return score;
 }
 
+/** "wide" / "tall" when the file name states a box at least 2:1, else "square" (a stated or unknown square mark). */
+function shapeOf(url: string): string {
+  const box = url.match(/(\d{2,4})x(\d{2,4})/i);
+  if (!box) return "square";
+  const w = Number(box[1]);
+  const h = Number(box[2]);
+  return w >= h * 2 ? "wide" : h >= w * 2 ? "tall" : "square";
+}
+
+/**
+ * The picture a file name describes, with the words that differ between copies of one mark removed: WordPress
+ * site-icon crops ("cropped-cropped-data-destruction-1-192x192.png"), size boxes, and the words logo/icon/mark
+ * ("data-destruction-logo.png") — both are "datadestruction". Null when too little is left to tell pictures apart.
+ */
+function nameStem(file: string): string | null {
+  const stem = file
+    .replace(/\.[a-z0-9]{2,4}$/, "")
+    .replace(/^(cropped[-_])+/, "")
+    .replace(/\d+x\d+/g, "")
+    .replace(/(^|[-_])(logo|icon|mark|brandmark|wordmark|site|scaled|small|large|thumb|\d+)(?=[-_]|$)/g, "")
+    .replace(/[^a-z]/g, "");
+  return stem.length >= 5 ? stem : null;
+}
+
 /**
  * One key per picture: a saved file by its file id; a site's icon family (favicon.ico, favicon-32x32,
- * apple-touch-icon, *-icon.svg) as one mark per host; anything else by its file name with size marks
- * stripped (logo-150x150.png = logo.png), so a CDN mirror of the same file is the same picture.
+ * apple-touch-icon, *-icon.svg) as one mark per host; anything else by what its file name describes plus its shape,
+ * so size variants, CDN mirrors and WordPress site-icon crops of one mark collapse, while a wide wordmark and a
+ * square mark of the same brand stay two pictures.
  */
 export function logoKey(url: string, fileId?: string | null): string {
   if (fileId) return `file:${fileId}`;
   const { host, file } = parsed(url);
   if (ICON_FAMILY.test(file)) return `icon:${host}`;
+  const stem = nameStem(file);
+  if (stem) return `name:${stem}:${shapeOf(file)}`;
   return file
     .replace(/[-_@]?\d+x\d+(?=[._-])/g, "")
     .replace(/[-_]?(scaled|small|large|thumb)(?=\.)/, "")
@@ -67,6 +94,8 @@ export interface RankableLogo {
   url: string;
   kind: string;
   fileId?: string | null;
+  /** A provider link past its expiry: still shown (with its Refresh), never ahead of a picture that loads. */
+  expired?: boolean;
 }
 
 /** Best first, one per picture (the best-scored copy of each wins). */
@@ -74,7 +103,7 @@ export function rankLogos<T extends RankableLogo>(logos: readonly T[]): T[] {
   const best = new Map<string, { item: T; score: number }>();
   for (const item of logos) {
     const key = logoKey(item.url, item.fileId);
-    const score = logoScore(item.url, item.kind);
+    const score = logoScore(item.url, item.kind) - (item.expired ? 60 : 0);
     const prev = best.get(key);
     if (!prev || score > prev.score) best.set(key, { item, score });
   }

@@ -11,8 +11,11 @@ import { classifyRedditHandle, classifyRedditUrl } from "./reddit-links";
  * A LinkedIn person's slug ends in a generated id (`arman-sadeghi-8b176627`); the id is an address, never part of a name.
  * A company/school slug keeps its path (`company/acme`). Returns the address people recognize, without the id.
  */
-export function linkedInAddress(handle: string | null | undefined): string {
-  const slug = (handle ?? "").trim().replace(/^@/, "").replace(/^\/+|\/+$/g, "");
+export function linkedInAddress(handle: string | null | undefined, url?: string | null): string {
+  let slug = (handle ?? "").trim().replace(/^@/, "").replace(/^\/+|\/+$/g, "");
+  // A bare slug says nothing about the page type; the profile link does (company/school/showcase pages are not people).
+  const page = /linkedin\.com\/(company|school|showcase)\/([^/?#]+)/i.exec(url ?? "");
+  if (page && !slug.includes("/")) slug = `${page[1].toLowerCase()}/${slug || page[2]}`;
   if (!slug) return "";
   if (slug.includes("/")) return `linkedin.com/${slug.replace(/^in\//, "in/")}`;
   const clean = slug.replace(/-(?=[0-9a-f]*\d)[0-9a-f]{6,}$/i, "");
@@ -28,7 +31,7 @@ export function formatSocialHandle(args: {
   const handle = (args.handle ?? "").trim();
   // A raw YouTube channel id is an address, not a handle: never printed as one.
   if (args.platform?.toLowerCase() === "youtube" && /^@?UC[\w-]{22}$/.test(handle)) return "";
-  if (args.platform?.toLowerCase() === "linkedin") return linkedInAddress(handle);
+  if (args.platform?.toLowerCase() === "linkedin") return linkedInAddress(handle, args.url);
   if (args.platform?.toLowerCase() === "reddit") {
     const target =
       (args.url ? classifyRedditUrl(args.url) : null) ?? (handle ? classifyRedditHandle(handle) : null);

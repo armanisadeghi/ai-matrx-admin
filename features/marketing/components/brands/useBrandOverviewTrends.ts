@@ -173,7 +173,7 @@ export function useBrandSearchClicks(siteIds: readonly string[]) {
   });
   return {
     clicks: query.data ?? null,
-    loading: siteIds.length > 0 && (gsc.isLoading || query.isPending),
+    loading: siteIds.length > 0 && (gsc.isLoading || query.isLoading),
     error: query.error,
     periods,
   };

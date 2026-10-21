@@ -84,7 +84,7 @@ import { BusinessFactEditorDialog } from "@/features/marketing/components/brands
 import { PropertyEditorDialog } from "@/features/marketing/components/brands/PropertyEditorDialog";
 import { SiteEditorDialog } from "@/features/marketing/components/sites/SiteEditorDialog";
 import { BrandAssetGallery } from "@/features/marketing/components/brands/BrandAssetGallery";
-import { pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
+import { isBannerUrl, pickHeroLogo } from "@/features/marketing/components/brands/logo-rank";
 import {
   BRAND_HERO_FRAME,
   BrandHomeSkeleton,
@@ -141,7 +141,9 @@ import { ChangeReviewWindow } from "@/features/trash/review/ChangeReviewWindow";
 import { PersonBrandAvatar, PersonFollowerTotal } from "@/features/marketing/components/brands/PersonBrandAvatar";
 import { BRAND_KIND_COPY, brandKindCopy, isPersonBrand } from "@/features/marketing/lib/brand-kind";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { normalizeWebsiteUrl, secureImageUrl } from "@/features/marketing/lib/website-url";
+import { normalizeWebsiteUrl } from "@/features/marketing/lib/website-url";
+import { brandAssetPreviewUrl } from "@/features/marketing/lib/brand-asset-preview";
+import { assetImageExpired } from "@/features/marketing/lib/asset-rehost";
 import { linkLabel as linkLabelOf } from "@/features/marketing/lib/link-in-bio";
 import {
   BRAND_ASSET_KIND_LABELS,
@@ -245,10 +247,7 @@ function factValueText(fact: BusinessFact): string {
  * never the browser's broken-image alt text.
  */
 function assetPreviewUrl(asset: BrandAsset): string | null {
-  return asset.source_url &&
-    /\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(asset.source_url)
-    ? secureImageUrl(asset.source_url)
-    : null;
+  return brandAssetPreviewUrl(asset);
 }
 
 /** Color assets carry their value in `data` (hex/value) or a `#hex` title. */
@@ -717,7 +716,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
           .filter((asset) => ["logo", "logo_dark", "wordmark", "headshot"].includes(asset.kind))
           .flatMap((asset) => {
             const url = assetPreviewUrl(asset);
-            return url ? [{ url, kind: asset.kind, fileId: asset.file_id }] : [];
+            return url && !assetImageExpired(asset) ? [{ url, kind: asset.kind, fileId: asset.file_id }] : [];
           }),
       ),
     favicon_url: current.favicon_url || firstAssetUrl(assetRows, ["favicon"]),
@@ -742,12 +741,17 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
     preview: assetPreviewUrl(asset),
     kind: asset.kind,
     fileId: asset.file_id,
+    expired: assetImageExpired(asset),
+    organizationId: asset.organization_id,
     color: null,
     label: isBrandAssetKind(asset.kind) ? BRAND_ASSET_KIND_LABELS[asset.kind] : humanizeIdentifier(asset.kind) || asset.kind,
   });
   const heroAccent = vividColor(brandColors.map((c) => c.value));
   const LOGO_KINDS: readonly string[] = ["logo", "logo_dark", "wordmark", "favicon", "headshot"];
-  const logoAssets = sortedAssets.filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset)).map(toOverviewAsset);
+  // A sharing banner (og:image / twitter card) is never a mark, so Brand look never offers one.
+  const logoAssets = sortedAssets
+    .filter((asset) => LOGO_KINDS.includes(asset.kind) && assetPreviewUrl(asset) && !isBannerUrl(asset.source_url))
+    .map(toOverviewAsset);
 
   // Surface scope — assembled at trigger time from what the cockpit already
   // loaded. No fetching; keys are omitted when their data is not loaded yet.
@@ -1168,6 +1172,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                     brandId={current.id}
                     brandSeg={brandSeg}
                     brandName={current.name}
+                    identity={{
+                      legalNames: factRows.filter((f) => f.kind === "legal_name").map(factValueText),
+                      websites: [current.website_url, ...(properties.data ?? []).filter((p) => p.kind === "website").map((p) => p.url)],
+                    }}
                     organizationId={current.organization_id}
                     accounts={socialAccounts.data ?? []}
                     loading={socialAccounts.isLoading}

@@ -4,9 +4,13 @@
  * The brand home's Overview tab: one bounded card per area, each a SUMMARY that opens its own
  * tab or page (never the full list on the home). Reads only what BrandWorkspace already loaded.
  */
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { ArrowRight, Globe2, ImageOff, ListChecks, Plus } from "lucide-react";
+import { ArrowRight, Globe2, ImageOff, ListChecks, Plus, RefreshCw } from "lucide-react";
+import { toast } from "@/lib/toast";
+import { rehostBrandAsset } from "@/features/marketing/lib/asset-rehost";
+import { marketingKeys } from "@/features/marketing/data/hooks";
 import { useOutsideImage } from "@/features/marketing/lib/useOutsideImage";
 import { TONE_BACKDROP, type Tone } from "@/features/marketing/components/brands/logo-tones";
 import type { LucideIcon } from "lucide-react";
@@ -47,6 +51,10 @@ export interface OverviewAsset {
   kind?: string;
   /** A saved copy's file id: two rows over one stored file are one picture. */
   fileId?: string | null;
+  /** A provider link (Facebook / Instagram CDN) past its expiry: the tile says so and offers Refresh. */
+  expired?: boolean;
+  /** The asset's organization, for Refresh. */
+  organizationId?: string;
   color: string | null;
   label: string;
 }
@@ -257,7 +265,46 @@ export function BrandOverviewFacts({
  * One asset tile: shimmer while the picture loads; outside pictures fall back through useOutsideImage; a source
  * that truly fails shows an image glyph and its site's domain, never a broken image.
  */
+/** A logo whose provider link expired: says so, with Refresh (files the picture in our file service when it still loads). */
+function ExpiredAssetTile({ asset }: { asset: OverviewAsset }) {
+  const [busy, setBusy] = useState(false);
+  const queryClient = useQueryClient();
+  const refresh = async () => {
+    if (!asset.organizationId) return;
+    setBusy(true);
+    const result = await rehostBrandAsset(asset.id, asset.organizationId);
+    setBusy(false);
+    void queryClient.invalidateQueries({ queryKey: marketingKeys.root });
+    if (result.status === "expired") toast.error("The link has expired. Run Enrich to fetch a fresh picture.");
+    else if (result.status === "failed") toast.error(result.reason ?? "The picture could not be saved.");
+  };
+  return (
+    <div
+      title={asset.label}
+      className="flex aspect-square flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border border-dashed border-border p-1 text-muted-foreground"
+    >
+      <ImageOff className="h-4 w-4" aria-hidden="true" />
+      <span className="max-w-full truncate type-meta">Image expired</span>
+      {asset.organizationId ? (
+        <Button
+          variant="quiet"
+          aria-label="Refresh image"
+          title="Refresh"
+          disabled={busy}
+          icon={<RefreshCw className={busy ? "animate-spin" : undefined} />}
+          onClick={() => void refresh()}
+        />
+      ) : null}
+    </div>
+  );
+}
+
 export function AssetTile({ asset, onOpen, tone }: { asset: OverviewAsset; onOpen: () => void; tone?: Tone }) {
+  if (asset.expired) return <ExpiredAssetTile asset={asset} />;
+  return <LiveAssetTile asset={asset} onOpen={onOpen} tone={tone} />;
+}
+
+function LiveAssetTile({ asset, onOpen, tone }: { asset: OverviewAsset; onOpen: () => void; tone?: Tone }) {
   const image = useOutsideImage(asset.preview);
   return (
     <button

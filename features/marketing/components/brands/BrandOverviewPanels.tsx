@@ -37,6 +37,7 @@ import {
   ScanSearch,
   Search,
   Swords,
+  TriangleAlert,
   UserCog,
   UserPlus,
   UserRound,
@@ -75,7 +76,7 @@ import { SocialImage } from "@/features/marketing/social/components/SocialImage"
 import { trackableOwn, useTrackOwn } from "@/features/marketing/social/components/useTrackOwn";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import type { AccountRow } from "@/features/marketing/social/types";
-import { accountMatchesBrand } from "@/features/marketing/social/owner-check";
+import { checkAccountOwners, type BrandIdentity } from "@/features/marketing/social/owner-check";
 import { AccountOwnerDialog } from "@/features/marketing/components/brands/AccountOwnerDialog";
 import { emitAssistTracked } from "@/features/assists/redux/emitTracked";
 import { filterUndecidedKeys } from "@/features/assists/service";
@@ -248,12 +249,13 @@ export function BrandOverviewKpis({
   const social = tabHref("social");
   // A hint shows only once its read has settled: never a false "connect" or "none" while loading.
   const settled = (loading: boolean, hint: ReactNode) => (loading ? undefined : hint);
-  // People's accounts, named apart on every tile the same way: a person glyph and the count (fits a phone tile).
+  // People's accounts, named apart on every tile the same way: "People 8.9K" with a person glyph. A total, never a
+  // signed number: + and − are reserved for change.
   const personal = (n: number | null, what: string) =>
     n ? (
-      <span className="text-muted-foreground" aria-label={`plus ${n.toLocaleString()} ${what} on people's personal accounts`}>
+      <span className="text-muted-foreground" aria-label={`${n.toLocaleString()} ${what} on people's personal accounts`}>
         {" · "}
-        <UserRound className="inline size-3 align-[-1px]" aria-hidden="true" />+{formatCompact(n)}
+        <UserRound className="inline size-3 align-[-1px]" aria-hidden="true" /> People {formatCompact(n)}
       </span>
     ) : null;
 
@@ -262,7 +264,7 @@ export function BrandOverviewKpis({
       <KpiTile
         className="min-h-[76px]"
         label="Audience"
-        title="Followers of the brand's own accounts. The person mark counts people's personal accounts apart."
+        title="Followers of the brand's own accounts. People counts personal accounts apart; they are not in the total."
         loading={accountsLoading}
         value={audience.brandFollowers === null ? null : formatCompact(audience.brandFollowers)}
         trend={trends.followers}
@@ -288,7 +290,7 @@ export function BrandOverviewKpis({
       <KpiTile
         className="min-h-[76px]"
         label="Posts"
-        title="Posts we hold on the brand's own accounts and its last post. The person mark counts people's posts apart."
+        title="Posts we hold on the brand's own accounts and its last post. People counts personal accounts' posts apart."
         loading={accountsLoading}
         value={posts ? posts.toLocaleString() : null}
         trend={trends.posts}
@@ -336,12 +338,12 @@ export function BrandOverviewKpis({
         className="min-h-[76px]"
         label="AI share of voice"
         title="How often AI answers name this brand next to its competitors."
-        loading={checks.isPending}
+        loading={checks.isLoading}
         read={checks.isError ? { status: "error", error: checks.error } : null}
         value={latestCheck?.score == null ? null : `${latestCheck.score}%`}
         href={marketingRoutes.brandAiVisibility(brandSeg)}
         hint={settled(
-          checks.isPending,
+          checks.isLoading,
           latestCheck ? (
             `Checked ${formatRelativeTime(latestCheck.checked_at)}`
           ) : (
@@ -353,12 +355,12 @@ export function BrandOverviewKpis({
         className="min-h-[76px]"
         label="Competitors"
         title="Rivals tracked for this brand: websites, social accounts and the brand's own list."
-        loading={competitors.isPending}
+        loading={competitors.isLoading}
         read={competitors.isError ? { status: "error", error: competitors.error } : null}
         value={rivals && rivals.length ? rivals.length.toLocaleString() : null}
         href={marketingRoutes.brandCompetitors(brandSeg)}
         hint={settled(
-          competitors.isPending,
+          competitors.isLoading,
           rivals && rivals.length ? (
             <span title={rankedNames(rivals).join(", ")}>{rankedNames(rivals).slice(0, 2).join(" · ")}</span>
           ) : (
@@ -370,12 +372,12 @@ export function BrandOverviewKpis({
         className="min-h-[76px]"
         label="Products & services"
         title="Products and services found for this brand."
-        loading={offerings.isPending}
+        loading={offerings.isLoading}
         read={offerings.isError ? { status: "error", error: offerings.error } : null}
         value={items && items.length ? items.length.toLocaleString() : null}
         href={marketingRoutes.brandOfferings(brandSeg)}
         hint={settled(
-          offerings.isPending,
+          offerings.isLoading,
           items && items.length ? (
             `${confirmed.toLocaleString()} confirmed`
           ) : (
@@ -503,6 +505,7 @@ export function BrandOverviewAccounts({
   brandId,
   brandSeg,
   brandName,
+  identity,
   organizationId,
   accounts,
   loading,
@@ -517,6 +520,8 @@ export function BrandOverviewAccounts({
   brandSeg: string;
   /** Compared with each brand-owned account's name: one that shares no word with it is raised for review. */
   brandName: string;
+  /** Legal names and websites: an account any of the brand's names describes is not raised. */
+  identity: Omit<BrandIdentity, "name">;
   organizationId: string;
   accounts: readonly AccountRow[];
   loading: boolean;
@@ -543,7 +548,8 @@ export function BrandOverviewAccounts({
   const holdRows = Math.min(ACCOUNT_PREVIEW, Math.max(1, expectedRows));
   const hasGrowth = accounts.some((a) => a.growth !== null);
   const grid = hasGrowth ? ACCOUNT_GRID : ACCOUNT_GRID_NO_GROWTH;
-  const suspect = new Set(brand.filter((a) => a.propertyId && !accountMatchesBrand(a, brandName)).map((a) => a.rowId));
+  const ownerCheck = checkAccountOwners(brand, { ...identity, name: brandName });
+  const suspect = new Set(brand.filter((a, i) => a.propertyId && ownerCheck.suspects.has(i)).map((a) => a.rowId));
   useAccountOwnerAssists({ brandId, brandName, accounts: brand.filter((a) => suspect.has(a.rowId)), enabled: canEdit && !loading, allHref });
 
   return (
@@ -736,6 +742,14 @@ export function BrandOverviewAccounts({
           </ul>
           <AccountTotals label="Brand" list={brand} grid={grid} hasGrowth={hasGrowth} />
           {people.length ? <AccountTotals label="Personal" list={people} grid={grid} hasGrowth={hasGrowth} muted /> : null}
+          {ownerCheck.nameMostAccountsUse ? (
+            <p className="flex min-h-7 items-center gap-2 border-t border-border px-3 type-meta text-warning-ink">
+              <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 truncate" title={`Brand name "${brandName}"; most accounts say "${ownerCheck.nameMostAccountsUse}"`}>
+                Most accounts say {ownerCheck.nameMostAccountsUse}
+              </span>
+            </p>
+          ) : null}
         </div>
       )}
       <AccountOwnerDialog account={ownerRow} organizationId={organizationId} onClose={() => setOwnerRow(null)} />
@@ -896,7 +910,7 @@ export function BrandOverviewKnown({
       value: strategyValue,
       meta: brief.data ? STRATEGY_STATUS[brief.data.status] : undefined,
       href: `${identity}/strategy`,
-      emptyLabel: brief.isPending ? "" : "Write the brief",
+      emptyLabel: brief.isLoading ? "" : "Write the brief",
     },
     {
       key: "audience",
@@ -924,7 +938,7 @@ export function BrandOverviewKnown({
             value: join(queries),
             meta: position === null ? undefined : `Avg position ${position.toFixed(1)}`,
             href: tabHref("web"),
-            emptyLabel: search.error || topQueries.isError ? "Unavailable" : search.loading || topQueries.isPending ? "" : search.clicks?.hasData ? "No named queries" : "Connect Search Console",
+            emptyLabel: search.error || topQueries.isError ? "Unavailable" : search.loading || topQueries.isLoading ? "" : search.clicks?.hasData ? "No named queries" : "Connect Search Console",
           },
         ]
       : []),
@@ -935,7 +949,7 @@ export function BrandOverviewKnown({
       value: join(competitors),
       meta: competitors.length ? String(competitors.length) : undefined,
       href: marketingRoutes.brandCompetitors(brandSeg),
-      emptyLabel: rivals.isPending ? "" : "Add competitors",
+      emptyLabel: rivals.isLoading ? "" : "Add competitors",
     },
     {
       key: "offerings",
@@ -944,7 +958,7 @@ export function BrandOverviewKnown({
       value: join(items.map((i) => i.name)),
       meta: items.length ? String(items.length) : undefined,
       href: marketingRoutes.brandOfferings(brandSeg),
-      emptyLabel: offerings.isPending ? "" : "Find them",
+      emptyLabel: offerings.isLoading ? "" : "Find them",
     },
   ];
 
@@ -1025,7 +1039,8 @@ export function BrandOverviewLook({
   const { copyText } = useClipboard({ notify: copyNotify });
   const shownLogos = rankedLogos(logos).slice(0, 4);
   const tones = useLogoTones(shownLogos.map((asset) => asset.url));
-  const missing = [logos.length ? null : "Logo", colors.length ? null : "Colors", fonts.length ? null : "Fonts"].filter(
+  // Missing counts only marks that load: an expired provider link is not a logo the brand has.
+  const missing = [shownLogos.some((asset) => !asset.expired) ? null : "Logo", colors.length ? null : "Colors", fonts.length ? null : "Fonts"].filter(
     (x): x is string => Boolean(x),
   );
   return (
@@ -1122,7 +1137,7 @@ export function BrandOverviewNext({
 }) {
   const rivals = useBrandCompetitorList(brandId, siteIds);
   const gsc = useGscPortfolioRollup(siteIds, "28d");
-  const settling = accountsLoading || pending === null || rivals.isPending || gsc.isLoading;
+  const settling = accountsLoading || pending === null || rivals.isLoading || gsc.isLoading;
   const { brand } = splitAudience(accounts);
   const untracked = brand.filter(trackableOwn);
   const quiet = brand.filter((a) => a.trackedAccountId && a.lastPostAt && isStale(a.lastPostAt));

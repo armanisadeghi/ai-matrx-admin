@@ -48,7 +48,6 @@ import {
   useDeleteBrandAsset,
   useUpdateBrandAsset,
 } from "@/features/marketing/data/hooks";
-import { secureImageUrl } from "@/features/marketing/lib/website-url";
 import { proxiedExternalImageUrl } from "@/lib/media/external-image";
 import { youTubeThumbnail, youtubeId } from "@ai-matrx/rich-content/utils/youtube";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
@@ -63,30 +62,14 @@ import {
   type BrandAssetKind,
 } from "@/features/marketing/types";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-
-/** Image CDNs whose URLs carry no file extension (e.g. Unsplash CDN saves). */
-const IMAGE_CDN_HOSTS = new Set(["images.unsplash.com", "plus.unsplash.com"]);
-
-function isImageCdnUrl(url: string): boolean {
-  try {
-    return IMAGE_CDN_HOSTS.has(new URL(url).hostname);
-  } catch {
-    return false;
-  }
-}
+import { brandAssetPreviewUrl, isStoredFileUrl } from "@/features/marketing/lib/brand-asset-preview";
 
 function assetPreviewUrl(asset: BrandAsset): string | null {
-  if (!asset.source_url) return null;
-  if (
-    !/\.(png|jpe?g|webp|gif|svg|ico)(\?|$)/i.test(asset.source_url) &&
-    !isImageCdnUrl(asset.source_url)
-  ) {
-    return null;
-  }
-  // These are source-only records, not owned files. Fetch through the existing
-  // bounded/SSRF-guarded proxy so provider hotlink and cross-origin policies do
-  // not turn confirmed brand-library tiles into blank boxes.
-  return proxiedExternalImageUrl(secureImageUrl(asset.source_url));
+  const url = brandAssetPreviewUrl(asset);
+  if (!url) return null;
+  // Our stored files load directly; source-only records go through the bounded/SSRF-guarded proxy so provider
+  // hotlink and cross-origin policies do not turn confirmed brand-library tiles into blank boxes.
+  return isStoredFileUrl(url) ? url : proxiedExternalImageUrl(url);
 }
 
 function assetColorValue(asset: BrandAsset): string | null {

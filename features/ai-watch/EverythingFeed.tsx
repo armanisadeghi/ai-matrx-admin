@@ -3,14 +3,15 @@
 /**
  * Watch AI · Everything: the platform-wide live feed of recent AI runs (see `everything-feed.ts`).
  * Mounted only while the person has Everything switched on, so nothing is read before that. The
- * newest page refreshes every few seconds; older runs page in on request (server-side keyset).
+ * newest page re-reads when a run changes (realtime); older runs page in on request (server-side keyset).
  */
 
 import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Eye } from "lucide-react";
 import { originClassLabel } from "@ai-matrx/chat/agents/redux/conversation-history/source-registry";
-import { cn, ErrorNotice, displayId } from "@ai-matrx/design-system";
+import { Checkbox, cn, ErrorNotice, displayId } from "@ai-matrx/design-system";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import {
   EVERYTHING_PAGE_SIZE,
   NO_FILTERS,
@@ -24,9 +25,30 @@ import {
   type EverythingFilters,
   type EverythingRow,
 } from "./everything-feed";
+import { useUserRequestChanges } from "./useUserRequestChanges";
 
-const REFRESH_MS = 4000;
 const LIVE_STATUSES = new Set(["pending", "running", "streaming"]);
+
+const ANY = "__any__";
+
+/** One filter: "any" plus what the feed has shown so far. The design-system Select, never a native one. */
+function FilterSelect({ label, any, value, onChange, options }: {
+  label: string;
+  any: string;
+  value: string | null;
+  onChange: (next: string | null) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <Select
+      value={value ?? ANY}
+      onValueChange={(v) => onChange(v === ANY ? null : v)}
+      aria-label={label}
+      className="min-w-0 flex-1"
+      options={[{ value: ANY, label: any }, ...options]}
+    />
+  );
+}
 
 function when(iso: string): string {
   const d = new Date(iso);
@@ -49,6 +71,7 @@ export default function EverythingFeed({
   const [more, setMore] = useState(true);
   const [names, setNames] = useState<{ people: Record<string, string>; organizations: Record<string, string> }>({ people: {}, organizations: {} });
   const [agentNames, setAgentNames] = useState<Record<string, string>>({});
+  const [namesError, setNamesError] = useState<string | null>(null);
   const [mandateLabels, setMandateLabels] = useState<Record<string, string>>({});
   // The options of each filter are what the feed has shown so far; picking one re-reads on the server.
   const seen = useRef({ people: new Set<string>(), orgs: new Set<string>(), origins: new Set<string>(), mandates: new Set<string>(), agents: new Map<string, string>() });
@@ -65,12 +88,14 @@ export default function EverythingFeed({
       if (r.agentId) s.agents.set(r.agentId, r.agentName ?? displayId(r.agentId));
     }
     bump((n) => n + 1);
-    void fetchEverythingNames([...s.people], [...s.orgs]).then(setNames, () => undefined);
-    void fetchMandateLabels([...s.mandates]).then((m) => setMandateLabels((cur) => ({ ...cur, ...Object.fromEntries(m) })), () => undefined);
-    void fetchAgentNames([...s.agents.keys()]).then((n) => setAgentNames((cur) => ({ ...cur, ...n })), () => undefined);
+    const nameFailed = (err: unknown) => setNamesError(err instanceof Error ? err.message : String(err));
+    void fetchEverythingNames([...s.people], [...s.orgs]).then(setNames, nameFailed);
+    void fetchMandateLabels([...s.mandates]).then((m) => setMandateLabels((cur) => ({ ...cur, ...Object.fromEntries(m) })), nameFailed);
+    void fetchAgentNames([...s.agents.keys()]).then((n) => setAgentNames((cur) => ({ ...cur, ...n })), nameFailed);
   }, []);
 
-  // New filters start the feed over; the newest page then refreshes on a timer.
+  // New filters start the feed over; the newest page then re-reads whenever a run changes (realtime, no timer).
+  const refreshRef = useRef<() => void>(() => undefined);
   useEffect(() => {
     let cancelled = false;
     setRows([]);
@@ -90,13 +115,14 @@ export default function EverythingFeed({
         if (!cancelled) setLoading(false);
       }
     };
+    refreshRef.current = () => void load(false);
     void load(true);
-    const timer = setInterval(() => void load(false), REFRESH_MS);
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      refreshRef.current = () => undefined;
     };
   }, [filterSig, learn]);
+  useUserRequestChanges({ scope: "everything", enabled: true, refresh: () => refreshRef.current() });
 
   const older = async () => {
     const last = rows.at(-1);
@@ -120,44 +146,39 @@ export default function EverythingFeed({
     <div className="flex min-h-0 flex-col" data-testid="ai-watch-everything">
       <div className="flex flex-col gap-1 border-b border-border p-2">
         <div className={cn("flex gap-1", !framed && "flex-wrap")}>
-          <select aria-label="Person" className={selectCls} value={filters.personId ?? ""} onChange={(e) => set({ personId: e.target.value || null })}>
-            <option value="">Everyone</option>
-            {[...s.people].map((id) => <option key={id} value={id}>{names.people[id] ?? displayId(id)}</option>)}
-          </select>
-          <select aria-label="Organization" className={selectCls} value={filters.organizationId ?? ""} onChange={(e) => set({ organizationId: e.target.value || null })}>
-            <option value="">Any organization</option>
-            {[...s.orgs].map((id) => <option key={id} value={id}>{names.organizations[id] ?? displayId(id)}</option>)}
-          </select>
+          <FilterSelect label="Person" any="Everyone" value={filters.personId} onChange={(v) => set({ personId: v })}
+            options={[...s.people].map((id) => ({ value: id, label: names.people[id] ?? displayId(id) }))} />
+          <FilterSelect label="Organization" any="Any organization" value={filters.organizationId} onChange={(v) => set({ organizationId: v })}
+            options={[...s.orgs].map((id) => ({ value: id, label: names.organizations[id] ?? displayId(id) }))} />
         </div>
         <div className={cn("flex gap-1", !framed && "flex-wrap")}>
-          <select aria-label="Door" className={selectCls} value={filters.originClass ?? ""} onChange={(e) => set({ originClass: e.target.value || null })}>
-            <option value="">Any door</option>
-            {[...s.origins].map((o) => <option key={o} value={o}>{originClassLabel(o)}</option>)}
-          </select>
-          <select aria-label="Mandate" className={selectCls} value={filters.mandateKey ?? ""} onChange={(e) => set({ mandateKey: e.target.value || null })}>
-            <option value="">Any mandate</option>
-            {[...s.mandates].map((m) => <option key={m} value={m}>{mandateLabels[m] ?? humanizeFeature(m)}</option>)}
-          </select>
+          <FilterSelect label="Door" any="Any door" value={filters.originClass} onChange={(v) => set({ originClass: v })}
+            options={[...s.origins].map((o) => ({ value: o, label: originClassLabel(o) }))} />
+          <FilterSelect label="Mandate" any="Any mandate" value={filters.mandateKey} onChange={(v) => set({ mandateKey: v })}
+            options={[...s.mandates].map((m) => ({ value: m, label: mandateLabels[m] ?? humanizeFeature(m) }))} />
         </div>
         <div className="flex items-center gap-1">
-          <select aria-label="Agent" className={selectCls} value={filters.agentId ?? ""} onChange={(e) => set({ agentId: e.target.value || null })}>
-            <option value="">Any agent</option>
-            {[...s.agents].map(([id, name]) => <option key={id} value={id}>{agentLabel(agentNames[id] ?? name)}</option>)}
-          </select>
+          <FilterSelect label="Agent" any="Any agent" value={filters.agentId} onChange={(v) => set({ agentId: v })}
+            options={[...s.agents].map(([id, name]) => ({ value: id, label: agentLabel(agentNames[id] ?? name) }))} />
           <label className="flex shrink-0 items-center gap-1 text-muted-foreground">
-            <input type="checkbox" checked={filters.backgroundOnly} onChange={(e) => set({ backgroundOnly: e.target.checked })} />
+            <Checkbox checked={filters.backgroundOnly} aria-label="Background only" onCheckedChange={(next) => set({ backgroundOnly: next === true })} />
             Background only
           </label>
           {anyFilter ? (
-            <button type="button" className="shrink-0 text-muted-foreground underline" onClick={() => setFilters(NO_FILTERS)}>
+            <Button variant="quiet" className="shrink-0" onClick={() => setFilters(NO_FILTERS)}>
               Clear
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
       {error ? (
         <div className="p-2">
           <ErrorNotice title="The runs could not be read" message={error} />
+        </div>
+      ) : null}
+      {namesError ? (
+        <div className="p-2">
+          <ErrorNotice title="Some names could not be read" message={namesError} />
         </div>
       ) : null}
       {loading && rows.length === 0 ? <div className="p-2 text-muted-foreground">Reading recent runs</div> : null}
@@ -191,9 +212,9 @@ export default function EverythingFeed({
         </button>
       ))}
       {more && rows.length > 0 ? (
-        <button type="button" onClick={() => void older()} className="px-2 py-1.5 text-left text-muted-foreground underline">
+        <Button variant="quiet" className="justify-start" onClick={() => void older()}>
           Older runs
-        </button>
+        </Button>
       ) : null}
     </div>
   );
