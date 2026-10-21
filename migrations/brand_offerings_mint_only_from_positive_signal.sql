@@ -30,71 +30,14 @@
 -- scripts/check-offering-mint-sources.ts. RED on the pre-fix bodies
 -- (2026-10-21: 5 failing checks), GREEN after this file.
 
--- 1. ---------------------------------------------------------------------------
-DO $do$
-DECLARE d text; n integer;
-  c_old CONSTANT text := E'  IF v_node_type IN (''product'', ''service'') THEN\n    v_offering := seo.fn_site_offering_for_topic(p_site_id, p_topic_id);\n';
-  c_new CONSTANT text := E'  IF v_node_type IN (''product'', ''service'') THEN\n'
-    || E'    -- A ruling that says "not offered", or a cleared ruling, never ADOPTS the\n'
-    || E'    -- offering into the brand: it lands only on an offering the brand already has.\n'
-    || E'    IF p_clear OR p_offering_match = ''not_offered'' THEN\n'
-    || E'      SELECT bo.id INTO v_offering\n'
-    || E'      FROM web.site s\n'
-    || E'      JOIN web.brand_offering bo ON bo.brand_id = s.brand_id AND bo.deleted_at IS NULL\n'
-    || E'       AND (bo.template_id = p_topic_id OR (bo.template_id IS NULL AND bo.metadata->>''source_topic_id'' = p_topic_id::text))\n'
-    || E'      WHERE s.id = p_site_id\n'
-    || E'      ORDER BY (bo.template_id IS NULL), bo.created_at\n'
-    || E'      LIMIT 1;\n'
-    || E'    ELSE\n'
-    || E'      v_offering := seo.fn_site_offering_for_topic(p_site_id, p_topic_id);\n'
-    || E'    END IF;\n'
-    || E'  END IF;\n'
-    || E'  IF v_offering IS NOT NULL THEN\n';
-BEGIN
-  d := pg_get_functiondef('seo.gsc_set_topic_value(uuid, uuid, numeric, text, text, text, boolean)'::regprocedure);
-  IF position('never ADOPTS the' in d) > 0 THEN RETURN; END IF;  -- already applied
-  n := (length(d) - length(replace(d, c_old, ''))) / length(c_old);
-  IF n <> 1 THEN RAISE EXCEPTION 'gsc_set_topic_value anchor matched % times', n; END IF;
-  EXECUTE replace(d, c_old, c_new);
-END
-$do$;
-
--- 2 + 3. -----------------------------------------------------------------------
-DO $do$
-DECLARE d text; n integer;
-  c_old1 CONSTANT text := E'    WHERE stv.site_id = v_site.id AND stv.deleted_at IS NULL\n  ), closure AS (';
-  c_new1 CONSTANT text := E'    WHERE stv.site_id = v_site.id AND stv.deleted_at IS NULL\n'
-    || E'      AND stv.offering_match IS DISTINCT FROM ''not_offered''\n  ), closure AS (';
-  c_old2 CONSTANT text := E'  WHERE NOT EXISTS (\n    SELECT 1 FROM web.brand_offering x\n    WHERE x.brand_id = v_site.brand_id AND x.deleted_at IS NULL\n      AND (x.template_id = t.id OR (x.template_id IS NULL AND x.metadata->>''source_topic_id'' = t.id::text))\n  );';
-  c_new2 CONSTANT text := E'  -- Never re-mint an offering the brand has in ANY state: a retracted\n'
-    || E'  -- (soft-deleted) offering stays retracted.\n'
-    || E'  WHERE NOT EXISTS (\n    SELECT 1 FROM web.brand_offering x\n    WHERE x.brand_id = v_site.brand_id\n'
-    || E'      AND (x.template_id = t.id OR (x.template_id IS NULL AND x.metadata->>''source_topic_id'' = t.id::text))\n  )\n'
-    || E'  -- Mint only from THIS brand''s own signals: a site or brand placement, or\n'
-    || E'  -- a worth row that is not "not offered", and their ancestors. A system or\n'
-    || E'  -- organization placement only maps onto an offering the brand already has.\n'
-    || E'  AND EXISTS (\n'
-    || E'    WITH RECURSIVE own AS (\n'
-    || E'      SELECT w.topic_id FROM _rso_winner w WHERE w.scope_tier IN (''site'', ''brand'')\n'
-    || E'      UNION\n'
-    || E'      SELECT stv.topic_id FROM seo.site_topic_value stv\n'
-    || E'      WHERE stv.site_id = v_site.id AND stv.deleted_at IS NULL\n'
-    || E'        AND stv.offering_match IS DISTINCT FROM ''not_offered''\n'
-    || E'      UNION\n'
-    || E'      SELECT p.parent_id FROM own o JOIN seo.topic p ON p.id = o.topic_id WHERE p.parent_id IS NOT NULL\n'
-    || E'    )\n'
-    || E'    SELECT 1 FROM own WHERE own.topic_id = t.id\n'
-    || E'  );';
-BEGIN
-  d := pg_get_functiondef('seo.fn_reconcile_site_offering_facts(uuid)'::regprocedure);
-  IF position('stays retracted' in d) > 0 THEN RETURN; END IF;  -- already applied
-  n := (length(d) - length(replace(d, c_old1, ''))) / length(c_old1);
-  IF n <> 1 THEN RAISE EXCEPTION 'reconcile anchor 1 matched % times', n; END IF;
-  n := (length(d) - length(replace(d, c_old2, ''))) / length(c_old2);
-  IF n <> 1 THEN RAISE EXCEPTION 'reconcile anchor 2 matched % times', n; END IF;
-  EXECUTE replace(replace(d, c_old1, c_new1), c_old2, c_new2);
-END
-$do$;
+-- 1-3. The three function changes (gsc_set_topic_value never adopts on a
+-- not_offered/cleared ruling; the reconcile mints only from this brand's own
+-- positive signals and never re-mints a retracted offering) used to be applied
+-- here by string-replacing the live function text, guarded by a search for
+-- comment text. That is gone: the full canonical bodies now live in
+-- migrations/brand_offerings_offering_mint_functions_canonical_bodies.sql
+-- (CREATE OR REPLACE, byte-identical to production), which sorts after this file.
+-- The guard below is therefore RED until that file has been applied.
 
 -- The reconcile predates the door register; declare it now that it is replaced.
 INSERT INTO platform.client_callable_door
