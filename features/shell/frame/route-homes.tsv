@@ -711,6 +711,8 @@ route	tree node	how found today	note
 /marketing/backlink-valuation	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
 /marketing/brands	BUSINESS › Marketing	menu: Marketing › Brands	
 /marketing/brands/[brandId]/[[...rest]]	BUSINESS › Marketing	opened from a list (under menu: Marketing › Brands)	
+/marketing/brands/all	BUSINESS › Marketing	menu: Marketing › Brands	
+/marketing/brands/new	BUSINESS › Marketing	menu: Marketing › Brands	
 /marketing/brands/new-website	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
 /marketing/brands/offerings	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
 /marketing/brands/smart-add	BUSINESS › Marketing	in-page link under menu: Marketing › Brands	
@@ -1029,7 +1031,7 @@ route	tree node	how found today	note
 /scraper/search-and-scrape	Memory › Capture	in-page link under menu: Web	web scraper
 /scraper/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /search	Memory › Ask & search	menu: Web › Search	+ Matrx Search (menu: Web › Search); search over web + yours
-/search/experience	Memory › Ask & search	menu: Web › Matrx Search	+ Matrx Search (menu: Web › Search); search over web + yours
+/search/experience	NOT TILES › Account menu	unreachable: old address that redirects (one search page, 2026-10-21)	search
 /search/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /settings/data	NOT TILES › Account menu	unreachable: old address that redirects (owner's cleanup list)	settings (one catch-all page holds every settings tab: billing, connectors, voices, memory, API keys…)
 /shapes	BUILD › Intelligence › Shapes	no menu; linked in-app (105 places)	

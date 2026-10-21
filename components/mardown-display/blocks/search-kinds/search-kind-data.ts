@@ -153,3 +153,51 @@ export function placesBesideEntity(
   if (!shown) return places;
   return places.filter((p) => placeKey(text(p.name)) !== shown);
 }
+
+const QUERY_STOP = new Set(["the", "a", "an", "of", "and", "in", "on", "for", "at", "to", "inc", "llc", "co", "com"]);
+
+function words(value: string): string[] {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length > 0 && !QUERY_STOP.has(w));
+}
+
+/**
+ * Google shows a knowledge panel only when the query NAMES the thing ("tesla", "lou malnati's").
+ * A provider's infobox for a site that merely ranked ("Electrek" for "latest news on electric
+ * vehicles") is not what was asked about: true only when every word of the entity's name is in
+ * the query, or the query is wholly inside the name.
+ */
+export function entityFitsQuery(entityName: string | null, query: string | null): boolean {
+  if (!entityName) return false;
+  if (!query) return true;
+  const name = words(entityName);
+  const asked = words(query);
+  if (name.length === 0 || asked.length === 0) return false;
+  const askedSet = new Set(asked);
+  const joinedAsked = asked.join("");
+  if (name.every((w) => askedSet.has(w) || joinedAsked.includes(w))) return true;
+  const nameSet = new Set(name);
+  return asked.every((w) => nameSet.has(w));
+}
+
+/** A query asking for what is new ("latest news on …", "… today"): Top stories lead the page. */
+export function isNewsQuery(query: string | null): boolean {
+  return query !== null && /\b(news|latest|headlines?|breaking|today|this week|update[sd]?)\b/i.test(query);
+}
+
+/** Words that say "news" without naming a subject — never enough to tie a story to the query. */
+const NEWS_WORDS = new Set(["news", "latest", "headline", "headlines", "breaking", "today", "week", "update", "updates", "updated", "new", "top", "this"]);
+
+/** A story belongs on the All page only when it shares a subject word with the query. */
+export function storyFitsQuery(story: Record<string, unknown>, query: string | null): boolean {
+  if (!query) return true;
+  const subject = words(query).filter((w) => !NEWS_WORDS.has(w) && w.length > 2);
+  if (subject.length === 0) return true;
+  const said = words([text(story.title), text(story.description), text(story.snippet)].filter(Boolean).join(" "));
+  const stems = subject.map((w) => w.slice(0, Math.max(4, w.length - 2)));
+  return said.some((w) => stems.some((stem) => w.startsWith(stem)));
+}

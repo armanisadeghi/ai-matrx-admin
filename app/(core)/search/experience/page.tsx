@@ -1,35 +1,20 @@
-// record-view: none — the search tool, not a record page
-// app/(core)/search/page.tsx
+// app/(core)/search/experience/page.tsx
 //
-// Matrx Search — the platform's search engine. One experience (`SearchExperience`) answers every
-// kind of search: the web, news, images, places, social, and the catalog tabs (Deep, Reviews,
-// AI answers) that run Tools through /tools/calls. The address is the state (`?q=`, `?tab=`, …).
-//
-// The page reads the address server-side so a NAVIGATION (the command bar's "Search the web for…",
-// a shared link) starts the experience over on its own query and tab, while the page's own
-// address writes (search → `?q=…`) never remount it.
-//
-// Guests never reach this file — the layout serves them the landing instead.
+// The tabbed search that lived here is now /search itself (one page, Google's layout — owner's
+// ruling 2026-10-21). An old link keeps its query and tab.
 
-import PageHeader from "@/features/shell/components/header/PageHeader";
-import { SearchPage } from "@/features/search/components/SearchPage";
-import { readSearchQuery, SEARCH_QUERY_PARAM } from "@/features/search/search-url";
+import { redirect } from "next/navigation";
 
-export default async function SearchRoute({
+export default async function SearchExperienceRedirect({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const query = readSearchQuery(params[SEARCH_QUERY_PARAM]);
-  const tab = readSearchQuery(params.tab);
-
-  return (
-    <>
-      <PageHeader>
-        <span className="text-sm font-medium text-foreground">Search</span>
-      </PageHeader>
-      <SearchPage key={`${query}|${tab}`} />
-    </>
-  );
+  const next = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    for (const v of Array.isArray(value) ? value : value === undefined ? [] : [value]) next.append(key, v);
+  }
+  const qs = next.toString();
+  redirect(qs ? `/search?${qs}` : "/search");
 }

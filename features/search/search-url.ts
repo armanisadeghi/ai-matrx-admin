@@ -10,9 +10,6 @@
 export const SEARCH_ROUTE = "/search";
 export const SEARCH_QUERY_PARAM = "q";
 
-/** Result count requested from the provider. */
-export const SEARCH_RESULT_COUNT = 20;
-
 export function buildSearchHref(query: string): string {
   const trimmed = query.trim();
   if (!trimmed) return SEARCH_ROUTE;

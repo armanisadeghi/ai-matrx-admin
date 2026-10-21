@@ -26,10 +26,11 @@ this whole program exists to prevent.
 
 **Routes**
 
-- `app/(core)/search/layout.tsx` — the auth branch. Guests get
-  `SearchLanding` (marketing); signed-in visitors fall through to the engine.
-  Also carries the route metadata.
-- `app/(core)/search/page.tsx` — the shell header and `SearchPage`.
+- `app/(core)/search/layout.tsx` — the auth branch. Guests get `GuestSearch`
+  (the same experience on the free allowance); signed-in visitors fall through
+  to the engine. Also carries the route metadata.
+- `app/(core)/search/page.tsx` — `SearchPage`: ONE page, laid out as Google is
+  (owner's ruling 2026-10-21). `/search/experience` redirects here with its query.
 - `app/(core)/scraper/search/page.tsx` — the Search Lab: the same
   `SearchExperience` on the `matrx-user/scraper` surface.
 
@@ -37,8 +38,12 @@ this whole program exists to prevent.
 
 - `components/SearchPage.tsx` — `/search` for a signed-in person: `useSearchRoute`
   + the `matrx-user/search` surface around ONE `SearchExperience`.
-- `components/SearchExperience.tsx` — the whole page: the pill, the tabs, the
-  results. Twelve tabs: the nine engine tabs plus the three catalog tabs below.
+- `components/SearchExperience.tsx` — the whole page, Google's layout: home =
+  the name, one box (mic + image search inside), Matrx Search / I'm Feeling
+  Lucky; results = name + box at top left, tabs All · Images · Videos · News ·
+  Shopping · Places, then More (Social, Jobs, Trends, Deep, Reviews, AI answers)
+  and Tools (engine, country, language, count, page, time, device, safe search,
+  location, AI answer, near me). Count line, results column, pager.
 - `components/SearchResultsSkeleton.tsx` — the waiting state, shaped like the
   answer.
 - `tools/ToolSearchPanel.tsx` — the three catalog tabs (third-party services

@@ -22,12 +22,15 @@
  * "Trending now" (a capped call).
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import {
   Braces,
   Camera,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   FileText,
   ImageIcon,
@@ -55,11 +58,20 @@ import {
   Switch,
   Tabs,
 } from "@ai-matrx/design-system/controls";
-import { ErrorNotice } from "@ai-matrx/design-system";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  ErrorNotice,
+} from "@ai-matrx/design-system";
+import { MicButton } from "@/components/audio/MicButton";
+import { useMicField } from "@/features/audio/hooks/useMicField";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { ProInput } from "@/components/official/ProInput";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
+import WebSearchResultsBlock from "@/components/mardown-display/blocks/search-kinds/WebSearchResultsBlock";
 import {
   SearchKindNested,
   hasCanonicalSearchComponent,
@@ -146,6 +158,9 @@ const ALL_TAB_OPTIONS: { value: SearchTab | ToolTab; label: string }[] = [
   ...TOOL_TABS.map((value) => ({ value, label: TOOL_TAB_LABEL[value] })),
 ];
 
+/** Google's tab row: these always show; everything else sits under More. */
+const PRIMARY_TABS: readonly (SearchTab | ToolTab)[] = ["web", "images", "videos", "news", "shopping", "places"];
+
 const SOCIAL_PLATFORM_OPTIONS = KEYWORD_SOCIAL_PLATFORMS.map((value) => ({
   value,
   label: value === "all" ? "All" : platformLabel(value),
@@ -207,10 +222,13 @@ const DEVICE_OPTIONS = [
   { value: "mobile", label: "Mobile" },
 ] as const satisfies readonly { value: SearchDevice; label: string }[];
 
-/** One measure for the header and the results — they line up. */
-const PAGE_WIDTH = "max-w-6xl";
+/** One measure for the header and the results — they line up on one left edge, Google's way. */
+const PAGE_WIDTH = "max-w-[1200px]";
 /** Google's search box measure. */
 const PILL_WIDTH = "max-w-[692px]";
+/** The results and tabs start where the box starts: the logo's column plus its gap. */
+const GUTTER = "lg:pl-[156px]";
+
 
 /** A code the short list lacks (from a shared link) still shows as itself. */
 function withCurrent(list: { value: string; label: string }[], current: string) {
@@ -293,8 +311,18 @@ function SearchPill({
     if (file && file.type.startsWith("image/")) inputs.searchByImage(file);
   };
 
+  // Voice rides the ONE shared recorder; Google's mic sits in the box at all times.
+  const mic = useMicField({
+    instanceId: "search-query",
+    label: "Search",
+    getValue: () => keywords,
+    writeValue: onQuery,
+    join: (base, text) => `${base}${base && !base.endsWith(" ") ? " " : ""}${text}`,
+    protect: false,
+  });
+
   return (
-    <div className="flex h-12 w-full min-w-0 items-center rounded-full border border-border bg-card pl-1.5 pr-1.5 shadow-sm transition-shadow hover:shadow-md focus-within:shadow-md">
+    <div className="flex h-12 w-full min-w-0 items-center rounded-full border border-border bg-background pl-1.5 pr-2 transition-shadow hover:border-transparent hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)] focus-within:border-transparent focus-within:shadow-[0_1px_6px_rgba(32,33,36,0.28)] dark:bg-muted dark:hover:shadow-[0_1px_6px_rgba(0,0,0,0.6)] dark:focus-within:shadow-[0_1px_6px_rgba(0,0,0,0.6)]">
       {busy ? (
         <LoadingTapButton
           variant="transparent"
@@ -316,7 +344,9 @@ function SearchPill({
         id="search-query"
         aria-label="Search"
         enableCleanup={false}
-        placeholder="Search, paste a link or @handle"
+        enableVoice={false}
+        showCopyButton={false}
+        placeholder={mic.isRecording ? "Listening…" : undefined}
         value={keywords}
         onChange={(e) => onQuery(e.target.value)}
         onKeyDown={(e) => {
@@ -337,14 +367,24 @@ function SearchPill({
         autoComplete="off"
         enterKeyHint="search"
         wrapperClassName="min-w-0 flex-1"
-        className="h-11 border-0 bg-transparent px-1.5 shadow-none placeholder:text-base focus-visible:ring-0"
+        className="h-11 border-0 bg-transparent px-1.5 text-base shadow-none focus-visible:ring-0"
       />
+      <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-border" />
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <MicButton
+          onMicClick={mic.handleVoiceClick}
+          isRecording={mic.isRecording}
+          isTranscribing={mic.isTranscribing}
+          audioLevel={mic.audioLevel}
+          micAriaLabel={mic.isRecording ? "Stop voice search" : "Search by voice"}
+        />
+      </div>
       <TapTargetButtonTransparent
         icon={<Camera />}
         ariaLabel="Search by image"
         tooltip="Search by image"
         onClick={() => fileRef.current?.click()}
-        className="text-muted-foreground"
+        className="text-primary"
       />
       <input
         ref={fileRef}
@@ -359,6 +399,27 @@ function SearchPill({
         }}
       />
     </div>
+  );
+}
+
+/** The page's name where Google puts its logo: big at the calm center, small beside the box. */
+function SearchWordmark({ size, onClick }: { size: "home" | "bar"; onClick?: () => void }) {
+  const mark = (
+    <span
+      className={cn(
+        "select-none font-semibold tracking-tight text-foreground",
+        size === "home" ? "text-[64px] leading-none sm:text-[84px]" : "text-[26px] leading-none",
+      )}
+    >
+      Matr<span className="text-primary">x</span>
+    </span>
+  );
+  if (!onClick) return mark;
+  // Google's logo is the way home: a plain link to the empty page.
+  return (
+    <a href="/search" onClick={(e) => { e.preventDefault(); onClick(); }} aria-label="Search home" className="shrink-0">
+      {mark}
+    </a>
   );
 }
 
@@ -544,41 +605,47 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
   const home = runs.length === 0 && !special && !pinnedTop;
   const compare = runs.length > 1;
 
-  // The engine switch is held (invisible, inert) on tabs no engine choice
-  // applies to, so the row never shifts as tabs change.
-  const engineControls = (
-    <div className="flex items-center gap-1">
-      <div
-        className={cn(!engineChoice && "invisible")}
-        aria-hidden={!engineChoice}
-        inert={!engineChoice}
-      >
-        <SegmentedControl
-          aria-label="Search engine"
-          value={engine}
-          onValueChange={setEngine}
-          data={ENGINE_OPTIONS}
-        />
-      </div>
-      <Button
-        variant="quiet"
-        icon={<SlidersHorizontal />}
-        pressed={optionsOpen}
-        badge={changedOptionCount > 0}
-        title={changedOptionCount > 0 ? `Options · ${changedOptionCount} changed` : "Options"}
-        onClick={() => setOptionsOpen((v) => !v)}
-        aria-label={changedOptionCount > 0 ? `Options, ${changedOptionCount} changed` : "Options"}
-        aria-expanded={optionsOpen}
-      >
-        Options
-      </Button>
-    </div>
+  // "I'm Feeling Lucky": the search runs as usual, then the first web result opens in its place.
+  const lucky = useRef(false);
+  const firstUrl = (() => {
+    const result = runs[0]?.outcome?.result;
+    const list = result && Array.isArray(result.results) ? result.results : [];
+    const first = list[0];
+    return isRecord(first) && typeof first.url === "string" ? first.url : null;
+  })();
+  const firstPhase = runs[0]?.phase;
+  useEffect(() => {
+    if (!lucky.current || firstPhase === "searching") return;
+    if (firstPhase === "error" || firstPhase === "done") {
+      lucky.current = false;
+      if (firstUrl) window.location.assign(firstUrl);
+    }
+  }, [firstUrl, firstPhase]);
+
+  /** Google's pager: a page is its own search of the same words. */
+  const goToPage = (page: number) => runTab(lastRequest?.vertical ?? vertical, { options: { ...options, page } });
+
+  // Google's "Tools": our advanced options (engine, country, page, near me…) wait behind one press.
+  const toolsButton = (
+    <Button
+      variant="quiet"
+      icon={<SlidersHorizontal />}
+      pressed={optionsOpen}
+      badge={changedOptionCount > 0}
+      title={changedOptionCount > 0 ? `Tools · ${changedOptionCount} changed` : "Tools"}
+      onClick={() => setOptionsOpen((v) => !v)}
+      aria-label={changedOptionCount > 0 ? `Tools, ${changedOptionCount} changed` : "Tools"}
+      aria-expanded={optionsOpen}
+    >
+      Tools
+    </Button>
   );
 
   const placesLocation = vertical === "places" && (
     <ProInput
       aria-label="Location"
       enableCleanup={false}
+      enableVoice={false}
       placeholder="Location, e.g. Austin, Texas"
       value={options.location ?? ""}
       onChange={(e) => setOption("location", e.target.value)}
@@ -590,7 +657,22 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     />
   );
 
-  const optionsPanel = optionsOpen && <SearchOptions form={form} />;
+  const optionsPanel = optionsOpen && (
+    <div className="space-y-3">
+      {engineChoice && (
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-muted-foreground">Engine</span>
+          <SegmentedControl
+            aria-label="Search engine"
+            value={engine}
+            onValueChange={setEngine}
+            data={ENGINE_OPTIONS}
+          />
+        </div>
+      )}
+      <SearchOptions form={form} />
+    </div>
+  );
 
   const hintMode = inputs.pendingMode !== "words" ? inputs.pendingMode : null;
   const statusLine = (
@@ -612,51 +694,121 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     </div>
   );
 
-  if (toolTab) {
-    // A catalog tab: the Tool's own box takes the pill's place under the same tab row.
-    return (
-      <>
-        <div className="flex-shrink-0 border-b border-border/60 px-3 pt-3 sm:px-4">
-          <div className={cn("mx-auto min-w-0 overflow-x-auto scrollbar-none", PAGE_WIDTH)}>
-            <Tabs
-              aria-label="Result type"
-              className="overflow-visible"
-              value={toolTab}
-              rule={false}
-              onValueChange={onAnyTab}
-              data={TAB_OPTIONS}
-            />
+  // Google's tab row: All · Images · Videos · News · Shopping · Places, then More. A More tab that is
+  // open joins the row (Google does the same), so the open tab is always visible.
+  const activeTab: SearchTab | ToolTab = toolTab ?? vertical;
+  const moreOptions = TAB_OPTIONS.filter((t) => !PRIMARY_TABS.includes(t.value));
+  const rowOptions = [
+    ...PRIMARY_TABS.flatMap((v) => TAB_OPTIONS.filter((t) => t.value === v)),
+    ...moreOptions.filter((t) => t.value === activeTab),
+  ];
+  const tabRow = (
+    <div className="flex min-h-10 min-w-0 items-center gap-x-1">
+      <div className="min-w-0 shrink overflow-x-auto scrollbar-none">
+        <Tabs
+          aria-label="Result type"
+          className="overflow-visible"
+          value={activeTab}
+          rule={false}
+          onValueChange={onAnyTab}
+          data={rowOptions}
+        />
+      </div>
+      {moreOptions.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="quiet" aria-label="More result types">
+              More
+              <ChevronDown className="ml-0.5 h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {moreOptions.map((t) => (
+              <DropdownMenuItem key={t.value} onSelect={() => onAnyTab(t.value)}>
+                {t.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+      <div className="ml-auto shrink-0 pl-2">{toolsButton}</div>
+    </div>
+  );
+
+  /** Logo + box, then the tab row — Google's results header, aligned to one left edge. */
+  const resultsHeader = (
+    <div className="flex-shrink-0 border-b border-border px-3 pt-3 sm:px-4 lg:px-7">
+      <div className={cn("space-y-1", PAGE_WIDTH)}>
+        <div className="flex justify-center pb-2 lg:hidden">
+          <SearchWordmark size="bar" onClick={onClear} />
+        </div>
+        <div className="flex items-center gap-x-9">
+          <div className="hidden w-[120px] shrink-0 lg:block">
+            <SearchWordmark size="bar" onClick={onClear} />
+          </div>
+          <div className={cn("w-full min-w-0", PILL_WIDTH)}>
+            <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} />
           </div>
         </div>
-        <div className="relative flex-1 overflow-auto px-3 py-6 sm:px-4 sm:py-10">
-          <ToolSearchPanel key={toolTab} tab={toolTab} seed={keywords.trim()} />
+        <div className={cn("min-w-0", GUTTER)}>
+          {tabRow}
+          <div className="flex min-w-0 flex-wrap items-center gap-3 empty:hidden">
+            {placesLocation}
+            {statusLine}
+            {locationNote && (
+              <p className="flex min-w-0 items-center gap-1.5 truncate text-xs text-muted-foreground">
+                <MapPinOff className="h-3.5 w-3.5 shrink-0" />
+                {locationNote}
+              </p>
+            )}
+          </div>
+          {optionsPanel && <div className="pb-3">{optionsPanel}</div>}
+        </div>
+      </div>
+    </div>
+  );
+
+  if (toolTab) {
+    // A catalog tab: the Tool's own box answers under the same header.
+    return (
+      <>
+        {resultsHeader}
+        <div className="relative flex-1 overflow-auto px-3 py-6 sm:px-4 sm:py-8 lg:px-7">
+          <div className={cn(PAGE_WIDTH, GUTTER)}>
+            <ToolSearchPanel key={toolTab} tab={toolTab} seed={keywords.trim()} />
+          </div>
         </div>
       </>
     );
   }
 
   if (home) {
-    // The start screen — Google's calm center. The box sits at a fixed
-    // height, so opening Options grows the page downward and never moves it.
+    // Google's home: the name, one box, two buttons. Every other door waits on the results page.
     return (
-      <div className="relative flex-1 overflow-auto px-4" {...dragProps}>
+      <div className="relative flex flex-1 flex-col overflow-auto px-4" {...dragProps}>
         {dropVeil}
-        <div className={cn("mx-auto w-full space-y-4 pb-16 pt-[18vh] sm:pt-[24vh]", PILL_WIDTH)}>
-          <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} autoFocus />
-          <div className="flex min-h-4 justify-center">{statusLine}</div>
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-            <Tabs
-              aria-label="Result type"
-              variant="capsule"
-              className="flex-wrap justify-center"
-              value={toolTab ?? vertical}
-              onValueChange={onAnyTab}
-              data={TAB_OPTIONS}
-            />
-            {engineControls}
+        <div className={cn("mx-auto flex w-full flex-col items-center gap-7 pb-16 pt-[14vh] sm:pt-[20vh]", PILL_WIDTH)}>
+          <SearchWordmark size="home" />
+          <div className="w-full space-y-1">
+            <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} autoFocus />
+            <div className="flex min-h-4 justify-center">{statusLine}</div>
           </div>
-          {placesLocation && <div className="flex justify-center">{placesLocation}</div>}
-          {optionsPanel}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button variant="outline" onClick={submitBox} disabled={isLoading}>
+              Matrx Search
+            </Button>
+            <Button
+              variant="outline"
+              disabled={isLoading || keywords.trim() === ""}
+              onClick={() => {
+                lucky.current = true;
+                inputs.submit();
+              }}
+            >
+              I&apos;m Feeling Lucky
+            </Button>
+          </div>
+          {guest && <SignUpForMore />}
         </div>
       </div>
     );
@@ -668,50 +820,16 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
     lastRequest.vertical !== vertical &&
     !isLoading;
   const showRuns = !special && runs.length > 0 && !tabStale;
+  const runTabNow = lastRequest?.vertical ?? vertical;
+  const pageable = showRuns && !compare && (runTabNow === "web" || runTabNow === "news") && runs[0]?.phase === "done";
 
   return (
     <>
-      <div className="flex-shrink-0 border-b border-border/60 px-3 pt-3 sm:px-4">
-        <div className={cn("mx-auto space-y-1", PAGE_WIDTH)}>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <div className={cn("w-full min-w-0 sm:flex-1", PILL_WIDTH)}>
-              <SearchPill form={form} inputs={inputs} onQuery={onQuery} onClear={onClear} onSubmit={submitBox} />
-            </div>
-            {engineControls}
-          </div>
+      {resultsHeader}
 
-          <div className="flex min-h-10 min-w-0 items-center gap-x-3 gap-y-1">
-            {/* Nine tabs scroll sideways on a phone, Google's way. */}
-            <div className="min-w-0 max-w-full shrink overflow-x-auto scrollbar-none">
-              <Tabs
-                aria-label="Result type"
-                className="overflow-visible"
-                value={toolTab ?? vertical}
-                rule={false}
-                onValueChange={onAnyTab}
-                data={TAB_OPTIONS}
-              />
-            </div>
-            <div className="hidden min-w-0 flex-1 items-center gap-3 md:flex">
-              {placesLocation}
-              {statusLine}
-              {locationNote && (
-                <p className="flex min-w-0 items-center gap-1.5 truncate text-xs text-muted-foreground">
-                  <MapPinOff className="h-3.5 w-3.5 shrink-0" />
-                  {locationNote}
-                </p>
-              )}
-            </div>
-          </div>
-          {placesLocation && <div className="pb-2 md:hidden">{placesLocation}</div>}
-
-          {optionsPanel && <div className="pb-3">{optionsPanel}</div>}
-        </div>
-      </div>
-
-      <div className="relative flex-1 overflow-auto px-3 py-4 sm:px-4 sm:py-5" {...dragProps}>
+      <div className="relative flex-1 overflow-auto px-3 py-3 sm:px-4 lg:px-7" {...dragProps}>
         {dropVeil}
-        <div className={cn("mx-auto space-y-4", PAGE_WIDTH)}>
+        <div className={cn("space-y-4", PAGE_WIDTH, GUTTER)}>
           {vertical === "social" && !special && (
             <Tabs
               aria-label="Social platform"
@@ -742,6 +860,7 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
               {runs.map((run) => (
                 <RunColumn
                   key={run.provider}
+                  named={compare || !tabHasEngineChoice(lastRequest?.vertical ?? vertical)}
                   run={run}
                   tab={lastRequest?.vertical ?? vertical}
                   query={lastRequest?.query ?? keywords.trim()}
@@ -760,6 +879,10 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
               query={keywords.trim()}
               onRun={() => runTab(vertical)}
             />
+          )}
+
+          {pageable && (
+            <SearchPager page={lastRequest?.options.page ?? options.page} onPage={goToPage} />
           )}
 
           {guest && showRuns && !isLoading && (
@@ -956,7 +1079,10 @@ function RunColumn({
   query,
   onRetry,
   guest = false,
+  named = false,
 }: {
+  /** Show which engine or tab answered — only when two answer side by side, or the tab is its own source. */
+  named?: boolean;
   run: KeywordEngineRun;
   tab: SearchTab;
   query: string;
@@ -974,7 +1100,8 @@ function RunColumn({
   return (
     <section className="min-w-0 space-y-3" aria-label={`${label} results`}>
       <ResultLine
-        label={label}
+        label={named ? label : null}
+        total={outcome ? num(outcome.result.total_results) : null}
         phase={run.phase}
         empty={Boolean(run.empty)}
         hits={outcome ? hits : null}
@@ -1019,7 +1146,7 @@ function RunColumn({
         (isWeb ? (
           // The result line already names the engine and count.
           <div className="[&_[data-search-collection-header]]:hidden">
-            <KindInstanceRender kind="web_search_results" value={outcome.result} variant="bare" />
+            <WebSearchResultsBlock serverData={{ ...outcome.result, __kind: "web_search_results" }} />
           </div>
         ) : (
           <SearchKindView value={outcome.result} />
@@ -1041,37 +1168,42 @@ function NoResults({ message }: { message?: string }) {
   );
 }
 
+function num(v: unknown): number | null {
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+/** Google's count line: "About 1,230,000 results (0.45 seconds)" — quiet, no rule. */
 function ResultLine({
   label,
   phase,
   empty = false,
   errorLabel,
   hits,
+  total = null,
   elapsedMs,
   unit,
   inspect,
   trailing,
 }: {
-  label: string;
+  label: string | null;
   empty?: boolean;
   phase: "idle" | "searching" | "working" | "uploading" | "done" | "error";
   hits: number | null;
+  /** The engine's own estimate of every match, when it gives one. */
+  total?: number | null;
   elapsedMs: number | null;
   unit?: string;
+  errorLabel?: string;
   inspect: { open: boolean; toggle: () => void; notes: number } | null;
   trailing?: React.ReactNode;
 }) {
   const busy = phase === "searching" || phase === "working" || phase === "uploading";
+  const u = unit ?? "results";
+  const count = total !== null && hits !== null && total > hits ? total : hits;
+  const seconds = elapsedMs !== null ? ` (${(elapsedMs / 1000).toFixed(2)} seconds)` : "";
   return (
-    <div className="flex h-8 min-w-0 items-center gap-2 border-b border-border/60 text-xs">
-      <span
-        aria-hidden
-        className={cn(
-          "h-1.5 w-1.5 shrink-0 rounded-full",
-          phase === "error" ? "bg-destructive" : busy ? "animate-pulse bg-primary" : "bg-success",
-        )}
-      />
-      <span className="truncate text-sm font-medium text-foreground">{label}</span>
+    <div className="flex h-8 min-w-0 items-center gap-2 text-sm">
+      {label && <span className="truncate font-medium text-foreground">{label}</span>}
       <span className="min-w-0 truncate tabular-nums text-muted-foreground">
         {busy && hits === null
           ? phase === "uploading"
@@ -1081,12 +1213,10 @@ function ResultLine({
             ? "Nothing found"
             : phase === "error"
             ? (errorLabel ?? "Didn't come back")
-            : hits !== null
-              ? `${hits} ${hits === 1 ? (unit ?? "results").replace(/s$/, "") : (unit ?? "results")}${
-                  elapsedMs !== null
-                    ? ` · ${formatDurationMs(elapsedMs, { style: "compact", precision: "fine" })}`
-                    : ""
-                }`
+            : count !== null
+              ? `${total !== null && count === total ? "About " : ""}${Intl.NumberFormat().format(count)} ${
+                  count === 1 ? u.replace(/s$/, "") : u
+                }${seconds}`
               : null}
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-1">
@@ -1105,6 +1235,42 @@ function ResultLine({
         )}
       </span>
     </div>
+  );
+}
+
+/** Pages Google shows at once around the current one. */
+const PAGER_SPAN = 10;
+
+/** Google's pager under the results: Previous · 1 2 3 … · Next. */
+function SearchPager({ page, onPage }: { page: number; onPage: (page: number) => void }) {
+  const first = Math.max(1, Math.min(page - 5, SEARCH_LAB_PAGE_MAX - PAGER_SPAN + 1));
+  const last = Math.min(SEARCH_LAB_PAGE_MAX, first + PAGER_SPAN - 1);
+  const pages = Array.from({ length: last - first + 1 }, (_, i) => first + i);
+  return (
+    <nav aria-label="Pages" className="flex max-w-[652px] items-center justify-center gap-1 py-6">
+      {page > 1 && (
+        <Button variant="quiet" icon={<ChevronLeft />} onClick={() => onPage(page - 1)}>
+          Previous
+        </Button>
+      )}
+      {pages.map((n) => (
+        <Button
+          key={n}
+          variant={n === page ? "quiet" : "link"}
+          aria-current={n === page ? "page" : undefined}
+          pressed={n === page}
+          onClick={() => n !== page && onPage(n)}
+        >
+          {String(n)}
+        </Button>
+      ))}
+      {page < SEARCH_LAB_PAGE_MAX && (
+        <Button variant="quiet" onClick={() => onPage(page + 1)}>
+          Next
+          <ChevronRight className="ml-0.5 h-4 w-4" />
+        </Button>
+      )}
+    </nav>
   );
 }
 
