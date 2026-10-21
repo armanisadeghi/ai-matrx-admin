@@ -14,6 +14,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
+import { useTableUrlState } from "@ai-matrx/design-system/data-table/url-state";
+import { nextQueryState } from "@ai-matrx/design-system/data-table/query-control";
+import { buildDriftReportScope, parseReportDestination, reportViewPatch } from "../../surface-contract";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useDriftReport } from "@/features/agents/hooks/useDriftReport";
@@ -22,9 +27,7 @@ import { AgentUsagesEngine } from "@/features/agents/components/usages/AgentUsag
 import { RollupTable } from "./RollupTable";
 import { AgentDriftReportHeader } from "./AgentDriftReportHeader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { createReportsScope } from "@/features/surfaces/manifests/reports.manifest";
-import { REPORTS } from "@/features/reports/registry";
+import { SurfaceRuntimeProvider, withScopeContributions } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { Loader2, RotateCw } from "lucide-react";
 
 export function AgentDriftReport({
@@ -36,15 +39,18 @@ export function AgentDriftReport({
   embedded?: boolean;
 }) {
   const isMobile = useIsMobile();
+  const router = useRouter();
+  const table = useTableUrlState({ tableId: `agent-drift-${mode}`, defaultSort: { id: "breaking", direction: "desc" }, defaultPageSize: 50 });
   const [sort, setSort] = useState<{ key: ReportSortKey; desc: boolean }>({
     key: "breaking",
     desc: true,
   });
   const [selected, setSelected] = useState<string | null>(null);
-  const { status, error, rows, adminRows, totals, refresh } = useDriftReport(
+  const report = useDriftReport(
     mode,
     sort,
   );
+  const { status, error, rows, adminRows, totals, refresh } = report;
 
   const onSort = (key: ReportSortKey) =>
     setSort((s) =>
@@ -72,7 +78,7 @@ export function AgentDriftReport({
     if (showMobileDetail) {
       return (
         <div className="min-h-0 flex-1">
-          <AgentUsagesEngine key={selected} agentId={selected} mode={mode} />
+          <AgentUsagesEngine key={selected} agentId={selected} mode={mode} surfaceName={mode === "user" ? "matrx-user/reports" : undefined} />
         </div>
       );
     }
@@ -91,6 +97,7 @@ export function AgentDriftReport({
               onSelect={setSelected}
               sort={sort}
               onSort={onSort}
+              table={table}
               summary={summary}
             />
           )}
@@ -112,13 +119,14 @@ export function AgentDriftReport({
               onSelect={setSelected}
               sort={sort}
               onSort={onSort}
+              table={table}
               summary={summary}
             />
           )}
         </div>
         <div className="min-w-0 flex-1">
           {selected ? (
-            <AgentUsagesEngine key={selected} agentId={selected} mode={mode} />
+            <AgentUsagesEngine key={selected} agentId={selected} mode={mode} surfaceName={mode === "user" ? "matrx-user/reports" : undefined} />
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
               Select an agent to see its usages and drift detail.
@@ -131,28 +139,14 @@ export function AgentDriftReport({
 
   // The reports surface for the open report (user scope only: the admin variant is the admin
   // reporting surface's). Read at send time from what the report already holds.
-  const getScope = () =>
-    createReportsScope({
-      available_report_slugs: REPORTS.filter((r) => r.status === "live").map((r) => r.slug),
-      report_is_admin_scope: false,
-      report_slug: "agent-drift",
-      report_title: "Agent Drift",
-      report_row_count: rows.length,
-      report_findings: rows.map((r) => ({
-        agent_id: r.agentId,
-        agent_name: r.agentName,
-        current_version: r.currentVersion,
-        breaking: r.myBreaking,
-        silent_breaking: r.mySilent,
-        warning: r.myWarning,
-        info: r.myInfo,
-        stale_pins: r.myStalePins,
-        usages: r.myUsageCount,
-      })),
-      report_totals: { agents_with_drift: totals.agents, ...totals.totals },
-      report_load_status: { status, error },
-      ...(selected ? { report_selected_agent_id: selected } : {}),
-    });
+  const getScope = withScopeContributions("matrx-user/reports", () => buildDriftReportScope({ report, selected, table: table.state }));
+  const parseView = (value: unknown) => {
+    const patch = reportViewPatch.parse(value);
+    if (patch.selected_agent_id && (status !== "succeeded" || !rows.some((row) => row.agentId === patch.selected_agent_id))) {
+      throw new Error("Choose an agent from the successfully loaded report_findings. Nothing was changed.");
+    }
+    return patch;
+  };
 
   const frame = embedded ? (
     <div className="flex h-full min-h-0 flex-col" data-report-embedded>
@@ -197,8 +191,26 @@ export function AgentDriftReport({
   );
 
   return mode === "user" ? (
-    <SurfaceRuntimeProvider surfaceName="matrx-user/reports" getScope={getScope}>
-      {frame}
+    <SurfaceRuntimeProvider surfaceName="matrx-user/reports" getScope={getScope} getWriteHandlers={() => ({
+      open_report: { validate: (value) => { parseReportDestination(value); }, apply: (value) => { const destination = parseReportDestination(value); router.push(destination.href); return { summary: `Opened ${destination.title}.`, data: { href: destination.href } }; } },
+      set_report_view: { validate: (value) => { parseView(value); }, apply: (value) => {
+        const patch = parseView(value);
+        if (patch.selected_agent_id !== undefined) setSelected(patch.selected_agent_id);
+        table.onStateChange(nextQueryState(table.state, {
+          ...(patch.search !== undefined ? { search: patch.search } : {}),
+          ...(patch.page !== undefined ? { page: patch.page } : {}),
+          ...(patch.page_size !== undefined ? { pageSize: patch.page_size } : {}),
+          ...(patch.sort !== undefined ? { sort: patch.sort } : {}),
+        }, { resetPage: patch.page === undefined && (patch.search !== undefined || patch.sort !== undefined || patch.page_size !== undefined) }));
+        return { summary: "Updated the report view; agent definitions and pins are unchanged.", data: patch };
+      } },
+    })}>
+      <NonEditableContextMenu sourceFeature="reports" surfaceName="matrx-user/reports" menuVersion={1} getApplicationScope={getScope} contentSource={{ type: "raw" }} extraSections={[{ id: "report-actions", label: "Report", anchor: "after-clipboard", items: [
+        { kind: "item", id: "refresh", label: "Refresh", icon: RotateCw, disabled: status === "loading", description: status === "loading" ? "Waiting for the current read" : undefined, onSelect: refresh },
+        { kind: "item", id: "close-detail", label: "Close detail", icon: RotateCw, disabled: selected === null, description: selected === null ? "No agent detail is open" : undefined, onSelect: () => setSelected(null) },
+      ] }]}>
+        <div className="contents">{frame}</div>
+      </NonEditableContextMenu>
     </SurfaceRuntimeProvider>
   ) : (
     frame

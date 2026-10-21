@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { xmlElement, xmlList, xmlText } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
+import { useRouter } from "next/navigation";
+import { parseImageHubDestination } from "@/features/image-manager/hub-surface";
 import {
   ArrowRight,
   Braces,
@@ -157,6 +160,7 @@ const STUDIO_TILES: Tile[] = [
 ];
 
 export function ImagesLandingHero() {
+  const router = useRouter();
   const sections = [
     { title: "Manager", landing: "/images/manager", links: MANAGER_TILES.map(({ href, label, description }) => ({ href, label, description })) },
     { title: "Studio", landing: "/images/studio", links: STUDIO_TILES.map(({ href, label, description }) => ({ href, label, description })) },
@@ -165,13 +169,19 @@ export function ImagesLandingHero() {
   const getScope = () => createImageManagerScope({
     image_hub_tab: "home",
     image_hub_sections: sections,
+    image_hub_overview: xmlElement("images", { tab: "home" }, sections.map((section) => xmlElement("section", { title: section.title, href: section.landing }, xmlList("tools", section.links, (link) => xmlElement("tool", { name: link.label, href: link.href }, xmlText("description", link.description, { max: 120 })))))) ,
     image_hub_links: links,
     image_hub_link_count: links.length,
     content: sections.map((section) => `${section.title}\n${section.links.map((link) => `${link.label}: ${link.description} (${link.href})`).join("\n")}`).join("\n\n"),
   });
   return (
-    <SurfaceRuntimeProvider surfaceName="matrx-user/image-manager" getScope={getScope}>
-    <NonEditableContextMenu sourceFeature="image-studio" surfaceName="matrx-user/image-manager" menuVersion={1} getApplicationScope={getScope} contentSource={{ type: "raw" }}>
+    <SurfaceRuntimeProvider surfaceName="matrx-user/image-manager" getScope={getScope} getWriteHandlers={() => ({
+      open_image_workspace: {
+        validate: (value) => { parseImageHubDestination(value, sections); },
+        apply: (value) => { const href = parseImageHubDestination(value, sections); router.push(href); return { summary: `Opened ${href}.`, data: { href } }; },
+      },
+    })}>
+    <NonEditableContextMenu sourceFeature="image-studio" surfaceName="matrx-user/image-manager" menuVersion={2} extraSections={[{ id: "image-workspaces", label: "Image workspaces", anchor: "after-clipboard", items: sections.map((section) => ({ kind: "submenu", id: section.title, label: section.title, icon: FolderTree, children: [{ kind: "item", id: section.landing, label: "Open home", icon: ArrowRight, onSelect: () => router.push(section.landing) }, ...section.links.map((link) => ({ kind: "item" as const, id: link.href, label: `Open ${link.label}`, icon: ArrowRight, onSelect: () => router.push(link.href) }))] })) }]} getApplicationScope={getScope} contentSource={{ type: "raw" }}>
     <div data-surface-value="image_hub_sections" className="h-full overflow-y-auto overscroll-contain pb-20">
       <div className="space-y-3 px-3 pb-3 pt-3 md:hidden">
         <MobileTileSection

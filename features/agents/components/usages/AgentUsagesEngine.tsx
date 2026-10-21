@@ -22,6 +22,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   AlertTriangle,
   ArrowRight,
@@ -92,9 +93,11 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 interface AgentUsagesEngineProps {
   agentId: string;
   mode: UsageScope;
+  /** A host may publish this engine's existing read state as an additive contribution. */
+  surfaceName?: string;
 }
 
-export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
+export function AgentUsagesEngine({ agentId, mode, surfaceName }: AgentUsagesEngineProps) {
   const dispatch = useAppDispatch();
   const scan = useAgentUsages(agentId, mode);
   const mandates = useAgentMandateImpact(agentId, mode);
@@ -142,6 +145,17 @@ export function AgentUsagesEngine({ agentId, mode }: AgentUsagesEngineProps) {
     ? rows.filter((row) => row.dimension === active)
     : workingRows;
   const viewingSetAside = active !== null && active !== "history" && isSetAside(active);
+
+  useSurfaceScopeContribution(surfaceName ?? null, "agent-usages", () => ({
+    agent_usage_detail: {
+      agent_id: agentId, mode, active_dimension: active, selected_row_ids: selected,
+      scan: { status: scan.status, error: scan.error, ...(scan.status === "succeeded" ? { groups: scan.groups, aggregates: scan.aggregates, summary: scan.summary } : {}) },
+      mandates: { status: mandates.status, error: mandates.error, posture: mandates.posture, ...(mandates.status === "succeeded" ? { impact: mandates.impact } : {}) },
+      history,
+      ...(scan.status === "succeeded" && mandates.status === "succeeded" ? { counts, dimension_rows: visibleRows } : {}),
+      bulk, row_mutations: rowMutations, notifying: notify, candidate_verdict: candidateVerdict,
+    },
+  }));
 
   const agentName =
     usageRows[0]?.agentName ??

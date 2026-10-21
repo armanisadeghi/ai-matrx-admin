@@ -52,6 +52,7 @@ export interface ImageHubLink { href: string; label: string; description: string
 export interface ImageHubSection { title: string; landing: string; links: ImageHubLink[] }
 
 const surfaceSpecific: SurfaceValue[] = [
+  { name: "image_hub_overview", label: "Image hub overview", description: "Compact XML of the landing's Manager and Studio homes and displayed tools with routes and descriptions. Absent on non-landing hub tabs.", valueType: "string", alwaysAvailable: false, typicalCharCount: 4000, inlineUpTo: 4500, group: "hub_location", sortOrder: 140 },
   { name: "image_hub_sections", label: "Hub sections", description: "Navigation groups rendered on the Images landing, each with its title, home route, and complete link catalog. Absent on other hub tabs.", valueType: "array", alwaysAvailable: false, typicalCharCount: 3000, group: "hub_location", sortOrder: 110 },
   { name: "image_hub_links", label: "Hub links", description: "Every tool link shown on the landing, with its label, description and route. Absent on other tabs.", valueType: "array", alwaysAvailable: false, typicalCharCount: 2600, group: "hub_location", sortOrder: 120 },
   { name: "image_hub_link_count", label: "Hub link count", description: "Number of tool links rendered on the landing. Absent on other tabs.", valueType: "number", alwaysAvailable: false, typicalCharCount: 3, group: "hub_location", sortOrder: 130 },
@@ -105,9 +106,10 @@ export const imageManagerManifest: SurfaceManifest = {
   intro: `<surface_intro>
 You are in the Image Manager: the hub the user moves through to find, upload, brand, and organize images. image_hub_tab tells you which tab they are on; the selection group tells you which images they have picked.
 Images are always identified here by a durable file_id, never by a URL — a URL you were given may already have expired, so resolve bytes from the id.
-The dedicated image workspaces (library, studio, generate, edit, annotate) are separate surfaces with their own richer vocabulary; do not assume their values are available here.
+The dedicated image workspaces (library, studio, generate, edit, annotate) are separate surfaces with their own richer vocabulary; do not assume their values are available here. On the navigation landing use open_image_workspace with a displayed route to open its tool. This hub cannot create, edit or delete images.
 </surface_intro>`,
   groups,
+  writeTargets: [{ name: "open_image_workspace", label: "Open image workspace", description: "Navigates from the Images landing to one of its displayed tools or section homes. Value is a route string from image_hub_links or image_hub_sections, for example /images/upload. Refuses unknown/external destinations. It neither creates nor edits images; available only on the navigation landing.", valueType: "string", mode: "ui", applyPolicy: "auto", group: "hub_location", sortOrder: 100 }],
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
 
@@ -116,6 +118,7 @@ export function createImageManagerScope(values: {
   image_hub_tab: string;
   selected_image_ids?: string[];
   image_hub_sections?: ImageHubSection[];
+  image_hub_overview?: string;
   image_hub_links?: ImageHubLink[];
   image_hub_link_count?: number;
   content?: string;
