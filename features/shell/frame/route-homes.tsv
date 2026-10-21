@@ -77,7 +77,7 @@ route	tree node	how found today	note
 /agents/new/generate	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
 /agents/new/import	BUILD › Intelligence › Agents	window: Agents › Import Agent Window	
 /agents/new/manual	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	
-/agents/new/studio	BUILD › Intelligence › Agents	unreachable: empty page (owner's cleanup list)	Agent Studio
+/agents/new/studio	BUILD › Intelligence › Agents	in-page link from /agents/new	real: Agent Studio (three-pane studio)
 /agents/new/studio/from-claude	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	Agent Studio
 /agents/new/studio/with-claude-code	BUILD › Intelligence › Agents	in-page link under menu: Agents › New Agent	Agent Studio
 /agents/orchestra-studio	BUILD › Intelligence › Agents	menu: Agents › Orchestra Studio	
@@ -131,7 +131,7 @@ route	tree node	how found today	note
 /chat/message-templates/new	BUSINESS › Messages	in-page link under menu: Communications › Message Templates	message templates
 /chat/new	YOURS › Chat › Chats	menu: Chat	
 /chat/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
-/chat/talk	YOURS › Chat › Voice / Talk	unreachable: old address that redirects (owner's cleanup list)	
+/chat/talk	YOURS › Chat › Voice / Talk	unreachable: old address that redirects (owner's cleanup list)	redirects to /chat/talk/a/<agentId> (or /chat/new when unseeded)
 /chat/talk/[conversationId]	YOURS › Chat › Voice / Talk	opened from a list (under menu: Chat › Talk)	
 /chat/talk/a/[agentId]	YOURS › Chat › Voice / Talk	opened from a list (under menu: Chat › Talk)	
 /chat/voice	YOURS › Chat › Voice / Talk	menu: Chat › Voice	
@@ -172,15 +172,15 @@ route	tree node	how found today	note
 /commerce/stores/connect	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Connect a Store	
 /commerce/triage	SOLUTIONS › E-Commerce	menu: Industries › Commerce › Triage	
 /compare	Productivity › Data › Templates, compare, data-to-model	menu: Data › Compare	
-/compare/old	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/data-stores	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/graph-demo	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/knowledge-home	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/libraries	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/library-catalog	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/rag	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/sources	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
-/compare/old/transcripts	Memory › (from Knowledge, to place)	in-page link under menu: Data › Compare	+ restored old Transcripts page
+/compare/old	Memory › Old pages scheduled for deletion	unreachable: nothing links to it (owner's cleanup list, ASK)	+ restored old Knowledge page kept for side-by-side review
+/compare/old/data-stores	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/graph-demo	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/knowledge-home	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/libraries	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/library-catalog	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/rag	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/sources	Memory › Old pages scheduled for deletion	linked from the /compare/old index	+ restored old Knowledge page kept for side-by-side review
+/compare/old/transcripts	Memory › Old pages scheduled for deletion	in-page link under menu: Data › Compare	+ restored old Transcripts page
 /connect-computer	NOT TILES › Account menu	menu: Computer › Connect a Computer	devices & Computer
 /connected-sources	BUILD › Connectors	menu: Integrations › Connected Sources	
 /context-items	Productivity › Data › Scopes & context	menu: Data › Context Items	
@@ -227,7 +227,7 @@ route	tree node	how found today	note
 /devices	NOT TILES › Account menu	menu: Code › Devices	devices & Computer
 /devices/[deviceId]	NOT TILES › Account menu	opened from a list (under menu: Code › Devices)	devices & Computer
 /devices/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
-/dictionary/admin	Memory › (from Knowledge, to place)	no menu; linked in-app (3 places)	+ dictionary (only admin map + window here)
+/dictionary/admin	Productivity › Audio	no menu; linked in-app (3 places)	custom dictionary: terminology and pronunciation
 /dictionary/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /documents	Productivity › Docs › Documents	menu: Content › Documents	
 /documents/[id]	Productivity › Docs › Documents	opened from a list (under menu: Content › Documents)	
@@ -659,7 +659,7 @@ route	tree node	how found today	note
 /marketing/[brandId]/seo/[siteId]/search-console/watchlist	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/seo/[siteId]/valuation	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/settings	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
-/marketing/[brandId]/socials	BUSINESS › Marketing	unreachable: empty page (owner's cleanup list)	
+/marketing/[brandId]/socials	BUSINESS › Marketing	old address that redirects (to …/accounts)	
 /marketing/[brandId]/socials/[platform]/[accountId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/socials/accounts	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/[brandId]/socials/ads	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
@@ -741,7 +741,7 @@ route	tree node	how found today	note
 /marketing/keyword-intelligence	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
 /marketing/keyword-research	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
 /marketing/local	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
-/marketing/monitoring	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/monitoring	BUSINESS › Marketing	in-page link · marketing admin map	real page (News trackers)
 /marketing/monitoring/[trackerId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/operations/approvals	BUSINESS › Marketing	menu: Marketing › Approvals	
 /marketing/operations/automations	BUSINESS › Marketing	menu: Marketing › Automations	
@@ -774,7 +774,7 @@ route	tree node	how found today	note
 /marketing/sites/[siteId]/[...rest]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/sites/new	BUSINESS › Marketing	in-page link under menu: Marketing	
 /marketing/snapshots/[snapshotId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
-/marketing/social	BUSINESS › Marketing	unreachable: old address that redirects (owner's cleanup list)	
+/marketing/social	BUSINESS › Marketing	menu: Marketing › Social	real page (not a redirect)
 /marketing/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /marketing/tools	BUSINESS › Marketing	menu: Marketing › All SEO Tools	
 /marketing/tools/domain	BUSINESS › Marketing	menu: Marketing › Domain Research	
@@ -821,7 +821,7 @@ route	tree node	how found today	note
 /meetings/[id]	BUSINESS › Meet	opened from a list (under menu: Communications › Meetings)	meetings
 /meetings/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /messages	BUSINESS › Messages	menu: Communications	
-/messages-showcase	MORE	unreachable: nothing links to it (owner's cleanup list, ASK)	+ messages showcase (demo)
+/messages-showcase	MORE	listed on the /messages/admin map	+ messages showcase (demo)
 /messages/[conversationId]	BUSINESS › Messages	opened from a list (under menu: Communications)	
 /messages/admin	BUSINESS › Messages	in-page link under menu: Communications	
 /messages/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
@@ -902,26 +902,26 @@ route	tree node	how found today	note
 /podcast/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /podcast/studio	BUSINESS › Marketing	menu: Publish › Podcasts	podcasts
 /podcast/studio/create	BUSINESS › Marketing	menu: Publish › New Podcast	podcasts
-/podcast/studio/create-a	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-b	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-c	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-d	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-dense	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-e	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-f	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-refine	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-reimagine	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/create-sharp	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-a	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-b	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-c	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-d	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-dense/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-e	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-f	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-refine/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-reimagine/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
-/podcast/studio/run-sharp/[id]	BUSINESS › Marketing	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-a	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-b	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-c	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-d	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-dense	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-e	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-f	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-refine	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-reimagine	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/create-sharp	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-a	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-b	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-c	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-d	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-dense/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-e	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-f	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-refine/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-reimagine/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
+/podcast/studio/run-sharp/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	podcasts
 /podcast/studio/run/[id]	BUSINESS › Marketing	opened from a list (under menu: Publish › Podcasts)	podcasts
 /podcast/studio/show/[showId]	BUSINESS › Marketing	opened from a list (under menu: Publish › Podcasts)	podcasts
 /presentations	Productivity › Docs › Slides	menu: Media › Presentations	menu has it under Media › Presentations
@@ -948,8 +948,8 @@ route	tree node	how found today	note
 /projects/[projectId]/settings	YOURS › Workspace › Projects & Tasks	opened from a list (under menu: Workspace › Projects)	
 /projects/new	YOURS › Workspace › Projects & Tasks	menu: Workspace › New Project	
 /projects/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
-/rag	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, KILL)	old Knowledge home / admin map (pre-Memory)
-/rag/admin	Memory › (from Knowledge, to place)	unreachable: nothing links to it (owner's cleanup list, KILL)	old Knowledge home / admin map (pre-Memory)
+/rag	Memory	unreachable: nothing links to it (owner's cleanup list, KILL)	old Knowledge home; twin of /knowledge
+/rag/admin	Memory › Advanced	admin feature map	old Knowledge home / admin map (pre-Memory)
 /rag/data-stores	Memory › Research › Graph, extractions, data stores	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
 /rag/flow	Memory › Research › Sources	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
 /rag/library	Memory › Research › Sources	unreachable: nothing links to it (owner's cleanup list, KILL)	old /rag address
@@ -1090,7 +1090,7 @@ route	tree node	how found today	note
 /user-settings/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /vault	NOT TILES › Account menu	menu: Account › Vault	vault & keys
 /vault/[itemId]	NOT TILES › Account menu	opened from a list (under menu: Account › Vault)	vault & keys
-/vault/approve-browser	NOT TILES › Account menu	NO LINK FOUND (sits under menu: Account › Vault)	vault & keys
+/vault/approve-browser	NOT TILES › Account menu	opened by an external link (?key=)	vault & keys
 /vault/authenticator	NOT TILES › Account menu	menu: Account › Authenticator	vault & keys
 /vault/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /voice	Productivity › Audio	menu: Audio › Voice Playground	voice playground
@@ -1126,15 +1126,15 @@ route	tree node	how found today	note
 /workflows/[id]/runs	BUILD › Intelligence › Workflows	opened from a record link	
 /workflows/[id]/triggers	BUILD › Intelligence › Workflows	opened from a record link	
 /workflows/all	BUILD › Intelligence › Workflows	menu: Workflows	
-/workflows/bakeoff	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/dense-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/dense/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/refine-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/refine/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/reimagine-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/reimagine/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/sharp-2/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
-/workflows/bakeoff/sharp/[id]	BUILD › Intelligence › Workflows	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/dense-2/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/dense/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/refine-2/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/refine/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/reimagine-2/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/reimagine/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/sharp-2/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
+/workflows/bakeoff/sharp/[id]	Not in the app frame › Design bake-off variants	unreachable: nothing links to it (owner's cleanup list, KILL)	design bake-off variants
 /workflows/battle	BUILD › Intelligence › Workflows	menu: Workflows › Workflow Battle	
 /workflows/builder/[tableId]	BUILD › Intelligence › Workflows	opened from a record link	
 /workflows/review	BUILD › Intelligence › Workflows	menu: Workflows › Review	
@@ -1155,7 +1155,7 @@ route	tree node	how found today	note
 /secure/[token]	NOT TILES › Account menu	shared link (opened from a message, never from a menu)	shared link: secure delivery of a secret (vault); not in the app frame by design (link)
 /sign/e/[envelopeId]	BUSINESS › Business Tools › E-signatures	shared link (opened from a message, never from a menu)	shared link: signer's page; not in the app frame by design (link)
 /site/[slug]	BUSINESS › Marketing	shared link (opened from a message, never from a menu)	shared link: published CMS site; not in the app frame by design (link)
-/v/[slug]	BUSINESS › Marketing	shared link (opened from a message, never from a menu)	shared link: short link / video page; not in the app frame by design (link)
+/v/[slug]	Productivity › Data › Bases & tables	shared link	published table view opened by a stranger
 /x/sign	BUSINESS › Business Tools › E-signatures	shared link (opened from a message, never from a menu)	shared link: sign by phone; not in the app frame by design (link)
 /x/sign/phone	BUSINESS › Business Tools › E-signatures	shared link (opened from a message, never from a menu)	shared link: sign by phone; not in the app frame by design (link)
 /meet	BUSINESS › Meet	no menu; linked in-app (145 places)	by design full-bleed meeting stage (meetings, calls); not in the app frame by design (meet)
@@ -1204,13 +1204,13 @@ route	tree node	how found today	note
 /r/[token]	Not in the app frame › Share links	opened from a record link	public share/short link
 /request-access/thank-you	Not in the app frame › Public website	public website page	marketing / legal page
 /s/[token]	Not in the app frame › Share links	opened from a record link	public share/short link
-/seo	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
-/seo/ai-visibility	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
-/seo/metadata	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
-/seo/page-audit	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
-/seo/robots-tester	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
-/seo/social-preview	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
-/seo/structured-data	BUSINESS › Marketing	public website page	+ free public SEO tools (/seo/*), not linked from the app
+/seo	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
+/seo/ai-visibility	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
+/seo/metadata	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
+/seo/page-audit	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
+/seo/robots-tester	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
+/seo/social-preview	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
+/seo/structured-data	BUSINESS › Marketing	not in any menu (cross-linked; /seo/page-audit linked from sharing lenses)	+ free public SEO tools (/seo/*)
 /sms	Not in the app frame › Message footers	public website page	page reached from an SMS/email
 /sms/personal-staff	Not in the app frame › Message footers	public website page	page reached from an SMS/email
 /templates	Productivity › Data › Templates, compare, data-to-model	menu: Data › Templates	templates gallery (public page)
@@ -1235,10 +1235,6 @@ route	tree node	how found today	note
 /oauth/consent	Not in the app frame › Sign-in plumbing	no menu; linked in-app (1 places)	OAuth consent/callback (others signing in with us)
 /oauth/success	Not in the app frame › Sign-in plumbing	NO MENU, NO LINK FOUND	OAuth consent/callback (others signing in with us)
 /samples	MORE	no menu; linked in-app (38 places)	+ samples page (root)
-/_flash-cards	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
-/_flashcard	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
-/_flashcard/[category]	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
-/_flashcard/[category]/[id]	MORE	unreachable: nothing links to it (owner's cleanup list, KILL)	old flash-card test pages (pre-App-Router)
 /agent-lists	BUILD › Intelligence › Agents	unreachable: nothing links to it (owner's cleanup list, ASK)	+ agent lists hub (todos and plans agents write)
 /local	NOT TILES › Account menu	menu: Computer	devices & Computer (menu: Computer › My Devices)
 /news	Memory › Research	menu: Knowledge › News	news
