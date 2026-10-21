@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1622 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1629 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "5104dca1a846";
+export const KIND_REGISTRY_FINGERPRINT = "be5abb89d597";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -5095,7 +5095,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 127 kinds (ad_creative, agent_assignment_batch_result, agent_iteration_plan, agent_react_result, …).
+ * * Shared by 130 kinds (ad_creative, agent_assignment_batch_result, agent_build_state, agent_iteration_plan, …).
  */
 export type JsonValue = unknown;
 
@@ -10360,6 +10360,21 @@ export interface ShellSiteIssueItem {
 }
 
 /**
+ * * From kind `tool_shortlist`.
+ */
+export interface ShortlistedTool {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  source: "native" | "catalog";
+  summary?: string;
+  tool_id: string;
+  display_name?: string;
+}
+
+/**
  * * Shared by 2 kinds (serp_placement, web_result).
  */
 export interface SiteLink {
@@ -12363,6 +12378,55 @@ export interface AgentBuildResult {
   output_kind?: string | null;
   test_variables?: Record<string, string>;
   response_format?: string;
+}
+
+/**
+ * Everything one agent build knows, carried step to step.
+ *  *
+ *  * Kind `agent_build_state` (registry v1).
+ */
+export interface AgentBuildState {
+  op?: "create" | "new_version" | "fork";
+  door?: string;
+  goal?: JsonValue;
+  mode?: "build" | "schema_refresh" | "prove";
+  tools?: JsonValue;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_build_state";
+  outcome?: string;
+  verdict?: "none" | "pass" | "fail" | "send_back" | "model_step_up" | "exhausted" | "needs_model_approval" | "unproven";
+  /**
+   * The agent this build improves, proves or refreshes.
+   */
+  agent_id?: string | null;
+  contract?: JsonValue;
+  findings?: string[];
+  model_id?: string | null;
+  rerun_idx?: number;
+  has_person?: boolean;
+  model_rung?: number;
+  rerun_from?: string;
+  send_backs?: number;
+  source_ref?: string;
+  mandate_key?: string | null;
+  /**
+   * conversation | agent | agent_prove | agent_schema | build
+   */
+  source_kind: string;
+  stop_reason?: string;
+  instructions?: JsonValue;
+  request_text?: string;
+  held_out_cases?: JsonValue[];
+  kind_shortlist?: string[];
+  saved_agent_id?: string | null;
+  send_back_limit?: number;
+  writer_examples?: JsonValue[];
+  proof_case_count?: number;
+  unproven_requested?: boolean;
+  missed_inputs_check?: boolean;
+  workflow_offer_wait_seconds?: number;
 }
 
 /**
@@ -15179,6 +15243,53 @@ export interface AgentMandateSpecification {
 }
 
 /**
+ * Which model the new agent runs on, and why.
+ *  *
+ *  * Kind `agent_model_choice` (registry v1).
+ */
+export interface AgentModelChoice {
+  rung?: number;
+  tier?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_model_choice";
+  reason: string;
+  skipped?: string[];
+  model_id?: string | null;
+  needs_approval?: boolean;
+}
+
+/**
+ * The held-out cases written as the new agent's tests.
+ *  *
+ *  * Kind `agent_proof_cases` (registry v1).
+ */
+export interface AgentProofCases {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_proof_cases";
+  case_ids?: string[];
+  floor_met?: boolean;
+  unproven_reason?: string;
+}
+
+/**
+ * What the judge reads (blind), and every tell that would un-blind it.
+ *  *
+ *  * Kind `agent_proof_packet` (registry v1).
+ */
+export interface AgentProofPacket {
+  tells?: string[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_proof_packet";
+  packet?: JsonValue;
+}
+
+/**
  * Output of ``ai.agent.react`` — final answer plus the step-by-step trace.
  *  *
  *  * Kind `agent_react_result` (registry v10).
@@ -15193,6 +15304,23 @@ export interface AgentReactResult {
   underlying: AiExecutionResult;
   react_trace?: ReActStep[];
   tool_calls_made?: number;
+}
+
+/**
+ * The agent a build wrote.
+ *  *
+ *  * Kind `agent_ref` (registry v1).
+ */
+export interface AgentRef {
+  op: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_ref";
+  status?: string;
+  summary?: string;
+  version?: number | null;
+  agent_id: string;
 }
 
 /**
@@ -15242,6 +15370,24 @@ export interface AgentResult {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   } | JsonValue[] | null;
+}
+
+/**
+ * What the free checks found wrong with one step's answer, and where to send it back.
+ *  *
+ *  * Kind `agent_spec_findings` (registry v1).
+ */
+export interface AgentSpecFindings {
+  flags?: string[];
+  stage: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_spec_findings";
+  findings?: string[];
+  advisories?: string[];
+  send_back_to?: string | null;
+  kind_proposal?: JsonValue;
 }
 
 /**
@@ -49506,7 +49652,7 @@ export interface SeoBacklinkContextAssessorOffer {
 }
 
 /**
- * Kind `seo.business_model_verdict.offer` (registry v7).
+ * Kind `seo.business_model_verdict.offer` (registry v8).
  */
 export interface SeoBusinessModelVerdictOffer {
   /**
@@ -49514,13 +49660,49 @@ export interface SeoBusinessModelVerdictOffer {
    */
   __kind?: "seo.business_model_verdict.offer";
   /**
-   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content.
+   * The site being discovered.
+   */
+  site_id: string;
+  /**
+   * The site's name as its owner entered it.
+   */
+  site_name: string;
+  /**
+   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content. Empty when the site has no crawled pages.
    */
   site_pages: string;
   /**
    * The site's domain; resolves relative references, never outside knowledge.
    */
   site_domain: string;
+  /**
+   * The address of every page in the site pages document, in reading order.
+   */
+  site_page_urls: string[];
+  /**
+   * The organization the run is filed in.
+   */
+  organization_id?: string;
+  /**
+   * The site's description as its owner entered it; absent when never written.
+   */
+  site_description?: string;
+  /**
+   * The site's business guidelines, written by its owner: what they sell, who pays, where they work, and corrections to earlier results. Outranks the pages.
+   */
+  business_guidelines?: string;
+  /**
+   * How many crawled pages the site has that could have been read.
+   */
+  site_pages_available: number;
+  /**
+   * The guidelines document's version; absent when never written.
+   */
+  business_guidelines_version?: number;
+  /**
+   * When the guidelines document was last saved (ISO time); absent when never written.
+   */
+  business_guidelines_updated_at?: string;
 }
 
 /**
@@ -49961,7 +50143,7 @@ export interface SeoFindingFixOffer {
 }
 
 /**
- * Kind `seo.guidelines_drafter.offer` (registry v7).
+ * Kind `seo.guidelines_drafter.offer` (registry v8).
  */
 export interface SeoGuidelinesDrafterOffer {
   /**
@@ -49969,33 +50151,69 @@ export interface SeoGuidelinesDrafterOffer {
    */
   __kind?: "seo.guidelines_drafter.offer";
   /**
-   * Step 3's earn-tier map, or the not-analysed sentinel.
+   * The site being discovered.
    */
-  money_map: unknown;
+  site_id: string;
   /**
-   * The composed cold-read document — the drafter's primary evidence.
+   * Step 3's earn-tier map; absent when step 3 has not been run.
+   */
+  money_map?: unknown;
+  /**
+   * The site's name as its owner entered it.
+   */
+  site_name: string;
+  /**
+   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content. Empty when the site has no crawled pages.
    */
   site_pages: string;
   /**
-   * The site's domain; resolves references, never outside knowledge.
+   * The site's domain; resolves relative references, never outside knowledge.
    */
   site_domain: string;
   /**
-   * Step 1's verdict, or the literal not-analysed sentinel. Always supplied: a dropped variable would read as 'nothing here' rather than 'nobody has looked'.
+   * Step 1's verdict; absent when step 1 has not been run.
    */
-  business_model: unknown;
+  business_model?: unknown;
   /**
-   * Step 2's profiles, or the not-analysed sentinel.
+   * Step 2's profiles; absent when step 2 has not been run.
    */
-  ideal_customer: unknown;
+  ideal_customer?: unknown;
   /**
-   * The site's guidelines document as it stands today, or a note saying it has none yet. When one exists, this step revises it rather than starting over.
+   * The address of every page in the site pages document, in reading order.
    */
-  current_guidelines: string;
+  site_page_urls: string[];
+  /**
+   * The organization the run is filed in.
+   */
+  organization_id?: string;
+  /**
+   * The site's description as its owner entered it; absent when never written.
+   */
+  site_description?: string;
+  /**
+   * The site's guidelines document as it stands today (the same text as business_guidelines). When one exists, this step revises it.
+   */
+  current_guidelines?: string;
+  /**
+   * The site's business guidelines, written by its owner: what they sell, who pays, where they work, and corrections to earlier results. Outranks the pages.
+   */
+  business_guidelines?: string;
+  /**
+   * How many crawled pages the site has that could have been read.
+   */
+  site_pages_available: number;
+  /**
+   * The guidelines document's version; absent when never written.
+   */
+  business_guidelines_version?: number;
+  /**
+   * When the guidelines document was last saved (ISO time); absent when never written.
+   */
+  business_guidelines_updated_at?: string;
 }
 
 /**
- * Kind `seo.ideal_customer_profile.offer` (registry v4).
+ * Kind `seo.ideal_customer_profile.offer` (registry v5).
  */
 export interface SeoIdealCustomerProfileOffer {
   /**
@@ -50003,17 +50221,53 @@ export interface SeoIdealCustomerProfileOffer {
    */
   __kind?: "seo.ideal_customer_profile.offer";
   /**
-   * The composed cold-read document — the agent's only page evidence.
+   * The site being discovered.
+   */
+  site_id: string;
+  /**
+   * The site's name as its owner entered it.
+   */
+  site_name: string;
+  /**
+   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content. Empty when the site has no crawled pages.
    */
   site_pages: string;
   /**
-   * The site's domain; resolves references, never outside knowledge.
+   * The site's domain; resolves relative references, never outside knowledge.
    */
   site_domain: string;
   /**
    * Step 1's ruled verdict JSON (model, offerings, money direction).
    */
   business_model: unknown;
+  /**
+   * The address of every page in the site pages document, in reading order.
+   */
+  site_page_urls: string[];
+  /**
+   * The organization the run is filed in.
+   */
+  organization_id?: string;
+  /**
+   * The site's description as its owner entered it; absent when never written.
+   */
+  site_description?: string;
+  /**
+   * The site's business guidelines, written by its owner: what they sell, who pays, where they work, and corrections to earlier results. Outranks the pages.
+   */
+  business_guidelines?: string;
+  /**
+   * How many crawled pages the site has that could have been read.
+   */
+  site_pages_available: number;
+  /**
+   * The guidelines document's version; absent when never written.
+   */
+  business_guidelines_version?: number;
+  /**
+   * When the guidelines document was last saved (ISO time); absent when never written.
+   */
+  business_guidelines_updated_at?: string;
 }
 
 /**
@@ -50295,7 +50549,7 @@ export interface SeoMapCurationOffer {
 }
 
 /**
- * Kind `seo.money_map.offer` (registry v4).
+ * Kind `seo.money_map.offer` (registry v5).
  */
 export interface SeoMoneyMapOffer {
   /**
@@ -50303,11 +50557,19 @@ export interface SeoMoneyMapOffer {
    */
   __kind?: "seo.money_map.offer";
   /**
-   * The composed cold-read document — the agent's only page evidence.
+   * The site being discovered.
+   */
+  site_id: string;
+  /**
+   * The site's name as its owner entered it.
+   */
+  site_name: string;
+  /**
+   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content. Empty when the site has no crawled pages.
    */
   site_pages: string;
   /**
-   * The site's domain; resolves references, never outside knowledge.
+   * The site's domain; resolves relative references, never outside knowledge.
    */
   site_domain: string;
   /**
@@ -50318,10 +50580,38 @@ export interface SeoMoneyMapOffer {
    * Step 2's ruled profiles JSON (ideal customers, tire-kickers).
    */
   ideal_customer: unknown;
+  /**
+   * The address of every page in the site pages document, in reading order.
+   */
+  site_page_urls: string[];
+  /**
+   * The organization the run is filed in.
+   */
+  organization_id?: string;
+  /**
+   * The site's description as its owner entered it; absent when never written.
+   */
+  site_description?: string;
+  /**
+   * The site's business guidelines, written by its owner: what they sell, who pays, where they work, and corrections to earlier results. Outranks the pages.
+   */
+  business_guidelines?: string;
+  /**
+   * How many crawled pages the site has that could have been read.
+   */
+  site_pages_available: number;
+  /**
+   * The guidelines document's version; absent when never written.
+   */
+  business_guidelines_version?: number;
+  /**
+   * When the guidelines document was last saved (ISO time); absent when never written.
+   */
+  business_guidelines_updated_at?: string;
 }
 
 /**
- * Kind `seo.offering_extraction.offer` (registry v4).
+ * Kind `seo.offering_extraction.offer` (registry v5).
  */
 export interface SeoOfferingExtractionOffer {
   /**
@@ -50329,15 +50619,23 @@ export interface SeoOfferingExtractionOffer {
    */
   __kind?: "seo.offering_extraction.offer";
   /**
+   * The site being discovered.
+   */
+  site_id: string;
+  /**
    * Step 3's earn-tier map JSON.
    */
   money_map: unknown;
   /**
-   * The composed cold-read document — the agent's only page evidence.
+   * The site's name as its owner entered it.
+   */
+  site_name: string;
+  /**
+   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content. Empty when the site has no crawled pages.
    */
   site_pages: string;
   /**
-   * The site's domain; resolves references, never outside knowledge.
+   * The site's domain; resolves relative references, never outside knowledge.
    */
   site_domain: string;
   /**
@@ -50348,16 +50646,48 @@ export interface SeoOfferingExtractionOffer {
    * Step 2's ruled profiles JSON (ideal customers, tire-kickers).
    */
   ideal_customer: unknown;
+  /**
+   * The address of every page in the site pages document, in reading order.
+   */
+  site_page_urls: string[];
+  /**
+   * The organization the run is filed in.
+   */
+  organization_id?: string;
+  /**
+   * The site's description as its owner entered it; absent when never written.
+   */
+  site_description?: string;
+  /**
+   * The site's business guidelines, written by its owner: what they sell, who pays, where they work, and corrections to earlier results. Outranks the pages.
+   */
+  business_guidelines?: string;
+  /**
+   * How many crawled pages the site has that could have been read.
+   */
+  site_pages_available: number;
+  /**
+   * The guidelines document's version; absent when never written.
+   */
+  business_guidelines_version?: number;
+  /**
+   * When the guidelines document was last saved (ISO time); absent when never written.
+   */
+  business_guidelines_updated_at?: string;
 }
 
 /**
- * Kind `seo.offering_valuation.offer` (registry v4).
+ * Kind `seo.offering_valuation.offer` (registry v5).
  */
 export interface SeoOfferingValuationOffer {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "seo.offering_valuation.offer";
+  /**
+   * The site being discovered.
+   */
+  site_id: string;
   /**
    * Step 3's earn-tier map JSON.
    */
@@ -50367,11 +50697,15 @@ export interface SeoOfferingValuationOffer {
    */
   offerings: unknown;
   /**
-   * The composed cold-read document — the agent's only page evidence.
+   * The site's name as its owner entered it.
+   */
+  site_name: string;
+  /**
+   * A first-look document made of the homepage and the site's most prominent real pages, each with its address, title, heading outline, and a bounded amount of content. Empty when the site has no crawled pages.
    */
   site_pages: string;
   /**
-   * The site's domain; resolves references, never outside knowledge.
+   * The site's domain; resolves relative references, never outside knowledge.
    */
   site_domain: string;
   /**
@@ -50382,6 +50716,34 @@ export interface SeoOfferingValuationOffer {
    * Step 2's ruled profiles JSON (ideal customers, tire-kickers).
    */
   ideal_customer: unknown;
+  /**
+   * The address of every page in the site pages document, in reading order.
+   */
+  site_page_urls: string[];
+  /**
+   * The organization the run is filed in.
+   */
+  organization_id?: string;
+  /**
+   * The site's description as its owner entered it; absent when never written.
+   */
+  site_description?: string;
+  /**
+   * The site's business guidelines, written by its owner: what they sell, who pays, where they work, and corrections to earlier results. Outranks the pages.
+   */
+  business_guidelines?: string;
+  /**
+   * How many crawled pages the site has that could have been read.
+   */
+  site_pages_available: number;
+  /**
+   * The guidelines document's version; absent when never written.
+   */
+  business_guidelines_version?: number;
+  /**
+   * When the guidelines document was last saved (ISO time); absent when never written.
+   */
+  business_guidelines_updated_at?: string;
 }
 
 /**
@@ -56496,6 +56858,22 @@ export interface ToolResultPage {
   retained_chars?: number;
   returned_chars?: number;
   db_copy_truncated?: boolean | null;
+}
+
+/**
+ * The tools a search found for a job, plus the ones kept on purpose.
+ *  *
+ *  * Kind `tool_shortlist` (registry v1).
+ */
+export interface ToolShortlist {
+  query: string;
+  scope?: "native" | "catalog" | "all";
+  tools?: ShortlistedTool[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "tool_shortlist";
+  verdict?: string;
 }
 
 /**
@@ -63479,6 +63857,7 @@ export type GeneratedKindSlug =
   | "agent_apps.metadata_request.offer"
   | "agent_assignment_batch_result"
   | "agent_build_result"
+  | "agent_build_state"
   | "agent_debrief"
   | "agent_definition"
   | "agent_factory.build_job.offer"
@@ -63564,8 +63943,13 @@ export type GeneratedKindSlug =
   | "agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of"
   | "agent_iteration_plan"
   | "agent_mandate_specification"
+  | "agent_model_choice"
+  | "agent_proof_cases"
+  | "agent_proof_packet"
   | "agent_react_result"
+  | "agent_ref"
   | "agent_result"
+  | "agent_spec_findings"
   | "agent_studio.chat_brief.offer"
   | "agent_task_list"
   | "agent_test_case_ref"
@@ -64855,6 +65239,7 @@ export type GeneratedKindSlug =
   | "tool_component_update_result"
   | "tool_result"
   | "tool_result_page"
+  | "tool_shortlist"
   | "tool_trace_call_detail"
   | "tool_trace_event"
   | "tool_trace_event_page"
@@ -65104,6 +65489,7 @@ export interface KindPayloadBySlug {
   "agent_apps.metadata_request.offer": AgentAppsMetadataRequestOffer;
   "agent_assignment_batch_result": AgentAssignmentBatchResult;
   "agent_build_result": AgentBuildResult;
+  "agent_build_state": AgentBuildState;
   "agent_debrief": AgentDebrief;
   "agent_definition": AgentDefinition;
   "agent_factory.build_job.offer": AgentFactoryBuildJobOffer;
@@ -65189,8 +65575,13 @@ export interface KindPayloadBySlug {
   "agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of": AgentInputWhoIsGoingOnTheTripEventOrPurposeAgeRangesOf;
   "agent_iteration_plan": AgentIterationPlan;
   "agent_mandate_specification": AgentMandateSpecification;
+  "agent_model_choice": AgentModelChoice;
+  "agent_proof_cases": AgentProofCases;
+  "agent_proof_packet": AgentProofPacket;
   "agent_react_result": AgentReactResult;
+  "agent_ref": AgentRef;
   "agent_result": AgentResult;
+  "agent_spec_findings": AgentSpecFindings;
   "agent_studio.chat_brief.offer": AgentStudioChatBriefOffer;
   "agent_task_list": AgentTaskList;
   "agent_test_case_ref": AgentTestCaseRef;
@@ -66480,6 +66871,7 @@ export interface KindPayloadBySlug {
   "tool_component_update_result": ToolComponentUpdateResult;
   "tool_result": ToolResult;
   "tool_result_page": ToolResultPage;
+  "tool_shortlist": ToolShortlist;
   "tool_trace_call_detail": ToolTraceCallDetail;
   "tool_trace_event": ToolTraceEvent;
   "tool_trace_event_page": ToolTraceEventPage;
@@ -66733,6 +67125,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_apps.metadata_request.offer",
   "agent_assignment_batch_result",
   "agent_build_result",
+  "agent_build_state",
   "agent_debrief",
   "agent_definition",
   "agent_factory.build_job.offer",
@@ -66818,8 +67211,13 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_input_who_is_going_on_the_trip_event_or_purpose_age_ranges_of",
   "agent_iteration_plan",
   "agent_mandate_specification",
+  "agent_model_choice",
+  "agent_proof_cases",
+  "agent_proof_packet",
   "agent_react_result",
+  "agent_ref",
   "agent_result",
+  "agent_spec_findings",
   "agent_studio.chat_brief.offer",
   "agent_task_list",
   "agent_test_case_ref",
@@ -68109,6 +68507,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "tool_component_update_result",
   "tool_result",
   "tool_result_page",
+  "tool_shortlist",
   "tool_trace_call_detail",
   "tool_trace_event",
   "tool_trace_event_page",
