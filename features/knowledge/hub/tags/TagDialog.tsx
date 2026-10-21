@@ -31,12 +31,15 @@ export function TagDialog({
   count,
   tags,
   onPick,
+  title,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   count: number;
   tags: HubTag[];
   onPick: (name: string) => void;
+  /** Overrides "Tag N items" (a list's bulk "Add tag" names its own noun). */
+  title?: string;
 }) {
   const [text, setText] = useState("");
   const typed = normalizeTagName(text);
@@ -73,7 +76,7 @@ export function TagDialog({
         }}
       >
         <DialogHeader className="px-4 pt-4">
-          <DialogTitle>Tag {count === 1 ? "1 item" : `${count} items`}</DialogTitle>
+          <DialogTitle>{title ?? `Tag ${count === 1 ? "1 item" : `${count} items`}`}</DialogTitle>
           <DialogDescription className="sr-only">Type a tag and press Enter.</DialogDescription>
         </DialogHeader>
         <Command shouldFilter={false} value={active} onValueChange={setActive} className="border-t border-border">

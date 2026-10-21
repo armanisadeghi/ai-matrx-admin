@@ -149,12 +149,40 @@ export interface EntityBulkActionConfirm {
    * unless `optional`.
    */
   reason?: { placeholder: string; optional?: boolean };
+  /**
+   * ASK ONE VALUE FOR THE WHOLE SELECTION (2026-10-21, the bulk twin rule). The confirm shows one
+   * date or one choice under its sentence; the picked value reaches `run` as `input.value`, once,
+   * for every row ("Approve until …", "Set status to …"). Never a browser dialog.
+   */
+  ask?: EntityBulkAsk;
 }
 
-/** What the person supplied in the action's confirm (see `EntityBulkActionConfirm.reason`). */
+/** The one value a bulk verb asks before it runs (see `EntityBulkActionConfirm.ask`). */
+export type EntityBulkAsk =
+  | {
+      kind: "date";
+      label: string;
+      /** `YYYY-MM-DD` the field opens on. */
+      defaultValue: string;
+      /** Earliest pickable `YYYY-MM-DD`. */
+      min?: string;
+      /** A sentence when the value cannot be used (blocks Confirm), else null. */
+      validate?: (value: string) => string | null;
+    }
+  | {
+      kind: "choice";
+      label: string;
+      options: readonly { value: string; label: string }[];
+      /** Defaults to the first option. */
+      defaultValue?: string;
+    };
+
+/** What the person supplied in the action's confirm (see `EntityBulkActionConfirm.reason` / `.ask`). */
 export interface EntityBulkActionInput {
   /** The trimmed reason, when the confirm asked for one. */
   reason?: string;
+  /** The date (`YYYY-MM-DD`) or choice value, when the confirm asked for one. */
+  value?: string;
 }
 
 /** What an action tells the shell to do with the list once it succeeded. */

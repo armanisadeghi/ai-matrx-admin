@@ -816,6 +816,8 @@ export function EntityListPage<TRow>({
       labelOf: config.getRowName,
       config: config.standardBulkActions,
       favoritesShown: Boolean(config.favorite),
+      // Move to Trash on active rows, Restore on archived ones (the archive axis).
+      archivedView: list.query.archived,
     }),
   );
   const bulkEnabled = bulkActions.length > 0;

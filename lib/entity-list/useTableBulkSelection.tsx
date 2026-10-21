@@ -19,6 +19,7 @@ import { useState } from "react";
 import type { MatrxDataTableSelectionConfig } from "@ai-matrx/design-system/data-table/types";
 import { EntityBulkActions } from "./components/EntityBulkBar";
 import type { EntityBulkAction, EntityBulkSelection } from "./selection";
+import type { ArchivedFilter } from "./types";
 import {
   mergeBulkActions,
   standardBulkActionsFor,
@@ -38,6 +39,8 @@ export interface UseTableBulkSelectionArgs<TRow> {
   standardBulkActions?: StandardBulkActionsConfig<TRow> | false;
   /** Does this screen show favorites (stars)? Default false — Favorite verbs only where they show. */
   favoritesShown?: boolean;
+  /** Which rows the screen shows: "active" (default) → Move to Trash; "archived" → Restore; "all" → both. */
+  archivedView?: ArchivedFilter;
   /** Re-read the screen's data after an action changed it. */
   onRefresh: () => void;
   /** Drop removed rows locally; defaults to `onRefresh`. */
@@ -66,6 +69,7 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
       // Off unless the screen says it shows favorites: "added" with nothing
       // visibly changing is a lie.
       favoritesShown: args.favoritesShown ?? false,
+      archivedView: args.archivedView,
     }),
   );
 
@@ -82,7 +86,7 @@ export function useTableBulkSelection<TRow>(args: UseTableBulkSelectionArgs<TRow
         orgId: null,
         search: "",
         deep: false,
-        archived: "active",
+        archived: args.archivedView ?? "active",
         filters: {},
       },
     };

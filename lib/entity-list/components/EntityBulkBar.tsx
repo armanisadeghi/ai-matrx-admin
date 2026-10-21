@@ -25,7 +25,8 @@
 import { useState, type ReactNode } from "react";
 import { Loader2, X } from "lucide-react";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system/controls";
+import { Button, Select } from "@ai-matrx/design-system/controls";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
@@ -34,6 +35,7 @@ import {
   type EntityBulkAction,
   type EntityBulkActionConfirm,
   type EntityBulkActionInput,
+  type EntityBulkAsk,
 } from "../selection";
 import type { EntityListSelection } from "../useEntityListSelection";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -64,6 +66,31 @@ export function EntityBulkActions<TRow>({
   } | null>(null);
   const askReason = (question: EntityBulkActionConfirm, confirmLabel: string) =>
     new Promise<string | null>((resolve) => setAsking({ question, confirmLabel, resolve }));
+  // A confirm that asks ONE value (a date, a choice): the same confirm, with the field under it.
+  const [askingValue, setAskingValue] = useState<{
+    question: EntityBulkActionConfirm & { ask: EntityBulkAsk };
+    confirmLabel: string;
+    variant: "default" | "destructive";
+    value: string;
+    resolve: (value: string | null) => void;
+  } | null>(null);
+  const askValue = (
+    question: EntityBulkActionConfirm & { ask: EntityBulkAsk },
+    confirmLabel: string,
+    variant: "default" | "destructive",
+  ) =>
+    new Promise<string | null>((resolve) =>
+      setAskingValue({
+        question,
+        confirmLabel,
+        variant,
+        value:
+          question.ask.kind === "date"
+            ? question.ask.defaultValue
+            : (question.ask.defaultValue ?? question.ask.options[0]?.value ?? ""),
+        resolve,
+      }),
+    );
 
   const run = async (action: EntityBulkAction<TRow>) => {
     const target = selection.build();
@@ -74,7 +101,15 @@ export function EntityBulkActions<TRow>({
     // guarantees the stop happens before anything runs.
     const question = action.confirm?.(target) ?? null;
     const input: EntityBulkActionInput = {};
-    if (question?.reason) {
+    if (question?.ask) {
+      const value = await askValue(
+        { ...question, ask: question.ask },
+        question.confirmLabel ?? action.label,
+        question.variant ?? (action.variant === "destructive" ? "destructive" : "default"),
+      );
+      if (value === null) return;
+      input.value = value;
+    } else if (question?.reason) {
       const reason = await askReason(question, question.confirmLabel ?? action.label);
       if (reason === null) return;
       input.reason = reason.trim();
@@ -195,7 +230,82 @@ export function EntityBulkActions<TRow>({
           }}
         />
       ) : null}
+      {askingValue ? (
+        <BulkAskDialog
+          asking={askingValue}
+          onChange={(value) => setAskingValue({ ...askingValue, value })}
+          onClose={(value) => {
+            askingValue.resolve(value);
+            setAskingValue(null);
+          }}
+        />
+      ) : null}
     </>
+  );
+}
+
+/** The confirm that asks ONE value for the whole selection (`EntityBulkActionConfirm.ask`). */
+function BulkAskDialog({
+  asking,
+  onChange,
+  onClose,
+}: {
+  asking: {
+    question: EntityBulkActionConfirm & { ask: EntityBulkAsk };
+    confirmLabel: string;
+    variant: "default" | "destructive";
+    value: string;
+  };
+  onChange: (value: string) => void;
+  onClose: (value: string | null) => void;
+}) {
+  const { ask } = asking.question;
+  const hint =
+    ask.kind === "date"
+      ? !asking.value
+        ? "Pick a date"
+        : ask.min && asking.value < ask.min
+          ? "Pick a later date"
+          : (ask.validate?.(asking.value) ?? null)
+      : asking.value
+        ? null
+        : "Pick one";
+  return (
+    <ConfirmDialog
+      open
+      onOpenChange={(open) => !open && onClose(null)}
+      title={asking.question.title}
+      description={asking.question.description}
+      variant={asking.variant}
+      confirmLabel={asking.confirmLabel}
+      cancelLabel="Cancel"
+      confirmDisabled={hint !== null}
+      onConfirm={() => onClose(asking.value)}
+      content={
+        <label className="flex flex-col gap-1 text-sm" data-entity-bulk-ask={ask.kind}>
+          <span className="type-secondary text-muted-foreground">{ask.label}</span>
+          {ask.kind === "date" ? (
+            // ui-exception: a date value, not prose
+            <input
+              type="date"
+              value={asking.value}
+              min={ask.min}
+              aria-label={ask.label}
+              onChange={(event) => onChange(event.target.value)}
+              className="h-7 rounded-md border border-border bg-background px-2 text-sm"
+            />
+          ) : (
+            <Select<string>
+              aria-label={ask.label}
+              value={asking.value}
+              onValueChange={onChange}
+              options={ask.options.map((option) => ({ value: option.value, label: option.label }))}
+            />
+          )}
+          {hint && asking.value ? <span className="type-secondary text-muted-foreground">{hint}</span> : null}
+        </label>
+      }
+    />
   );
 }
 

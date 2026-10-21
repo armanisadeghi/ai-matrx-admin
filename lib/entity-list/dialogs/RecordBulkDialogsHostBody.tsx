@@ -5,12 +5,14 @@
 import React from "react";
 import { HomePickerHostDialog } from "@/features/scopes/homes/HomePickerHostDialog";
 import { ShareWithPeopleHostDialog } from "@/features/sharing/bulk/ShareWithPeopleHostDialog";
+import { TagPickerHostDialog } from "@/features/knowledge/hub/tags/TagPickerHostDialog";
 
 export default function RecordBulkDialogsHostBody() {
   return (
     <>
       <HomePickerHostDialog />
       <ShareWithPeopleHostDialog />
+      <TagPickerHostDialog />
     </>
   );
 }

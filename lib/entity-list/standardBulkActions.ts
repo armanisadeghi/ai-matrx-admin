@@ -18,18 +18,30 @@
 //   shareBulkAction  "Share…" — the Share dialog's People form
 //                    (`shareWithPeople`), then `share_resource_with_user` per
 //                    row through `shareWithUser`.
+//   restoreBulkAction "Restore" — out of Trash (archived) through the one
+//                    restore door (`restoreFromTrash` → `entity_undelete`).
+//   tagBulkAction    "Add tag" — THE tag picker (`pickTag`: your tags, or a
+//                    new name), then `platform.file_under_tag` per row.
+//
+// ARCHIVE IS TRASH. The platform has ONE archive door (`archiveRecord` writes
+// `deleted_at`) and ONE way back (`entity_undelete`), so "Archive" is the
+// built-in "Move to Trash" and "Unarchive" is "Restore" — never a second pair.
+// Which of the two a bar shows follows the view (`archivedView`): an archived-
+// only view shows Restore and no Trash; an active-only view the reverse.
 //
 // 🚨 A bulk action never decides who may tick a row. `bulkSelection.
 // isRowSelectable` is for rows NO action can ever touch; one feature's limits
 // live inside that feature's own `run` (skip + report), so the next action a
 // surface adds is not silently blocked on rows the first one could not handle.
 
-import { House, Share2, Star, StarOff, Tag, Trash2 } from "lucide-react";
+import { ArchiveRestore, House, Share2, Star, StarOff, Tag, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
-import { archiveRecord } from "@/features/trash/service";
+import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
 import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
-import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { pickTag } from "@/features/knowledge/hub/tags/tagPickerOpener";
+import { isArchivedRow } from "./archivedRow";
+import type { ArchivedFilter } from "./types";
 import { pickHome } from "@/features/scopes/homes/homePickerOpener";
 import { resolveHomeScopeId, setHome } from "@/features/scopes/homes/setHome";
 import { shareWithPeople } from "@/features/sharing/bulk/shareWithPeopleOpener";
@@ -100,6 +112,20 @@ export async function runPerRow<TRow>(
     });
   }
 
+  return reportPerRow(succeeded, skipped, options);
+}
+
+/**
+ * THE ONE OUTCOME SENTENCE for a verb that ran over a selection: succeeded rows
+ * counted, skipped rows NAMED with their reason in one warning toast. Throws
+ * only when nothing succeeded, so the shell keeps the selection and says so.
+ * `runPerRow` ends here; a verb with its own batch door reports through it too.
+ */
+export function reportPerRow(
+  succeeded: string[],
+  skipped: { name: string; reason: string }[],
+  options: Pick<PerRowOptions<never>, "done" | "noun" | "removesRows">,
+): EntityBulkActionResult {
   const skippedLine = skipped
     .slice(0, 5)
     .map((s) => `${s.name}: ${s.reason}`)
@@ -157,7 +183,35 @@ export function trashBulkAction<TRow>(args: {
           noun: args.noun,
           labelOf: args.labelOf,
           removesRows: true,
-          skipReason: args.appliesTo,
+          skipReason: (row) => (isArchivedRow(row) ? "Already in Trash" : (args.appliesTo?.(row) ?? null)),
+        },
+        args.rowIdOf,
+      ),
+  };
+}
+
+/**
+ * "Restore" — bring every selected archived (trashed) row back through the one
+ * restore door (`restoreFromTrash` → `entity_undelete`). A row that is not in
+ * Trash is skipped and named; a refusal (a taken name, no edit access) is
+ * named with the database's own sentence.
+ */
+export function restoreBulkAction<TRow>(args: BuiltInVerbArgs<TRow>): EntityBulkAction<TRow> {
+  return {
+    id: "restore",
+    label: "Restore",
+    icon: ArchiveRestore,
+    disabledReason: (_count, selection) =>
+      selection.rows.length > 0 && !selection.rows.some(isArchivedRow) ? "None of these are in Trash" : null,
+    run: (selection) =>
+      runPerRow(
+        selection,
+        (id) => restoreFromTrash(args.token, id),
+        {
+          done: "Restored",
+          noun: args.noun,
+          labelOf: args.labelOf,
+          skipReason: (row) => (isArchivedRow(row) ? (args.appliesTo?.(row) ?? null) : "Not in Trash"),
         },
         args.rowIdOf,
       ),
@@ -199,7 +253,7 @@ export function favoriteBulkAction<TRow>(args: {
   };
 }
 
-/** Ask for one tag name, then file every selected row under it (`platform.file_under_tag`). */
+/** Pick one tag (THE tag picker: yours, or a new name), then file every selected row under it (`platform.file_under_tag`). */
 export function tagBulkAction<TRow>(args: {
   token: string;
   noun: string;
@@ -212,14 +266,12 @@ export function tagBulkAction<TRow>(args: {
     label: "Add tag",
     icon: Tag,
     run: async (selection) => {
-      const answers = await promptForValues({
+      const picked = await pickTag({
         title: `Tag ${bulkCountLabel(selection.count, args.noun)}`,
-        description: "A new name creates the tag.",
-        submitLabel: "Add tag",
-        fields: [{ name: "tag", prompt: "Tag name" }],
+        count: selection.count,
       });
-      const name = answers?.tag?.trim();
-      // Canceled or empty: resolve with nothing, so the shell keeps the selection.
+      const name = picked?.trim();
+      // Closed without a choice: resolve with nothing, so the shell keeps the selection.
       if (!name) return;
       return runPerRow(
         selection,
@@ -396,6 +448,8 @@ export interface StandardBulkActionsConfig<TRow = never> {
   move?: boolean;
   /** "Share…" (`share_resource_with_user`). */
   share?: boolean;
+  /** "Restore" out of Trash (`entity_undelete`) — the Unarchive. Shown when the view can hold archived rows. */
+  restore?: boolean;
   /**
    * For lists that mix record types or hold rows the built-ins cannot act on:
    * return a short reason to skip (and name) that row, or null to act on it.
@@ -407,7 +461,10 @@ export interface StandardBulkActionsConfig<TRow = never> {
  * THE BUILT-IN BULK SET. Every list that names its record type
  * (`registryToken`) gets these without writing any code; a surface turns one
  * off with `standardBulkActions: { trash: false }` (keys: favorite, tag, move,
- * share, trash), or all with `false`.
+ * share, restore, trash), or all with `false`.
+ * The archive pair follows `archivedView`: "active" (the default) → Move to
+ * Trash; "archived" → Restore; "all" → both, each skipping and naming the rows
+ * it does not apply to.
  * The surface's own actions come first, and an own action with the same id
  * replaces the built-in one.
  */
@@ -423,10 +480,13 @@ export function standardBulkActionsFor<TRow>(args: {
    * changing is a lie.
    */
   favoritesShown?: boolean;
+  /** Which rows the view shows (the list's archive axis). Default "active". */
+  archivedView?: ArchivedFilter;
 }): EntityBulkAction<TRow>[] {
   if (!args.token || args.config === false) return [];
-  const on = (key: "trash" | "favorite" | "tag" | "move" | "share") =>
+  const on = (key: "trash" | "favorite" | "tag" | "move" | "share" | "restore") =>
     !args.config || args.config[key] !== false;
+  const view = args.archivedView ?? "active";
   const base = {
     token: args.token,
     noun: args.noun,
@@ -444,14 +504,15 @@ export function standardBulkActionsFor<TRow>(args: {
     ...(on("tag") ? [tagBulkAction<TRow>(base)] : []),
     ...(on("move") ? [moveBulkAction<TRow>(base)] : []),
     ...(on("share") ? [shareBulkAction<TRow>(base)] : []),
-    ...(on("trash") ? [trashBulkAction<TRow>(base)] : []),
+    ...(on("restore") && view !== "active" ? [restoreBulkAction<TRow>(base)] : []),
+    ...(on("trash") && view !== "archived" ? [trashBulkAction<TRow>(base)] : []),
   ];
 }
 
 /**
  * The surface's own actions, then the built-ins. An own action with a
  * built-in's id takes that built-in's PLACE, so every bar reads in the same
- * order (Favorite · Unfavorite · Add tag · Move to… · Share… · Move to Trash)
+ * order (Favorite · Unfavorite · Add tag · Move to… · Share… · Restore · Move to Trash)
  * whoever implements it.
  */
 export function mergeBulkActions<TRow>(
