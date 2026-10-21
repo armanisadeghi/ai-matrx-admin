@@ -36,6 +36,9 @@ export function realPicture(url: string | null | undefined): string | null {
   return PLACEHOLDER_PICTURES.some((p) => low.includes(p)) ? null : url;
 }
 
+/** A picture this much wider (or taller) than a square is a wordmark, not a photo: it is never cropped. */
+const WORDMARK_RATIO = 1.6;
+
 function faviconFor(website: string, size: number): string {
   return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(website)}&sz=${Math.max(64, size * 2)}`;
 }
@@ -45,8 +48,10 @@ export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = fals
   const sources = [logoUrl, website ? faviconFor(website, size) : null].filter((s): s is string => Boolean(s));
   const [failed, setFailed] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  // A wordmark (Amazon's wide logo) served as the "picture" must show whole: cover would crop it to "mazo".
+  const [wordmark, setWordmark] = useState(false);
   const src = sources[failed] ?? null;
-  const photo = fill && src === logoUrl;
+  const photo = fill && src === logoUrl && !wordmark;
   const letter = (name.trim()[0] ?? "?").toUpperCase();
 
   // A site the favicon service doesn't know comes back as its 16px default globe: that is not the
@@ -55,6 +60,10 @@ export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = fals
     if (!photo && img.naturalWidth > 0 && img.naturalWidth <= 16) {
       setFailed((n) => n + 1);
       return;
+    }
+    if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+      const ratio = img.naturalWidth / img.naturalHeight;
+      setWordmark(ratio > WORDMARK_RATIO || ratio < 1 / WORDMARK_RATIO);
     }
     setLoaded(true);
   }, [photo]);
@@ -86,7 +95,7 @@ export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = fals
             ref={settleIfAlreadyLoaded}
             onLoad={(e) => settle(e.currentTarget)}
             onError={() => { setLoaded(false); setFailed((n) => n + 1); }}
-            className={cn("h-full w-full", fill && src === logoUrl ? "object-cover" : "object-contain")}
+            className={cn("h-full w-full", photo ? "object-cover" : "object-contain")}
           />
         </>
       ) : (
