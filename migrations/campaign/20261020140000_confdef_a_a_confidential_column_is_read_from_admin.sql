@@ -1,10 +1,4 @@
--- target: production
--- additive: yes
---   CHANGES one knob row's platform value, custom/field_sensitivity_levels read.confidential editor -> admin (value and
---   default_value), and ADDS one trigger, platform.feature_knob zzzzzz_access_version_u, on the existing trigger function
---   custom._access_version_bump_stmt(). No function body is replaced. No organization override row is touched.
---   Inverse: migrations/inverse/20261020140000_confdef_a_a_confidential_column_is_read_from_admin_down.sql.
--- guard: custom/system_enabled
+-- chair-step: lane CONFIDENTIAL-DEFAULT, owner ruling (Arman 2026-10-20): a Confidential column is hidden below admin unless granted. CHANGES one knob row's platform value, custom/field_sensitivity_levels read.confidential editor -> admin (value and default_value; no organization override row is touched), and ADDS one trigger, platform.feature_knob zzzzzz_access_version_u, on the existing function custom._access_version_bump_stmt(). No function body is replaced. Inverse: migrations/inverse/20261020140000_confdef_a_a_confidential_column_is_read_from_admin_down.sql.
 -- lock: platform
 -- lane: confidential-default
 -- based-on: iam.field_sensitivity_level(text, text, uuid) a30667ea4dc66276de846f666afe2f7f946bb5d4ae99a1f01c9694d21275b14a

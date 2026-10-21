@@ -328,7 +328,7 @@ export function ColumnAccessPanel({ subject }: { subject: ColumnAccessPanelSubje
               data={view.words.map((w) => ({
                 value: w.word,
                 label: WORD_LABEL[w.word] ?? w.word,
-                title: `Seen by ${w.readNeeds} · Changed by ${w.editNeeds}`,
+                title: `Seen by ${w.readNeeds} and up, or anyone granted it · Changed by ${w.editNeeds}`,
                 disabled: !view.mayChange,
               }))}
             />
@@ -336,7 +336,7 @@ export function ColumnAccessPanel({ subject }: { subject: ColumnAccessPanelSubje
               const picked = view.words.find((w) => w.word === word);
               return picked ? (
                 <p className="text-xs text-muted-foreground" data-column-access-seen-by="">
-                  Seen by {picked.readNeeds}
+                  Seen by {picked.readNeeds} and up, plus anyone granted it
                 </p>
               ) : null;
             })()}
