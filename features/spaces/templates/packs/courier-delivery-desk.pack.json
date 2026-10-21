@@ -1,0 +1,3992 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0576",
+  "version": 1,
+  "title": "Courier and Last-Mile Delivery Desk",
+  "description": "Dispatch same-day and route deliveries, capture proof, retry failed drops, and see margin.",
+  "forWho": "Local couriers and last-mile delivery companies",
+  "icon": {
+    "emoji": "📦"
+  },
+  "cover": {
+    "url": "gallery:manufacturing-cardboard-parcels-delivery",
+    "offsetY": 50
+  },
+  "category": "manufacturing",
+  "tags": [
+    "courier",
+    "delivery",
+    "last mile",
+    "dispatch",
+    "same day",
+    "messenger"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-courier-delivery-desk",
+    "catalogueId": "SP0576",
+    "useCase": "The dispatcher at Swiftpine Courier uses this to load today's routes, chase failed attempts and see which clients and routes pay.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Courier and last-mile delivery",
+    "job": "scheduling",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Swiftpine Courier",
+      "describes": "A local courier with six drivers running same-day, rush and scheduled routes for pharmacies, law firms, labs and shops.",
+      "address": {
+        "line1": "92 Tamarack Yard Road",
+        "city": "Sacramento",
+        "region": "CA",
+        "postalCode": "95811",
+        "country": "US"
+      },
+      "phone": "(916) 555-0130",
+      "website": "swiftpinecourier.net",
+      "email": "dispatch@swiftpinecourier.net",
+      "timezone": "America/Los_Angeles"
+    },
+    "cleanupTag": "use-case:spaces-courier-delivery-desk",
+    "tables": [
+      {
+        "token": "stop",
+        "name": "Deliveries",
+        "labelSingular": "Delivery",
+        "labelPlural": "Deliveries",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "send",
+        "titleField": "stop_name",
+        "describes": "Every pickup and drop: client, route, driver, delivery window, proof of delivery and stop margin.",
+        "subject": "thing",
+        "independentOf": {
+          "account": "Either record can be created or change status before the other.",
+          "route": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Delivery ticket",
+            "values": {
+              "status": "Booked",
+              "stop_name": "New delivery"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pickup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Address, contact, pieces and anything fragile, cold or confidential."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Drop"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Address, who may sign, and where it may be left."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Proof"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signature or a photo showing the door number"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Time delivered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Failed attempt: reason, photo and a note left"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "The window is booked ahead; Delivered on is stamped by the driver at the door.",
+        "fields": [
+          {
+            "key": "stop_name",
+            "label": "Delivery",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Booked",
+              "Assigned",
+              "Picked up",
+              "Out for delivery",
+              "Failed attempt",
+              "Delivered",
+              "Returned to sender"
+            ],
+            "choiceColors": {
+              "Booked": "slate",
+              "Assigned": "blue",
+              "Picked up": "violet",
+              "Out for delivery": "amber",
+              "Failed attempt": "red",
+              "Delivered": "green",
+              "Returned to sender": "pink"
+            },
+            "required": true,
+            "default": "Booked",
+            "statusGroups": {
+              "Booked": "todo",
+              "Assigned": "todo",
+              "Picked up": "in_progress",
+              "Out for delivery": "in_progress",
+              "Failed attempt": "in_progress",
+              "Delivered": "done",
+              "Returned to sender": "done"
+            }
+          },
+          {
+            "key": "account",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "account",
+            "relationMax": 1
+          },
+          {
+            "key": "route",
+            "label": "Route",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "route",
+            "relationMax": 1
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "service",
+            "label": "Service",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Same day",
+              "Rush, 2 hours",
+              "Scheduled route",
+              "Next morning"
+            ],
+            "choiceColors": {
+              "Same day": "blue",
+              "Rush, 2 hours": "red",
+              "Scheduled route": "teal",
+              "Next morning": "violet"
+            }
+          },
+          {
+            "key": "window",
+            "label": "Delivery window opens",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "pieces",
+            "label": "Pieces",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "attempts",
+            "label": "Attempts",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "key": "fail_reason",
+            "label": "Failed because",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Nobody home",
+              "Business closed",
+              "Wrong address",
+              "Refused",
+              "No safe place"
+            ],
+            "choiceColors": {
+              "Nobody home": "slate",
+              "Business closed": "amber",
+              "Wrong address": "orange",
+              "Refused": "red",
+              "No safe place": "violet"
+            }
+          },
+          {
+            "key": "signature",
+            "label": "Signature captured",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "photo",
+            "label": "Photo at door",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "driver_pay",
+            "label": "Driver pay (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Stop margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Returned to sender\", {Status} = \"Booked\"), \"\", {Price (USD)} - {Driver pay (USD)})"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Dispatcher",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deliv_btn",
+            "label": "Mark delivered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "stop_delivered"
+            }
+          },
+          {
+            "key": "fail_btn",
+            "label": "Log failed attempt",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "stop_failed"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "stop_take"
+            }
+          },
+          {
+            "key": "claim_btn",
+            "label": "Open a claim",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "claim",
+              "template": "Claim file",
+              "prefill": {
+                "delivery": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "dl-1",
+            "values": {
+              "stop_name": "Pharmacy totes to Ridgeview Care Home",
+              "status": "Delivered",
+              "account": "ac-1",
+              "route": "rt-1",
+              "driver": "tm-3",
+              "service": "Scheduled route",
+              "window": "@today-2d 10:00",
+              "delivered_on": "@today-2d",
+              "pieces": 6,
+              "attempts": 1,
+              "signature": true,
+              "photo": true,
+              "price": 38,
+              "driver_pay": 17
+            }
+          },
+          {
+            "key": "dl-2",
+            "values": {
+              "stop_name": "Court filing to county clerk",
+              "status": "Delivered",
+              "account": "ac-2",
+              "route": "rt-1",
+              "driver": "tm-3",
+              "service": "Rush, 2 hours",
+              "window": "@today-2d 13:00",
+              "delivered_on": "@today-2d",
+              "pieces": 1,
+              "attempts": 1,
+              "signature": true,
+              "price": 65,
+              "driver_pay": 28
+            }
+          },
+          {
+            "key": "dl-3",
+            "values": {
+              "stop_name": "Specimen cooler to regional lab",
+              "status": "Delivered",
+              "account": "ac-3",
+              "route": "rt-2",
+              "driver": "tm-4",
+              "service": "Same day",
+              "window": "@today-1d 15:30",
+              "delivered_on": "@today-1d",
+              "pieces": 2,
+              "attempts": 1,
+              "signature": true,
+              "price": 52,
+              "driver_pay": 23
+            }
+          },
+          {
+            "key": "dl-4",
+            "values": {
+              "stop_name": "Brake rotors to Eastside Auto",
+              "status": "Delivered",
+              "account": "ac-4",
+              "route": "rt-2",
+              "driver": "tm-4",
+              "service": "Scheduled route",
+              "window": "@today-1d 09:00",
+              "delivered_on": "@today-1d",
+              "pieces": 3,
+              "attempts": 1,
+              "photo": true,
+              "price": 24,
+              "driver_pay": 11
+            }
+          },
+          {
+            "key": "dl-5",
+            "values": {
+              "stop_name": "Anniversary bouquet, Larkspur Court",
+              "status": "Failed attempt",
+              "account": "ac-5",
+              "route": "rt-2",
+              "driver": "tm-4",
+              "service": "Same day",
+              "window": "@today-1d 17:00",
+              "pieces": 1,
+              "attempts": 1,
+              "fail_reason": "Nobody home",
+              "price": 29,
+              "driver_pay": 13,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "dl-6",
+            "values": {
+              "stop_name": "Online order, three cartons, Birchwood Ave",
+              "status": "Returned to sender",
+              "account": "ac-6",
+              "route": "rt-1",
+              "driver": "tm-3",
+              "service": "Next morning",
+              "window": "@today-3d 11:00",
+              "pieces": 3,
+              "attempts": 3,
+              "fail_reason": "Wrong address",
+              "price": 21,
+              "driver_pay": 10
+            }
+          },
+          {
+            "key": "dl-7",
+            "values": {
+              "stop_name": "Pharmacy totes to Maple Hollow Assisted Living",
+              "status": "Out for delivery",
+              "account": "ac-1",
+              "route": "rt-3",
+              "driver": "tm-3",
+              "service": "Scheduled route",
+              "window": "@today 10:00",
+              "pieces": 4,
+              "attempts": 0,
+              "price": 38,
+              "driver_pay": 17,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "dl-8",
+            "values": {
+              "stop_name": "Signed closing papers to title office",
+              "status": "Picked up",
+              "account": "ac-2",
+              "route": "rt-3",
+              "driver": "tm-5",
+              "service": "Rush, 2 hours",
+              "window": "@today 11:30",
+              "pieces": 1,
+              "attempts": 0,
+              "price": 65,
+              "driver_pay": 28
+            }
+          },
+          {
+            "key": "dl-9",
+            "values": {
+              "stop_name": "Lab supplies restock, Northgate clinic",
+              "status": "Assigned",
+              "account": "ac-3",
+              "route": "rt-3",
+              "driver": "tm-5",
+              "service": "Same day",
+              "window": "@today 14:00",
+              "pieces": 5,
+              "attempts": 0,
+              "price": 44,
+              "driver_pay": 19
+            }
+          },
+          {
+            "key": "dl-10",
+            "values": {
+              "stop_name": "Anniversary bouquet, second try",
+              "status": "Assigned",
+              "account": "ac-5",
+              "route": "rt-3",
+              "driver": "tm-3",
+              "service": "Same day",
+              "window": "@today 16:00",
+              "pieces": 1,
+              "attempts": 1,
+              "price": 15,
+              "driver_pay": 8,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "dl-11",
+            "values": {
+              "stop_name": "Transmission parts to Westlake Garage",
+              "status": "Booked",
+              "account": "ac-4",
+              "route": "rt-4",
+              "service": "Scheduled route",
+              "window": "@today+1d 09:00",
+              "pieces": 2,
+              "attempts": 0,
+              "price": 24,
+              "driver_pay": 11
+            }
+          },
+          {
+            "key": "dl-12",
+            "values": {
+              "stop_name": "Deposition exhibits to Harmon Tower",
+              "status": "Booked",
+              "account": "ac-2",
+              "route": "rt-4",
+              "service": "Next morning",
+              "window": "@today+2d 08:30",
+              "pieces": 2,
+              "attempts": 0,
+              "price": 48,
+              "driver_pay": 21
+            }
+          },
+          {
+            "key": "dl-13",
+            "values": {
+              "stop_name": "Weekly online orders, south side batch",
+              "status": "Booked",
+              "account": "ac-6",
+              "route": "rt-4",
+              "service": "Next morning",
+              "window": "@today+4d 10:00",
+              "pieces": 14,
+              "attempts": 0,
+              "price": 126,
+              "driver_pay": 63
+            }
+          }
+        ]
+      },
+      {
+        "token": "account",
+        "name": "Clients",
+        "labelSingular": "Client",
+        "labelPlural": "Clients",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building",
+        "titleField": "account_name",
+        "describes": "The businesses that send with you, how they are billed, and their first-attempt delivery rate.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New client",
+            "values": {
+              "acct_status": "Trial",
+              "account_name": "New client"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pickup address, hours and the person who hands over"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "What we may never do (leave unattended, ride warm, accept cash)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Billing contact and rate card agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "account_name",
+            "label": "Client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "acct_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Trial",
+              "Paused",
+              "Closed"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "Trial": "blue",
+              "Paused": "amber",
+              "Closed": "gray"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Business type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pharmacy",
+              "Law firm",
+              "Medical lab",
+              "Auto parts",
+              "Florist",
+              "Online shop"
+            ],
+            "choiceColors": {
+              "Pharmacy": "teal",
+              "Law firm": "violet",
+              "Medical lab": "red",
+              "Auto parts": "orange",
+              "Florist": "pink",
+              "Online shop": "blue"
+            }
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly invoice",
+              "Monthly invoice",
+              "Pay per delivery"
+            ],
+            "choiceColors": {
+              "Weekly invoice": "blue",
+              "Monthly invoice": "violet",
+              "Pay per delivery": "teal"
+            }
+          },
+          {
+            "key": "pickup_notes",
+            "label": "Pickup notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billing_email",
+            "label": "Billing email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "delivered",
+            "label": "Delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliveries",
+            "pick": "stop_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "failed",
+            "label": "Failed or returned",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliveries",
+            "pick": "stop_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Failed attempt",
+                "Returned to sender"
+              ]
+            }
+          },
+          {
+            "key": "first_try",
+            "label": "First-attempt rate (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Delivered} + {Failed or returned} > 0, ROUND({Delivered} / ({Delivered} + {Failed or returned}) * 100, 0), \"\")"
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue delivered (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "deliveries",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "book_btn",
+            "label": "Book a delivery",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "stop",
+              "template": "Delivery ticket",
+              "prefill": {
+                "account": "@row"
+              }
+            }
+          },
+          {
+            "key": "mail_btn",
+            "label": "Email billing",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{billing_email}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ac-1",
+            "values": {
+              "account_name": "Corner Apothecary",
+              "acct_status": "Active",
+              "kind": "Pharmacy",
+              "billing": "Weekly invoice",
+              "pickup_notes": "Totes ready at the side door by 9:30; cold items in the blue bags.",
+              "billing_email": "billing@cornerapothecary.net"
+            }
+          },
+          {
+            "key": "ac-2",
+            "values": {
+              "account_name": "Haldane and Ruiz Attorneys",
+              "acct_status": "Active",
+              "kind": "Law firm",
+              "billing": "Monthly invoice",
+              "pickup_notes": "Reception, 4th floor; filings must be stamped and the receipt photographed.",
+              "billing_email": "accounts@haldaneruiz.net"
+            }
+          },
+          {
+            "key": "ac-3",
+            "values": {
+              "account_name": "Clearwater Diagnostics",
+              "acct_status": "Active",
+              "kind": "Medical lab",
+              "billing": "Monthly invoice",
+              "pickup_notes": "Specimens stay upright and cool; never left in a vehicle over 20 minutes.",
+              "billing_email": "ap@clearwaterdx.net"
+            }
+          },
+          {
+            "key": "ac-4",
+            "values": {
+              "account_name": "Eastgate Auto Parts",
+              "acct_status": "Active",
+              "kind": "Auto parts",
+              "billing": "Weekly invoice",
+              "pickup_notes": "Counter pickups 8 to 4; heavy parts on the hand truck.",
+              "billing_email": "office@eastgateparts.net"
+            }
+          },
+          {
+            "key": "ac-5",
+            "values": {
+              "account_name": "Petal and Stem Florist",
+              "acct_status": "Trial",
+              "kind": "Florist",
+              "billing": "Pay per delivery",
+              "pickup_notes": "Arrangements ride flat in the crates; text the shop on any failed attempt.",
+              "billing_email": "hello@petalandstem.net"
+            }
+          },
+          {
+            "key": "ac-6",
+            "values": {
+              "account_name": "Fernhill Goods (online shop)",
+              "acct_status": "Paused",
+              "kind": "Online shop",
+              "billing": "Weekly invoice",
+              "pickup_notes": "Batch ready Tuesdays and Fridays; address quality varies, check before loading.",
+              "billing_email": "orders@fernhillgoods.net"
+            }
+          }
+        ]
+      },
+      {
+        "token": "route",
+        "name": "Routes",
+        "labelSingular": "Route",
+        "labelPlural": "Routes",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "map",
+        "titleField": "route_name",
+        "describes": "Each driver's run for the day, with stops, delivered count, fuel and route margin once closed out.",
+        "subject": "thing",
+        "independentOf": {
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Closed out"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Route sheet",
+            "values": {
+              "status": "Planned",
+              "route_name": "New route"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before rolling"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Stops in order, rush and cold first"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vehicle walk-around done, cooler packs in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Close-out"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Every stop Delivered or Failed with a reason"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Undelivered items back on the shelf and logged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Miles and fuel entered"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Route date is planned; Closed out on is stamped when the driver checks in.",
+        "fields": [
+          {
+            "key": "route_name",
+            "label": "Route",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Loaded",
+              "On the road",
+              "Closed out"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Loaded": "blue",
+              "On the road": "amber",
+              "Closed out": "green"
+            },
+            "required": true,
+            "default": "Planned",
+            "statusGroups": {
+              "Planned": "todo",
+              "Loaded": "in_progress",
+              "On the road": "in_progress",
+              "Closed out": "done"
+            }
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "vehicle",
+            "label": "Vehicle",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Cargo van",
+              "Box truck",
+              "Car",
+              "Cargo e-bike"
+            ],
+            "choiceColors": {
+              "Cargo van": "blue",
+              "Box truck": "violet",
+              "Car": "teal",
+              "Cargo e-bike": "green"
+            }
+          },
+          {
+            "key": "route_date",
+            "label": "Route date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "closed_on",
+            "label": "Closed out on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "miles",
+            "label": "Miles driven",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ]
+          },
+          {
+            "key": "fuel",
+            "label": "Fuel and tolls (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "stop_count",
+            "label": "Stops",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stops",
+            "pick": "stop_name",
+            "agg": "count"
+          },
+          {
+            "key": "done_count",
+            "label": "Delivered stops",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stops",
+            "pick": "stop_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "route_rev",
+            "label": "Revenue (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stops",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "route_pay",
+            "label": "Driver pay (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "stops",
+            "pick": "driver_pay",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Delivered",
+                "Failed attempt"
+              ]
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "route_margin",
+            "label": "Route margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Closed out\", {Revenue (USD)} - {Driver pay (USD)} - {Fuel and tolls (USD)}, \"\")"
+          },
+          {
+            "key": "dispatcher",
+            "label": "Dispatcher",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "close_btn",
+            "label": "Close out route",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "route_close"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rt-1",
+            "values": {
+              "route_name": "North loop, pharmacy and courthouse run",
+              "status": "Closed out",
+              "driver": "tm-3",
+              "vehicle": "Cargo van",
+              "route_date": "@today-2d",
+              "closed_on": "@today-2d",
+              "miles": 64,
+              "fuel": 14
+            }
+          },
+          {
+            "key": "rt-2",
+            "values": {
+              "route_name": "East side, labs and parts",
+              "status": "Closed out",
+              "driver": "tm-4",
+              "vehicle": "Car",
+              "route_date": "@today-1d",
+              "closed_on": "@today-1d",
+              "miles": 48,
+              "fuel": 9
+            }
+          },
+          {
+            "key": "rt-3",
+            "values": {
+              "route_name": "Midday mixed route, downtown and north",
+              "status": "On the road",
+              "driver": "tm-3",
+              "vehicle": "Cargo van",
+              "route_date": "@today",
+              "miles": 0,
+              "fuel": 0,
+              "dispatcher": "@installer"
+            }
+          },
+          {
+            "key": "rt-4",
+            "values": {
+              "route_name": "Early run, parts and legal",
+              "status": "Planned",
+              "driver": "tm-5",
+              "vehicle": "Cargo van",
+              "route_date": "@today+1d",
+              "miles": 0,
+              "fuel": 0,
+              "dispatcher": "@installer"
+            }
+          }
+        ]
+      },
+      {
+        "token": "claim",
+        "name": "Claims",
+        "labelSingular": "Claim",
+        "labelPlural": "Claims",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-check",
+        "titleField": "claim_name",
+        "describes": "Damaged, lost or late deliveries a client has asked to be paid for, and what was decided.",
+        "subject": "thing",
+        "independentOf": {
+          "stop": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Denied",
+              "Paid out"
+            ],
+            "filled": [
+              "decided_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Claim file",
+            "values": {
+              "status": "Open",
+              "claim_name": "New claim"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Evidence"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of delivery photo and signature"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Pickup condition and scan times"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Driver's account in their words"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decision"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Amount and reason, sent to the client in writing."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "claim_name",
+            "label": "Claim",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Investigating",
+              "Paid out",
+              "Denied"
+            ],
+            "choiceColors": {
+              "Open": "slate",
+              "Investigating": "amber",
+              "Paid out": "green",
+              "Denied": "red"
+            },
+            "required": true,
+            "default": "Open",
+            "statusGroups": {
+              "Open": "todo",
+              "Investigating": "in_progress",
+              "Paid out": "done",
+              "Denied": "done"
+            }
+          },
+          {
+            "key": "delivery",
+            "label": "Delivery",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "stop",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Damaged",
+              "Lost",
+              "Late",
+              "Delivered to wrong place"
+            ],
+            "choiceColors": {
+              "Damaged": "orange",
+              "Lost": "red",
+              "Late": "pink",
+              "Delivered to wrong place": "violet"
+            }
+          },
+          {
+            "key": "claimed",
+            "label": "Claimed (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "settled",
+            "label": "Settled (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "findings",
+            "label": "What we found",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pay_btn",
+            "label": "Mark paid out",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "claim_paid"
+            }
+          },
+          {
+            "key": "deny_btn",
+            "label": "Deny claim",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "claim_denied"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cm-1",
+            "values": {
+              "claim_name": "Crushed carton corner, online order",
+              "status": "Paid out",
+              "delivery": "dl-6",
+              "kind": "Damaged",
+              "claimed": 42,
+              "settled": 21,
+              "decided_on": "@today-1d",
+              "findings": "Photo shows the carton crushed before pickup was signed for; split the cost with the shop."
+            }
+          },
+          {
+            "key": "cm-2",
+            "values": {
+              "claim_name": "Bouquet delivered after the dinner",
+              "status": "Investigating",
+              "delivery": "dl-5",
+              "kind": "Late",
+              "claimed": 85,
+              "settled": 0,
+              "findings": "Driver arrived inside the window; nobody answered. Checking the door photo."
+            }
+          },
+          {
+            "key": "cm-3",
+            "values": {
+              "claim_name": "Exhibit binder missing a tab",
+              "status": "Denied",
+              "delivery": "dl-2",
+              "kind": "Lost",
+              "claimed": 60,
+              "settled": 0,
+              "decided_on": "@today-1d",
+              "findings": "Sealed envelope signed for intact; the firm found the tab in their office."
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each delivery is for one client account.",
+        "fromTable": "stop",
+        "fromField": "account",
+        "toTable": "account",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "deliveries"
+      },
+      {
+        "describes": "Each delivery rides on one route.",
+        "fromTable": "stop",
+        "fromField": "route",
+        "toTable": "route",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "stops"
+      },
+      {
+        "describes": "Each delivery is run by one driver.",
+        "fromTable": "stop",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "deliveries_run"
+      },
+      {
+        "describes": "Each route has one driver.",
+        "fromTable": "route",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "routes_driven"
+      },
+      {
+        "describes": "Each claim is about one delivery.",
+        "fromTable": "claim",
+        "fromField": "delivery",
+        "toTable": "stop",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "claims"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Odette Marchetti",
+              "role": "Owner",
+              "work_email": "odette@swiftpinecourier.net",
+              "mobile": "(916) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Kwame Asante",
+              "role": "Dispatcher",
+              "work_email": "kwame@swiftpinecourier.net",
+              "mobile": "(916) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Jordy Villalobos",
+              "role": "Driver",
+              "work_email": "jordy@swiftpinecourier.net",
+              "mobile": "(916) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Brynn Halvorsen",
+              "role": "Driver",
+              "work_email": "brynn@swiftpinecourier.net",
+              "mobile": "(916) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Sami Haddad",
+              "role": "Driver",
+              "work_email": "sami@swiftpinecourier.net",
+              "mobile": "(916) 555-0144",
+              "start_date": "@today-9y"
+            }
+          },
+          {
+            "key": "tm-6",
+            "values": {
+              "full_name": "Ilse Brandt",
+              "role": "Billing",
+              "work_email": "ilse@swiftpinecourier.net",
+              "mobile": "(916) 555-0145",
+              "start_date": "@today-2y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "delivery_booking",
+        "name": "Delivery booking",
+        "describes": "How a client books a pickup.",
+        "audience": "staff",
+        "table": "stop",
+        "fields": [
+          {
+            "fieldKey": "stop_name",
+            "ask": "What are we picking up and where is it going?",
+            "required": true
+          },
+          {
+            "fieldKey": "account",
+            "ask": "Which client account?",
+            "required": true
+          },
+          {
+            "fieldKey": "service",
+            "ask": "How fast does it need to arrive?"
+          },
+          {
+            "fieldKey": "window",
+            "ask": "When does the delivery window open?"
+          }
+        ],
+        "submitLabel": "Book the pickup",
+        "confirmation": "Thanks. Dispatch will confirm the driver and pickup time by text."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "stop_delivered",
+        "table": "stop",
+        "name": "Mark delivered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "stop_failed",
+        "table": "stop",
+        "name": "Log failed attempt",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Failed attempt"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "stop_take",
+        "table": "stop",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "route_close",
+        "table": "route",
+        "name": "Close out route",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Closed out"
+          },
+          {
+            "field": "closed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "claim_paid",
+        "table": "claim",
+        "name": "Mark paid out",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid out"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "claim_denied",
+        "table": "claim",
+        "name": "Deny claim",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Denied"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_stop",
+        "name": "All deliveries",
+        "table": "stop",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "stop_board",
+        "name": "Deliveries board",
+        "table": "stop",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "stop_cal",
+        "name": "Deliveries calendar",
+        "table": "stop",
+        "kind": "calendar",
+        "dateField": "window",
+        "allDay": true
+      },
+      {
+        "token": "stop_over",
+        "name": "Overdue",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "window": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Assigned",
+            "Picked up",
+            "Out for delivery",
+            "Failed attempt"
+          ]
+        }
+      },
+      {
+        "token": "stop_week",
+        "name": "Due this week",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "window": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Assigned",
+            "Picked up",
+            "Out for delivery",
+            "Failed attempt"
+          ]
+        }
+      },
+      {
+        "token": "stop_next7",
+        "name": "Next 7 days",
+        "table": "stop",
+        "kind": "grid",
+        "within": {
+          "window": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Assigned",
+            "Picked up",
+            "Out for delivery",
+            "Failed attempt"
+          ]
+        }
+      },
+      {
+        "token": "stop_mine",
+        "name": "My deliveries",
+        "table": "stop",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_account",
+        "name": "All clients",
+        "table": "account",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "account_board",
+        "name": "Clients board",
+        "table": "account",
+        "kind": "kanban",
+        "groupBy": "acct_status"
+      },
+      {
+        "token": "all_route",
+        "name": "All routes",
+        "table": "route",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "route_board",
+        "name": "Routes board",
+        "table": "route",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "route_cal",
+        "name": "Routes calendar",
+        "table": "route",
+        "kind": "calendar",
+        "dateField": "route_date",
+        "allDay": true
+      },
+      {
+        "token": "route_over",
+        "name": "Overdue",
+        "table": "route",
+        "kind": "grid",
+        "within": {
+          "route_date": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Loaded",
+            "On the road"
+          ]
+        }
+      },
+      {
+        "token": "route_week",
+        "name": "Due this week",
+        "table": "route",
+        "kind": "grid",
+        "within": {
+          "route_date": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Loaded",
+            "On the road"
+          ]
+        }
+      },
+      {
+        "token": "route_next7",
+        "name": "Next 7 days",
+        "table": "route",
+        "kind": "grid",
+        "within": {
+          "route_date": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Planned",
+            "Loaded",
+            "On the road"
+          ]
+        }
+      },
+      {
+        "token": "route_mine",
+        "name": "My routes",
+        "table": "route",
+        "kind": "grid",
+        "me": [
+          "dispatcher"
+        ]
+      },
+      {
+        "token": "all_claim",
+        "name": "All claims",
+        "table": "claim",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "claim_board",
+        "name": "Claims board",
+        "table": "claim",
+        "kind": "kanban",
+        "groupBy": "status"
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Courier and Last-Mile Delivery Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "stop",
+          "describes": "Every pickup and drop: client, route, driver, delivery window, proof of delivery and stop margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "account",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many deliveries have a failed attempt waiting for a retry?",
+        "whyItMatters": "Failed attempts are re-planned before the afternoon routes leave.",
+        "expect": {
+          "table": "stop",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Failed attempt"
+          },
+          "answer": 1,
+          "unit": "deliveries"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open deliveries.",
+        "action": {
+          "kind": "open",
+          "surface": "stop_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "stop_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open clients.",
+        "action": {
+          "kind": "open",
+          "surface": "account_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "account_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open routes.",
+        "action": {
+          "kind": "open",
+          "surface": "route_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "route_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "swiftpinecourier.net",
+        "inbox-mail.net",
+        "cornerapothecary.net",
+        "haldaneruiz.net",
+        "clearwaterdx.net",
+        "eastgateparts.net",
+        "petalandstem.net",
+        "fernhillgoods.net"
+      ],
+      "fictionalStreets": [
+        "Tamarack Yard Road",
+        "Larkspur Court",
+        "Birchwood Ave"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "courier-delivery-desk",
+      "parent": null,
+      "title": "Courier and Last-Mile Delivery Desk",
+      "icon": {
+        "emoji": "📦"
+      },
+      "cover": {
+        "url": "gallery:manufacturing-cardboard-parcels-delivery",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start the day on the Dashboard: today's routes, deliveries still to assign, and failed attempts to re-plan. Each delivery moves Booked, Assigned, Picked up, Out for delivery, Delivered on the board; Mark delivered stamps the day. A route is closed out at check-in, which shows its margin."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:failed-attempts"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:route-close-out"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deliveries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every pickup and drop: client, route, driver, delivery window, proof of delivery and stop margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stop",
+              "view": "stop_board"
+            },
+            "inline": true,
+            "title": "Deliveries",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "stop-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "service",
+                  "window",
+                  "delivered_on",
+                  "pieces",
+                  "attempts",
+                  "fail_reason",
+                  "signature",
+                  "photo",
+                  "price",
+                  "driver_pay",
+                  "margin",
+                  "assigned_to",
+                  "deliv_btn",
+                  "fail_btn",
+                  "take_btn",
+                  "claim_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stop-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "window",
+                "hiddenFields": [
+                  "status",
+                  "service",
+                  "window",
+                  "delivered_on",
+                  "pieces",
+                  "attempts",
+                  "fail_reason",
+                  "signature",
+                  "photo",
+                  "price",
+                  "driver_pay",
+                  "margin",
+                  "assigned_to",
+                  "deliv_btn",
+                  "fail_btn",
+                  "take_btn",
+                  "claim_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "stop-t",
+                "name": "All deliveries",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "stop-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "window": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Assigned",
+                    "Picked up",
+                    "Out for delivery",
+                    "Failed attempt"
+                  ]
+                }
+              },
+              {
+                "id": "stop-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "window": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Assigned",
+                    "Picked up",
+                    "Out for delivery",
+                    "Failed attempt"
+                  ]
+                }
+              },
+              {
+                "id": "stop-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "window": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Assigned",
+                    "Picked up",
+                    "Out for delivery",
+                    "Failed attempt"
+                  ]
+                }
+              },
+              {
+                "id": "stop-m",
+                "name": "My deliveries",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "stop-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The businesses that send with you, how they are billed, and their first-attempt delivery rate."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "account",
+              "view": "account_board"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "acco-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "acct_status",
+                "hiddenFields": [
+                  "pickup_notes",
+                  "billing_email",
+                  "delivered",
+                  "failed",
+                  "first_try",
+                  "book_btn",
+                  "mail_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "acco-t",
+                "name": "All clients",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "acco-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Routes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each driver's run for the day, with stops, delivered count, fuel and route margin once closed out."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "route",
+              "view": "route_board"
+            },
+            "inline": true,
+            "title": "Routes",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rout-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "closed_on",
+                  "miles",
+                  "fuel",
+                  "stop_count",
+                  "done_count",
+                  "route_rev",
+                  "route_pay",
+                  "route_margin",
+                  "dispatcher",
+                  "close_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "rout-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "route_date",
+                "hiddenFields": [
+                  "status",
+                  "route_date",
+                  "miles",
+                  "fuel",
+                  "stop_count",
+                  "done_count",
+                  "route_rev",
+                  "route_pay",
+                  "route_margin",
+                  "dispatcher",
+                  "close_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "rout-t",
+                "name": "All routes",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rout-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "route_date": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Loaded",
+                    "On the road"
+                  ]
+                }
+              },
+              {
+                "id": "rout-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "route_date": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Loaded",
+                    "On the road"
+                  ]
+                }
+              },
+              {
+                "id": "rout-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "route_date": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Planned",
+                    "Loaded",
+                    "On the road"
+                  ]
+                }
+              },
+              {
+                "id": "rout-m",
+                "name": "My routes",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "dispatcher"
+                ]
+              }
+            ],
+            "activeViewId": "rout-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Damaged, lost or late deliveries a client has asked to be paid for, and what was decided."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "claim_board"
+            },
+            "inline": true,
+            "title": "Claims",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "clai-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "settled",
+                  "decided_on",
+                  "findings",
+                  "pay_btn",
+                  "deny_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "clai-t",
+                "name": "All claims",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "clai-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "courier-delivery-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A courier makes money on stops that are delivered the first time. This workspace keeps every delivery, route and client in one place so dispatch can see the day, drivers know their order, and the owner can see which clients and routes pay."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deliveries",
+              "bold": true
+            },
+            {
+              "text": ": one row per pickup-and-drop. It moves Booked, Assigned, Picked up, Out for delivery, then Delivered, or Failed attempt with a reason. After three failed attempts it is Returned to sender. Mark delivered stamps the day; Log failed attempt keeps it open for a retry."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": pharmacies, law firms, labs, parts stores, florists and online shops that send with you, their billing and pickup notes, with delivered and failed counts and a First-attempt rate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Routes",
+              "bold": true
+            },
+            {
+              "text": ": each driver's run for a day, with vehicle, miles and fuel. Stops, delivered stops, revenue and driver pay roll up; Route margin appears when the route is closed out."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Claims",
+              "bold": true
+            },
+            {
+              "text": ": damaged, lost or late deliveries a client wants paid for."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "7:00: dispatch opens Deliveries, This week view, and assigns every Booked stop for today to a route and driver."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Order stops: rush and specimen stops first, cold chain before warm, legal filings before the clerk closes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Drivers press Mark delivered at the door with a signature or a door photo."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Failed attempt: the driver picks the reason and leaves a note; the client is texted within 15 minutes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "3:00: dispatch works Failed attempts to re-plan and puts each retry on the next route."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At check-in, the driver enters miles and fuel and dispatch presses Close out route."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Booking and route building"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dispatcher"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Proof of delivery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Driver at the door"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Claims and client calls"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Invoices and driver pay"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Billing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Proof that holds up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A signature, or a photo that shows the parcel and the door number, and the time. Without one, a claim is ours to pay."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "courier-delivery-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stop",
+                      "view": "all_stop"
+                    },
+                    "inline": true,
+                    "title": "Deliveries by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Deliveries by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stop",
+                      "view": "all_stop"
+                    },
+                    "inline": true,
+                    "title": "Revenue by service",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Revenue by service",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "service",
+                          "op": "sum",
+                          "field": "price"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "stop",
+                      "view": "all_stop"
+                    },
+                    "inline": true,
+                    "title": "Failed attempts by reason",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Failed attempts by reason",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "fail_reason",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "account",
+                      "view": "all_account"
+                    },
+                    "inline": true,
+                    "title": "Clients by business type",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Clients by business type",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "kind",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "route",
+                      "view": "all_route"
+                    },
+                    "inline": true,
+                    "title": "Routes by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Routes by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "claim",
+                      "view": "all_claim"
+                    },
+                    "inline": true,
+                    "title": "Claims by kind",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Claims by kind",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "kind",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed attempts to re-plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stop",
+              "view": "all_stop"
+            },
+            "inline": true,
+            "title": "Failed attempts to re-plan",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "Failed",
+                "layout": "list",
+                "filters": {
+                  "status": "Failed attempt"
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Not yet on a driver"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stop",
+              "view": "all_stop"
+            },
+            "inline": true,
+            "title": "Not yet on a driver",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Booked",
+                "layout": "list",
+                "filters": {
+                  "status": "Booked"
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "all_claim"
+            },
+            "inline": true,
+            "title": "Open claims",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Open or investigating",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Open",
+                    "Investigating"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "First-attempt rate (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivered over delivered plus failed and returned, per client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 90 percent means fix addresses and windows with that client"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stop margin (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price less driver pay, blank for booked and returned stops"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rush stops should carry the best margin"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Route margin (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivered revenue less driver pay and fuel, once closed out"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A route under 40 percent needs re-drawing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Failed or returned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Failed attempts and returns per client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each one costs a second trip"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "failed-attempts",
+      "parent": "courier-delivery-desk",
+      "title": "Cutting failed attempts",
+      "icon": {
+        "emoji": "🔁"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A failed attempt costs a second trip and often a client. Most are preventable before the van leaves. This page is how the team keeps the first-attempt rate above 95 percent and what to do when a drop fails anyway."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the route"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check every new address against the client's note; online shop orders are the most likely to be wrong."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Businesses: confirm closing time. A dental office that closes at 4 cannot take a 4:30 drop."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Homes: if the client allows it, text the recipient the window the night before."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medical and legal items are signature only; never plan them as leave-at-door."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the door"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Knock and wait one full minute. Call the number on the ticket."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Safe place allowed and the item is not signature-only: leave it, take the photo with the door number in frame."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Otherwise press Log failed attempt and choose the reason: Nobody home, Business closed, Wrong address, Refused, No safe place."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Leave a card with the dispatch number and the next window."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Re-planning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reason"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next step"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Nobody home"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retry on the next route, text the new window"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Business closed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retry first thing the next business day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wrong address"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the client for the correct one before any retry"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Refused"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Return to sender the same day; tell the client why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No safe place"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask the recipient for a neighbour or pickup point"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After three failed attempts the delivery is Returned to sender, and the client is billed for the attempts under their rate card."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the rate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each client shows a First-attempt rate. Under 90 percent means a conversation: a cut-off time, better addresses, or a different service."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist at 3 pm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every failed attempt has a reason and a photo"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every retry is on a route with a window"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clients texted about each failed drop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "route-close-out",
+      "parent": "courier-delivery-desk",
+      "title": "Building and closing a route",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A route is the unit you pay drivers and fuel on, so it is where margin is won or lost. This page covers how dispatch builds a route in the morning and how a driver closes it out in the evening."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the route for the date, pick the driver and vehicle. A cargo e-bike suits downtown legal runs; a van suits pharmacy totes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Assign each delivery to the route. Group by area, then by deadline."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Rush and specimen stops go first; cold items ride in coolers and are delivered within 90 minutes of pickup."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the route to Loaded once everything is scanned on board, and On the road when the driver leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "New same-day bookings go to the route nearest the pickup, not the emptiest one, and the driver is told by text before the next stop."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Dispatch watches Out for delivery; a stop not moving for 45 minutes gets a call."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The driver checks in and every stop is Delivered or Failed attempt with a reason."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Undelivered items go back on the shelf with a tag; nothing stays in the van overnight."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter Miles driven and Fuel and tolls."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Close out route. Route margin appears: delivered revenue less driver pay and fuel."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading route margin"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Route margin"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Above 50 percent of revenue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A dense, well-ordered route"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "35 to 50 percent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal mixed day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Below 35 percent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Too many miles or too many failed stops; redraw the area"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The east side route ran three stops: two delivered for 76 in revenue, and 47 paid to the driver, because the failed bouquet drop is still paid. With 9 in fuel, close out shows a 20 margin, well under 35 percent, so the florist retry goes on the denser midday route instead of its own trip."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

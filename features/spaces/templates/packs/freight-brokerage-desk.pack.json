@@ -1,0 +1,4086 @@
+{
+  "packVersion": 1,
+  "catalogueId": "SP0575",
+  "version": 1,
+  "title": "Freight Brokerage Desk",
+  "description": "Quote, cover and track loads, vet carriers, and watch margin per load and per customer.",
+  "forWho": "Freight brokers and small brokerage teams",
+  "icon": {
+    "emoji": "🚛"
+  },
+  "cover": {
+    "url": "gallery:manufacturing-shipping-containers-port",
+    "offsetY": 50
+  },
+  "category": "manufacturing",
+  "tags": [
+    "freight broker",
+    "brokerage",
+    "loads",
+    "carriers",
+    "logistics",
+    "tms"
+  ],
+  "spec": {
+    "specVersion": 1,
+    "id": "spaces-freight-brokerage-desk",
+    "catalogueId": "SP0575",
+    "useCase": "The owner of Lonestar Lane Brokerage uses this to see loads to cover today, carriers whose insurance is lapsing, and margin by customer.",
+    "industry": "manufacturing_logistics",
+    "vertical": "Freight brokerage",
+    "job": "work_orders",
+    "audience": "organization",
+    "teaches": "relations_rollups",
+    "strengths": [],
+    "requires": [],
+    "business": {
+      "name": "Lonestar Lane Brokerage",
+      "describes": "A five-person freight brokerage moving dry van, reefer and flatbed loads across the South and Midwest.",
+      "address": {
+        "line1": "1840 Caddo Mill Road",
+        "city": "Fort Worth",
+        "region": "TX",
+        "postalCode": "76102",
+        "country": "US"
+      },
+      "phone": "(817) 555-0130",
+      "website": "lonestarlane.net",
+      "email": "dispatch@lonestarlane.net",
+      "timezone": "America/Chicago"
+    },
+    "cleanupTag": "use-case:spaces-freight-brokerage-desk",
+    "tables": [
+      {
+        "token": "load",
+        "name": "Loads",
+        "labelSingular": "Load",
+        "labelPlural": "Loads",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "load_name",
+        "describes": "Every load from quote to delivery: customer, carrier, equipment, rate, carrier pay and margin.",
+        "subject": "thing",
+        "independentOf": {
+          "shipper": "Either record can be created or change status before the other.",
+          "carrier": "Either record can be created or change status before the other.",
+          "team_member": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Load sheet",
+            "values": {
+              "status": "Quoted",
+              "load_name": "New load"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Shipment"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Pickup and delivery addresses, appointment times, commodity, weight and piece count."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Covering it"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Carrier approved and insurance current"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Rate confirmation sent and signed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Driver name and cell on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Check calls"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "At pickup, with the trailer number and seal"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Midway, with an updated arrival time"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "At delivery, with any detention clock"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After delivery"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of delivery received, clean or with exceptions noted"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Invoice created the same day"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Pickup is the appointment; Delivered on is stamped when the receiver signs, a day or more later.",
+        "fields": [
+          {
+            "key": "load_name",
+            "label": "Load",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Quoted",
+              "Tendered",
+              "Covered",
+              "In transit",
+              "Delivered",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Quoted": "slate",
+              "Tendered": "blue",
+              "Covered": "violet",
+              "In transit": "amber",
+              "Delivered": "green",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "default": "Quoted",
+            "statusGroups": {
+              "Quoted": "todo",
+              "Tendered": "todo",
+              "Covered": "in_progress",
+              "In transit": "in_progress",
+              "Delivered": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "shipper",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "shipper",
+            "relationMax": 1
+          },
+          {
+            "key": "carrier",
+            "label": "Carrier",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "carrier",
+            "relationMax": 1
+          },
+          {
+            "key": "equipment",
+            "label": "Equipment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dry van 53 ft",
+              "Reefer",
+              "Flatbed",
+              "Step deck",
+              "Power only"
+            ],
+            "choiceColors": {
+              "Dry van 53 ft": "blue",
+              "Reefer": "teal",
+              "Flatbed": "orange",
+              "Step deck": "amber",
+              "Power only": "violet"
+            }
+          },
+          {
+            "key": "rep",
+            "label": "Broker rep",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "pickup_on",
+            "label": "Pickup",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "miles",
+            "label": "Loaded miles",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 4000
+              }
+            ]
+          },
+          {
+            "key": "weight",
+            "label": "Weight (lbs)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 48000
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Customer rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "carrier_pay",
+            "label": "Carrier pay (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "margin",
+            "label": "Margin (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Cancelled\", {Status} = \"Quoted\"), \"\", {Customer rate (USD)} - {Carrier pay (USD)})"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Cancelled\", {Status} = \"Quoted\"), \"\", IF({Customer rate (USD)} > 0, ROUND({Margin (USD)} / {Customer rate (USD)} * 100, 1), 0))"
+          },
+          {
+            "key": "rpm",
+            "label": "Rate per mile (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Loaded miles} > 0, ROUND({Customer rate (USD)} / {Loaded miles}, 2), \"\")"
+          },
+          {
+            "key": "ratecon",
+            "label": "Rate confirmation signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pod",
+            "label": "Proof of delivery in",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "assigned_to",
+            "label": "Working it",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "transit_btn",
+            "label": "Mark picked up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "load_transit"
+            }
+          },
+          {
+            "key": "deliv_btn",
+            "label": "Mark delivered",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "load_delivered"
+            }
+          },
+          {
+            "key": "take_btn",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "load_take"
+            }
+          },
+          {
+            "key": "inv_btn",
+            "label": "Create invoice",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "invoice",
+              "template": "Customer invoice",
+              "prefill": {
+                "load": "@row"
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ld-1",
+            "values": {
+              "load_name": "Dallas to Memphis, paper rolls",
+              "status": "Delivered",
+              "shipper": "sh-1",
+              "carrier": "ca-1",
+              "equipment": "Dry van 53 ft",
+              "rep": "tm-2",
+              "pickup_on": "@today-9d 07:00",
+              "delivered_on": "@today-8d",
+              "miles": 452,
+              "weight": 41800,
+              "rate": 1650,
+              "carrier_pay": 1380,
+              "ratecon": true,
+              "pod": true
+            }
+          },
+          {
+            "key": "ld-2",
+            "values": {
+              "load_name": "Fresno to Denver, bagged salad",
+              "status": "Delivered",
+              "shipper": "sh-2",
+              "carrier": "ca-2",
+              "equipment": "Reefer",
+              "rep": "tm-3",
+              "pickup_on": "@today-8d 05:30",
+              "delivered_on": "@today-6d",
+              "miles": 1210,
+              "weight": 38200,
+              "rate": 4850,
+              "carrier_pay": 4150,
+              "ratecon": true,
+              "pod": true
+            }
+          },
+          {
+            "key": "ld-3",
+            "values": {
+              "load_name": "Birmingham to Atlanta, steel coil",
+              "status": "Delivered",
+              "shipper": "sh-3",
+              "carrier": "ca-3",
+              "equipment": "Flatbed",
+              "rep": "tm-2",
+              "pickup_on": "@today-6d 08:00",
+              "delivered_on": "@today-6d",
+              "miles": 147,
+              "weight": 44500,
+              "rate": 925,
+              "carrier_pay": 760,
+              "ratecon": true,
+              "pod": true
+            }
+          },
+          {
+            "key": "ld-4",
+            "values": {
+              "load_name": "Joliet to Columbus, retail pallets",
+              "status": "Delivered",
+              "shipper": "sh-4",
+              "carrier": "ca-4",
+              "equipment": "Dry van 53 ft",
+              "rep": "tm-4",
+              "pickup_on": "@today-5d 13:00",
+              "delivered_on": "@today-4d",
+              "miles": 355,
+              "weight": 26400,
+              "rate": 1290,
+              "carrier_pay": 1065,
+              "ratecon": true,
+              "pod": false
+            }
+          },
+          {
+            "key": "ld-5",
+            "values": {
+              "load_name": "Laredo to Houston, auto parts",
+              "status": "Delivered",
+              "shipper": "sh-5",
+              "carrier": "ca-1",
+              "equipment": "Dry van 53 ft",
+              "rep": "tm-3",
+              "pickup_on": "@today-4d 06:00",
+              "delivered_on": "@today-3d",
+              "miles": 316,
+              "weight": 33900,
+              "rate": 1180,
+              "carrier_pay": 975,
+              "ratecon": true,
+              "pod": true
+            }
+          },
+          {
+            "key": "ld-6",
+            "values": {
+              "load_name": "Salinas to Phoenix, strawberries",
+              "status": "In transit",
+              "shipper": "sh-2",
+              "carrier": "ca-2",
+              "equipment": "Reefer",
+              "rep": "tm-3",
+              "pickup_on": "@today-1d 04:00",
+              "miles": 645,
+              "weight": 36000,
+              "rate": 3150,
+              "carrier_pay": 2700,
+              "ratecon": true,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "ld-7",
+            "values": {
+              "load_name": "Chattanooga to Charlotte, flooring",
+              "status": "Covered",
+              "shipper": "sh-3",
+              "carrier": "ca-5",
+              "equipment": "Step deck",
+              "rep": "tm-2",
+              "pickup_on": "@today 10:00",
+              "miles": 262,
+              "weight": 39800,
+              "rate": 1420,
+              "carrier_pay": 1175,
+              "ratecon": true,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "ld-8",
+            "values": {
+              "load_name": "Memphis to Indianapolis, appliances",
+              "status": "Tendered",
+              "shipper": "sh-1",
+              "equipment": "Dry van 53 ft",
+              "rep": "tm-4",
+              "pickup_on": "@today+1d 08:00",
+              "miles": 465,
+              "weight": 29300,
+              "rate": 1580,
+              "carrier_pay": 1300,
+              "assigned_to": "@installer"
+            }
+          },
+          {
+            "key": "ld-9",
+            "values": {
+              "load_name": "Houston to San Antonio, drilling pipe",
+              "status": "Tendered",
+              "shipper": "sh-5",
+              "equipment": "Flatbed",
+              "rep": "tm-3",
+              "pickup_on": "@today+2d 07:00",
+              "miles": 198,
+              "weight": 45000,
+              "rate": 1050,
+              "carrier_pay": 860
+            }
+          },
+          {
+            "key": "ld-10",
+            "values": {
+              "load_name": "Columbus to Nashville, retail pallets",
+              "status": "Quoted",
+              "shipper": "sh-4",
+              "equipment": "Dry van 53 ft",
+              "rep": "tm-4",
+              "pickup_on": "@today+4d 14:00",
+              "miles": 380,
+              "weight": 24800,
+              "rate": 1340,
+              "carrier_pay": 1110
+            }
+          },
+          {
+            "key": "ld-11",
+            "values": {
+              "load_name": "Fresno to Salt Lake City, frozen fruit",
+              "status": "Quoted",
+              "shipper": "sh-2",
+              "equipment": "Reefer",
+              "rep": "tm-3",
+              "pickup_on": "@today+6d 05:00",
+              "miles": 820,
+              "weight": 40100,
+              "rate": 3600,
+              "carrier_pay": 3060
+            }
+          },
+          {
+            "key": "ld-12",
+            "values": {
+              "load_name": "Atlanta to Jacksonville, building panels",
+              "status": "Cancelled",
+              "shipper": "sh-3",
+              "equipment": "Flatbed",
+              "rep": "tm-2",
+              "pickup_on": "@today-2d 09:00",
+              "miles": 346,
+              "weight": 41000,
+              "rate": 1250,
+              "carrier_pay": 1030
+            }
+          },
+          {
+            "key": "ld-13",
+            "values": {
+              "load_name": "Dallas to Oklahoma City, paper rolls",
+              "status": "Covered",
+              "shipper": "sh-1",
+              "carrier": "ca-4",
+              "equipment": "Dry van 53 ft",
+              "rep": "tm-2",
+              "pickup_on": "@today-1d 15:00",
+              "miles": 206,
+              "weight": 40200,
+              "rate": 860,
+              "carrier_pay": 705,
+              "ratecon": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "shipper",
+        "name": "Customers",
+        "labelSingular": "Customer",
+        "labelPlural": "Customers",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "building-2",
+        "titleField": "shipper_name",
+        "describes": "The shippers you move freight for, their terms, credit limit, and what they have paid and owe.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New customer",
+            "values": {
+              "cust_status": "Prospect",
+              "shipper_name": "New customer"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Setup"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Credit check run and limit set"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed shipper agreement on file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Accounts payable contact and invoice rules (portal, PO numbers)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Lanes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Their regular lanes, volumes and seasons."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "shipper_name",
+            "label": "Customer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cust_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Prospect",
+              "Credit hold",
+              "Lost"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "Prospect": "slate",
+              "Credit hold": "amber",
+              "Lost": "red"
+            }
+          },
+          {
+            "key": "terms",
+            "label": "Payment terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Net 15",
+              "Net 30",
+              "Net 45"
+            ],
+            "choiceColors": {
+              "Net 15": "teal",
+              "Net 30": "blue",
+              "Net 45": "violet"
+            }
+          },
+          {
+            "key": "credit_limit",
+            "label": "Credit limit (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 250000
+              }
+            ]
+          },
+          {
+            "key": "lanes",
+            "label": "Main lanes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ap_email",
+            "label": "Accounts payable email",
+            "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "open_loads",
+            "label": "Open loads",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads",
+            "pick": "load_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Quoted",
+                "Tendered",
+                "Covered",
+                "In transit"
+              ]
+            }
+          },
+          {
+            "key": "delivered",
+            "label": "Loads delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads",
+            "pick": "load_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "revenue",
+            "label": "Revenue delivered (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads",
+            "pick": "rate",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "cust_margin",
+            "label": "Margin delivered (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads",
+            "pick": "margin",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "invoices",
+            "pick": "total",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Overdue",
+                "Short-paid"
+              ]
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "new_load",
+            "label": "Quote a load",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "load",
+              "template": "Load sheet",
+              "prefill": {
+                "shipper": "@row"
+              }
+            }
+          },
+          {
+            "key": "mail_ap",
+            "label": "Email accounts payable",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "mailto:{{ap_email}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sh-1",
+            "values": {
+              "shipper_name": "Trinity Paper Converters",
+              "cust_status": "Active",
+              "terms": "Net 30",
+              "credit_limit": 60000,
+              "lanes": "Dallas out to TN, OK and AR",
+              "ap_email": "ap@trinitypaper.net"
+            }
+          },
+          {
+            "key": "sh-2",
+            "values": {
+              "shipper_name": "Valle Verde Produce Co-op",
+              "cust_status": "Active",
+              "terms": "Net 15",
+              "credit_limit": 90000,
+              "lanes": "Central Valley to the Mountain West",
+              "ap_email": "payables@valleverdeproduce.net"
+            }
+          },
+          {
+            "key": "sh-3",
+            "values": {
+              "shipper_name": "Ironline Metals Supply",
+              "cust_status": "Active",
+              "terms": "Net 45",
+              "credit_limit": 50000,
+              "lanes": "Birmingham and Chattanooga to the Southeast",
+              "ap_email": "ap@ironlinemetals.net"
+            }
+          },
+          {
+            "key": "sh-4",
+            "values": {
+              "shipper_name": "Northfield Home Goods DC",
+              "cust_status": "Active",
+              "terms": "Net 30",
+              "credit_limit": 75000,
+              "lanes": "Joliet and Columbus to the Midwest",
+              "ap_email": "carrierpay@northfieldhome.net"
+            }
+          },
+          {
+            "key": "sh-5",
+            "values": {
+              "shipper_name": "Gulfbend Industrial",
+              "cust_status": "Credit hold",
+              "terms": "Net 45",
+              "credit_limit": 25000,
+              "lanes": "Laredo and Houston, Texas loops",
+              "ap_email": "ap@gulfbendindustrial.net"
+            }
+          },
+          {
+            "key": "sh-6",
+            "values": {
+              "shipper_name": "Sierra Crest Bottling",
+              "cust_status": "Prospect",
+              "terms": "Net 30",
+              "credit_limit": 20000,
+              "lanes": "Reno to Northern California",
+              "ap_email": "ap@sierracrestbottling.net"
+            }
+          }
+        ]
+      },
+      {
+        "token": "carrier",
+        "name": "Carriers",
+        "labelSingular": "Carrier",
+        "labelPlural": "Carriers",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "carrier_name",
+        "describes": "Every trucking company you tender to, with authority, insurance, safety rating and loads hauled.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Approved"
+            ],
+            "filled": [
+              "approved_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Carrier setup",
+            "values": {
+              "status": "Pending setup",
+              "carrier_name": "New carrier"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Carrier packet"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Operating authority active for at least 90 days"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Certificate of insurance naming us, auto and cargo"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "W-9 and payment details"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed broker-carrier agreement"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Safety rating and recent inspections reviewed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Phone and email match the authority record"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "approved_on",
+            "insurance_to"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "carrier_name",
+            "label": "Carrier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Setup",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Pending setup",
+              "Approved",
+              "Insurance expiring",
+              "Do not use"
+            ],
+            "choiceColors": {
+              "Pending setup": "slate",
+              "Approved": "green",
+              "Insurance expiring": "amber",
+              "Do not use": "red"
+            },
+            "required": true,
+            "default": "Pending setup",
+            "statusGroups": {
+              "Pending setup": "todo",
+              "Approved": "done",
+              "Insurance expiring": "in_progress",
+              "Do not use": "done"
+            }
+          },
+          {
+            "key": "mc",
+            "label": "MC number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "dot",
+            "label": "USDOT number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "equipment",
+            "label": "Main equipment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dry van 53 ft",
+              "Reefer",
+              "Flatbed",
+              "Step deck",
+              "Power only"
+            ],
+            "choiceColors": {
+              "Dry van 53 ft": "blue",
+              "Reefer": "teal",
+              "Flatbed": "orange",
+              "Step deck": "amber",
+              "Power only": "violet"
+            }
+          },
+          {
+            "key": "safety",
+            "label": "Safety rating",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Satisfactory",
+              "Not rated",
+              "Conditional"
+            ],
+            "choiceColors": {
+              "Satisfactory": "green",
+              "Not rated": "slate",
+              "Conditional": "amber"
+            }
+          },
+          {
+            "key": "home_lanes",
+            "label": "Preferred lanes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "approved_on",
+            "label": "Approved on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "insurance_to",
+            "label": "Insurance expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "cargo_cover",
+            "label": "Cargo cover (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "dispatch_phone",
+            "label": "Dispatch phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "hauled",
+            "label": "Loads delivered",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads_hauled",
+            "pick": "load_name",
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "paid_out",
+            "label": "Carrier pay (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads_hauled",
+            "pick": "carrier_pay",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Delivered",
+                "In transit"
+              ]
+            },
+            "unit": "USD",
+            "format": "currency"
+          },
+          {
+            "key": "approve_btn",
+            "label": "Approve carrier",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "carrier_ok"
+            }
+          },
+          {
+            "key": "call_disp",
+            "label": "Call dispatch",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "open_url",
+              "url": "tel:{{dispatch_phone}}"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ca-1",
+            "values": {
+              "carrier_name": "Red Mesa Transport",
+              "status": "Approved",
+              "mc": "MC-884213",
+              "dot": "3301457",
+              "equipment": "Dry van 53 ft",
+              "safety": "Satisfactory",
+              "home_lanes": "Texas to the Mid-South",
+              "approved_on": "@today-2y",
+              "insurance_to": "@today+8m",
+              "cargo_cover": 100000,
+              "dispatch_phone": "(214) 555-0171"
+            }
+          },
+          {
+            "key": "ca-2",
+            "values": {
+              "carrier_name": "Coldline Express",
+              "status": "Approved",
+              "mc": "MC-902774",
+              "dot": "3417720",
+              "equipment": "Reefer",
+              "safety": "Satisfactory",
+              "home_lanes": "California to Colorado and Arizona",
+              "approved_on": "@today-1y",
+              "insurance_to": "@today+5m",
+              "cargo_cover": 150000,
+              "dispatch_phone": "(559) 555-0172"
+            }
+          },
+          {
+            "key": "ca-3",
+            "values": {
+              "carrier_name": "Steelhook Flatbed LLC",
+              "status": "Approved",
+              "mc": "MC-771058",
+              "dot": "2984411",
+              "equipment": "Flatbed",
+              "safety": "Satisfactory",
+              "home_lanes": "Alabama and Georgia",
+              "approved_on": "@today-3y",
+              "insurance_to": "@today+10m",
+              "cargo_cover": 100000,
+              "dispatch_phone": "(205) 555-0173"
+            }
+          },
+          {
+            "key": "ca-4",
+            "values": {
+              "carrier_name": "Prairie Line Logistics",
+              "status": "Insurance expiring",
+              "mc": "MC-1120934",
+              "dot": "3655102",
+              "equipment": "Dry van 53 ft",
+              "safety": "Not rated",
+              "home_lanes": "Illinois, Ohio, Indiana",
+              "approved_on": "@today-8m",
+              "insurance_to": "@today+12d",
+              "cargo_cover": 100000,
+              "dispatch_phone": "(815) 555-0174"
+            }
+          },
+          {
+            "key": "ca-5",
+            "values": {
+              "carrier_name": "Two Rivers Heavy Haul",
+              "status": "Approved",
+              "mc": "MC-650917",
+              "dot": "2511809",
+              "equipment": "Step deck",
+              "safety": "Satisfactory",
+              "home_lanes": "Tennessee to the Carolinas",
+              "approved_on": "@today-4y",
+              "insurance_to": "@today+6m",
+              "cargo_cover": 250000,
+              "dispatch_phone": "(423) 555-0175"
+            }
+          },
+          {
+            "key": "ca-6",
+            "values": {
+              "carrier_name": "Quickfleet Partners",
+              "status": "Pending setup",
+              "mc": "MC-1198420",
+              "dot": "3802217",
+              "equipment": "Power only",
+              "safety": "Not rated",
+              "home_lanes": "Dallas and Houston",
+              "insurance_to": "@today+11m",
+              "cargo_cover": 100000,
+              "dispatch_phone": "(713) 555-0176"
+            }
+          },
+          {
+            "key": "ca-7",
+            "values": {
+              "carrier_name": "Longview Haulers",
+              "status": "Do not use",
+              "mc": "MC-1003378",
+              "dot": "3519924",
+              "equipment": "Dry van 53 ft",
+              "safety": "Conditional",
+              "home_lanes": "Texas loops",
+              "approved_on": "@today-2y",
+              "insurance_to": "@today-1m",
+              "cargo_cover": 100000,
+              "dispatch_phone": "(903) 555-0177"
+            }
+          }
+        ]
+      },
+      {
+        "token": "invoice",
+        "name": "Customer invoices",
+        "labelSingular": "Invoice",
+        "labelPlural": "Invoices",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "inv_name",
+        "describes": "What each delivered load was billed, with detention and extras, and whether the customer has paid.",
+        "subject": "thing",
+        "independentOf": {
+          "load": "Either record can be created or change status before the other.",
+          "shipper": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "Customer invoice",
+            "values": {
+              "status": "Draft",
+              "inv_name": "New invoice"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Attach"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed rate confirmation"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of delivery"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Detention or lumper receipts"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Send"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Customer PO or reference number on the invoice"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Due follows the customer's terms; Paid on is stamped when the money lands, early or late.",
+        "fields": [
+          {
+            "key": "inv_name",
+            "label": "Invoice",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Short-paid",
+              "Overdue",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Short-paid": "amber",
+              "Overdue": "red",
+              "Paid": "green"
+            },
+            "required": true,
+            "default": "Draft",
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Short-paid": "in_progress",
+              "Overdue": "in_progress",
+              "Paid": "done"
+            }
+          },
+          {
+            "key": "load",
+            "label": "Load",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "load",
+            "relationMax": 1
+          },
+          {
+            "key": "shipper",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "shipper",
+            "relationMax": 1
+          },
+          {
+            "key": "linehaul",
+            "label": "Linehaul (USD)",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "load",
+            "pick": "rate"
+          },
+          {
+            "key": "accessorials",
+            "label": "Detention and extras (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "total",
+            "label": "Invoice total (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Linehaul (USD)} + {Detention and extras (USD)}"
+          },
+          {
+            "key": "due_on",
+            "label": "Due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_btn",
+            "label": "Mark paid",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "inv_paid"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "in-1",
+            "values": {
+              "inv_name": "Invoice for load 30418",
+              "status": "Paid",
+              "load": "ld-1",
+              "shipper": "sh-1",
+              "accessorials": 0,
+              "due_on": "@today-1d",
+              "paid_on": "@today-2d"
+            }
+          },
+          {
+            "key": "in-2",
+            "values": {
+              "inv_name": "Invoice for load 30422",
+              "status": "Sent",
+              "load": "ld-2",
+              "shipper": "sh-2",
+              "accessorials": 150,
+              "due_on": "@today+9d"
+            }
+          },
+          {
+            "key": "in-3",
+            "values": {
+              "inv_name": "Invoice for load 30425",
+              "status": "Overdue",
+              "load": "ld-3",
+              "shipper": "sh-3",
+              "accessorials": 75,
+              "due_on": "@today-2d"
+            }
+          },
+          {
+            "key": "in-4",
+            "values": {
+              "inv_name": "Invoice for load 30427",
+              "status": "Draft",
+              "load": "ld-4",
+              "shipper": "sh-4",
+              "accessorials": 0,
+              "due_on": "@today+26d"
+            }
+          },
+          {
+            "key": "in-5",
+            "values": {
+              "inv_name": "Invoice for load 30431",
+              "status": "Short-paid",
+              "load": "ld-5",
+              "shipper": "sh-5",
+              "accessorials": 125,
+              "due_on": "@today"
+            }
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "describes": "Each load is for one customer.",
+        "fromTable": "load",
+        "fromField": "shipper",
+        "toTable": "shipper",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "loads"
+      },
+      {
+        "describes": "Each covered load is hauled by one carrier.",
+        "fromTable": "load",
+        "fromField": "carrier",
+        "toTable": "carrier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "loads_hauled"
+      },
+      {
+        "describes": "Each load has one broker rep.",
+        "fromTable": "load",
+        "fromField": "rep",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "loads_booked"
+      },
+      {
+        "describes": "Each invoice bills one load.",
+        "fromTable": "invoice",
+        "fromField": "load",
+        "toTable": "load",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "load_invoices"
+      },
+      {
+        "describes": "Each invoice goes to one customer.",
+        "fromTable": "invoice",
+        "fromField": "shipper",
+        "toTable": "shipper",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "invoices"
+      }
+    ],
+    "sharedBlocks": [
+      {
+        "block": "team_member",
+        "rows": [
+          {
+            "key": "tm-1",
+            "values": {
+              "full_name": "Rhett Galvan",
+              "role": "Owner",
+              "work_email": "rhett@lonestarlane.net",
+              "mobile": "(817) 555-0140",
+              "start_date": "@today-1y"
+            }
+          },
+          {
+            "key": "tm-2",
+            "values": {
+              "full_name": "Tamsin Cole",
+              "role": "Broker, dry van and flatbed",
+              "work_email": "tamsin@lonestarlane.net",
+              "mobile": "(817) 555-0141",
+              "start_date": "@today-3y"
+            }
+          },
+          {
+            "key": "tm-3",
+            "values": {
+              "full_name": "Desmond Ebi",
+              "role": "Broker, reefer",
+              "work_email": "desmond@lonestarlane.net",
+              "mobile": "(817) 555-0142",
+              "start_date": "@today-5y"
+            }
+          },
+          {
+            "key": "tm-4",
+            "values": {
+              "full_name": "Lourdes Pineda",
+              "role": "Carrier sales",
+              "work_email": "lourdes@lonestarlane.net",
+              "mobile": "(817) 555-0143",
+              "start_date": "@today-7y"
+            }
+          },
+          {
+            "key": "tm-5",
+            "values": {
+              "full_name": "Wren Abernathy",
+              "role": "Billing and carrier pay",
+              "work_email": "wren@lonestarlane.net",
+              "mobile": "(817) 555-0144",
+              "start_date": "@today-9y"
+            }
+          }
+        ]
+      }
+    ],
+    "forms": [
+      {
+        "token": "quote_request",
+        "name": "Quote request",
+        "describes": "How a shipper asks for a rate.",
+        "audience": "staff",
+        "table": "load",
+        "fields": [
+          {
+            "fieldKey": "load_name",
+            "ask": "Where is it going from and to, and what is it?",
+            "required": true
+          },
+          {
+            "fieldKey": "shipper",
+            "ask": "Which customer is asking?",
+            "required": true
+          },
+          {
+            "fieldKey": "equipment",
+            "ask": "What equipment does it need?"
+          },
+          {
+            "fieldKey": "pickup_on",
+            "ask": "When is it ready to pick up?"
+          }
+        ],
+        "submitLabel": "Ask for a rate",
+        "confirmation": "Thanks. A broker will send a rate within the hour."
+      }
+    ],
+    "dimensions": [],
+    "extras": [
+      {
+        "kind": "row_action",
+        "token": "load_transit",
+        "table": "load",
+        "name": "Mark picked up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "In transit"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "load_delivered",
+        "table": "load",
+        "name": "Mark delivered",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Delivered"
+          },
+          {
+            "field": "delivered_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "load_take",
+        "table": "load",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "assigned_to",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "carrier_ok",
+        "table": "carrier",
+        "name": "Approve carrier",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          },
+          {
+            "field": "approved_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "inv_paid",
+        "table": "invoice",
+        "name": "Mark paid",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid"
+          },
+          {
+            "field": "paid_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "token": "all_load",
+        "name": "All loads",
+        "table": "load",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "load_board",
+        "name": "Loads board",
+        "table": "load",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "load_cal",
+        "name": "Loads calendar",
+        "table": "load",
+        "kind": "calendar",
+        "dateField": "pickup_on",
+        "allDay": true
+      },
+      {
+        "token": "load_over",
+        "name": "Overdue",
+        "table": "load",
+        "kind": "grid",
+        "within": {
+          "pickup_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Tendered",
+            "Covered",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "load_week",
+        "name": "Due this week",
+        "table": "load",
+        "kind": "grid",
+        "within": {
+          "pickup_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Tendered",
+            "Covered",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "load_next7",
+        "name": "Next 7 days",
+        "table": "load",
+        "kind": "grid",
+        "within": {
+          "pickup_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Quoted",
+            "Tendered",
+            "Covered",
+            "In transit"
+          ]
+        }
+      },
+      {
+        "token": "load_mine",
+        "name": "My loads",
+        "table": "load",
+        "kind": "grid",
+        "me": [
+          "assigned_to"
+        ]
+      },
+      {
+        "token": "all_shipper",
+        "name": "All customers",
+        "table": "shipper",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "shipper_board",
+        "name": "Customers board",
+        "table": "shipper",
+        "kind": "kanban",
+        "groupBy": "cust_status"
+      },
+      {
+        "token": "all_carrier",
+        "name": "All carriers",
+        "table": "carrier",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "carrier_board",
+        "name": "Carriers board",
+        "table": "carrier",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "all_invoice",
+        "name": "All invoices",
+        "table": "invoice",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "invoice_board",
+        "name": "Invoices board",
+        "table": "invoice",
+        "kind": "kanban",
+        "groupBy": "status"
+      },
+      {
+        "token": "invoice_over",
+        "name": "Overdue",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue",
+            "Short-paid"
+          ]
+        }
+      },
+      {
+        "token": "invoice_week",
+        "name": "Due this week",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue",
+            "Short-paid"
+          ]
+        }
+      },
+      {
+        "token": "invoice_next7",
+        "name": "Next 7 days",
+        "table": "invoice",
+        "kind": "grid",
+        "within": {
+          "due_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Sent",
+            "Overdue",
+            "Short-paid"
+          ]
+        }
+      }
+    ],
+    "agent": {
+      "platformAgent": {
+        "id": "4cd676c6-f55d-4426-b7eb-a9d0273566ec",
+        "name": "Answers From Your Tables"
+      },
+      "name": "Freight Brokerage Desk assistant",
+      "variables": [
+        {
+          "name": "primary_table",
+          "table": "load",
+          "describes": "Every load from quote to delivery: customer, carrier, equipment, rate, carrier pay and margin."
+        },
+        {
+          "name": "related_tables",
+          "table": "shipper",
+          "describes": "The records the first table connects to."
+        }
+      ],
+      "question": {
+        "ask": "How many loads are tendered and still need a carrier?",
+        "whyItMatters": "Uncovered loads close to pickup are the first job every morning.",
+        "expect": {
+          "table": "load",
+          "measure": {
+            "op": "count"
+          },
+          "filter": {
+            "status": "Tendered"
+          },
+          "answer": 2,
+          "unit": "loads"
+        }
+      }
+    },
+    "walk": [
+      {
+        "says": "Open loads.",
+        "action": {
+          "kind": "open",
+          "surface": "load_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "load_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open customers.",
+        "action": {
+          "kind": "open",
+          "surface": "shipper_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "shipper_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open carriers.",
+        "action": {
+          "kind": "open",
+          "surface": "carrier_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "carrier_board",
+          "minItems": 3
+        }
+      }
+    ],
+    "foundation": [],
+    "provenance": {
+      "kind": "synthesized",
+      "authoredBy": "Spaces industry template author (Claude)",
+      "authoredOn": "2026-10-21",
+      "noRealPeople": true,
+      "sources": [],
+      "fictionalDomains": [
+        "lonestarlane.net",
+        "inbox-mail.net",
+        "trinitypaper.net",
+        "valleverdeproduce.net",
+        "ironlinemetals.net",
+        "northfieldhome.net",
+        "gulfbendindustrial.net",
+        "sierracrestbottling.net"
+      ],
+      "fictionalStreets": [
+        "Caddo Mill Road"
+      ]
+    },
+    "version": 1
+  },
+  "pages": [
+    {
+      "key": "freight-brokerage-desk",
+      "parent": null,
+      "title": "Freight Brokerage Desk",
+      "icon": {
+        "emoji": "🚛"
+      },
+      "cover": {
+        "url": "gallery:manufacturing-shipping-containers-port",
+        "offsetY": 50
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Start the morning on the Dashboard: loads picking up today that still need a carrier, carriers with insurance about to lapse, and invoices past due. A load moves Quoted, Tendered, Covered, In transit, Delivered on the Loads board. Mark delivered stamps the day; Create invoice starts the bill from the load."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dashboard"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:carrier-vetting"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:load-day"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Loads"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every load from quote to delivery: customer, carrier, equipment, rate, carrier pay and margin."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "load",
+              "view": "load_board"
+            },
+            "inline": true,
+            "title": "Loads",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "load-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "rep",
+                  "pickup_on",
+                  "delivered_on",
+                  "miles",
+                  "weight",
+                  "rate",
+                  "carrier_pay",
+                  "margin",
+                  "margin_pct",
+                  "rpm",
+                  "ratecon",
+                  "pod",
+                  "assigned_to",
+                  "transit_btn",
+                  "deliv_btn",
+                  "take_btn",
+                  "inv_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "load-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "pickup_on",
+                "hiddenFields": [
+                  "status",
+                  "rep",
+                  "pickup_on",
+                  "delivered_on",
+                  "miles",
+                  "weight",
+                  "rate",
+                  "carrier_pay",
+                  "margin",
+                  "margin_pct",
+                  "rpm",
+                  "ratecon",
+                  "pod",
+                  "assigned_to",
+                  "transit_btn",
+                  "deliv_btn",
+                  "take_btn",
+                  "inv_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "load-t",
+                "name": "All loads",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "load-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "pickup_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Tendered",
+                    "Covered",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "load-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "pickup_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Tendered",
+                    "Covered",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "load-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "pickup_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "Tendered",
+                    "Covered",
+                    "In transit"
+                  ]
+                }
+              },
+              {
+                "id": "load-m",
+                "name": "My loads",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "assigned_to"
+                ]
+              }
+            ],
+            "activeViewId": "load-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The shippers you move freight for, their terms, credit limit, and what they have paid and owe."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shipper",
+              "view": "shipper_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ship-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "cust_status",
+                "hiddenFields": [
+                  "lanes",
+                  "ap_email",
+                  "open_loads",
+                  "delivered",
+                  "cust_margin",
+                  "awaiting",
+                  "new_load",
+                  "mail_ap",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "ship-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "ship-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Carriers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every trucking company you tender to, with authority, insurance, safety rating and loads hauled."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "carrier",
+              "view": "carrier_board"
+            },
+            "inline": true,
+            "title": "Carriers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "carr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "mc",
+                  "dot",
+                  "home_lanes",
+                  "insurance_to",
+                  "cargo_cover",
+                  "dispatch_phone",
+                  "hauled",
+                  "paid_out",
+                  "approve_btn",
+                  "call_disp",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "carr-t",
+                "name": "All carriers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "carr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customer invoices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What each delivered load was billed, with detention and extras, and whether the customer has paid."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "invoice_board"
+            },
+            "inline": true,
+            "title": "Customer invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "invo-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status",
+                "hiddenFields": [
+                  "accessorials",
+                  "total",
+                  "due_on",
+                  "paid_on",
+                  "paid_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "id": "invo-t",
+                "name": "All invoices",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "invo-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "due_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue",
+                    "Short-paid"
+                  ]
+                }
+              },
+              {
+                "id": "invo-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue",
+                    "Short-paid"
+                  ]
+                }
+              },
+              {
+                "id": "invo-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue",
+                    "Short-paid"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "invo-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "freight-brokerage-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A brokerage lives on two relationships, the shipper who pays you and the carrier you pay, and the margin in between. This workspace keeps both sides of every load on one row."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The four tables"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Loads",
+              "bold": true
+            },
+            {
+              "text": ": one row per shipment. It moves Quoted (rate sent), Tendered (customer said yes), Covered (carrier booked and rate confirmation signed), In transit, Delivered. Margin is the customer rate less carrier pay; Rate per mile helps you compare lanes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": shippers, their payment terms and credit limit, with revenue and margin from delivered loads and what they still owe."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Carriers",
+              "bold": true
+            },
+            {
+              "text": ": every trucking company you work with: MC and USDOT numbers, insurance expiry, cargo cover, safety rating. Only Approved carriers get loads."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customer invoices",
+              "bold": true
+            },
+            {
+              "text": ": one per delivered load. The linehaul comes from the load; detention, lumper and other extras are added on the invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A normal day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "7:00: open Loads, This week view. Anything picking up today and still Tendered is the first job."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Carrier sales works the Loads to cover list: past carriers on the lane first, then the load board."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before a load is Covered: carrier is Approved, insurance runs past delivery, rate confirmation is signed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check calls at pickup, midway and delivery; notes go in the load's page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Delivered: press Mark delivered when the proof of delivery arrives, then Create invoice the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: billing works Money to collect and pays carriers whose proof of delivery is in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Area"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Customer rates and tenders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Brokers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Carrier setup and coverage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Carrier sales"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Invoices and carrier pay"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Billing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Credit limits and holds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A margin you can trust"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Quotes and cancelled loads show no margin, so the totals are only freight that moved. Short-paid invoices stay open until the difference is collected or written off by the owner."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "parent": "freight-brokerage-desk",
+      "title": "Dashboard",
+      "icon": {
+        "emoji": "📊"
+      },
+      "settings": {
+        "fullWidth": true
+      },
+      "blocks": [
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "load",
+                      "view": "all_load"
+                    },
+                    "inline": true,
+                    "title": "Loads by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc1",
+                        "name": "Loads by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc1"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "load",
+                      "view": "all_load"
+                    },
+                    "inline": true,
+                    "title": "Margin by equipment",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc2",
+                        "name": "Margin by equipment",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "equipment",
+                          "op": "sum",
+                          "field": "margin"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc2"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "load",
+                      "view": "all_load"
+                    },
+                    "inline": true,
+                    "title": "Revenue by equipment",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc3",
+                        "name": "Revenue by equipment",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "bar",
+                          "groupBy": "equipment",
+                          "op": "sum",
+                          "field": "rate"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc3"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "carrier",
+                      "view": "all_carrier"
+                    },
+                    "inline": true,
+                    "title": "Carriers by setup",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc4",
+                        "name": "Carriers by setup",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc4"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.33
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "invoice",
+                      "view": "all_invoice"
+                    },
+                    "inline": true,
+                    "title": "Invoices by status",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc5",
+                        "name": "Invoices by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc5"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.34
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "shipper",
+                      "view": "all_shipper"
+                    },
+                    "inline": true,
+                    "title": "Customers by terms",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "vc6",
+                        "name": "Customers by terms",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "terms",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "vc6"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Loads to cover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "load",
+              "view": "all_load"
+            },
+            "inline": true,
+            "title": "Loads to cover",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl0",
+                "name": "Tendered",
+                "layout": "list",
+                "filters": {
+                  "status": "Tendered"
+                }
+              }
+            ],
+            "activeViewId": "dl0"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Carriers to re-check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "carrier",
+              "view": "all_carrier"
+            },
+            "inline": true,
+            "title": "Carriers to re-check",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl1",
+                "name": "Expiring or pending",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Insurance expiring",
+                    "Pending setup"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Money to collect"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Money to collect",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dl2",
+                "name": "Open invoices",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue",
+                    "Short-paid"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dl2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to read the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do about it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Margin (USD) and Margin (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Customer rate less carrier pay, blank for quotes and cancelled loads"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 12 percent on a regular lane means re-quote it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rate per mile (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Customer rate over loaded miles"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Short hauls run higher per mile; compare like with like"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Awaiting payment (USD)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sent, short-paid and overdue invoices for the customer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Over half the credit limit means talk before booking more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loads delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivered loads per carrier"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Your best carriers get the first call on their lanes"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "carrier-vetting",
+      "parent": "freight-brokerage-desk",
+      "title": "Vetting a new carrier",
+      "icon": {
+        "emoji": "🛡️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most broker losses come from the wrong carrier: lapsed insurance, a brand-new authority, or someone pretending to be a real fleet. This page is the setup routine every carrier passes before the first load, and the re-checks that keep the list clean."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the first load"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the carrier with Pending setup. Enter MC and USDOT numbers exactly."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look up the authority record yourself. Active for at least 90 days, and the phone and email match what the carrier gave you."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for the certificate of insurance from the insurance agent, not from the carrier. Auto liability and cargo, with our company as certificate holder."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the safety rating and recent roadside inspections. Conditional means the owner decides."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect the W-9, payment details and the signed broker-carrier agreement."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press Approve carrier. It stamps Approved on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Red flags"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What you see"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why it matters"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Email domain differs from the one on the authority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Possible identity theft; call the listed number"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Payment details changed by email"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Classic fraud; confirm by phone with a known contact"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Insurance certificate sent directly by the carrier"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "May be altered; get it from the agent"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brand-new authority and a very low rate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Double brokering risk"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping the list clean"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance expiring within 30 days: move to Insurance expiring and request a renewed certificate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A carrier that drops a load, fakes a check call or re-brokers your freight moves to Do not use, with the reason in its page. Do not delete it; the record protects the next broker."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Once a quarter, sort Carriers by Loads delivered. The top ten get first call on their lanes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist before tendering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Carrier is Approved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance runs past the delivery date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Equipment matches the load"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rate confirmation signed and returned"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Driver name and cell number confirmed by a call to the carrier's listed dispatch phone, not a number from an email"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "load-day",
+      "parent": "freight-brokerage-desk",
+      "title": "Covering and tracking a load",
+      "icon": {
+        "emoji": "📍"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A load is a promise to two people at once. This page is the routine from the shipper's yes to the signed proof of delivery, so the customer never has to ask where their freight is."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the customer tenders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the load from Quoted to Tendered and press Assign to me."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fill the load sheet: appointment times, commodity, weight, special handling, reference numbers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price the carrier side before you call. Target margin on dry van is 15 to 20 percent; reefer and flatbed often less."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Covering it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Call carriers who hauled this lane before. Their Loads delivered count and notes are on the carrier row."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree the rate, send the rate confirmation, and tick Rate confirmation signed only when it comes back."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the load to Covered and set the carrier."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Check calls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you need"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Driver at shipper"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Trailer and seal numbers, loaded time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mid-route"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Location and updated arrival time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "At receiver"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Arrival time, so detention can be billed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Empty"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Proof of delivery photo and any shortage or damage"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press Mark picked up at the first call and Mark delivered when the proof of delivery arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When things go wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Truck breaks down: tell the customer before they ask, with a new arrival time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Detention: write in and out times in the load page; it goes on the invoice as Detention and extras."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Load cancelled by the shipper after cover: agree a truck-order-not-used fee with both sides in writing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Worked example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Salinas to Phoenix strawberries: tendered at 3,150, covered with a reefer carrier at 2,700 for a 450 margin, about 14 percent. Pickup at 4 am; the reefer temperature is confirmed on the bill of lading at the first check call. The receiver signs clean the next afternoon, the broker presses Mark delivered, and billing sends the invoice before close."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "waivers": []
+}

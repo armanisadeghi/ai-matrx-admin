@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0572",
-  "version": 1,
+  "version": 2,
   "title": "Independent Pharmacy Desk",
   "description": "Run the fill queue, will-call bins, prior auths, med sync and drug stock for one store.",
   "forWho": "Independent and community pharmacies",
@@ -9,7 +9,7 @@
     "emoji": "💊"
   },
   "cover": {
-    "url": "gallery:healthcare-hospital-corridor",
+    "url": "gallery:healthcare-blister-packs-tablets-white",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2721,7 +2721,7 @@
         "Quarry Hollow Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2732,7 +2732,7 @@
         "emoji": "💊"
       },
       "cover": {
-        "url": "gallery:healthcare-hospital-corridor",
+        "url": "gallery:healthcare-blister-packs-tablets-white",
         "offsetY": 50
       },
       "settings": {
