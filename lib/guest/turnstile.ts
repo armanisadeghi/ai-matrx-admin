@@ -1,4 +1,3 @@
-"use client";
 // lib/guest/turnstile.ts — the invisible human check sent when a NEW guest is made (FREE-ALLOWANCE.md §5).
 //
 // aidream verifies the token only when it is about to mint a new guest identity (knob
@@ -112,3 +111,36 @@ export function fetchWithGuestChallenge(base: typeof fetch = fetch): typeof fetc
     return base(input, { ...init, body: JSON.stringify({ ...body, turnstile_token: token }) });
   };
 }
+
+// ── the header lane (X-Fingerprint-ID): a held token ─────────────────────────────────────────────────
+// A visitor's FIRST request on the fingerprint lane is where aidream mints them, and the header builders
+// there are synchronous. So the token is primed before a signed-out request goes out (awaited once, held
+// for 4 minutes — Turnstile tokens live 5) and the builders attach whatever is held. The server reads it
+// only when it is about to mint; a returning visitor's held token is simply ignored.
+const HELD_MS = 240_000;
+let held: { token: string; at: number } | null = null;
+let priming: Promise<string | null> | null = null;
+
+/** The held header-lane token, or null (none primed, expired, or no site key). Synchronous. */
+export function heldGuestChallengeToken(): string | null {
+  return held && Date.now() - held.at < HELD_MS ? held.token : null;
+}
+
+/** Make sure a fresh token is held before a signed-out request goes out. Immediate when one is held or
+ *  when there is no site key; single flight across callers. */
+export function primeGuestChallenge(): Promise<string | null> {
+  const have = heldGuestChallengeToken();
+  if (have || !turnstileSiteKey()) return Promise.resolve(have);
+  priming ??= getTurnstileToken()
+    .then((token) => {
+      if (token) held = { token, at: Date.now() };
+      return token;
+    })
+    .finally(() => {
+      priming = null;
+    });
+  return priming;
+}
+
+/** The header the fingerprint lane carries (aidream services/auth_guest/mint_challenge.py HEADER). */
+export const TURNSTILE_HEADER = "X-Turnstile-Token";

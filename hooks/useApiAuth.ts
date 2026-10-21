@@ -15,6 +15,7 @@ import {
 } from '@/lib/redux/slices/userSlice';
 import { getFingerprint } from '@/lib/services/fingerprint-service';
 import { selectOrganizationId } from '@/lib/redux/slices/appContextSlice';
+import { heldGuestChallengeToken, primeGuestChallenge, TURNSTILE_HEADER } from '@/lib/guest/turnstile';
 import {
     applyOrganizationContextHeader,
     requireOrganizationContext,
@@ -50,6 +51,9 @@ export function buildApiAuthHeaders(args: {
         headers['Authorization'] = `Bearer ${args.accessToken}`;
     } else if (args.fingerprintId) {
         headers['X-Fingerprint-ID'] = args.fingerprintId;
+        // the human check a NEW visitor's mint needs (lib/guest/turnstile.ts; primed in waitForAuth)
+        const challenge = heldGuestChallengeToken();
+        if (challenge) headers[TURNSTILE_HEADER] = challenge;
     }
 
     if (args.accessToken) {
@@ -144,7 +148,7 @@ export function useApiAuth() {
      * Concurrent calls share a single fingerprint-fetch promise to avoid races.
      * Always returns true — falls back to a temporary fingerprint as last resort.
      */
-    const waitForAuth = useCallback(async (): Promise<boolean> => {
+    const waitForAuthCredential = useCallback(async (): Promise<boolean> => {
         // Fast path: already ready
         if (authReadyRef.current && (accessTokenRef.current || fingerprintIdRef.current)) {
             return true;
@@ -184,6 +188,13 @@ export function useApiAuth() {
 
         return fingerprintFetchPromiseRef.current;
     }, [dispatch]);
+
+    /** Plus, for a signed-out visitor, the human check a first (minting) request carries. */
+    const waitForAuth = useCallback(async (): Promise<boolean> => {
+        const ready = await waitForAuthCredential();
+        if (!accessTokenRef.current) await primeGuestChallenge();
+        return ready;
+    }, [waitForAuthCredential]);
 
     /**
      * Check if auth is ready (has either token or fingerprint).
