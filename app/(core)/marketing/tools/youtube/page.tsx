@@ -1,5 +1,5 @@
 // Public-video discovery through the YouTube Data API — an AGENCY-plane TOOL
-// (it researches the open web, not one brand's property). Moved here from
+// (it researches the open web, not one client's property). Moved here from
 // `/marketing/discovery/youtube` in the 2026-08-28 agency restructure; the old
 // address is a 308 shim onto this route.
 

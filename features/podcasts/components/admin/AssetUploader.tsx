@@ -24,7 +24,6 @@ import {
 import { folderForPodcast } from "@/features/files/utils/folder-conventions";
 import type { components } from '@ai-matrx/api/types';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /**
  * Shape returned by the Python podcast-video upload endpoint
@@ -242,7 +241,13 @@ export function AssetUploader({ onComplete, currentImageUrl, currentVideoUrl, sh
                                     )}
                                     <p className="text-xs text-muted-foreground mt-0.5">Click to replace</p>
                                 </div>
-                                <ControlButton variant="quiet" removes onClick={removeVideo} className="shrink-0" aria-label="Remove video" icon={<Trash2 />} />
+                                <button
+                                    onClick={removeVideo}
+                                    title="Remove video"
+                                    className="shrink-0 p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center gap-2 py-6">

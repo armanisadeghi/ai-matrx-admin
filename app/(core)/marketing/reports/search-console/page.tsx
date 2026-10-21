@@ -1,10 +1,10 @@
-// The cross-brand Search Console roll-up — the site-less portfolio landing
+// The cross-client Search Console roll-up — the site-less portfolio landing
 // the old flat `/marketing/search-console` served (its site picker lives
 // inside `SearchConsoleGate`). Restored 2026-08-30 after the agency-model
 // restructure's smart shim dropped the no-`?site=` mode (adversarial audit
 // finding). Per-site dashboards stay canonical at
 // `/marketing/[brandId]/seo/[siteId]/search-console` — same component, bound;
-// this page is the Reports plane's roll-up door across every brand.
+// this page is the Reports plane's roll-up door across every client.
 
 import { Suspense } from "react";
 

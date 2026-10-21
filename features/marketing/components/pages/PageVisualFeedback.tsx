@@ -19,7 +19,6 @@ import {
 import type { MarketingPage } from "@/features/marketing/types";
 import { toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 const VISUAL_FEEDBACK_KIND = "visual_feedback";
 
@@ -223,9 +222,15 @@ export function PageVisualFeedback({ page }: { page: MarketingPage }) {
                 >
                   <PenLine className="h-3.5 w-3.5" />
                 </button>
-                <ControlButton variant="quiet" removes type="button"
-                 
-                  onClick={() => void detach(link)} aria-label="Detach from page" icon={<Unlink />} />
+                <button
+                  type="button"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
+                  onClick={() => void detach(link)}
+                  title="Detach from page"
+                  aria-label="Detach from page"
+                >
+                  <Unlink className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           ))}

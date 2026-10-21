@@ -26,7 +26,7 @@
 
 "use client";
 
-import { PropertyRow, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { HardDrive, AlertTriangle, RefreshCw, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -64,11 +64,18 @@ export function StorageQuotaChip({ className }: StorageQuotaChipProps) {
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span className="truncate">Storage usage could not be read</span>
         </span>
-        <ControlButton variant="quiet" type="button"
+        <button
+          type="button"
           onClick={() => void refresh()}
-          disabled={loading} className="shrink-0" icon={<RefreshCw
+          disabled={loading}
+          className="flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-destructive-ink hover:bg-destructive/10 disabled:opacity-60"
+        >
+          <RefreshCw
+            className={cn("h-3 w-3", loading && "animate-spin")}
             aria-hidden="true"
-          />}>Retry</ControlButton>
+          />
+          Retry
+        </button>
         <ErrorAlchemyMenu />
       </div>
     );

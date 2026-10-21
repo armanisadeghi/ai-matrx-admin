@@ -83,36 +83,11 @@ function Kept({ asset }: { asset: BrandAsset }) {
   return asset.kind === "color" ? <Swatch asset={asset} /> : <FontName asset={asset} />;
 }
 
-/**
- * THE one Yes / No for a discovered color or font (used here and by the brand home's palette): Yes stamps
- * `confirmed_at`; No stamps `metadata.declined_at` (so no rerun files it again) and retires the row.
- */
-export function useVisualSuggestionAnswer() {
-  const update = useUpdateBrandAsset();
-  const remove = useDeleteBrandAsset();
-  return async (asset: BrandAsset, answer: "yes" | "no") => {
-    if (answer === "yes") {
-      await update.mutateAsync({
-        assetId: asset.id,
-        expectedVersion: asset.version,
-        patch: { confirmed_at: new Date().toISOString() },
-      });
-      return;
-    }
-    const metadata = isJsonRecord(asset.metadata) ? asset.metadata : {};
-    await update.mutateAsync({
-      assetId: asset.id,
-      expectedVersion: asset.version,
-      patch: { metadata: { ...metadata, declined_at: new Date().toISOString() } },
-    });
-    await remove.mutateAsync(asset.id);
-  };
-}
-
 export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: string; organizationId: string }) {
   const dispatch = useAppDispatch();
   const assets = useBrandAssets(brandId);
-  const answerSuggestion = useVisualSuggestionAnswer();
+  const update = useUpdateBrandAsset();
+  const remove = useDeleteBrandAsset();
   const [reading, setReading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +108,22 @@ export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: s
     }
     setBusy(true);
     try {
-      await answerSuggestion(current, a);
+      if (a === "yes") {
+        await update.mutateAsync({
+          assetId: current.id,
+          expectedVersion: current.version,
+          patch: { confirmed_at: new Date().toISOString() },
+        });
+      } else {
+        // A "No" is remembered, so no rerun ever asks again.
+        const metadata = isJsonRecord(current.metadata) ? current.metadata : {};
+        await update.mutateAsync({
+          assetId: current.id,
+          expectedVersion: current.version,
+          patch: { metadata: { ...metadata, declined_at: new Date().toISOString() } },
+        });
+        await remove.mutateAsync(current.id);
+      }
     } catch (e) {
       setError(extractErrorMessage(e));
     } finally {

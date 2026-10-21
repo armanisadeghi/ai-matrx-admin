@@ -7,12 +7,12 @@ import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { createClient } from "@/utils/supabase/server";
 
 /**
- * Resolve a bare `site_id` to the path segments of its brand workspace.
+ * Resolve a bare `site_id` to the path segments of its client workspace.
  *
  * The flat `/marketing/sites/[siteId]/…` door exists because most rows in the
  * database know a site and nothing above it. The agency tree needs the brand
  * too, so the door resolves it server-side (browser → Supabase is the rule for
- * data the BRAND page renders; a redirect has nothing to render and must decide
+ * data the CLIENT renders; a redirect has nothing to render and must decide
  * before the response, which is exactly the `changes/[changeId]` pattern).
  *
  * Returns the KEY segments when the rows carry them, so the emitted address is

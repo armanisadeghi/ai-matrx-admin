@@ -9,7 +9,7 @@ import { SocialAnalyticsPanel } from "@/features/marketing/social/components/Soc
 import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
 
 /**
- * This brand's Analytics — the brand's websites with their Google Analytics
+ * This client's Analytics — the brand's websites with their Google Analytics
  * headline numbers, each opening the canonical `SiteAnalyticsPanel` in a window.
  * Replaces the Coming-Soon placeholder (google-native PLAN §4.9 Plane A).
  *
@@ -32,12 +32,12 @@ export default async function BrandAnalyticsPage({
   }
   return (
     <div className="h-full overflow-y-auto p-3 pt-[calc(var(--shell-header-h)+0.75rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+1rem)]">
-      <Suspense fallback={<LoadingSurface label="Loading this brand's Analytics…" />}>
+      <Suspense fallback={<LoadingSurface label="Loading this client's Analytics…" />}>
         <BrandAnalyticsWorkspace brandId={brand.id} />
       </Suspense>
       <div className="mt-3 grid grid-cols-1 items-start gap-3 xl:grid-cols-2">
         <Suspense
-          fallback={<LoadingSurface label="Loading this brand's YouTube channel…" />}
+          fallback={<LoadingSurface label="Loading this client's YouTube channel…" />}
         >
           <BrandChannelPanel brandId={brand.id} />
         </Suspense>

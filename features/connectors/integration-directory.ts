@@ -28,10 +28,6 @@ export interface IntegrationDirectoryItem {
   status: string;
   attention: boolean;
   accountSummary?: string;
-  /** The person's own accounts, deduplicated, service accounts excluded (`personAccounts`). */
-  accounts?: readonly string[];
-  /** Service accounts on this card: hidden from people, shown to admins behind Advanced. */
-  serviceAccounts?: readonly string[];
   /**
    * Organizations that share an account of this kind with the viewer. Never
    * makes the item `saved`/`connected` — those describe the viewer's OWN
@@ -99,35 +95,6 @@ export function filterDirectory(
     });
 }
 
-/** A machine identity (a Google service account, a Firebase admin SDK key): never a person's account. */
-export function isServiceAccountIdentity(identity: string): boolean {
-  return /\.gserviceaccount\.com$|firebase-adminsdk|\bservice[-_ ]account\b/i.test(identity);
-}
-
-/** The person's own accounts: trimmed, deduplicated without regard to case, service accounts set apart. */
-export function personAccounts(identities: readonly string[]): {
-  accounts: string[];
-  serviceAccounts: string[];
-} {
-  const seen = new Set<string>();
-  const accounts: string[] = [];
-  const serviceAccounts: string[] = [];
-  for (const raw of identities) {
-    const identity = raw.trim();
-    const key = identity.toLowerCase();
-    if (!identity || seen.has(key)) continue;
-    seen.add(key);
-    (isServiceAccountIdentity(identity) ? serviceAccounts : accounts).push(identity);
-  }
-  return { accounts, serviceAccounts };
-}
-
-/** Two names, then a count: a card's foot never prints a whole list. */
-export function compactAccounts(accounts: readonly string[], shown = 2): string {
-  const head = accounts.slice(0, shown).join(", ");
-  return accounts.length > shown ? `${head} +${accounts.length - shown}` : head;
-}
-
 export function savedAccountSummary(
   accounts: readonly { identity: string; status: string | null }[],
   loading: boolean,
@@ -142,12 +109,7 @@ export function savedAccountSummary(
   const unavailable = states.includes("unavailable");
   const attention = states.includes("needs_attention");
   const connected = states.includes("connected");
-  const { accounts: own, serviceAccounts } = personAccounts(
-    accounts.map((account) => account.identity),
-  );
   return {
-    accounts: own,
-    serviceAccounts,
     saved: accounts.length > 0,
     connected: !loading && !failed && connected,
     attention: !loading && !failed && !unknown && !unavailable && attention,
@@ -167,7 +129,10 @@ export function savedAccountSummary(
                 : accounts.length > 0
                   ? "Disconnected"
                   : "Not connected",
-    accountSummary: compactAccounts(own),
+    accountSummary: accounts
+      .map((account) => account.identity)
+      .filter(Boolean)
+      .join(", "),
   };
 }
 

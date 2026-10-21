@@ -15,7 +15,7 @@ explicitly rejected: no legacy crawler data will be migrated.
 ### 1. Permanent route namespace
 
 **Context:** The system now includes sites, shared analysis definitions,
-connections, batches, findings, and cross-brand cost reporting. It is broader
+connections, batches, findings, and cross-client cost reporting. It is broader
 than a website list.
 
 **Question:** Should the permanent product root be `/marketing/sites` rather
@@ -157,9 +157,9 @@ schedule, but keep site-specific crawl configuration and run history in `web`.
 
 ### 12. Component organization ownership
 
-**Context:** A brand's organization may edit a site shared from another
+**Context:** A client organization may edit a site shared from another
 organization. If component triggers stamp the editor's active organization,
-child rows and cost-by-brand reporting can disagree with the owning site.
+child rows and cost-by-client reporting can disagree with the owning site.
 
 **Question:** Must every site component copy/validate
 `organization_id = site.organization_id`, regardless of the editor's active

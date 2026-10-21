@@ -295,31 +295,15 @@ function SwitchField({
   inputId,
   labelId,
 }: KnobFieldControlProps) {
-  // OPTIMISTIC FLIP (every switch setting): the thumb moves on the press and the
-  // save follows. The row's write toasts its own refusal and answers `false`
-  // (or throws); either puts the switch back on the saved value.
-  const [optimistic, setOptimistic] = useState<boolean | null>(null);
-  const saved = ladder.value === true;
-  useEffect(() => {
-    if (optimistic !== null && optimistic === saved) setOptimistic(null);
-  }, [optimistic, saved]);
   return (
     <div className="flex h-9 items-center">
       <Switch
         id={inputId}
         aria-label={labelId ? undefined : knob.label}
         aria-labelledby={labelId}
-        checked={optimistic ?? saved}
+        checked={ladder.value === true}
         disabled={disabled}
-        onCheckedChange={(next) => {
-          setOptimistic(next);
-          void Promise.resolve(onCommit(next)).then(
-            (ok) => {
-              if (ok === false) setOptimistic(null);
-            },
-            () => setOptimistic(null),
-          );
-        }}
+        onCheckedChange={(next) => void onCommit(next)}
       />
     </div>
   );

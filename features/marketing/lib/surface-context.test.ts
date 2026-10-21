@@ -187,7 +187,7 @@ const FULL_PROFILE: Json = {
   competitors: ["ERI", { name: "Sims Lifecycle", domain: "simslifecycle.com", handles: ["@sims"] }],
   target_keywords: ["e-waste recycling los angeles"],
   content_guidelines: "Cite certifications; never promise \"free\" pickup",
-  notes: "Brand prefers <quarterly> case studies",
+  notes: "Client prefers <quarterly> case studies",
 };
 
 // ---------------------------------------------------------------------------
@@ -279,7 +279,7 @@ describe("buildBrandContextXml", () => {
     expect(xml).toContain(
       "<value_props><item>Certified destruction</item><item>Same-week pickup</item></value_props>",
     );
-    expect(xml).toContain("<notes>Brand prefers &lt;quarterly&gt; case studies</notes>");
+    expect(xml).toContain("<notes>Client prefers &lt;quarterly&gt; case studies</notes>");
     // Competitors render by name whatever their stored shape; retired profile.offerings never renders.
     expect(xml).toContain("<competitors><item>ERI</item><item>Sims Lifecycle</item></competitors>");
     expect(xml).not.toContain("<offerings>");

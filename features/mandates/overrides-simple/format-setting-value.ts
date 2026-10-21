@@ -1,0 +1,57 @@
+// features/mandates/overrides-simple/format-setting-value.ts
+//
+// One plain, read-only rendering of a model setting's value — what a row shows
+// when it is NOT overridden. The editor (`SettingControlInput`) only appears
+// once the person chooses to override that row.
+
+import type { ControlDefinition } from "@ai-matrx/chat/agents/redux/agent-settings/types";
+import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
+
+/** `{ type: "json_object" }` → `"json_object"` (the response_format shape). */
+function flattenTypeObject(value: unknown): unknown {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    "type" in value &&
+    Object.keys(value).length === 1
+  ) {
+    return (value as { type: unknown }).type;
+  }
+  return value;
+}
+
+export function formatSettingValue(
+  value: unknown,
+  control: ControlDefinition | null,
+): string {
+  const flat = flattenTypeObject(value);
+  if (flat === undefined || flat === null || flat === "") return "Not set";
+  if (typeof flat === "boolean") return flat ? "On" : "Off";
+  if (control?.type === "enum" && typeof flat === "string") {
+    return humanizeIdentifier(flat);
+  }
+  if (typeof flat === "number") return flat.toLocaleString();
+  if (typeof flat === "string") return flat;
+  if (Array.isArray(flat)) {
+    if (flat.length === 0) return "None";
+    if (flat.every((item) => typeof item === "string")) return flat.join(", ");
+  }
+  const json = JSON.stringify(flat);
+  return json.length > 80 ? `${json.slice(0, 77)}…` : json;
+}
+
+/**
+ * What a row says the AGENT sets. When the agent leaves a setting unset, the
+ * model's own default applies — and that number is the model's, not the
+ * agent's, so it is never printed as if the agent had chosen it.
+ */
+export function agentSettingDisplay(
+  agentValue: unknown,
+  control: ControlDefinition | null,
+): { text: string; modelDefault: boolean } {
+  if (agentValue === undefined || agentValue === null) {
+    return { text: "Model default", modelDefault: true };
+  }
+  return { text: formatSettingValue(agentValue, control), modelDefault: false };
+}

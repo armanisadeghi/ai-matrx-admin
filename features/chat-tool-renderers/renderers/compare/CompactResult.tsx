@@ -26,8 +26,6 @@ export function CompactResult({ result, runId }: { result: ComparisonResult; run
     .sort((a, b) => Number(b.is_primary) - Number(a.is_primary))
     .slice(0, FIELDS_SHOWN);
   const leader = verdict.leader;
-  // An item the run could not read says so, by name: never only "Nothing to compare yet".
-  const unread = result.items.filter((i) => i.error);
 
   return (
     <div className="space-y-3 px-3 py-3" data-compare-result="">
@@ -77,16 +75,6 @@ export function CompactResult({ result, runId }: { result: ComparisonResult; run
             </div>
           ))}
         </div>
-      ) : null}
-
-      {unread.length > 0 ? (
-        <ul className="space-y-1" data-compare-unread="">
-          {unread.map((it) => (
-            <li key={it.item_id} className="type-secondary text-muted-foreground">
-              <span className="font-medium text-foreground">{it.name}</span> {it.error}
-            </li>
-          ))}
-        </ul>
       ) : null}
 
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-2">

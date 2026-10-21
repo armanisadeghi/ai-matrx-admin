@@ -252,12 +252,12 @@ function ChannelBindControl({
     boundTo: readonly string[],
   ): Promise<void> {
     // 🚨 THE CONSEQUENCE FIRST, NOT A GENERIC "ARE YOU SURE?" — this press is
-    // what makes every later refresh read and overwrite under THIS brand, on
+    // what makes every later refresh read and overwrite under THIS client, on
     // THIS account's quota, and a wrong pick is silent afterwards.
     const ok = await confirm({
-      title: `Bind ${candidate.title} to this brand`,
+      title: `Bind ${candidate.title} to this client`,
       description:
-        "Refreshes for this brand will read this channel and replace its stored numbers. Nothing is changed on YouTube.",
+        "Refreshes for this client will read this channel and replace its stored numbers. Nothing is changed on YouTube.",
       confirmLabel: `Bind ${candidate.title}`,
     });
     if (!ok) return;
@@ -277,7 +277,7 @@ function ChannelBindControl({
           channelId: candidate.channelId,
         }),
       });
-      toast.success(`${candidate.title} is now this brand's channel.`);
+      toast.success(`${candidate.title} is now this client's channel.`);
       onBound();
     } catch (error) {
       toast.error(extractErrorMessage(error));
@@ -310,7 +310,7 @@ function ChannelBindControl({
         />
       ) : elsewhere.isError ? (
         <InlineQueryError
-          what="the other brands' channel bindings"
+          what="the other clients' channel bindings"
           error={elsewhere.error}
           onRetry={() => void elsewhere.refetch()}
         />
@@ -321,7 +321,7 @@ function ChannelBindControl({
               variant="outline"
               onClick={() =>
                 openConnect({
-                  reason: "to read this brand's own YouTube channel",
+                  reason: "to read this client's own YouTube channel",
                 })
               }
             >
@@ -344,7 +344,7 @@ function ChannelBindControl({
                   {candidateIdentity(candidate)}
                 </p>
                 {boundTo.length > 0 ? (
-                  // Held by another brand: say so on the row, so the press
+                  // Held by another client: say so on the row, so the press
                   // is never read as adding this channel to this brand.
                   <p className="text-xs text-foreground">
                     {`Bound to ${boundTo.join(", ")}`}
@@ -530,10 +530,10 @@ export function BrandChannelPanel({ brandId, variant = "card" }: BrandChannelPan
       </div>
 
       {binding.isLoading ? (
-        <LoadingSurface label="Looking for this brand's YouTube channel…" />
+        <LoadingSurface label="Looking for this client's YouTube channel…" />
       ) : binding.isError ? (
         <InlineQueryError
-          what="this brand's YouTube channel binding"
+          what="this client's YouTube channel binding"
           error={binding.error}
           onRetry={() => void binding.refetch()}
         />

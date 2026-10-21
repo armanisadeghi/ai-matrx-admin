@@ -91,7 +91,7 @@ export function KeywordIntelligenceHub({
   brandId,
 }: {
   /**
-   * Scope the hub to one brand's websites (the agency-model brand workspace
+   * Scope the hub to one client's websites (the agency-model brand workspace
    * mounts it as the brand's SEO overview). Omitted, it lists every readable
    * site — the pre-restructure cross-portfolio behavior.
    */
@@ -115,7 +115,7 @@ export function KeywordIntelligenceHub({
         </h1>
         <p className="text-xs text-muted-foreground">
           {brandId
-            ? "Every screen that gives this brand's keywords meaning. Pick a website, then the job you came to do."
+            ? "Every screen that gives this client's keywords meaning. Pick a website, then the job you came to do."
             : "Every screen that gives your keywords meaning, for every website you run. Pick a website, then the job you came to do."}
         </p>
       </header>

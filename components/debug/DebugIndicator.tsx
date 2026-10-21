@@ -8,7 +8,6 @@ import type { DebugData } from "./SystemPromptDebugModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface DebugIndicatorProps {
   debugData: DebugData | null;
@@ -101,7 +100,13 @@ export const DebugIndicator: React.FC<DebugIndicatorProps> = ({
             >
               <ChevronRight size={16} className="rotate-180" />
             </button>
-            <ControlButton variant="quiet" removes onClick={onClose} aria-label="Close" icon={<X size={16} />} />
+            <button
+              onClick={onClose}
+              className="p-1 rounded hover:bg-destructive/20"
+              title="Close"
+            >
+              <X size={16} />
+            </button>
           </div>
         </div>
 

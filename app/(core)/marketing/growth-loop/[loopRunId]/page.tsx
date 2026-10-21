@@ -57,7 +57,7 @@ export default function GrowthLoopRunRedirect({
         error={loop.error}
         onRetry={() => void loop.refetch()}
         fallbackHref={marketingRoutes.brands()}
-        fallbackLabel="All brands"
+        fallbackLabel="All clients"
       />
     );
   }

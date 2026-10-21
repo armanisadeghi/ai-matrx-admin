@@ -25,7 +25,7 @@
  *
  * The path is ALWAYS the Press Room the person is standing in (`usePathname()`, i.e.
  * `/marketing/<brand>/pr`). The flat `/marketing/pr` is retired: it redirects to the
- * brand roster and drops the query, so a link built on it opened nothing (2026-10-05).
+ * client roster and drops the query, so a link built on it opened nothing (2026-10-05).
  * Guard: `__tests__/deep-links-land.test.tsx`.
  */
 

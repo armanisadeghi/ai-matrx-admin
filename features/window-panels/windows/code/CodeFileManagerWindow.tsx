@@ -18,7 +18,6 @@
  * All state + actions flow through useCodeFileManager. Redux owns persistence.
  */
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   TreeDisclosure,
   TreeFolderIcon,
@@ -326,18 +325,18 @@ export function CodeFileManagerWindow({
         >
           Open
         </button>
-        <ControlButton
+        <button
           type="button"
-          variant="danger"
           onClick={() =>
             setConfirmDelete({
               kind: "selection",
               label: `${mgr.selectedFileIds.length} file(s)`,
             })
           }
+          className="px-2 py-0.5 text-[11px] rounded bg-rose-600 hover:bg-rose-700 text-white"
         >
           Delete
-        </ControlButton>
+        </button>
         <button
           type="button"
           onClick={mgr.clearFileSelection}

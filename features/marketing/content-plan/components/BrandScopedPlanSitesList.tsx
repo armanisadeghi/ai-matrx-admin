@@ -5,7 +5,7 @@
  * scoped to the brand in context.
  *
  * Without this the list showed every site the viewer can plan across every org
- * and every brand, so one brand's Content Plan page listed another brand's
+ * and every client, so one client's Content Plan page listed another client's
  * websites and their plan coverage.
  *
  * The brand comes from `MarketingBrandProvider` (a real UUID), never from the

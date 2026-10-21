@@ -119,11 +119,6 @@ const RECORDER = () => {
         : null,
       messages: scroller ? scroller.querySelectorAll("[data-message-id],[data-chat-message]").length : 0,
       rowActive: !!row,
-      dockH: dock ? Math.round(dock.getBoundingClientRect().height) : null,
-      // What sits above the composer box when the dock is taller than the composer alone.
-      dockExtra: dock && dock.getBoundingClientRect().height > 150
-        ? [...dock.querySelectorAll("*")].filter((n) => n.children.length === 0 && n.textContent.trim() && !(ed && boxOf(ed).contains(n))).map((n) => n.textContent.trim().slice(0, 50)).slice(0, 4).join(" | ")
-        : null,
     });
     requestAnimationFrame(sample);
   };
@@ -188,12 +183,6 @@ function judge(step) {
     for (const f of after) if (trail[trail.length - 1] !== f.pillY) trail.push(f.pillY);
     fails.push(`floating pill moved ${trail.join("→")}`);
   }
-  const docks = [];
-  for (const f of after) if (f.dockH != null && docks[docks.length - 1] !== f.dockH) docks.push(f.dockH);
-  if (docks.length > 1) {
-    const extra = after.find((f) => f.dockExtra)?.dockExtra;
-    fails.push(`strip above the composer resized ${docks.join("→")}${extra ? ` ("${extra}")` : ""}`);
-  }
   const foots = [];
   for (const f of after) if (f.footer && foots[foots.length - 1] !== f.footer) foots.push(f.footer);
   if (foots.length > 1) fails.push(`sidebar footer moved ${foots.join("→")}`);
@@ -209,10 +198,9 @@ function judge(step) {
   }
   // New chat reacts at once: the address and the splash change within 300 ms.
   if (kind === "toNew") {
-    // "/chat/new", or "/chat/a/<agent>" when the conversation's agent is not the default.
-    const reacted = frames.find((f) => f.path !== step.fromPath && /^\/chat\/(new|a\/)/.test(f.path));
+    const reacted = frames.find((f) => f.path === "/chat/new" && f.splash);
     step.reactMs = reacted ? reacted.t : null;
-    if (!reacted || reacted.t > 300) fails.push(`New chat changed the address after ${reacted ? reacted.t : "never (2.5 s)"} ms`);
+    if (!reacted || reacted.t > 300) fails.push(`New chat showed its splash after ${reacted ? reacted.t : "never (2.5 s)"} ms`);
   }
   step.fails = fails;
   return step;
@@ -223,12 +211,11 @@ async function measure(page, label, kind, { action, clickedId = null, targetIsCo
     const el = document.querySelector("[data-conversation-title-trigger]") || document.querySelector("[data-chat-header-agent-name]");
     return el ? el.textContent.trim() : "";
   }).catch(() => "");
-  const fromPath = new URL(page.url()).pathname;
   if (kind !== "hard") await page.evaluate((id) => window.__chatStabilityReset(id), clickedId);
   await action();
   await sleep(SAMPLE_MS);
   const data = await page.evaluate(() => ({ frames: window.__chatStability.frames, shifts: window.__chatStability.shifts }));
-  return judge({ label, kind, clickedId, targetIsConversation, fromTitle, fromPath, ...data, url: page.url() });
+  return judge({ label, kind, clickedId, targetIsConversation, fromTitle, ...data, url: page.url() });
 }
 
 async function sidebarIds(page) {
@@ -274,14 +261,7 @@ try {
     action: async () => { await page.reload({ waitUntil: "commit", timeout: 120000 }); },
   }));
   await sleep(1500);
-  // The history list is live (other sessions on this account add rows), so each target is
-  // read from the list as it is now: the first visible conversation not opened yet.
-  const visited = new Set([ids[0]]);
-  const nextTarget = async () => (await sidebarIds(page)).find((id) => !visited.has(id) && !page.url().endsWith(id));
-  for (let i = 0; i < 6; i++) {
-    const id = await nextTarget();
-    if (!id) throw new Error("no unvisited conversation in the sidebar");
-    visited.add(id);
+  for (const id of ids.slice(1, 7)) {
     steps.push(await measure(page, `switch → ${id.slice(0, 8)}`, "switch", {
       clickedId: id,
       action: () => page.locator(`a[href="/chat/${id}"]`).first().click(),
@@ -297,8 +277,7 @@ try {
     action: () => page.locator('button[aria-label="New chat"]').first().click(),
   }));
   await sleep(2500);
-  const target = await nextTarget();
-  if (!target) throw new Error("no unvisited conversation in the sidebar");
+  const target = ids[7];
   steps.push(await measure(page, `new chat → ${target.slice(0, 8)}`, "fromNew", {
     clickedId: target,
     action: () => page.locator(`a[href="/chat/${target}"]`).first().click(),

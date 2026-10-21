@@ -40,7 +40,6 @@ import {
 } from "@/features/marketing/components/shared/MarketingUi";
 import { extractErrorMessage } from "@/utils/errors";
 import { cn } from "@/lib/utils";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 // THE NAMING LAW: canonical labels for every declared surface value + group —
 // section titles and field labels below render these byte-identically.
@@ -238,9 +237,14 @@ export function PageCapturesCard({ page }: { page: MarketingPage }) {
                           >
                             <PenLine className="h-3 w-3" />
                           </button>
-                          <ControlButton variant="quiet" removes type="button"
-                           
-                            onClick={() => setDeleting(capture)} aria-label="Delete capture" icon={<Trash2 />} />
+                          <button
+                            type="button"
+                            title="Delete capture"
+                            onClick={() => setDeleting(capture)}
+                            className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
                         </span>
                       </li>
                     ))}

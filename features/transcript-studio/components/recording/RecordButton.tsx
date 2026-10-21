@@ -1,7 +1,6 @@
 "use client";
 
 import { Mic, Square } from "lucide-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useStudioSession } from "../../hooks/useStudioSession";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
@@ -22,9 +21,8 @@ export function RecordButton({ sessionId, className }: RecordButtonProps) {
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <ControlButton
+      <button
         type="button"
-        variant={isRecording ? "danger" : "primary"}
         onClick={isRecording ? session.stop : session.start}
         disabled={blockedByOther}
         title={
@@ -34,19 +32,27 @@ export function RecordButton({ sessionId, className }: RecordButtonProps) {
               ? "Stop recording"
               : "Start recording"
         }
-        aria-label={isRecording ? "Stop recording" : "Start recording"}
-        icon={
-          isRecording ? (
-            <Square className="fill-current" />
-          ) : (
-            <Mic />
-          )
-        }
+        className={cn(
+          "inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-xs font-medium transition-colors",
+          isRecording
+            ? "bg-red-500 text-white hover:bg-red-600"
+            : blockedByOther
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:bg-primary/90",
+        )}
       >
-        <span className="hidden sm:inline">
-          {isRecording ? "Stop" : "Record"}
-        </span>
-      </ControlButton>
+        {isRecording ? (
+          <>
+            <Square className="h-3 w-3 fill-current" />
+            <span className="hidden sm:inline">Stop</span>
+          </>
+        ) : (
+          <>
+            <Mic className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Record</span>
+          </>
+        )}
+      </button>
       {isRecording && (
         <div className="flex items-center gap-1.5 rounded-full bg-red-500/10 px-2 py-0.5 text-[11px]">
           <span className="font-mono tabular-nums text-red-600 dark:text-red-400">

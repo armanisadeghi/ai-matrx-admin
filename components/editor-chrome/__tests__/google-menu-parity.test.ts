@@ -73,13 +73,13 @@ describe("Page setup is a real row, never a promise", () => {
     expect(pageSetup(product, false)).toBeUndefined();
   });
   it("the old promises are gone from the Coming Soon registry", () => {
-    for (const id of ["workbooks.page-setup", "presentations.page-setup", "editor.file.page-setup", "workbooks.settings"]) expect(getComingSoon(id)).toBeUndefined();
+    for (const id of ["workbooks.page-setup", "presentations.page-setup", "editor.file.page-setup"]) expect(getComingSoon(id)).toBeUndefined();
   });
 });
 
 describe("Google File menu", () => {
   const handlers = { share: () => {}, copy: () => {}, rename: () => {}, move: () => {}, trash: () => {}, saveAsTemplate: () => {}, download: () => {}, navigate: () => {} };
-  const rows: EditorMenuEntry[] = ["file.new", "file.open", "file.import", "file.history", "file.print", "file.details", "file.settings", "file.page-setup"].map((id) => ({
+  const rows: EditorMenuEntry[] = ["file.new", "file.open", "file.import", "file.history", "file.print", "file.details", "file.page-setup"].map((id) => ({
     kind: "action",
     id,
     label: id,
@@ -92,14 +92,10 @@ describe("Google File menu", () => {
       "Share", "Email", "Download", "Approvals", "|",
       "Rename", "Move", "Move to trash", "|",
       "Version history", "Make available offline", "|",
-      "file.details", "Security limitations", "file.settings", "file.page-setup", "|",
+      "file.details", "Security limitations", "Settings", "file.page-setup", "|",
       "file.print",
     ]);
     for (const a of flattenMenus([{ id: "file", label: "File", items: menu }]).filter((r) => r.soon)) expect(getComingSoon(a.soon!)).toBeDefined();
-  });
-  it("Sheets without a Settings row shows none (its promise was retired when Settings was built; no stand-in)", () => {
-    const menu = buildEditorFileMenu({ product: "sheets", rows: rows.filter((r) => r.id !== "file.settings"), templatesHref: "/t", downloads: [] }, handlers);
-    expect(labels(menu)).not.toContain("Settings");
   });
   it("Slides: Import slides, Language and Page setup in Google's places; no owner rows without rights", () => {
     const menu = buildEditorFileMenu(

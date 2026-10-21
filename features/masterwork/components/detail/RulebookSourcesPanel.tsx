@@ -105,7 +105,6 @@ import { useLaunchGate } from "@/lib/launch-gate/useLaunchGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /**
  * The registered source→rulebook pairs live in ONE place — `../../sourceLinks`
@@ -1708,9 +1707,14 @@ export function SourceRows({
             </div>
           </div>
           {canEdit ? (
-            <ControlButton variant="quiet" removes type="button"
-             
-              onClick={() => onRemoveUrl(staged.url)} className="shrink-0" aria-label="Remove this link" icon={<X />} />
+            <button
+              type="button"
+              title="Remove this link"
+              onClick={() => onRemoveUrl(staged.url)}
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive-ink"
+            >
+              <X className="size-3.5" />
+            </button>
           ) : null}
           </div>
           <SectionYields
@@ -1797,10 +1801,15 @@ function FailedUploadRow({
                 "Retry"
               )}
             </Button>
-            <ControlButton variant="quiet" removes type="button"
-             
+            <button
+              type="button"
+              title="Dismiss this failed upload"
               disabled={retrying}
-              onClick={() => onDismiss?.()} className="shrink-0" aria-label="Dismiss this failed upload" icon={<X />} />
+              onClick={() => onDismiss?.()}
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive-ink disabled:opacity-50"
+            >
+              <X className="size-3.5" />
+            </button>
           </div>
         ) : null}
       </div>

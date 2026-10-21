@@ -1,4 +1,4 @@
-// The cross-brand cost roll-up — an AGENCY-plane report (it concerns no
+// The cross-client cost roll-up — an AGENCY-plane report (it concerns no
 // single brand), moved here from the flat `/marketing/cost` in the 2026-08-28
 // agency restructure. `/marketing/cost` is now a 308 shim onto this route.
 

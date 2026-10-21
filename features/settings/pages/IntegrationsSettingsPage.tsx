@@ -128,7 +128,7 @@ import { IntegrationDirectory } from "@/features/connectors/IntegrationDirectory
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { AbilitySections } from "@/features/connectors/AbilitySections";
-import { describeForViewer, memberDescription } from "@/features/connectors/member-description";
+import { describeForViewer } from "@/features/connectors/member-description";
 import { foldAbilities } from "@/features/connectors/provider-folds";
 import { useSettingsTabNavigate } from "@/features/settings/components/SettingsPresentationContext";
 import {
@@ -855,10 +855,8 @@ export function IntegrationsWorkspace({
             entry.slug === "google-workspace"
               ? `${entry.name} · local tools`
               : entry.name,
-          // A card is layout, not prose: the setup notes a catalog row carries stay on the
-          // admin-only expanded row, never on the card.
-          description: memberDescription(entry.name),
-          vendor: entry.vendor,
+          description: describeForViewer(entry, showInternalNotes),
+          vendor: `${entry.vendor} · Agent tools`,
           category: entry.category,
           // The products the catalog stores for this connector (Outlook, Teams, Jira …): the same
           // data the chat's + menu searches.
@@ -866,7 +864,7 @@ export function IntegrationsWorkspace({
           artwork: {
             id: entry.slug,
             name: entry.name,
-            blurb: memberDescription(entry.name),
+            blurb: describeForViewer(entry, showInternalNotes),
             surfaces: ["directory"],
             iconUrl: artwork[0],
             fallbackIconUrls: artwork.slice(1),
@@ -1094,18 +1092,6 @@ export function IntegrationsWorkspace({
           <ChatConnectorSwitchRow conversationId={chatConversationId} target={chatTarget} />
         ) : null}
         {renderDetailBody(item)}
-        {showInternalNotes && item.serviceAccounts?.length ? (
-          <details className="rounded-lg border border-border px-3 py-2 text-xs">
-            <summary className="cursor-pointer font-medium text-muted-foreground">
-              Advanced
-            </summary>
-            <ul className="mt-2 space-y-1 break-all font-mono text-muted-foreground">
-              {item.serviceAccounts.map((account) => (
-                <li key={account}>{account}</li>
-              ))}
-            </ul>
-          </details>
-        ) : null}
       </div>
     );
   };

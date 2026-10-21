@@ -17,13 +17,10 @@ export function RunCheckButton({
   brandId,
   organizationId,
   disabled,
-  className,
 }: {
   brandId: string;
   organizationId: string;
   disabled?: boolean;
-  /** Placement only (e.g. full width in a grid of actions). */
-  className?: string;
 }) {
   const estimate = useBrandCheckEstimate(brandId, organizationId);
   const run = useRunBrandCheck(brandId, organizationId);
@@ -51,7 +48,7 @@ export function RunCheckButton({
   };
 
   return (
-    <Button variant="outline" onClick={onRun} disabled={blocked} className={className}>
+    <Button variant="outline" onClick={onRun} disabled={blocked}>
       {run.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radar className="h-3.5 w-3.5" />}
       {run.isPending ? "Checking" : "Run check"}
     </Button>

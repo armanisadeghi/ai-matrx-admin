@@ -4,8 +4,8 @@
  * The brand workspace's Initiatives list — the canonical `InitiativesListPage`,
  * opened pre-filtered to the brand in context.
  *
- * Without this the org-scoped list opened on "All brands", so one brand's
- * Planning page showed every other brand's goals, timelines and budgets.
+ * Without this the org-scoped list opened on "All brands", so one client's
+ * Planning page showed every other client's goals, timelines and budgets.
  *
  * The brand comes from `MarketingBrandProvider` (a real UUID + name), never
  * from the route param — the param is an address and is usually a key.

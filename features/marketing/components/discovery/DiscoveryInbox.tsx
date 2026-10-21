@@ -1157,7 +1157,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
       }}
     >
       {/* No RouteHeader — the [brandId] layout's breadcrumb trail is the
-          header for the whole brand tree (Arman, 2026-08-30). */}
+          header for the whole client tree (Arman, 2026-08-30). */}
       <main className="h-full overflow-y-auto bg-textured p-3 pt-[calc(var(--shell-header-h)+0.5rem)] sm:p-4 sm:pt-[calc(var(--shell-header-h)+0.75rem)]">
         <div className="grid w-full gap-3">
           {(offeringCount.data ?? 0) > 0 ? (

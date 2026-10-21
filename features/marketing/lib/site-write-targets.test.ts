@@ -1,6 +1,6 @@
 /**
  * The `site_editor_draft` target stages authored copy into ONE row of a
- * portfolio that can hold dozens of brand websites. The failures these tests
+ * portfolio that can hold dozens of client websites. The failures these tests
  * exist to prevent are landing the copy on the WRONG website, and letting a
  * JSON-shaped value through into a prose field.
  */

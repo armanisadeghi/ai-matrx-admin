@@ -7,7 +7,7 @@
  */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { curatedList, fetchCuratedModels, type CuratedCatalogClient } from "@ai-matrx/agents/models";
+import { catalogKindOf, curatedList, fetchCuratedModels, type CuratedCatalogClient } from "@ai-matrx/agents/models";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -28,7 +28,7 @@ jest.mock("@/lib/api/post-json-as-user", () => ({
   },
 }));
 
-import { UnifiedModelKindTable, kindOfModel } from "../UnifiedModelKindTable";
+import { UnifiedModelKindTable } from "../UnifiedModelKindTable";
 import { listingEditOf } from "../ModelListingEditor";
 
 const tables: Record<string, Record<string, unknown>[]> = {
@@ -89,7 +89,7 @@ describe("Catalogs model kinds are the one catalog", () => {
     const { host, root } = await mount();
     const shown = names(host);
     const all = await fetchCuratedModels(client);
-    const llm = (offeredOnly: boolean) => curatedList(all, { offeredOnly }).filter((m) => kindOfModel(m, new Map(entries.map((e) => [e.id, e.kind]))) === "llm_model");
+    const llm = (offeredOnly: boolean) => curatedList(all, { offeredOnly }).filter((m) => catalogKindOf(m, new Map(entries.map((e) => [e.id, e.kind]))) === "llm_model");
     const expected = llm(false).map((m) => m.common_name!);
     // Same members and order as the shared list (Beta first by display_order 0, then Zeta, Mid, Alpha unordered).
     expect(shown.map((t) => expected.find((n) => t.includes(n)))).toEqual(expected);

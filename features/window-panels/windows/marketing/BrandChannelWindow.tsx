@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * BrandChannelWindow — one brand's owned YouTube channel beside whatever the
+ * BrandChannelWindow — one client's owned YouTube channel beside whatever the
  * reader was already looking at.
  *
  * The window is the FRAME only: it wraps the canonical `BrandChannelPanel`,

@@ -26,7 +26,6 @@ import {
 import { MetadataPanel } from "./MetadataPanel";
 import { MousePointerClick } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface StudioFileCardProps {
     file: StudioSourceFile;
@@ -264,30 +263,34 @@ export function StudioFileCard({
                         </button>
                     )}
                     {onDescribe && (
-                        <ControlButton
+                        <button
                             type="button"
-                            variant={file.imageMetadata ? "success" : "outline"}
                             onClick={onDescribe}
                             disabled={isDescribing}
+                            className={cn(
+                                "h-7 rounded-md border px-2 text-[11px] font-medium flex items-center gap-1 transition-colors",
+                                file.imageMetadata
+                                    ? "border-success/40 bg-success/10 text-success-ink hover:bg-success/15"
+                                    : "border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-foreground",
+                                isDescribing && "cursor-wait opacity-70",
+                            )}
                             title={
                                 file.imageMetadata
                                     ? "Re-describe with AI"
                                     : "Generate filename + alt text + caption + SEO + colors"
                             }
-                            icon={
-                                isDescribing ? (
-                                    <Loader2 className="animate-spin" />
-                                ) : (
-                                    <MousePointerClick />
-                                )
-                            }
                         >
+                            {isDescribing ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                                <MousePointerClick className="h-3 w-3" />
+                            )}
                             {isDescribing
                                 ? "Describing"
                                 : file.imageMetadata
                                   ? "Described"
                                   : "Describe"}
-                        </ControlButton>
+                        </button>
                     )}
                     <button
                         type="button"
@@ -301,8 +304,14 @@ export function StudioFileCard({
                             <ChevronUp className="h-4 w-4" />
                         )}
                     </button>
-                    <ControlButton variant="quiet" removes type="button"
-                        onClick={onRemove} aria-label="Remove this file" icon={<Trash2 />} />
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        className="h-8 w-8 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink flex items-center justify-center"
+                        title="Remove this file"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </button>
                 </div>
             </header>
 

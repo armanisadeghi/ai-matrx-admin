@@ -1,5 +1,5 @@
 // record-view: none — a sub-view (outreach) inside a record or scope, not the record page; the record's own page carries the section
-// The Outreach front door for one brand — link and PR prospecting doors with
+// The Outreach front door for one client — link and PR prospecting doors with
 // live counts into the CRM (which owns contact machinery) and the sites'
 // backlink prospecting.
 //
@@ -10,8 +10,8 @@
 // media-lists, outreach} shape.
 //
 // Brand-scoped 2026-08-30: `BrandScopedOutreach` binds the canonical door to
-// `useMarketingBrand()`, so prospecting sees only this brand's websites and
-// the mailbox count only this brand's organization. The CRM doors that carry
+// `useMarketingBrand()`, so prospecting sees only this client's websites and
+// the mailbox count only this client's organization. The CRM doors that carry
 // no brand link in the data model stay org-wide and say so on the page — a
 // filter we cannot apply is never faked.
 

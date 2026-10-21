@@ -1,6 +1,6 @@
 /**
  * Drift guard: every coming-soon surface Marketing declares — agency pillar
- * entries, public tool categories, AND the brand-workspace declarations in
+ * entries, public tool categories, AND the client-workspace declarations in
  * brand-sections.ts — must have its promise registered in
  * lib/coming-soon/registry.ts, and every marketing-owned registry row must be
  * rendered somewhere in those declarations. `MarketingComingSoon` throws at

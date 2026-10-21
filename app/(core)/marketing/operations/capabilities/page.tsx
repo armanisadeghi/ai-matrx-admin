@@ -1,10 +1,10 @@
-// The cross-brand SEO Capabilities catalog — the site-less inventory and
+// The cross-client SEO Capabilities catalog — the site-less inventory and
 // control surface the old flat `/marketing/capabilities` served (its website
 // selector lives inside `SeoCapabilitiesWorkspace`). Restored 2026-08-30 after
 // the agency-model restructure's smart shim dropped the no-`?site=` mode
 // (adversarial audit finding). Per-site capability pages stay canonical at
 // `/marketing/[brandId]/seo/[siteId]/capabilities` — same component, bound;
-// this page is the Operations plane's control-surface door across every brand.
+// this page is the Operations plane's control-surface door across every client.
 
 import { Suspense } from "react";
 

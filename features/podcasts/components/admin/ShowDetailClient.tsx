@@ -44,7 +44,6 @@ import { pushAppHref, replaceAppHref } from "@/lib/deployment/navigate";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { copyToClipboard } from "@/lib/clipboard/copy";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /** An episode length reads at a glance: "45 min" / "1h 30m". */
 function formatDuration(seconds: number): string {
@@ -382,10 +381,16 @@ export function ShowDetailClient({ showId }: ShowDetailClientProps) {
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
-                      <ControlButton variant="quiet" removes onClick={(e) => {
+                      <button
+                        onClick={(e) => {
                           e.stopPropagation();
                           setPendingDeleteEpId(ep.id);
-                        }} aria-label="Delete" icon={<Trash2 />} />
+                        }}
+                        className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}

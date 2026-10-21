@@ -3,7 +3,7 @@ import { MarketingWorkspaceNav } from "@/features/marketing/components/shared/Ma
 import { SocialReportsSection } from "@/features/marketing/social/components/SocialReportsSection";
 
 /**
- * The agency-plane social roll-up: every brand's tracked accounts and recent
+ * The agency-plane social roll-up: every client's tracked accounts and recent
  * outliers. The ONE cross-brand social place (it used to be a card at the foot
  * of Reports); a brand's own social work lives at /marketing/[brand]/socials.
  */

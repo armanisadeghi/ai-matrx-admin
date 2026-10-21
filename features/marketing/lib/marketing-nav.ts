@@ -1,11 +1,11 @@
 /**
- * The Marketing hub's cross-brand structure, declared ONCE.
+ * The Marketing hub's AGENCY-PLANE structure, declared ONCE.
  *
- * A person or team works on one or more brands - usually their own (2026-08-28
+ * The user is an agency; a brand is one of their clients (2026-08-28
  * agency-model restructure — docs/handoffs/marketing-agency-restructure.md).
- * These pillars are ONLY what concerns no single brand: the roster,
- * cross-brand roll-ups, operations, and generic tools. Everything else lives
- * in the brand workspace (`/marketing/[brandId]/…`, declared in
+ * These pillars are ONLY what concerns no single client: the roster,
+ * cross-client roll-ups, operations, and generic tools. Everything else lives
+ * in the client workspace (`/marketing/[brandId]/…`, declared in
  * `lib/brand-sections.ts`). Anything that renders a map of Marketing (the
  * `/marketing` hub, `/marketing/tools`, the shell nav) reads this file so a
  * new surface can never be added to one menu and missed by the others.
@@ -344,13 +344,13 @@ export const MARKETING_PUBLIC_TOOLS: readonly MarketingNavEntry[] =
 
 export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
   {
-    key: "brands",
-    label: "Brands",
+    key: "clients",
+    label: "Clients & Brands",
     description:
-      "Every brand you manage. Open a brand for its whole workspace — identity, websites, socials, locations, SEO, content, email, PR, ads, intelligence, and planning.",
+      "Every client you manage. Open a brand for its whole workspace — identity, websites, socials, locations, SEO, content, email, PR, ads, intelligence, and planning.",
     iconName: "Landmark",
     landingItems: [
-      "One workspace per brand",
+      "One workspace per client brand",
       "Identity: assets, guides, offerings",
       "Websites, socials, and locations",
       "SEO, content, email, PR, and ads",
@@ -361,7 +361,7 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
         label: "Brands",
         href: marketingRoutes.brands(),
         description:
-          "The brands list. Everything about one brand lives inside its workspace.",
+          "The client roster. Everything about one client lives inside its brand.",
         iconName: "Landmark",
       },
     ],
@@ -370,21 +370,21 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
     key: "reports",
     label: "Reports & Roll-ups",
     description:
-      "Cross-brand measurement — the numbers that span every brand you manage.",
+      "Cross-client measurement — the numbers that span every brand you manage.",
     iconName: "FileBarChart",
     landingItems: [
-      "ready-to-send reports",
-      "Cross-brand rank roll-up",
+      "Client-ready reports",
+      "Cross-client rank roll-up",
       "Provider cost against ceilings",
       "Cross-channel analytics",
-      "Cross-brand social roll-up",
+      "Cross-client social roll-up",
     ],
     entries: [
       {
         label: "Reports",
         href: marketingRoutes.reports(),
         description:
-          "Scheduled, branded, ready-to-send reports assembled from live marketing data.",
+          "Scheduled, branded, client-ready reports assembled from live marketing data.",
         iconName: "FileBarChart",
       },
       {
@@ -398,14 +398,14 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
         label: "Search Console",
         href: marketingRoutes.searchConsoleRollup(),
         description:
-          "The full Search Console dataset across every brand — pick a property and drill in.",
+          "The full Search Console dataset across every client — pick a property and drill in.",
         iconName: "SearchCheck",
       },
       {
         label: "Social",
         href: marketingRoutes.social(),
         description:
-          "Every tracked social account and recent outlier across your brands, in one place.",
+          "Every tracked social account and recent outlier across all your clients, in one place.",
         iconName: "Share2",
       },
       {
@@ -449,7 +449,7 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
         label: "Approvals",
         href: marketingRoutes.approvals(),
         description:
-          "Every pending AI proposal across your brands, in one review queue.",
+          "Every pending AI proposal across your clients, in one review queue.",
         iconName: "BadgeCheck",
       },
       {
@@ -472,7 +472,7 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
     key: "tools",
     label: "SEO Tools & Research",
     description:
-      "Focused analyzers and research that work on any URL — no brand setup required.",
+      "Focused analyzers and research that work on any URL — no client setup required.",
     iconName: "Wrench",
     landingItems: [
       "Meta title + description",

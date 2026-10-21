@@ -56,8 +56,10 @@ function formatSwapValue(value: unknown): string {
 
 const INSTANCE_KEY = "model-replace-review";
 
-// What these overrides cover is said by the dialog's own description above the panel.
 const REPLACE_WORDS = {
+  heading: "Replacement settings",
+  scopeNote:
+    "Each agent keeps its own settings. Only values you change here are written onto every agent.",
   noModelNote: "No replacement model selected.",
   baselineSourceLabel: "Replacement model",
   baselineDefaultLabel: "Model default",

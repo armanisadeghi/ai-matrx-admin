@@ -58,7 +58,7 @@ import {
 } from "@/features/agents/redux/agent-builder.slice";
 import { selectAllModels, selectModelFullyLoaded } from "@ai-matrx/agents/models";
 import { getModelRecords, useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
-import { useModelCatalog } from "@ai-matrx/agents/models/react";
+import { ModelListDropdown, useModelCatalog } from "@ai-matrx/agents/models/react";
 import { withOfferingPin } from "@/features/ai-models/utils/offering-pin";
 import type {
   LLMParams,
@@ -78,9 +78,11 @@ import {
 } from "./reconciliation/analyze";
 import { ModelChangeReconciliation } from "./reconciliation/ModelChangeReconciliation";
 import {
+  ExtraSettingRow,
   ModelSettingsPanel,
   SettingRowFrame,
   SettingRowLabel,
+  SettingsGroupSection,
 } from "@ai-matrx/agents/settings/react";
 import { agentCapabilitiesTarget, agentSettingsTarget } from "./agent-settings-target";
 import { SettingsJsonEditor } from "./json/SettingsJsonEditor";
@@ -896,7 +898,7 @@ export function AgentSettingsCore({
 
   // Settings need the model's full controls blob. The registry may only hold
   // lightweight options (or nothing) until explicitly fetched — same pattern as
-  // the chat's ConversationModelSettings and the canonical model picker.
+  // RunConfigOverrides and the canonical model picker in the builder.
   useEffect(() => {
     getModelRecords().loadOptions();
   }, [dispatch]);
@@ -980,8 +982,11 @@ export function AgentSettingsCore({
   });
   const allIssues = validation.issues;
   // A set value the model does not carry natively is KEPT — the server
-  // translates it (settings-translation K7). THE panel draws it under
-  // "Translated for this model" (`extraSettingKeys`), never as a warning.
+  // translates it (settings-translation K7). It renders under "Translated for
+  // this model", never as a warning to fix.
+  const translatedIssues = allIssues.filter(
+    (i) => i.category === "unsupported_by_model",
+  );
   const warningIssues = allIssues.filter(
     (i) => i.category !== "unsupported_by_model",
   );
@@ -1441,12 +1446,15 @@ export function AgentSettingsCore({
               values={currentSettings as Record<string, unknown>}
               target={target}
               idPrefix={`agent-${agentId}`}
-              model={{
-                value: modelId,
-                change: handleModelChange,
-                pinnedOfferingId: settings?.offering_id,
-                changePin: handleOfferingPinChange,
-              }}
+              model={
+                <ModelListDropdown
+                  value={modelId}
+                  onValueChange={handleModelChange}
+                  inputModalities={[]}
+                  pinnedOfferingId={settings?.offering_id}
+                  onOfferingPinChange={handleOfferingPinChange}
+                />
+              }
               emptyNote={noControls && !error ? "Select a model to see available settings." : undefined}
               renderRow={renderVoiceRow}
               capabilities={capabilities}
@@ -1465,6 +1473,22 @@ export function AgentSettingsCore({
                       fixableCount={fixableIssues.length}
                       unknownCount={unknownIssues.length}
                     />
+                  )}
+                  {!noControls && translatedIssues.length > 0 && (
+                    <SettingsGroupSection id="translated" title="Translated for this model">
+                      <div data-translated-settings>
+                        {translatedIssues.map((issue) => (
+                          <ExtraSettingRow
+                            key={issue.key}
+                            rowKey={issue.key}
+                            label={humanizeIdentifier(issue.key)}
+                            value={issue.value}
+                            kind="translated"
+                            onClear={() => target.clear(issue.key)}
+                          />
+                        ))}
+                      </div>
+                    </SettingsGroupSection>
                   )}
                   {/* Gentle, non-blocking reminder: json_schema selected but no
                       usable output schema yet. Whole banner links to the tab. */}

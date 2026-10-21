@@ -36,7 +36,7 @@ const ROUTES = [
   ["/marketing/tools", "Tl"],
   ["/marketing/tools/youtube", "Yt"],
   ["/marketing/tools/youtube/videos/video-1", "Yv"],
-  // The brand workspace
+  // The client workspace
   [B, "Bo"],
   [`${B}/identity`, "Id"],
   [`${B}/identity/media`, "Ba"],

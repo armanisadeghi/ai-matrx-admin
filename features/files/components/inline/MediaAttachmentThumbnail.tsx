@@ -6,7 +6,6 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 import type { MediaRef } from "@/features/files/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 function isOwnedFileReference(ref: MediaRef | string | null | undefined) {
   if (!ref) return false;
@@ -103,18 +102,23 @@ export function MediaAttachmentThumbnail({
         )}
       </button>
 
-      <ControlButton variant="quiet" removes type="button"
+      <button
+        type="button"
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
           onRemove();
         }}
-       
+        aria-label={removeLabel}
         // A small visible X in the corner; its TOUCH area extends outward
         // (up and right, off the image) instead of a 44px box over two thirds
         // of the thumbnail — page-pass 2026-09-27. The page's touch floor is
         // exempted here because the pseudo-element supplies the reach.
-        data-touch-exempt="" className="absolute z-10 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100 after:absolute" aria-label={removeLabel} icon={<X />} />
+        data-touch-exempt=""
+        className="absolute -right-1.5 -top-1.5 z-10 rounded-full bg-black/70 p-0.5 text-white opacity-0 transition-opacity hover:bg-destructive focus-visible:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100 after:absolute after:-right-3 after:-top-3 after:h-9 after:w-9 after:content-['']"
+      >
+        <X className="h-3 w-3" />
+      </button>
       <ErrorAlchemyMenu error={errorMessage} />
     </motion.div>
   );

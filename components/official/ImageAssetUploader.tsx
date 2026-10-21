@@ -59,7 +59,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
 import { extractErrorMessage } from "@/utils/errors";
 import { Button } from "@ai-matrx/design-system";
-import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -393,8 +393,14 @@ function PreviewBar({
             <Eye className="h-4 w-4" />
           </button>
         )}
-        <ControlButton variant="quiet" removes type="button"
-          onClick={onClear} aria-label="Remove image" icon={<Trash2 />} />
+        <button
+          type="button"
+          onClick={onClear}
+          title="Remove image"
+          className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
     </div>
   );
@@ -1117,8 +1123,14 @@ export function ImageAssetUploader({
                   <Eye className="h-4 w-4" />
                 </button>
               )}
-              <ControlButton variant="quiet" removes type="button"
-                onClick={remove} aria-label="Remove image" icon={<Trash2 />} />
+              <button
+                type="button"
+                onClick={remove}
+                title="Remove image"
+                className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive-ink transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           )}
         </div>

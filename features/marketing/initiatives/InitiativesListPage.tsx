@@ -16,9 +16,9 @@ export function InitiativesListPage({
 }: {
   /**
    * 🚨 BRAND SCOPE (2026-08-30). This list is ORG-scoped by design, and the
-   * brand route mounted it with nothing — so `/marketing/<brand>/planning/
-   * initiatives` opened on "All brands" and showed every OTHER brand's goals,
-   * timelines and budgets inside that brand's workspace. Mounted from a brand
+   * brand route mounted it with nothing — so `/marketing/<client>/planning/
+   * initiatives` opened on "All brands" and showed every OTHER client's goals,
+   * timelines and budgets inside that client's workspace. Mounted from a brand
    * it now opens pre-filtered to that brand. It stays a DEFAULT rather than a
    * hidden predicate: the facet still carries every brand's true count and the
    * user can widen it deliberately (THE DOOR LAW), which a silent SQL filter

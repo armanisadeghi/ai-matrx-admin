@@ -5,7 +5,7 @@
  *
  * The loop is CODE on the server (render → review → re-render, up to the org's
  * round knob); this dialog streams its milestones and shows the finished clip,
- * or says plainly that the brand is not in the article and no clip was made.
+ * or says plainly that the client is not in the article and no clip was made.
  * A finished clip lands in the brand's clips gallery.
  */
 
@@ -46,7 +46,7 @@ export function MakeClipDialog({
   siteId,
   organizationId,
   defaultUrl = "",
-  defaultBrandName = "",
+  defaultClientName = "",
   coverageMentionId = null,
   trigger,
 }: {
@@ -55,7 +55,7 @@ export function MakeClipDialog({
   organizationId: string;
   /** Set for a coverage mention (fixed); empty for a pasted link. */
   defaultUrl?: string;
-  defaultBrandName?: string;
+  defaultClientName?: string;
   coverageMentionId?: string | null;
   trigger?: ReactNode;
 }) {
@@ -63,13 +63,13 @@ export function MakeClipDialog({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [url, setUrl] = useState(defaultUrl);
-  const [brand, setBrand] = useState(defaultBrandName);
+  const [client, setClient] = useState(defaultClientName);
   const [stages, setStages] = useState<Stage[]>([]);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<MakeClipResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fixedUrl = Boolean(coverageMentionId && defaultUrl);
-  const brandName = brand.trim() || defaultBrandName;
+  const clientName = client.trim() || defaultClientName;
   const runKey = `clip:${siteId}:${coverageMentionId ?? "link"}`;
   useOpenIfRemembered(runKey, setOpen);
   const rejoin = useRejoinRun<MakeClipResult>(runKey, open && !running && !result);
@@ -79,7 +79,7 @@ export function MakeClipDialog({
       void queryClient.invalidateQueries({ queryKey: ["marketing", "press", "clips"] });
     }
   }, [rejoin.result, queryClient]);
-  const canRun = isHttpUrl(url) && brandName.length > 0 && !running && !rejoin.following;
+  const canRun = isHttpUrl(url) && clientName.length > 0 && !running && !rejoin.following;
 
   const reset = () => {
     rejoin.clear();
@@ -88,7 +88,7 @@ export function MakeClipDialog({
     setError(null);
     setRunning(false);
     setUrl(defaultUrl);
-    setBrand(defaultBrandName);
+    setClient(defaultClientName);
   };
 
   const run = async () => {
@@ -102,7 +102,7 @@ export function MakeClipDialog({
         dispatch,
         siteId,
         organizationId,
-        { url: url.trim(), client_name: brandName, coverage_mention_id: coverageMentionId },
+        { url: url.trim(), client_name: clientName, coverage_mention_id: coverageMentionId },
         {
           onStage: (stage) => setStages((prev) => [...prev, stage]),
           onRun: (runId) => rememberRun(runKey, runId),
@@ -157,11 +157,11 @@ export function MakeClipDialog({
             />
           </div>
           <div className="grid gap-1">
-            <Label htmlFor="clip-brand">Who the clip is for</Label>
+            <Label htmlFor="clip-client">Who the clip is for</Label>
             <Input
-              id="clip-brand"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
+              id="clip-client"
+              value={client}
+              onChange={(e) => setClient(e.target.value)}
               placeholder="The company named in the article"
               disabled={running}
             />

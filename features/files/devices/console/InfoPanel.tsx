@@ -23,7 +23,6 @@ import type { DeviceRow } from "../types";
 import type { ConsoleStatus } from "./connection";
 import { removeDevice } from "./remove-device";
 import { copyToClipboard } from "@/lib/clipboard/copy";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 function Row({ label, value, mono, copy }: { label: string; value: string; mono?: boolean; copy?: string }) {
   const [copied, setCopied] = useState(false);
@@ -114,8 +113,10 @@ export function InfoPanel({
         <Row label="Protocol" value={s?.protocol_version ?? relay?.protocol_version ?? dash} />
         <Row label="Device ID" value={device.id} mono copy={device.id} />
       </Group>
-      <ControlButton variant="quiet" removes type="button"
+      <button
+        type="button"
         disabled={removing}
+        className="mb-6 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-border bg-card text-[15px] font-medium text-destructive-ink hover:bg-destructive/5 disabled:opacity-50"
         onClick={async () => {
           const ok = await confirm({
             title: "Remove this computer?",
@@ -133,7 +134,11 @@ export function InfoPanel({
             toast.error("Could not remove it", { description: error instanceof Error ? error.message : String(error) });
             setRemoving(false);
           }
-        }} className="mb-6 w-full" icon={<Trash2 />}>Remove this computer</ControlButton>
+        }}
+      >
+        <Trash2 className="h-4 w-4" />
+        Remove this computer
+      </button>
     </div>
   );
 }

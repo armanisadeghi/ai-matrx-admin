@@ -2,23 +2,23 @@
   {
     "product": "Marketing",
     "family": "Business",
-    "summary": "A brand workspace: pick a brand, then work on its websites, search ranking, content, social, local listings and outreach. Roll-ups, research tools and connections sit outside any one brand.",
+    "summary": "An agency-style workspace: pick a client, then work on their websites, search ranking, content, social, local listings and outreach. Roll-ups, research tools and connections sit outside any one client.",
     "entry": "/marketing",
-    "brandSwitcher": {
+    "clientSwitcher": {
       "at": "top of the sidebar",
       "target": "/marketing/brands",
-      "note": "Shows the picked brand (name from /marketing/[brandId]); every \"brand\" section below uses that brand. With no brand picked, only the Brands section and the cross-brand sections show."
+      "note": "Shows the picked client (name from /marketing/[brandId]); every \"client\" section below uses that client. With no client picked, only the Clients section and the agency-wide sections show."
     },
     "sections": [
       {
-        "name": "Brands",
+        "name": "Clients",
         "route": "/marketing/brands",
-        "brandScoped": false,
-        "why": "Every brand, add one, and the cross-brand hub.",
+        "clientScoped": false,
+        "why": "Every client, add one, and the cross-client hub.",
         "pages": [
           {
             "route": "/marketing/brands",
-            "title": "Brands",
+            "title": "Clients",
             "role": "list",
             "reachedFrom": [
               "@menu",
@@ -99,12 +99,12 @@
       {
         "name": "Overview",
         "route": "/marketing/[brandId]",
-        "brandScoped": true,
-        "why": "One brand at a glance: properties, health, activity, inbox.",
+        "clientScoped": true,
+        "why": "One client at a glance: properties, health, activity, inbox.",
         "pages": [
           {
             "route": "/marketing/[brandId]",
-            "title": "Brand overview",
+            "title": "Client overview",
             "role": "record",
             "reachedFrom": [
               "/marketing/[brandId]/content/map/[mapId]/graph",
@@ -151,8 +151,8 @@
       {
         "name": "Websites",
         "route": "/marketing/[brandId]/websites",
-        "brandScoped": true,
-        "why": "The brand's sites: pages, structure, sitemaps, crawls, media, settings.",
+        "clientScoped": true,
+        "why": "The client's sites: pages, structure, sitemaps, crawls, media, settings.",
         "pages": [
           {
             "route": "/marketing/[brandId]/websites",
@@ -508,7 +508,7 @@
       {
         "name": "SEO",
         "route": "/marketing/[brandId]/seo",
-        "brandScoped": true,
+        "clientScoped": true,
         "why": "Search work on a site: audit, keywords, rankings, backlinks, search console, AI visibility.",
         "pages": [
           {
@@ -1251,7 +1251,7 @@
       {
         "name": "Content",
         "route": "/marketing/[brandId]/content/plan",
-        "brandScoped": true,
+        "clientScoped": true,
         "why": "What to write and publish: content plans and topical maps.",
         "pages": [
           {
@@ -1501,8 +1501,8 @@
       {
         "name": "Social",
         "route": "/marketing/[brandId]/socials",
-        "brandScoped": true,
-        "why": "The brand's accounts, look-ups, outliers, swipe file, video studio, ad library.",
+        "clientScoped": true,
+        "why": "The client's accounts, look-ups, outliers, swipe file, video studio, ad library.",
         "pages": [
           {
             "route": "/marketing/[brandId]/socials/[platform]/[accountId]",
@@ -1656,7 +1656,7 @@
       {
         "name": "Local & Listings",
         "route": "/marketing/[brandId]/locations",
-        "brandScoped": true,
+        "clientScoped": true,
         "why": "Business locations, listings, reviews and the local rank grid.",
         "pages": [
           {
@@ -1708,7 +1708,7 @@
       {
         "name": "Press, Email & Ads",
         "route": "/marketing/[brandId]/pr",
-        "brandScoped": true,
+        "clientScoped": true,
         "why": "Outreach: press room, email, advertising, PR calendar and initiatives.",
         "pages": [
           {
@@ -1809,8 +1809,8 @@
       {
         "name": "Competitors & Reputation",
         "route": "/marketing/[brandId]/intelligence/competitors",
-        "brandScoped": true,
-        "why": "Who else is out there, what is said about the brand, news monitors, what AI says.",
+        "clientScoped": true,
+        "why": "Who else is out there, what is said about the client, news monitors, what AI says.",
         "pages": [
           {
             "route": "/marketing/[brandId]/intelligence/competitors",
@@ -2034,8 +2034,8 @@
       {
         "name": "Brand",
         "route": "/marketing/[brandId]/identity",
-        "brandScoped": true,
-        "why": "Who the brand is: voice, strategy, audience, claims, media, products.",
+        "clientScoped": true,
+        "why": "Who the client is: voice, strategy, audience, claims, media, products.",
         "pages": [
           {
             "route": "/marketing/[brandId]/identity",
@@ -2224,10 +2224,10 @@
         ]
       },
       {
-        "name": "Brand settings",
+        "name": "Client settings",
         "route": "/marketing/[brandId]/settings",
-        "brandScoped": true,
-        "why": "The brand's address and settings.",
+        "clientScoped": true,
+        "why": "The client's address and settings.",
         "pages": [
           {
             "route": "/marketing/[brandId]/settings",
@@ -2248,8 +2248,8 @@
       {
         "name": "Reports",
         "route": "/marketing/reports",
-        "brandScoped": false,
-        "why": "Roll-ups across all brands: reports, cost, ranks, search console, social.",
+        "clientScoped": false,
+        "why": "Roll-ups across all clients: reports, cost, ranks, search console, social.",
         "pages": [
           {
             "route": "/marketing/reports",
@@ -2383,7 +2383,7 @@
       {
         "name": "Research tools",
         "route": "/marketing/tools",
-        "brandScoped": false,
+        "clientScoped": false,
         "why": "Free analyzers and research for any site, plus the zip-code heatmap.",
         "pages": [
           {
@@ -2560,7 +2560,7 @@
       {
         "name": "Operations",
         "route": "/marketing/operations/connections",
-        "brandScoped": false,
+        "clientScoped": false,
         "why": "Connect Google and Bing, automations, approvals, capabilities, data quality.",
         "pages": [
           {
@@ -2727,7 +2727,7 @@
       {
         "name": "Publish",
         "route": "/cms",
-        "brandScoped": false,
+        "clientScoped": false,
         "why": "Websites we publish: CMS, HTML pages, artifacts, podcasts.",
         "pages": [
           {
@@ -3029,7 +3029,7 @@
     ],
     "journeys": [
       {
-        "name": "Audit a brand's website",
+        "name": "Audit a client's website",
         "steps": [
           "/marketing/brands",
           "/marketing/[brandId]",
@@ -3041,7 +3041,7 @@
         ]
       },
       {
-        "name": "Add a new brand with Smart Add",
+        "name": "Add a new client with Smart Add",
         "steps": [
           "/marketing/brands",
           "/marketing/brands/smart-add/company",
@@ -3073,7 +3073,7 @@
         ]
       },
       {
-        "name": "Check a brand's social competitors",
+        "name": "Check a client's social competitors",
         "steps": [
           "/marketing/[brandId]/socials/accounts",
           "/marketing/[brandId]/socials/research",
@@ -3091,7 +3091,7 @@
         ]
       },
       {
-        "name": "Quick-check any website ((no brand needed))",
+        "name": "Quick-check any website (no client needed)",
         "steps": [
           "/marketing/tools",
           "/marketing/tools/domain",
@@ -3100,7 +3100,7 @@
         ]
       },
       {
-        "name": "Weekly cross-brand review",
+        "name": "Weekly cross-client review",
         "steps": [
           "/marketing/reports",
           "/marketing/reports/ranks",
@@ -3124,16 +3124,16 @@
       {
         "route": "/marketing/brands/smart-add/person",
         "why": "A Smart Add step no page links to.",
-        "proposedHome": "Brands"
+        "proposedHome": "Clients"
       },
       {
         "route": "/marketing/brands/smart-add/validate/[brandId]",
         "why": "A Smart Add step no page links to.",
-        "proposedHome": "Brands"
+        "proposedHome": "Clients"
       },
       {
         "route": "/marketing/calendar",
-        "why": "Cross-brand PR calendar chooser; only the dev admin map links it.",
+        "why": "Cross-client PR calendar chooser; only the dev admin map links it.",
         "proposedHome": "Press, Email & Ads"
       },
       {
@@ -3153,7 +3153,7 @@
       },
       {
         "route": "/marketing/pages/[pageId]",
-        "why": "Un-scoped copy of the Page Workspace; the brand-scoped page has the real links.",
+        "why": "Un-scoped copy of the Page Workspace; the client-scoped page has the real links.",
         "proposedHome": "Websites"
       },
       {
@@ -3191,26 +3191,26 @@
       {
         "route": "/marketing/[brandId]/websites",
         "depth": 3,
-        "why": "Marketing > Brands > pick a brand > Websites. The menu opens on the brands list and Websites only appears after a brand is picked.",
-        "proposal": "Make Websites the first section under the brand switcher; with one brand, skip the list and land on it."
+        "why": "Marketing > Clients > pick a client > Websites. The menu opens on the client list and Websites only appears after a client is picked.",
+        "proposal": "Make Websites the first section under the client switcher; with one client, skip the list and land on it."
       },
       {
         "route": "/marketing/[brandId]/websites/[siteId]",
         "depth": 4,
-        "why": "A site is reached through brand, then Websites, then the site; no cross-brand site list exists (the old one was removed).",
-        "proposal": "Add an \"All websites\" view in the Brands section, filterable by brand."
+        "why": "A site is reached through client, then Websites, then the site; no cross-client site list exists (the old one was removed).",
+        "proposal": "Add an \"All websites\" view in the Clients section, filterable by client."
       },
       {
         "route": "/marketing/[brandId]/seo/[siteId]",
         "depth": 4,
-        "why": "SEO first asks for a brand, then a site, then shows the tools.",
-        "proposal": "Remember the last site per brand; open straight onto it."
+        "why": "SEO first asks for a client, then a site, then shows the tools.",
+        "proposal": "Remember the last site per client; open straight onto it."
       },
       {
         "route": "/marketing/operations/connections",
         "depth": 2,
         "why": "Google and Bing must be connected before any ranking or search data shows, yet the link sits in the Operations group at the bottom.",
-        "proposal": "Show a \"Connect Google\" prompt on the brand overview and SEO pages until done."
+        "proposal": "Show a \"Connect Google\" prompt on the client overview and SEO pages until done."
       },
       {
         "route": "/marketing/[brandId]/identity/voice",
@@ -3221,7 +3221,7 @@
       {
         "route": "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
         "depth": 6,
-        "why": "The main keyword tool is brand > SEO > site > Keywords > Workbench.",
+        "why": "The main keyword tool is client > SEO > site > Keywords > Workbench.",
         "proposal": "Put Keywords as a direct sidebar row of the site SEO menu with Workbench as its default tab."
       },
       {
@@ -3235,7 +3235,7 @@
       {
         "name": "Websites",
         "route": "/marketing/[brandId]/websites",
-        "why": "TREE.md lists \"hub, brands, SEO, search console, social, CMS & pages, podcasts, artifacts, reports, automations, approvals, research, heatmap\" with no Websites. It is the brand's main asset and the base of SEO."
+        "why": "TREE.md lists \"hub, brands, SEO, search console, social, CMS & pages, podcasts, artifacts, reports, automations, approvals, research, heatmap\" with no Websites. It is the client's main asset and the base of SEO."
       },
       {
         "name": "Content",
@@ -3268,9 +3268,9 @@
         "why": "Google/Bing connection is the gate to rankings; TREE lists automations and approvals but not connections, capabilities or data quality."
       },
       {
-        "name": "Brand switcher",
+        "name": "Client switcher",
         "route": "/marketing/brands",
-        "why": "The brand-first model is not in TREE."
+        "why": "The agency model (client first) is not in TREE."
       }
     ],
     "legacy": [
@@ -3312,12 +3312,12 @@
       {
         "route": "/marketing/ads",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/ai-visibility",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/approvals",
@@ -3327,7 +3327,7 @@
       {
         "route": "/marketing/audience",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/automations",
@@ -3337,12 +3337,12 @@
       {
         "route": "/marketing/backlink-valuation",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/brands/[brandId]/[[...rest]]",
         "kind": "redirect",
-        "note": "Sends people to the brand workspace (old address under /brands)."
+        "note": "Sends people to the client workspace (old address under /brands)."
       },
       {
         "route": "/marketing/brands/smart-add",
@@ -3362,7 +3362,7 @@
       {
         "route": "/marketing/competitors",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/connections",
@@ -3382,22 +3382,22 @@
       {
         "route": "/marketing/content-plan",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/content-plan/[siteId]",
         "kind": "redirect",
-        "note": "Sends people to the brand Content plan for that site."
+        "note": "Sends people to the client Content plan for that site."
       },
       {
         "route": "/marketing/content-plan/nodes/[nodeId]",
         "kind": "redirect",
-        "note": "Sends people to the brand Content plan."
+        "note": "Sends people to the client Content plan."
       },
       {
         "route": "/marketing/content-studio",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/cost",
@@ -3417,42 +3417,42 @@
       {
         "route": "/marketing/email",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/initiatives",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/initiatives/[id]",
         "kind": "redirect",
-        "note": "Sends people to the brand Initiatives page."
+        "note": "Sends people to the client Initiatives page."
       },
       {
         "route": "/marketing/keyword-intelligence",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/keyword-research",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/local",
         "kind": "redirect",
-        "note": "Sends people to the brand Locations page (or the Brands list)."
+        "note": "Sends people to the client Locations page (or the Clients list)."
       },
       {
         "route": "/marketing/outreach",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/pr",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/ranks",
@@ -3467,22 +3467,22 @@
       {
         "route": "/marketing/sites",
         "kind": "redirect",
-        "note": "Sends people to the Brands list."
+        "note": "Sends people to the Clients list."
       },
       {
         "route": "/marketing/sites/[siteId]",
         "kind": "redirect",
-        "note": "Sends people to the brand Websites > site page."
+        "note": "Sends people to the client Websites > site page."
       },
       {
         "route": "/marketing/sites/[siteId]/[...rest]",
         "kind": "redirect",
-        "note": "Sends people to the brand Websites > site sub-page."
+        "note": "Sends people to the client Websites > site sub-page."
       },
       {
         "route": "/marketing/sites/new",
         "kind": "redirect",
-        "note": "Sends people to Brands > New website."
+        "note": "Sends people to Clients > New website."
       }
     ],
     "duplicates": [
@@ -3506,21 +3506,21 @@
           "/marketing/topical-maps/[mapId]",
           "/marketing/[brandId]/content/map/[mapId]"
         ],
-        "note": "Topical map exists un-scoped and brand-scoped; both are live and linked."
+        "note": "Topical map exists un-scoped and client-scoped; both are live and linked."
       },
       {
         "routes": [
           "/marketing/pages/[pageId]",
           "/marketing/[brandId]/websites/[siteId]/pages/[pageId]"
         ],
-        "note": "Page Workspace at an un-scoped and a brand-scoped address."
+        "note": "Page Workspace at an un-scoped and a client-scoped address."
       },
       {
         "routes": [
           "/marketing/monitoring",
           "/marketing/[brandId]/intelligence/monitoring"
         ],
-        "note": "News monitors: cross-brand list and per-brand list."
+        "note": "News monitors: agency list and per-client list."
       },
       {
         "routes": [
@@ -3563,7 +3563,7 @@
           "/marketing/[brandId]/seo/[siteId]/ai-visibility",
           "/seo/ai-visibility"
         ],
-        "note": "AI visibility lives per brand, per site and as a free public tool."
+        "note": "AI visibility lives per client, per site and as a free public tool."
       },
       {
         "routes": [

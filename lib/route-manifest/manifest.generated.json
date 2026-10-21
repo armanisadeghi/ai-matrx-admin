@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1578,
+  "routeCount": 1577,
   "routes": [
     {
       "pattern": "/",
@@ -642,11 +642,6 @@
       "pattern": "/administration/billing/build-waste",
       "status": "live",
       "source": "app/(admin)/administration/billing/build-waste/page.tsx"
-    },
-    {
-      "pattern": "/administration/billing/free-allowance",
-      "status": "live",
-      "source": "app/(admin)/administration/billing/free-allowance/page.tsx"
     },
     {
       "pattern": "/administration/billing/held-runs/[id]",

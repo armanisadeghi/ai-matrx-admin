@@ -36,7 +36,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -311,7 +311,8 @@ export function UploadEpisodeDialog({
                       Uploaded · click to replace
                     </p>
                   </div>
-                  <ControlButton variant="quiet" removes type="button"
+                  <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setAudioUrl(null);
@@ -319,7 +320,12 @@ export function UploadEpisodeDialog({
                       setAudioState("idle");
                       if (audioInputRef.current)
                         audioInputRef.current.value = "";
-                    }} className="shrink-0" aria-label="Remove" icon={<X />} />
+                    }}
+                    className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive-ink"
+                    title="Remove"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center gap-2 py-6">

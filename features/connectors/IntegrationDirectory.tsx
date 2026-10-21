@@ -17,7 +17,7 @@ import {
   Info,
 } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
-import { Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { Chip, Input, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MCP_CATEGORY_META } from "@ai-matrx/chat/agents/types/mcp.types";
@@ -93,9 +93,6 @@ export function IntegrationDirectory({
   const featured = visible
     .filter((item) => item.featured)
     .sort((a, b) => featuredRank(a) - featuredRank(b));
-  const shownInFeatured = new Set(
-    featured.slice(0, FEATURED_SHOWN).map((item) => item.id),
-  );
   const change = (patch: Partial<DirectoryFilters>) =>
     onFiltersChange({ ...filters, ...patch });
   const clearFilters = () =>
@@ -146,6 +143,32 @@ export function IntegrationDirectory({
       ))}
     </div>
   );
+  const mine = items.filter((item) => item.saved);
+  const sharedOnly = items.filter(
+    (item) => !item.saved && (item.sharedBy?.length ?? 0) > 0,
+  );
+  const yourConnections = (mine.length > 0 || sharedOnly.length > 0) && (
+    <section aria-label="Your connections" className="space-y-2.5">
+      <h2 className="text-sm font-semibold">Your connections</h2>
+      <div className="flex flex-wrap gap-2">
+        {mine.map((item) => (
+          <ConnectionChip
+            key={item.id}
+            item={item}
+            onOpen={() => onSelect(item.id)}
+          />
+        ))}
+        {sharedOnly.map((item) => (
+          <ConnectionChip
+            key={item.id}
+            item={item}
+            shared
+            onOpen={() => onSelect(item.id)}
+          />
+        ))}
+      </div>
+    </section>
+  );
   const section = (
     title: string,
     entries: IntegrationDirectoryItem[],
@@ -171,7 +194,7 @@ export function IntegrationDirectory({
           </button>
         </div>
         {title === "Featured"
-          ? featuredGrid(entries.slice(0, FEATURED_SHOWN))
+          ? featuredGrid(entries.slice(0, 9))
           : grid(entries.slice(0, 4))}
       </section>
     );
@@ -498,17 +521,14 @@ export function IntegrationDirectory({
               </div>
             ) : grouped ? (
               <div className="space-y-8">
+                {yourConnections}
                 {section("Featured", featured, () =>
                   change({ browse: "featured" }),
                 )}
                 {categories.map(([key, meta]) =>
                   section(
                     meta.label,
-                    // ONE CARD PER PROVIDER: whatever Featured shows is not shown again below.
-                    visible.filter(
-                      (item) =>
-                        item.category === key && !shownInFeatured.has(item.id),
-                    ),
+                    visible.filter((item) => item.category === key),
                     () => change({ category: key, browse: "all" }),
                   ),
                 )}
@@ -579,8 +599,6 @@ export function IntegrationCard({
     </button>
   );
 }
-
-const FEATURED_SHOWN = 9;
 
 const FEATURED_ORDER = [
   "google",
@@ -680,5 +698,29 @@ export function FeaturedIntegrationTile({
         </span>
       </span>
     </button>
+  );
+}
+
+/** One of the viewer's connections — or one an organization shares — as a chip. */
+function ConnectionChip({
+  item,
+  shared = false,
+  onOpen,
+}: {
+  item: IntegrationDirectoryItem;
+  shared?: boolean;
+  onOpen: () => void;
+}) {
+  const tone = shared ? "neutral" : item.attention ? "warning" : item.connected ? "success" : "neutral";
+  return (
+    <Chip
+      label={shared ? `${item.name} · ${item.sharedBy?.join(", ")}` : item.name}
+      tone={tone}
+      icon={<ConnectorTile connector={item.artwork} size="xs" />}
+      title={shared ? `Shared by ${item.sharedBy?.join(", ")}` : item.accountSummary || item.status}
+      asChild
+    >
+      <button type="button" data-integration-id={item.id} aria-label={`${item.name}: ${shared ? "shared" : item.status}`} onClick={onOpen} />
+    </Chip>
   );
 }

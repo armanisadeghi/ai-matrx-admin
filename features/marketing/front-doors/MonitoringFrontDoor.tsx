@@ -51,7 +51,7 @@ export function MonitoringFrontDoor({
   brandId?: string | null;
   /** The route the site picker writes `?site=` back onto. Defaults to the flat
    * monitoring route; inside a brand it must be the brand route or selecting a
-   * site navigates the user out of the brand workspace. */
+   * site navigates the user out of the client workspace. */
   basePath?: string;
 } = {}) {
   const siteState = useFrontDoorSite(brandId);

@@ -18,7 +18,7 @@ const CAPABILITIES: ModuleCapability[] = [
     icon: Landmark,
     title: "The brand is the anchor, not the URL",
     description:
-      "Every tool hangs off a brand — its websites, social properties, assets, and confirmed business facts. Agencies run a hundred brands without a hundred disconnected dashboards.",
+      "Every tool hangs off a brand — its websites, social properties, assets, and confirmed business facts. Agencies run a hundred clients without a hundred disconnected dashboards.",
   },
   {
     icon: Globe,
@@ -48,7 +48,7 @@ const CAPABILITIES: ModuleCapability[] = [
     icon: BarChart3,
     title: "Cost attribution that goes to the page",
     description:
-      "Every crawl, analysis, and AI run is priced and attributed back to a site, a page, and a brand. You always know what a deliverable cost to produce.",
+      "Every crawl, analysis, and AI run is priced and attributed back to a site, a page, and a client organization. You always know what a deliverable cost to produce.",
   },
 ];
 

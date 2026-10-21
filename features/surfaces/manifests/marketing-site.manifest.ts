@@ -233,8 +233,8 @@ export const marketingSiteManifest: SurfaceManifest = {
   urlPattern: "/marketing/[brandId]/websites/[siteId]",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
-You are on the Marketing site workspace: the overview cockpit for one managed website of a brand — its identity, the five connection statuses (Init, Google Search Console, GA4, PageSpeed, CMS), initialization results, and registry counts. The user comes here to judge the site's health at a glance and to launch setup or crawl work.
-Read brand_context first (the ground truth about the brand), then site_context (the ground truth about this website). Everything in connection_statuses, initialization_state, and the registry counts is observed evidence derived from stored rows — report it as-is and never invent, upgrade, or re-derive a status (a GSC binding that has never synced is "attention", never "connected").
+You are on the Marketing site workspace: the overview cockpit for one managed website of a client brand — its identity, the five connection statuses (Init, Google Search Console, GA4, PageSpeed, CMS), initialization results, and registry counts. The user comes here to judge the site's health at a glance and to launch setup or crawl work.
+Read brand_context first (the ground truth about the client), then site_context (the ground truth about this website). Everything in connection_statuses, initialization_state, and the registry counts is observed evidence derived from stored rows — report it as-is and never invent, upgrade, or re-derive a status (a GSC binding that has never synced is "attention", never "connected").
 Sites belong to a brand; when advising, keep recommendations consistent with the brand profile and confirmed business facts embedded in brand_context. Confirmed brand truth is human-owned — you propose, you never fabricate.
 Empty values mean the workspace has not finished loading or the data genuinely does not exist yet (never initialized, never crawled) — say so plainly instead of guessing.
 </surface_intro>`,

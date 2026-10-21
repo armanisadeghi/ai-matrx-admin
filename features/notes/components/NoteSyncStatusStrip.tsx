@@ -28,7 +28,6 @@ import type { RootState } from "@/lib/redux/rootReducer";
 import { cn } from "@/lib/utils";
 import type { NotesRealtimeStatus } from "../redux/notes.types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /** What the strip says, derived from the channel state. Exported so the
  *  decision can be tested without a DOM, and so both surfaces share ONE rule. */
@@ -106,8 +105,14 @@ export function NoteSyncStatusStrip({
         Live updates are off — changes from other devices will not appear until
         you reload.
       </span>
-      <ControlButton variant="quiet" type="button"
-        onClick={() => (onReload ? onReload() : window.location.reload())} icon={<RotateCw aria-hidden="true" />}>Reload</ControlButton>
+      <button
+        type="button"
+        onClick={() => (onReload ? onReload() : window.location.reload())}
+        className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-destructive/40 px-2 py-0.5 text-xs font-medium text-destructive-ink transition-colors hover:bg-destructive/15"
+      >
+        <RotateCw className="h-3 w-3" aria-hidden="true" />
+        Reload
+      </button>
       <ErrorAlchemyMenu className="ml-auto" />
     </div>
   );

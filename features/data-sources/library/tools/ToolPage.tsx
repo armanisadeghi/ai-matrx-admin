@@ -218,6 +218,9 @@ export function ToolPage({
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-4" data-tool-page={toolId}>
+      <ToolsAdminSlot where="tool" toolId={realToolId}>
+        <AdminToolLayer toolId={realToolId} />
+      </ToolsAdminSlot>
       <div className="flex items-center gap-2">
         <Button variant="quiet" onClick={onBack} icon={<ArrowLeft className="h-4 w-4" />}>
           All Tools
@@ -307,11 +310,6 @@ export function ToolPage({
           </div>
         </div>
       </div>
-
-      {/* The admin layer sits under the tool: it never pushes the box and the answer below the fold. */}
-      <ToolsAdminSlot where="tool" toolId={realToolId}>
-        <AdminToolLayer toolId={realToolId} />
-      </ToolsAdminSlot>
 
       {approval ? (
         <ToolActionApprovalDialog

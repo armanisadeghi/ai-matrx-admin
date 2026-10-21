@@ -188,8 +188,8 @@ export function PagePickerDialog({
                   <span className="block truncate text-foreground">
                     {page.url}
                   </span>
-                  {/* A user with several brands reads many brands' sites. An unlabeled
-                      list is how one brand's metadata lands on another's. */}
+                  {/* An agency user reads many clients' sites. An unlabeled
+                      list is how one client's metadata lands on another's. */}
                   <span className="block truncate text-[11px] text-muted-foreground">
                     {siteLabel(page.url)}
                   </span>

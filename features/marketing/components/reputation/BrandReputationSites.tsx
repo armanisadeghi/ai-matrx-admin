@@ -44,7 +44,7 @@ export function BrandReputationSites() {
   return (
     <MarketingFrontDoorPage
       title="Reputation"
-      lede="Which published pages hurt this brand, what each one needs, and the pitch angle that fixes it — read per website. Pick a site to open its decision brief."
+      lede="Which published pages hurt this client, what each one needs, and the pitch angle that fixes it — read per website. Pick a site to open its decision brief."
     >
       {sites.isError ? <QueryError error={sites.error} /> : null}
 

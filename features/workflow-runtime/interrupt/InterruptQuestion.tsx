@@ -62,7 +62,6 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { heldWriteOfInterrupt } from "@/features/record-change-approvals/recordChangeApproval";
 import { HeldInterrupt } from "./HeldInterrupt";
 import { DecisionPanel } from "./DecisionPanel";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 /**
  * Where the host is drawing questions.
@@ -295,10 +294,16 @@ function ApprovalControl({
           )}
           Approve
         </button>
-        <ControlButton variant="quiet" removes type="button"
+        <button
+          type="button"
           data-interrupt-reject
           disabled={sending}
-          onClick={() => onDecide(approvalResumeValue(false, note))} icon={<X />}>Reject</ControlButton>
+          onClick={() => onDecide(approvalResumeValue(false, note))}
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-destructive/50 px-3 text-sm font-medium text-destructive-ink transition-colors hover:bg-destructive/10 disabled:opacity-50"
+        >
+          <X className="h-4 w-4" />
+          Reject
+        </button>
       </div>
       <textarea
         value={note}

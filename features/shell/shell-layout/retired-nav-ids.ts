@@ -6,10 +6,7 @@
 // destination is gone; stored layouts drop it and say so). Never delete a row: an old stored body
 // can name any id that ever existed. Guard: features/shell/__tests__/nav-ids.test.ts.
 
-export const RETIRED_NAV_IDS: Readonly<Record<string, string | null>> = {
-  // Marketing pillar key "clients" became "brands" (brands, never clients - Arman, 2026-10-21).
-  "marketing.clients.brands": "marketing.brands.brands",
-};
+export const RETIRED_NAV_IDS: Readonly<Record<string, string | null>> = {};
 
 /**
  * Follows the retired map to the id that stands for `id` today. `retired` is true when any hop

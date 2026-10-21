@@ -5,7 +5,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
   name: "Marketing",
   slug: "marketing",
   description:
-    "The Marketing module in its agency-model shape (2026-08-28): a small AGENCY plane (brands list, cross-brand reports, operations, generic tools) plus everything else nested inside one brand at /marketing/[brandId] — identity, websites (crawler, canonical page registry, immutable snapshots), the SEO practice per site, content, channels, intelligence, planning. Structure is declared ONCE in features/marketing/lib/{routes.ts,brand-sections.ts,route-sections.ts,marketing-nav.ts}. Persisted data is read directly from Supabase by the browser.",
+    "The Marketing module in its agency-model shape (2026-08-28): a small AGENCY plane (client roster, cross-client reports, operations, generic tools) plus everything else nested inside one client at /marketing/[brandId] — identity, websites (crawler, canonical page registry, immutable snapshots), the SEO practice per site, content, channels, intelligence, planning. Structure is declared ONCE in features/marketing/lib/{routes.ts,brand-sections.ts,route-sections.ts,marketing-nav.ts}. Persisted data is read directly from Supabase by the browser.",
   docs: [
     { label: "Marketing FEATURE.md", href: "/features/marketing/FEATURE.md" },
     {
@@ -34,9 +34,9 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     },
     {
       url: "/marketing/brands",
-      label: "Brand roster",
+      label: "Client roster",
       description:
-        "BrandsPortfolio — every brand, and the door into each brand workspace.",
+        "BrandsPortfolio — every client brand, and the door into each client workspace.",
       filePath: "app/(core)/marketing/brands/page.tsx",
       status: "Live",
     },
@@ -44,13 +44,13 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/brands/new-website",
       label: "Add website",
       description:
-        "NewSiteForm — creates a site through web.create_site; `?brand=` pre-binds it to a brand.",
+        "NewSiteForm — creates a site through web.create_site; `?brand=` pre-binds it to a client.",
       filePath: "app/(core)/marketing/brands/new-website/page.tsx",
       status: "Live",
     },
     {
       url: "/marketing/reports",
-      label: "Brand reports",
+      label: "Client reports",
       description:
         "MarketingReportsWorkspace — printable 28-day Search Console report with findings, comparison, and traffic classes.",
       filePath: "app/(core)/marketing/reports/page.tsx",
@@ -60,7 +60,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/reports/cost",
       label: "Cost roll-up",
       description:
-        "WorkspaceCostWorkspace — cross-site and organization cost rollups (was /marketing/cost).",
+        "WorkspaceCostWorkspace — cross-site and client-organization cost rollups (was /marketing/cost).",
       filePath: "app/(core)/marketing/reports/cost/page.tsx",
       status: "Live",
     },
@@ -68,7 +68,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/reports/ranks",
       label: "Rank roll-up",
       description:
-        "CrossSiteRanksHub — every tracked keyword across every brand and site (was /marketing/ranks).",
+        "CrossSiteRanksHub — every tracked keyword across every client and site (was /marketing/ranks).",
       filePath: "app/(core)/marketing/reports/ranks/page.tsx",
       status: "Live",
     },
@@ -235,12 +235,12 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       status: "Live",
     },
 
-    // ── The brand workspace: /marketing/[brandId] ────────────────────────
+    // ── The client workspace: /marketing/[brandId] ────────────────────────
     {
       url: "/marketing/[brandId]",
       label: "Brand overview",
       description:
-        "BrandWorkspace — this brand at a glance: properties, health, activity. The dual-mode segment accepts a brand key or UUID.",
+        "BrandWorkspace — this client at a glance: properties, health, activity. The dual-mode segment accepts a brand key or UUID.",
       filePath: "app/(core)/marketing/[brandId]/page.tsx",
       status: "Live",
     },
@@ -334,7 +334,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/websites",
       label: "Websites",
       description:
-        "SitesPortfolio — the brand's Properties door (still reads the whole readable portfolio; brand scoping tracked in the restructure handoff).",
+        "SitesPortfolio — the client's Properties door (still reads the whole readable portfolio; brand scoping tracked in the restructure handoff).",
       filePath: "app/(core)/marketing/[brandId]/websites/page.tsx",
       status: "Live",
     },
@@ -547,7 +547,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/seo",
       label: "SEO section",
       description:
-        "The brand's website list, each row opening the SEO practice on that site (entry-list doctrine, never a forced workspace).",
+        "The client's website list, each row opening the SEO practice on that site (entry-list doctrine, never a forced workspace).",
       filePath: "app/(core)/marketing/[brandId]/seo/page.tsx",
       status: "Live",
     },
@@ -811,7 +811,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/content/plan",
       label: "Content Plan list",
       description:
-        "BrandScopedPlanSitesList → PlanSitesList — this brand's websites and their plan coverage (the site dropdown inside stays cross-org on purpose).",
+        "BrandScopedPlanSitesList → PlanSitesList — this client's websites and their plan coverage (the site dropdown inside stays cross-org on purpose).",
       filePath: "app/(core)/marketing/[brandId]/content/plan/page.tsx",
       status: "Live",
     },
@@ -917,7 +917,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/pr/outreach",
       label: "Outreach",
       description:
-        "BrandScopedOutreach → OutreachFrontDoor — prospecting scoped to this brand's websites and its organization's mailboxes; the CRM doors (campaigns, Chasebox, replies, wins) have no brand link and are labeled as counting across your brands.",
+        "BrandScopedOutreach → OutreachFrontDoor — prospecting scoped to this client's websites and its organization's mailboxes; the CRM doors (campaigns, Chasebox, replies, wins) have no brand link and are labeled as counting across your clients.",
       filePath: "app/(core)/marketing/[brandId]/pr/outreach/page.tsx",
       status: "Live",
     },
@@ -977,7 +977,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/[brandId]/analytics",
       label: "Analytics",
       description:
-        "BrandAnalyticsWorkspace — this brand's websites with their 28-day Google Analytics headline numbers, each opening the canonical SiteAnalyticsPanel in the siteAnalyticsWindow. Reads seo.web_analytics_daily directly, deduped to the newest collection run per day. The unbuilt cross-channel join is printed under the live panel (coming-soon id marketing.analytics.cross-channel). The brand's own YouTube channel sits below it: BrandChannelPanel (U-M3), the other channel this section's promise already named.",
+        "BrandAnalyticsWorkspace — this client's websites with their 28-day Google Analytics headline numbers, each opening the canonical SiteAnalyticsPanel in the siteAnalyticsWindow. Reads seo.web_analytics_daily directly, deduped to the newest collection run per day. The unbuilt cross-channel join is printed under the live panel (coming-soon id marketing.analytics.cross-channel). The brand's own YouTube channel sits below it: BrandChannelPanel (U-M3), the other channel this section's promise already named.",
       filePath: "app/(core)/marketing/[brandId]/analytics/page.tsx",
       status: "Live",
     },
@@ -1045,7 +1045,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/sites",
       label: "Legacy site portfolio",
       description:
-        "308s to the brands list — a website belongs to a brand, so the agency plane has no site list.",
+        "308s to the client roster — a website belongs to a client, so the agency plane has no site list.",
       filePath: "app/(core)/marketing/sites/page.tsx",
       status: "Deprecated",
       notes: [
@@ -1071,7 +1071,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/content-plan",
       label: "Legacy content plan",
       description:
-        "308s to the brands list; `content-plan/[siteId]` resolves its brand and lands on that site's plan workspace.",
+        "308s to the client roster; `content-plan/[siteId]` resolves its brand and lands on that site's plan workspace.",
       filePath: "app/(core)/marketing/content-plan/page.tsx",
       status: "Deprecated",
       notes: [
@@ -1082,11 +1082,11 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/initiatives",
       label: "Legacy initiatives",
       description:
-        "308s to the brands list; Initiatives is a Planning screen on the brand now.",
+        "308s to the client roster; Initiatives is a Planning screen on the brand now.",
       filePath: "app/(core)/marketing/initiatives/page.tsx",
       status: "Deprecated",
       notes: [
-        "initiatives/[id]/page.tsx → the initiative inside its brand's Planning section",
+        "initiatives/[id]/page.tsx → the initiative inside its client's Planning section",
       ],
     },
     {
@@ -1112,7 +1112,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/search-console",
       label: "Legacy Search Console",
       description:
-        "`?site=` resolves onto that site's SEO Search Console screen; without one, the brands list.",
+        "`?site=` resolves onto that site's SEO Search Console screen; without one, the client roster.",
       filePath: "app/(core)/marketing/search-console/page.tsx",
       status: "Deprecated",
     },
@@ -1120,7 +1120,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/capabilities",
       label: "Legacy capabilities",
       description:
-        "`?site=` resolves onto that site's SEO Capabilities screen; without one, the brands list.",
+        "`?site=` resolves onto that site's SEO Capabilities screen; without one, the client roster.",
       filePath: "app/(core)/marketing/capabilities/page.tsx",
       status: "Deprecated",
     },
@@ -1128,7 +1128,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/local",
       label: "Legacy Local & Listings",
       description:
-        "`?brand=` / `?location=` resolve onto /marketing/[brand]/locations; a plain visit lands on the brands list.",
+        "`?brand=` / `?location=` resolve onto /marketing/[brand]/locations; a plain visit lands on the client roster.",
       filePath: "app/(core)/marketing/local/page.tsx",
       status: "Deprecated",
     },
@@ -1164,7 +1164,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/keyword-research",
       label: "Legacy keyword research",
       description:
-        "308s to the brands list; research lives at /marketing/[brand]/seo/[site]/keywords/research.",
+        "308s to the client roster; research lives at /marketing/[brand]/seo/[site]/keywords/research.",
       filePath: "app/(core)/marketing/keyword-research/page.tsx",
       status: "Deprecated",
     },
@@ -1172,7 +1172,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/keyword-intelligence",
       label: "Legacy keyword intelligence",
       description:
-        "308s to the brands list; keywords live at /marketing/[brand]/seo/[site]/keywords.",
+        "308s to the client roster; keywords live at /marketing/[brand]/seo/[site]/keywords.",
       filePath: "app/(core)/marketing/keyword-intelligence/page.tsx",
       status: "Deprecated",
     },
@@ -1180,7 +1180,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/backlink-valuation",
       label: "Legacy backlink valuation",
       description:
-        "308s to the brands list; valuation lives at /marketing/[brand]/seo/[site]/valuation.",
+        "308s to the client roster; valuation lives at /marketing/[brand]/seo/[site]/valuation.",
       filePath: "app/(core)/marketing/backlink-valuation/page.tsx",
       status: "Deprecated",
     },
@@ -1188,7 +1188,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/ai-visibility",
       label: "Legacy AI visibility",
       description:
-        "308s to the brands list; AI visibility lives at /marketing/[brand]/seo/[site]/ai-visibility.",
+        "308s to the client roster; AI visibility lives at /marketing/[brand]/seo/[site]/ai-visibility.",
       filePath: "app/(core)/marketing/ai-visibility/page.tsx",
       status: "Deprecated",
     },
@@ -1196,7 +1196,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/competitors",
       label: "Legacy competitors",
       description:
-        "308s to the brands list; Competitors is a brand Intelligence screen.",
+        "308s to the client roster; Competitors is a brand Intelligence screen.",
       filePath: "app/(core)/marketing/competitors/page.tsx",
       status: "Deprecated",
     },
@@ -1204,7 +1204,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/monitoring",
       label: "Legacy monitoring",
       description:
-        "308s to the brands list; Monitoring is a brand Intelligence screen.",
+        "308s to the client roster; Monitoring is a brand Intelligence screen.",
       filePath: "app/(core)/marketing/monitoring/page.tsx",
       status: "Deprecated",
     },
@@ -1212,14 +1212,14 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/pr",
       label: "Legacy press room",
       description:
-        "308s to the brands list; the Press Room is a brand section.",
+        "308s to the client roster; the Press Room is a brand section.",
       filePath: "app/(core)/marketing/pr/page.tsx",
       status: "Deprecated",
     },
     {
       url: "/marketing/email",
       label: "Legacy email",
-      description: "308s to the brands list; Email is a brand section.",
+      description: "308s to the client roster; Email is a brand section.",
       filePath: "app/(core)/marketing/email/page.tsx",
       status: "Deprecated",
     },
@@ -1227,7 +1227,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/outreach",
       label: "Legacy outreach",
       description:
-        "308s to the brands list; outreach lives beside the brand's Email section.",
+        "308s to the client roster; outreach lives beside the brand's Email section.",
       filePath: "app/(core)/marketing/outreach/page.tsx",
       status: "Deprecated",
     },
@@ -1235,7 +1235,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/ads",
       label: "Legacy paid ads",
       description:
-        "308s to the brands list; Advertising is a brand section.",
+        "308s to the client roster; Advertising is a brand section.",
       filePath: "app/(core)/marketing/ads/page.tsx",
       status: "Deprecated",
     },
@@ -1243,7 +1243,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/social",
       label: "Social roll-up",
       description:
-        "Agency-plane roll-up: every brand's tracked accounts and recent outliers. A brand's own social work is at /marketing/[brandId]/socials.",
+        "Agency-plane roll-up: every client's tracked accounts and recent outliers. A brand's own social work is at /marketing/[brandId]/socials.",
       filePath: "app/(core)/marketing/social/page.tsx",
       status: "Live",
     },
@@ -1251,7 +1251,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/calendar",
       label: "PR calendar door",
       description:
-        "Lands on the brand PR calendar (/marketing/<brand>/planning/calendar): straight there with one brand, a brand chooser with several.",
+        "Lands on the brand PR calendar (/marketing/<brand>/planning/calendar): straight there with one client, a client chooser with several.",
       filePath: "app/(core)/marketing/calendar/page.tsx",
       status: "Live",
     },
@@ -1259,7 +1259,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/audience",
       label: "Legacy audience",
       description:
-        "308s to the brands list; Audience is reserved under brand Identity.",
+        "308s to the client roster; Audience is reserved under brand Identity.",
       filePath: "app/(core)/marketing/audience/page.tsx",
       status: "Deprecated",
     },
@@ -1267,7 +1267,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/content-studio",
       label: "Legacy content studio",
       description:
-        "308s to the brands list; the Studio is reserved under brand Content.",
+        "308s to the client roster; the Studio is reserved under brand Content.",
       filePath: "app/(core)/marketing/content-studio/page.tsx",
       status: "Deprecated",
     },
@@ -1304,7 +1304,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
     {
       overlayId: "brandChannelWindow",
       description:
-        "One brand's owned YouTube channel (U-M3), beside whatever the reader was looking at. The window is the frame only: it wraps the canonical BrandChannelPanel, the same component the brand Analytics route mounts, variant=\"bare\". Opened via useOpenBrandChannelWindow.",
+        "One client's owned YouTube channel (U-M3), beside whatever the reader was looking at. The window is the frame only: it wraps the canonical BrandChannelPanel, the same component the brand Analytics route mounts, variant=\"bare\". Opened via useOpenBrandChannelWindow.",
     },
     {
       overlayId: "siteTrackingWindow",
@@ -1350,7 +1350,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       name: "MarketingReportsWorkspace",
       filePath: "features/marketing/reports/MarketingReportsWorkspace.tsx",
       description:
-        "Shareable report composition over the canonical seo.gsc_perf_* reads, including GscPortfolioClassBar, site/page GscClassBar rollups, and EntityRef doors.",
+        "Client-ready report composition over the canonical seo.gsc_perf_* reads, including GscPortfolioClassBar, site/page GscClassBar rollups, and EntityRef doors.",
       tier: "internal",
     },
     {

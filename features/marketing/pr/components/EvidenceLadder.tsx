@@ -67,7 +67,7 @@ const KIND_ICON: Record<ProofKind, ComponentType<{ className?: string }>> = {
 const OWNER_LABEL: Record<GapOwner, string> = {
   you: "You",
   team: "Your team",
-  brand: "The brand",
+  client: "The client",
   third_party: "Someone outside",
 };
 

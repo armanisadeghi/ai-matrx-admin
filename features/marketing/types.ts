@@ -112,7 +112,7 @@ export interface BrandListRow extends MarketingBrand {
 /**
  * The human-authored editorial brand profile stored in `web.brand.profile`
  * (jsonb, default `{}`). Flat by design: every field is an optional string or
- * string array. This is the voice-of-the-brand document downstream agents
+ * string array. This is the voice-of-the-client document downstream agents
  * rely on — humans author it; agents only propose changes.
  */
 export interface BrandProfile {

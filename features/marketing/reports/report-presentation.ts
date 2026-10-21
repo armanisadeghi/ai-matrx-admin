@@ -41,7 +41,7 @@ export function buildReportRowCopy(
   return webCopy({
     kind: "web-search-report-row",
     label,
-    description: `${label} from the brand Search Console report.`,
+    description: `${label} from the client Search Console report.`,
     surface: "Marketing Reports",
     data: row,
     lines: gscMetricCopyLines(label, dimension, row),

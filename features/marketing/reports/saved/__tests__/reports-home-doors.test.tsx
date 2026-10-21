@@ -29,5 +29,5 @@ it("/marketing/reports keeps the live report and adds the saved section", () => 
     "utf8",
   );
   expect(source).toContain("<SavedSeoReportsSection");
-  expect(source).toContain("Brand search report");
+  expect(source).toContain("Client search report");
 });

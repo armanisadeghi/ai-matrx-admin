@@ -26,7 +26,6 @@
  *   • controls  → `getLiveCaptureControls()` — registered by the Capture Studio
  */
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2, Mic, Pause, Play, Square, Video } from "lucide-react";
@@ -202,20 +201,19 @@ export function LiveCaptureIndicator() {
           )}
         </button>
 
-        <ControlButton
+        <button
           type="button"
-          variant="danger"
           onClick={() => void stopAndSave()}
           disabled={saving}
           aria-label="Stop recording and save it"
-          icon={
-            saving ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Square className="fill-current" />
-            )
-          }
-        />
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-destructive text-destructive-foreground active:scale-95 disabled:opacity-60"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Square className="h-4 w-4 fill-current" />
+          )}
+        </button>
       </div>
     </div>
   );

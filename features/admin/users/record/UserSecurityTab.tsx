@@ -324,7 +324,7 @@ const ACTION_COPY: Record<Pending["kind"], { title: (label: string, who: string)
   },
   factor: {
     title: (label, who) => `Remove ${who}'s ${label}?`,
-    description: "Ends their current sign-ins; existing access may last until tokens expire.",
+    description: "They must set it up again to use it.",
     confirm: "Remove factor",
   },
   key: {

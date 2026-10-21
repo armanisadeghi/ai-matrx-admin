@@ -151,7 +151,7 @@ function competitorView(raw: string | null): CompetitorView {
  * hrefs were hardcoded to the FLAT `/marketing/competitors` route, so inside a
  * brand (`/marketing/<brand>/intelligence/competitors`) five of the six tabs —
  * Review, Opportunities, Competitors, Evidence, History — navigated off the
- * brand entirely, and the flat route bounced the user to the brands list with
+ * brand entirely, and the flat route bounced the user to the clients list with
  * every bit of context lost. Only the default Run tab appeared to work. The
  * base is now whatever route the workspace is actually mounted on.
  */
@@ -300,7 +300,7 @@ export default function CompetitorAutopsyWorkspace({
   view: fixedView,
 }: {
   /** Brand scope. Supplied by the brand route so the workspace can never fall
-   * back to another brand's site — see useCompetitorAutopsy's brandId note. */
+   * back to another client's site — see useCompetitorAutopsy's brandId note. */
   brandId?: string | null;
   /**
    * The view fixed by the ROUTE — each competitor screen has its own URL under

@@ -19,7 +19,7 @@ function toSearchParams(query: SearchParams): URLSearchParams {
 /**
  * LEGACY door for the bare flat site address — see `./[...rest]/page.tsx` for
  * the sub-path variant. A site's home is now its website inventory overview
- * inside the owning brand.
+ * inside the owning client.
  */
 export default async function LegacyFlatSiteRedirect({
   params,

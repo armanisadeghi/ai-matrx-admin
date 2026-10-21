@@ -6,7 +6,7 @@ import { LoadingSurface } from "@/features/marketing/components/shared/Marketing
 import LocalListingsWorkspace from "@/features/marketing/local/LocalListingsWorkspace";
 import { resolveBrandParam } from "@/features/marketing/lib/keys-server";
 
-/** This brand's business locations, listings, and reviews. */
+/** This client's business locations, listings, and reviews. */
 export default async function BrandLocationsPage({
   params,
 }: {

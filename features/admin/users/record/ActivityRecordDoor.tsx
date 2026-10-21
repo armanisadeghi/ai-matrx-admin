@@ -9,14 +9,20 @@
 // a podcast job also links its Studio run page.
 
 import { useEffect, useState, type ReactElement } from "react";
-import { CircleAlert, Workflow } from "lucide-react";
+import { Bot, CircleAlert } from "lucide-react";
 import { Peek, PeekPopover, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
 import { createClient } from "@/utils/supabase/client";
 import type { Database, Json } from "@/types/database.types";
 import { isJsonObject } from "@/types/json";
 import { adminOrganizationHref } from "./UserOrganizationsTab";
-import type { DoorRecordType } from "./userActivity";
 
+export type DoorRecordType = "agent_run" | "app_log";
+
+export const PEEK_RECORD_TYPES: readonly DoorRecordType[] = ["agent_run", "app_log"];
+
+export function isPeekRecordType(type: string): type is DoorRecordType {
+  return (PEEK_RECORD_TYPES as readonly string[]).includes(type);
+}
 
 type AgentRunRow = Pick<
   Database["chat"]["Tables"]["agent_run"]["Row"],
@@ -71,7 +77,7 @@ export function agentRunPeekRecord(r: AgentRunRow): PeekRecord {
     ...(r.organization_id ? [{ property: "Organization", value: "Open", href: adminOrganizationHref(r.organization_id) }] : []),
   ];
   const href = agentRunPageHref(r.kind, r.id);
-  return { kind: "Agent job", id: r.id, title: r.kind.replace(/[_.]/g, " "), glyph: Workflow, body, ...(href ? { href } : {}), copyData: r };
+  return { kind: "Agent job", id: r.id, title: r.kind.replace(/[_.]/g, " "), glyph: Bot, body, ...(href ? { href } : {}), copyData: r };
 }
 
 export function appLogPeekRecord(r: AppLogRow): PeekRecord {

@@ -5,7 +5,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 /**
  * LEGACY: new-website intake moved to `/marketing/brands/new-website` (a static
  * child of the roster, where it cannot collide with a brand key). `?brand=`
- * pre-binds the new site to a brand, so the whole query rides along.
+ * pre-binds the new site to a client, so the whole query rides along.
  */
 export default async function LegacyNewMarketingSiteRedirect({
   searchParams,

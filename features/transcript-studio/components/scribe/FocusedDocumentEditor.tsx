@@ -7,7 +7,6 @@
  * while not actively typing.
  */
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useRef } from "react";
 import { Check, Loader2, Minimize2, Square } from "lucide-react";
 import {
@@ -77,15 +76,15 @@ export function FocusedDocumentEditor({
             )}
           </span>
           {isRecording && (
-            <ControlButton
+            <button
               type="button"
-              variant="danger"
               onClick={() => recording?.stop()}
               aria-label="Stop recording"
-              icon={<Square className="fill-current" />}
+              className="flex items-center gap-1.5 rounded-full bg-red-500 px-3 py-1.5 text-sm font-medium text-white active:bg-red-600"
             >
+              <Square className="h-3.5 w-3.5 fill-current" />
               Stop
-            </ControlButton>
+            </button>
           )}
           <button
             type="button"

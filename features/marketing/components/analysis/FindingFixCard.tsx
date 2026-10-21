@@ -18,7 +18,7 @@
  * SAFETY, non-negotiable: applying writes the page's DESIRED metadata and a CMS
  * DRAFT through `applyFindingFix` — the seams that already existed. It never
  * publishes, never moves a route (THE 301 LAW), and never creates a CMS page.
- * The live brand site is unchanged until a human publishes the draft in the
+ * The live client site is unchanged until a human publishes the draft in the
  * CMS. That is why the button says "as a draft" and the receipt names where it
  * landed.
  */

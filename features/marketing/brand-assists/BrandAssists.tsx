@@ -11,14 +11,9 @@
  *
  * Results — every brand assist I ran for this brand, from its ledger receipt, so the result stays visible
  * after the chip is gone. The data itself lives in its normal home (named on each row).
- *
- * Placement (Arman, 2026-10-21): offers and results never take the page's premium top space. They share ONE
- * compact, foldable "Discoveries" card low on the Overview, one at a time with previous / next.
  */
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
-import { Button } from "@ai-matrx/design-system/controls";
-import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
+import { ExternalLink } from "lucide-react";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { selectAssistsForSurface } from "@/features/assists/redux/assistsSlice";
 import { emitAssistTracked } from "@/features/assists/redux/emitTracked";
@@ -32,7 +27,6 @@ import {
   BRAND_ASSIST_SOURCE_PREFIX,
   BRAND_ASSIST_SURFACE,
   brandAssistDedupeKey,
-  isRetiredBrandAssist,
   brandAssistSourceKey,
   offersToEmit,
   type BrandAssistOffers,
@@ -49,8 +43,9 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
   const [history, setHistory] = useState<Assist[]>([]);
   // This brand's pending chips. When one leaves the stack (run, declined, snoozed — `assistDecided` fires
   // after the ledger write) the receipt is new, so the results re-read without a page reload.
-  const surfaceAssists = useAppSelector((state) => selectAssistsForSurface(state, BRAND_ASSIST_SURFACE));
-  const pendingHere = surfaceAssists.filter((a) => a.entityId === brandId).length;
+  const pendingHere = useAppSelector((state) =>
+    selectAssistsForSurface(state, BRAND_ASSIST_SURFACE).filter((a) => a.entityId === brandId).length,
+  );
   const lastPending = useRef<number | null>(null);
 
   useEffect(() => {
@@ -123,95 +118,48 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
   const seenJobs = new Set<string>();
   const results = history.filter((row) => {
     if (row.entityId !== brandId || row.status !== "accepted" || !isRunResult(row.result)) return false;
-    if (isRetiredBrandAssist(row.sourceKey)) return false;
     const job = (row.result as BrandAssistRunResult).assist_id ?? row.id;
     if (seenJobs.has(job)) return false;
     seenJobs.add(job);
     return true;
   });
-  const pending = surfaceAssists.filter((a) => a.entityId === brandId && !isRetiredBrandAssist(a.sourceKey));
-  const items: Discovery[] = [
-    ...pending.map((assist): Discovery => ({ kind: "offer", id: assist.id, assist })),
-    ...results.map((row): Discovery => ({ kind: "result", id: row.id, result: row.result as unknown as BrandAssistRunResult })),
-  ];
-  const [index, setIndex] = useState(0);
-  const at = items.length ? Math.min(index, items.length - 1) : 0;
-  const current = items[at] ?? null;
 
   return (
-    <>
-      {/* Hydrates the assists ledger and renders the current offer's chip (verb / Not now); nothing else. */}
-      <div className="hidden">
-        <AssistStrip surfaceName={BRAND_ASSIST_SURFACE} filter={() => false} />
-      </div>
-      {current ? (
-        <SectionCard
-          title="Discoveries"
-          anchor="overview-discoveries"
-          collapsible
-          about="Small jobs we can run for this brand and what they found. One at a time; nothing runs without your click."
-          headerExtra={
-            items.length > 1 ? (
-              <span className="flex items-center gap-0.5">
-                <Button variant="quiet" icon={<ChevronLeft />} aria-label="Previous discovery" title="Previous" disabled={at === 0} onClick={() => setIndex(at - 1)} />
-                <span className="type-meta tabular-nums text-muted-foreground">
-                  {at + 1} of {items.length}
-                </span>
-                <Button variant="quiet" icon={<ChevronRight />} aria-label="Next discovery" title="Next" disabled={at >= items.length - 1} onClick={() => setIndex(at + 1)} />
-              </span>
-            ) : undefined
-          }
-        >
-          <div className="flex min-h-[60px] flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-2" data-testid="brand-assists">
-            {current.kind === "offer" ? (
-              <>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate type-title text-foreground">{current.assist.title}</span>
-                  {current.assist.body ? <span className="block truncate type-meta text-muted-foreground">{current.assist.body}</span> : null}
-                </span>
-                <AssistStrip surfaceName={BRAND_ASSIST_SURFACE} filter={(a) => a.id === current.id} />
-              </>
-            ) : (
-              <ResultLine result={current.result} />
-            )}
-          </div>
-        </SectionCard>
+    <div className="flex flex-col gap-2 empty:hidden" data-testid="brand-assists">
+      <AssistStrip surfaceName={BRAND_ASSIST_SURFACE} filter={(a) => a.entityId === brandId} />
+      {results.length > 0 ? (
+        <div className="grid gap-2 sm:grid-cols-2" data-testid="brand-assist-results">
+          {results.slice(0, 4).map((row) => {
+            const result = row.result as unknown as BrandAssistRunResult;
+            return (
+              <div key={row.id} className="rounded-lg border border-border bg-card p-2.5">
+                <div className="text-sm font-medium text-foreground">{result.summary}</div>
+                {result.items.slice(0, 5).map((item, i) => (
+                  <div key={`${item.label}-${i}`} className="flex h-6 min-w-0 items-center gap-2 text-xs">
+                    <span className="shrink-0 text-muted-foreground">{item.label}</span>
+                    {item.href ? (
+                      <OutboundLink href={item.href} className="truncate text-foreground hover:underline">
+                        {item.value}
+                      </OutboundLink>
+                    ) : (
+                      <span className="truncate text-foreground">{item.value}</span>
+                    )}
+                    {item.detail ? <span className="truncate text-muted-foreground">{item.detail}</span> : null}
+                  </div>
+                ))}
+                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="truncate">Saved to {result.lands}</span>
+                  {result.review_href ? (
+                    <OutboundLink href={result.review_href} className="ml-auto inline-flex items-center gap-1 text-foreground hover:underline">
+                      Review <ExternalLink className="size-3" />
+                    </OutboundLink>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : null}
-    </>
-  );
-}
-
-type Discovery =
-  | { kind: "offer"; id: string; assist: Assist }
-  | { kind: "result"; id: string; result: BrandAssistRunResult };
-
-/** One finished job: its summary, colors as swatches (never hex lists), other items as short text, and Review. */
-function ResultLine({ result }: { result: BrandAssistRunResult }) {
-  const colors = result.items.filter((item) => item.label === "Color" && /^#[0-9a-f]{3,8}$/i.test(item.value));
-  const others = result.items.filter((item) => !colors.includes(item)).slice(0, 3);
-  return (
-    <>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate type-title text-foreground">{result.summary}</span>
-        {others.length ? (
-          <span className="block truncate type-meta text-muted-foreground">
-            {others.map((item) => item.value).join(" · ")}
-          </span>
-        ) : null}
-      </span>
-      {colors.length ? (
-        <span className="flex shrink-0 items-center -space-x-1" aria-label={`${colors.length} colors`}>
-          {colors.slice(0, 6).map((item, i) => (
-            // ui-exception: a swatch renders the brand's own color value
-            <span key={`${item.value}-${i}`} className="size-6 rounded-full border-2 border-card" style={{ background: item.value }} title={item.value} />
-          ))}
-        </span>
-      ) : null}
-      {result.review_href ? (
-        <Button asChild variant="outline" icon={<ExternalLink />}>
-          <OutboundLink href={result.review_href}>Review</OutboundLink>
-        </Button>
-      ) : null}
-    </>
+    </div>
   );
 }

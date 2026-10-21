@@ -1,5 +1,5 @@
 /**
- * Same-route brand switching (Arman's rule, 2026-08-30): changing the brand
+ * Same-route client switching (Arman's rule, 2026-08-30): changing the brand
  * in the crumb keeps you on EXACTLY the same route for the new brand — as long
  * as it is a valid place to be.
  *

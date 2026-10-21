@@ -22,8 +22,7 @@ import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
 import { PersonFoundStage } from "./found/PersonFoundStage";
 import { personAnswers, personCoreReady } from "./found/personCards";
-import { loginSeed as readLoginSeed, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
-import { welcomeNameOf } from "./welcome/welcomeName";
+import { loginSeed as readLoginSeed, provenProfileName, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
 import { readTypedName, writeTypedName } from "./welcome/typedNameStore";
 import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
 import type { PersonGroup } from "./welcome/peopleGroups";
@@ -1913,10 +1912,9 @@ export function SmartAddBrand({
     // Declared after the first round's effect, so on the commit that starts both, the first round claims the name.
     if (welcomeNameKick && welcomeSeed) runWelcomeName();
   }, [welcomeNameKick, welcomeSeed]);
-  // The name rule (welcomeName.ts): the login's own name > one typed here > a proven GitHub name > the email's hint.
-  const { name: welcomeName, proven: welcomeProvenName } = welcomeOn
-    ? welcomeNameOf({ seed: welcomeSeed, loginName: welcomeLoginName, later: welcomeLateName ?? personTyped.current?.name ?? null, visible })
-    : { name: welcomeSeed?.name ?? welcomeLoginName ?? welcomeLateName ?? personTyped.current?.name ?? "", proven: null };
+  const welcomeName = welcomeSeed?.name ?? welcomeLoginName ?? welcomeLateName ?? personTyped.current?.name ?? "";
+  // Next in line after the login: the name on a GitHub account the email lookup proved is theirs.
+  const welcomeProvenName = welcomeOn && welcomeSeed && !welcomeName ? provenProfileName(visible) : null;
   const adoptProvenName = useEffectEvent((name: string) => welcomeSetName(name, false));
   useEffect(() => {
     if (welcomeProvenName) adoptProvenName(welcomeProvenName);

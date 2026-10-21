@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (initiatives) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/planning/initiatives/page.tsx
 //
-// Initiatives — the container above channels — for this brand.
+// Initiatives — the container above channels — for this client.
 //
 // NOTE (agency restructure, 2026-08-29): `InitiativesListPage` is the canonical
 // component the flat `/marketing/initiatives` route used and is mounted here

@@ -1921,7 +1921,7 @@ function UrlChangeIntakeCard({
         kind: "web-url-change-intake",
         label: "URL change webhook setup",
         description:
-          "One-time brand CMS webhook credential plus its public IndexNow ownership file.",
+          "One-time client CMS webhook credential plus its public IndexNow ownership file.",
         surface: `Integrations — URL changes — ${site.domain}`,
         data: {
           webhook_url: setup.webhookUrl,

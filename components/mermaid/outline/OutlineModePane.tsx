@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,
@@ -457,9 +457,14 @@ function SequenceOutline({ doc, apply }: { doc: SequenceDoc; apply: Apply }) {
               onCommit={(label) => apply({ type: "renameParticipant", id: p.id, label })}
             />
             <SimpleTooltip text={`Delete ${p.alias ?? p.id}`}>
-              <ControlButton variant="quiet" removes type="button"
-               
-                onClick={() => apply({ type: "deleteParticipant", id: p.id })} className="opacity-100 focus-visible:opacity-100" aria-label={`Delete ${p.alias ?? p.id}`} icon={<Trash2 />} />
+              <button
+                type="button"
+                aria-label={`Delete ${p.alias ?? p.id}`}
+                onClick={() => apply({ type: "deleteParticipant", id: p.id })}
+                className="rounded-full p-0.5 text-muted-foreground opacity-100 hover:bg-destructive/10 hover:text-destructive-ink sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover/chip:opacity-100 focus-visible:opacity-100"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
             </SimpleTooltip>
           </span>
         ))}

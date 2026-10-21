@@ -223,10 +223,10 @@ export function MarketingReportsWorkspace() {
       : {}),
   });
   const reportCopy = webCopy({
-    kind: "web-brand-search-report",
-    label: `${selectedSiteName ?? "Brand"} search report`,
+    kind: "web-client-search-report",
+    label: `${selectedSiteName ?? "Client"} search report`,
     description:
-      "A ready-to-send 28-day GSC report with canonical traffic-class evidence.",
+      "A client-ready 28-day GSC report with canonical traffic-class evidence.",
     surface: "Marketing Reports",
     data: clientReport,
     lines: [
@@ -340,12 +340,12 @@ export function MarketingReportsWorkspace() {
             ) : requiredError ? (
               <div data-surface-value="report_load_error">
                 <InlineQueryError
-                  what="the brand report"
+                  what="the client report"
                   error={requiredError}
                 />
               </div>
             ) : isLoading ? (
-              <LoadingSurface label="Assembling the brand report…" />
+              <LoadingSurface label="Assembling the client report…" />
             ) : !selectedSite || !summaryRow ? (
               <NoReportData
                 siteId={selectedSiteId}
@@ -360,7 +360,7 @@ export function MarketingReportsWorkspace() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div data-surface-value="selected_site" className="min-w-0">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                        Brand search report
+                        Client search report
                       </p>
                       <h1 className="mt-1 text-2xl font-semibold tracking-tight">
                         <EntityRef
@@ -399,7 +399,7 @@ export function MarketingReportsWorkspace() {
                     </div>
                   </div>
                   <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-                    A live, ready-to-send account of what Google search
+                    A live, client-ready account of what Google search
                     delivered, which traffic mattered, and where the next
                     opportunity sits.
                   </p>

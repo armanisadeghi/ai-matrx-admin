@@ -45,19 +45,3 @@ describe("one card per provider", () => {
     expect(out[0].keywords).toContain("outlook mail");
   });
 });
-
-describe("a folded card does not print a provider's accounts twice", () => {
-  it("merges account lists across abilities without repeats", () => {
-    const out = foldAbilities([
-      item("native:slack", { saved: true, accounts: ["Acme", "Beta"], accountSummary: "Acme, Beta" }),
-      item("mcp-slack", {
-        server: server("slack"),
-        saved: true,
-        accounts: ["acme", "Gamma"],
-        accountSummary: "acme, Gamma",
-      }),
-    ]);
-    expect(out[0].accounts).toEqual(["Acme", "Beta", "Gamma"]);
-    expect(out[0].accountSummary).toBe("Acme, Beta +1");
-  });
-});

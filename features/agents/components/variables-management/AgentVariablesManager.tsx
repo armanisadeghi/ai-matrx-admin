@@ -9,7 +9,6 @@
  * modal in edit mode on the new variable.
  */
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRowAction";
 import React, { useEffect, useState } from "react";
 import { Plus, X, AlertCircle, Layers, SlidersHorizontal } from "lucide-react";
@@ -326,18 +325,17 @@ export function AgentVariablesManager({ agentId }: AgentVariablesManagerProps) {
           </Label>
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 py-0.5">
             {undeclaredNames.map((name) => (
-              <ControlButton
+              <button
                 type="button"
                 key={name}
-                variant="outline"
-                tone="destructive"
                 onClick={() => handleAddClick(name)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors shrink-0"
                 title={`Found in messages — click to define ${name}`}
-                icon={<AlertCircle />}
-                iconEnd={<Plus />}
               >
-                {name}
-              </ControlButton>
+                <AlertCircle className="w-3 h-3 shrink-0" />
+                <span>{name}</span>
+                <Plus className="w-3 h-3 shrink-0 opacity-70" />
+              </button>
             ))}
           </div>
         </div>

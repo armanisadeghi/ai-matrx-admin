@@ -1,6 +1,5 @@
 "use client";
 
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { Select } from "@ai-matrx/design-system/controls";
 import React, { useState } from "react";
 import { extractErrorMessage } from "@/utils/errors";
@@ -201,15 +200,15 @@ export const CredentialsModal: React.FC<CredentialsModalProps> = ({
           )}
         </div>
         <div className="flex items-center justify-between border-t border-neutral-200 px-3 py-2 dark:border-neutral-800">
-          <ControlButton
+          <button
             type="button"
-            variant="danger"
             onClick={() => void revoke()}
             disabled={busy}
-            icon={<Trash2 size={12} />}
+            className="flex items-center gap-1 rounded-sm border border-red-300 px-2 py-1 text-[11px] text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/40"
           >
+            <Trash2 size={12} />
             Revoke
-          </ControlButton>
+          </button>
           <div className="flex gap-1">
             <button
               type="button"

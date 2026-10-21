@@ -2,7 +2,7 @@
 
 /**
  * `news_client_context` (NEWS-ENGINE-SPEC §6.16) — what the judgment jobs were
- * told about the brand this run: company, spokespeople and proof, rivals,
+ * told about the client this run: company, spokespeople and proof, rivals,
  * beats, search terms, exclusions and the brief. The ONE renderer.
  */
 
@@ -19,7 +19,7 @@ export function NewsClientContextView({ value }: { value: Record<string, unknown
   return (
     <KindCard
       testId="news-client-context"
-      title={`What the judges were told about ${str(company.name) || "the brand"}`}
+      title={`What the judges were told about ${str(company.name) || "the client"}`}
       subtitle="Frozen at the start of the run; each judgment job receives only its slice."
     >
       {str(company.description) ? <p className="text-xs text-foreground">{str(company.description)}</p> : null}

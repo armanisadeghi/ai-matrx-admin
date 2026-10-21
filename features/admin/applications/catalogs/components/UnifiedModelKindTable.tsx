@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ArrowLeft, ExternalLink, Link2 } from "lucide-react";
-import { curatedList, fetchCuratedModels, type CuratedCatalogClient, type CuratedModel } from "@ai-matrx/agents/models";
+import { catalogKindOf, curatedList, fetchCuratedModels, type CuratedCatalogClient, type CuratedModel } from "@ai-matrx/agents/models";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -31,38 +31,6 @@ import { discoveryApi, type CallAuth, type ListingEdit } from "@/features/ai-mod
 import { ModelListingEditor } from "./ModelListingEditor";
 import { kindLabel } from "@/features/admin/applications/catalogs/schemas";
 import type { CatalogEntryRow } from "@/features/admin/applications/catalogs/types";
-
-/** The catalog kinds whose rows live in the unified catalog (ai.*) — Arman's "one editor". */
-export const MODEL_KINDS: ReadonlySet<string> = new Set([
-  "llm_model",
-  "whisper_model",
-  "tts_model_file",
-  "image_gen_model",
-  "video_gen_model",
-  "ner_model",
-  "wake_word_model",
-  "lora",
-]);
-
-/**
- * The catalog kind a unified model belongs to: the kind of the old rows its variants carry (the list
- * migration stamps them); a model added later is placed by what it does.
- */
-export function kindOfModel(m: CuratedModel, kindOfEntry: ReadonlyMap<string, string>): string {
-  for (const v of m.variants) for (const id of v.catalog_entry_ids) {
-    const k = kindOfEntry.get(id);
-    if (k && MODEL_KINDS.has(k)) return k;
-  }
-  const out = m.capabilities.output ?? [];
-  const inp = m.capabilities.input ?? [];
-  if (m.presentation?.shelf === "loras") return "lora";
-  if (out.includes("video")) return "video_gen_model";
-  if (out.includes("image")) return "image_gen_model";
-  if (out.includes("audio")) return "tts_model_file";
-  if (inp.includes("audio")) return "whisper_model";
-  if (m.capabilities.interaction === "extraction") return "ner_model";
-  return "llm_model";
-}
 
 export interface ModelRow {
   id: string;
@@ -129,7 +97,7 @@ export function UnifiedModelKindTable({ app, kind, allEntries, onBack, onAddFrom
 
   const kindOfEntry = useMemo(() => new Map(allEntries.map((e) => [e.id, e.kind])), [allEntries]);
   const rows = useMemo(
-    () => (models ? curatedList(models, { offeredOnly: false }).filter((m) => kindOfModel(m, kindOfEntry) === kind).map(toRow) : []),
+    () => (models ? curatedList(models, { offeredOnly: false }).filter((m) => catalogKindOf(m, kindOfEntry) === kind).map(toRow) : []),
     [models, kind, kindOfEntry],
   );
 

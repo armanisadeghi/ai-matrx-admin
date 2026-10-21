@@ -14,7 +14,6 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { loadConversation } from "@ai-matrx/chat/agents/redux/execution-system/thunks/load-conversation.thunk";
 import type { ConversationBattleFork } from "../types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 interface ConversationBattleColumnProps {
   fork: ConversationBattleFork;
@@ -62,8 +61,14 @@ export function ConversationBattleColumn({
           name={fork.label}
           className="shrink-0"
         />
-        <ControlButton variant="quiet" removes type="button"
-          onClick={() => onRemove(fork)} aria-label="Remove this fork from the battle (the chat stays in history)" icon={<X />} />
+        <button
+          type="button"
+          onClick={() => onRemove(fork)}
+          title="Remove this fork from the battle (the chat stays in history)"
+          className="p-1 rounded text-muted-foreground hover:text-destructive-ink hover:bg-destructive/10"
+        >
+          <X className="size-3.5" />
+        </button>
       </div>
       <div className="flex-1 min-h-0 overflow-hidden">
         {loadError ? (

@@ -6,7 +6,7 @@
  *
  * Without the org, the count silently spanned every organization the
  * signed-in user belongs to, so an agency operator saw one number covering all
- * of their brands.
+ * of their clients.
  *
  * The brand's NAME goes down too, because the rest of the page is genuinely
  * not brand-scopable (templates, campaigns, org template libraries have no

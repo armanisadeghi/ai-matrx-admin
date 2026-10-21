@@ -22,7 +22,7 @@ export function UserAcquisitionTab({ userId, shareForAi }: UserTabBodyProps) {
           Open journey <ExternalLink className="h-3.5 w-3.5" />
         </AppLink>
       </div>
-      <UserAcquisitionExplorer focusUser={userId} onShown={shareForAi} />
+      <UserAcquisitionExplorer focusUser={userId} onShown={(shown) => shareForAi({ acquisition: shown })} />
     </div>
   );
 }

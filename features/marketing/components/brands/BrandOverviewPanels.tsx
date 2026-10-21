@@ -16,9 +16,8 @@
  *  - Brand look: logo assets raw (never tinted), color swatches (click copies the hex), fonts.
  */
 
-import { useEffect, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import type { LucideIcon } from "lucide-react";
@@ -49,6 +48,8 @@ import {
 import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
+import { useClipboard } from "@ai-matrx/kit/clipboard";
+import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
@@ -413,11 +414,6 @@ export function BrandOverviewKpis({
 
 /* ------------------------------------------------------------------------------------------------ */
 
-/** A click that landed on a link, button or menu item inside a clickable row (portaled menus bubble too). */
-function insideControl(target: EventTarget): boolean {
-  return target instanceof Element && Boolean(target.closest("a, button, input, [role='menuitem'], [role='menu'], [role='dialog']"));
-}
-
 function AccountAvatar({ account }: { account: AccountRow }) {
   if (account.profileId && account.avatarHint) {
     return (
@@ -563,7 +559,6 @@ export function BrandOverviewAccounts({
   onAdd: () => void;
 }) {
   const { busyRow, progress, trackOwn, trackAllOwn, refreshOwn, refreshAllOwn } = useTrackOwn(organizationId, brandId);
-  const router = useRouter();
   const [ownerRow, setOwnerRow] = useState<AccountRow | null>(null);
   const { brand, people } = splitAudience(accounts);
   // Tracking and refreshing spend points on the brand's own accounts only; a person's account is theirs.
@@ -662,26 +657,7 @@ export function BrandOverviewAccounts({
               const canTrack = canEdit && !isPerson && trackableOwn(a);
               const canRefresh = canEdit && Boolean(a.trackedAccountId && a.profileId);
               return (
-                <li
-                  key={a.rowId}
-                  // The whole row opens the account; links, buttons and the row menu inside keep their own job.
-                  {...(href
-                    ? {
-                        tabIndex: 0,
-                        "data-clickable": "",
-                        "aria-label": `Open ${labels.primary}`,
-                        onClick: (event: MouseEvent<HTMLLIElement>) => {
-                          if (insideControl(event.target)) return;
-                          router.push(href);
-                        },
-                        onKeyDown: (event: KeyboardEvent<HTMLLIElement>) => {
-                          if (event.key !== "Enter" || event.target !== event.currentTarget) return;
-                          router.push(href);
-                        },
-                      }
-                    : {})}
-                  className={`flex min-h-[52px] flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 outline-none focus-visible:bg-accent/50 ${href ? "hover:bg-accent/40" : ""} ${grid}`}
-                >
+                <li key={a.rowId} className={`flex min-h-[52px] flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 ${grid}`}>
                   <div className="flex min-w-0 flex-1 items-center gap-2.5">
                     {href ? (
                       <Link prefetch={false} href={href} className="shrink-0" data-clickable="" aria-label={labels.primary}>
@@ -806,9 +782,6 @@ export function BrandOverviewAccounts({
 
 /* ------------------------------------------------------------------------------------------------ */
 
-/** Icon and label start on one left edge in every quick action (centered text under a left icon read as sloppy). */
-const QUICK_ACTION = "w-full justify-start";
-
 export function BrandOverviewActions({
   brandId,
   brandSeg,
@@ -832,7 +805,7 @@ export function BrandOverviewActions({
   const aiEstimate = useBrandCheckEstimate(brandId, organizationId, canEdit);
   const identity = marketingRoutes.brandIdentity(brandSeg);
   const link = (href: string, icon: ReactNode, label: string, meta?: ReactNode) => (
-    <Button asChild variant="outline" icon={icon} meta={meta} className={QUICK_ACTION}>
+    <Button asChild variant="outline" icon={icon} meta={meta} className="w-full">
       <Link prefetch={false} href={href}>
         {label}
       </Link>
@@ -844,19 +817,19 @@ export function BrandOverviewActions({
       anchor="overview-actions"
       about="The jobs people run most on a brand. Anything that spends points names its cost before it starts."
     >
-      <div className="grid grid-cols-2 gap-2 p-3">
+      <div className="grid grid-cols-2 gap-2 p-3 lg:grid-cols-1 xl:grid-cols-2">
         {canEdit ? link(marketingRoutes.smartAddEnrich(brandId), <ScanSearch />, "Enrich brand") : null}
         {link(marketingRoutes.brandDiscovery(brandSeg), <Inbox />, "Review inbox", pending === null ? "…" : pending.toLocaleString())}
         {canEdit ? (
           aiEstimate.data && !aiEstimate.data.can_compare ? (
             // The AI check compares the brand with the rivals named for it; with none, the door is naming them.
-            <Button asChild variant="outline" icon={<Swords />} className={QUICK_ACTION} title="Name the rivals to compare with, then run the check">
+            <Button asChild variant="outline" icon={<Swords />} className="w-full" title="Name the rivals to compare with, then run the check">
               <Link prefetch={false} href={marketingRoutes.brandAiVisibility(brandSeg)}>
                 Set up AI check
               </Link>
             </Button>
           ) : (
-            <RunCheckButton brandId={brandId} organizationId={organizationId} className={QUICK_ACTION} />
+            <RunCheckButton brandId={brandId} organizationId={organizationId} />
           )
         ) : null}
         {link(`${identity}/voice`, <Mic />, "Measure voice")}
@@ -864,16 +837,16 @@ export function BrandOverviewActions({
         {link(marketingRoutes.brandAssets(brandSeg, "generate"), <ImagePlus />, "Generate image")}
         {link(marketingRoutes.brandAssets(brandSeg), <FolderOpen />, "Asset desk")}
         {canEdit ? (
-          <Button variant="outline" icon={<ListPlus />} className={QUICK_ACTION} onClick={onAddFact}>
+          <Button variant="outline" icon={<ListPlus />} className="w-full" onClick={onAddFact}>
             Add fact
           </Button>
         ) : null}
         {canEdit ? (
-          <Button variant="outline" icon={<UserPlus />} className={QUICK_ACTION} onClick={onAddAccount}>
+          <Button variant="outline" icon={<UserPlus />} className="w-full" onClick={onAddAccount}>
             Add account
           </Button>
         ) : null}
-        <Button variant="outline" icon={<Workflow />} className={QUICK_ACTION} onClick={onOpenActivity}>
+        <Button variant="outline" icon={<Workflow />} className="w-full" onClick={onOpenActivity}>
           Background work
         </Button>
       </div>
@@ -1034,6 +1007,7 @@ export function BrandOverviewKnown({
               <span className="min-w-0 flex-1">
                 <PropertyRow
                   label={label}
+                  meta={meta}
                   value={
                     value ? (
                       <span className="block truncate" title={value}>
@@ -1045,11 +1019,7 @@ export function BrandOverviewKnown({
                   }
                 />
               </span>
-              {/* Meta and chevron are one cluster on the row's center line, never up on the label line. */}
-              <span className="flex shrink-0 items-center gap-2 self-center">
-                {meta ? <span className="whitespace-nowrap type-meta tabular-nums text-muted-foreground">{meta}</span> : null}
-                <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
-              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
             </Link>
           </li>
         ))}
@@ -1065,44 +1035,87 @@ function rankedLogos(logos: readonly OverviewAsset[]): (OverviewAsset & { url: s
   return rankLogos(logos.flatMap((asset) => (asset.preview ? [{ ...asset, url: asset.preview, kind: asset.kind ?? "logo" }] : [])));
 }
 
-/** The brand's marks (logos, wordmark, favicon). Colors and fonts live in the Brand palette. */
+export interface OverviewSwatch {
+  id: string;
+  value: string;
+  name: string | null;
+}
+
+export interface OverviewFont {
+  id: string;
+  name: string;
+}
+
 export function BrandOverviewLook({
   logos,
+  colors,
+  fonts,
   total,
   onOpen,
 }: {
   logos: OverviewAsset[];
+  colors: OverviewSwatch[];
+  fonts: OverviewFont[];
   total: number;
   onOpen: () => void;
 }) {
+  const { copyText } = useClipboard({ notify: copyNotify });
   const shownLogos = rankedLogos(logos).slice(0, 4);
   const tones = useLogoTones(shownLogos.map((asset) => asset.url));
-  // An expired provider link is not a logo the brand has.
-  const hasLogo = shownLogos.some((asset) => !asset.expired);
+  // Missing counts only marks that load: an expired provider link is not a logo the brand has.
+  const missing = [shownLogos.some((asset) => !asset.expired) ? null : "Logo", colors.length ? null : "Colors", fonts.length ? null : "Fonts"].filter(
+    (x): x is string => Boolean(x),
+  );
   return (
     <SectionCard
-      title="Logos"
+      title="Brand look"
       anchor="overview-look"
-      about="The brand's logos and marks, best first."
+      about="The brand's logos, colors and fonts. Click a color to copy its value."
       action={{ label: total ? `All ${total}` : "Open", onClick: onOpen }}
     >
       <div className="grid gap-3 p-3">
-        {shownLogos.length ? (
+        {logos.length ? (
           <div className="grid grid-cols-4 gap-2">
             {shownLogos.map((asset) => (
               <AssetTile key={asset.id} asset={asset} tone={tones.get(asset.url)} onOpen={onOpen} />
             ))}
           </div>
         ) : null}
-        {hasLogo ? null : (
+        {colors.length ? (
+          <div className="flex flex-wrap items-center gap-1">
+            {colors.slice(0, 10).map((swatch) => (
+              <Button
+                key={swatch.id}
+                variant="quiet"
+                aria-label={`Copy color ${swatch.value}`}
+                title={`${swatch.name && swatch.name !== swatch.value ? `${swatch.name} · ` : ""}${swatch.value.toUpperCase()} · click to copy`}
+                onClick={() => void copyText(swatch.value, `${swatch.value} copied`)}
+                icon={<span className="block size-5 rounded-full border border-border" style={{ background: swatch.value }} />}
+              />
+            ))}
+          </div>
+        ) : null}
+        {fonts.length ? (
+          <div className="flex flex-wrap gap-2">
+            {fonts.slice(0, 4).map((font) => (
+              <span key={font.id} className="flex min-w-0 items-baseline gap-2 rounded-md border border-border px-2.5 py-1.5">
+                <span className="text-lg leading-none text-foreground" style={{ fontFamily: `"${font.name}", inherit` }}>
+                  Aa
+                </span>
+                <span className="truncate type-secondary text-foreground">{font.name}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+        {missing.length ? (
           <div className="flex min-h-7 items-center gap-2">
             <span className="type-label">Missing</span>
-            <span className="min-w-0 flex-1 truncate type-secondary text-muted-foreground">Logo</span>
+            <span className="min-w-0 flex-1 truncate type-secondary text-muted-foreground">{missing.join(" · ")}</span>
             <Button variant="quiet" icon={<Plus />} onClick={onOpen}>
               Add
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
     </SectionCard>
   );

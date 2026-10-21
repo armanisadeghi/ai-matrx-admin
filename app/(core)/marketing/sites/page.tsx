@@ -3,8 +3,8 @@ import { permanentRedirect } from "next/navigation";
 /**
  * LEGACY: the flat cross-brand site portfolio.
  *
- * The cross-brand plane has no site list of its own any more — a website belongs to
- * a brand, so the list is the door and each brand carries its own Websites
+ * The agency plane has no site list of its own any more — a website belongs to
+ * a client, so the roster is the door and each brand carries its own Websites
  * section (`/marketing/[brandKey]/websites`).
  */
 export default function LegacyMarketingSitesRedirect() {

@@ -25,7 +25,7 @@ import { BrandIdentityBuilderFeed } from "@/features/marketing/brand-guide/Brand
 import { BrandVisualSuggestions } from "@/features/marketing/brand-guide/BrandVisualSuggestions";
 
 /**
- * Brand Identity — who this brand IS, as opposed to what it owns or what the
+ * Brand Identity — who this client IS, as opposed to what it owns or what the
  * agency does for it. One room per kind of brand truth; each is a real route,
  * so a room can be linked, shared, and opened by an agent.
  */

@@ -290,7 +290,7 @@ export function readSetAside(parts: RunParts): SetAsideList[] {
       id: "rejected",
       label: "Rejected as not relevant",
       explain:
-        "The relevance judge (after the code floors and recall guards) said these do not bear on this brand.",
+        "The relevance judge (after the code floors and recall guards) said these do not bear on this client.",
       count: Math.max(rejected.length, num(summaryCounts.coarse_rejected)),
       byReason: tally(rejected.map((r) => r.reason ?? "unspecified")),
       items: rejected,

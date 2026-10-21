@@ -9,7 +9,7 @@
  * `useUpdateBrand`) — never a bespoke callback, never a direct DB write.
  * Validation + jsonb merge live in the pure `lib/brand-write-targets.ts`
  * (unit-tested — the destructive failure to prevent is a profile write that
- * drops the rest of the brand's profile). Confirmed business facts, assets,
+ * drops the rest of the client's profile). Confirmed business facts, assets,
  * and properties have NO handler on purpose: they are human-owned truth
  * promoted through the discovery review inbox (see the manifest's
  * writeTargets comment).

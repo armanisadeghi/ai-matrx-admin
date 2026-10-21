@@ -154,12 +154,7 @@ import {
   offerColumnState,
   type OfferColumnStatus,
 } from "./offer-column-state";
-import {
-  coverageLine,
-  isFed,
-  JOB_OVERRIDE_HEADING,
-  JOB_OVERRIDE_WORDS,
-} from "./words";
+import { coverageLine, isFed, JOB_OVERRIDE_WORDS } from "./words";
 import { effectiveConsumption } from "./effective-consumption";
 import { writeReportStillDescribesDraft } from "./write-report-life";
 import { BatchMode } from "./batch/BatchMode";
@@ -2538,22 +2533,13 @@ function BindingDraft({
                       </div>
                     ) : overridesReady ? (
                       <div className="mt-2 space-y-2">
-                        {/* B14: this screen STORES the overrides, so it says
-                            where they land — the panel has no header of its own. */}
-                        <div className="flex min-h-7 items-center gap-1.5">
-                          <span className="type-title text-foreground">
-                            {JOB_OVERRIDE_HEADING.title}
-                          </span>
-                          <FieldHelp label={JOB_OVERRIDE_HEADING.title}>
-                            {JOB_OVERRIDE_HEADING.scopeNote}
-                          </FieldHelp>
-                        </div>
                         <ConversationModelSettings
                           conversationId={overridesId}
                           model="override"
                           allowJson
-                          // B14 — the canonical panel in the job's nouns (the
-                          // heading above says where these land).
+                          // B14 — the canonical panel, told where it is. Its
+                          // default sentence ("this conversation only") is a lie
+                          // on a screen that stores a binding.
                           words={{ ...JOB_OVERRIDE_WORDS, modelEmptyChoiceLabel: "Use inherited model" }}
                           inheritedSources={overrideBaseline.sources}
                           nullOverrideDefaults={overrideBaseline.holderSettings}

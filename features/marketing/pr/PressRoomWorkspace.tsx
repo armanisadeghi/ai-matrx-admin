@@ -21,7 +21,7 @@
  * handing to an agent, `useBrandSites` / `useVisibleBrandOptions` for scope.
  *
  * Scope first: the first persona is an agency operator running press for
- * several businesses, so a hub that cannot say WHICH business cannot
+ * several client businesses, so a hub that cannot say WHICH business cannot
  * serve them. Brand and site live in the URL beside the open row and the forced
  * load state, so every screen here is shareable and reload-safe.
  */
@@ -156,9 +156,9 @@ export default function PressRoomWorkspace({
    * 🚨 BRAND SCOPE (2026-08-30). The brand route mounted this workspace with
    * nothing, and the effect below then "defaulted" to `brands.data[0]` — the
    * first brand ALPHABETICALLY ACROSS THE WHOLE PLATFORM. So opening
-   * `/marketing/<any-brand>/pr` without a `?brand=` showed a DIFFERENT
-   * brand's press room — their stories, journalists, pitches and coverage —
-   * while the URL and page header still named the brand you asked for. When
+   * `/marketing/<any-client>/pr` without a `?brand=` showed a DIFFERENT
+   * client's press room — their stories, journalists, pitches and coverage —
+   * while the URL and page header still named the client you asked for. When
    * the route supplies a brand it is the only brand this workspace may
    * default to.
    */
@@ -914,7 +914,7 @@ export default function PressRoomWorkspace({
                         siteId={mention.site_id}
                         organizationId={mention.organization_id}
                         defaultUrl={mention.url}
-                        defaultBrandName={selectedBrand?.name ?? ""}
+                        defaultClientName={selectedBrand?.name ?? ""}
                         coverageMentionId={mention.id}
                       />
                     )
@@ -924,7 +924,7 @@ export default function PressRoomWorkspace({
               siteIds={(sites.data ?? []).map((site) => site.id)}
               activeSiteId={snapshot.isSample ? null : siteId || null}
               organizationId={selectedSite?.organization_id ?? null}
-              brandName={selectedBrand?.name ?? ""}
+              clientName={selectedBrand?.name ?? ""}
             />
 
             <p className="pb-2 text-[11px] leading-4 text-muted-foreground">

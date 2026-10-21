@@ -4,11 +4,11 @@
  * Host for the identity rooms that are still SITE-scoped underneath.
  *
  * Knowledge (business discovery), Offerings (the topic tree) and Guidelines are
- * brand truth the user thinks about once per brand, but their tables and their
+ * brand truth the user thinks about once per client, but their tables and their
  * canonical components hang off ONE site row. So the brand route owns the URL
  * and this component resolves the site: `?site=` (key or UUID) when the user
  * picked one, otherwise the brand's first site. When the brand has more than
- * one site a small picker appears — a single brand with two websites must not
+ * one site a small picker appears — a single client with two websites must not
  * silently edit the wrong one.
  *
  * It supplies exactly what the old site layout supplied — the site context and

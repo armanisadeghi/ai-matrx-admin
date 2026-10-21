@@ -4,7 +4,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 /**
  * SEO provider spend rollup panel (M-9 / WS-7 UI tranche) — the third
- * `/marketing/cost` mode, alongside "By site" / "By brand". Reads
+ * `/marketing/cost` mode, alongside "By site" / "By client". Reads
  * `GET /seo/spend/summary`: this-month + last-month provider breakdown
  * (spent vs the org/provider monthly ceiling, % used), a 30-day daily
  * spend chart, and any recent `seo_budget_exceeded` rejections so a

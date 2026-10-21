@@ -64,7 +64,7 @@ function normalizedIndustryTokens(value: string): string[] {
 /**
  * True only when this BRAND'S authored industry identifies the pack's
  * canonical industry. Organization-industry membership is an entitlement and
- * must never personalize every brand in an agency account.
+ * must never personalize every client brand in an agency account.
  */
 export function starterPackMatchesBrandIndustry(
   pack: Pick<

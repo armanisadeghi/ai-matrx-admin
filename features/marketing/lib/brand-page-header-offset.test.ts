@@ -1,4 +1,4 @@
-// Census: every `[brandId]` brand-workspace page must clear the shell's
+// Census: every `[brandId]` client-workspace page must clear the shell's
 // glass header band — either via `<PageHeader>` (the header owns the
 // spacing) or, for pages that render their own scroll body, an explicit
 // `--shell-header-h` top offset on that body (see

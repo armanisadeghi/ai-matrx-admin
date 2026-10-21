@@ -51,7 +51,7 @@ export default function SocialPostWindow({
   const [title, setTitle] = useState("Post");
 
   // Scoped to its brand's pages: another brand's Studio, /board or any page outside the brand closes it
-  // (it must never reopen over a different brand's data, however it was restored).
+  // (it must never reopen over a different client's data, however it was restored).
   const pathname = usePathname();
   const outOfScope = postPanelOutOfScope({ brandSeg, pathname });
   useEffect(() => {

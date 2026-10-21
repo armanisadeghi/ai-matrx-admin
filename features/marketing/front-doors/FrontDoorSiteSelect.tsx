@@ -43,7 +43,7 @@ export function useFrontDoorSite(
    * `/marketing/<brand>/...` used to pick `options[0]` — the first site on the
    * PLATFORM — so All Green Recycling's Monitoring page opened on AI Matrx's
    * website, and every door beneath it (Coverage, Link changes, AI visibility,
-   * Reputation) linked into that other brand's workspace. Choosing the site
+   * Reputation) linked into that other client's workspace. Choosing the site
    * from outside the brand also made the picker look dead: selecting All Green
    * wrote `?site=`, then this resolver kept returning the same foreign default.
    * When a brand is in scope the options ARE that brand's sites, so neither can

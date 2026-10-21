@@ -4,7 +4,7 @@
  * Acceptance (2026-10-05): an angle's "Link to this angle" opened the Press Room without the
  * angle. Two causes, one class:
  *  1. every Press Room href was built on the retired flat `/marketing/pr`, which redirects to
- *     the brand roster and drops the query (`?focus=` included);
+ *     the client roster and drops the query (`?focus=` included);
  *  2. a link without `?brand=&site=` had those filled in by the page's defaulting effects
  *     through `set()`, and `set()` treats a brand/site change as the person switching business
  *     — it clears `focus`. A default is not a choice: filling one must keep the record open.

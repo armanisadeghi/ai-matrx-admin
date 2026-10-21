@@ -63,7 +63,7 @@ import {
   TreeFolderIcon,
   treeIndentStyle,
 } from "@/components/official/topic-tree/geometry";
-import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Input } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -565,8 +565,15 @@ function SortableCategoryRow({
           >
             <Plus className="h-3 w-3" />
           </button>
-          <ControlButton variant="quiet" removes type="button"
-            onClick={onDelete} className="opacity-0 group-hover:opacity-100" aria-label="Delete category" icon={<Trash2 />} />
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label="Delete category"
+            title="Delete"
+            className="inline-flex items-center justify-center h-6 w-6 rounded opacity-0 group-hover:opacity-100 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink transition-all"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
         </>
       )}
     </div>

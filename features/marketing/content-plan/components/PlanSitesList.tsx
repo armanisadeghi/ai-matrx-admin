@@ -180,8 +180,8 @@ export function PlanSitesList({
   /**
    * 🚨 BRAND SCOPE (2026-08-30). `/marketing/<brand>/content/plan` mounted
    * this list with nothing, so it showed every site the viewer can plan
-   * across every org and every brand — one brand's workspace listing
-   * another brand's websites and their plan coverage. The dropdown is
+   * across every org and every client — one client's workspace listing
+   * another client's websites and their plan coverage. The dropdown is
    * deliberately cross-org (a plan applied under another org must stay
    * reachable); the LIST on a brand route is not.
    */

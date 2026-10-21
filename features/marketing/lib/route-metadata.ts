@@ -29,7 +29,7 @@ interface MarketingRouteIdentity {
 
 const MARKETING_ROOT: MarketingRouteIdentity = {
   description:
-    "Every brand brand you manage, cross-brand roll-ups, operations, and SEO tools.",
+    "Every client brand you manage, cross-client roll-ups, operations, and SEO tools.",
   letter: "Mk",
 };
 
@@ -47,25 +47,25 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
     letter: "Ad",
   },
   "/marketing/brands": {
-    titlePrefix: "Brands",
-    description: "Every brand brand you manage — open one for its workspace.",
+    titlePrefix: "Clients",
+    description: "Every client brand you manage — open one for its workspace.",
     letter: "Br",
   },
   "/marketing/brands/new-website": {
     titlePrefix: "New Website",
-    description: "Add a website to a brand.",
+    description: "Add a website to a client brand.",
     letter: "Ns",
   },
   "/marketing/reports": {
     titlePrefix: "Reports",
     description:
-      "Scheduled, branded, ready-to-send reports assembled from live marketing data.",
+      "Scheduled, branded, client-ready reports assembled from live marketing data.",
     letter: "Rp",
   },
   "/marketing/social": {
     titlePrefix: "Social",
     description:
-      "Every tracked social account and recent outlier across your brands.",
+      "Every tracked social account and recent outlier across all your clients.",
     letter: "Sy",
   },
   "/marketing/reports/cost": {
@@ -77,7 +77,7 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
   "/marketing/reports/search-console": {
     titlePrefix: "Search Console",
     description:
-      "The full Search Console dataset across every brand — pick a property and drill in.",
+      "The full Search Console dataset across every client — pick a property and drill in.",
     letter: "Sw",
   },
   "/marketing/reports/ranks": {
@@ -88,12 +88,12 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
   },
   "/marketing/reports/search-console/new-pages": {
     titlePrefix: "New Pages in Search",
-    description: "Pages that just started appearing in Search Console, across every brand.",
+    description: "Pages that just started appearing in Search Console, across every client.",
     letter: "Nw",
   },
   "/marketing/reports/search-console/insights": {
     titlePrefix: "Search Console Insights",
-    description: "What changed in Search Console across every brand, and what is worth acting on.",
+    description: "What changed in Search Console across every client, and what is worth acting on.",
     letter: "Si",
   },
   "/marketing/reports/search-console/digs": {
@@ -161,7 +161,7 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
   "/marketing/operations/approvals": {
     titlePrefix: "Approvals",
     description:
-      "Every pending AI proposal across your brands, in one review queue.",
+      "Every pending AI proposal across your clients, in one review queue.",
     letter: "Ap",
   },
   "/marketing/operations/capabilities": {
@@ -271,12 +271,12 @@ export function getMarketingRouteMetadata(
     return createMarketingMetadata(normalizedPath, OPENING);
   }
 
-  // ── The brand workspace: /marketing/[brandSeg]/… ──────────────────────
+  // ── The client workspace: /marketing/[brandSeg]/… ──────────────────────
   const section = segments[2];
   if (!section) {
     return createMarketingMetadata(normalizedPath, {
       titlePrefix: "Brand Overview",
-      description: "This brand at a glance — properties, health, activity.",
+      description: "This client at a glance — properties, health, activity.",
       letter: "Bo",
     });
   }

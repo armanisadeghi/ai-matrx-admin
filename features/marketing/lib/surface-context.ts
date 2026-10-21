@@ -5,7 +5,7 @@
  * below it, `matrx-user/marketing-site`). Those two surfaces emit ONE compact
  * XML snapshot each — `brand_context` and `site_context` — that every child
  * surface inherits, so an agent working anywhere in the tree reads the same
- * ground truth about the brand and the managed website. The CMS analog is
+ * ground truth about the client and the managed website. The CMS analog is
  * `features/cms/utils/buildSiteStructureXml.ts` (`site_structure`).
  *
  * Both builders are PURE — no fetching, no hooks. Callers pass rows they

@@ -30,7 +30,7 @@ import { Button, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-syste
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import AppLink from "@/components/navigation/AppLink";
 import { ScopedPersonRef } from "./ScopedPersonRef";
-import { ActivityRecordDoor } from "./ActivityRecordDoor";
+import { ActivityRecordDoor, isPeekRecordType } from "./ActivityRecordDoor";
 import { adminActionWords } from "../lib/adminActionWords";
 import { useRecordLoad } from "./useRecordLoad";
 import {
@@ -42,7 +42,6 @@ import {
   fetchActivityPage,
   groupActivityByDay,
   isActivityKind,
-  isPeekRecordType,
   type ActivityItem,
   type ActivityKind,
   type ActivityPage,
@@ -102,10 +101,8 @@ function ActivityRow({ item, personId, scope }: { item: ActivityItem; personId: 
       type={peekType}
       id={item.record.id}
       trigger={
-        // The row's title, opening the record's peek: the same title type as every other row, so the
-        // button carries placement only.
-        <button type="button" className="min-w-0 truncate text-left" data-testid="user-activity-peek">
-          <span className="font-medium text-foreground hover:text-primary">{words}</span>
+        <button type="button" className="truncate text-left font-medium text-foreground hover:text-primary" data-testid="user-activity-peek">
+          {words}
         </button>
       }
     />

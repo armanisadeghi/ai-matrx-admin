@@ -30,7 +30,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { extractErrorMessage } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 
 type LineKind = "command" | "stdout" | "stderr" | "info" | "error";
 
@@ -238,8 +237,14 @@ export const SimpleTerminal: React.FC<SimpleTerminalProps> = ({
         </span>
         <div className="flex items-center gap-0.5">
           {executing && (
-            <ControlButton variant="quiet" removes type="button"
-              onClick={handleStop} aria-label="Stop running command (Ctrl+C)" icon={<StopIcon size={12} />} />
+            <button
+              type="button"
+              onClick={handleStop}
+              title="Stop running command (Ctrl+C)"
+              className="flex h-5 w-5 items-center justify-center rounded-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/50"
+            >
+              <StopIcon size={12} />
+            </button>
           )}
           <button
             type="button"

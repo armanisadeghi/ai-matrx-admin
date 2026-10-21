@@ -46,7 +46,7 @@ import {
   Rows3,
 } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { SegmentedControl, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setPreference,
@@ -647,10 +647,16 @@ function TruncateRow({
         <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
           {canTruncate &&
             (active ? (
-              <ControlButton variant="quiet" removes onClick={(e) => {
+              <button
+                title="Remove truncation"
+                onClick={(e) => {
                   e.stopPropagation();
                   onRemove(entry.pathStr);
-                }} aria-label="Remove truncation" icon={<Trash2 size={11} />} />
+                }}
+                className="p-0.5 rounded text-success hover:text-destructive-ink hover:bg-destructive/10 transition-colors"
+              >
+                <Trash2 size={11} />
+              </button>
             ) : (
               <button
                 title={`Truncate: ${local.leadChars} lead · ${local.tailChars} tail`}
@@ -701,10 +707,16 @@ function TruncateRow({
                 <Trash2 size={11} />
               </button>
             ) : (
-              <ControlButton variant="quiet" removes onClick={(e) => {
+              <button
+                title="Replace with brevity stub"
+                onClick={(e) => {
                   e.stopPropagation();
                   onApplyStub(entry.pathStr, "");
-                }} aria-label="Replace with brevity stub" icon={<PackageX size={11} />} />
+                }}
+                className="p-0.5 rounded text-muted-foreground hover:text-destructive-ink hover:bg-destructive/10 transition-colors"
+              >
+                <PackageX size={11} />
+              </button>
             ))}
         </div>
       </div>

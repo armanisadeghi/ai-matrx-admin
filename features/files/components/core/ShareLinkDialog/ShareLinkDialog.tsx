@@ -14,7 +14,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { Select, Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Select } from "@ai-matrx/design-system/controls";
 import { useCallback, useState } from "react";
 import { Check, Copy, ExternalLink, Link, Loader2, Trash2 } from "lucide-react";
 import { extractErrorMessage } from "@/utils/errors";
@@ -311,8 +311,15 @@ export function ShareLinkDialogBody({
                         </span>
                       ) : null}
                     </div>
-                    <ControlButton variant="quiet" removes type="button"
-                      onClick={() => void handleRevoke(link.id)} className="shrink-0" aria-label="Revoke link" icon={<Trash2 />} />
+                    <button
+                      type="button"
+                      onClick={() => void handleRevoke(link.id)}
+                      aria-label="Revoke link"
+                      title="Revoke link"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-destructive-ink hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
 
                   {/* Direct file URL — embeds + hot-links. Promoted as the

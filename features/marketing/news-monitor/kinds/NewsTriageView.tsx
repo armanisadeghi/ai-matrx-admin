@@ -2,7 +2,7 @@
 
 /**
  * `news_triage` (NEWS-ENGINE-SPEC §6.12) — the triage job's verdict on each
- * fresh story: pitch-ready, big story, or watch, with the brand's standing
+ * fresh story: pitch-ready, big story, or watch, with the client's standing
  * and why. The ONE triage renderer.
  */
 

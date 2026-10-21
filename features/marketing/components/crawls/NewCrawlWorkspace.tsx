@@ -414,7 +414,7 @@ export function NewCrawlWorkspace() {
    * `setExcludeText` setters the user's own typing uses, so the staged command
    * is visible, editable, and thrown away by a reload like any other draft.
    * Starting the crawl is deliberately not a target: `start()` spends real
-   * time against the brand's server, and the human presses Start crawl.
+   * time against the client's server, and the human presses Start crawl.
    */
   const getSurfaceWriteHandlers = () => ({
     crawl_options: (value: unknown) => {

@@ -1,5 +1,4 @@
 // components/admin/controls/LargeIndicator.tsx
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { Suspense, lazy, useState, useCallback, useMemo } from "react";
@@ -365,13 +364,26 @@ const LargeIndicator: React.FC<LargeIndicatorProps> = ({
                   agent
                 </div>
               </div>
-              <ControlButton
-                variant={copied ? "success" : "primary"}
+              <button
                 onClick={handleCopyContext}
-                icon={copied ? <ClipboardCheck size={13} /> : <Copy size={13} />}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
+                  copied
+                    ? "bg-green-600 text-white"
+                    : "bg-blue-600 hover:bg-blue-500 text-white"
+                }`}
               >
-                {copied ? "Copied!" : "Copy"}
-              </ControlButton>
+                {copied ? (
+                  <>
+                    <ClipboardCheck size={13} />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy size={13} />
+                    Copy
+                  </>
+                )}
+              </button>
             </div>
             {routeContext && (
               <div className="mt-2 text-[10px] text-slate-500 font-mono">

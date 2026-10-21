@@ -19,14 +19,14 @@ export function ClipsGallery({
   siteIds,
   activeSiteId,
   organizationId,
-  brandName,
+  clientName,
 }: {
   siteIds: readonly string[];
   /** Where a pasted-link clip is filed (the Press Room's selected site). */
   activeSiteId: string | null;
   /** The brand's organization (the active site's own). */
   organizationId: string | null;
-  brandName: string;
+  clientName: string;
 }) {
   const clips = useClipsGallery(siteIds);
   return (
@@ -42,7 +42,7 @@ export function ClipsGallery({
             <MakeClipDialog
               siteId={activeSiteId}
               organizationId={organizationId}
-              defaultBrandName={brandName}
+              defaultClientName={clientName}
               trigger={
                 <Button type="submit" variant="outline">
                   Make clip from a link

@@ -83,8 +83,6 @@ import {
   getSite,
   getSiteHeroScreenshot,
   getSiteOverview,
-  listSiteTopPages,
-  getSiteGlance,
   getSnapshot,
   listCrawlEvents,
   listCrawls,
@@ -189,10 +187,6 @@ export const marketingKeys = {
     [...marketingKeys.site(siteId), "homepage-meta"] as const,
   heroScreenshot: (siteId: string) =>
     [...marketingKeys.site(siteId), "hero-screenshot"] as const,
-  glance: (siteId: string) =>
-    [...marketingKeys.site(siteId), "glance"] as const,
-  topPages: (siteId: string) =>
-    [...marketingKeys.site(siteId), "top-pages"] as const,
   discovered: (
     brandId: string,
     status: DiscoveredItemStatus | null,
@@ -253,7 +247,7 @@ export const marketingKeys = {
 export function useSites(
   state: MatrxDataTableQueryState,
   /** Brand scope. Inside a brand workspace this MUST be set, or the portfolio
-   * lists every brand's websites — see listSites' brand-scope note. */
+   * lists every client's websites — see listSites' brand-scope note. */
   brandId?: string | null,
 ) {
   return useQuery({
@@ -321,22 +315,6 @@ export function useSiteOverview(siteId: string) {
   return useQuery({
     queryKey: marketingKeys.overview(siteId),
     queryFn: ({ signal }) => getSiteOverview(siteId, signal),
-    enabled: Boolean(siteId),
-  });
-}
-
-export function useSiteGlance(siteId: string) {
-  return useQuery({
-    queryKey: marketingKeys.glance(siteId),
-    queryFn: ({ signal }) => getSiteGlance(siteId, signal),
-    enabled: Boolean(siteId),
-  });
-}
-
-export function useSiteTopPages(siteId: string, limit = 3) {
-  return useQuery({
-    queryKey: [...marketingKeys.topPages(siteId), limit] as const,
-    queryFn: ({ signal }) => listSiteTopPages(siteId, limit, signal),
     enabled: Boolean(siteId),
   });
 }
@@ -1409,7 +1387,7 @@ export function useDeleteBrandAsset() {
 }
 
 /** Light brand options (id/name) for one organization — pickers only. */
-/** Every readable brand across every org — the brand switcher's list. */
+/** Every readable brand across every org — the client switcher's list. */
 export function useAllBrandOptions() {
   return useQuery({
     queryKey: [...marketingKeys.root, "all-brand-options"] as const,
