@@ -54,7 +54,15 @@ async function api(method, p, body, timeoutMs = 60000) {
 const readState = () => { try { return JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch { return null; } };
 
 async function box(sandboxId, request, timeoutSec = 180) {
-  const r = await api("POST", `/sandboxes/${sandboxId}/exec`, { command: `python3 ${BOX_DRIVER}`, stdin: JSON.stringify(request), timeout: timeoutSec }, (timeoutSec + 30) * 1000);
+  let r;
+  // A 503 is the orchestrator refusing before the command reaches the box (it answers that while it restarts),
+  // so retrying cannot run a command twice.
+  for (let attempt = 1; attempt <= 8; attempt++) {
+    r = await api("POST", `/sandboxes/${sandboxId}/exec`, { command: `python3 ${BOX_DRIVER}`, stdin: JSON.stringify(request), timeout: timeoutSec }, (timeoutSec + 30) * 1000);
+    if (r.status !== 503) break;
+    console.error(`pw-cloud: the orchestrator is busy (503); retrying in 15 s (${attempt}/8)`);
+    await new Promise((res) => setTimeout(res, 15000));
+  }
   if (r.status === 410 || r.status === 404) { console.error(`run ${run}'s cloud machine is gone (expired after ${IDLE_TTL_SECONDS / 60} idle minutes or stopped); use: node pw-cloud.mjs ${run} start`); process.exit(1); }
   if (r.status !== 200 || !r.json) { console.error(`pw-cloud: the machine answered ${r.status}: ${r.text.slice(0, 400)}`); process.exit(1); }
   return r.json;
@@ -71,10 +79,16 @@ async function start() {
   }
   // The box is owned by the test account; mint (and discard) a session only to learn its user id.
   const { userId } = await mintSessionCookies();
-  const created = await api("POST", "/sandboxes", {
-    user_id: userId, organization_id: SAFETY_NET_ORG, name: `real-test browser ${run}`.slice(0, 100),
-    template: "bare", ttl_seconds: IDLE_TTL_SECONDS, labels: { feature: "real-tests-browser", run },
-  }, 300000);
+  let created;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    created = await api("POST", "/sandboxes", {
+      user_id: userId, organization_id: SAFETY_NET_ORG, name: `real-test browser ${run}`.slice(0, 100),
+      template: "bare", ttl_seconds: IDLE_TTL_SECONDS, labels: { feature: "real-tests-browser", run },
+    }, 300000);
+    if (created.status !== 503 && created.status !== 429) break;
+    console.error(`pw-cloud: the orchestrator is busy (${created.status}); retrying in 20 s (${attempt}/6)`);
+    await new Promise((r) => setTimeout(r, 20000));
+  }
   if (created.status >= 300 || !created.json?.sandbox_id) { console.error(`pw-cloud: could not create a cloud machine (${created.status}): ${created.text.slice(0, 400)}`); process.exit(1); }
   const id = created.json.sandbox_id;
   fs.writeFileSync(stateFile, JSON.stringify({ sandbox_id: id, created_at: new Date().toISOString() }));
@@ -86,7 +100,8 @@ async function start() {
   console.log(`${res.stdout.trim()} (cloud machine ${id})`);
 }
 
-const trafficCookie = (u) => ({ name: MATRX_AGENT_TRAFFIC.cookie, value: agentTrafficValue("real-tests"), url: new URL(u).origin, sameSite: "Lax" });
+// The agent-traffic marker (scripts/lib/agent-traffic.mjs) as a cookie on the page's origin; none for data:/about: pages.
+const trafficCookie = (u) => (/^https?:/.test(u) ? [{ name: MATRX_AGENT_TRAFFIC.cookie, value: agentTrafficValue("real-tests"), url: new URL(u).origin, sameSite: "Lax" }] : []);
 
 if (cmd === "start") { await start(); process.exit(0); }
 const st = readState();
@@ -95,7 +110,16 @@ const id = st.sandbox_id;
 
 if (cmd === "stop") {
   const res = await box(id, { cmd: "stop" }, 60).catch(() => null);
-  await api("DELETE", `/sandboxes/${id}?graceful=false&purge=true`);
+  let del;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    del = await api("DELETE", `/sandboxes/${id}?graceful=false&purge=true`).catch((e) => ({ status: 0, text: String(e) }));
+    if (del.status === 204 || del.status === 404) break;
+    await new Promise((r) => setTimeout(r, 15000));
+  }
+  if (del.status !== 204 && del.status !== 404) {
+    console.error(`pw-cloud: the cloud machine ${id} was NOT deleted (${del.status}: ${del.text.slice(0, 200)}); it ends by itself ${IDLE_TTL_SECONDS / 60} minutes after its last command`);
+    process.exit(1);
+  }
   fs.rmSync(stateFile, { force: true });
   console.log(res?.stdout?.trim() || "stopped");
   process.exit(0);
@@ -108,14 +132,14 @@ let request = { cmd, args };
 if (cmd === "signin") {
   const asAt = args.indexOf("--as");
   const { email, cookies } = await mintSessionCookies(asAt >= 0 ? args[asAt + 1] : undefined);
-  request = { cmd, args: [], email, cookies: [...cookies, trafficCookie("https://www.aimatrx.com/")] };
+  request = { cmd, args: [], email, cookies: [...cookies, ...trafficCookie("https://www.aimatrx.com/")] };
 } else if (cmd === "goto") {
-  request = { cmd, args, cookies: [trafficCookie(args[0])] };
+  request = { cmd, args, cookies: trafficCookie(args[0]) };
 } else if (cmd === "chat") {
   let origin = args[1];
   if (!origin) { const cur = (await box(id, { cmd: "url" })).stdout.trim(); origin = /^https?:/.test(cur) ? new URL(cur).origin : "https://www.aimatrx.com"; }
   const u = `${origin}/chat/a/${args[0] || process.env.CHAT_TEST_AGENT_ID || DEFAULT_CHAT_AGENT}`;
-  request = { cmd: "goto", args: [u], cookies: [trafficCookie(u)] };
+  request = { cmd: "goto", args: [u], cookies: trafficCookie(u) };
 } else if (cmd === "upload") {
   request = { cmd, args: [args[0]], files: args.slice(1).map((f) => ({ name: path.basename(f), b64: fs.readFileSync(f).toString("base64") })) };
 }
