@@ -91,3 +91,18 @@ export function parseMap(raw: string): MapSpec | { error: string } {
     markers,
   };
 }
+
+/**
+ * The first view, computed before Leaflet starts: the map opens already fitted to its places. It used
+ * to open at zoom 4 and refit at once, so the first draw built a tile grid only to throw it away.
+ */
+export function initialMapView(
+  markers: MapMarker[],
+  center?: [number, number],
+  zoom?: number,
+): { center: [number, number]; zoom: number } | { bounds: [number, number][] } {
+  if (center) return { center, zoom: zoom ?? 11 };
+  if (markers.length === 1) return { center: [markers[0].lat, markers[0].lng], zoom: zoom ?? 13 };
+  if (markers.length > 1) return { bounds: markers.map((m) => [m.lat, m.lng] as [number, number]) };
+  return { center: [20, 0], zoom: zoom ?? 4 };
+}

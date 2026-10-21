@@ -11,7 +11,9 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useInView } from "@ai-matrx/kit/hooks";
+import { safeCancelIdleCallback, safeRequestIdleCallback } from "@/utils/browser-compat";
 import dynamic from "next/dynamic";
 import { Check, Copy, List, MapPin, TriangleAlert } from "lucide-react";
 
@@ -33,6 +35,24 @@ const MapCanvas = dynamic(() => import("./MapCanvas"), {
   ssr: false,
   loading: () => <Skeleton className="h-full w-full" />,
 });
+
+/**
+ * THE MAP DRAWS WHEN IT CAN BE SEEN, IN A TASK OF ITS OWN (review 6, 2026-10-21). Leaflet's first draw
+ * (its box read, the marker layer, a grid of tile images) was one 805–830 ms task on the phone notes
+ * page, inside the same task as the block that holds it. The map now waits until its box is near the
+ * screen and the page is idle; until then its frame (same size) shows the skeleton.
+ * Guard: blocks/__tests__/the-map-draws-when-seen-in-its-own-task.test.tsx.
+ */
+export function useMapReady(): [React.RefCallback<HTMLDivElement>, boolean] {
+  const [ref, seen] = useInView<HTMLDivElement>({ rootMargin: "300px" });
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!seen || ready) return;
+    const handle = safeRequestIdleCallback(() => setReady(true), { timeout: 600 });
+    return () => safeCancelIdleCallback(handle);
+  }, [seen, ready]);
+  return [ref, ready];
+}
 
 export interface MapBlockProps {
   content?: string;
@@ -68,6 +88,7 @@ export const MapBlock: React.FC<MapBlockProps> = ({
   const showList =
     placesList === "side" || (placesList === "toggle" && listOpen);
 
+  const [mapBoxRef, mapReady] = useMapReady();
   const host = useBlockHostSlot();
   // The kind host's type label joins this header: ONE header row (review 5, G1).
   const typeLabel = useBlockTypeLabelSlot();
@@ -140,8 +161,10 @@ export const MapBlock: React.FC<MapBlockProps> = ({
             )}
           >
             <div
+              ref={mapBoxRef}
               // Full Print draws this map through the host's tile-aware capture.
               data-matrx-print-picture=""
+              data-map-ready={mapReady ? "" : undefined}
               aria-label={spec.title ?? "Map"}
               className={cn(
                 "w-full min-w-0 overflow-hidden rounded-md border border-border",
@@ -149,12 +172,16 @@ export const MapBlock: React.FC<MapBlockProps> = ({
                 placesList ? "h-96" : "h-72",
               )}
             >
-              <MapCanvas
-                markers={spec.markers}
-                center={spec.center}
-                zoom={spec.zoom}
-                focus={focus}
-              />
+              {mapReady ? (
+                <MapCanvas
+                  markers={spec.markers}
+                  center={spec.center}
+                  zoom={spec.zoom}
+                  focus={focus}
+                />
+              ) : (
+                <Skeleton className="h-full w-full" />
+              )}
             </div>
             {showList && (
               <ol
