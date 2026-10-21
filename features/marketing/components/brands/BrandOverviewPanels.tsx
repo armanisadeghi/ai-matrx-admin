@@ -39,6 +39,7 @@ import {
   Swords,
   UserCog,
   UserPlus,
+  UserRound,
   Users,
   Workflow,
 } from "lucide-react";
@@ -111,7 +112,7 @@ function followerDelta(accounts: readonly AccountRow[]): number | null {
 
 function Delta({ value, suffix }: { value: number; suffix: string }) {
   if (Math.abs(value) < (suffix === "%" ? 0.0005 : 0.5)) {
-    return <span className="text-muted-foreground">No change {suffix === "%" ? "vs prior" : suffix}</span>;
+    return <span className="text-muted-foreground">{suffix === "%" ? "No change vs prior" : "No change"}</span>;
   }
   const tone = value > 0 ? "text-success-ink" : value < 0 ? "text-destructive-ink" : "text-muted-foreground";
   return (
@@ -190,11 +191,22 @@ function rankedNames(rivals: readonly BrandCompetitor[]): string[] {
 
 const CERTAINTY_RANK: Record<string, number> = { confirmed: 3, likely: 2, possible: 1 };
 
-/** Products and services with the most evidence first: confirmed, then certainty, then how many sources name them. */
-function rankedOfferings<T extends { status: string; certainty: string; quotes: readonly unknown[]; families: readonly unknown[] }>(items: readonly T[]): T[] {
+/**
+ * Products and services with the most evidence first: confirmed, then certainty, then how many sources
+ * name them. Ties go to what the brand mostly sells (its majority kind) and to proper names over a
+ * lower-case phrase lifted from page text ("aesthetic results" on a swimwear brand). Nothing is removed.
+ */
+function rankedOfferings<T extends { name: string; kind: string; status: string; certainty: string; quotes: readonly unknown[]; families: readonly unknown[] }>(items: readonly T[]): T[] {
+  const live = items.filter((i) => i.status !== "dismissed");
+  const kinds = new Map<string, number>();
+  for (const i of live) kinds.set(i.kind, (kinds.get(i.kind) ?? 0) + 1);
   const score = (i: T) =>
-    (i.status === "confirmed" ? 100 : 0) + (CERTAINTY_RANK[i.certainty] ?? 0) * 10 + i.quotes.length + i.families.length;
-  return items.filter((i) => i.status !== "dismissed").sort((a, b) => score(b) - score(a));
+    (i.status === "confirmed" ? 1000 : 0) +
+    (CERTAINTY_RANK[i.certainty] ?? 0) * 100 +
+    (i.quotes.length + i.families.length) * 10 +
+    ((kinds.get(i.kind) ?? 0) * 2 > live.length ? 2 : 0) +
+    (/^[A-Z0-9]/.test(i.name) ? 1 : 0);
+  return live.sort((a, b) => score(b) - score(a));
 }
 
 export function BrandOverviewKpis({
@@ -236,14 +248,21 @@ export function BrandOverviewKpis({
   const social = tabHref("social");
   // A hint shows only once its read has settled: never a false "connect" or "none" while loading.
   const settled = (loading: boolean, hint: ReactNode) => (loading ? undefined : hint);
-  const personal = (n: number | null) => (n ? <span className="text-muted-foreground"> · +{formatCompact(n)} personal</span> : null);
+  // People's accounts, named apart on every tile the same way: a person glyph and the count (fits a phone tile).
+  const personal = (n: number | null, what: string) =>
+    n ? (
+      <span className="text-muted-foreground" aria-label={`plus ${n.toLocaleString()} ${what} on people's personal accounts`}>
+        {" · "}
+        <UserRound className="inline size-3 align-[-1px]" aria-hidden="true" />+{formatCompact(n)}
+      </span>
+    ) : null;
 
   return (
     <KpiGrid>
       <KpiTile
         className="min-h-[76px]"
         label="Audience"
-        title="Followers of the brand's own accounts; people's personal accounts are counted apart."
+        title="Followers of the brand's own accounts. The person mark counts people's personal accounts apart."
         loading={accountsLoading}
         value={audience.brandFollowers === null ? null : formatCompact(audience.brandFollowers)}
         trend={trends.followers}
@@ -261,7 +280,7 @@ export function BrandOverviewKpis({
               ) : (
                 `${audience.brand.length} account${audience.brand.length === 1 ? "" : "s"}`
               )}
-              {personal(audience.peopleFollowers)}
+              {personal(audience.peopleFollowers, "followers")}
             </span>
           ),
         )}
@@ -269,7 +288,7 @@ export function BrandOverviewKpis({
       <KpiTile
         className="min-h-[76px]"
         label="Posts"
-        title="Posts we hold on the brand's own accounts; posts on people's personal accounts are counted apart."
+        title="Posts we hold on the brand's own accounts and its last post. The person mark counts people's posts apart."
         loading={accountsLoading}
         value={posts ? posts.toLocaleString() : null}
         trend={trends.posts}
@@ -281,11 +300,11 @@ export function BrandOverviewKpis({
           ) : (
             <span className="block truncate">
               {lastPost ? (
-                <span className={isStale(lastPost) ? "text-warning-ink" : undefined}>Last {lastPostLabel(lastPost, posts)}</span>
+                <span className={isStale(lastPost) ? "text-warning-ink" : undefined}>{lastPostLabel(lastPost, posts)}</span>
               ) : (
                 <HintDoor href={social}>Fetch posts</HintDoor>
               )}
-              {personal(peoplePosts)}
+              {personal(peoplePosts, "posts")}
             </span>
           ),
         )}
