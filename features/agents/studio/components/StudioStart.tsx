@@ -17,7 +17,7 @@
  * examples" opens the examples box (`ExamplesStart`); the two bring-over ways in are their own pages.
  *
  * Every in-place panel stays mounted (hidden when closed), so text typed in one survives a switch;
- * the description is also kept for the tab's session, so leaving and coming back never loses it.
+ * the description is a durable draft (`useDurableDraft`), so leaving and coming back never loses it.
  */
 
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -34,6 +34,7 @@ import { startAgentBuild } from "@/features/agents/factory/service";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
+import { useDurableDraft, writeDraft } from "@ai-matrx/kit/drafts";
 import { STUDIO_MODES, STUDIO_STARTERS, type StudioMode } from "../modes";
 import { buildNameFrom, type StudioState } from "../studio-state";
 import { canEditAgent } from "../improve";
@@ -52,11 +53,7 @@ export const STUDIO_DRAFT_KEY = "agent-studio:start:describe";
 
 /** Puts words in the Describe box for this tab's session (a stopped build's "Edit description"). */
 export function keepStudioDraft(text: string): void {
-  try {
-    if (text.trim()) sessionStorage.setItem(STUDIO_DRAFT_KEY, text);
-  } catch {
-    // Storage refused (private mode): the box opens empty.
-  }
+  if (text.trim()) writeDraft(STUDIO_DRAFT_KEY, text);
 }
 
 interface StudioStartProps {
@@ -73,7 +70,9 @@ interface StudioStartProps {
 export function StudioStart({ onStart, onBack, initialJob = "", initialMode = "describe", planLink }: StudioStartProps) {
   const router = useRouter();
   const [open, setOpen] = useState<OpenMode>(initialMode);
-  const [description, setDescriptionState] = useState(initialJob);
+  // The Describe box is a durable draft (the kit's one draft store): leaving, Back or a reload never loses it.
+  const durable = useDurableDraft(STUDIO_DRAFT_KEY);
+  const description = durable.draft || initialJob;
   // Build-first: examples are optional, so none are asked for up front — one quiet
   // "Add an example" opens the shared field with a single box.
   const [examples, setExamples] = useState<string[]>([]);
@@ -94,24 +93,14 @@ export function StudioStart({ onStart, onBack, initialJob = "", initialMode = "d
   const hasEditable = agents.some((a) => !a.isArchived && canEditAgent(a));
 
   const setDescription = (text: string) => {
-    setDescriptionState(text);
-    try {
-      if (text.trim()) sessionStorage.setItem(STUDIO_DRAFT_KEY, text);
-      else sessionStorage.removeItem(STUDIO_DRAFT_KEY);
-    } catch {
-      // Storage refused (private mode): the text still lives in the box for this visit.
-    }
+    if (text.trim()) durable.setDraft(text);
+    else durable.clearDraft();
   };
 
-  // Restore the session's draft after mount (never during render: the server has no session storage).
+  // A plan step's job opens the box with that job (it replaces an older draft).
   useEffect(() => {
-    if (initialJob) return;
-    try {
-      const kept = sessionStorage.getItem(STUDIO_DRAFT_KEY);
-      if (kept) setDescriptionState(kept);
-    } catch {
-      // No storage: nothing to restore.
-    }
+    if (initialJob) durable.setDraft(initialJob);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per job handed in
   }, [initialJob]);
 
   const go = (id: string, move: () => void) => {

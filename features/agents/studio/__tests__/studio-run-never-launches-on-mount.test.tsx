@@ -130,7 +130,7 @@ describe("guard 2: an idle workspace pane makes 0 reads in 30 s", () => {
 
 describe("guard 3: nothing is swallowed in features/agents/studio/**", () => {
   /** Files another lane owns and is fixing (BUILD-PLAN §A): remove each as that lane lands. Shrink-only. */
-  const OTHER_LANE_PENDING = new Set(["components/StudioStart.tsx"]);
+  const OTHER_LANE_PENDING = new Set<string>([]);
   const SWALLOW = [
     /\.catch\(\s*\(\s*\)\s*=>\s*(undefined|null|\[\]|\{\s*\})\s*\)/,
     /,\s*\(\s*\)\s*=>\s*undefined\s*,?\s*\)/,
@@ -158,3 +158,14 @@ describe("guard 3: nothing is swallowed in features/agents/studio/**", () => {
     expect(hits).toEqual([]);
   });
 });
+
+describe("guard 4: the page top is the shell header template, never a hand-built bar in the body (lane 5A-b)", () => {
+  const page = strip(readFileSync(PAGE, "utf8"));
+  it("renders RecordPageHeader with the stage steps, and no body header row", () => {
+    expect(page.match(/<RecordPageHeader\b/g) ?? []).toHaveLength(1);
+    expect(page).toMatch(/steps=\{\{\s*steps: stage\.steps/);
+    expect(page).not.toMatch(/data-testid="studio-header"/);
+    expect(page).not.toMatch(/<StageSteps\b/);
+  });
+});
+
