@@ -1,0 +1,1705 @@
+[
+ {
+  "product": "Home",
+  "family": "Yours",
+  "summary": "Where a person starts: what is waiting, what they were doing, and everything the app can do.",
+  "entry": "/launchpad/start",
+  "sections": [
+   {
+    "name": "Today",
+    "route": "/dashboard",
+    "why": "Recents, favorites and what is waiting on you.",
+    "pages": [
+     {
+      "route": "/dashboard",
+      "title": "Dashboard",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Workspace"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Launchpad",
+    "route": "/launchpad",
+    "why": "Your own start pages built from your tables.",
+    "pages": [
+     {
+      "route": "/launchpad",
+      "title": "Launchpad",
+      "role": "list",
+      "reachedFrom": [
+       "/launchpad"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/launchpad/[key]",
+      "title": "Launchpad page",
+      "role": "record",
+      "reachedFrom": [
+       "/launchpad"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Browse everything",
+    "route": "/features",
+    "why": "The full catalog of what the app does.",
+    "pages": [
+     {
+      "route": "/features",
+      "title": "Features",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Other"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Site root",
+    "route": "/",
+    "why": "Marketing page for signed-out visitors.",
+    "pages": [
+     {
+      "route": "/",
+      "title": "Site root",
+      "role": "placeholder",
+      "reachedFrom": [
+       "Every logo and sign-out"
+      ],
+      "leadsTo": [
+       "/login"
+      ]
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Open the app and pick up where I left off",
+    "steps": [
+     "/launchpad/[key]",
+     "/dashboard"
+    ]
+   },
+   {
+    "name": "Find a feature I did not know about",
+    "steps": [
+     "/features"
+    ]
+   },
+   {
+    "name": "Build my own start page",
+    "steps": [
+     "/launchpad",
+     "/launchpad/[key]"
+    ]
+   },
+   {
+    "name": "New user first look",
+    "steps": [
+     "/welcome",
+     "/meet-matrx",
+     "/dashboard"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [],
+  "missingFromTree": [
+   {
+    "name": "Home welcome page",
+    "route": "/meet-matrx",
+    "why": "Owner ruling: Home is a version of the new welcome page. Today /welcome and /meet-matrx sit in the Account menu; Home should open on a refreshed version of them."
+   },
+   {
+    "name": "Favorites and recents",
+    "route": "/dashboard",
+    "why": "TREE.md says Today shows recents and favorites; the dashboard page is a different layout."
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/start",
+    "kind": "redirect",
+    "note": "Permanent redirect to the person's start launchpad; still linked in 67 places."
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/dashboard",
+     "/launchpad/[key]",
+     "/start"
+    ],
+    "note": "Three candidates for the entry page (dashboard, launchpad, start). Pick one landing and fold the rest in."
+   },
+   {
+    "routes": [
+     "/",
+     "/features"
+    ],
+    "note": "Signed-out site root and Features overlap as 'what is this app'."
+   }
+  ]
+ },
+ {
+  "product": "Workspace",
+  "family": "Yours",
+  "summary": "The places you work: boards, war rooms, pages, projects and tasks.",
+  "entry": "/board",
+  "sections": [
+   {
+    "name": "Boards",
+    "route": "/board",
+    "why": "Your features side by side.",
+    "pages": [
+     {
+      "route": "/board",
+      "title": "Boards",
+      "role": "list",
+      "reachedFrom": [
+       "/board"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/board/[id]",
+      "title": "Board",
+      "role": "record",
+      "reachedFrom": [
+       "/board"
+      ],
+      "leadsTo": [
+       "/notes/[id]",
+       "/data/[tableId]",
+       "/projects/[projectId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "War Rooms",
+    "route": "/war-room",
+    "why": "Live shared rooms for a task or incident.",
+    "pages": [
+     {
+      "route": "/war-room",
+      "title": "War rooms",
+      "role": "list",
+      "reachedFrom": [
+       "/war-room"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/war-room/all",
+      "title": "All war rooms",
+      "role": "list",
+      "reachedFrom": [
+       "/war-room"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/war-room/new",
+      "title": "New war room",
+      "role": "create",
+      "reachedFrom": [
+       "/war-room"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/war-room/[id]",
+      "title": "War room",
+      "role": "record",
+      "reachedFrom": [
+       "/war-room/all"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/war-room/admin",
+      "title": "War room admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "In-page link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Spaces",
+    "route": "/spaces",
+    "why": "Notion-style pages, databases and templates.",
+    "pages": [
+     {
+      "route": "/spaces",
+      "title": "Spaces",
+      "role": "list",
+      "reachedFrom": [
+       "/spaces"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/spaces/home",
+      "title": "Spaces home",
+      "role": "list",
+      "reachedFrom": [
+       "/spaces"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/spaces/[spaceId]",
+      "title": "Space",
+      "role": "record",
+      "reachedFrom": [
+       "/spaces"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/spaces/use-template",
+      "title": "Use a template",
+      "role": "create",
+      "reachedFrom": [
+       "/spaces"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/spaces/duplicate",
+      "title": "Duplicate from the web",
+      "role": "create",
+      "reachedFrom": [
+       "External link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Pages & Dashboards",
+    "route": "/data/pages",
+    "why": "Pages and dashboards built from your tables.",
+    "pages": [
+     {
+      "route": "/data/pages",
+      "title": "Pages",
+      "role": "list",
+      "reachedFrom": [
+       "/data/pages"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/pages/[pageId]",
+      "title": "Page",
+      "role": "record",
+      "reachedFrom": [
+       "/data/pages"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/data/dashboards",
+      "title": "Dashboards",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Workspace > Dashboards"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Make",
+    "route": "/make",
+    "why": "Make a table, form, booking page or dashboard from a template.",
+    "pages": [
+     {
+      "route": "/make",
+      "title": "Make",
+      "role": "create",
+      "reachedFrom": [
+       "/make"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/templates/workspaces",
+      "title": "Workspace templates",
+      "role": "list",
+      "reachedFrom": [
+       "/make"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/templates/workspaces/[category]",
+      "title": "Workspace templates by category",
+      "role": "list",
+      "reachedFrom": [
+       "/templates/workspaces"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Projects & Tasks",
+    "route": "/projects",
+    "why": "Projects and the work inside them.",
+    "pages": [
+     {
+      "route": "/projects",
+      "title": "Projects",
+      "role": "list",
+      "reachedFrom": [
+       "/projects"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/projects/new",
+      "title": "New project",
+      "role": "create",
+      "reachedFrom": [
+       "/projects"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/projects/[projectId]",
+      "title": "Project",
+      "role": "record",
+      "reachedFrom": [
+       "/projects"
+      ],
+      "leadsTo": [
+       "/tasks/[id]"
+      ]
+     },
+     {
+      "route": "/projects/[projectId]/settings",
+      "title": "Project settings",
+      "role": "settings",
+      "reachedFrom": [
+       "/projects/[projectId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tasks",
+      "title": "Tasks",
+      "role": "list",
+      "reachedFrom": [
+       "/projects"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tasks/new",
+      "title": "New task",
+      "role": "create",
+      "reachedFrom": [
+       "/tasks"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tasks/[id]",
+      "title": "Task",
+      "role": "record",
+      "reachedFrom": [
+       "/tasks"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/tasks/compare",
+      "title": "Compare tasks",
+      "role": "tool",
+      "reachedFrom": [
+       "/projects"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Start a project and add tasks",
+    "steps": [
+     "/projects/new",
+     "/projects/[projectId]",
+     "/tasks/new",
+     "/tasks/[id]"
+    ]
+   },
+   {
+    "name": "Run an incident in a war room",
+    "steps": [
+     "/war-room",
+     "/war-room/new",
+     "/war-room/[id]"
+    ]
+   },
+   {
+    "name": "Write a page in a space",
+    "steps": [
+     "/spaces",
+     "/spaces/[spaceId]"
+    ]
+   },
+   {
+    "name": "Build a dashboard from my tables",
+    "steps": [
+     "/make",
+     "/data/dashboards",
+     "/data/pages/[pageId]"
+    ]
+   },
+   {
+    "name": "Set up my board of tools",
+    "steps": [
+     "/board",
+     "/board/[id]"
+    ]
+   }
+  ],
+  "stranded": [],
+  "buried": [
+   {
+    "route": "/spaces/home",
+    "depth": 2,
+    "why": "Spaces has two home pages (/spaces and /spaces/home)",
+    "proposal": "Pick one."
+   },
+   {
+    "route": "/projects/[projectId]/settings",
+    "depth": 3,
+    "why": "settings only from inside a project",
+    "proposal": "Fine; add to project row menu."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Workspace home",
+    "route": "/board",
+    "why": "The tile opens Boards; six sub-products have no overview."
+   },
+   {
+    "name": "Pages & Dashboards address",
+    "route": "/data/pages",
+    "why": "Both live under /data, a different product. Move the addresses to /workspace/... with redirects."
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/board/all",
+    "kind": "redirect",
+    "note": "Redirects to /board."
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/spaces",
+     "/spaces/home"
+    ],
+    "note": "Two Spaces home pages."
+   },
+   {
+    "routes": [
+     "/make",
+     "/templates",
+     "/templates/workspaces"
+    ],
+    "note": "Make and two template galleries all start something from a template."
+   },
+   {
+    "routes": [
+     "/projects",
+     "/tasks",
+     "/organizations/[orgId]/tasks"
+    ],
+    "note": "Tasks reach you via Projects, Tasks and the org's list."
+   },
+   {
+    "routes": [
+     "/war-room",
+     "/war-room/all"
+    ],
+    "note": "Each redirects to the other depending on sign-in; confusing to maintain."
+   }
+  ]
+ },
+ {
+  "product": "Chat",
+  "family": "Yours",
+  "summary": "Talk to AI. Also the side chat on every page, plus voice, agent messaging, imported chats and AI Work.",
+  "entry": "/chat/new",
+  "sections": [
+   {
+    "name": "Chats",
+    "route": "/chat/new",
+    "why": "Start a chat, continue one, or open one someone shared.",
+    "pages": [
+     {
+      "route": "/chat/new",
+      "title": "New chat",
+      "role": "create",
+      "reachedFrom": [
+       "/chat/new"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/chat/[conversationId]",
+      "title": "Conversation",
+      "role": "record",
+      "reachedFrom": [
+       "/chat/new"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/open/chat/[conversationId]",
+      "title": "Shared chat opener",
+      "role": "record",
+      "reachedFrom": [
+       "Shared link"
+      ],
+      "leadsTo": [
+       "/chat/[conversationId]"
+      ]
+     }
+    ]
+   },
+   {
+    "name": "Voice & Talk",
+    "route": "/chat/voice",
+    "why": "Speak with an agent.",
+    "pages": [
+     {
+      "route": "/chat/voice",
+      "title": "Voice",
+      "role": "tool",
+      "reachedFrom": [
+       "/chat/voice"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/chat/voice/playground",
+      "title": "Voice playground",
+      "role": "tool",
+      "reachedFrom": [
+       "/chat/voice"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/chat/talk/a/[agentId]",
+      "title": "Talk to an agent",
+      "role": "record",
+      "reachedFrom": [
+       "Menu: Chat > Talk"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Agent Messenger",
+    "route": "/messenger/agents",
+    "why": "Message your agents like contacts.",
+    "pages": [
+     {
+      "route": "/messenger/agents",
+      "title": "Agent messenger",
+      "role": "list",
+      "reachedFrom": [
+       "/messenger/agents"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Imported AI chats",
+    "route": "/work/conversations",
+    "why": "Conversations brought in from other AI providers.",
+    "pages": [
+     {
+      "route": "/work/conversations",
+      "title": "Provider conversations",
+      "role": "list",
+      "reachedFrom": [
+       "/work/conversations"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/conversations/[conversationId]",
+      "title": "Imported conversation",
+      "role": "record",
+      "reachedFrom": [
+       "/work/conversations"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "AI Work",
+    "route": "/work",
+    "why": "What your AI is doing: live runs, saved requests, connections.",
+    "pages": [
+     {
+      "route": "/work",
+      "title": "AI Work overview",
+      "role": "list",
+      "reachedFrom": [
+       "/work"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/live",
+      "title": "Live runs",
+      "role": "list",
+      "reachedFrom": [
+       "/work"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/new",
+      "title": "New request",
+      "role": "create",
+      "reachedFrom": [
+       "/work"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/requests",
+      "title": "Saved requests",
+      "role": "list",
+      "reachedFrom": [
+       "/work"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/connections",
+      "title": "Connections & sync",
+      "role": "settings",
+      "reachedFrom": [
+       "/work"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/work/admin",
+      "title": "AI Work admin map",
+      "role": "settings",
+      "reachedFrom": [
+       "In-page link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Ask a question",
+    "steps": [
+     "/chat/new",
+     "/chat/[conversationId]"
+    ]
+   },
+   {
+    "name": "Open a chat someone shared",
+    "steps": [
+     "/open/chat/[conversationId]",
+     "/chat/[conversationId]"
+    ]
+   },
+   {
+    "name": "Talk out loud to an agent",
+    "steps": [
+     "/chat/voice",
+     "/chat/talk/a/[agentId]"
+    ]
+   },
+   {
+    "name": "Watch what my AI is doing",
+    "steps": [
+     "/work",
+     "/work/live"
+    ]
+   },
+   {
+    "name": "Bring in my ChatGPT history",
+    "steps": [
+     "/work/conversations",
+     "/work/conversations/[conversationId]"
+    ]
+   },
+   {
+    "name": "Save a request to re-run",
+    "steps": [
+     "/work/new",
+     "/work/requests"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/chat/voice/gemini",
+    "why": "no menu or link reaches it",
+    "proposedHome": "Voice & Talk"
+   },
+   {
+    "route": "/chat/voice/music",
+    "why": "no menu or link reaches it",
+    "proposedHome": "Voice & Talk"
+   },
+   {
+    "route": "/chat/a/[agentId]",
+    "why": "reached only from launchpad cards and agent pages",
+    "proposedHome": "Chats"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/work/requests",
+    "depth": 3,
+    "why": "saved requests only from the AI Work overview",
+    "proposal": "Make it a sidebar item."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Chat history list",
+    "route": "/chat/new",
+    "why": "TREE.md lists Chats as search, pinned, recents, archived; there is no list page - history is a side panel and a window."
+   },
+   {
+    "name": "Chat home",
+    "route": "/chat/new",
+    "why": "No Chat landing; the tile opens a blank new chat."
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/chat",
+    "kind": "redirect",
+    "note": "Redirects to /chat/new."
+   },
+   {
+    "route": "/chat/talk",
+    "kind": "redirect",
+    "note": "Redirects to /chat/talk/a/<agent> or /chat/new."
+   },
+   {
+    "route": "/chat/talk/[conversationId]",
+    "kind": "redirect",
+    "note": "Redirects to /chat/[conversationId]."
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/chat/voice/playground",
+     "/voice/playground"
+    ],
+    "note": "Two voice playgrounds, one in Chat and one in Audio."
+   },
+   {
+    "routes": [
+     "/chat/talk/a/[agentId]",
+     "/chat/voice"
+    ],
+    "note": "Talk and Voice are two ways to speak to an agent."
+   }
+  ]
+ },
+ {
+  "product": "Account",
+  "family": "Yours",
+  "summary": "You and your organizations: profile, settings, billing, keys, trash, devices and sign-out. Not a tile; the account menu.",
+  "entry": "/organizations",
+  "sections": [
+   {
+    "name": "You",
+    "route": "/user-settings/[[...path]]",
+    "why": "Settings, welcome, trash and personal records.",
+    "pages": [
+     {
+      "route": "/user-settings/[[...path]]",
+      "title": "Settings",
+      "role": "settings",
+      "reachedFrom": [
+       "Menu: Account > Settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/welcome",
+      "title": "Welcome",
+      "role": "tool",
+      "reachedFrom": [
+       "Menu: Account > Welcome"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/meet-matrx",
+      "title": "Meet Matrx",
+      "role": "tool",
+      "reachedFrom": [
+       "Menu: Account > Meet Matrx"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/me/access-log",
+      "title": "Access log",
+      "role": "report",
+      "reachedFrom": [
+       "Menu: Account > Access Log"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/trash",
+      "title": "Trash",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Account > Trash"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/approvals",
+      "title": "Approvals",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Account > Approvals"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Billing & codes",
+    "route": "/redeem",
+    "why": "Redeem a code and see public prices.",
+    "pages": [
+     {
+      "route": "/redeem",
+      "title": "Redeem a code",
+      "role": "create",
+      "reachedFrom": [
+       "/redeem"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/pricing",
+      "title": "Pricing",
+      "role": "list",
+      "reachedFrom": [
+       "Public website"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/pricing/compare",
+      "title": "Compare plans",
+      "role": "report",
+      "reachedFrom": [
+       "/pricing"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/pricing/pledge",
+      "title": "Pledge",
+      "role": "report",
+      "reachedFrom": [
+       "/pricing"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Organizations",
+    "route": "/organizations",
+    "why": "Your organizations and their settings.",
+    "pages": [
+     {
+      "route": "/organizations",
+      "title": "My organizations",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]",
+      "title": "Organization",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings",
+      "title": "Settings",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/api-keys",
+      "title": "API keys",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/change-policy",
+      "title": "Change policy",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/configuration",
+      "title": "Configuration",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/domains",
+      "title": "Domains",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/keyword-value",
+      "title": "Keyword value",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/mandates",
+      "title": "Mandate settings",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/mandates/[mandateKey]",
+      "title": "Mandate setting",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings/mandates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/payments",
+      "title": "Payments",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/settings/system-context",
+      "title": "System context",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/settings"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Organization admin",
+    "route": "/organizations/[orgId]/admin",
+    "why": "Spend, approvals, automations and members for admins.",
+    "pages": [
+     {
+      "route": "/organizations/[orgId]/admin",
+      "title": "Admin dashboard",
+      "role": "report",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/ai-spend",
+      "title": "AI spend",
+      "role": "report",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/ai-spend/detail",
+      "title": "AI spend detail",
+      "role": "report",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin/ai-spend"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/spend-approvals",
+      "title": "Spend approvals",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]",
+      "title": "Approval",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin/spend-approvals"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/triggers",
+      "title": "Triggers",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]",
+      "title": "Trigger run",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin/triggers"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/automations/[kind]/[id]",
+      "title": "Automation",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/admin/users/[userId]/[[...tab]]",
+      "title": "Member",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/admin"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Organization's own lists",
+    "route": "/organizations/[orgId]",
+    "why": "The organization's view of things also found in other products.",
+    "pages": [
+     {
+      "route": "/organizations/[orgId]/applets",
+      "title": "Applets",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/context-items",
+      "title": "Context items",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/files",
+      "title": "Files",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/hr",
+      "title": "HR",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/performance-reviews",
+      "title": "Performance reviews",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/mandates",
+      "title": "Mandates",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/mandates/[mandateKey]",
+      "title": "Mandate",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/mandates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/mandates/new",
+      "title": "New mandate",
+      "role": "create",
+      "reachedFrom": [
+       "/organizations/[orgId]/mandates"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/notes",
+      "title": "Notes",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/prompts",
+      "title": "Prompts",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/resources/[kind]",
+      "title": "Resource",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/tables",
+      "title": "Tables",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/tasks",
+      "title": "Tasks",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/templates",
+      "title": "Templates",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/workflows",
+      "title": "Workflows",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/shortcuts",
+      "title": "Shortcuts",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/shortcuts/categories",
+      "title": "Shortcut categories",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]/shortcuts"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/shortcuts/shortcuts",
+      "title": "Shortcuts list",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]/shortcuts"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/shortcuts/edit/[id]",
+      "title": "Edit shortcut",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/shortcuts/shortcuts"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Organization scopes",
+    "route": "/organizations/[orgId]/scopes",
+    "why": "The organization's scope types, scopes and context items.",
+    "pages": [
+     {
+      "route": "/organizations/[orgId]/scopes",
+      "title": "Scope types",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]",
+      "title": "Scope type",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/edit",
+      "title": "Edit scope type",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/[scopeId]",
+      "title": "Scope",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/[scopeId]/edit",
+      "title": "Edit scope",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]/[scopeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/[scopeId]/[itemId]",
+      "title": "Scope item",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]/[scopeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/[scopeId]/context-items",
+      "title": "Scope context items",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]/[scopeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/context-items",
+      "title": "Type context items",
+      "role": "list",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]",
+      "title": "Type context item",
+      "role": "record",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]/context-items"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/edit",
+      "title": "Edit type context item",
+      "role": "settings",
+      "reachedFrom": [
+       "/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Vault & keys",
+    "route": "/vault",
+    "why": "Passwords, keys, and one-time secure delivery.",
+    "pages": [
+     {
+      "route": "/vault",
+      "title": "Vault",
+      "role": "list",
+      "reachedFrom": [
+       "/vault"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/vault/[itemId]",
+      "title": "Vault item",
+      "role": "record",
+      "reachedFrom": [
+       "/vault"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/vault/authenticator",
+      "title": "Authenticator",
+      "role": "tool",
+      "reachedFrom": [
+       "Menu: Account > Authenticator"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/vault/approve-browser",
+      "title": "Approve a browser",
+      "role": "tool",
+      "reachedFrom": [
+       "External link"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/secure/[token]",
+      "title": "Secure delivery",
+      "role": "record",
+      "reachedFrom": [
+       "Shared link"
+      ],
+      "leadsTo": []
+     }
+    ]
+   },
+   {
+    "name": "Devices & Computer",
+    "route": "/local",
+    "why": "Your computers and connected devices.",
+    "pages": [
+     {
+      "route": "/local",
+      "title": "My devices",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Computer"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/devices",
+      "title": "Devices",
+      "role": "list",
+      "reachedFrom": [
+       "Menu: Code > Devices"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/devices/[deviceId]",
+      "title": "Device",
+      "role": "record",
+      "reachedFrom": [
+       "/devices"
+      ],
+      "leadsTo": []
+     },
+     {
+      "route": "/connect-computer",
+      "title": "Connect a computer",
+      "role": "create",
+      "reachedFrom": [
+       "Menu: Computer > Connect a Computer"
+      ],
+      "leadsTo": []
+     }
+    ]
+   }
+  ],
+  "journeys": [
+   {
+    "name": "Change my settings",
+    "steps": [
+     "/user-settings/[[...path]]"
+    ]
+   },
+   {
+    "name": "Invite someone and set org rules",
+    "steps": [
+     "/organizations",
+     "/organizations/[orgId]",
+     "/organizations/[orgId]/settings"
+    ]
+   },
+   {
+    "name": "Store a key safely",
+    "steps": [
+     "/vault",
+     "/vault/[itemId]"
+    ]
+   },
+   {
+    "name": "Recover something deleted",
+    "steps": [
+     "/trash"
+    ]
+   },
+   {
+    "name": "Connect my computer to agents",
+    "steps": [
+     "/connect-computer",
+     "/local",
+     "/devices/[deviceId]"
+    ]
+   },
+   {
+    "name": "See what the organization is spending",
+    "steps": [
+     "/organizations/[orgId]/admin",
+     "/organizations/[orgId]/admin/ai-spend",
+     "/organizations/[orgId]/admin/ai-spend/detail"
+    ]
+   }
+  ],
+  "stranded": [
+   {
+    "route": "/images/profile-photo",
+    "why": "nothing links to it",
+    "proposedHome": "You"
+   },
+   {
+    "route": "/teams/id/[teamId]",
+    "why": "team address reached only from shared links; it redirects to org settings",
+    "proposedHome": "Organizations"
+   }
+  ],
+  "buried": [
+   {
+    "route": "/organizations/[orgId]/settings/api-keys",
+    "depth": 4,
+    "why": "API keys sit four clicks deep",
+    "proposal": "Move API keys to Vault & keys."
+   },
+   {
+    "route": "/organizations/[orgId]/settings/payments",
+    "depth": 3,
+    "why": "billing for the org is under settings",
+    "proposal": "Add a Billing row in the account menu."
+   },
+   {
+    "route": "/approvals",
+    "depth": 1,
+    "why": "approvals appear in the account menu but are work, not account",
+    "proposal": "Surface in Home > Today."
+   }
+  ],
+  "missingFromTree": [
+   {
+    "name": "Profile",
+    "route": "/user-settings/[[...path]]",
+    "why": "TREE.md lists profile, billing and export; all are tabs of one settings page."
+   },
+   {
+    "name": "Billing",
+    "route": "/user-settings/[[...path]]",
+    "why": "No billing page; plan, usage and pricing are split across settings and /pricing."
+   },
+   {
+    "name": "Export",
+    "route": "/exports",
+    "why": "Menu has Bring Your Export (/exports) which is not in this family's route list."
+   },
+   {
+    "name": "Sign out",
+    "route": "(action)",
+    "why": "An action, not a page."
+   }
+  ],
+  "legacy": [
+   {
+    "route": "/organizations/[orgId]/org-2",
+    "kind": "old copy",
+    "note": "Duplicate of the org workspace; owner marked KILL."
+   },
+   {
+    "route": "/organizations/[orgId]/projects",
+    "kind": "redirect",
+    "note": "Redirects to /projects?org_filter=."
+   },
+   {
+    "route": "/organizations/[orgId]/projects/[projectId]",
+    "kind": "redirect",
+    "note": "Redirects to /projects/[projectId]."
+   },
+   {
+    "route": "/organizations/[orgId]/projects/[projectId]/settings",
+    "kind": "redirect",
+    "note": "Redirects to project settings."
+   },
+   {
+    "route": "/organizations/[orgId]/settings/scopes",
+    "kind": "redirect",
+    "note": "Redirects to org scopes."
+   },
+   {
+    "route": "/settings/data",
+    "kind": "redirect",
+    "note": "Redirects to /trash."
+   }
+  ],
+  "duplicates": [
+   {
+    "routes": [
+     "/trash",
+     "/files/trash"
+    ],
+    "note": "Account trash and Drive trash."
+   },
+   {
+    "routes": [
+     "/devices",
+     "/local",
+     "/connect-computer"
+    ],
+    "note": "Three device pages under three menus (Computer, Code)."
+   },
+   {
+    "routes": [
+     "/welcome",
+     "/meet-matrx"
+    ],
+    "note": "Two onboarding pages; becoming Home."
+   },
+   {
+    "routes": [
+     "/organizations/[orgId]/scopes",
+     "/scopes"
+    ],
+    "note": "Same data, two addresses."
+   },
+   {
+    "routes": [
+     "/organizations/[orgId]/mandates",
+     "/organizations/[orgId]/settings/mandates"
+    ],
+    "note": "Two org mandate lists."
+   },
+   {
+    "routes": [
+     "/organizations/[orgId]/shortcuts",
+     "/organizations/[orgId]/shortcuts/shortcuts"
+    ],
+    "note": "Shortcuts has a landing and a list of the same name."
+   }
+  ]
+ }
+]
