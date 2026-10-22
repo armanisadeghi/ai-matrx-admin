@@ -39,6 +39,8 @@ import {
   undoDismiss,
   undoSurfaceAnyway,
 } from "./data";
+import { Pill, formatWhen } from "./kinds/shared";
+import { nowStaleAt } from "./run-document";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -101,8 +103,16 @@ export function StoryActions({
   }
 
   const surfacedByPerson = story.status === "surfaced" && Boolean(story.surfaced_override_at);
+  const staleSince = nowStaleAt(story);
   return (
     <span className="inline-flex items-center gap-1" data-story-action={story.status}>
+      {staleSince ? (
+        <span data-story-now-stale={staleSince}>
+          <Pill tone="warn" title={`Surfaced while fresh; a run on ${formatWhen(staleSince)} read it as stale.`}>
+            Now stale
+          </Pill>
+        </span>
+      ) : null}
       {surfacedByPerson ? (
         <span className="inline-flex items-center gap-1 text-[11px] text-success">
           Surfaced by you
