@@ -565,3 +565,8 @@ export const PRODUCTS: readonly FrameProduct[] = [
 export function productById(id: string): FrameProduct | undefined {
   return PRODUCTS.find((p) => p.id === id);
 }
+
+/** The favorites a person has before they ever edit the grid: the card's nine (3 x 3). */
+export const DEFAULT_GRID_FAVORITES: readonly string[] = [
+  "chat", "memory", "workspace", "docs", "drive", "data", "crm", "intelligence", "meet",
+];

@@ -9,7 +9,7 @@
 // `look` is the owner's bake-off (A plain, B family hairlines, C filled marks) until he picks.
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { Check, Grip, Pencil, Star } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Grip, Pencil, Star } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
@@ -90,14 +90,23 @@ export function AppGrid({
     .slice(0, GRID_FAVORITES_MAX);
   const favoriteIds = new Set(favoriteProducts.map((p) => p.id));
   // Every other product once, in family order (editing: every product, so each can be starred).
-  const rest = families.flatMap((f) =>
-    products.filter((p) => p.family === f.id && (editing || !favoriteIds.has(p.id))),
-  );
+  const rest = families.flatMap((f) => products.filter((p) => p.family === f.id && !favoriteIds.has(p.id)));
+  const full = favoriteProducts.length >= GRID_FAVORITES_MAX;
 
+  // Edits start from the favorites that resolve to a product, so a retired id never lingers.
   function toggleFavorite(id: string) {
-    onFavoritesChange(
-      favorites.includes(id) ? favorites.filter((f) => f !== id) : [...favorites, id],
-    );
+    const current = favoriteProducts.map((p) => p.id);
+    if (current.includes(id)) onFavoritesChange(current.filter((f) => f !== id));
+    else if (!full) onFavoritesChange([...current, id]);
+  }
+
+  function moveFavorite(id: string, by: -1 | 1) {
+    const current = favoriteProducts.map((p) => p.id);
+    const from = current.indexOf(id);
+    const to = from + by;
+    if (from < 0 || to < 0 || to >= current.length) return;
+    current.splice(to, 0, current.splice(from, 1)[0]);
+    onFavoritesChange(current);
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
@@ -108,13 +117,13 @@ export function AppGrid({
 
   // The keyboard's tile order: the favorites card, then the list.
   const navKeys = [
-    ...(editing ? [] : favoriteProducts.map((p) => `fav-${p.id}`)),
+    ...favoriteProducts.map((p) => `fav-${p.id}`),
     ...rest.map((p) => `all-${p.id}`),
   ];
   const activeKey = rovingKey && navKeys.includes(rovingKey) ? rovingKey : navKeys[0];
 
   function renderTile(product: FrameProduct, group: string) {
-    const isFavorite = favorites.includes(product.id);
+    const isFavorite = favoriteIds.has(product.id);
     const key = `${group}-${product.id}`;
     const navigable = navKeys.includes(key);
     const keyboard = {
@@ -130,14 +139,15 @@ export function AppGrid({
       "outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
     );
     if (editing) {
-      return (
+      const index = favoriteProducts.findIndex((p) => p.id === product.id);
+      const toggle = (
         <button
-          key={key}
           type="button"
           {...keyboard}
           aria-pressed={isFavorite}
+          disabled={!isFavorite && full}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${product.name} ${isFavorite ? "from" : "to"} favorites`}
-          className={tileClass}
+          className={cn(tileClass, "w-full")}
           onClick={() => toggleFavorite(product.id)}
         >
           {glyph}
@@ -150,6 +160,33 @@ export function AppGrid({
             )}
           />
         </button>
+      );
+      return (
+        <div key={key} className="relative min-w-0">
+          {toggle}
+          {isFavorite ? (
+            <>
+              <button
+                type="button"
+                aria-label={`Move ${product.name} earlier`}
+                disabled={index <= 0}
+                className="absolute top-1.5 left-1 rounded-sm text-muted-foreground hover:text-foreground disabled:opacity-0"
+                onClick={() => moveFavorite(product.id, -1)}
+              >
+                <ChevronLeft aria-hidden className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                aria-label={`Move ${product.name} later`}
+                disabled={index >= favoriteProducts.length - 1}
+                className="absolute top-1.5 left-5 rounded-sm text-muted-foreground hover:text-foreground disabled:opacity-0"
+                onClick={() => moveFavorite(product.id, 1)}
+              >
+                <ChevronRight aria-hidden className="size-3.5" />
+              </button>
+            </>
+          ) : null}
+        </div>
       );
     }
     return (
@@ -196,12 +233,12 @@ export function AppGrid({
           onKeyDown={onKeyDown}
           className="mf-grid-scroll overflow-y-auto overscroll-contain p-2"
         >
-          {!editing && favoriteProducts.length > 0 ? (
-            <section aria-label="Your favorites" className="mf-grid-card grid grid-cols-3 p-1">
+          {favoriteProducts.length > 0 ? (
+            <section aria-label={editing ? "Your favorites, in order" : "Your favorites"} className="mf-grid-card grid grid-cols-3 p-1">
               {favoriteProducts.map((p) => renderTile(p, "fav"))}
             </section>
           ) : null}
-          <section aria-label={editing ? "Choose favorites" : "All products"} className="pt-1">
+          <section aria-label={editing ? "Add favorites" : "All products"} className="pt-1">
             {look === "B" && !editing ? (
               families.map((family) => {
                 const members = rest.filter((p) => p.family === family.id);

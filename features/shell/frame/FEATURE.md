@@ -313,6 +313,8 @@ ownership attributes, and no `className`/`style` on any exported props type.
   - Medium form adds a footer "Properties" toggle, so the panel is never removed silently.
   - Tests added.
 
+- 2026-10-21: App-grid favorites persist per person (`userPreferences.appGrid.favorites`, null = default nine
+  `DEFAULT_GRID_FAVORITES`); the frame stays prop-driven, the host wires `useGridFavorites`. Edit mode reorders.
 - 2026-10-18: Medium form (the drawer sidebar; the companion and properties take turns; body min width). Rows and
   crumbs are real links. Phone header controls get the 44px touch ring. The drawer is inert
   behind, traps focus, closes on Esc and returns focus. The grid uses a roving tabindex.

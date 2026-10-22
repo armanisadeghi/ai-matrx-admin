@@ -670,6 +670,15 @@ export interface InboxPreferences {
 }
 
 /**
+ * The app grid's favourites (features/shell/frame): the product ids on the 9-dot card, in the
+ * order the person set. `null` = never edited, so the frame's own default nine shows (and follows
+ * the catalogue as it grows); an array, even empty, is the person's own choice.
+ */
+export interface AppGridPreferences {
+  favorites: string[] | null;
+}
+
+/**
  * Choices made inside the shared data tools (the JSON truncator, the server-log
  * viewer). They used to live in per-browser localStorage keys and were lost on
  * every other device; they follow the person now. `null` = the tool's own
@@ -936,6 +945,7 @@ export interface UserPreferences {
   reversible: ReversiblePreferences;
   inbox: InboxPreferences;
   dataTools: DataToolsPreferences;
+  appGrid: AppGridPreferences;
 }
 
 /**
@@ -1496,6 +1506,7 @@ export const initializeUserPreferencesState = (
       truncator: { autoThreshold: null, autoLeadChars: null, autoTailChars: null, autoArrayKeepN: null, maxDepth: null },
       serverLogNoiseExcludes: null,
     },
+    appGrid: { favorites: null },
   };
 
   // Merge with defaults to ensure all properties exist
@@ -1608,6 +1619,9 @@ export const initializeUserPreferencesState = (
     dataTools: {
       truncator: { ...defaultPreferences.dataTools.truncator, ...preferences.dataTools?.truncator },
       serverLogNoiseExcludes: preferences.dataTools?.serverLogNoiseExcludes ?? null,
+    },
+    appGrid: {
+      favorites: Array.isArray(preferences.appGrid?.favorites) ? [...preferences.appGrid.favorites] : null,
     },
   };
 
@@ -2050,6 +2064,7 @@ const PERSISTED_PREFERENCE_MODULES: Record<keyof UserPreferences, true> = {
   reversible: true,
   inbox: true,
   dataTools: true,
+  appGrid: true,
 };
 
 const PREFERENCE_MODULE_KEYS = Object.keys(

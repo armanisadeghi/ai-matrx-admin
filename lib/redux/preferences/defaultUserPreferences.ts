@@ -287,4 +287,6 @@ export const defaultUserPreferences: UserPreferences = {
     truncator: { autoThreshold: null, autoLeadChars: null, autoTailChars: null, autoArrayKeepN: null, maxDepth: null },
     serverLogNoiseExcludes: null,
   },
+  // The app grid's favourites; null = the frame's own default nine. Keep in sync with userPreferencesSlice.ts.
+  appGrid: { favorites: null },
 };
