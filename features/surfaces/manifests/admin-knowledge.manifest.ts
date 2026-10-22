@@ -92,7 +92,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "knowledge_section",
     label: "Knowledge section",
     description:
-      'Which child of the Knowledge admin family is active: "cms_agents", "kg_cost", "kg_inspector", "podcasts_shows", "podcasts_show_detail", "podcasts_episode_detail", or "research_system". Always present — each emitter declares which one it is.',
+      'Which part of the Knowledge admin family is active: "hub" (the /administration/knowledge landing), "cms_agents", "kg_cost", "kg_inspector", "podcasts_shows", "podcasts_show_detail", "podcasts_episode_detail", or "research_system". Always present — each emitter declares which one it is.',
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 20,
@@ -523,6 +523,7 @@ Only the values matching the current knowledge_section are populated — everyth
 export function createAdminKnowledgeScope(values: {
   // alwaysAvailable: true → required
   knowledge_section:
+    | "hub"
     | "cms_agents"
     | "kg_cost"
     | "kg_inspector"
