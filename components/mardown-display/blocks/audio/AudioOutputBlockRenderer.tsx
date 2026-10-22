@@ -36,6 +36,7 @@ const AudioOutputBlockRenderer: React.FC<AudioOutputBlockRendererProps> = ({
   const mime = pickStr(data.mimeType) ?? pickStr(data.mime_type);
   const source = buildMediaSource(data, mime);
   const resolvedUrl =
+    // media-src-ok: <audio> element — files-session cookie lane
     useMediaResolution(fileSourceToMediaRef(source)).resolution?.src ?? null;
 
   // Log the raw inbound shape + what we resolved, once per resolved URL. This is

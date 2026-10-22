@@ -58,7 +58,6 @@ export const filesUiHost: FilesUiHost = {
     import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu as unknown as ComponentType<Loose>),
   ),
   copyNotify,
-  showManualCopy: (options) => {
-    void import("@ai-matrx/kit/clipboard-fallback-opener").then((m) => m.openClipboardFallback(options.text, { title: options.title, description: options.description }));
-  },
+  // The manual-copy fallback is the engine's own (`openClipboardFallback`), shown by the
+  // `<ClipboardFallbackHost />` mounted in app/Providers.tsx (@ai-matrx/media consumer action).
 };

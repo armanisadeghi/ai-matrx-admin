@@ -5,7 +5,9 @@ import { Loader2 } from "lucide-react";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileName } from "@/features/files/redux/selectors";
-import { useMediaResolution } from "@ai-matrx/media/core";
+import { useMediaSrc } from "@ai-matrx/media/core";
+import { Button } from "@ai-matrx/design-system/controls";
+import { useState } from "react";
 import type { ImageSource } from "@/features/image-studio/modes/shared/types";
 
 const EditModeShell = dynamic(
@@ -22,24 +24,49 @@ interface Props {
 }
 
 /**
- * Resolve the file id to a renderable URL through the universal handler.
- * `useFileSrc` returns the best URL for the file's web state — a permanent
- * CDN URL for public files, a freshly-minted signed URL for private ones —
- * so Filerobot always loads through the CDN when one exists and never
- * re-uses a stale signed URL. (The earlier crossOrigin pre-probe was
- * removed: it blocked the editor for tens of seconds on private files whose
- * signed S3 URLs are perfectly loadable but don't echo CORS headers for a
- * HEAD-style anonymous probe.)
+ * Load the file through `useMediaSrc` (crossOrigin — the editor draws it on
+ * a canvas): public files come straight from the CDN, private ones as a
+ * bearer-fetched object URL. The editor receives the cloud file id, so its
+ * own source hook makes the same decision; this page only gates the states
+ * around it (refused → AccessGate, loading → spinner).
  */
-export default function EditByIdClient({ cloudFileId, folder }: Props) {
-  const media = useMediaResolution(cloudFileId);
-  const url = media.resolution?.src ?? null;
+export default function EditByIdClient(props: Props) {
+  // A fresh mount re-reads the bytes: "Try again" after a network failure.
+  const [attempt, setAttempt] = useState(0);
+  return (
+    <EditById
+      key={`${props.cloudFileId}:${attempt}`}
+      {...props}
+      onRetry={() => setAttempt((n) => n + 1)}
+    />
+  );
+}
+
+function EditById({
+  cloudFileId,
+  folder,
+  onRetry,
+}: Props & { onRetry: () => void }) {
+  const media = useMediaSrc(cloudFileId, { crossOrigin: true });
   const fileName = useAppSelector((s) => selectFileName(s, cloudFileId));
 
   // The resolver refused the file (denied, deleted, missing). Without this the
   // page spun "Loading image…" forever. The gate asks the platform which state
   // it is and offers the way forward.
-  if (media.status === "unavailable") {
+  // The bytes did not arrive (network, server) — a retry can help; this is
+  // not an access answer, so never show the access gate for it.
+  if (media.failureReason === "blob" || media.failureReason === "element-load") {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center gap-3 bg-background">
+        <span className="text-sm text-muted-foreground">This image could not be loaded</span>
+        <Button variant="outline" onClick={onRetry}>
+          Try again
+        </Button>
+      </div>
+    );
+  }
+
+  if (media.failed) {
     return (
       <div className="h-full w-full overflow-hidden bg-background">
         <AccessGate
@@ -52,7 +79,7 @@ export default function EditByIdClient({ cloudFileId, folder }: Props) {
     );
   }
 
-  if (!url) {
+  if (!media.src) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-background">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -64,8 +91,8 @@ export default function EditByIdClient({ cloudFileId, folder }: Props) {
   }
 
   const source: ImageSource = {
-    kind: "url",
-    url,
+    kind: "cloudFileId",
+    cloudFileId,
     suggestedFilename: fileName ?? "image",
   };
 

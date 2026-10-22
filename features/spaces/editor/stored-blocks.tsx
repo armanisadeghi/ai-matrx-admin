@@ -23,7 +23,7 @@ import { Component, useEffect, useRef, useState, useSyncExternalStore, type Reac
 import { ErrorNotice } from "@ai-matrx/design-system";
 
 import type { RichSpan, SpaceMedia } from "../contract";
-import { useSpaceMediaUrl } from "../page/media";
+import { useSpaceMedia } from "../page/media";
 import { SpaceIcon } from "../page/SpaceIcon";
 import { useSpaces } from "../state/SpacesProvider";
 import { useCrumbPathPending } from "../nav/crumb-path";
@@ -312,9 +312,11 @@ function CaptionField({ initial, autoFocus, onCommit }: { initial: string; autoF
 
 function MediaBlock({ type, p, edit }: { type: MediaKind; p: Record<string, unknown>; edit: MediaEdit | null }) {
   const media = mediaOf(p);
-  const src = useSpaceMediaUrl(media);
+  const { url: src, failed } = useSpaceMedia(media, { asLink: type === "file" });
   const width = typeof p.width === "number" ? p.width : undefined;
-  const name = typeof p.name === "string" && p.name ? p.name : src ? decodeURIComponent(src.split("?")[0].split("/").pop() || "") : "File";
+  // Never name a file after a tab-local object URL (a uuid): only a real address carries a name.
+  const nameFromSrc = src && !src.startsWith("blob:") ? decodeURIComponent(src.split("?")[0].split("/").pop() || "") : "";
+  const name = typeof p.name === "string" && p.name ? p.name : nameFromSrc || "File";
   if (type === "file") {
     return (
       <MediaFrame kind="file" p={p} edit={edit} resizable={false}>
@@ -325,7 +327,13 @@ function MediaBlock({ type, p, edit }: { type: MediaKind; p: Record<string, unkn
       </MediaFrame>
     );
   }
-  if (!src) return <div className="spaces-media-empty" contentEditable={false}>{media ? "Loading…" : `Add ${type === "image" ? "an image" : `a ${type}`}`}</div>;
+  if (!src) {
+    return (
+      <div className="spaces-media-empty" contentEditable={false}>
+        {failed ? "This file could not be loaded" : media ? "Loading…" : `Add ${type === "image" ? "an image" : `a ${type}`}`}
+      </div>
+    );
+  }
   return (
     <MediaFrame kind={type} p={p} edit={edit} resizable={type !== "audio"} tall={type === "pdf" && typeof p.height === "number" ? p.height : undefined}>
       {type === "image" ? <img src={src} alt={Array.isArray(p.caption) ? (p.caption as RichSpan[]).map((s) => s.text).join("") : ""} className="spaces-image" draggable={false} /> : null}

@@ -35,6 +35,7 @@ export function FastFireReviewPlaylist() {
   const current = index >= 0 ? playable[index] : undefined;
   const next = index >= 0 ? playable[index + 1] : playable[0];
   const currentSrc =
+    // media-src-ok: <audio> element — files-session cookie lane
     useMediaResolution(current?.grade?.responseAudioFileId ?? null).resolution
       ?.src ?? null;
   // Lookahead: resolving the next clip's URL NOW is what lets the `ended`

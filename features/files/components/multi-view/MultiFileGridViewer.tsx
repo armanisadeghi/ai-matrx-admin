@@ -13,7 +13,7 @@
  *     navigate, ESC exits focus. ESC at the top level closes the page.
  *   - Close button does `router.back()` when we have history, else
  *     `window.close()` — supports both new-tab and same-tab callers.
- *   - Images use the master URL via `useFileSrc` for full fidelity; every
+ *   - Images use the master via `useMediaSrc` for full fidelity; every
  *     other kind falls back to `MediaThumbnail`.
  */
 
@@ -21,9 +21,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMediaResolution } from "@ai-matrx/media/core";
+import { useMediaSrc } from "@ai-matrx/media/core";
 import { MediaThumbnail } from "@ai-matrx/media/react";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { pickGridLayout } from "./grid-layout";
@@ -225,19 +225,27 @@ function FocusView({
 }) {
   const file = files[index];
   const isImage = file.mimeType.startsWith("image/");
-  const url =
-    useMediaResolution(isImage ? file.id : null).resolution?.src ?? null;
+  // useMediaSrc, never resolution.src: private pixels need the bearer lane.
+  const media = useMediaSrc(isImage ? file.id : null);
+  const url = media.failed ? null : media.src;
 
   return (
     <div className="relative flex-1 flex items-center justify-center bg-background">
       {isImage ? (
         url ? (
           <img
+            key={media.retryKey}
             src={url}
+            onError={media.onLoadError}
             alt={file.fileName}
             className="max-h-full max-w-full object-contain"
             draggable={false}
           />
+        ) : media.failed ? (
+          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <ImageOff className="h-8 w-8" />
+            <span className="text-xs">This image could not be loaded</span>
+          </div>
         ) : (
           <div className="h-full w-full max-h-[80dvh] max-w-[80vw] animate-pulse bg-muted" />
         )

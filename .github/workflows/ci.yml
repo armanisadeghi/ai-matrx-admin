@@ -518,6 +518,17 @@ jobs:
         # that OWNS the primitives, and a provider stand-in inside a test file
         # are not.
         run: pnpm check:google-auth-gate:self-test
+      - name: AN IMAGE'S PIXELS COME THROUGH useMediaSrc — never a file's raw address
+        # A private file's resolved address is a bearer-authenticated byte route;
+        # bound to an <img>, CSS background or canvas it renders broken wherever
+        # third-party cookies are blocked. That shipped six times (scanner
+        # thumbnails, image viewer, image editor sources, multi-file viewer, HR
+        # photos, Spaces covers — 2026-10-22). Fails on any unannotated
+        # `resolution.src` read or hand-built byte route bound to an element.
+        # Pure static scan, offline, no credentials.
+        run: pnpm check:media-src-door
+      - name: the media-src door guard can still fail (self-test)
+        run: pnpm check:media-src-door:self-test
       - name: NO HAND-TYPED MANDATE KEYS — the vocabulary is the authority
         # @ai-matrx/agents 0.10.0 publishes the declared mandate key set,
         # emitted by THE ONE GENERATOR from aidream's own declared_mandates().

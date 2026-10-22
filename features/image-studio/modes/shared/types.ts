@@ -28,7 +28,7 @@ export type ModePresentation = "page" | "modal";
 export type ImageSource =
   | { kind: "file"; file: File }
   | { kind: "url"; url: string; suggestedFilename?: string }
-  | { kind: "cloudFileId"; cloudFileId: string };
+  | { kind: "cloudFileId"; cloudFileId: string; suggestedFilename?: string };
 
 export interface SaveResult {
   /** New cloud file id created by the save. */

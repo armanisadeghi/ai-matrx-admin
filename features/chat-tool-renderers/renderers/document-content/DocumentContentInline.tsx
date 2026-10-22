@@ -134,6 +134,7 @@ function PdfBody({ result }: { result: Record<string, unknown> }) {
   const src =
     useMediaResolution(
       fileId ? { file_id: fileId, mime_type: "application/pdf" } : null,
+    // media-src-ok: link href (Open PDF) — a navigation
     ).resolution?.src ?? null;
   const sourcePages = Array.isArray(result.source_pages)
     ? (result.source_pages as unknown[]).filter(

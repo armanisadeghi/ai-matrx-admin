@@ -32,6 +32,7 @@
 
 import { usePreviewHostToolbar } from "./PreviewHostToolbar";
 import { createContext, lazy, Suspense, use } from "react";
+import { useMediaSrc } from "@ai-matrx/media/core";
 import {
   HtmlViewer,
   MediaFileViewer,
@@ -94,11 +95,30 @@ export function PreviewerSkeleton() {
  */
 const HostPreviewUrlContext = createContext<string | null>(null);
 
-/** Host asset URL if there is one, else the package's client resolution. */
+/**
+ * Host asset URL if there is one, else the package's client resolution — an
+ * ADDRESS, for the video/audio elements (files-session lane) and the PDF
+ * engine (credentialed range loads). Never for pixels: see `useHostImageUrl`.
+ */
 function useHostOrResolvedUrl(source: MediaViewerSource): string | null {
   const hostUrl = use(HostPreviewUrlContext);
+  // media-src-ok: address for <video>/<audio> and the PDF engine's credentialed loader
   const { url } = useViewerDisplayUrl(source);
   return hostUrl ?? url;
+}
+
+/**
+ * Host asset URL if there is one, else the image's pixels through
+ * `useMediaSrc` — a private file arrives as a bearer-fetched object URL.
+ */
+function useHostImageUrl(source: MediaViewerSource): string | null {
+  const hostUrl = use(HostPreviewUrlContext);
+  const media = useMediaSrc(
+    !hostUrl && source.kind === "ref" ? source.ref : null,
+  );
+  if (hostUrl) return hostUrl;
+  if (source.kind === "blob") return source.url;
+  return media.failed ? null : media.src;
 }
 
 function fileIdOf(source: MediaViewerSource): string | null {
@@ -109,7 +129,7 @@ function fileIdOf(source: MediaViewerSource): string | null {
 }
 
 function HostImageViewer({ source, fileName, className }: MediaViewerProps) {
-  const url = useHostOrResolvedUrl(source);
+  const url = useHostImageUrl(source);
   return <ImagePreview url={url} fileName={fileName} className={className} />;
 }
 

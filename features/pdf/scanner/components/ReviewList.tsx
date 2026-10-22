@@ -119,7 +119,14 @@ function SortableTile({
     isDragging,
   } = useSortable({ id: item.itemId });
 
-  const { src: previewSrc, updating, enhanceFailed } = useScanThumbSrc(item);
+  const {
+    src: previewSrc,
+    updating,
+    enhanceFailed,
+    failed: imageFailed,
+    onLoadError,
+    retryKey,
+  } = useScanThumbSrc(item);
 
   return (
     <div
@@ -141,12 +148,19 @@ function SortableTile({
           aria-label={`Adjust crop for page ${index + 1}`}
         >
           <img
+            key={retryKey}
             src={previewSrc}
+            onError={onLoadError}
             alt={item.fileName}
             className="h-full w-full object-cover"
             draggable={false}
           />
         </button>
+      ) : item.kind === "image" && imageFailed ? (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-muted-foreground">
+          <AlertCircle className="h-6 w-6" />
+          <span className="text-center text-[10px]">Image unavailable</span>
+        </div>
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2">
           <FileText className="h-6 w-6 text-muted-foreground" />

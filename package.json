@@ -226,6 +226,8 @@
     "check:static-loader": "tsx scripts/check-static-loader.ts",
     "check:google-auth-gate": "tsx scripts/check-google-auth-gate.ts",
     "check:google-auth-gate:self-test": "tsx scripts/check-google-auth-gate.ts --self-test",
+    "check:media-src-door": "tsx scripts/check-media-src-door.ts",
+    "check:media-src-door:self-test": "tsx scripts/check-media-src-door.ts --self-test",
     "check:server-pipeline": "tsx scripts/check-server-pipeline.ts",
     "check:server-pipeline:self-test": "tsx scripts/check-server-pipeline.ts --self-test",
     "check:static-loader:self-test": "tsx scripts/check-static-loader.ts --self-test",

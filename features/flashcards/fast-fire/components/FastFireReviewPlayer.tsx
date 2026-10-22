@@ -30,6 +30,7 @@ export function FastFireReviewPlayer({
   cardId: string;
 }) {
   const dispatch = useAppDispatch();
+  // media-src-ok: <audio> element — files-session cookie lane
   const src = useMediaResolution(fileId ?? null).resolution?.src ?? null;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);

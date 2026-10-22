@@ -64,6 +64,7 @@ export function UniversalInlineFile({
 }: UniversalInlineFileProps) {
   const { file, status } = useFile(match.source);
   const mediaUrl =
+    // media-src-ok: readiness gate + FileCard link href; pixels render via InlineMediaRef and the svg/html viewers read the fileId's bytes
     useMediaResolution(fileSourceToMediaRef(match.source)).resolution?.src ??
     null;
 
@@ -122,7 +123,6 @@ export function UniversalInlineFile({
               source={{ kind: "fileId", fileId }}
               previewKind="svg"
               fileName={fileName}
-              url={mediaUrl}
               loadingFallback={<InlineSkeleton />}
             />
           ) : (
@@ -189,7 +189,6 @@ export function UniversalInlineFile({
               source={{ kind: "fileId", fileId }}
               previewKind="html"
               fileName={fileName}
-              url={mediaUrl}
               loadingFallback={<InlineSkeleton />}
             />
           ) : (

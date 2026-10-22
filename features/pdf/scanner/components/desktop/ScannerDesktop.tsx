@@ -290,11 +290,13 @@ export default function ScannerDesktop() {
       itemId: string,
       quad: Quad | null,
       rotation: ScanRotation,
-      enhance: CropEnhance,
+      enhance: CropEnhance | null,
     ) => {
       session.setQuad(itemId, quad);
       session.setRotation(itemId, rotation);
-      session.setEnhance(itemId, enhance.mode, enhance.fileId);
+      // Untouched enhance row → leave the page's enhance (and any Clean all
+      // still running for it) alone.
+      if (enhance) session.setEnhance(itemId, enhance.mode, enhance.fileId);
     },
     [session],
   );
@@ -628,6 +630,7 @@ export default function ScannerDesktop() {
 
           <CropSheet
             item={cropItem}
+            enhancing={cropItem ? session.enhancingIds.has(cropItem.itemId) : false}
             onClose={() => setCropItem(null)}
             onApply={handleCropApply}
           />

@@ -1112,6 +1112,8 @@ if $STRICT; then
         # file outside providers/google-provider/ naming a raw provider
         # authorization primitive. Static, offline, no credentials.
         "Google authorization windows (a raw provider call bypassing the one-window gate)|pnpm check:google-auth-gate"
+        # An image's pixels come through useMediaSrc: a private file's raw address bound to an <img>/canvas renders broken (2026-10-22).
+        "Image pixels through the one media door (a raw file address bound to an image)|pnpm check:media-src-door"
         # Google's chat tool names (bundle:list_google, google_workspace, google_email_send) still exist
         # in the live registry; a server rename would silently turn off the Google switch in chat (2026-10-20).
         "Google chat tool names (a renamed server tool silently disables Google in chat)|pnpm check:google-chat-tools"
@@ -1942,6 +1944,8 @@ else
         # file outside providers/google-provider/ naming a raw provider
         # authorization primitive. Static, offline, no credentials.
         "Google authorization windows (a raw provider call bypassing the one-window gate)|pnpm check:google-auth-gate"
+        # An image's pixels come through useMediaSrc: a private file's raw address bound to an <img>/canvas renders broken (2026-10-22).
+        "Image pixels through the one media door (a raw file address bound to an image)|pnpm check:media-src-door"
         # Google's chat tool names (bundle:list_google, google_workspace, google_email_send) still exist
         # in the live registry; a server rename would silently turn off the Google switch in chat (2026-10-20).
         "Google chat tool names (a renamed server tool silently disables Google in chat)|pnpm check:google-chat-tools"

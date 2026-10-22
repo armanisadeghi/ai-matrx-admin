@@ -120,6 +120,7 @@ function MediaPlayer({
   name: string;
   seek: SeekRequest | null;
 }) {
+  // media-src-ok: <video>/<audio> preview — files-session cookie lane
   const src = useMediaResolution(fileId).resolution?.src ?? null;
   return kind === "video" ? (
     <VideoPreview url={src} mimeType={null} label={name} seek={seek} className="h-full" />
