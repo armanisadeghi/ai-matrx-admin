@@ -30,6 +30,7 @@ import {
   Images,
   Image as ImageIcon,
   Inbox,
+  Layers,
   Info,
   Landmark,
   Mic,
@@ -1000,6 +1001,14 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                       ) : null}
                       {canEdit ? <DiscoverBrandMenuItem brandId={current.id} organizationId={current.organization_id} /> : null}
                       {canEdit ? (
+                        <DropdownMenuItem asChild>
+                          <Link prefetch={false} href={marketingRoutes.brandSession(marketingSeg(current))}>
+                            <Layers />
+                            Decide
+                          </Link>
+                        </DropdownMenuItem>
+                      ) : null}
+                      {canEdit ? (
                         <DropdownMenuItem onSelect={() => setEditorOpen(true)}>
                           <Pencil />
                           Edit
@@ -1066,6 +1075,12 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                         </Link>
                       </Button>
                       <DiscoverBrandButton brandId={current.id} organizationId={current.organization_id} />
+                      <Button asChild variant="outline">
+                        <Link prefetch={false} href={marketingRoutes.brandSession(marketingSeg(current))} data-testid="brand-session" title="Decide where each candidate belongs">
+                          <Layers className="h-3.5 w-3.5" />
+                          Decide
+                        </Link>
+                      </Button>
                       <Button
                         icon={<Pencil />}
                         variant="outline"

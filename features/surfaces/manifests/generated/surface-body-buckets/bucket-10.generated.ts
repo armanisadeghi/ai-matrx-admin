@@ -5,10 +5,10 @@ export { agentRunManifest as s33 } from "@ai-matrx/chat/surfaces/manifests/agent
 export { agentComparisonModelManifest as s34 } from "../../agent-comparison-model.manifest";
 export { keywordIntelligenceManifest as s74 } from "../../keyword-intelligence.manifest";
 export { marketingFindingsManifest as s80 } from "../../marketing-findings.manifest";
-export { marketingBrandAudienceManifest as s103 } from "../../marketing-brand-audience.manifest";
-export { masterworkRulebookManifest as s112 } from "../../masterwork-rulebook.manifest";
-export { marketingSiteMediaManifest as s169 } from "../../marketing-site-media.manifest";
-export { workbooksManifest as s205 } from "../../workbooks.manifest";
-export { adminAiModelsManifest as s230 } from "../../admin-ai-models.manifest";
-export { adminSandboxManifest as s247 } from "../../admin-sandbox.manifest";
-export { adminProofRunsManifest as s254 } from "../../admin-proof-runs.manifest";
+export { marketingBrandAudienceManifest as s104 } from "../../marketing-brand-audience.manifest";
+export { masterworkRulebookManifest as s113 } from "../../masterwork-rulebook.manifest";
+export { marketingSiteMediaManifest as s170 } from "../../marketing-site-media.manifest";
+export { workbooksManifest as s206 } from "../../workbooks.manifest";
+export { adminAiModelsManifest as s231 } from "../../admin-ai-models.manifest";
+export { adminSandboxManifest as s248 } from "../../admin-sandbox.manifest";
+export { adminProofRunsManifest as s255 } from "../../admin-proof-runs.manifest";

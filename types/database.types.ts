@@ -158642,6 +158642,29 @@ export type Database = {
           why: string
         }[]
       }
+      brand_choice_correct: {
+        Args: {
+          p_action?: string
+          p_choice_id: string
+          p_reason?: string
+          p_value: Json
+          p_via?: string
+        }
+        Returns: Json
+      }
+      brand_choice_decide: {
+        Args: {
+          p_action: string
+          p_choice_id: string
+          p_reason?: string
+          p_via?: string
+        }
+        Returns: Json
+      }
+      brand_choice_propose: {
+        Args: { p_choice_id: string; p_value: Json }
+        Returns: string
+      }
       brand_offering_catalog: {
         Args: { p_site_id: string }
         Returns: {

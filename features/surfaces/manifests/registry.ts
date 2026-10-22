@@ -123,6 +123,7 @@ import { marketingBrandKnowledgeManifest } from "./marketing-brand-knowledge.man
 import { marketingBrandGuidelinesManifest } from "./marketing-brand-guidelines.manifest";
 import { marketingBrandMessagingManifest } from "./marketing-brand-messaging.manifest";
 import { marketingBrandClaimsManifest } from "./marketing-brand-claims.manifest";
+import { marketingBrandSessionManifest } from "./marketing-brand-session.manifest";
 import { marketingBrandOfferingsManifest } from "./marketing-brand-offerings.manifest";
 import { marketingBrandVoiceManifest } from "./marketing-brand-voice.manifest";
 import { marketingBrandAudienceManifest } from "./marketing-brand-audience.manifest";
@@ -422,6 +423,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   marketingBrandGuidelinesManifest,
   marketingBrandMessagingManifest,
   marketingBrandClaimsManifest,
+  marketingBrandSessionManifest,
   marketingBrandOfferingsManifest,
   marketingBrandVoiceManifest,
   marketingBrandAudienceManifest,
