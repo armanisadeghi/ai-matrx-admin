@@ -48,7 +48,7 @@ export const LOAN_MATH_DEMO: PlaygroundDemo = {
     title: "Monthly payment on a $24,000 car loan",
     steps: [
       { label: "Payment formula", tex: "M = P \\frac{r(1+r)^n}{(1+r)^n - 1}", note: "Monthly rate", inline: "r = 0.069 / 12" },
-      { label: "Plug in", tex: "M = 24000 \\cdot \\frac{0.00575(1.00575)^{60}}{(1.00575)^{60} - 1}" },
+      { label: "Plug in", tex: "\\begin{aligned} M &= 24000 \\cdot \\frac{0.00575 \\cdot 1.4110}{1.4110 - 1} \\\\ &= 24000 \\cdot 0.019754 \\end{aligned}" },
       { label: "Result", tex: "M \\approx 474.10", note: "Total interest", inline: "60M - P \\approx 4446" },
     ],
   },
