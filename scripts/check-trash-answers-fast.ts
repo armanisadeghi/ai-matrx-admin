@@ -10,7 +10,7 @@
  *   - `public.trash_counts()`                                              — ceiling 2 s
  *   - for the organization admin@admin.com administers with the most archived rows:
  *     `public.org_trash_list(org, array[kind], null, 50, 0)` per kind       — 300 ms each
- *     `public.org_trash_list(org, null, null, 50, 0)` (the merged page)    — 300 ms
+ *     `public.org_trash_list(org, null, null, 50, 0)` (the merged page)    — 1 s, an overview (FT3)
  *     `public.org_trash_counts(org, null)`                                 — 2 s
  * Server-side EXPLAIN ANALYZE Execution Time, statement_timeout 5 s so a runaway kind fails fast.
  * Judgment: judgeTrashTimings (scripts/lib/trash-doors.ts). Exit 1 over a ceiling, 2 UNMEASURED.
@@ -121,7 +121,9 @@ async function main(): Promise<number> {
         rows.push({ label: `org_trash_list ${kind} (${o.name})`, class: "kind", ...t });
       }
       const m = await timed(db, admin.id, "select * from public.org_trash_list($1::uuid, null, null, 50, 0)", [o.id]);
-      rows.push({ label: `org_trash_list merged page (${o.name})`, class: "kind", ...m });
+      // FT3 (coordinator ruling 2026-10-22): the organization's merged page is its Recent overview - every kind in one
+      // call, like the personal one - so it is held to the overview ceiling (1 s) and block budget, not the per-kind 300 ms.
+      rows.push({ label: `org_trash_list merged page (${o.name})`, class: "overview", ...m });
       const c = await timed(db, admin.id, "select * from public.org_trash_counts($1::uuid, null)", [o.id]);
       rows.push({ label: `org_trash_counts (${o.name})`, class: "counts", ...c });
     }

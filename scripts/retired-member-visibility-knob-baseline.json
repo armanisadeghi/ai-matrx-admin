@@ -7,7 +7,6 @@
     "scripts/campaign-tests/carryingedgesperf_green.sql",
     "scripts/campaign-tests/checklists_green.sql",
     "scripts/campaign-tests/checklists_red.sql",
-    "scripts/campaign-tests/dash_green.sql",
     "scripts/campaign-tests/dash_red.sql",
     "scripts/campaign-tests/digests_green.sql",
     "scripts/campaign-tests/doorstwo_green.sql",

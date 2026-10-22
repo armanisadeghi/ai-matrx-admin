@@ -128,8 +128,9 @@ export interface CloudBrowserProfile {
  * as it does today.
  */
 export interface RunEgress {
-  kind: "datacenter" | "residential";
-  /** The person's own computer that carried the page. Null for datacenter. */
+  /** `paid_proxy`: no computer of theirs could carry it, so our paid backup network did. */
+  kind: "datacenter" | "residential" | "paid_proxy";
+  /** The person's own computer (or "our backup network") that carried the page. Null for datacenter. */
   deviceName: string | null;
 }
 

@@ -16,7 +16,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'dash_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -54,10 +53,10 @@ begin
          (v_org, 'organization', v_org, c_dana,  'member', 'active');
   -- Without the switch every door refuses a person: it is off globally by design.
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
-  values ('custom','system_enabled','organization', v_org, v_org, 'true'),
-  -- VIS-19: this organization shares deliberately, which is the only setting under which
-  -- "she sees her own numbers" is a different sentence from "she sees everything".
-         ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"');
+  values ('custom','system_enabled','organization', v_org, v_org, 'true');
+  -- The retired member-visibility knob is NOT written (access ladder T-17, 2026-10-03: every member opens
+  -- every Organization record, lists hide and never lock). The member's numbers are therefore the same
+  -- rows as the admin's, which is the rule PART 6 now asserts.
 
   insert into custom.record (organization_id, table_id, data_class, data, created_by)
   values (v_org, custom.organization_kernel_id(), 'record',
@@ -106,17 +105,13 @@ begin
       'amount', (100 * v_i)::text));
   end loop;
 
-  -- A step no client door covers: the records default to the store's `internal` visibility
-  -- and the share is what narrows them. Stepping out is stated, and NOTHING is asserted while
-  -- out — the shape of the fixture is not a claim about the product.
+  -- The records keep the store's default (organization-level, listed for everyone): under T-17 a member
+  -- opens and is listed every one of them, so the member's dashboard is the admin's. Stepping out of the
+  -- seat only stamps who made them; NOTHING is asserted while out.
   perform set_config('role', v_boss, true);
-  update custom.record set created_by = c_admin, visibility = 'personal'::platform.visibility
+  update custom.record set created_by = c_admin
    where organization_id = v_org and table_id = v_tbl;
   update custom.record set created_by = c_admin where organization_id = v_org and id = v_tbl;
-  insert into iam.permissions (resource_type, resource_id, granted_to_user_id, permission_level, status)
-  select 'record', r.id, c_dana, 'viewer', 'active'
-    from custom.record r
-   where r.organization_id = v_org and r.table_id = v_tbl and r.data ->> 'owner' = 'Dana';
   perform set_config('role', 'authenticated', true);
 
   v_this := jsonb_build_object(
@@ -321,10 +316,15 @@ begin
   v_out := custom.dashboard_run(v_org, v_dash, '{}'::jsonb);
   select (e -> 'rows' -> 0 -> 'measures' ->> 'count')::integer into v_n
     from jsonb_array_elements(v_out -> 'blocks') e where e ->> 'title' = 'Opened this month';
-  if v_n <> 10 then
-    raise exception '6: she was shared ten records and the dashboard tells her % — this is the whole product', v_n;
+  if v_n <> 20 then
+    raise exception '6: every member opens and is listed all twenty Organization records and the dashboard tells her % — this is the whole product', v_n;
   end if;
-  raise notice 'PART 6 PASSED — the admin is told 20 and the member, on the SAME dashboard in ONE call, is told 10';
+  -- And it is what her own list door says, never a different number from a different door.
+  select count(*) into v_i from custom.query_visible_ids(v_org, v_tbl, 'viewer');
+  if v_i <> v_n then
+    raise exception '6: the dashboard counts % for her and her list door lists %', v_n, v_i;
+  end if;
+  raise notice 'PART 6 PASSED — the admin is told 20 and the member, on the SAME dashboard in ONE call, is told 20 — the rows her list door shows';
 
   -- ══ PART 7 — A MEMBER MAY LOOK AND MAY NOT REWRITE ════════════════════════════════════
   begin

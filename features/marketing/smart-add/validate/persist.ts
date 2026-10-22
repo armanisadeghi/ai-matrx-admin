@@ -42,7 +42,7 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { startSystemRun } from "@/lib/workflows/system-runs";
-import { withdrawSite } from "@/features/marketing/data/retraction";
+import { applyRetraction, restoreRetraction, withdrawSite, type RetractionSummary } from "@/features/marketing/data/retraction";
 import { sourceAccountOf } from "@/features/marketing/components/brands/logo-rank";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { linkPersonToBrand } from "../relations";
@@ -86,7 +86,21 @@ export interface PersistOptions {
    * per-answer promotion. The finding row is the person evidence research reads (aidream research/verified_identity.py
    * person_validated_properties): without it a brand made through Smart Add was never "known as theirs".
    */
-  created?: { propertyId?: string; siteId?: string };
+  created?: { propertyId?: string; siteId?: string; existing?: boolean };
+}
+
+/**
+ * `created.existing` (validate/unconfirmed.ts): the home was on the brand BEFORE this answer (an account or website no
+ * person had confirmed). Yes records the person's answer naming it (the same row Create writes); Undo takes back only the
+ * answer, never the home. Not us withdraws the home through `web.decision_retraction` (no second NO LIST entry: the
+ * answer adds its own) and Undo restores exactly what that took. The homes it predates are kept on the answer
+ * (`context.answer.kept`), the withdrawals' summaries in `context.answer.before.retractions`, so a later visit's Undo
+ * (savedAnswers.ts) does the same.
+ */
+function keptHomes(opts: PersistOptions): string[] {
+  const c = opts.created;
+  if (!c?.existing) return [];
+  return [...(c.propertyId ? [`web.property:${c.propertyId}`] : []), ...(c.siteId ? [`web.site:${c.siteId}`] : [])];
 }
 
 export interface PersistContext {
@@ -142,7 +156,7 @@ async function recordDiscovered(
   relationKey: string | null,
   value: string,
   resolved: { resolved_property_id?: string; resolved_fact_id?: string },
-  trail: { homes: string[]; before: Record<string, Json> } = { homes: [], before: {} },
+  trail: { homes: string[]; before: Record<string, Json>; kept?: string[] } = { homes: [], before: {} },
   sentiment: PersistOptions["sentiment"] = null,
   from: "smart_add.validate" | "smart_add.create" = "smart_add.validate",
 ): Promise<{ id: string; undo: () => Promise<void> }> {
@@ -160,6 +174,8 @@ async function recordDiscovered(
     // What the answer wrote and what it replaced: a reload's Undo (savedAnswers.ts) takes it back from this alone.
     homes: trail.homes,
     before: trail.before,
+    // Homes named here that were on the brand before this answer: an Undo never takes them away.
+    ...(trail.kept?.length ? { kept: trail.kept } : {}),
     suggested: item.suggestion ? (item.suggestion as unknown as Json) : null,
     ...(item.fact && value !== item.fact.value ? { edited_from: item.fact.value } : {}),
   };
@@ -902,6 +918,21 @@ async function persistAnswerOnce(
     }
   }
   if (answer === "not_us") {
+    if (opts.created?.existing) {
+      // Not ours after all: the home it was saved as leaves the brand with everything that grew from it.
+      const taken: RetractionSummary[] = [];
+      try {
+        if (opts.created.siteId) taken.push(await applyRetraction("site", opts.created.siteId, false));
+        if (opts.created.propertyId) taken.push(await applyRetraction("property", opts.created.propertyId, false));
+      } catch (error) {
+        for (const t of [...taken].reverse()) await restoreRetraction(t).catch(() => undefined);
+        throw error;
+      }
+      before.retractions = taken as unknown as Json;
+      undos.push(async () => {
+        for (const t of [...taken].reverse()) await restoreRetraction(t);
+      });
+    }
     const ex = await addExclusion(ctx, item);
     if (ex.id) homes.push(`web.brand_exclusion:${ex.id}`);
     undos.push(ex.undo);
@@ -964,9 +995,9 @@ async function persistAnswerOnce(
       opts.relationKey ?? null,
       value,
       resolved,
-      { homes: [...homes], before },
+      { homes: [...homes], before, kept: keptHomes(opts).filter((h) => homes.includes(h)) },
       opts.sentiment ?? null,
-      opts.created ? "smart_add.create" : "smart_add.validate",
+      opts.created && !opts.created.existing ? "smart_add.create" : "smart_add.validate",
     );
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
@@ -977,7 +1008,10 @@ async function persistAnswerOnce(
     }
     return {
       discoveredId: discovered.id,
-      ...(resolved.resolved_property_id || siteId ? { retraction: { rootType: "decision" as const, rootId: discovered.id } } : {}),
+      // A home this answer brought in is taken back through the retraction; a home that predates it (existing) never is.
+      ...((resolved.resolved_property_id && !opts.created?.existing) || (siteId && !(opts.created?.existing && opts.created.siteId))
+        ? { retraction: { rootType: "decision" as const, rootId: discovered.id } }
+        : {}),
       homes,
       undo: async () => {
         // Reverse order: the homes first, then the finding back to its earlier state.

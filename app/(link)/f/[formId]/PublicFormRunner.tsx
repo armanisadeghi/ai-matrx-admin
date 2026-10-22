@@ -170,7 +170,25 @@ export function PublicFormRunner({
   const [editKey, setEditKey] = useState<string | null>(null);
   const [editing, setEditing] = useState<{ kind: "none" } | { kind: "found"; answers: Record<string, unknown> } | { kind: "gone"; message: string }>({ kind: "none" });
   const [editCopied, setEditCopied] = useState<"idle" | "copied" | "manual">("idle");
-  const w = { changeAnswers: "Change your answers", saveChanges: "Save changes", ...(words ?? {}) };
+  // CD-PAGE-08: every sentence this page says to the visitor comes from the form's words (one table, in
+  // @ai-matrx/records/forms) — English only when she met the form in English.
+  const w = {
+    changeAnswers: "Change your answers",
+    saveChanges: "Save changes",
+    copyMyLink: "Copy my link",
+    linkCopied: "Link copied",
+    copyByHand: "This browser would not copy for you, so here is your link to copy by hand:",
+    saving: "Saving your answers…",
+    savedFinishElsewhere: "Your answers are saved. To finish on another device, use your own link.",
+    pickedUp: "Picked up where you left off.",
+    startOver: "Start over",
+    answersKept: "Your answers were saved.",
+    ...(words ?? {}),
+  };
+  // The timestamped English sentences stay for an English visitor (the store's words for her are the English ones);
+  // any other language reads its own sentence whole.
+  const englishSaved = w.savedFinishElsewhere === "Your answers are saved. To finish on another device, use your own link.";
+  const englishPicked = w.pickedUp === "Picked up where you left off.";
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editingRef = useRef(false);
   const inFlight = useRef<Promise<void> | null>(null);
@@ -558,9 +576,11 @@ export function PublicFormRunner({
     <>
       {resumed.kind === "found" && !sent ? (
         <p className="mt-3 flex flex-wrap items-center gap-x-2 rounded border border-dashed px-2 py-1 text-xs text-muted-foreground">
-          <span>Picked up where you left off{resumed.savedAt ? ` — saved ${whenSaid(resumed.savedAt)}` : ""}.</span>
+          <span>
+            {englishPicked && resumed.savedAt ? `Picked up where you left off — saved ${whenSaid(resumed.savedAt)}.` : w.pickedUp}
+          </span>
           <button type="button" className="underline underline-offset-2" onClick={startOver}>
-            Start over
+            {w.startOver}
           </button>
         </p>
       ) : null}
@@ -581,12 +601,12 @@ export function PublicFormRunner({
       {/* The form's authored text (intro, question help, thank-you) reads
           through the one rich-content core — markdown and math, in the
           server HTML (records-ui `renderText` host port, 0.85.15). */}
-      {paymentNotice ? <PaymentNotice {...paymentNotice} note="Your answers were saved." /> : null}
+      {paymentNotice ? <PaymentNotice {...paymentNotice} note={w.answersKept} /> : null}
       {paymentRefused ? (
         <PaymentNotice
           outcome="refused"
           reason={paymentRefused.reason}
-          note="Your answers were saved."
+          note={w.answersKept}
           retry={paymentRefused.recordId ? { subjectId: form.form_id, recordId: paymentRefused.recordId, back: `/f/${form.form_id}` } : null}
         />
       ) : null}
@@ -609,29 +629,34 @@ export function PublicFormRunner({
         <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground" aria-live="polite" data-form-edit-link="">
           <span>{w.changeAnswers}:</span>
           <button type="button" className="underline underline-offset-2" onClick={() => void copyEditLink(editUrl)}>
-            {editCopied === "copied" ? "Link copied" : "Copy my link"}
+            {editCopied === "copied" ? w.linkCopied : w.copyMyLink}
           </button>
-          {editCopied === "manual" ? <span className="break-all rounded border border-dashed px-2 py-1">{editUrl}</span> : null}
+          {editCopied === "manual" ? (
+            <span className="break-all rounded border border-dashed px-2 py-1">
+              {w.copyByHand} {editUrl}
+            </span>
+          ) : null}
         </div>
       ) : null}
       {!sent && save.kind !== "idle" ? (
         <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground" aria-live="polite">
-          {save.kind === "saving" ? <span>Saving your answers…</span> : null}
+          {save.kind === "saving" ? <span>{w.saving}</span> : null}
           {save.kind === "refused" ? <span>{save.message} <ErrorAlchemyMenu error={save.message} /></span> : null}
           {save.kind === "saved" && resumeUrl ? (
             <span className="flex flex-wrap items-center gap-x-2">
               <span>
-                Your answers are saved{save.at ? ` (${whenSaid(save.at)})` : ""}. To finish on another device, use your
-                own link.
+                {englishSaved && save.at
+                  ? `Your answers are saved (${whenSaid(save.at)}). To finish on another device, use your own link.`
+                  : w.savedFinishElsewhere}
               </span>
               <button type="button" className="underline underline-offset-2" onClick={() => void copyResumeLink(resumeUrl)}>
-                {copied === "copied" ? "Link copied" : "Copy my link"}
+                {copied === "copied" ? w.linkCopied : w.copyMyLink}
               </button>
             </span>
           ) : null}
           {copied === "manual" && resumeUrl ? (
             <span className="break-all rounded border border-dashed px-2 py-1">
-              This browser would not copy for you, so here is your link to copy by hand: {resumeUrl}
+              {w.copyByHand} {resumeUrl}
             </span>
           ) : null}
         </div>

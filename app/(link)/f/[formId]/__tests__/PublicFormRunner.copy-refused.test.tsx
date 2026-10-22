@@ -58,10 +58,10 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-async function saveThenCopy() {
+async function saveThenCopy(words?: Record<string, string>, label = "Copy my link") {
   const form = { form_id: "f1", title: "Intake", table_id: "t", fields: [], honeypot_key: "hp", presentation: {} };
   await act(async () => {
-    root.render(<PublicFormRunner form={form as never} />);
+    root.render(<PublicFormRunner form={form as never} {...(words ? { words } : {})} />);
   });
   await act(async () => {
     container.querySelector<HTMLButtonElement>("[data-testid=answer]")!.click();
@@ -69,7 +69,7 @@ async function saveThenCopy() {
   await act(async () => {
     jest.advanceTimersByTime(1500);
   });
-  const copy = [...container.querySelectorAll("button")].find((b) => b.textContent === "Copy my link");
+  const copy = [...container.querySelectorAll("button")].find((b) => b.textContent === label);
   expect(copy).toBeDefined();
   await act(async () => {
     copy!.click();
@@ -90,4 +90,22 @@ it("says the link is copied only when the copy landed", async () => {
   await saveThenCopy();
   expect(container.textContent).toContain("Link copied");
   expect(container.textContent).not.toContain("copy by hand");
+});
+
+// CD-PAGE-08: a visitor who met the form in Spanish read "Gracias" over English "Copy my link" — every sentence
+// this page says to her comes from the form's words.
+const ES = {
+  copyMyLink: "Copiar mi enlace",
+  linkCopied: "Enlace copiado",
+  copyByHand: "Este navegador no pudo copiarlo; aquí tienes tu enlace para copiarlo a mano:",
+  saving: "Guardando tus respuestas…",
+  savedFinishElsewhere: "Tus respuestas están guardadas. Para terminar en otro dispositivo, usa tu propio enlace.",
+};
+
+it("speaks the form's language on the finish-later link", async () => {
+  copyText.mockResolvedValue(false);
+  await saveThenCopy(ES, "Copiar mi enlace");
+  expect(container.textContent).toContain(ES.savedFinishElsewhere);
+  expect(container.textContent).toContain(ES.copyByHand);
+  expect(container.textContent).not.toMatch(/Copy my link|copy by hand|Your answers are saved/);
 });

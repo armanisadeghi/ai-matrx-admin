@@ -16,6 +16,7 @@ import { isJsonRecord, parseBrandProfile, type MarketingBrand } from "@/features
 import type { EvidenceField, EvidenceItem, EvidenceSource } from "../evidence";
 import { parseSuggestion, type BrandFact } from "./queue";
 import type { KnownOnBrand } from "./fold";
+import { unconfirmedHomes, type ConfirmedRow, type UnconfirmedHome } from "./unconfirmed";
 
 export interface SavedRow {
   id: string;
@@ -105,12 +106,14 @@ export interface SavedFindings {
   items: EvidenceItem[];
   facts: BrandFact[];
   known: KnownOnBrand;
+  /** The brand's own accounts and websites no person confirmed yet: asked as ordinary cards (unconfirmed.ts). */
+  unconfirmed: UnconfirmedHome[];
 }
 
 /** Every open finding saved on the brand, and what the brand already knows. */
 export async function loadSavedFindings(brand: MarketingBrand): Promise<SavedFindings> {
   const db = await authenticatedWebDb(supabase);
-  const [rows, properties, sites, facts] = await Promise.all([
+  const [rows, properties, sites, facts, answeredOurs] = await Promise.all([
     db
       .from("discovered_item")
       .select("id, category, guessed_kind, url, value, context, confidence")
@@ -119,11 +122,20 @@ export async function loadSavedFindings(brand: MarketingBrand): Promise<SavedFin
       .is("deleted_at", null)
       .order("created_at", { ascending: true })
       .limit(1000),
-    db.from("property").select("url, handle, kind").eq("brand_id", brand.id).is("deleted_at", null).limit(500),
-    db.from("site").select("root_url, domain").eq("brand_id", brand.id).is("deleted_at", null).limit(100),
+    db.from("property").select("id, url, handle, kind, display_name, status").eq("brand_id", brand.id).is("deleted_at", null).limit(500),
+    db.from("site").select("id, root_url, domain").eq("brand_id", brand.id).is("deleted_at", null).limit(100),
     db.from("business_fact").select("kind, value, confirmed_at").eq("brand_id", brand.id).is("deleted_at", null).not("confirmed_at", "is", null).limit(1000),
+    // What a person already confirmed (status confirmed + reviewed_by): the homes it names are not asked again.
+    db
+      .from("discovered_item")
+      .select("category, guessed_kind, url, site_id, relation_key, resolved_property_id, context")
+      .eq("brand_id", brand.id)
+      .eq("status", "confirmed")
+      .not("reviewed_by", "is", null)
+      .is("deleted_at", null)
+      .limit(1000),
   ]);
-  for (const r of [rows, properties, sites, facts]) if (r.error) throw new Error(r.error.message);
+  for (const r of [rows, properties, sites, facts, answeredOurs]) if (r.error) throw new Error(r.error.message);
   const items: EvidenceItem[] = [];
   const found: BrandFact[] = [];
   for (const row of rows.data ?? []) {
@@ -150,5 +162,9 @@ export async function loadSavedFindings(brand: MarketingBrand): Promise<SavedFin
       return s(v.text) ?? s(v.url) ?? (typeof f.value === "string" ? f.value : "");
     }),
   };
-  return { items, facts: found, known };
+  const unconfirmed = unconfirmedHomes({ properties: properties.data ?? [], sites: sites.data ?? [], confirmed: (answeredOurs.data ?? []) as ConfirmedRow[] });
+  // A home's card joins the open findings unless a pending finding already carries its key (that card is the one asked).
+  const open = new Set(items.map((i) => i.key));
+  for (const u of unconfirmed) if (!open.has(u.item.key)) items.push(u.item);
+  return { items, facts: found, known, unconfirmed };
 }

@@ -83,6 +83,8 @@ try {
   }
   await page.locator("[data-form-edit-link]").waitFor({ timeout: 180000 });
   await page.screenshot({ path: `${SHOTS}/cd-page-08-3-sent.png` });
+  const sentText = await page.locator("main").innerText();
+  check("stranger: the sent page speaks Spanish too (no English left over)", /Respuestas recibidas/.test(sentText) && /Copiar mi enlace/.test(sentText) && !/Answers received|Copy my link/.test(sentText), sentText.replace(/\s+/g, " ").slice(0, 200));
   const row = (await db.query("select r.id, r.data from custom.record r join custom.anon_submission s on s.record_id = r.id where s.form_id = $1::uuid order by s.created_at desc limit 1", [formId])).rows[0];
   check("store: her answers became a row under the form's keys", row?.data?.name === "Lucía Ortega" && row?.data?.plan === "week", JSON.stringify(row?.data));
   check("store: the calculated score is on her row", Number(row?.data?.score) === 7, `score ${row?.data?.score}`);

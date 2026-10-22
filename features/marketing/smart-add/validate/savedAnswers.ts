@@ -16,7 +16,7 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { associationsService } from "@/features/scopes/service/associationsService";
-import { withdrawSite } from "@/features/marketing/data/retraction";
+import { restoreRetraction, withdrawSite, type RetractionSummary } from "@/features/marketing/data/retraction";
 import { isJsonRecord, type MarketingBrand } from "@/features/marketing/types";
 import type { EvidenceItem } from "../evidence";
 import type { SuggestContext } from "../webKinds";
@@ -68,7 +68,10 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
     PROMOTED_TYPES.map((t) => [t, Array.isArray(promoted[t]) ? (promoted[t] as Json[]).filter((id): id is string => typeof id === "string") : []]),
   ) as Record<PromotedFindingType, string[]>;
   await undoPromotion(created);
+  // Homes that were on the brand before the answer (an unconfirmed account / website confirmed on the page) stay.
+  const kept = new Set(Array.isArray(answer.kept) ? answer.kept.filter((h): h is string => typeof h === "string") : []);
   for (const home of [...homes].reverse()) {
+    if (kept.has(home)) continue;
     const [table, id] = [home.slice(0, home.indexOf(":")), home.slice(home.indexOf(":") + 1)];
     if (table === "web.property") await deleteProperty(id);
     // The site goes through the retraction door AS THIS ANSWER (root decision = the row carrying the `caused` edge), so
@@ -103,6 +106,9 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
       if (!gone.ok) throw new Error(gone.error.message);
     }
   }
+  // A Not us on a home already on the brand withdrew it: bring back exactly what that took.
+  const taken = Array.isArray(before.retractions) ? (before.retractions as unknown as RetractionSummary[]) : [];
+  for (const t of [...taken].reverse()) await restoreRetraction(t);
   const { error } = await (await db())
     .from("discovered_item")
     .update({ status: "pending", relation_key: null, reviewed_at: null, reviewed_by: null, resolved_property_id: null, resolved_fact_id: null })
@@ -162,7 +168,11 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     if (!item) continue;
     const rowIds = [r.id, ...(copiesOf.get(r.id) ?? [])];
     const homes = Array.isArray(answerCtx.homes) ? answerCtx.homes : [];
-    const pulled = Boolean(r.resolved_property_id) || homes.some((h) => typeof h === "string" && h.startsWith("web.site:"));
+    // Only a home the answer brought in pulled data in; one that predates it (context.answer.kept) is never retracted.
+    const kept = Array.isArray(answerCtx.kept) ? answerCtx.kept : [];
+    const pulled =
+      (Boolean(r.resolved_property_id) && !kept.includes(`web.property:${r.resolved_property_id}`)) ||
+      homes.some((h) => typeof h === "string" && h.startsWith("web.site:") && !kept.includes(h));
     const relationKey = r.relation_key;
     const value = typeof rec(r.value).text === "string" ? (rec(r.value).text as string) : item.value;
     out.entries.push({

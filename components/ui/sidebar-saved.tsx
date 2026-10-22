@@ -5,6 +5,7 @@ import Link from "@/components/navigation/AppLink";
 import type { LinkProps } from "next/link";
 import React, {useState, createContext, useContext, useCallback} from "react";
 import {AnimatePresence, motion, HTMLMotionProps} from "motion/react";
+import {Button} from "@ai-matrx/design-system";
 import {IconMenu2, IconX} from "@tabler/icons-react";
 
 interface Links {
@@ -167,11 +168,13 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = (
                                 className
                             )}
                         >
-                            <div
-                                className="absolute right-10 top-10 z-50 text-foreground"
-                                onClick={() => setOpen(!open)}
-                            >
-                                <IconX/>
+                            <div className="flex justify-end">
+                                <Button
+                                    variant="quiet"
+                                    icon={<IconX/>}
+                                    aria-label="Close sidebar"
+                                    onClick={() => setOpen(!open)}
+                                />
                             </div>
                             {children}
                         </motion.div>
