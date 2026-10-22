@@ -27,7 +27,7 @@ import { createClickTarget, runAlchemyAction, type ClickTarget } from "@ai-matrx
 import { useAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/boot";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";

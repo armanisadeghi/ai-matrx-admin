@@ -6,7 +6,7 @@
  * rendered only while open, dragged by summon's dock.
  */
 import { useCallback } from "react";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { DebugData } from "@/components/debug/SystemPromptDebugModal";

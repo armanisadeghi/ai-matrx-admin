@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/boot";
 import { cn } from "@/lib/utils";
 import type { OverlayId } from "@ai-matrx/summon/open";
 import { getMenuIcon, type MenuIconKey } from "./menuIconRegistry";

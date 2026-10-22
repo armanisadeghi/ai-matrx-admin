@@ -118,7 +118,6 @@ export const defaultUserPreferences: UserPreferences = {
     lastSandboxTemplate: "bare",
     monacoEnvironmentsEnabled: true,
     activeAgentSandboxBySurface: {},
-    sandboxCanvasAutoOpen: true,
     toolResultCanvasAutoOpen: true,
   },
   // Matches the in-slice defaults at

@@ -155,6 +155,7 @@ export async function createAgentFromBuilder(
       toast.error("Failed to create agent", { description: msg });
       return { success: false, error: msg };
     }
+    const userId = authData.user.id;
 
     // Organization is carried, never guessed. `ensureOrgId` throws
     // `OrganizationContextError` ("Select an organization before sending this
@@ -174,13 +175,13 @@ export async function createAgentFromBuilder(
           : await ensureOrgId(undefined);
 
     const { modelId } = await resolveNewAgentModelId((fullKey) =>
-      ensureEffectiveKnob(organizationId, authData.user.id, fullKey),
+      ensureEffectiveKnob(organizationId, userId, fullKey),
     );
 
     const payload = {
       ...configToInsertPayload(config, modelId),
       ...(owner.kind === "system" ? { agent_type: "builtin" } : {}),
-      created_by: authData.user.id,
+      created_by: userId,
       organization_id: organizationId,
     } satisfies AgentInsert;
 

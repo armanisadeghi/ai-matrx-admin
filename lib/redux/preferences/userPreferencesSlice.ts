@@ -276,21 +276,9 @@ export interface CodingPreferences {
    */
   monacoEnvironmentsEnabled: boolean;
   /**
-   * Reveal the Sandbox in the Canvas the first time the agent works in the
-   * bound box — on by default.
-   *
-   * The sandbox is a canvas content type, not a panel: with this on, the
-   * first `shell_execute` / `fs_*` / `git_ingest` of a conversation opens the
-   * canvas on the Sandbox pane, the way Claude Code reveals its terminal when
-   * it runs a command. With it off, the pane is still added to the canvas
-   * switcher — available, never on screen uninvited. Either way the canvas is
-   * never hijacked away from a document or the browser the user is reading.
-   */
-  sandboxCanvasAutoOpen: boolean;
-  /**
    * Reveal a record a TOOL just created in the Canvas — on by default.
    *
-   * Same courtesy as the sandbox knob, one level up: when a chat tool creates
+   * When a chat tool creates
    * a document (or any other canvas-renderable record), the canvas opens on it
    * the way Claude.ai shows an artifact the moment it is written — but ONLY
    * into a canvas that is showing nothing else. With this off, the record is
@@ -1383,7 +1371,6 @@ export const initializeUserPreferencesState = (
       lastSandboxTemplate: "bare",
       monacoEnvironmentsEnabled: true,
       activeAgentSandboxBySurface: {},
-      sandboxCanvasAutoOpen: true,
       toolResultCanvasAutoOpen: true,
     },
     sandbox: {

@@ -975,11 +975,8 @@ export function ShortcutForm({
             handleChange("llmOverrides", v as ShortcutFormData["llmOverrides"])
           }
           title="Model & settings"
-          hint="Which model this shortcut runs on, and the settings it runs with. Left alone, it uses the agent's own model and settings."
+          hint="Which model this shortcut runs on, and the settings it runs with, stored on this shortcut and applied every time it runs. Left alone (or reset), it uses the agent's own model and settings."
           words={{
-            heading: "Model settings for this shortcut",
-            scopeNote:
-              "These are stored on this shortcut and applied every time it runs. Resetting a value hands it back to the agent's own default.",
             noModelNote:
               "No model chosen — this shortcut runs on the agent's own model.",
           }}

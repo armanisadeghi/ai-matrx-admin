@@ -99,7 +99,6 @@ export function readAppChatPreferences(state: RootState): ChatPreferences {
     directiveApplyPolicy: user?.assistant?.directiveApplyPolicy ?? d.directiveApplyPolicy,
     restoreUnsentDrafts: user?.prompts?.restoreUnsentDrafts !== false,
     sandboxBySurface: user?.coding?.activeAgentSandboxBySurface ?? d.sandboxBySurface,
-    sandboxCanvasAutoOpen: user?.coding?.sandboxCanvasAutoOpen !== false,
     conversationLanes: user?.conversationFilters?.lanes,
     conversationSurfaces: user?.conversationFilters?.surfaces,
     activeScratchpadId: user?.scratchpad?.activeId ?? d.activeScratchpadId,

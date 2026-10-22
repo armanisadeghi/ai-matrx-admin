@@ -41,7 +41,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { expectNavigationThen } from "@/lib/navigation/expectNavigationLazy";
+import { expectNavigation } from "@ai-matrx/summon/boot-kit";
 
 export interface WindowOverlayDescriptor {
   /** Registered overlayId (e.g. `quickDataWindow`). */
@@ -83,7 +83,8 @@ export function OpenDestinationDialog({
   const openHere = useCallback(() => {
     close();
     // a window closes before this push: the overlay layer writes no address behind it
-    expectNavigationThen(route, () => router.push(route));
+    expectNavigation(route);
+    router.push(route);
   }, [close, router, route]);
 
   const openNewTab = useCallback(() => {

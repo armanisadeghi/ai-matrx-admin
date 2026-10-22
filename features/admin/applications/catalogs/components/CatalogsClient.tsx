@@ -34,8 +34,8 @@ import { APPLICATIONS_ADMIN_LOCATION } from "@/features/admin/applications/const
 import { AddFromLinkDialog } from "@/features/admin/applications/catalogs/components/AddFromLinkDialog";
 import { CatalogEntryEditor } from "@/features/admin/applications/catalogs/components/CatalogEntryEditor";
 import { CatalogKindTable } from "@/features/admin/applications/catalogs/components/CatalogKindTable";
-import { MODEL_KINDS, UnifiedModelKindTable, kindOfModel } from "@/features/admin/applications/catalogs/components/UnifiedModelKindTable";
-import { fetchCuratedModels, type CuratedCatalogClient, type CuratedModel } from "@ai-matrx/agents/models";
+import { UnifiedModelKindTable } from "@/features/admin/applications/catalogs/components/UnifiedModelKindTable";
+import { MODEL_CATALOG_KINDS, catalogKindOf, fetchCuratedModels, type CuratedCatalogClient, type CuratedModel } from "@ai-matrx/agents/models";
 import {
   CATALOG_KINDS,
   DEFAULT_CATALOG_APP,
@@ -261,8 +261,8 @@ export function CatalogsClient({
     return [...CATALOG_KINDS.map((k) => k.slug), ...extraKinds].map((slug) => {
       const def = CATALOG_KINDS.find((k) => k.slug === slug);
       const base = { slug, label: kindLabel(slug), description: def?.description ?? "", registered: Boolean(def) };
-      if (MODEL_KINDS.has(slug)) {
-        const models = (curated ?? []).filter((m) => kindOfModel(m, kindOfEntry) === slug);
+      if (MODEL_CATALOG_KINDS.has(slug)) {
+        const models = (curated ?? []).filter((m) => catalogKindOf(m, kindOfEntry) === slug);
         const active = models.filter((m) => m.offered).length;
         return { ...base, pending: curated === null, total: models.length, active, inactive: models.length - active };
       }
@@ -456,7 +456,7 @@ export function CatalogsClient({
         getScope={getSurfaceScope}
       >
         <div className="flex h-full flex-col gap-3 p-4">
-          {MODEL_KINDS.has(view.kind) ? (
+          {MODEL_CATALOG_KINDS.has(view.kind) ? (
             // Arman's "one editor": model kinds read and write the unified catalog (ai.*); the old
             // catalog_entries rows stay viewable, read-only, for comparison.
             <UnifiedModelKindTable

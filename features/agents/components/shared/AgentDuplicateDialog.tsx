@@ -31,7 +31,7 @@ import { Button, Select } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { expectNavigationThen } from "@/lib/navigation/expectNavigationLazy";
+import { expectNavigation } from "@ai-matrx/summon/boot-kit";
 
 export type AgentDuplicateStep = "choose" | "loading" | "success" | "error";
 
@@ -216,7 +216,8 @@ export function AgentDuplicateDialog({
                   if (!newAgentPath) return;
                   close();
                   // a window closes around this push: the overlay layer writes no address behind it
-                  expectNavigationThen(newAgentPath, () => startTransition(() => router.push(newAgentPath)));
+                  expectNavigation(newAgentPath);
+                  startTransition(() => router.push(newAgentPath));
                 }}
               >
                 Open new agent

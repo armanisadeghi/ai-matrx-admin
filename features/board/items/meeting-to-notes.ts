@@ -22,6 +22,7 @@ export async function sendMeetingPartToNotes(source: NodeSource, tileTitle: stri
     meetingId: target.meetingId,
     meetingTitle: meeting?.title ?? tileTitle,
     part: target.part,
+    // The part's text as its tile shows it right now (published by the tile's body).
     text: publishedMeetingPartText(target.meetingId, target.part),
   });
   try {

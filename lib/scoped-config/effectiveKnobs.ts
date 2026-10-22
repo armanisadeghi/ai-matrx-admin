@@ -694,7 +694,7 @@ export async function catchUpKnobsSinceBoot(): Promise<boolean> {
   if (!defaults && heldAsks.size === 0) return false;
   const rpc = platformRpc(createClient());
   let moved = false;
-  // A held snapshot's etag carries the platform defaults' version (`k3.<inputs>.<defaults version>`,
+  // A held snapshot's etag carries the register vector (`k4.<inputs>.<vector>`, dblanea2; was k3 in
   // migration dblanea_knob_delta_unchanged_is_cheap): "unchanged" there means the defaults did not move
   // either, so the full defaults read (~80 ms server-side) is asked only when no snapshot is held.
   const holdsSnapshot = [...heldAsks.keys()].some((addr) => lastAnswers.has(addr));

@@ -85,7 +85,7 @@ import { flattenResourcePickerItems } from "@/features/resource-manager/resource
 import { useAttachResourcePicker } from "@/features/connectors/useAttachResourcePicker";
 // Light entries only: ./window and ./url each ship as one module, so a hook imported from them
 // carried the whole window section / link manager into every route's first load.
-import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/root";
+import { useOverlayLink as useUrlSync } from "@ai-matrx/summon/boot-root";
 // The full-screen editor's callback module loads on use, never at boot (builder-G 2026-10-18): a
 // group only exists once that module created it, so by the first dispose/emit it is in memory.
 const loadFullScreenEditorCallbacks = () => import("@/features/overlays/definitions/callbacks/fullScreenEditor");
