@@ -389,11 +389,10 @@ function BrowseAllSources({ library, onHome, onOpen }: { library: Library; onHom
   const featured = view.kind === "featured" && !searching ? library.sources.filter((s) => s.featured) : [];
   const sections = librarySections(matches);
 
-  // Only a source's OWN price can be "from": the flat catalog default is on every source, so it says nothing
-  // about any one of them (it is stated where the person decides: the source's own page).
-  const priced = library.sources.filter((s) => s.ownPrice);
-  const cheapest = cheapestPoints(priced, rate);
-  const cheapestSource = cheapest == null ? null : priced.find((s) => pointsPerRecord(s, rate) === cheapest) ?? null;
+  // The price a source card shows is the server's points_per_record, computed by the same function billing
+  // charges with (data_fetch.service.effective_price_for_dataset): the two cannot drift.
+  const cheapest = cheapestPoints(library.sources, rate);
+  const cheapestSource = cheapest == null ? null : library.sources.find((s) => pointsPerRecord(s, rate) === cheapest) ?? null;
   const fromText = cheapestSource ? price(cheapestSource, 1) : null;
 
   return (
@@ -479,9 +478,7 @@ function CardGrid({ sources, onOpen, rich = false }: { sources: LibrarySource[];
 }
 
 function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boolean; onOpen: () => void }) {
-  const priceOf = usePriceText();
-  // the flat default is not shown as this source's price; a source with its own price shows it
-  const price = source.ownPrice ? priceOf(source, 1, { pointsOnly: true }) : null;
+  const price = usePriceText()(source, 1, { pointsOnly: true });
   const preview = fieldPreview(source.outputFields, rich ? 5 : 3);
   return (
     <button
@@ -510,9 +507,9 @@ function SourceCard({ source, rich, onOpen }: { source: LibrarySource; rich: boo
         </ChipSet>
       )}
       <div className="mt-auto flex items-center gap-1.5 pt-1">
-        {price ? (
-          <span className="text-xs font-medium text-foreground" data-unit-price="">{price} / record</span>
-        ) : null}
+        <span className="text-xs font-medium text-foreground" data-unit-price="">
+          {price ? `${price} / record` : "No price yet"}
+        </span>
         <span className="ml-auto flex items-center gap-1">
           {source.knownIssue ? (
             <Badge tone="warning" title={plainIssue(source.knownIssue)}>
