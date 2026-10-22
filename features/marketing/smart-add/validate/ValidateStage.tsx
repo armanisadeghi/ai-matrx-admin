@@ -28,6 +28,7 @@ import { useMediaQuery } from "@ai-matrx/kit/media-query";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { PlatformMark } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { ShadedLogo } from "../ShadedLogo";
 import { avatarInitial } from "../avatarInitial";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { websiteHost } from "../evidence";
@@ -209,12 +210,12 @@ function WeThink({ item, kinds }: { item: FocusItem; kinds: BrandRelationKind[] 
 }
 
 
-/** Logos: the ONE picture this card asks about, raw, never boxed; the badge counts the places it was found. */
+/** Logos: the ONE picture this card asks about, raw (a white logo gets the dark backdrop); the badge counts the places it was found. */
 function LogoHero({ item }: { item: FocusItem }) {
   const found = 1 + (item.folded?.length ?? 0);
   return (
     <div className="relative self-start" data-testid="validate-logo">
-      <img src={logoImageOf(item) ?? item.value} alt="" className="h-28 max-w-[14rem] object-contain" />
+      <ShadedLogo url={logoImageOf(item) ?? item.value} imgClassName="h-28 max-w-[14rem] object-contain" testId="validate-logo-image" />
       {found > 1 ? (
         <span className="absolute -top-2 -right-2">
           <Badge>{found}</Badge>
@@ -626,7 +627,7 @@ export function ValidateStage({
         <div className="grid min-h-full lg:grid-cols-[minmax(0,1fr)_20rem]" data-testid="smart-add-validate">
           <div ref={stageRef} className="flex flex-col items-center px-3 pt-[calc(var(--shell-header-h,0px)+1.5rem)] sm:px-4">
             <header className="flex w-full max-w-[40rem] items-center gap-3">
-              {brandLogo ? <img src={brandLogo} alt="" className="size-7 shrink-0 rounded-md object-contain" /> : null}
+              {brandLogo ? <ShadedLogo url={brandLogo} className="size-7 shrink-0 rounded-md" /> : null}
               <span className="truncate text-base font-semibold">{brandName}</span>
               <span className="ml-auto flex items-center gap-2 text-sm font-medium tabular-nums" data-testid="validate-progress">
                 {working ? (
