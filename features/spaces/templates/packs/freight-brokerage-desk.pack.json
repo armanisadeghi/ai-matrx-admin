@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0575",
-  "version": 1,
+  "version": 2,
   "title": "Freight Brokerage Desk",
   "description": "Quote, cover and track loads, vet carriers, and watch margin per load and per customer.",
   "forWho": "Freight brokers and small brokerage teams",
@@ -2346,7 +2346,7 @@
         "Caddo Mill Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2436,6 +2436,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:load-day"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dispatch-board"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:claims-and-detention"
                   }
                 }
               ]
@@ -2653,7 +2686,9 @@
                   "awaiting",
                   "new_load",
                   "mail_ap",
-                  "added_at"
+                  "added_at",
+                  "credit_limit",
+                  "revenue"
                 ]
               },
               {
@@ -2772,7 +2807,8 @@
                   "due_on",
                   "paid_on",
                   "paid_btn",
-                  "added_at"
+                  "added_at",
+                  "linehaul"
                 ]
               },
               {
@@ -2866,7 +2902,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "From quote to paid"
             }
           ],
           "props": {
@@ -2925,7 +2961,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal day"
+              "text": "A day on the desk"
             }
           ],
           "props": {
@@ -2984,7 +3020,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Reps, carrier sales, billing"
             }
           ],
           "props": {
@@ -3452,7 +3488,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading margin and rate per mile"
             }
           ],
           "props": {
@@ -4078,6 +4114,459 @@
               "text": "Salinas to Phoenix strawberries: tendered at 3,150, covered with a reefer carrier at 2,700 for a 450 margin, about 14 percent. Pickup at 4 am; the reefer temperature is confirmed on the bill of lading at the first check call. The receiver signs clean the next afternoon, the broker presses Mark delivered, and billing sends the invoice before close."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "dispatch-board",
+      "parent": "freight-brokerage-desk",
+      "title": "Dispatch board",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The live board for the floor: what still needs a truck, what picks up today, and what is rolling. Check calls are written on the load's page."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "load"
+            },
+            "inline": true,
+            "title": "Loads",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Board",
+                "layout": "kanban",
+                "groupField": "status",
+                "id": "load-board",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "rep",
+                  "pickup_on",
+                  "delivered_on",
+                  "miles",
+                  "weight",
+                  "rate",
+                  "carrier_pay",
+                  "margin",
+                  "margin_pct",
+                  "rpm",
+                  "ratecon",
+                  "pod",
+                  "assigned_to",
+                  "transit_btn",
+                  "deliv_btn",
+                  "take_btn",
+                  "inv_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Picking up today",
+                "layout": "grid",
+                "within": {
+                  "pickup_on": {
+                    "relative": "today"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "pickup_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "load-picking-up-today",
+                "icon": "Table"
+              },
+              {
+                "name": "Picking up tomorrow",
+                "layout": "list",
+                "within": {
+                  "pickup_on": {
+                    "relative": "tomorrow"
+                  }
+                },
+                "id": "load-picking-up-tomorrow",
+                "icon": "List"
+              },
+              {
+                "name": "Needs a truck",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Tendered"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "pickup_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "load-needs-a-truck",
+                "icon": "List"
+              },
+              {
+                "name": "Rolling",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "In transit"
+                  ]
+                },
+                "id": "load-rolling",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "load-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Carriers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "carrier"
+            },
+            "inline": true,
+            "title": "Carriers",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Insurance expiring",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Insurance expiring"
+                  ]
+                },
+                "id": "carrie-insurance-expiring",
+                "icon": "Table"
+              },
+              {
+                "name": "Waiting on setup",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Pending setup"
+                  ]
+                },
+                "id": "carrie-waiting-on-setup",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "carrie-insurance-expiring"
+          }
+        }
+      ]
+    },
+    {
+      "key": "claims-and-detention",
+      "parent": "freight-brokerage-desk",
+      "title": "Claims, detention and TONU",
+      "icon": {
+        "emoji": "⚖️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Three things eat a broker's margin after the truck is booked: a cargo claim, detention at the dock, and a truck ordered not used. Each one has a rule written into the rate confirmation; this page is how we work them."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "TriangleAlert"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Detention"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The rate confirmation says the free time (usually two hours) and the hourly rate after it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The driver texts in and out times; the carrier sends the signed in-and-out sheet. No sheet, no detention."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bill the shipper the same rate you pay the carrier, as an accessorial on the Customer invoice. Never eat detention to keep a customer quiet; tell them the dock is slow."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Truck ordered, not used (TONU)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When the shipper cancels after the truck is dispatched, the carrier is owed a TONU fee, usually $150 to $300."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the load Cancelled, add the fee as an accessorial on the invoice, and pay the carrier the same week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cargo claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Get the delivery receipt with the exception written on it, and photos, the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the carrier in writing within 24 hours and ask for their insurer's claim number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The shipper files the claim with its invoice for the goods; we pass it to the carrier and chase it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Do not short-pay the carrier on your own; agree any offset in writing first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write every step on the load's page with the date."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who pays first"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Our job"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two hours over free time"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shipper or receiver"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bill and pay detention, both sides"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shipper cancels after dispatch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shipper"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bill and pay TONU"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Damaged freight"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Carrier's cargo cover"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Get papers, pass the claim, follow up weekly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Late with no notice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nobody, at first"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Talk to the carrier; two strikes and they leave the list"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist on every exception"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Times or photos saved on the load"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Accessorial added to the invoice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Carrier paid or claim number written down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

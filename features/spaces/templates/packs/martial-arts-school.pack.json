@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0586",
-  "version": 1,
+  "version": 2,
   "title": "Martial Arts School",
   "description": "Intro lessons to black belt: students, ranks, belt tests, class schedule and dues.",
   "forWho": "Karate, taekwondo and jiu-jitsu schools",
@@ -248,7 +248,7 @@
         "Kettering Mill Road"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "lead",
@@ -629,7 +629,8 @@
               "intro_at": "@today-5d 16:30",
               "instructor": "tm-3",
               "phone": "(614) 555-0104",
-              "email": "brightwater.home@inbox-mail.net"
+              "email": "brightwater.home@inbox-mail.net",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -642,7 +643,8 @@
               "intro_at": "@today-3d 18:00",
               "instructor": "tm-2",
               "phone": "(614) 555-0105",
-              "email": "okafor.home@inbox-mail.net"
+              "email": "okafor.home@inbox-mail.net",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -655,7 +657,8 @@
               "intro_at": "@today-9d 10:00",
               "instructor": "tm-3",
               "phone": "(614) 555-0106",
-              "email": "marsh.home@inbox-mail.net"
+              "email": "marsh.home@inbox-mail.net",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2303,6 +2306,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:class-week"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:keeping-students"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:intro-to-student"
@@ -2487,7 +2523,8 @@
                   "tests_passed",
                   "add_test_btn",
                   "call_btn",
-                  "added_at"
+                  "added_at",
+                  "monthly_dues"
                 ]
               },
               {
@@ -2555,7 +2592,8 @@
                   "examiner",
                   "notes",
                   "pass_btn",
-                  "added_at"
+                  "added_at",
+                  "fee"
                 ]
               },
               {
@@ -2573,7 +2611,8 @@
                   "examiner",
                   "notes",
                   "pass_btn",
-                  "added_at"
+                  "added_at",
+                  "fee"
                 ]
               },
               {
@@ -3065,7 +3104,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My follow-ups"
+              "text": "My callbacks"
             }
           ],
           "props": {
@@ -3796,6 +3835,358 @@
               "text": "Look at the Intros by source chart each month and put the next month's effort where families are actually coming from."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "class-week",
+      "parent": "martial-arts-school",
+      "title": "Class week",
+      "icon": {
+        "emoji": "🥋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The week's classes with their fill, and the students to watch: trial months ending, freezes coming back, and anyone who has stopped coming."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "class"
+            },
+            "inline": true,
+            "title": "Classes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "By day",
+                "layout": "kanban",
+                "groupField": "days",
+                "id": "class-by-day",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "capacity",
+                  "avg_attendance",
+                  "fill",
+                  "room_check",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "All classes",
+                "layout": "grid",
+                "id": "class-all-classes",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "class-by-day"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Students to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "student"
+            },
+            "inline": true,
+            "title": "Students",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Trial month",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Trial month"
+                  ]
+                },
+                "id": "studen-trial-month",
+                "icon": "Table"
+              },
+              {
+                "name": "Frozen",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Frozen"
+                  ]
+                },
+                "id": "studen-frozen",
+                "icon": "List"
+              },
+              {
+                "name": "By rank",
+                "layout": "chart",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "rank",
+                  "op": "count"
+                },
+                "id": "studen-by-rank",
+                "icon": "ChartPie"
+              }
+            ],
+            "activeViewId": "studen-trial-month"
+          }
+        }
+      ]
+    },
+    {
+      "key": "keeping-students",
+      "parent": "martial-arts-school",
+      "title": "Keeping students",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A school grows by keeping students, not only signing them. Most quit in the first 90 days or after a missed month; both are visible early if attendance is watched."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "HeartHandshake"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first 90 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Week 1: the instructor learns the student's name and uses it in class. Parents get a short message after the first class."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Week 3: the first stripe. Something to take home matters more than the belt test is far away."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Day 30: the trial month ends. Call, do not email; ask how it is going before you ask about the membership."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Attendance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Classes since last belt is updated at the front desk each week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Missed two weeks: a text from the instructor, not from the office."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Missed a month: a call, and an offer of a private lesson to catch up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Freezes and cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Request"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What we offer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Injury or illness"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Freeze up to three months, no dues"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Money is tight"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Move to twice a week or the ten-class card"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Too busy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Freeze one month, then a call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Moving away"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cancel with no fee; give them a letter for their next school"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask why, and listen, before offering anything. Write the reason on the student's page; patterns tell the owner which classes or times are not working."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Count students frozen and cancelled, with reasons"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Call every frozen student whose freeze ends this month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank-you note to families with a student past one year"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

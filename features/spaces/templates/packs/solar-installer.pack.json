@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0583",
-  "version": 1,
+  "version": 2,
   "title": "Solar Installer",
   "description": "Leads to permission to operate: surveys, permits, installs, utility approvals and margin.",
   "forWho": "Residential solar and battery installers",
@@ -277,7 +277,7 @@
         "Juniper Ridge Road"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "customer",
@@ -986,7 +986,8 @@
             "name": "Install project",
             "values": {
               "status": "Survey and design",
-              "project_name": "New project"
+              "project_name": "New project",
+              "prod_factor": 1450
             },
             "default": true,
             "body": {
@@ -1390,6 +1391,24 @@
             "pick": "annual_kwh"
           },
           {
+            "key": "prod_factor",
+            "label": "Production factor (kWh per kW)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "default": 1450,
+            "rules": [
+              {
+                "kind": "min",
+                "value": 600
+              },
+              {
+                "kind": "max",
+                "value": 2200
+              }
+            ]
+          },
+          {
             "key": "ppw",
             "label": "Price per watt (USD)",
             "parityType": "formula",
@@ -1403,7 +1422,13 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "ROUND({System size (kW)} * 1650, 0)"
+            "formula": "ROUND({System size (kW)} * {Production factor (kWh per kW)}, 0)",
+            "look": {
+              "id": "decimal",
+              "options": {
+                "precision": 0
+              }
+            }
           },
           {
             "key": "offset",
@@ -1411,7 +1436,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Yearly usage (kWh)} > 0, ROUND({System size (kW)} * 1650 / {Yearly usage (kWh)} * 100, 0), \"\")"
+            "formula": "IF({Yearly usage (kWh)} > 0, ROUND({System size (kW)} * {Production factor (kWh per kW)} / {Yearly usage (kWh)} * 100, 0), \"\")"
           },
           {
             "key": "margin",
@@ -1543,7 +1568,8 @@
               "signed_on": "@today-150d",
               "install_on": "@today-75d",
               "installed_on": "@today-74d",
-              "pto_on": "@today-30d"
+              "pto_on": "@today-30d",
+              "prod_factor": 1600
             }
           },
           {
@@ -1562,7 +1588,9 @@
               "permit_fees": 800,
               "signed_on": "@today-110d",
               "install_on": "@today-40d",
-              "installed_on": "@today-40d"
+              "installed_on": "@today-40d",
+              "prod_factor": 1600,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1581,7 +1609,9 @@
               "permit_fees": 700,
               "signed_on": "@today-95d",
               "install_on": "@today-25d",
-              "installed_on": "@today-24d"
+              "installed_on": "@today-24d",
+              "prod_factor": 1600,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1599,7 +1629,9 @@
               "labor_cost": 4900,
               "permit_fees": 900,
               "signed_on": "@today-60d",
-              "install_on": "@today"
+              "install_on": "@today",
+              "prod_factor": 1500,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1617,7 +1649,8 @@
               "labor_cost": 2600,
               "permit_fees": 650,
               "signed_on": "@today-45d",
-              "install_on": "@today+9d"
+              "install_on": "@today+9d",
+              "prod_factor": 1500
             }
           },
           {
@@ -1635,7 +1668,8 @@
               "labor_cost": 4200,
               "permit_fees": 850,
               "signed_on": "@today-30d",
-              "install_on": "@today+24d"
+              "install_on": "@today+24d",
+              "prod_factor": 1600
             }
           },
           {
@@ -1653,7 +1687,8 @@
               "labor_cost": 4600,
               "permit_fees": 800,
               "signed_on": "@today-12d",
-              "install_on": "@today+40d"
+              "install_on": "@today+40d",
+              "prod_factor": 1600
             }
           },
           {
@@ -1671,7 +1706,8 @@
               "labor_cost": 2300,
               "permit_fees": 600,
               "signed_on": "@today-50d",
-              "install_on": "@today-3d"
+              "install_on": "@today-3d",
+              "prod_factor": 1600
             }
           },
           {
@@ -1687,7 +1723,8 @@
               "equipment_cost": 8400,
               "labor_cost": 2900,
               "permit_fees": 0,
-              "signed_on": "@today-40d"
+              "signed_on": "@today-40d",
+              "prod_factor": 1600
             }
           }
         ],
@@ -2576,6 +2613,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:install-schedule"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:site-survey"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:pricing-and-margin"
@@ -2632,7 +2702,8 @@
                   "contract_total",
                   "add_project_btn",
                   "call_btn",
-                  "added_at"
+                  "added_at",
+                  "monthly_bill"
                 ]
               },
               {
@@ -2937,7 +3008,8 @@
                   "reorder_at",
                   "stock_value",
                   "reorder",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3341,7 +3413,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Install date passed"
+              "text": "Installs that slipped"
             }
           ],
           "props": {
@@ -3388,7 +3460,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On a roof this week"
+              "text": "Crews on roofs this week"
             }
           ],
           "props": {
@@ -3435,7 +3507,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My projects"
+              "text": "Projects I own"
             }
           ],
           "props": {
@@ -4037,7 +4109,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Estimated production uses 1,650 kWh per installed kW a year, a fair figure for our high, sunny climate on a south or west roof. "
+              "text": "Estimated production is System size times the project's Production factor: the kWh one installed kW makes in a year on that roof. New projects start at 1,450, a middle figure; set it from your design tool's estimate for the roof, about 1,600 for an open south roof in a sunny state and 1,100 to 1,300 for shade or a cloudy region. "
             },
             {
               "text": "Bill offset",
@@ -4066,6 +4138,406 @@
               "text": "A signed contract can be cancelled during the legal cooling-off period. Mark the project Cancelled; margin leaves its numbers blank so the dashboard stays honest."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "install-schedule",
+      "parent": "solar-installer",
+      "title": "Install schedule",
+      "icon": {
+        "emoji": "🔧"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Crews, roofs and inspections for the next six weeks. A project is only scheduled once its permit is approved and the equipment is in the warehouse."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "project"
+            },
+            "inline": true,
+            "title": "Projects",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Calendar",
+                "layout": "calendar",
+                "dateField": "install_on",
+                "id": "projec-calendar",
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "status",
+                  "crew_lead",
+                  "panels",
+                  "battery",
+                  "contract_price",
+                  "equipment_cost",
+                  "labor_cost",
+                  "permit_fees",
+                  "usage",
+                  "prod_factor",
+                  "ppw",
+                  "production",
+                  "offset",
+                  "margin",
+                  "margin_pct",
+                  "open_approvals",
+                  "signed_on",
+                  "install_on",
+                  "installed_on",
+                  "pto_on",
+                  "assigned_to",
+                  "inst_btn",
+                  "pto_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Next 6 weeks",
+                "layout": "grid",
+                "within": {
+                  "install_on": {
+                    "relative": "next_days",
+                    "n": 42
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "install_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "projec-next-6-weeks",
+                "icon": "Table"
+              },
+              {
+                "name": "Ready to schedule",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Permit approved"
+                  ]
+                },
+                "id": "projec-ready-to-schedule",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "projec-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Approvals holding a project"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "approval"
+            },
+            "inline": true,
+            "title": "Approvals",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "By office",
+                "layout": "kanban",
+                "groupField": "agency",
+                "id": "approv-by-office",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "reference",
+                  "submitted_on",
+                  "approved_on",
+                  "ok_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Corrections",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Corrections requested"
+                  ]
+                },
+                "id": "approv-corrections",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "approv-by-office"
+          }
+        }
+      ]
+    },
+    {
+      "key": "site-survey",
+      "parent": "solar-installer",
+      "title": "Running a site survey",
+      "icon": {
+        "emoji": "📐"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A good survey is the difference between the system we sold and the one we can build. Measure once, photograph everything, and set the production factor from what you saw."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Ruler"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you go"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pull the last twelve months of usage from the homeowner's bill and write the yearly kWh on the homeowner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look at the roof on satellite: direction, pitch, trees, vents and skylights."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the roof"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Measure each usable face and note the direction it faces."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check roof age and condition. Over 15 years on composition shingle, quote the reroof first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Find the rafters and their spacing; note the attic access."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read shading at three times of day with your app, or by eye at noon and late afternoon."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the electrical panel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Photograph the panel label, the main breaker and any open slots."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A 100 amp panel with a battery usually needs a panel upgrade; price it now."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting the production factor"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Roof"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Production factor"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "South or west, no shade, sunny state"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1,550 to 1,650"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "East or west, light shade"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1,350 to 1,500"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Heavy shade or cloudy region"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "1,100 to 1,300"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the figure from your design tool on the project. Bill offset uses it, so a shaded roof never promises a homeowner 100%."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Back at the office"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos on the homeowner's page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "System size and production factor on the project"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Permit and HOA approvals added as Not started"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

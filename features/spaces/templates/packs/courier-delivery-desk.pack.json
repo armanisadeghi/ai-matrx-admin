@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0576",
-  "version": 1,
+  "version": 2,
   "title": "Courier and Last-Mile Delivery Desk",
   "description": "Dispatch same-day and route deliveries, capture proof, retry failed drops, and see margin.",
   "forWho": "Local couriers and last-mile delivery companies",
@@ -2230,7 +2230,7 @@
         "Birchwood Ave"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2320,6 +2320,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:route-close-out"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:dispatch-board"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:rush-dispatch"
                   }
                 }
               ]
@@ -2537,7 +2570,8 @@
                   "first_try",
                   "book_btn",
                   "mail_btn",
-                  "added_at"
+                  "added_at",
+                  "revenue"
                 ]
               },
               {
@@ -2780,7 +2814,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "Pickup to proof"
             }
           ],
           "props": {
@@ -2839,7 +2873,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal day"
+              "text": "The dispatch day"
             }
           ],
           "props": {
@@ -2898,7 +2932,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Dispatcher, drivers, account desk"
             }
           ],
           "props": {
@@ -3361,7 +3395,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading first-attempt rate and route margin"
             }
           ],
           "props": {
@@ -3984,6 +4018,451 @@
               "text": "The east side route ran three stops: two delivered for 76 in revenue, and 47 paid to the driver, because the failed bouquet drop is still paid. With 9 in fuel, close out shows a 20 margin, well under 35 percent, so the florist retry goes on the denser midday route instead of its own trip."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "dispatch-board",
+      "parent": "courier-delivery-desk",
+      "title": "Dispatch board",
+      "icon": {
+        "emoji": "🗺️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The dispatcher's screen from 6 am: every stop by where it is in the day, the routes on the road, and the rush jobs still without a driver."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "stop"
+            },
+            "inline": true,
+            "title": "Stops",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Board",
+                "layout": "kanban",
+                "groupField": "status",
+                "id": "stop-board",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "driver",
+                  "window",
+                  "delivered_on",
+                  "pieces",
+                  "attempts",
+                  "fail_reason",
+                  "signature",
+                  "photo",
+                  "price",
+                  "driver_pay",
+                  "margin",
+                  "assigned_to",
+                  "deliv_btn",
+                  "fail_btn",
+                  "take_btn",
+                  "claim_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "By service",
+                "layout": "kanban",
+                "groupField": "service",
+                "id": "stop-by-service",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "driver",
+                  "window",
+                  "delivered_on",
+                  "pieces",
+                  "attempts",
+                  "fail_reason",
+                  "signature",
+                  "photo",
+                  "price",
+                  "driver_pay",
+                  "margin",
+                  "assigned_to",
+                  "deliv_btn",
+                  "fail_btn",
+                  "take_btn",
+                  "claim_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Rush and same day",
+                "layout": "grid",
+                "anyOf": {
+                  "service": [
+                    "Rush, 2 hours",
+                    "Same day"
+                  ],
+                  "status": [
+                    "Booked",
+                    "Assigned",
+                    "Picked up",
+                    "Out for delivery"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "window",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "stop-rush-and-same-day",
+                "icon": "Table"
+              },
+              {
+                "name": "Windows today",
+                "layout": "list",
+                "within": {
+                  "window": {
+                    "relative": "today"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "window",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "stop-windows-today",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "stop-board"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Routes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "route"
+            },
+            "inline": true,
+            "title": "Routes",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "On the road",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Loaded",
+                    "On the road"
+                  ]
+                },
+                "id": "route-on-the-road",
+                "icon": "List"
+              },
+              {
+                "name": "Route calendar",
+                "layout": "calendar",
+                "dateField": "route_date",
+                "id": "route-route-calendar",
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "status",
+                  "route_date",
+                  "closed_on",
+                  "miles",
+                  "fuel",
+                  "stop_count",
+                  "done_count",
+                  "route_rev",
+                  "route_pay",
+                  "route_margin",
+                  "dispatcher",
+                  "close_btn",
+                  "added_at"
+                ]
+              }
+            ],
+            "activeViewId": "route-on-the-road"
+          }
+        }
+      ]
+    },
+    {
+      "key": "rush-dispatch",
+      "parent": "courier-delivery-desk",
+      "title": "Taking and sending a rush job",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A rush job is a two-hour promise made on the phone. Most of the time it is won or lost in the first ten minutes: the questions you ask, and which driver you send."
+            }
+          ],
+          "background": "orange",
+          "props": {
+            "icon": "Timer"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pickup and drop addresses, a name and phone at both ends, and the business hours of the drop."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "What it is: pieces, weight, and anything special (a lab specimen on ice, signed legal papers, a part that will not fit a car)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The deadline, as a time, not as as soon as possible."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price it before you hang up: rush is the standard rate plus the rush fee, and the client hears the total."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who to send"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Downtown, small and light"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The e-bike or the closest car"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Across town, under an hour of driving"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The driver whose next stop is nearest the pickup, if their route can absorb 40 minutes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Will not fit a car"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A van; never promise a van you do not have"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lab specimen or legal filing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A driver who has done that client before"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "While it runs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book the stop as Rush, 2 hours with the window set to the promised time. It shows on the Rush and same day list until delivered."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Text the client the driver's name at pickup and the photo at delivery."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the driver will be late, call the client before the window passes, never after."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When you cannot do it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Say so on the call. A declined rush keeps a client; a missed one loses them. Offer the earliest time you can keep, or a scheduled next-morning slot at the normal price."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the end of the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every rush delivered with signature or door photo"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rush fee on the stop's price"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any late rush written up on the client's page with the reason"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }
