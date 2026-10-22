@@ -136,10 +136,11 @@ session, never you.
 | | **Local lane** (a Mac session) | **Cloud lane** (a cloud container) |
 |---|---|---|
 | Server | none needed to look; `pnpm preview:start` (the ONE shared server, `http://<session>.localhost:3001`) only for a rapid fix-and-look loop on UI you are changing right now | **none** — a container cannot run a dev server and a type check together |
-| Look and prove | `TMPDIR=/tmp/pl-<you> pnpm page:look --route <route> --commit <sha>` against `https://aimatrx.com` (admin routes are served from `https://manage.aimatrx.com` — check the commit there) after the release carrying your commit (about hourly; exit 3 = not live yet — work on something else) | same |
+| Look and prove | `TMPDIR=/tmp/pl-<you> pnpm page:look --route <route> --commit <sha>` against `https://aimatrx.com` (admin routes are served from `https://manage.aimatrx.com` — check the commit there) after the release carrying your commit (about hourly; exit 3 = not live yet — work on something else) | same, but add `--views desktop-light,phone-light` and never `--full` (four views with `--full` ran a 15 GB container out of memory), and run one look, probe or type check at a time |
 | Agent surface proof | `TMPDIR=/tmp/pp-<you> pnpm surface:probe --surface <name> --route <route> --commit <sha> --out <file>` (a window/dialog surface: add `--open 'SELECTOR=>TEXT'` so it is opened before the read) (+ `--agent '<request>'` for write targets) | same |
 | Sync a manifest's DB mirror | `pnpm exec tsx scripts/sync-surface-manifests-direct.ts --surface <name>`, then the same with `--check` | no direct-Postgres credentials: `pnpm -s exec tsx scripts/emit-surface-sync-sql.ts --surface <name> --organization-id <system org> > /tmp/<you>.sql` (the system org: `select organization_id from iam.system_orgs where key = 'system'`), run the file through the Supabase MCP wrapped in `begin;` … `commit;`, then the same command with `--check` added — its SELECT must return no rows |
 | Type check | `pnpm type-check` | `pnpm type-check:files <your files or dirs>` |
+| After changing a manifest | `pnpm generate:surface-index`, then commit only your entry of `features/surfaces/manifests/generated/surface-index.generated.ts` (other workers' uncommitted manifests appear in it — commit your hunk through a private index, as below) | same |
 | A view you cannot see | `deferred-visual` with the exact step | same |
 
 **Both lanes:**
