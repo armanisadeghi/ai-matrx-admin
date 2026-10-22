@@ -17,7 +17,7 @@ import { callApi } from "@/lib/api/call-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
-import { smartAddEnrichHref, smartAddValidateHref } from "@/features/marketing/smart-add/smartAddUrl";
+import { smartAddValidateHref } from "@/features/marketing/smart-add/smartAddUrl";
 
 interface ReadinessCondition {
   key: "ours_known" | "name_clear" | "outside_exists" | "own_site_real";
@@ -89,7 +89,8 @@ export function BrandResearchReadiness({ brandId, organizationId }: { brandId: s
 
   // Each server action key opens its own existing door; a key with no door here shows no button (never a guess).
   const ACTION_HREF: Record<string, (id: string) => string> = {
-    confirm_identity: smartAddEnrichHref,
+    // The validate page lists the brand's own unconfirmed accounts and websites as Yes / Not us cards (2fb3daf6d); Enrich only finds more.
+    confirm_identity: smartAddValidateHref,
     review_results: smartAddValidateHref,
     owner_questions: marketingRoutes.brandOwnerStory,
     crawl_site: marketingRoutes.brandWebsites,
