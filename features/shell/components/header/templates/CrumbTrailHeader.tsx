@@ -20,20 +20,14 @@
 // "view all" links) remains `features/scopes/components/pages/ScopeBreadcrumb.tsx`;
 // migrate it onto this template when touched.
 
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
+import { useRouter } from "next/navigation";
+import { CrumbDoor } from "@/features/shell/frame/CrumbDoor";
 import { useBackHref } from "@/lib/navigation/useBackHref";
 import NavLink from "@/components/navigation/NavLink";
-import { Check, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 import { RecordId, Skeleton } from "@ai-matrx/design-system";
 import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 
@@ -82,70 +76,24 @@ export interface CrumbTrailHeaderProps {
   fallback?: boolean;
 }
 
+// EVERY CRUMB IS A DOOR (Arman, 2026-10-22): the classic trail opens a level's siblings through the
+// SAME searchable door the new frame draws (frame/CrumbDoor) — one component, client-side moves.
 function CrumbOptions({ crumb }: { crumb: Crumb }) {
-  const [loaded, setLoaded] = useState<CrumbOption[] | null>(null);
-  const [failed, setFailed] = useState(false);
-  const options = crumb.options ?? loaded ?? [];
-  const lazy = !crumb.options && crumb.loadOptions;
-  if (!lazy && options.length === 0) return null;
+  const router = useRouter();
+  if (!crumb.loadOptions && !(crumb.options && crumb.options.length > 0)) return null;
+  const go = (opt: CrumbOption) => ({ ...opt, onSelect: () => router.push(opt.href) });
+  const load = crumb.loadOptions;
   return (
-    <DropdownMenu
-      onOpenChange={(open) => {
-        if (!open || !lazy || loaded) return;
-        crumb.loadOptions!().then(setLoaded, () => setFailed(true));
+    <CrumbDoor
+      door={{
+        kind: "siblings",
+        label: crumb.optionsLabel ?? crumb.label,
+        options: crumb.options?.map(go),
+        loadOptions: !crumb.options && load ? async () => (await load()).map(go) : undefined,
+        allHref: crumb.optionsAllHref,
+        allLabel: crumb.optionsAllLabel,
       }}
-    >
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label={`Switch ${crumb.optionsLabel ?? crumb.label}`}
-          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-accent/60"
-        >
-          <ChevronDown className="h-3.5 w-3.5" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="min-w-[12rem] max-w-[20rem]"
-      >
-        {crumb.optionsLabel && (
-          <DropdownMenuLabel className="text-xs text-muted-foreground">
-            {crumb.optionsLabel}
-          </DropdownMenuLabel>
-        )}
-        <div className="max-h-[60dvh] overflow-y-auto">
-          {lazy && !loaded ? (
-            <div className="px-2 py-1.5 type-meta text-muted-foreground">
-              {failed ? "Could not load" : <Skeleton aria-label="Loading" className="h-4 w-28 rounded" />}
-            </div>
-          ) : null}
-          {options.map((opt) => (
-            <DropdownMenuItem
-              key={opt.href}
-              asChild
-              className={cn(opt.active && "bg-accent/60")}
-            >
-              <NavLink href={opt.href} className="flex items-center gap-2">
-                <Check
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0",
-                    opt.active ? "opacity-100 text-primary" : "opacity-0",
-                  )}
-                />
-                <span className="truncate">{opt.label}</span>
-              </NavLink>
-            </DropdownMenuItem>
-          ))}
-        </div>
-        {crumb.optionsAllHref && (
-          <DropdownMenuItem asChild>
-            <NavLink href={crumb.optionsAllHref} className="text-muted-foreground">
-              {crumb.optionsAllLabel ?? "View all"}
-            </NavLink>
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    />
   );
 }
 

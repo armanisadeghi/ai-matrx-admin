@@ -5,7 +5,7 @@
 // when the item can be favorited) · "…" (always) · right slot.
 // Phone: back (or menu at a product's top level) · title · "…".
 import { Fragment } from "react";
-import { isPlainClick } from "./FrameSidebar";
+import { isPlainClick } from "./plainClick";
 import type { ReactNode } from "react";
 import {
   ArrowLeft,

@@ -52,7 +52,8 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     const { data } = await supabase.auth.getSession();
     const userId = data.session?.user.id;
     if (!userId) return [];
-    const rows = await fetchOutreachLists({ userId });
+    // The read uses only the caller (organizations are asked of the server, never listed here).
+    const rows = await fetchOutreachLists({ userId, orgIds: [], orgNames: {} });
     return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.name || "Untitled list" }));
   },
 };

@@ -5,7 +5,7 @@
 // the app canvas with no border. The top row is the header's height and offset, so it lines up
 // with the sheet's breadcrumbs. Every row is a real link.
 import { formatCount } from "@ai-matrx/kit/format";
-import type { MouseEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { ExternalLink, PanelLeftClose, Pencil, Plus, Star } from "lucide-react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
@@ -13,6 +13,7 @@ import { AppGrid } from "./AppGrid";
 import { GoToSearch } from "./GoToSearch";
 import type { GoToSearchProps } from "./GoToSearch";
 import { ProductMark } from "./ProductMark";
+import { isPlainClick } from "./plainClick";
 import type { AppGridProps } from "./AppGrid";
 import type { FrameMenuItem, FramePin, FrameProduct } from "./types";
 
@@ -50,10 +51,6 @@ export interface FrameSidebarProps {
   top?: ReactNode;
 }
 
-/** A plain left click goes to the host's handler; modified clicks keep the browser's link behaviour. */
-export function isPlainClick(e: MouseEvent) {
-  return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
-}
 
 export function FrameSidebar({
   product,

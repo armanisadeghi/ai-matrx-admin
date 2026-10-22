@@ -18,7 +18,7 @@ import { SearchField } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { rankMenuSearch } from "./searchEngine";
-import { isPlainClick } from "./FrameSidebar";
+import { isPlainClick } from "./plainClick";
 import type { FrameCrumb, FrameCrumbDoor, FrameCrumbOption, FrameDoorSearchEntry } from "./types";
 
 /** Rows shown before "more" — a door is a list to glance at; the search reaches the rest. */
