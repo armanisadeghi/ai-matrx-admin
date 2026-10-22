@@ -364,7 +364,12 @@ function startIngest(
   ).catch((error) => console.error("[smart-add] background ingest not started", error));
 }
 
-async function addSite(ctx: PersistContext, url: string): Promise<{ id: string | null; note?: string; undo: () => Promise<void> }> {
+async function addSite(
+  ctx: PersistContext,
+  url: string,
+  /** The answer that made the site, once recorded with its `caused` edge: its undo acts as exactly that answer. */
+  decisionOf: () => string | null = () => null,
+): Promise<{ id: string | null; note?: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const parsed = normalizeWebsiteUrl(url);
   const host = parsed.hostname.toLowerCase();
@@ -392,7 +397,7 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string |
   startIngest(ctx, site.id, { sites: [site.id] });
   if (existing.data?.id === site.id) return { id: null, undo: async () => {} };
   // Undo goes through the retraction door (never a bare site delete): what the site's crawl found goes with it.
-  return { id: site.id, undo: async () => void (await withdrawSite(site.id)) };
+  return { id: site.id, undo: async () => void (await withdrawSite(site.id, decisionOf())) };
 }
 
 /** A live web.business_fact on the brand of this finding's kind with the same text (case and spacing ignored). */
@@ -740,6 +745,8 @@ async function persistAnswerOnce(
   const value = opts.value?.trim() || item.value;
   const ev = item.evidence;
   let siteId: string | null = null;
+  // Set once the answer row AND its `caused` edge to the site exist: the site's undo then names this answer.
+  let decidedId: string | null = null;
 
   if (answer === "later" && !opts.recordMark) return { discoveredId: null, homes, undo: async () => undefined };
   if (item.key.startsWith(GAP_PREFIX)) return persistGap(ctx, item, answer, value);
@@ -775,7 +782,7 @@ async function persistAnswerOnce(
   } else if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev) {
     const root = item.kind === "website" ? (ev.url ?? ev.value) : webSiteRoot(ev);
     if (root) {
-      const site = await addSite(ctx, root);
+      const site = await addSite(ctx, root, () => decidedId);
       siteId = site.id;
       if (site.id) homes.push(`web.site:${site.id}`);
       undos.push(site.undo);
@@ -964,7 +971,10 @@ async function persistAnswerOnce(
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
     // Provenance: the site exists because of this decision (the account's is resolved_property_id).
-    if (siteId) await recordCause(ctx, discovered.id, "web_site", siteId);
+    if (siteId) {
+      await recordCause(ctx, discovered.id, "web_site", siteId);
+      decidedId = discovered.id;
+    }
     return {
       discoveredId: discovered.id,
       ...(resolved.resolved_property_id || siteId ? { retraction: { rootType: "decision" as const, rootId: discovered.id } } : {}),

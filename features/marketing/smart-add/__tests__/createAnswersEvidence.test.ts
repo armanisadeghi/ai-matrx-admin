@@ -156,6 +156,20 @@ it("a web result answered Ours whose site Create claimed is recorded naming that
   expect(service.createSite).not.toHaveBeenCalled();
 });
 
+it("a website Yes and a web Ours on the same host: ONE answer names the site (REVIEW5 I1)", () => {
+  // Two answers each naming the site meant undoing either took the site away under the other.
+  const pxSite = ev({ key: "website:pxdocs.com", field: "website", value: "https://pxdocs.com/", url: "https://pxdocs.com/" });
+  const plan = createdAnswers({
+    accounts: [],
+    sites: [{ url: "https://pxdocs.com", siteId: "site-px" }],
+    websites: [pxSite],
+    webOurs: [pxdocs],
+  });
+  expect(plan).toEqual([{ item: pxSite, created: { siteId: "site-px" } }]);
+  // The web result is not recorded here, so routeWebChoices keeps it (a row that names no site).
+  expect([...recordedWebKeys(plan, [pxdocs])]).toEqual([]);
+});
+
 it("Create passes its web Ours results to the plan and keeps the recorded ones out of routeWebChoices", () => {
   const src = readFileSync(join(__dirname, "..", "SmartAddBrand.tsx"), "utf8");
   const create = src.slice(src.indexOf("const create = async () =>"));

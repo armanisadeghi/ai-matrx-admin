@@ -36,18 +36,24 @@ export function createdAnswers(input: {
   const out: CreatedAnswer[] = input.accounts.map((a) => ({ item: a.item, created: { propertyId: a.propertyId } }));
   const siteOf = new Map(input.sites.map((s) => [websiteHost(s.url), s.siteId]));
   const seen = new Set<string>();
+  // ONE answer names a site (REVIEW5 I1): a website Yes and a web "Ours" on the same host would each record a
+  // `caused` edge to it, and undoing either took the site away under the other. The website answer wins; a web
+  // result whose site is already named stays with `routeWebChoices` (a row that names no site).
+  const named = new Set<string>();
   for (const w of input.websites) {
     const host = websiteHost(w.url ?? w.value);
     const siteId = siteOf.get(host);
-    if (!siteId || seen.has(w.key)) continue;
+    if (!siteId || seen.has(w.key) || named.has(siteId)) continue;
     seen.add(w.key);
+    named.add(siteId);
     out.push({ item: w, created: { siteId } });
   }
   for (const w of input.webOurs ?? []) {
     const root = webSiteRoot(w);
     const siteId = root ? siteOf.get(websiteHost(root)) : undefined;
-    if (!siteId || seen.has(w.key)) continue;
+    if (!siteId || seen.has(w.key) || named.has(siteId)) continue;
     seen.add(w.key);
+    named.add(siteId);
     out.push({ item: w, created: { siteId } });
   }
   return out;

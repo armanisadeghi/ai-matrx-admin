@@ -3,9 +3,11 @@
  * soft-deleted the site row alone (`deleteSite`), so its running crawl kept going and every still-pending finding read
  * from its pages (pictures, its YouTube / Instagram) stayed asked on the validation page. Both Undo paths that take a
  * site back — the in-session answer (validate/persist.ts addSite) and an earlier answer (validate/savedAnswers.ts,
- * the brand page's table and a reopened Enrich) — now go through `web.decision_retraction` with the SITE as root,
- * apply on, "Not us" off: it cancels the crawl, the site's findings follow it, and only PENDING findings read from
- * its host are withdrawn (the function's sweep reads `status = 'pending'`), never one a person answered.
+ * the brand page's table and a reopened Enrich) — now go through `web.decision_retraction` AS THE ANSWER being undone
+ * (root decision, apply on, "Not us" off): it cancels the crawl, the site's findings follow it, and only PENDING
+ * findings and UNCONFIRMED facts read from its host are withdrawn, never what a person answered or confirmed
+ * (REVIEW5 C1/I1: the database keeps person facts and a site another live answer still names; its self-test
+ * `web.__decision_retraction_selftest()` proves both).
  */
 const rpc = jest.fn(async (_fn: string, _args: Record<string, unknown>) => ({ data: { applied: true }, error: null }));
 const updates: Array<{ table: string; patch: Record<string, unknown> }> = [];
@@ -80,7 +82,9 @@ const pxdocs = {
   confidence: 0.9,
   source: { kind: "web_search", where: "web result", url: null, node: "web" },
 } as unknown as EvidenceItem;
-const SITE_WITHDRAW = { p_root_type: "site", p_root_id: "site-px", p_apply: true, p_exclude: false };
+// Undo acts as exactly the answer being undone (root decision; REVIEW5 I1): the database keeps a site another live
+// answer still names and never rewrites that other answer.
+const AS_ANSWER = (decisionId: string) => ({ p_root_type: "decision", p_root_id: decisionId, p_apply: true, p_exclude: false });
 
 beforeEach(() => {
   rpc.mockClear();
@@ -94,13 +98,13 @@ it("the in-session Undo of an Ours website withdraws the site through the retrac
   const persisted = await persistAnswer(ctx, focus, "ours", {});
   expect(persisted.homes).toContain("web.site:site-px");
   await persisted.undo();
-  expect(rpc).toHaveBeenCalledWith("decision_retraction", SITE_WITHDRAW);
+  expect(rpc).toHaveBeenCalledWith("decision_retraction", AS_ANSWER(persisted.discoveredId as string));
   expect(deleteSite).not.toHaveBeenCalled();
 });
 
 it("taking back an earlier Ours website (brand page, reopened Enrich) withdraws it the same way", async () => {
   expect(await retractSavedAnswer("brand-1", [], { evidenceKey: "web:pxdocs.com" })).toBe(true);
-  expect(rpc).toHaveBeenCalledWith("decision_retraction", SITE_WITHDRAW);
+  expect(rpc).toHaveBeenCalledWith("decision_retraction", AS_ANSWER("dec-1"));
   expect(deleteSite).not.toHaveBeenCalled();
   // The finding itself goes back to pending afterwards (undoSaved), as before.
   expect(updates.some((u) => u.table === "discovered_item" && u.patch.status === "pending")).toBe(true);

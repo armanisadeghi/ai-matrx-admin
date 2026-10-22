@@ -71,8 +71,10 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
   for (const home of [...homes].reverse()) {
     const [table, id] = [home.slice(0, home.indexOf(":")), home.slice(home.indexOf(":") + 1)];
     if (table === "web.property") await deleteProperty(id);
-    // The site goes through the retraction door, so the pending findings its crawl produced go with it.
-    else if (table === "web.site") await withdrawSite(id);
+    // The site goes through the retraction door AS THIS ANSWER (root decision = the row carrying the `caused` edge), so
+    // the pending findings its crawl produced go with it, a site another live answer still names stays, and no other
+    // answer is rewritten (REVIEW5 I1).
+    else if (table === "web.site") await withdrawSite(id, leadId);
     else if (table === "web.brand_asset") await deleteBrandAsset(id);
     else if (table === "web.brand_exclusion") {
       const { error } = await (await db()).from("brand_exclusion").update({ deleted_at: new Date().toISOString() }).eq("id", id);
@@ -106,7 +108,6 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
     .update({ status: "pending", relation_key: null, reviewed_at: null, reviewed_by: null, resolved_property_id: null, resolved_fact_id: null })
     .in("id", rowIds);
   if (error) throw new Error(error.message);
-  void leadId;
 }
 
 /** The brand's answered findings, latest first, as Answered-tray entries that can be undone. */

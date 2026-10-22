@@ -32,6 +32,13 @@ export interface RetractionSummary {
   runs_cancelled: number;
   facts_retracted: number;
   facts_weakened: number;
+  /** Facts on the root a person confirmed, typed or answered: never withdrawn or rewritten by a retraction. */
+  facts_kept?: number;
+  /** Root `decision`: the site / account another live answer still names, so it stayed. */
+  site_kept?: string | null;
+  property_kept?: string | null;
+  /** The live answers naming the root's site (root `site`), or the OTHER answers naming it (root `decision`). */
+  answers_naming_home?: string[];
   findings_retracted: number;
   findings_rechecked: number;
   people_unlinked: number;
@@ -87,14 +94,19 @@ export async function applyRetraction(rootType: RetractionRootType, rootId: stri
 }
 
 /**
- * Take back a website an answer made (a plain Undo, never "Not us"): through the same door, so everything that grew
- * from the site goes with it — its running crawl and ingest are cancelled, its pages and the findings read from them
- * (`site_id`) follow the site, and every still-PENDING finding read from its pages (`context.found_on` /
- * `evidence_urls` on its host) is withdrawn. A finding a person already answered is never touched. A bare
- * `deleteSite` left those findings asked on the validation page after the site was gone.
+ * Take back a website an answer made (a plain Undo, never "Not us"), through the same door, so what grew from the site
+ * goes with it: its running crawl and ingest are cancelled, its pages and `site_id` findings follow it, and every
+ * still-PENDING finding read from its host (`context.found_on` / `evidence_urls`) is withdrawn, with every UNCONFIRMED
+ * fact read only from it. Nothing a person confirmed, typed or answered is withdrawn or rewritten: an answered finding
+ * is detached from the site (DB trigger `web._site_removal_keeps_answers`), and a fact with `confirmed_by`, a typed
+ * (`manual`) fact or one a live answer resolves to is kept (`facts_kept`; REVIEW5 C1, 2026-10-22).
+ *
+ * `decisionId` names the ONE answer being undone (root `decision`): the database then acts on exactly that answer and
+ * keeps the site when another live answer still names it (`site_kept`; REVIEW5 I1). Without it (a typed gap website,
+ * which no answer names) the site is the root; a site two live answers name then rewrites neither answer.
  */
-export async function withdrawSite(siteId: string): Promise<RetractionSummary> {
-  return call("site", siteId, true, false);
+export async function withdrawSite(siteId: string, decisionId?: string | null): Promise<RetractionSummary> {
+  return decisionId ? call("decision", decisionId, true, false) : call("site", siteId, true, false);
 }
 
 /** Keep an applied summary on its web.brand_exclusion row (context.retraction). */

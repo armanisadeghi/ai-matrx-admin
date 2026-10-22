@@ -399,7 +399,8 @@ describe("changing an answer takes back what it created", () => {
     expect(withdrawSite).not.toHaveBeenCalled();
     await saver.decide(fresh, { kind: "backlink", sentiment: null });
     expect(withdrawSite).toHaveBeenCalledTimes(1);
-    expect(withdrawSite).toHaveBeenCalledWith("site-1");
+    // As the answer that made it (root decision; REVIEW5 I1).
+    expect(withdrawSite).toHaveBeenCalledWith("site-1", expect.stringMatching(/^discovered_item-/));
     expect(deleteSite).not.toHaveBeenCalled();
     expect(failures).toEqual([]);
   });
