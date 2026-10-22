@@ -11,6 +11,12 @@ export const AI_MODEL_DRILL: MatrxDataTableLocalDrillConfig = {
   countLabel: "Models",
   dimensions: ["maker", "hosted_by", "input_kinds", "output_kinds", "is_premium", "is_deprecated", "is_primary"],
   measures: ["count", "avg_input_price", "avg_output_price", "avg_context_window", "max_context_window"],
+  // A catalog holds models from 40+ makers on 40+ hosts: inferred, both dropped past 30 values and
+  // the Group menu lost Provider (live walk 2026-10-22). Declared, they always group.
+  extraDimensions: [
+    { key: "maker", label: "Provider", kind: "choice", cardinality: "medium" },
+    { key: "hosted_by", label: "Hosted by", kind: "choice", cardinality: "medium" },
+  ],
   extraMeasures: [
     { key: "avg_input_price", label: "Input price (avg)", additive: false, op: "avg", of: "input_price", nulls: "count" },
     { key: "avg_output_price", label: "Output price (avg)", additive: false, op: "avg", of: "output_price", nulls: "count" },

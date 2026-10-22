@@ -72,4 +72,15 @@ describe("ai model drill", () => {
     const openai = groups.find((g) => g.groups.maker === "openai");
     expect(openai?.unknown?.avg_input_price).toBe(1);
   });
+
+  // LIVE WALK 2026-10-22: the catalog holds models from 40+ makers on 40+ hosts, so the inferred
+  // drill dropped Provider and Hosted by ("more than 30 different values") and the Group menu
+  // offered only kinds and yes/no facts. Both are declared Dimensions; they never drop.
+  it("offers Provider and Hosted by on a catalog with many makers", () => {
+    const many = Array.from({ length: 120 }, (_, i) => m({ maker: `maker-${i % 45}`, hosted_by: `host-${i % 41}` }));
+    const wide = drillConfigFromColumns(columns, many, AI_MODEL_DRILL);
+    const keys = wide.dimensions.map((d) => d.key);
+    expect(keys).toEqual(expect.arrayContaining(["maker", "hosted_by", "output_kinds", "is_deprecated"]));
+    expect(drillDroppedItems(wide.dimensions, AI_MODEL_DRILL)).toEqual([]);
+  });
 });
