@@ -53,7 +53,7 @@ import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import type {
   AccessDeniedContext,
   AccessRequestability,
-} from "@/features/access-gate/types";
+} from "@ai-matrx/data/access";
 // THE package initials formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). Recorded display decision: a multi-part name takes FIRST +
 // LAST, so "Ana Maria Rivera" is AR — this surface previously took first +
@@ -69,7 +69,7 @@ import {
   archivedOrganizationExplanation,
   archivedOrganizationHeadline,
   mayRestoreArchived,
-} from "@/features/access-gate/service/archivedWords";
+} from "@ai-matrx/data/access";
 
 /**
  * Restore an archived record in place, through the ONE generic door

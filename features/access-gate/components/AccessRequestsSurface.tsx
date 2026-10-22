@@ -68,7 +68,7 @@ import type {
   AccessRequestRow,
   AccessRequestStatus,
   RequestedLevel,
-} from "@/features/access-gate/types";
+} from "@ai-matrx/data/access";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 type Box = "inbox" | "sent";

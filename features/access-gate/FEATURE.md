@@ -104,7 +104,7 @@ it. The states it can render:
 | Status      | What the user sees                                                           |
 | ----------- | ---------------------------------------------------------------------------- |
 | `denied`    | Kind, name, owner, org + **Request access** (view / edit + a note)           |
-| `deleted`   | "This site is in Trash" — archived, not erased; **Restore** for the owner / an editor (`entity_undelete`), otherwise who can restore it. Never "deleted" (`service/archivedWords.ts`) |
+| `deleted`   | "This site is in Trash" — archived, not erased; **Restore** for the owner / an editor (`entity_undelete`), otherwise who can restore it. Never "deleted" (`archivedWords` in `@ai-matrx/data/access`) |
 | `missing`   | "We couldn't find this site" — the link may be wrong                         |
 | `anonymous` | "Sign in to open this site" → `/login?next=<here>`                           |
 | `ok`        | **They DO have access** — the read failed transiently. Retry actually works. |
@@ -155,7 +155,7 @@ mandates (definition sections, org Binding tab).
 | `hooks/useAccessGate.ts`                                     | `(token, id) → status + context`; reconciles a passed `RecordUnavailableError` capture before rendering.                                                                                                                                                                                             |
 | `hooks/useAccessStates.ts`                                   | The LIST counterpart: `(token, ids) → Map<id, context>`. A table that joins to another table has rows whose embed came back null for the same four reasons. Module-cached by `token:id`, one RPC per distinct id, `refresh()` for the grant loop. Pass ONLY the ids that actually failed to resolve. |
 | `components/UnresolvedEntityRef.tsx`                         | The inline sibling of `EntityRef` — the door for a record you CANNOT read. Renders the resolved state in the cell ("Steven Wax — no access"), with owner, organization, `RequestAccessPanel`, sign-in, retry, and the surface's own `repairAction` one click away. Live: the CRM outreach roster.    |
-| `service/accessDeniedContext.ts`                             | Client half of `access_denied_context`.                                                                                                                                                                                                                                                              |
+| `service/accessDeniedContext.ts`                             | Thin wrapper over `@ai-matrx/data/access` (`fetchAccessDeniedContext`, `resolveAccessGateSlug`); host inputs in `accessEnv.ts`.                                                                                                                                                                                                                                                              |
 | `service/accessRequests.ts`                                  | resource + setting create/list/decide/report/withdraw and DM delivery.                                                                                                                                                                                                                               |
 | `lib/governedActionError.ts`                                 | Narrow classifier for platform-governed 42501s; refuses to misclassify infrastructure permission faults.                                                                                                                                                                                             |
 | —                                                            | **No variant registry.** A feature that earns a bespoke screen composes the exported `AccessDeniedView`. A token→component map consulted during render is a dynamic component boundary for an extension point with zero users — speculative abstraction, and React Compiler lint rightly flags it.   |
@@ -320,7 +320,7 @@ surface means importing them too, never reimplementing the RPC call.
 
 - 2026-10-14 — Hidden by me + check-first removal: `GovernedActionDialog` gains archive wording and a "Hide it for me" choice; new `service/hiddenByMe.ts`, `hooks/useHiddenByMe.ts`, `components/HiddenFilter.tsx`; brands adopt it.
 
-- 2026-09-27 — page-pass shared fix: an archived record is said as archived ("This template is in Trash … archived, not erased") with a **Restore** control for its owner or an editor (the generic `entity_undelete` door, then the surface re-reads — `router.refresh()` on a server page). Guard: `service/archivedWords.test.ts`.
+- 2026-09-27 — page-pass shared fix: an archived record is said as archived ("This template is in Trash … archived, not erased") with a **Restore** control for its owner or an editor (the generic `entity_undelete` door, then the surface re-reads — `router.refresh()` on a server page). Guard: `archivedWords.test.ts` in `@ai-matrx/data/access`.
 
 - **2026-09-25** — **`RequestAccess`: the platform answer to a control you
   cannot use.** Org-owned asks reuse the setting-request ledger + DM (new

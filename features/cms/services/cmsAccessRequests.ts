@@ -10,7 +10,7 @@ import { sendDirectActionMessage } from "@/features/messaging/service/sendDirect
 import type {
   AccessRequestCreated,
   AccessRequestRecipient,
-} from "@/features/access-gate/types";
+} from "@ai-matrx/data/access";
 import type { CmsAccessGateToken } from "@/features/cms/accessGateTokens";
 import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
 
