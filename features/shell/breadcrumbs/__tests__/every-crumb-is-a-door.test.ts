@@ -69,12 +69,11 @@ function deadCrumbs(isPageless?: (href: string) => boolean): string[] {
 }
 
 describe("every crumb is a real door", () => {
-  it("RED witness: without the pageless table, the derivation links levels that are no page", () => {
+  it("RED witness: without the pageless table, 120 trails link a folder that is no page", () => {
     const before = deadCrumbs(() => false);
     // eslint-disable-next-line no-console -- the census printed once, for the report
-    console.log(`dead crumbs without the table: ${before.length}\n${before.filter((d) => d.includes("smart-add")).join("\n")}`);
-    // Arman's page: the level between Smart Add and the brand linked to a folder with no page.
-    expect(before.some((d) => d.startsWith(`/marketing/brands/smart-add/validate/${ID} → `) && d.includes("(/marketing/brands/smart-add/validate is no page)"))).toBe(true);
+    console.log(`dead crumbs without the table: ${before.length}\n${before.slice(0, 12).join("\n")}`);
+    expect(before).toContain("/account/restore → \"Account\" (/account is no page)");
     expect(before.length).toBeGreaterThan(50);
   });
 
@@ -104,6 +103,13 @@ describe("a header kept in a layout links back to its own level", () => {
     expect(ownAddressOf(here, ["(group)", "validate", ID, "__PAGE__?{}"])).toBe("/marketing/brands/smart-add");
     expect(ownAddressOf("/marketing/brands/smart-add", [])).toBe("/marketing/brands/smart-add");
     expect(ownAddressOf("/x", null)).toBe("/x");
+  });
+
+  it("RED witness: the header's name declared without its own address was text (Arman's dead crumb)", () => {
+    const here = `/marketing/brands/smart-add/validate/${ID}`;
+    // What EntityModeHeader declared before 2026-10-22: the name alone.
+    const trail = resolvePageTrail([{ label: "Smart Add brand" }], deriveTrail({ pathname: here, nav: NAV }), here);
+    expect(trail.map((c) => [c.label, c.href])).toEqual([["Smart Add brand", undefined]]);
   });
 
   it("Smart Add brand is a link, the levels above and below come from the address", () => {
