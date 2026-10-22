@@ -27,8 +27,25 @@ export function keyFollowsLabel(key: string, label: string | undefined): boolean
 }
 
 /** The label to store for `typed` under `key`; none when the key already says it. */
-function labelFor(typed: string, key: string): string | undefined {
+export function labelFor(typed: string, key: string): string | undefined {
   return typed !== key && typed !== humanizeIdentifier(key) ? typed : undefined;
+}
+
+/**
+ * One Name field, two names (A22): what a keystroke in a form's Name field does.
+ * The field keeps the name exactly as typed ("Normal Text"); the key
+ * (`normal_text`) is derived from it while the key still follows the name and
+ * is not locked. A key that does not follow (picked from elsewhere, or a saved
+ * policy whose key cannot change) stays as it is.
+ */
+export function typedNameDraft(input: {
+  typed: string;
+  key: string;
+  label: string | undefined;
+  keyLocked?: boolean;
+}): { label: string; key: string } {
+  const linked = !input.keyLocked && (!input.key || keyFollowsLabel(input.key, input.label));
+  return { label: input.typed, key: linked ? sanitizeVariableName(input.typed) : input.key };
 }
 
 export type VariableNameEdit =

@@ -19,13 +19,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { Label } from "@/components/ui/label";
-import { Input } from "@ai-matrx/design-system";
+import { LabelKeyField } from "@/features/agents/components/shared/LabelKeyField";
 import { SwitchLegacy as Switch } from "@/components/ui/switch";
 import { Button, TextInputDialog } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Loader2, WandSparkles } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 import {
   sanitizeVariableName,
   variableValueToDisplay,
@@ -429,46 +428,18 @@ export function AgentVariableEditor({
     <div className="min-w-0 space-y-3">
       {/* ── Name ─────────────────────────────────────────────────────────── */}
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Name</Label>
-        <Input
-          placeholder="e.g. City Name"
+        <LabelKeyField
           value={nameDraft}
-          onChange={(e) => setNameDraft(e.target.value)}
+          onChange={setNameDraft}
           onBlur={handleNameBlur}
           disabled={readonly}
-          className={isDuplicate ? "border-destructive" : ""}
-          style={{ fontSize: "16px" }}
+          placeholder="e.g. City Name"
+          keyText={keyLine}
+          keyPrefix="In messages"
+          formatKey={(k) => `{{${k}}}`}
+          error={isDuplicate ? "This name is taken" : null}
+          onChangeKey={draftKey ? undefined : () => setIsChangingKey(true)}
         />
-        {/* ONE fixed-height status line. These states appear and vanish as the
-            name field blurs; when they changed the layout, the blur (which
-            renames) moved every control below by a line between mousedown and
-            mouseup, so the click on "Fill automatically" landed on nothing. */}
-        {!readonly && (
-          <p
-            className={cn(
-              "h-4 truncate type-secondary leading-4",
-              isDuplicate ? "text-destructive" : "text-muted-foreground",
-            )}
-          >
-            {isDuplicate ? (
-              "This name is taken"
-            ) : (
-              <>
-                In messages{" "}
-                <code className="font-mono text-foreground">{`{{${keyLine}}}`}</code>
-                {!draftKey && (
-                  <button
-                    type="button"
-                    onClick={() => setIsChangingKey(true)}
-                    className="ml-2 underline underline-offset-2 hover:text-foreground"
-                  >
-                    Change
-                  </button>
-                )}
-              </>
-            )}
-          </p>
-        )}
         <TextInputDialog
           open={isChangingKey}
           onOpenChange={setIsChangingKey}
