@@ -2822,6 +2822,15 @@ def main():
         record_mtimes()
         total_local += commit_all()
         rc, _, err = git("fetch", "-q", REMOTE, BRANCH, check=False)
+        # A concurrent `git fetch` by another session in this shared checkout updates
+        # refs/remotes/origin/main under us: "cannot lock ref 'refs/remotes/origin/main': is at X but
+        # expected Y". GitHub was reached; re-fetch (ported from aidream d4b34d4f4b; ship-all
+        # 2026-10-22 reported it as "could not reach GitHub" and pushed nothing).
+        for _attempt in range(8):
+            if rc == 0 or "cannot lock ref" not in err:
+                break
+            time.sleep(0.5 + 0.5 * _attempt)
+            rc, _, err = git("fetch", "-q", REMOTE, BRANCH, check=False)
         if rc != 0:
             die("could not reach GitHub:\n" + err)
         _, n, _ = git("rev-list", "--count", "HEAD..%s/%s" % (REMOTE, BRANCH))
