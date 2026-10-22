@@ -20,10 +20,11 @@ import { useMemo } from "react";
 
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { createOpener } from "@ai-matrx/summon/opener";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "aiWatchWindow" as const;
+const opener = createOpener<Record<string, unknown>>(OVERLAY_ID);
 
 /**
  * THE ONE WINDOW (2026-10-14): every Watch AI door opens the page's single window — a list of every
@@ -48,10 +49,8 @@ function normalize(target: string | WatchAiRunOptions): WatchAiRunOptions {
 
 export function watchAiRunAction(target: string | WatchAiRunOptions = {}) {
   const opts = normalize(target);
-  return openOverlay({
-    overlayId: OVERLAY_ID,
-    instanceId: AI_WATCH_PAGE_INSTANCE,
-    data: {
+  return opener.openAction(
+    {
       windowInstanceId: AI_WATCH_PAGE_INSTANCE,
       requestId: opts.requestId ?? null,
       userRequestId: opts.userRequestId ?? null,
@@ -62,7 +61,8 @@ export function watchAiRunAction(target: string | WatchAiRunOptions = {}) {
       // A new door press re-applies its target even when it names the same call again.
       focusAt: Date.now(),
     },
-  });
+    AI_WATCH_PAGE_INSTANCE,
+  );
 }
 
 /** The one call: `useWatchAiRun()(requestId | options)`. */
