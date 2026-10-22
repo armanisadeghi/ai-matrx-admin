@@ -34,9 +34,12 @@
 //   node scripts/real-tests/w6b-entry-matrix.mjs --scenario hr --as member
 //   node scripts/real-tests/w6b-entry-matrix.mjs --triggers chat,binding --as admin --out DIR
 //   --wait <s>   seconds to wait per run for the write (default 150)   --keep  do not archive
-// Every run appends one JSON line per trigger to
-//   ../common-docs/operations/real-tests/surface-entry-matrix/runs.jsonl
-// and writes result.json + screenshots to --out (default: a new temp directory, printed).
+// Every run writes result.json + screenshots to --out (default: a new temp directory, printed) and
+// stores result.json as a platform work product (common-docs holds plans only, document-types rule 11):
+//   aidream scripts/store_platform_artifact.py surface-entry-matrix <file>  → printed /files/f/<id> link
+// (--no-store skips the upload). A run is found by its unique tag (the note's canary, or the tag in the
+// HR message) inside the stored request, never by account and time alone — two runs as one account
+// never pick up each other's conversation.
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import os from "node:os";
@@ -59,11 +62,17 @@ const TEST_DATA_AGENT = { id: "c552587a-433b-4df0-98a6-074841ffe7bc", name: "Too
 const TEST_REPLY_AGENT = { id: "8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f", name: "Test Reply" };
 const NOTES_SURFACE = "matrx-user/notes";
 const SHORTCUT_LABEL = "W6B fix spelling";
-const LEDGER = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../../common-docs/operations/real-tests/surface-entry-matrix/runs.jsonl");
+const AIDREAM = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../../aidream");
+const ARTIFACT_COLLECTION = "surface-entry-matrix";
+// The shortcut's category: the system "My Personal" row (placement ai-action) — the context menu and
+// the Agents popover read shortcuts only through a category (mandate.context_menu_view joins
+// platform.categories with placement_type in ai-action|content-block|organization-tool|user-tool), and
+// the shortcut form refuses a save with none (features/agent-shortcuts/components/ShortcutForm.tsx).
+const SHORTCUT_CATEGORY = { name: "My Personal", placement: "ai-action" };
 
 // ── args ────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
-const opt = { scenario: "notes", as: "admin", triggers: null, wait: 150, keep: false, out: null };
+const opt = { scenario: "notes", as: "admin", triggers: null, wait: 150, keep: false, out: null, store: true };
 for (let i = 0; i < argv.length; i += 1) {
   const a = argv[i], v = argv[i + 1];
   if (a === "--scenario") (opt.scenario = v), (i += 1);
@@ -72,6 +81,7 @@ for (let i = 0; i < argv.length; i += 1) {
   else if (a === "--wait") (opt.wait = Number(v)), (i += 1);
   else if (a === "--out") (opt.out = v), (i += 1);
   else if (a === "--keep") opt.keep = true;
+  else if (a === "--no-store") opt.store = false;
   else { console.error(`unknown argument ${a}`); process.exit(2); }
 }
 opt.triggers ??= opt.scenario === "hr" ? ["chat"] : ["chat", "binding", "shortcut", "mandate"];
@@ -188,8 +198,12 @@ async function ensureBinding(orgId) {
   return { id: data, created: true, role, payload: { value_mappings } };
 }
 async function createShortcut(orgId, instruction) {
+  const { data: cats } = await userDb.schema("platform").from("categories").select("id")
+    .eq("dimension", "shortcut").eq("name", SHORTCUT_CATEGORY.name).eq("placement_type", SHORTCUT_CATEGORY.placement)
+    .is("deleted_at", null).limit(1);
+  if (!cats?.[0]) throw new Error(`no "${SHORTCUT_CATEGORY.name}" shortcut category readable by this account`);
   const { data: id, error } = await userDb.schema("agent").rpc("agx_create_shortcut_m", {
-    p_agent_id: TEST_DATA_AGENT.id, p_label: SHORTCUT_LABEL, p_category_id: null, p_user_id: session.userId,
+    p_agent_id: TEST_DATA_AGENT.id, p_label: SHORTCUT_LABEL, p_category_id: cats[0].id, p_user_id: session.userId,
     p_organization_id: orgId, p_project_id: null, p_task_id: null, p_use_latest: true,
   });
   if (error) throw new Error(`shortcut create refused: ${error.message}`);
@@ -283,16 +297,34 @@ const TRIGGERS = {
     if (await pointerClick(page, "[data-radix-popper-content-wrapper] button", SHORTCUT_LABEL)) { await page.waitForTimeout(4000); return null; }
     if (await pointerClick(page, `[aria-label="Run ${SHORTCUT_LABEL}"]`)) { await page.waitForTimeout(4000); return null; }
     await shot(page, "mandate-menu");
-    return `Agents menu lists no "${SHORTCUT_LABEL}" mandate`;
+    // The Agents popover gives a Run door only to a page-registered fixed job (manifest agentRoles /
+    // useDeclaredSurfaceMandates with runHere: aidream apps/shared/chat/src/surfaces/components/chrome/
+    // SurfaceMandatesSection.tsx row.runHere); a person's mandate shortcut is listed under "Also
+    // available here" as a plain <li> with no door (same file, the discovered list).
+    const listed = await page.evaluate((label) => Array.from(document.querySelectorAll("[data-radix-popper-content-wrapper] li"))
+      .some((li) => (li.textContent || "").includes(label)), SHORTCUT_LABEL);
+    return listed
+      ? `Agents menu lists "${SHORTCUT_LABEL}" under "Also available here" with no Run door (SurfaceMandatesSection.tsx: only runHere page roles get one)`
+      : `Agents menu lists no "${SHORTCUT_LABEL}" mandate`;
   },
 };
 
 // ── oracles ─────────────────────────────────────────────────────────────────
 async function findRun(t0) {
   const { data } = await refDb.schema("chat").from("user_request")
-    .select("id,conversation_id,agent_id,source_feature,mandate_key,door,binding_id,status,created_at,metadata")
-    .eq("created_by", session.userId).gte("created_at", t0).order("created_at", { ascending: true }).limit(5);
+    .select("id,conversation_id,agent_id,source_feature,mandate_key,door,binding_id,status,created_at")
+    .eq("created_by", session.userId).gte("created_at", t0).order("created_at", { ascending: true }).limit(20);
   return data || [];
+}
+/** The runs since t0 whose stored first request carries `tag` (unique per run) — never another run's. */
+async function runsCarrying(t0, tag) {
+  const out = [];
+  for (const r of await findRun(t0)) {
+    const { data } = await refDb.schema("chat").from("request_snapshot").select("request_payload,unified_payload")
+      .eq("conversation_id", r.conversation_id).eq("iteration", 1);
+    if ((data || []).some((d) => `${JSON.stringify(d.request_payload ?? "")}${JSON.stringify(d.unified_payload ?? "")}`.includes(tag))) out.push(r);
+  }
+  return out;
 }
 async function receivedOracle(conversationId, want, situationWants = []) {
   const r = await fetch(`${SERVER}/admin/surface-evidence/receives`, {
@@ -385,10 +417,10 @@ async function runNotes(trigger, orgId, browser) {
     res.approvals = approvals;
     await sleep(4000);
     await shot(page, `${trigger}-after`);
-    const runs = await findRun(t0);
+    const runs = await runsCarrying(t0, note.canary);
     res.runs = runs.map((r) => ({ id: r.id, conversation_id: r.conversation_id, agent_id: r.agent_id, source_feature: r.source_feature, mandate_key: r.mandate_key, door: r.door, binding_id: r.binding_id, status: r.status }));
     const run = runs.find((r) => r.agent_id === TEST_DATA_AGENT.id) ?? runs[0];
-    if (!run) { res.blocked = "no run row (chat.user_request) after the trigger"; await ctx.close(); return res; }
+    if (!run) { res.blocked = "no run (chat.user_request) whose stored request carries this run's canary"; await ctx.close(); return res; }
     res.conversation_id = run.conversation_id;
     // The page situation: the module paragraph (AI Matrx › …) and the Notes page paragraph naming this note.
     res.oracles.received = await receivedOracle(run.conversation_id, [note.canary], ["AI Matrx ›", '"Notes" screen', `W6-B ${runTag}`]);
@@ -411,20 +443,49 @@ async function runHr(trigger, browser) {
   await ctx.addCookies(session.cookies);
   const page = await ctx.newPage();
   await page.goto(`${BASE}/hr/settings/employer`, { waitUntil: "domcontentloaded", timeout: 60000 });
-  await page.waitForTimeout(12000);
+  // With no employer chosen the page is the "Open one employer below" picker and the Employer surface
+  // is not mounted (W6-B's Canvas situation). Open one as a person does: Harbor Staffing Co (the
+  // last_check probe employer) when listed, else the first. Then wait for the Employer form itself.
+  const identity = page.locator("[data-hr-section=identity]");
+  await Promise.race([identity.waitFor({ timeout: 30000 }), page.getByText("Open one employer below", { exact: false }).first().waitFor({ timeout: 30000 })]).catch(() => {});
+  if (!(await identity.count())) {
+    // Each picker row reads "<avatar letter><employer name> … Open". Open one as a person does (a real
+    // pointer click on its name); an employer this seat does not run HR for answers "You can't open
+    // this here", so try the next. Harbor Staffing Co (the last_check probe employer) first.
+    const names = await page.evaluate(() => Array.from(document.querySelectorAll("button, [role=button], [role=option], li, a"))
+      .filter((e) => e.getClientRects().length && /Open$/.test((e.textContent || "").trim()))
+      .map((e) => (e.textContent || "").replace(/Open$/, "").trim().replace(/^([a-z])(?=\1)/i, "")));
+    const order = [...new Set(names)].sort((x, y) => Number(y.includes("Harbor Staffing Co")) - Number(x.includes("Harbor Staffing Co")));
+    res.employer_tried = [];
+    for (const name of order) {
+      res.employer_tried.push(name);
+      if (res.employer_tried.length > 1) {
+        await page.goto(`${BASE}/hr/settings/employer`, { waitUntil: "domcontentloaded", timeout: 60000 });
+        await page.getByText(name, { exact: true }).first().waitFor({ timeout: 30000 }).catch(() => {});
+      }
+      await page.getByText(name, { exact: true }).first().click({ timeout: 10000 }).catch(() => {});
+      if (await identity.waitFor({ timeout: 25000 }).then(() => true).catch(() => false)) { res.employer_pick = name; break; }
+    }
+  }
+  if (!(await identity.waitFor({ timeout: 45000 }).then(() => true).catch(() => false))) {
+    await shot(page, `hr-${opt.as}-page`);
+    res.blocked = "the Employer form never rendered (no employer could be opened)"; await ctx.close(); return res;
+  }
+  await page.waitForTimeout(4000);
   await shot(page, `hr-${opt.as}-page`);
-  const orgName = await page.evaluate(() => (document.querySelector('[aria-label^="Organization:"]')?.getAttribute("aria-label") || "").replace(/^Organization:\s*/, "").replace(/\. Change organization$/, ""));
+  const orgName = await page.evaluate(() => (document.querySelector('[aria-label^="Employer:"]')?.getAttribute("aria-label") || "").replace(/^Employer:\s*/, "").replace(/\. Change employer$/, ""));
   res.page_org = orgName;
   const t0 = new Date(Date.now() - 2000).toISOString();
   if (trigger !== "chat") { res.blocked = "hr scenario runs the chat trigger only (read-only)"; await ctx.close(); return res; }
-  const why = await TRIGGERS.chat(page, { message: "ok", agent: TEST_REPLY_AGENT });
+  const tag = `W6C${rand()}`;
+  res.tag = tag;
+  const why = await TRIGGERS.chat(page, { message: `ok ${tag}`, agent: TEST_REPLY_AGENT });
   if (why) { res.blocked = why; await ctx.close(); return res; }
   await sleep(25000);
   await shot(page, `hr-${opt.as}-after`);
-  // Only this seat's Test Reply run started after t0 (never run two harnesses as one seat at once).
-  const runs = (await findRun(t0)).filter((r) => r.agent_id === TEST_REPLY_AGENT.id);
+  const runs = (await runsCarrying(t0, tag)).filter((r) => r.agent_id === TEST_REPLY_AGENT.id);
   const run = runs[0];
-  if (!run) { res.blocked = "no Test Reply run row after the chat send"; await ctx.close(); return res; }
+  if (!run) { res.blocked = `no Test Reply run whose stored request carries ${tag}`; await ctx.close(); return res; }
   res.conversation_id = run.conversation_id;
   res.runs = runs.map((r) => ({ id: r.id, conversation_id: r.conversation_id, agent_id: r.agent_id, source_feature: r.source_feature }));
   res.oracles.received = await receivedOracle(run.conversation_id, [], ["Human Resources", ...(orgName ? [orgName] : [])]);
@@ -447,11 +508,19 @@ try {
     results.push(r);
     const verdict = Object.fromEntries(Object.entries(r.oracles).map(([k, v]) => [k, v.pass ? "PASS" : "FAIL"]));
     console.log(`${r.scenario}/${r.trigger} as ${r.as}: ${r.blocked ? `BLOCKED (${r.blocked})` : JSON.stringify(verdict)}${r.conversation_id ? ` conv ${r.conversation_id}` : ""}`);
-    fs.mkdirSync(path.dirname(LEDGER), { recursive: true });
-    fs.appendFileSync(LEDGER, `${JSON.stringify({ at: r.at, scenario: r.scenario, trigger: r.trigger, as: r.as, blocked: r.blocked, verdict, conversation_id: r.conversation_id ?? null, note_id: r.note_id ?? null, live: r.live })}\n`);
   }
 } finally {
   await browser.close();
   fs.writeFileSync(path.join(opt.out, "result.json"), JSON.stringify(results, null, 2));
   console.log(`result: ${path.join(opt.out, "result.json")}`);
+  if (opt.store && results.length) {
+    // One work-product file per invocation, named so the collection reads as a ledger.
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const named = path.join(opt.out, `run-${stamp}-${opt.scenario}-${opt.as}.json`);
+    fs.copyFileSync(path.join(opt.out, "result.json"), named);
+    try {
+      const out = execSync(`uv run python scripts/store_platform_artifact.py ${ARTIFACT_COLLECTION} ${JSON.stringify(named)}`, { cwd: AIDREAM, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+      console.log(`stored: ${out.trim().split("\n").pop()}`);
+    } catch (e) { console.error(`store refused (result kept at ${named}): ${String(e.stderr || e.message).trim().split("\n").pop()}`); }
+  }
 }
