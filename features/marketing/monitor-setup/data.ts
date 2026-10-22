@@ -23,6 +23,7 @@ import { supabase } from "@/utils/supabase/client";
 import {
   authenticatedWebDb,
   requireAuthenticatedSupabaseSession,
+  signedInPersonId,
 } from "@/utils/supabase/webDb";
 
 export const monitorSetupKeys = {
@@ -171,6 +172,7 @@ export async function addSpokesperson(input: {
       value: title ? { text: name, name, title } : { text: name, name },
       source: "manual",
       confirmed_at: new Date().toISOString(),
+      confirmed_by: await signedInPersonId(supabase),
     })
     .select("id")
     .single();
@@ -196,6 +198,7 @@ export async function addProof(input: {
       value: url ? { text: summary, summary, url } : { text: summary, summary },
       source: "manual",
       confirmed_at: new Date().toISOString(),
+      confirmed_by: await signedInPersonId(supabase),
     })
     .select("id")
     .single();

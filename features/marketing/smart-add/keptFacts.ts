@@ -22,7 +22,7 @@
 
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { authenticatedWebDb, signedInPersonId } from "@/utils/supabase/webDb";
 import { extractErrorMessage } from "@/utils/errors";
 import { factDisplayLabel } from "@/features/marketing/lib/factLabel";
 import type { BrandFact } from "./validate/queue";
@@ -232,6 +232,8 @@ export async function saveKeptFacts(
 ): Promise<{ problems: string[]; factIds: string[]; offeringIds: string[] }> {
   const problems: string[] = [];
   const db = await authenticatedWebDb(supabase);
+  // Every answer records the person who gave it (single-source plan § 2.2); unanswered rows name nobody.
+  const me = await signedInPersonId(supabase);
   const now = new Date().toISOString();
   const factRows = plan.rows.filter((r) => r.kind);
   const factIdByKey = new Map<string, string>();
@@ -247,7 +249,7 @@ export async function saveKeptFacts(
           value: factValue(r.fact.value),
           source: "discovered",
           metadata: r.metadata as Json,
-          ...(r.decision === "confirmed" ? { confirmed_at: now } : {}),
+          ...(r.decision === "confirmed" ? { confirmed_at: now, confirmed_by: me } : {}),
         })),
       )
       .select("id, metadata");
@@ -287,7 +289,7 @@ export async function saveKeptFacts(
         } as Json,
         confidence: r.fact.certainty === "confirmed" ? 0.85 : r.fact.certainty === "likely" ? 0.7 : 0.5,
         status: r.decision === "confirmed" ? "confirmed" : "pending",
-        ...(r.decision === "confirmed" ? { reviewed_at: now, relation_key: "ours" } : {}),
+        ...(r.decision === "confirmed" ? { reviewed_at: now, reviewed_by: me, relation_key: "ours" } : {}),
         ...(factIdByKey.get(r.fact.key) ? { resolved_fact_id: factIdByKey.get(r.fact.key) } : {}),
       })),
     );

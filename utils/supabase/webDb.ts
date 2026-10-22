@@ -82,6 +82,18 @@ export async function requireAuthenticatedSupabaseSession<
   return sessionResult.data.session;
 }
 
+/**
+ * The signed-in person's id: the `confirmed_by` / `reviewed_by` every answer they give records (single-source
+ * plan § 2.2). The database refuses a confirmation that names anyone else (`web._fact_person_confirms`,
+ * `web._finding_person_reviews`); guard `features/marketing/__tests__/confirmWritersNamePerson.test.ts`.
+ */
+export async function signedInPersonId<C extends SupabaseClient<Database>>(
+  client: C,
+): Promise<string> {
+  const session = await requireAuthenticatedSupabaseSession(client);
+  return session.user.id;
+}
+
 export async function authenticatedWebDb<C extends SupabaseClient<Database>>(
   client: C,
 ) {

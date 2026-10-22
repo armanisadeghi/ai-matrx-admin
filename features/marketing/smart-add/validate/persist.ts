@@ -25,7 +25,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { promotedHomes, promoteSmartAddFindings, undoPromotion } from "../promote";
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { authenticatedWebDb, signedInPersonId } from "@/utils/supabase/webDb";
 import {
   createBrandAsset,
   listBrandPropertiesForMatching,
@@ -116,6 +116,11 @@ async function db() {
   return authenticatedWebDb(supabase);
 }
 
+/** When an answer counts as reviewed, and by whom: a pending row (other than "later") names nobody. */
+function reviewStamp(status: string, answer: Answer, at: string, me: string): { reviewed_at: string | null; reviewed_by: string | null } {
+  return status === "pending" && answer !== "later" ? { reviewed_at: null, reviewed_by: null } : { reviewed_at: at, reviewed_by: me };
+}
+
 /** The brand as the server holds it now, kept as the page's copy (background runs move it after Create). */
 async function freshBrand(ctx: PersistContext): Promise<MarketingBrand> {
   const brand = await getBrand(ctx.getBrand().id);
@@ -135,6 +140,8 @@ async function recordDiscovered(
 ): Promise<{ id: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const w = await db();
+  // The answer records the person who gave it (single-source plan § 2.2): reviewed_by with every reviewed_at.
+  const me = await signedInPersonId(supabase);
   const at = new Date().toISOString();
   const status = CONFIRMED.has(answer) ? "confirmed" : DISMISSED.has(answer) ? "dismissed" : "pending";
   const answerCtx = {
@@ -151,7 +158,7 @@ async function recordDiscovered(
   // Every saved row this card answers: the finding and each copy folded into it (fold.ts) — settled together.
   const existing = await w
     .from("discovered_item")
-    .select("id, status, relation_key, sentiment, reviewed_at, context, resolved_property_id, resolved_fact_id")
+    .select("id, status, relation_key, sentiment, reviewed_at, reviewed_by, context, resolved_property_id, resolved_fact_id")
     .eq("brand_id", brand.id)
     .eq("source", "smart_add")
     .in("context->>evidence_key", [item.key, ...item.twins])
@@ -175,6 +182,7 @@ async function recordDiscovered(
             relation_key: before.relation_key,
             sentiment: before.sentiment,
             reviewed_at: before.reviewed_at,
+            reviewed_by: before.reviewed_by,
             context: before.context,
             resolved_property_id: before.resolved_property_id,
             resolved_fact_id: before.resolved_fact_id,
@@ -192,7 +200,7 @@ async function recordDiscovered(
       } as Json;
       const { error } = await w
         .from("discovered_item")
-        .update({ status, relation_key, sentiment, reviewed_at: at, context, ...(isLead ? resolved : {}) })
+        .update({ status, relation_key, sentiment, reviewed_at: at, reviewed_by: me, context, ...(isLead ? resolved : {}) })
         .eq("id", before.id);
       if (error) {
         await restore().catch(() => undefined);
@@ -221,7 +229,7 @@ async function recordDiscovered(
     const context = { ...(isJsonRecord(was.context) ? was.context : {}), answer: answerCtx } as Json;
     const { error } = await w
       .from("discovered_item")
-      .update({ deleted_at: null, status, relation_key, sentiment, reviewed_at: status === "pending" && answer !== "later" ? null : at, context, ...resolved })
+      .update({ deleted_at: null, status, relation_key, sentiment, ...reviewStamp(status, answer, at, me), context, ...resolved })
       .eq("id", was.id);
     // access-errors: ok — a write failure on the person's own answer, shown as "Not saved"
     if (error) throw new Error(error.message);
@@ -278,7 +286,7 @@ async function recordDiscovered(
       status,
       relation_key,
       sentiment,
-      reviewed_at: status === "pending" && answer !== "later" ? null : at,
+      ...reviewStamp(status, answer, at, me),
       ...resolved,
     })
     .select("id")
@@ -431,7 +439,7 @@ async function settleKeptFact(
   if (!factId) return false;
   const current = await w
     .from("business_fact")
-    .select("id, value, confirmed_at, metadata, version, deleted_at")
+    .select("id, value, confirmed_at, confirmed_by, metadata, version, deleted_at")
     .eq("id", factId)
     .is("deleted_at", null)
     .maybeSingle();
@@ -444,6 +452,7 @@ async function settleKeptFact(
     answer === "correct"
       ? {
           confirmed_at: at,
+          confirmed_by: await signedInPersonId(supabase),
           metadata: { ...meta, decision: "confirmed", ...(item.fact && value !== item.fact.value ? { edited_from: item.fact.value } : {}) } as Json,
           ...(item.fact && value !== item.fact.value ? { value: (/^https?:\/\//i.test(value) ? { url: value } : { text: value }) as Json } : {}),
         }
@@ -456,11 +465,11 @@ async function settleKeptFact(
   if (error) throw new Error(error.message);
   if (answer === "correct") resolved.resolved_fact_id = factId;
   homes.push(`web.business_fact:${factId}`);
-  trail.fact = { value: before.value, confirmed_at: before.confirmed_at, metadata: before.metadata, kept: true };
+  trail.fact = { value: before.value, confirmed_at: before.confirmed_at, confirmed_by: before.confirmed_by, metadata: before.metadata, kept: true };
   undos.push(async () => {
     const { error: e } = await (await db())
       .from("business_fact")
-      .update({ value: before.value, confirmed_at: before.confirmed_at, metadata: before.metadata, deleted_at: null, version: before.version + 2 })
+      .update({ value: before.value, confirmed_at: before.confirmed_at, confirmed_by: before.confirmed_by, metadata: before.metadata, deleted_at: null, version: before.version + 2 })
       .eq("id", factId);
     if (e) throw new Error(e.message);
   });

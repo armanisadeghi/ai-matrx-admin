@@ -12,7 +12,7 @@
 
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { authenticatedWebDb, signedInPersonId } from "@/utils/supabase/webDb";
 import { isJsonRecord } from "@/features/marketing/types";
 import { exclusionMatchForUrl } from "@/features/marketing/smart-add/webKinds";
 import { retractionFromContext, type RetractionSummary } from "./retraction";
@@ -181,6 +181,7 @@ export async function addBrandRelation(input: {
     relation_key: input.relationKey,
     sentiment: input.sentiment ?? null,
     reviewed_at: now,
+    reviewed_by: await signedInPersonId(supabase),
   });
   if (error) {
     if (error.code === "23505") throw new Error("Already on this brand.");

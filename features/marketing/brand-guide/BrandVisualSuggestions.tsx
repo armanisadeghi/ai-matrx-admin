@@ -22,6 +22,8 @@ import { useBrandAssets, useDeleteBrandAsset, useUpdateBrandAsset } from "@/feat
 import { isJsonRecord, type BrandAsset } from "@/features/marketing/types";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { supabase } from "@/utils/supabase/client";
+import { signedInPersonId } from "@/utils/supabase/webDb";
 
 function field(asset: BrandAsset, key: string): string | null {
   const v = isJsonRecord(asset.data) ? asset.data[key] : null;
@@ -95,7 +97,7 @@ export function useVisualSuggestionAnswer() {
       await update.mutateAsync({
         assetId: asset.id,
         expectedVersion: asset.version,
-        patch: { confirmed_at: new Date().toISOString() },
+        patch: { confirmed_at: new Date().toISOString(), confirmed_by: await signedInPersonId(supabase) },
       });
       return;
     }
