@@ -18,7 +18,14 @@
 //                                            installed dists resolves against the installed sibling
 //      FAIL -> restore the snapshot, reinstall it frozen (the OLDER pair stays installed), print the
 //              exact broken import, exit 1. Nothing new is adopted.
-//   5. check:matrx-lockfile && check:matrx-packages (unchanged)
+//   5. check:matrx-lockfile && check:matrx-packages, judged against npm latest AT RELEASE START
+//
+// THE SNAPSHOT (2026-10-21): aidream publishes ~10 times an hour, so step 5 used to re-read
+// latest-NOW and fail STALE on versions published after step 3 had resolved (no frontend release
+// 14:52-20:41 PT, meet 0.11.118). The snapshot instant is taken ONCE, here, before anything
+// updates — or inherited from MATRX_PACKAGES_AS_OF when the release took it earlier — and every
+// check below judges against it. A version published after it ships with the next release; a
+// version stale against it still fails.
 //
 //   node scripts/sync-matrx-packages.mjs
 
@@ -47,6 +54,10 @@ function step(label, cmd, args) {
     process.exit(code);
   }
 }
+
+const SNAPSHOT_AT = process.env.MATRX_PACKAGES_AS_OF?.trim() || new Date().toISOString();
+process.env.MATRX_PACKAGES_AS_OF = SNAPSHOT_AT; // every child check inherits it
+console.log(`[sync:matrx-packages] release snapshot: npm latest as of ${SNAPSHOT_AT}`);
 
 step("await every latest tarball", "node", ["scripts/check-matrx-lockfile.mjs", "--await-latest"]);
 
