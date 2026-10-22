@@ -131,7 +131,7 @@ export function GetDataBody({ tileId, source, onSource }: Pick<ItemBodyProps, "t
   }
 
   const fetchNow = (src: DataSource, values: Record<string, string>, count: number, option: string | null) => {
-    const input = buildInput(src, values, modeOf(src, option).option).input;
+    const input = buildInput(src, values, modeOf(src, option, values).option).input;
     if (!input) return;
     const request = { sourceKey: src.key, sourceLabel: src.label, input, count };
     saveDraft({ sourceKey: src.key, values, option: option ?? undefined, count, request });
@@ -203,7 +203,7 @@ function SourcePicker({
           {groups.length === 0 && <p className="px-3 py-2 text-xs text-muted-foreground">Nothing matches</p>}
           {groups.map((g) => (
             <div key={g.group} className="mt-1">
-              <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{g.group}</div>
+              <div className="px-2 py-1 type-meta font-semibold uppercase tracking-wide text-muted-foreground">{g.group}</div>
               {g.sources.map((s) => {
                 const selectable = !busy && (s.verified || allowUnverified);
                 const active = s.key === pickedKey;
@@ -282,7 +282,7 @@ function SourceForm({
   const [custom, setCustom] = useState(initial);
   const count = capCount(choice === "custom" ? custom : Number(choice), limit?.value);
   const estimate = fetchCostRow(source, count);
-  const built = buildInput(source, values, modeOf(source, option).option);
+  const built = buildInput(source, values, modeOf(source, option, values).option);
   const settingHref = limit ? limitSettingHref(organizationId, limit.setting) : null;
   const saveValues = () => onDraft({ ...draft, sourceKey: source.key, values, option: option ?? undefined, count });
 
@@ -291,7 +291,7 @@ function SourceForm({
       className="flex max-w-xl flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (built.input) onFetch(values, count, modeOf(source, option).option);
+        if (built.input) onFetch(values, count, modeOf(source, option, values).option);
       }}
     >
       <div className="flex items-center gap-2">
@@ -310,6 +310,7 @@ function SourceForm({
           onDraft({ ...draft, sourceKey: source.key, values, option: next ?? undefined, count });
         }}
         onBlur={saveValues}
+        organizationId={organizationId}
       />
 
       <div className="flex flex-col gap-1">

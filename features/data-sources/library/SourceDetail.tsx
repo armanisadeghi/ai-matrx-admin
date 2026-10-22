@@ -30,11 +30,12 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
 import { buildInput, capCount, countChoices, searchOptions } from "../contract";
-import { SourceInputFields, modeOf } from "../SourceInputFields";
+import { LINK_OPTION, SourceInputFields, modeOf } from "../SourceInputFields";
+import { sourceColumns } from "../openingColumns";
 import { limitSettingHref, fetchedTablesKey } from "../hooks";
 import { clearRun, resumeRun, runState, startRun, useRun } from "../runs";
 import { fetchData, getJob } from "../server";
-import { orderTellingFields, plainIssue, type Library, type LibrarySource } from "./catalog";
+import { plainIssue, type Library, type LibrarySource } from "./catalog";
 import { GroupMark } from "./groupMark";
 import {
   libraryKey,
@@ -64,7 +65,7 @@ export function refillFromInputs(
     else if (typeof v === "number" && Number.isFinite(v)) values[k] = String(v);
   }
   if (Object.keys(values).length === 0) return null;
-  if (values.url) return { values, option: null };
+  if (values.url) return { values, option: LINK_OPTION };
   const option = searchOptions(source).find((o) => o.fields.every((f) => f.name in values))?.name ?? null;
   return { values, option };
 }
@@ -268,7 +269,7 @@ function Section({
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
         </h3>
         {end && (
@@ -280,31 +281,25 @@ function Section({
   );
 }
 
-/** The columns a fetch brings back: the telling ones first, the long tail folded behind "Show all". */
-function WhatYouGet({ fields }: { fields: string[] }) {
+/** The columns a fetch brings back: the source's short opening set in plain names; every other column behind "All columns". */
+function WhatYouGet({ sourceKey, fields }: { sourceKey: string; fields: string[] }) {
   const [all, setAll] = useState(false);
-  const PREVIEW = 8;
   if (fields.length === 0) {
     return <p className="text-xs text-muted-foreground">Every column the source returns becomes a table column</p>;
   }
-  const ordered = orderTellingFields(fields);
-  const shown = all ? ordered : ordered.slice(0, PREVIEW);
-  const more = ordered.length - shown.length;
+  const columns = sourceColumns(sourceKey, fields);
+  const shown = all ? columns.all : columns.opening;
+  const more = columns.all.length - columns.opening.length;
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-opening-columns={columns.opening.length}>
       <ChipSet>
-        {shown.map((f) => (
-          <Chip key={f} label={f} />
+        {shown.map((c) => (
+          <Chip key={c.field} label={c.label} />
         ))}
-        {!all && more > 0 && (
-          <button type="button" data-clickable="" onClick={() => setAll(true)} className="rounded-full px-1.5 text-xs font-medium text-primary hover:underline">
-            +{more} more
-          </button>
-        )}
       </ChipSet>
-      {all && ordered.length > PREVIEW && (
-        <Button variant="quiet" className="self-start" onClick={() => setAll(false)}>
-          Show fewer
+      {more > 0 && (
+        <Button variant="quiet" className="self-start" onClick={() => setAll((v) => !v)} aria-expanded={all}>
+          {all ? "Fewer columns" : `All columns (${columns.all.length})`}
         </Button>
       )}
     </div>
@@ -345,7 +340,7 @@ function SourceForm({
     limit?.value,
   );
   const costRows = [sourceCostRow(source, 1, "Per record"), sourceCostRow(source, count, "Total")];
-  const built = buildInput(source, values, modeOf(source, option).option);
+  const built = buildInput(source, values, modeOf(source, option, values).option);
   const settingHref = limit
     ? limitSettingHref(organizationId, limit.setting)
     : null;
@@ -392,7 +387,7 @@ function SourceForm({
             : undefined
         }
       >
-        <WhatYouGet fields={source.outputFields} />
+        <WhatYouGet sourceKey={source.key} fields={source.outputFields} />
       </Section>
 
       <Section title="What to enter">
@@ -402,6 +397,7 @@ function SourceForm({
           option={option}
           onValues={setValues}
           onOption={setOption}
+          organizationId={organizationId}
         />
       </Section>
 
