@@ -283,6 +283,8 @@ export interface FreshCopy {
   title: string | null;
   installId?: string | null;
   onInstallId?: (installId: string) => void;
+  /** INSTALL-ATOMIC: the store has answered for this copy, so its install row exists and can record pages. */
+  onInstallRow?: (installId: string) => void;
 }
 
 /**
@@ -309,7 +311,10 @@ export async function installTemplateTables(
       ...(fresh ? { title: fresh.title, installId: fresh.installId ?? null, ...(fresh.onInstallId ? { onInstallId: fresh.onInstallId } : {}) } : {}),
       onCall: (answer) => {
         // The copy's id first: a refused or stopped run is resumed on THIS copy, never a new one.
-        if (fresh && answer.install_id) fresh.onInstallId?.(answer.install_id);
+        if (fresh && answer.install_id) {
+          fresh.onInstallId?.(answer.install_id);
+          fresh.onInstallRow?.(answer.install_id);
+        }
         // A refusal ends the run now, never re-asked in a loop the person cannot see (55P03 waited 148 s a call).
         if (answer.state === "refused") throw new TemplateInstallRefused(answer.refusal);
         if (typeof answer.next_step === "number" && typeof answer.steps === "number" && !answer.done) onStage?.(`Making tables ${answer.next_step}/${answer.steps}…`);
@@ -501,11 +506,14 @@ export interface MakePagesOptions {
   /** Stops the run (Cancel): the pages made so far go to Trash and are kept in the journal for Try again. */
   signal?: AbortSignal;
   /**
-   * TEMPLATE-INSTALL-3: tells the template's install the root page it made, so Remove moves it (and its sub-pages) to Trash and Restore
-   * brings it back. Called once the tables are installed and every page is written; a failure is the run's failure (the pages go to Trash,
-   * Try again resumes the same copy, and recording the same page twice is one record).
+   * TEMPLATE-INSTALL-3: tells the template's install the root page, so Remove moves it (and its sub-pages) to Trash and Restore
+   * brings it back. INSTALL-ATOMIC (ADVERSARIAL-7 F1b): called BEFORE the root is written, under the id the run chose, so no run can
+   * leave a page its install does not know (SP0579's copy recorded nothing: the old note ran only after ~3 min of page writes, and
+   * that run never got there). A failure stops the run before any page exists; recording the same page twice is one record.
    */
-  notePage?: (installId: string, root: SpaceDoc) => Promise<void>;
+  notePage?: (installId: string, root: { id: SpaceId; title: string }) => Promise<void>;
+  /** INSTALL-ATOMIC: the copy's install id once its install row exists (the store's first answer); the record waits for it. */
+  installReady?: Promise<string>;
 }
 
 /** The unfinished run's root, brought back (from Trash if the failed run put it there); null = start fresh. */
@@ -554,12 +562,21 @@ export async function makeTemplatePages(
   };
   run.ids[ordered[0].key] = run.root;
   const remember = () => journal?.write({ ...run, pending: [...(run.pending ?? [])], installId: journal.read()?.installId ?? run.installId ?? null });
+  // INSTALL-ATOMIC: the install records the root BEFORE it is written (the store accepts a planned page id), so every root a run
+  // writes is already its install's. A retry records it again: one record.
+  const record = async (id: SpaceId, title: string) => {
+    if (!options.notePage) return;
+    const installId = options.installReady ? await untilStopped(options.installReady, options.signal) : (journal?.read()?.installId ?? run.installId);
+    if (!installId) throw new Error("The template's copy was made, but its id was not kept, so Remove would leave the pages behind.");
+    await options.notePage(installId, { id, title });
+  };
   let root: SpaceDoc;
   if (resumed) root = resumed;
   else {
     // The id is in the journal BEFORE the write: a refresh at any point finds this root again, never a second one.
     run.pending = [run.root];
     remember();
+    await record(run.root, ordered[0].title);
     root = await createRoot(ordered[0].title, run.root);
     run.pending = [];
     run.root = root.id;
@@ -567,12 +584,9 @@ export async function makeTemplatePages(
   }
   remember();
   try {
+    // A resumed root (made by an earlier run, perhaps before INSTALL-ATOMIC) is recorded again before anything else is written.
+    if (resumed) await record(root.id, ordered[0].title);
     const made = await fillTemplatePages(store, root, ordered, Promise.resolve(tables), onProgress, options, run, remember);
-    if (options.notePage) {
-      const installId = journal?.read()?.installId ?? run.installId;
-      if (!installId) throw new Error("The template's copy was made, but its id was not kept, so Remove would leave the pages behind.");
-      await options.notePage(installId, made);
-    }
     journal?.write(null);
     return made;
   } catch (err) {
@@ -737,8 +751,8 @@ export interface UseTemplateRun {
   /** Called with Cancel when nothing has moved for `stallMs`; with null when it moves again or the run ends. */
   onStalled?: (cancel: (() => void) | null) => void;
   stallMs?: number;
-  /** TEMPLATE-INSTALL-3: records the root page on the install (template_install_note, kind page), so Remove moves the pages to Trash. */
-  notePage?: (installId: string, root: SpaceDoc) => Promise<void>;
+  /** TEMPLATE-INSTALL-3: records the root page on the install (template_install_note, kind page) BEFORE it is written (INSTALL-ATOMIC). */
+  notePage?: (installId: string, root: { id: SpaceId; title: string }) => Promise<void>;
 }
 
 export type UseTemplateResult = { ok: true; root: SpaceDoc } | { ok: false; message: string; stopped: boolean };
@@ -789,6 +803,15 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
     write: (run) => r.journal.write(run ? { ...run, installId: installId ?? run.installId ?? null } : null),
   };
   const ordered = packPagesInOrder(r.template.pack.pages);
+  // INSTALL-ATOMIC: the root is recorded on the install before it is written, so its write waits for the install row (the store's first
+  // answer). Costs nothing: the root's content waits for every table anyway. A run that fails before any answer makes no page.
+  let rowReady: (id: string) => void = () => undefined;
+  let rowFailed: (err: unknown) => void = () => undefined;
+  const installReady = new Promise<string>((resolve, reject) => {
+    rowReady = resolve;
+    rowFailed = reject;
+  });
+  installReady.catch(() => undefined);
   try {
     moved();
     const tables = r
@@ -801,6 +824,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
         {
           title: ordered[0]?.title ?? null,
           installId,
+          onInstallRow: (id) => rowReady(id),
           onInstallId: (id) => {
             if (installId === id) return;
             installId = id;
@@ -816,7 +840,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
         return made;
       });
     // Answered through makeTemplatePages; this keeps an early page failure from leaving it unhandled.
-    tables.catch(() => undefined);
+    tables.catch((err: unknown) => rowFailed(err));
     const root = await makeTemplatePages(
       r.store,
       (title, id) => r.createRoot(title, id),
@@ -834,7 +858,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
         moved();
       },
       journal,
-      { sizes: r.sizes, onRootReady: r.onRootReady, signal: stop.signal, notePage: r.notePage },
+      { sizes: r.sizes, onRootReady: r.onRootReady, signal: stop.signal, notePage: r.notePage, installReady: r.notePage ? installReady : undefined },
     );
     return { ok: true, root };
   } catch (err) {
