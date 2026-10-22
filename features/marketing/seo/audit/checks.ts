@@ -26,7 +26,7 @@
  * SERP length limits are IMPORTED, never redeclared.
  */
 
-import { TITLE_LIMITS, DESCRIPTION_LIMITS } from "../serp/metrics";
+import { evaluateMetaDescription, evaluateMetaTitle } from "../serp/metrics";
 import type { StoredMetaFieldMetrics } from "../serp/metrics";
 
 // ---------------------------------------------------------------------------
@@ -36,11 +36,12 @@ import type { StoredMetaFieldMetrics } from "../serp/metrics";
 
 /**
  * Thin content, in words of audited visible text. Screaming Frog's "low
- * content" default is 200 words; we warn below 300 and fail below 100.
+ * content" default is 200 words; the thin_content contract bands are
+ * <50 -> 20, 50-149 -> 45, 150-299 -> 70, 300+ -> 100.
  */
 export const CONTENT_OK_WORDS = 300;
-export const CONTENT_WARN_WORDS = 200;
-export const CONTENT_FAIL_WORDS = 100;
+export const CONTENT_WARN_WORDS = 150;
+export const CONTENT_FAIL_WORDS = 50;
 
 // `url_design_quality` — the deduction formula from its live catalog row.
 export const URL_DESIGN_MAX_LENGTH = 115;
@@ -103,6 +104,8 @@ export const IMAGE_BELOW_FOLD_EAGER_FAIL_RATIO = 0.5;
 export const IMAGE_OVERSIZE_MINOR_RATIO = 2.0;
 export const IMAGE_OVERSIZE_MAJOR_RATIO = 4.0;
 export const IMAGE_OVERSIZE_SEVERE_RATIO = 8.0;
+export const IMAGE_OVERSIZE_WARN_BYTES = 300 * 1024;
+export const IMAGE_OVERSIZE_FAIL_BYTES = 1024 * 1024;
 
 /** Broken images: the row's own band — 3+ is a page that looks abandoned. */
 export const BROKEN_IMAGE_FAIL_COUNT = 3;
@@ -147,6 +150,8 @@ export const LARGE_PAGE_BYTES = 5_000_000;
  */
 export const TTFB_GOOD_MS = 800;
 export const TTFB_POOR_MS = 1_800;
+/** A TTFB sample older than this is not graded (stale evidence). */
+export const TTFB_MAX_AGE_DAYS = 30;
 
 // --- Mobile rendering, language, social ------------------------------------
 
@@ -292,7 +297,6 @@ export const RICH_RESULT_REQUIRED_PROPERTIES: Record<
   HowTo: ["name", "step"],
   JobPosting: ["title", "datePosted", "hiringOrganization", "jobLocation"],
   LocalBusiness: ["name", "address"],
-  Organization: ["name"],
   Product: ["name", "offers"],
   QAPage: ["mainEntity"],
   Recipe: ["name", "image"],
@@ -343,7 +347,9 @@ export const RICH_RESULT_RECOMMENDED_PROPERTIES: Record<
     "applicationCategory",
     "operatingSystem",
   ],
-  VideoObject: ["description", "duration", "contentUrl", "embedUrl"],
+  // Google accepts embedUrl OR contentUrl; `contentUrl` stands for either
+  // (see SCHEMA_PROPERTY_ALIASES), so it is listed once.
+  VideoObject: ["description", "duration", "contentUrl"],
 };
 
 /**
@@ -353,6 +359,7 @@ export const RICH_RESULT_RECOMMENDED_PROPERTIES: Record<
  */
 export const SCHEMA_PROPERTY_ALIASES: Record<string, readonly string[]> = {
   address: ["address", "location"],
+  contentUrl: ["contentUrl", "embedUrl"],
   author: ["author", "creator"],
   image: ["image", "thumbnailUrl", "photo"],
   openingHours: ["openingHours", "openingHoursSpecification"],
@@ -363,34 +370,66 @@ export const SCHEMA_PROPERTY_ALIASES: Record<string, readonly string[]> = {
 
 /** schema.org LocalBusiness subtypes common enough to be worth naming. */
 export const LOCAL_BUSINESS_SUBTYPES: ReadonlySet<string> = new Set([
+  "AccountingService",
+  "Attorney",
+  "AutoDealer",
+  "AutoRepair",
   "AutomotiveBusiness",
+  "BankOrCreditUnion",
+  "Bar",
+  "BeautySalon",
+  "CafeOrCoffeeShop",
   "ChildCare",
+  "DaySpa",
   "Dentist",
+  "DiagnosticLab",
   "DryCleaningOrLaundry",
+  "Electrician",
   "EmergencyService",
   "EmploymentAgency",
   "EntertainmentBusiness",
   "FinancialService",
   "FoodEstablishment",
+  "GeneralContractor",
   "GovernmentOffice",
+  "HVACBusiness",
+  "HairSalon",
   "HealthAndBeautyBusiness",
+  "HealthClub",
   "HomeAndConstructionBusiness",
+  "Hospital",
+  "Hotel",
+  "HousePainter",
+  "IndividualPhysician",
   "InsuranceAgency",
   "LegalService",
   "Library",
+  "Locksmith",
   "LodgingBusiness",
   "MedicalBusiness",
+  "MedicalClinic",
+  "MovingCompany",
+  "NailSalon",
+  "Notary",
+  "Optician",
+  "Pharmacy",
+  "Physician",
+  "Plumber",
   "ProfessionalService",
   "RadioStation",
   "RealEstateAgent",
   "Restaurant",
+  "RoofingContractor",
   "SelfStorage",
   "ShoppingCenter",
   "SportsActivityLocation",
   "Store",
+  "TattooParlor",
   "TelevisionStation",
   "TouristInformationCenter",
   "TravelAgency",
+  "VeterinaryCare",
+  "Winery",
 ]);
 
 /** How many offending values a structured-data check attaches as evidence. */
@@ -417,6 +456,11 @@ export const TBT_GOOD_MS = 200;
 export const TBT_POOR_MS = 600;
 export const TBT_POOR_MS_PER_POINT = 50;
 
+/** Interaction to Next Paint (real-visitor field data), Google's thresholds. */
+export const INP_GOOD_MS = 200;
+export const INP_POOR_MS = 500;
+export const INP_POOR_MS_PER_POINT = 50;
+
 /** cwv_cls — unitless layout-shift score. */
 export const CLS_GOOD = 0.1;
 export const CLS_POOR = 0.25;
@@ -440,7 +484,7 @@ export const CACHE_WELL_CACHED_MIN_MS = 30 * 24 * 60 * 60 * 1_000;
 export const CACHE_NEGLIGIBLE_STATIC_BYTES = 10_000;
 
 /** A measurement older than this is stale evidence, not today's truth. */
-export const LAB_PERFORMANCE_MAX_AGE_DAYS = 90;
+export const LAB_PERFORMANCE_MAX_AGE_DAYS = 30;
 
 /** Status bands shared by the performance checks, applied to the final score. */
 export const PERFORMANCE_PASS_SCORE = 90;
@@ -499,6 +543,21 @@ export interface PageImageItem {
   loading?: string | null;
   featured?: boolean;
   http_status?: number | null;
+  /** Response content type of the image fetch, when captured. */
+  content_type?: string | null;
+  /** Transfer bytes, decoded size and format from the bounded image capture. */
+  bytes?: number | null;
+  natural_width?: number | null;
+  natural_height?: number | null;
+  final_url?: string | null;
+  actual_format?: string | null;
+  capture_status?: string | null;
+  /** Placed by a lazy-loading script (`data-src` and kin). */
+  js_lazy?: boolean;
+  /** Markup that only exists with JavaScript off. */
+  in_noscript?: boolean;
+  /** `header` / `footer` / `content`, from the capture. */
+  region?: string | null;
   [key: string]: unknown;
 }
 
@@ -529,6 +588,25 @@ export interface LabPerformance {
   /** Total transferred bytes of cacheable static assets; null = not reported. */
   cacheStaticBytes?: number | null;
   cacheShortTtlResources?: CacheShortTtlResource[];
+  /**
+   * `{host: transferred_bytes}` of the static assets, when the provider
+   * recorded it — lets the caching check judge first-party files only.
+   */
+  cacheStaticBytesByHost?: Record<string, number>;
+  /** True when the provider cut its under-cached list short (count is a floor). */
+  cacheListTruncated?: boolean;
+  /**
+   * Real-visitor (CrUX) field data keyed `lcp_ms` / `inp_ms` / `cls`; `level`
+   * is "page" or "origin". Graded ahead of the lab estimate when present.
+   */
+  fieldMetrics?: Record<string, FieldMetric>;
+}
+
+/** One real-visitor (CrUX) metric — Python `LabPerformance.field_metrics` entry. */
+export interface FieldMetric {
+  value: number;
+  category?: string | null;
+  level?: string | null;
 }
 
 /**
@@ -561,6 +639,19 @@ export interface PageEvidence {
   schemaTypes?: string[] | null;
   imageCount?: number | null;
   imagesMissingAlt?: number | null;
+  /** `<a href>` links on the page (`links_summary.total`); null = never captured. */
+  linkCount?: number | null;
+  /** The internal ones among them (`links_summary.internal`). */
+  internalLinkCount?: number | null;
+  /**
+   * App-shell markup facts (`snapshot.extracted.app_shell`): an app mount point
+   * and an executable script. Null = the snapshot predates the capture, so the
+   * shell fact is unknown and nothing is silenced.
+   */
+  appRoot?: boolean | null;
+  executableScript?: boolean | null;
+  /** Body words outside script/style/template, measured on shell-marked pages. */
+  appShellWords?: number | null;
   /**
    * Per-<img> inventory in DOM order, capped while `imageCount` stays the true
    * total. Empty with a non-zero `imageCount` means the snapshot predates the
@@ -568,6 +659,13 @@ export interface PageEvidence {
    */
   imageItems?: PageImageItem[];
   httpStatus?: number | null;
+  /**
+   * Set when the crawler was KEPT OUT of this URL rather than seeing it fail
+   * (`cloudflare_block`, `blocked`, `RateLimited`, `RateLimitTimeout`). The
+   * transport checks answer n_a naming the block: a wall is a crawl state,
+   * never a broken page.
+   */
+  fetchBlockedReason?: string | null;
   redirectChain?: RedirectHop[];
   mixedContent?: string[];
   /**
@@ -598,6 +696,8 @@ export interface PageEvidence {
    * responseTimeMs, which measures a different thing.
    */
   ttfbMs?: number | null;
+  /** ISO 8601 instant `ttfbMs` was measured; a sample older than `TTFB_MAX_AGE_DAYS` is not graded. */
+  ttfbMeasuredAt?: string | null;
   /**
    * {prev, next} from rel=prev/next link tags. Empty = the page declares no
    * pagination, which is NOT a defect (see checkPaginationMarkup).
@@ -703,7 +803,7 @@ export const SYNC_GSC: Remediation = {
   scope: "site",
   label: "Pull this site's Google data",
   explainer:
-    "We ask GSC for the clicks, impressions and average " +
+    "We ask Google Search Console for the clicks, impressions and average " +
     "positions it recorded for this site, and store them so the search " +
     "checks can read real numbers instead of guessing. It reads only; " +
     "nothing on your website or in Google changes.",
@@ -883,15 +983,6 @@ function rstripSlashes(value: string): string {
   return value.replace(/\/+$/, "");
 }
 
-/** Render a possibly-absent number the way Python's f-string renders None. */
-function pyNumber(value: number | null | undefined): string {
-  return value === null || value === undefined ? "None" : String(value);
-}
-
-function isEmptyMetrics(metrics: CheckMetaMetrics | undefined): boolean {
-  return !metrics || Object.keys(metrics).length === 0;
-}
-
 /**
  * Python `urlsplit(...).netloc`, minus a leading `www.`. Deliberately NOT
  * `new URL()`: the WHATWG parser strips default ports and re-encodes, so it
@@ -978,10 +1069,31 @@ export function checkUrlDesignQuality(ev: PageEvidence): CheckOutcome {
       evidence,
     );
   }
+  const lengthOnly = penalty === URL_DESIGN_LONG_PENALTY && problems.length === 1;
+  if (lengthOnly) {
+    // A long slug is not a defect worth a person's time (changing a live URL
+    // means redirects and risk). It lowers the score the catalog formula
+    // gives it, but never opens a finding.
+    return outcome(
+      "pass",
+      score,
+      `This URL is longer than ${URL_DESIGN_MAX_LENGTH} characters, but nothing else ` +
+        "about it is a problem; a long slug alone is not worth changing.",
+      0,
+      evidence,
+    );
+  }
+  const sentence = problems
+    .map((problem) =>
+      problem.startsWith("has ") || problem.startsWith("contains ")
+        ? problem
+        : `is ${problem}`,
+    )
+    .join("; ");
   return outcome(
     "warn",
     score,
-    `This URL ${problems.join("; ")} — simpler, stable URLs are easier for people ` +
+    `This URL ${sentence} — simpler, stable URLs are easier for people ` +
       "and search engines to understand.",
     problems.length,
     evidence,
@@ -990,7 +1102,22 @@ export function checkUrlDesignQuality(ev: PageEvidence): CheckOutcome {
 
 // --- Title -----------------------------------------------------------------
 
+/**
+ * A URL we attempted but never parsed (a 404, a 5xx, a loop) has no <head>.
+ * Reporting its title, description or canonical as MISSING would invent
+ * findings about markup nobody read — the transport checks own that URL.
+ */
+function headNotCaptured(): CheckOutcome {
+  return outcome(
+    "n_a",
+    null,
+    "We never received this page's HTML (the server answered with an error or " +
+      "never answered), so there is no <head> to judge.",
+  );
+}
+
 export function checkTitlePresence(ev: PageEvidence): CheckOutcome {
+  if (!ev.headCaptured) return headNotCaptured();
   if (ev.title) {
     return outcome(
       "pass",
@@ -1000,15 +1127,44 @@ export function checkTitlePresence(ev: PageEvidence): CheckOutcome {
   }
   return outcome(
     "fail",
-    5,
+    15,
     "This page has no <title> tag (or it is empty) — search engines will " +
       "synthesize one, and the SERP headline is out of your control.",
     1,
   );
 }
 
+/**
+ * Character bands from the catalogue's own `score_contract` for
+ * `title_length` (optimal 30-60; 61-70 and 15-29 borderline; over 70
+ * truncates; under 15 too short).
+ */
+export const TITLE_BAND_OPTIMAL: readonly [number, number] = [30, 60];
+export const TITLE_BAND_BORDERLINE_MAX = 70;
+export const TITLE_BAND_TOO_SHORT = 15;
+/** `meta_description_length` contract: optimal 70-155, over 165 truncates, under 50 thin. */
+export const DESCRIPTION_BAND_OPTIMAL: readonly [number, number] = [70, 155];
+export const DESCRIPTION_BAND_TRUNCATES = 165;
+export const DESCRIPTION_BAND_TOO_SHORT = 50;
+
+/** Python `len(" ".join(text.split()))` — whitespace-collapsed code points. */
+function collapsedLength(text: string): number {
+  const words = text.split(/\s+/).filter((word) => word !== "");
+  return Array.from(words.join(" ")).length;
+}
+
+/** Pixel width of THIS text, measured now — never a stored flag from an older capture. */
+function pixelNote(text: string, kind: "title" | "description"): string {
+  const evaluation =
+    kind === "title" ? evaluateMetaTitle(text) : evaluateMetaDescription(text);
+  return `, about ${evaluation.pixelWidth}px wide`;
+}
+
+/**
+ * Scored by the contract's character bands, from the title text itself.
+ * Pixel width is shown as a measurement of THIS title, never as a verdict.
+ */
 export function checkTitleLength(ev: PageEvidence): CheckOutcome {
-  const metrics = ev.titleMetrics;
   if (!ev.title) {
     return outcome(
       "n_a",
@@ -1016,56 +1172,57 @@ export function checkTitleLength(ev: PageEvidence): CheckOutcome {
       "This page has no title yet, so there is nothing to measure.",
     );
   }
-  if (isEmptyMetrics(metrics)) {
+  const chars = collapsedLength(ev.title);
+  const detail = `${chars} chars${pixelNote(ev.title, "title")}`;
+  const [low, high] = TITLE_BAND_OPTIMAL;
+  if (chars > TITLE_BAND_BORDERLINE_MAX) {
     return outcome(
-      "n_a",
-      null,
-      "We haven't measured this page's title yet.",
-      0,
-      null,
-      RECAPTURE_PAGE,
+      "warn",
+      55,
+      `The title is ${detail} — over ${TITLE_BAND_BORDERLINE_MAX} characters Google ` +
+        `almost always cuts it off in results. Aim for ${low}-${high}.`,
+      1,
     );
   }
-  const issues = (metrics?.issues ?? []).map((issue) => String(issue));
-  const chars = metrics?.character_count;
-  const pixels = metrics?.pixel_width;
-  const detail =
-    chars !== null && chars !== undefined
-      ? `${chars} chars, ${pyNumber(pixels)}px`
-      : "measured at capture";
-  if (metrics?.ok || metrics?.title_ok) {
-    return outcome("pass", 100, `Title length is within limits (${detail}).`);
+  if (chars < TITLE_BAND_TOO_SHORT) {
+    return outcome(
+      "warn",
+      50,
+      `The title is only ${detail} — too short to say what the page is about. ` +
+        `Aim for ${low}-${high}.`,
+      1,
+    );
   }
-  const flagsBad = [
-    metrics?.seo_length_ok,
-    metrics?.desktop_ok,
-    metrics?.mobile_ok,
-  ].filter((ok) => ok === false).length;
-  const score = flagsBad <= 1 ? 60 : 35;
-  const reason = issues.length
-    ? `Title length problem (${detail}): ` + issues.join("; ")
-    : `Title is outside the recommended window (${detail}; aim for ` +
-      `${TITLE_LIMITS.minChars}-${TITLE_LIMITS.maxChars} chars) and may truncate in SERPs.`;
-  return outcome("warn", score, reason, Math.max(1, issues.length));
+  if (low <= chars && chars <= high) {
+    return outcome("pass", 100, `Title length is in the optimal window (${detail}).`);
+  }
+  return outcome(
+    "pass",
+    75,
+    `Title is ${detail} — a little outside the ${low}-${high} sweet spot, but ` +
+      "not enough to matter.",
+    1,
+  );
 }
 
 // --- Meta description ------------------------------------------------------
 
 export function checkMetaDescriptionPresence(ev: PageEvidence): CheckOutcome {
+  if (!ev.headCaptured) return headNotCaptured();
   if (ev.description) {
     return outcome("pass", 100, "Meta description present.");
   }
   return outcome(
     "fail",
-    25,
+    45,
     "No meta description — Google will scrape arbitrary body text for the " +
       "snippet, and CTR suffers.",
     1,
   );
 }
 
+/** Scored by the contract's character bands, from the description text itself. */
 export function checkMetaDescriptionLength(ev: PageEvidence): CheckOutcome {
-  const metrics = ev.descriptionMetrics;
   if (!ev.description) {
     return outcome(
       "n_a",
@@ -1073,41 +1230,41 @@ export function checkMetaDescriptionLength(ev: PageEvidence): CheckOutcome {
       "This page has no meta description yet, so there is nothing to measure.",
     );
   }
-  if (isEmptyMetrics(metrics)) {
+  const chars = collapsedLength(ev.description);
+  const detail = `${chars} chars${pixelNote(ev.description, "description")}`;
+  const [low, high] = DESCRIPTION_BAND_OPTIMAL;
+  if (chars > DESCRIPTION_BAND_TRUNCATES) {
     return outcome(
-      "n_a",
-      null,
-      "We haven't measured this page's meta description yet.",
-      0,
-      null,
-      RECAPTURE_PAGE,
+      "warn",
+      65,
+      `The meta description is ${detail} — over ${DESCRIPTION_BAND_TRUNCATES} ` +
+        `characters Google cuts it off. Aim for ${low}-${high}.`,
+      1,
     );
   }
-  const issues = (metrics?.issues ?? []).map((issue) => String(issue));
-  const chars = metrics?.character_count;
-  const pixels = metrics?.pixel_width;
-  const detail =
-    chars !== null && chars !== undefined
-      ? `${chars} chars, ${pyNumber(pixels)}px`
-      : "measured at capture";
-  if (metrics?.ok || metrics?.description_ok) {
+  if (chars < DESCRIPTION_BAND_TOO_SHORT) {
+    return outcome(
+      "warn",
+      60,
+      `The meta description is only ${detail} — too short to earn the click. ` +
+        `Aim for ${low}-${high}.`,
+      1,
+    );
+  }
+  if (low <= chars && chars <= high) {
     return outcome(
       "pass",
       100,
-      `Meta description length is within limits (${detail}).`,
+      `Meta description length is in the optimal window (${detail}).`,
     );
   }
-  const flagsBad = [
-    metrics?.seo_length_ok,
-    metrics?.desktop_ok,
-    metrics?.mobile_ok,
-  ].filter((ok) => ok === false).length;
-  const score = flagsBad <= 1 ? 60 : 40;
-  const reason = issues.length
-    ? `Meta description length problem (${detail}): ` + issues.join("; ")
-    : `Meta description is outside the recommended window (${detail}; aim for ` +
-      `${DESCRIPTION_LIMITS.minChars}-${DESCRIPTION_LIMITS.maxChars} chars).`;
-  return outcome("warn", score, reason, Math.max(1, issues.length));
+  return outcome(
+    "pass",
+    80,
+    `Meta description is ${detail} — slightly outside the ${low}-${high} window, ` +
+      "which is not a problem.",
+    1,
+  );
 }
 
 // --- Structure -------------------------------------------------------------
@@ -1128,17 +1285,47 @@ export function checkH1Presence(ev: PageEvidence): CheckOutcome {
   if (h1Count === 0) {
     return outcome(
       "fail",
-      20,
+      30,
       "No H1 on the page — the primary on-page topic signal is missing.",
       1,
     );
   }
   return outcome(
     "warn",
-    50,
-    `${h1Count} H1 tags — multiple H1s dilute the primary topic signal; keep one.`,
+    55,
+    `${h1Count} H1 tags — search engines accept several, but one clear H1 keeps ` +
+      "the page's topic unambiguous.",
     h1Count - 1,
   );
+}
+
+/**
+ * URL path segments of pages that exist to DO something (contact, say thanks,
+ * take an application) rather than to be read. Length is not their job, so
+ * the content-volume checks exempt them (`[\p{L}\p{N}_]` is Python's Unicode `\w`).
+ */
+export const UTILITY_PATH_PATTERN =
+  /(?:^|\/)(?:contact(?:-us)?|thank-?you[\p{L}\p{N}_-]*|thanks|confirmation|confirmed|application[\p{L}\p{N}_-]*|apply[\p{L}\p{N}_-]*|job-application[\p{L}\p{N}_-]*|[\p{L}\p{N}_-]*-form|forms?|login|log-in|signin|sign-in|register|signup|sign-up|cart|checkout|account|unsubscribe|search|privacy[\p{L}\p{N}_-]*|terms[\p{L}\p{N}_-]*)(?:\/|$)/iu;
+
+/** Path segments that mark a page as an article/post by where it lives. */
+export const ARTICLE_PATH_PATTERN =
+  /(?:^|\/)(?:blog|news|articles?|posts?|insights|stories|resources|guides?|learn|press|magazine)(?:\/|$)|\/20\d\d\/\d\d?\//iu;
+
+function isUtilityUrl(url: string): boolean {
+  return UTILITY_PATH_PATTERN.test(urlSplit(url).path || "/");
+}
+
+/** A page that asks not to be indexed is not held to a ranking-content bar. */
+function noindexNotApplicable(ev: PageEvidence, what: string): CheckOutcome | null {
+  if (ev.noindex) {
+    return outcome(
+      "n_a",
+      null,
+      `This page is noindexed, so ${what} does not apply to it — it is not ` +
+        "meant to rank.",
+    );
+  }
+  return null;
 }
 
 export function checkThinContent(ev: PageEvidence): CheckOutcome {
@@ -1153,13 +1340,23 @@ export function checkThinContent(ev: PageEvidence): CheckOutcome {
       RECAPTURE_PAGE,
     );
   }
+  const skip = noindexNotApplicable(ev, "word count");
+  if (skip) return skip;
+  if (isUtilityUrl(ev.url)) {
+    return outcome(
+      "n_a",
+      null,
+      "This is a utility page (contact, thank-you, form, login), where length is not " +
+        "what makes it good.",
+    );
+  }
   if (words >= CONTENT_OK_WORDS) {
     return outcome("pass", 100, `${words} words of visible text.`);
   }
   if (words >= CONTENT_WARN_WORDS) {
     return outcome(
       "warn",
-      60,
+      70,
       `Only ${words} words of visible text (below ${CONTENT_OK_WORDS}) — ` +
         "thin pages struggle to rank for anything competitive.",
       1,
@@ -1168,7 +1365,7 @@ export function checkThinContent(ev: PageEvidence): CheckOutcome {
   if (words >= CONTENT_FAIL_WORDS) {
     return outcome(
       "warn",
-      40,
+      45,
       `Only ${words} words of visible text — this is thin content by any ` +
         `industry bar (Screaming Frog flags under ${CONTENT_WARN_WORDS}).`,
       1,
@@ -1176,46 +1373,9 @@ export function checkThinContent(ev: PageEvidence): CheckOutcome {
   }
   return outcome(
     "fail",
-    15,
+    20,
     `Only ${words} words of visible text — effectively an empty page to a search engine.`,
     1,
-  );
-}
-
-export function checkImageAltPresence(ev: PageEvidence): CheckOutcome {
-  const count = ev.imageCount;
-  const missing = ev.imagesMissingAlt;
-  if (
-    count === null ||
-    count === undefined ||
-    missing === null ||
-    missing === undefined
-  ) {
-    return outcome(
-      "n_a",
-      null,
-      "We haven't listed this page's images yet.",
-      0,
-      null,
-      RECAPTURE_PAGE,
-    );
-  }
-  if (count === 0) return outcome("n_a", null, "No images on this page.");
-  if (missing === 0) {
-    return outcome("pass", 100, `All ${count} images carry alt text.`);
-  }
-  const ratio = missing / count;
-  const score = clampScore(pythonRound(95 * (1 - ratio)));
-  const status: CheckStatus =
-    ratio >= IMAGE_ALT_FAIL_RATIO || missing >= IMAGE_ALT_FAIL_COUNT
-      ? "fail"
-      : "warn";
-  return outcome(
-    status,
-    score,
-    `${missing} of ${count} images have no alt text — invisible to image ` +
-      "search and screen readers.",
-    missing,
   );
 }
 
@@ -1235,7 +1395,7 @@ export function checkMetaRobotsConflicts(ev: PageEvidence): CheckOutcome {
   if (tokens.has("index") && tokens.has("noindex")) {
     return outcome(
       "fail",
-      20,
+      25,
       `Conflicting robots directives ("${ev.metaRobots}") — index and ` +
         "noindex together leave the outcome to the crawler's mood.",
       1,
@@ -1254,7 +1414,7 @@ export function checkMetaRobotsConflicts(ev: PageEvidence): CheckOutcome {
   if (ev.nofollow) {
     return outcome(
       "warn",
-      55,
+      45,
       "Page is nofollowed — its internal links pass no signals onward.",
       1,
       { meta_robots: ev.metaRobots ?? null },
@@ -1270,11 +1430,20 @@ export function checkMetaRobotsConflicts(ev: PageEvidence): CheckOutcome {
 }
 
 export function checkCanonicalPresence(ev: PageEvidence): CheckOutcome {
+  if (!ev.headCaptured) return headNotCaptured();
   const canonical = ev.canonicalUrl;
   if (!canonical) {
+    if (ev.noindex) {
+      return outcome(
+        "n_a",
+        null,
+        "This page is noindexed, so a missing canonical does not matter — it " +
+          "is not competing in the index.",
+      );
+    }
     return outcome(
       "warn",
-      50,
+      65,
       "No rel=canonical — parameter/scheme/host variants of this URL can " +
         "compete with it in the index.",
       1,
@@ -1361,7 +1530,45 @@ export function checkCanonicalConflicts(ev: PageEvidence): CheckOutcome {
 // combined check could only ever be recorded under one of those keys, so the
 // other verdicts would be computed and thrown away.
 
+const BLOCKED_FETCH_WORDS: Record<string, string> = {
+  cloudflare_block:
+    "a bot-protection challenge (Cloudflare or similar) stopped our crawler",
+  blocked: "the server refused our crawler (HTTP 401/403)",
+  RateLimited: "the server kept answering 'too many requests' until we gave up",
+  RateLimitTimeout: "the crawl stopped on rate limits before this page was fetched",
+};
+
+/**
+ * Statuses that ARE a wall whatever reason code the crawl stored: the server
+ * answered, but about us, not about the page.
+ */
+const WALL_STATUS_REASONS: Record<number, string> = {
+  401: "blocked",
+  403: "blocked",
+  429: "RateLimited",
+};
+
+/** n_a, naming the wall, when we were kept out instead of seeing a failure. */
+function blockedFetchOutcome(ev: PageEvidence): CheckOutcome | null {
+  const reason =
+    ev.fetchBlockedReason || WALL_STATUS_REASONS[ev.httpStatus ?? -1];
+  if (!reason) return null;
+  const words =
+    BLOCKED_FETCH_WORDS[reason] ?? `our crawler was blocked (${reason})`;
+  return outcome(
+    "n_a",
+    null,
+    `Blocked — could not assess: ${words}. A page that shuts out a crawler is ` +
+      "not a broken page; it may load fine for people. Check it in a browser, or " +
+      "allow our crawler and crawl again.",
+    0,
+    { blocked_reason: reason, http_status: ev.httpStatus ?? null },
+  );
+}
+
 export function checkBrokenPage4xx(ev: PageEvidence): CheckOutcome {
+  const blocked = blockedFetchOutcome(ev);
+  if (blocked !== null) return blocked;
   const status = ev.httpStatus;
   if (status === null || status === undefined) {
     return outcome(
@@ -1387,6 +1594,8 @@ export function checkBrokenPage4xx(ev: PageEvidence): CheckOutcome {
 }
 
 export function checkServerError5xx(ev: PageEvidence): CheckOutcome {
+  const blocked = blockedFetchOutcome(ev);
+  if (blocked !== null) return blocked;
   const status = ev.httpStatus;
   if (status === null || status === undefined) {
     return outcome(
@@ -1423,9 +1632,21 @@ export function checkServerError5xx(ev: PageEvidence): CheckOutcome {
   return outcome("pass", 100, `HTTP ${status} — not a server error.`);
 }
 
+function chainLoops(ev: PageEvidence): boolean {
+  const urls = chainUrls(ev);
+  return urls.length !== new Set(urls).size;
+}
+
+/** redirect_chain contract ladder: 1 hop 85, 2 hops 60, 3 hops 40, 4+ hops 20. */
+const REDIRECT_HOP_SCORES: Record<number, number> = { 1: 85, 2: 60, 3: 40 };
+
 export function checkRedirectChain(ev: PageEvidence): CheckOutcome {
   const chain = ev.redirectChain ?? [];
   const status = ev.httpStatus;
+  if (chainLoops(ev)) {
+    // One defect, one verdict: a loop is `redirect_loop`'s finding.
+    return outcome("n_a", null, "This redirect loops — see the redirect loop check.");
+  }
   if (status !== null && status !== undefined && status >= 300 && status < 400) {
     return outcome(
       "warn",
@@ -1436,28 +1657,25 @@ export function checkRedirectChain(ev: PageEvidence): CheckOutcome {
       { http_status: status },
     );
   }
-  if (chain.length === 0) {
+  const hops = Math.max(0, chain.length - 1);
+  if (hops === 0) {
     return outcome(
       "pass",
       100,
       "No redirects — the URL serves content directly.",
     );
   }
-  if (chain.length > REDIRECT_CHAIN_MAX_HOPS) {
-    return outcome(
-      "warn",
-      45,
-      `${chain.length - 1} redirect hops before this page resolves (limit is ` +
-        `${REDIRECT_CHAIN_MAX_HOPS - 1}) — every hop wastes crawl budget and ` +
-        "leaks link equity.",
-      chain.length - 1,
-      { redirect_chain: sampleUrls(chainUrls(ev)) },
-    );
+  const score = REDIRECT_HOP_SCORES[hops] ?? 20;
+  if (hops === 1) {
+    return outcome("pass", score, "One clean redirect before this page resolves.");
   }
   return outcome(
-    "pass",
-    100,
-    `Redirect chain is short (${Math.max(0, chain.length - 1)} hop(s)).`,
+    score >= 50 ? "warn" : "fail",
+    score,
+    `${hops} redirect hops before this page resolves — every hop wastes ` +
+      "crawl budget and leaks link equity.",
+    hops,
+    { redirect_chain: sampleUrls(chainUrls(ev)) },
   );
 }
 
@@ -1528,6 +1746,21 @@ export function checkPaginationMarkup(ev: PageEvidence): CheckOutcome {
   );
 }
 
+const ACTIVE_MIXED_EXTENSIONS = [".js", ".mjs", ".css", ".html", ".htm", ".php", ".json"];
+const PASSIVE_MIXED_EXTENSIONS = [
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg", ".ico", ".bmp",
+  ".mp4", ".webm", ".ogg", ".mp3", ".wav", ".m4a", ".woff", ".woff2", ".ttf",
+];
+
+/** Images and media are passive; script/stylesheet/iframe (and anything unknown) are active. */
+function isPassiveMixed(url: string): boolean {
+  const path = urlSplit(url).path.toLowerCase();
+  return (
+    PASSIVE_MIXED_EXTENSIONS.some((ext) => path.endsWith(ext)) &&
+    !ACTIVE_MIXED_EXTENSIONS.some((ext) => path.endsWith(ext))
+  );
+}
+
 export function checkMixedContent(ev: PageEvidence): CheckOutcome {
   const resources = ev.mixedContent ?? [];
   if (resources.length === 0) {
@@ -1538,11 +1771,18 @@ export function checkMixedContent(ev: PageEvidence): CheckOutcome {
     );
   }
   const n = resources.length;
+  // mixed_content contract: any active resource 20, passive only 50. A URL we
+  // cannot classify counts as active - the safer reading.
+  const active = resources.filter((url) => !isPassiveMixed(url));
+  const score = active.length ? 20 : 50;
+  const kind = active.length
+    ? `${active.length} of them are scripts, stylesheets or frames that browsers block`
+    : "all are images or media that browsers warn about";
   return outcome(
-    "warn",
-    clampScore(70 - 5 * n),
-    `${n} resource(s) load over plain http:// on an https:// page — browsers ` +
-      "block or warn on mixed content, and the padlock disappears.",
+    active.length ? "fail" : "warn",
+    score,
+    `${n} resource(s) load over plain http:// on an https:// page — ${kind}, ` +
+      "and the padlock disappears.",
     n,
     { mixed_content: sampleUrls(resources) },
   );
@@ -1607,6 +1847,27 @@ export function checkTtfbServerResponse(ev: PageEvidence): CheckOutcome {
       RECAPTURE_PAGE,
     );
   }
+  let measured = "";
+  if (ev.ttfbMeasuredAt) {
+    const at = Date.parse(ev.ttfbMeasuredAt);
+    if (!Number.isNaN(at)) {
+      const day = ev.ttfbMeasuredAt.slice(0, 10);
+      const ageDays = Math.floor((Date.now() - at) / 86_400_000);
+      if (ageDays > TTFB_MAX_AGE_DAYS) {
+        return outcome(
+          "n_a",
+          null,
+          "The last server response time for this page was measured " +
+            `${ageDays} days ago (${day}) — ` +
+            "too old to describe the server as it is today.",
+          0,
+          null,
+          RECAPTURE_PAGE,
+        );
+      }
+      measured = ` (measured ${day})`;
+    }
+  }
   // Floor division, not rounding, in all three bands: Python rounds halves to
   // even and JavaScript rounds them up, so a rounded score would diverge from
   // the Python original on exact midpoints. Floor over non-negative integers
@@ -1616,7 +1877,7 @@ export function checkTtfbServerResponse(ev: PageEvidence): CheckOutcome {
     return outcome(
       "pass",
       clampScore(100 - Math.floor((10 * ttfb) / TTFB_GOOD_MS)),
-      `The server sent the first byte in ${ttfb} ms — comfortably inside ` +
+      `The server sent the first byte in ${ttfb} ms${measured} — comfortably inside ` +
         `the ${TTFB_GOOD_MS} ms bar for a good server response.`,
       0,
       { ttfb_ms: ttfb },
@@ -1628,7 +1889,7 @@ export function checkTtfbServerResponse(ev: PageEvidence): CheckOutcome {
     return outcome(
       "warn",
       clampScore(89 - Math.floor((39 * (ttfb - TTFB_GOOD_MS)) / span)),
-      `The server took ${ttfb} ms to send the first byte (over ` +
+      `The server took ${ttfb} ms${measured} to send the first byte (over ` +
         `${TTFB_GOOD_MS} ms) — every other speed metric starts late, and ` +
         "visitors feel the delay before anything appears.",
       1,
@@ -1638,7 +1899,7 @@ export function checkTtfbServerResponse(ev: PageEvidence): CheckOutcome {
   return outcome(
     "fail",
     clampScore(49 - Math.floor((ttfb - TTFB_POOR_MS) / 100)),
-    `The server took ${ttfb} ms to send the first byte (over ` +
+    `The server took ${ttfb} ms${measured} to send the first byte (over ` +
       `${TTFB_POOR_MS} ms) — slow server response suppresses both rankings ` +
       "and conversions.",
     1,
@@ -1785,6 +2046,21 @@ export function declaredPageType(ev: PageEvidence): string | null {
 }
 
 /**
+ * An article by what the page IS, not by a label a theme stamps on every page
+ * (WordPress emits `og:type=article` on contact forms). A real article is not
+ * a utility page AND declares an Article schema.org type or lives in a
+ * blog/news style section.
+ */
+function isRealArticle(ev: PageEvidence): boolean {
+  if (isUtilityUrl(ev.url)) return false;
+  const schema = (ev.schemaTypes ?? [])
+    .filter((type): type is string => typeof type === "string")
+    .map((type) => type.toLowerCase().trim());
+  if (schema.some((type) => CONTENT_DEPTH_ARTICLE_SCHEMA_TYPES.has(type))) return true;
+  return ARTICLE_PATH_PATTERN.test(urlSplit(ev.url).path || "/");
+}
+
+/**
  * Content volume measured against the page's OWN declared type.
  *
  * Deliberately NOT a second thin-content verdict: checkThinContent asks an
@@ -1818,7 +2094,18 @@ export function checkContentDepth(ev: PageEvidence): CheckOutcome {
       RECAPTURE_PAGE,
     );
   }
+  const skip = noindexNotApplicable(ev, "content depth");
+  if (skip) return skip;
   const pageType = declaredPageType(ev);
+  if (pageType === "article" && !isRealArticle(ev)) {
+    return outcome(
+      "n_a",
+      null,
+      "This page only carries an article label (a theme default such as og:type " +
+        "article), and it is a utility page or not in a blog/news section — it is " +
+        "not judged as an article.",
+    );
+  }
   if (pageType === null) {
     return outcome(
       "n_a",
@@ -1903,6 +2190,20 @@ export function checkTextHtmlRatio(ev: PageEvidence): CheckOutcome {
       RECAPTURE_PAGE,
     );
   }
+  const skip = noindexNotApplicable(ev, "the text-to-markup ratio");
+  if (skip) return skip;
+  if (
+    ev.wordCount !== null &&
+    ev.wordCount !== undefined &&
+    ev.wordCount < CONTENT_OK_WORDS
+  ) {
+    return outcome(
+      "n_a",
+      null,
+      `This page has only ${ev.wordCount} words, which the thin-content check ` +
+        "already reports — a low text share is the same fact, not a second defect.",
+    );
+  }
   const ratio = textBytes / htmlBytes;
   const evidence = {
     text_bytes: textBytes,
@@ -1921,8 +2222,8 @@ export function checkTextHtmlRatio(ev: PageEvidence): CheckOutcome {
       evidence,
     );
   }
-  if (ratio < TEXT_HTML_RATIO_WARN) {
-    // A PASS carrying a 75 — the row's own logic is "advisory signal; only
+  if (ratio <= TEXT_HTML_RATIO_WARN) {
+    // contract: 3-10% inclusive. A PASS carrying a 75 — the row's own logic is "advisory signal; only
     // extreme values matter", and its severity_map calls this band "info".
     return outcome(
       "pass",
@@ -1961,6 +2262,11 @@ function imageFormat(url: string | null | undefined): string | null {
   return IMAGE_FORMAT_ALIASES[suffix] ?? suffix;
 }
 
+/** Python `isinstance(value, int)` for a JSON number. */
+function isInt(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value);
+}
+
 /** The usable per-image inventory, or the `n_a` that explains its absence. */
 function inventoryOrReason(
   ev: PageEvidence,
@@ -1987,10 +2293,116 @@ function inventoryOrReason(
   return [items, null];
 }
 
+/**
+ * Hosts/paths that serve measurement pixels, not pictures. A visitor never
+ * sees them, so a missing alt, width or status on one is not a defect.
+ */
+const TRACKER_IMAGE_PATTERN = new RegExp(
+  "(?:facebook\\.com/tr[/?]|connect\\.facebook\\.net|px\\.ads\\.linkedin\\.com|" +
+    "linkedin\\.com/px|snap\\.licdn\\.com|google-analytics\\.com|googletagmanager\\.com|" +
+    "doubleclick\\.net|googleadservices\\.com|google\\.com/(?:pagead|ads)/|bat\\.bing\\.com|" +
+    "analytics\\.twitter\\.com|t\\.co/i/adsct|ads-twitter\\.com|px\\.ads\\.|" +
+    "pixel\\.wp\\.com|stats\\.wp\\.com|pixel\\.quantserve\\.com|ct\\.pinterest\\.com|" +
+    "analytics\\.tiktok\\.com|clarity\\.ms|hotjar\\.com|(?:^|/)(?:1x1|pixel|spacer|blank)\\.(?:gif|png)(?:\\?|$))",
+  "i",
+);
+
+function isPixelOrTrackerImage(item: PageImageItem): boolean {
+  if (item.width === 1 && item.height === 1) return true;
+  if (item.natural_width === 1 && item.natural_height === 1) return true;
+  return TRACKER_IMAGE_PATTERN.test(String(item.src || ""));
+}
+
+/**
+ * The images a visitor can see: not a script placeholder (no src), not a
+ * 1x1/tracking pixel, not markup that only exists with JavaScript off.
+ */
+function contentImages(items: PageImageItem[]): PageImageItem[] {
+  return items.filter(
+    (item) => Boolean(item.src) && !item.in_noscript && !isPixelOrTrackerImage(item),
+  );
+}
+
+const NO_CONTENT_IMAGES =
+  "This page has no content images to judge (only script placeholders, tracking pixels " +
+  "or no-script fallbacks).";
+
+/** header / footer / content — from the capture, else from a logo-looking name. */
+function imageRegionOf(item: PageImageItem): string {
+  const region = item.region;
+  if (region === "header" || region === "footer" || region === "content") {
+    return region;
+  }
+  const name = `${item.src || ""} ${item.alt || ""}`.toLowerCase();
+  return name.includes("logo") ? "header" : "content";
+}
+
+export function checkImageAltPresence(ev: PageEvidence): CheckOutcome {
+  const total = ev.imageCount;
+  if (total === null || total === undefined) {
+    return outcome(
+      "n_a",
+      null,
+      "We haven't listed this page's images yet.",
+      0,
+      null,
+      RECAPTURE_PAGE,
+    );
+  }
+  if (total === 0) return outcome("n_a", null, "No images on this page.");
+  const allItems = (ev.imageItems ?? []).filter(
+    (item): item is PageImageItem => typeof item === "object" && item !== null,
+  );
+  if (allItems.length === 0) {
+    // A pre-inventory snapshot's missing_alt counted `alt=""` (a valid
+    // decorative marker) as missing, so an incomplete inventory is not judged.
+    return outcome(
+      "n_a",
+      null,
+      "This page was captured before its images were listed one by one, so " +
+        "decorative images (empty alt) cannot be told from missing alt text.",
+      0,
+      null,
+      RECAPTURE_PAGE,
+    );
+  }
+  const items = contentImages(allItems);
+  if (items.length === 0) return outcome("n_a", null, NO_CONTENT_IMAGES);
+  // Explicit alt="" marks a decorative image: valid, and out of the denominator.
+  const meaningful = items.filter((item) => item.alt !== "");
+  if (meaningful.length === 0) {
+    return outcome(
+      "pass",
+      100,
+      `All ${items.length} images are marked decorative (empty alt).`,
+    );
+  }
+  const missing = meaningful.filter(
+    (item) => item.alt === null || item.alt === undefined,
+  ).length;
+  const count = meaningful.length;
+  if (missing === 0) {
+    return outcome("pass", 100, `All ${count} meaningful images carry alt text.`);
+  }
+  const ratio = missing / count;
+  const score = clampScore(pythonRound(100 * (1 - ratio)));
+  const status: CheckStatus =
+    ratio >= IMAGE_ALT_FAIL_RATIO || missing >= IMAGE_ALT_FAIL_COUNT
+      ? "fail"
+      : "warn";
+  return outcome(
+    status,
+    score,
+    `${missing} of ${count} images have no alt text — invisible to image ` +
+      "search and screen readers.",
+    missing,
+  );
+}
+
 /** Names the inventory cap when the page carried more images than we kept. */
 function inventoryNote(ev: PageEvidence, items: PageImageItem[]): string {
   const total = ev.imageCount;
-  if (typeof total === "number" && Number.isInteger(total) && total > items.length) {
+  if (isInt(total) && total > items.length) {
     return ` (measured over the first ${items.length} of ${total} images)`;
   }
   return "";
@@ -2004,8 +2416,10 @@ function inventoryNote(ev: PageEvidence, items: PageImageItem[]): string {
  * documented limit of the evidence, not a hidden assumption.
  */
 export function checkImageDimensionAttrs(ev: PageEvidence): CheckOutcome {
-  const [items, unavailable] = inventoryOrReason(ev);
+  const [inventory, unavailable] = inventoryOrReason(ev);
   if (unavailable) return unavailable;
+  const items = contentImages(inventory);
+  if (items.length === 0) return outcome("n_a", null, NO_CONTENT_IMAGES);
   const missing = items
     .filter(
       (item) =>
@@ -2014,7 +2428,7 @@ export function checkImageDimensionAttrs(ev: PageEvidence): CheckOutcome {
         item.height === null ||
         item.height === undefined,
     )
-    .map((item) => item.src || "(no src)");
+    .map((item) => String(item.src));
   const total = items.length;
   const covered = total - missing.length;
   const coverage = covered / total;
@@ -2045,25 +2459,53 @@ export function checkImageDimensionAttrs(ev: PageEvidence): CheckOutcome {
  * Lazy below the fold, eager above it — and never lazy on the hero.
  *
  * Viewport geometry is not captured, so "above the fold" is approximated by
- * DOM order plus the page's own featured/OG image, which IS captured and is
- * the usual LCP element.
+ * DOM order (the first `IMAGE_ABOVE_FOLD_DOM_COUNT` content images) plus the
+ * page's own featured/OG image; header images are above the fold by
+ * construction and footer images are not judged.
  */
 export function checkImageLazyLoading(ev: PageEvidence): CheckOutcome {
-  const [items, unavailable] = inventoryOrReason(ev);
+  const [inventory, unavailable] = inventoryOrReason(ev);
   if (unavailable) return unavailable;
 
   const isLazy = (item: PageImageItem): boolean =>
-    String(item.loading ?? "")
+    String(item.loading || "")
       .trim()
-      .toLowerCase() === "lazy";
+      .toLowerCase() === "lazy" || item.js_lazy === true;
 
-  const aboveFold = items.filter(
-    (item, index) => index < IMAGE_ABOVE_FOLD_DOM_COUNT || item.featured === true,
-  );
-  const belowFold = items.filter(
-    (item, index) =>
-      !(index < IMAGE_ABOVE_FOLD_DOM_COUNT || item.featured === true),
-  );
+  const visible = contentImages(inventory);
+  if (visible.length === 0) {
+    return outcome(
+      "n_a",
+      null,
+      "This page's images are placed by a lazy-loading script, are tracking pixels, or " +
+        "sit in no-script fallbacks, so their loading policy cannot be judged from the " +
+        "page source.",
+    );
+  }
+  const allRegions = visible.map((item) => imageRegionOf(item));
+  const items = visible.filter((_item, index) => allRegions[index] !== "footer");
+  const regions = allRegions.filter((region) => region !== "footer");
+  if (items.length === 0) {
+    return outcome(
+      "n_a",
+      null,
+      "This page's only images sit in its footer, which is not judged.",
+    );
+  }
+  let contentSeen = 0;
+  const aboveFoldIndexes = new Set<number>();
+  items.forEach((item, index) => {
+    if (regions[index] === "header") {
+      aboveFoldIndexes.add(index);
+      return;
+    }
+    if (contentSeen < IMAGE_ABOVE_FOLD_DOM_COUNT || item.featured === true) {
+      aboveFoldIndexes.add(index);
+    }
+    contentSeen += 1;
+  });
+  const aboveFold = items.filter((_item, index) => aboveFoldIndexes.has(index));
+  const belowFold = items.filter((_item, index) => !aboveFoldIndexes.has(index));
   const note = inventoryNote(ev, items);
 
   const heroLazy = aboveFold
@@ -2104,58 +2546,133 @@ export function checkImageLazyLoading(ev: PageEvidence): CheckOutcome {
 }
 
 /**
- * Share of raster images served as WebP/AVIF instead of JPEG/PNG/GIF.
+ * Below this many legacy-format image bytes a page has no "significant raster
+ * images" (the catalog row scores 100) — WebP would save a few KB.
+ */
+export const IMAGE_MODERN_FORMAT_MIN_LEGACY_BYTES = 50_000;
+const TRACKER_HOST_MARKERS = [
+  "px.ads.",
+  "pixel.",
+  "doubleclick.",
+  "googleadservices.",
+  "google-analytics.",
+  "googletagmanager.",
+  "facebook.com/tr",
+  "facebook.net",
+  "bat.bing.",
+  "adsystem.",
+  "scorecardresearch.",
+  "hotjar.",
+  "clarity.ms",
+];
+const TRACKER_PATH_MARKERS = [
+  "/collect",
+  "/pixel",
+  "/beacon",
+  "/track",
+  "/impression",
+  "/tr?",
+];
+const MEASURED_IMAGE_CAPTURE_STATUSES: ReadonlySet<string> = new Set([
+  "complete",
+  "http_error",
+  "too_large",
+]);
+
+/** A tracking pixel or beacon is not content; it never counts as an image. */
+function isTrackingImage(item: PageImageItem): boolean {
+  for (const key of ["final_url", "src"] as const) {
+    const url = String(item[key] || "").toLowerCase();
+    if (!url) continue;
+    const at = url.indexOf("://");
+    const stripped = at >= 0 ? url.slice(at + 3) : url;
+    if (TRACKER_HOST_MARKERS.some((marker) => stripped.includes(marker))) return true;
+    if (TRACKER_PATH_MARKERS.some((marker) => stripped.includes(marker))) return true;
+  }
+  return false;
+}
+
+/**
+ * Share of raster image BYTES served as WebP/AVIF instead of JPEG/PNG/GIF.
  *
- * The catalog row asks for a BYTE-weighted share. Transfer bytes are not
- * captured, so this is image-COUNT weighted and says so in its reasoning — a
- * byte-weighted number would be invented.
+ * Uses captured transfer bytes and response content type, including the
+ * preferred `<picture>` source rather than its legacy `<img>` fallback.
  */
 export function checkImageModernFormat(ev: PageEvidence): CheckOutcome {
   const [items, unavailable] = inventoryOrReason(ev);
   if (unavailable) return unavailable;
 
-  let modern = 0;
+  const measured = items.filter(
+    (item) =>
+      isInt(item.bytes) &&
+      item.bytes >= 0 &&
+      MEASURED_IMAGE_CAPTURE_STATUSES.has(String(item.capture_status)) &&
+      !isTrackingImage(item),
+  );
+  if (measured.length === 0) {
+    return outcome(
+      "n_a",
+      null,
+      "Image transfer sizes have not been captured, so the promised byte-weighted " +
+        "modern-format share cannot be calculated.",
+      0,
+      null,
+      RECAPTURE_PAGE,
+    );
+  }
+
+  let modernBytes = 0;
+  let legacyBytes = 0;
   const legacy: string[] = [];
-  for (const item of items) {
+  for (const item of measured) {
+    const byteCount = item.bytes as number;
     const offered = new Set(
-      (item.picture_formats ?? []).map((format) => String(format).toLowerCase()),
+      (item.picture_formats || []).map((format) => String(format).toLowerCase()),
     );
-    if ([...offered].some((format) => IMAGE_MODERN_RASTER_FORMATS.has(format))) {
-      modern += 1;
-      continue;
+    const actual = String(item.actual_format || "").toLowerCase();
+    const candidates = [item.final_url, item.src, ...(item.srcset || [])];
+    const formats = new Set<string>([actual]);
+    for (const url of candidates) {
+      const format = imageFormat(typeof url === "string" ? url : null);
+      if (format) formats.add(format);
     }
-    const candidates = [item.src, ...(item.srcset ?? [])];
-    const formats = new Set(
-      candidates
-        .map((url) => imageFormat(url))
-        .filter((format): format is string => Boolean(format)),
-    );
-    if ([...formats].some((format) => IMAGE_MODERN_RASTER_FORMATS.has(format))) {
-      modern += 1;
-    } else if (
-      [...formats].some((format) => IMAGE_LEGACY_RASTER_FORMATS.has(format))
+    if (
+      IMAGE_MODERN_RASTER_FORMATS.has(actual) ||
+      (!actual &&
+        [...offered].some((format) => IMAGE_MODERN_RASTER_FORMATS.has(format)))
     ) {
+      modernBytes += byteCount;
+    } else if ([...formats].some((format) => IMAGE_LEGACY_RASTER_FORMATS.has(format))) {
+      legacyBytes += byteCount;
       legacy.push(item.src || "(no src)");
     }
   }
 
-  const classified = modern + legacy.length;
+  const classified = modernBytes + legacyBytes;
   const note = inventoryNote(ev, items);
   if (classified === 0) {
     return outcome(
       "n_a",
       null,
-      `None of this page's ${items.length} images declare a format in their URL ` +
-        "(vector or extension-less CDN sources) — nothing to judge.",
+      `None of the ${measured.length} measured images had a classifiable raster format.`,
     );
   }
-  const coverage = modern / classified;
+  const coverage = modernBytes / classified;
   const score = clampScore(pythonRound(100 * coverage));
   if (coverage >= IMAGE_MODERN_FORMAT_PASS_COVERAGE) {
     return outcome(
       "pass",
       score,
-      `${modern} of ${classified} raster images are already WebP/AVIF${note}.`,
+      `${modernBytes} of ${classified} measured raster bytes are WebP/AVIF${note}.`,
+      legacy.length,
+    );
+  }
+  if (legacyBytes < IMAGE_MODERN_FORMAT_MIN_LEGACY_BYTES) {
+    return outcome(
+      "pass",
+      100,
+      `Only ${legacyBytes} bytes of this page's images are JPEG/PNG/GIF${note} — ` +
+        "too little for WebP or AVIF to be worth chasing.",
       legacy.length,
     );
   }
@@ -2164,9 +2681,8 @@ export function checkImageModernFormat(ev: PageEvidence): CheckOutcome {
   return outcome(
     status,
     score,
-    `${legacy.length} of ${classified} raster images are still JPEG/PNG/GIF${note} — ` +
-      "WebP or AVIF typically cuts those downloads by a quarter to a half. " +
-      "(Share is image-weighted; per-image transfer bytes are not captured.)",
+    `${legacyBytes} of ${classified} measured raster bytes are JPEG/PNG/GIF${note} — ` +
+      "WebP or AVIF typically cuts those downloads by a quarter to a half.",
     legacy.length,
     { legacy_format_images: sampleUrls(legacy) },
   );
@@ -2175,38 +2691,34 @@ export function checkImageModernFormat(ev: PageEvidence): CheckOutcome {
 /**
  * Images delivered far larger than the box they are drawn into.
  *
- * The catalog row scores this in bytes; per-image transfer bytes and decoded
- * dimensions both need a fetch the crawl never makes. The one intrinsic-size
- * fact HTML does carry is a srcset `w` descriptor, so this compares the widest
- * DECLARED candidate against the declared display width — and only for images
- * with no `sizes` attribute. No image declaring both → `n_a`, never a pass on
- * unmeasured images.
+ * Scores captured transfer-byte bands and decoded natural width against the
+ * declared display width. Missing capture remains `n_a`.
  */
 export function checkImageOversized(ev: PageEvidence): CheckOutcome {
   const [items, unavailable] = inventoryOrReason(ev);
   if (unavailable) return unavailable;
 
-  const measured: [string, number, number, number][] = [];
+  const measured: [string, number, number, number, number][] = [];
   for (const item of items) {
-    if (item.sizes) continue;
     const display = item.width;
-    const widths = (item.srcset_widths ?? []).filter(
-      (width) => typeof width === "number" && Number.isInteger(width) && width > 0,
-    );
+    const intrinsic = item.natural_width;
+    const byteCount = item.bytes;
     if (
-      typeof display !== "number" ||
-      !Number.isInteger(display) ||
+      !isInt(display) ||
       display <= 0 ||
-      widths.length === 0
+      !isInt(intrinsic) ||
+      intrinsic <= 0 ||
+      !isInt(byteCount) ||
+      byteCount < 0
     ) {
       continue;
     }
-    const intrinsic = Math.max(...widths);
     measured.push([
       item.src || "(no src)",
       intrinsic / display,
       intrinsic,
       display,
+      byteCount,
     ]);
   }
 
@@ -2214,26 +2726,39 @@ export function checkImageOversized(ev: PageEvidence): CheckOutcome {
     return outcome(
       "n_a",
       null,
-      "No image on this page declares both a display width and an intrinsic " +
-        "srcset width, and per-image bytes are not captured — nothing measurable " +
-        "here without an image-fetch pass.",
+      "No image has all three measurements needed here: display width, decoded " +
+        "natural width, and transfer bytes.",
+      0,
+      null,
+      RECAPTURE_PAGE,
     );
   }
 
+  // Python's sort is stable; so is Array.prototype.sort.
   measured.sort((left, right) => right[1] - left[1]);
   const [worstSrc, worstRatio, worstIntrinsic, worstDisplay] = measured[0];
   const offenders = measured
-    .filter(([, ratio]) => ratio > IMAGE_OVERSIZE_MINOR_RATIO)
+    .filter(
+      ([, ratio, , , byteCount]) =>
+        ratio > IMAGE_OVERSIZE_MINOR_RATIO || byteCount > IMAGE_OVERSIZE_WARN_BYTES,
+    )
     .map(
-      ([src, , intrinsic, display]) =>
-        `${src} (${intrinsic}px for a ${display}px slot)`,
+      ([src, , intrinsic, display, byteCount]) =>
+        `${src} (${intrinsic}px for a ${display}px slot; ${byteCount} bytes)`,
     );
-  if (worstRatio <= IMAGE_OVERSIZE_MINOR_RATIO) {
+  const worstBytes = Math.max(...measured.map((row) => row[4]));
+  const estimatedWasteBytes = measured.reduce(
+    (sum, [, , intrinsic, display, byteCount]) =>
+      sum +
+      pythonRound(byteCount * (1 - Math.min(1.0, (display / intrinsic) ** 2))),
+    0,
+  );
+  if (worstRatio <= IMAGE_OVERSIZE_MINOR_RATIO && worstBytes <= IMAGE_OVERSIZE_WARN_BYTES) {
     return outcome(
       "pass",
       100,
       `All ${measured.length} measurable images are sized for their slot ` +
-        `(worst case ${pyFixed(worstRatio, 1)}x, within retina headroom).`,
+        `(worst case ${pyFixed(worstRatio, 1)}x and ${worstBytes} bytes).`,
     );
   }
   const detail =
@@ -2241,10 +2766,10 @@ export function checkImageOversized(ev: PageEvidence): CheckOutcome {
     `(${pyFixed(worstRatio, 1)}x): ${worstSrc}`;
   let status: CheckStatus;
   let score: number;
-  if (worstRatio > IMAGE_OVERSIZE_SEVERE_RATIO) {
+  if (worstRatio > IMAGE_OVERSIZE_SEVERE_RATIO || worstBytes > IMAGE_OVERSIZE_FAIL_BYTES) {
     status = "fail";
     score = 25;
-  } else if (worstRatio > IMAGE_OVERSIZE_MAJOR_RATIO) {
+  } else if (worstRatio > IMAGE_OVERSIZE_MAJOR_RATIO || worstBytes > IMAGE_OVERSIZE_WARN_BYTES) {
     status = "warn";
     score = 50;
   } else {
@@ -2255,32 +2780,32 @@ export function checkImageOversized(ev: PageEvidence): CheckOutcome {
     status,
     score,
     `${offenders.length} image(s) are delivered far larger than they are displayed — ` +
-      `${detail}. Visitors pay for every one of those pixels. ` +
-      "(Measured from declared dimensions; transfer bytes are not captured.)",
+      `${detail}. Estimated avoidable transfer is ${estimatedWasteBytes} bytes.`,
     offenders.length,
-    { oversized_images: sampleUrls(offenders) },
+    {
+      oversized_images: sampleUrls(offenders),
+      estimated_waste_bytes: estimatedWasteBytes,
+      largest_image_bytes: worstBytes,
+    },
   );
 }
 
 /**
- * <img> sources that return 4xx/5xx.
+ * <img> sources that return 4xx/5xx (or a non-image body).
  *
- * 🚨 CAPTURE GAP — this check cannot answer today. The crawl status-checks
- * PAGES, never sub-resources, so no `http_status` is ever written onto an
- * image inventory item and this returns `n_a` on every page. The logic below
- * is the contract the capture pass has to satisfy.
+ * Uses the bounded image evidence captured before snapshot persistence. A
+ * network failure or old snapshot without statuses remains `n_a`.
  */
 export function checkBrokenImages(ev: PageEvidence): CheckOutcome {
-  const [items, unavailable] = inventoryOrReason(ev);
+  const [inventory, unavailable] = inventoryOrReason(ev);
   if (unavailable) return unavailable;
+  const items = contentImages(inventory);
+  if (items.length === 0) return outcome("n_a", null, NO_CONTENT_IMAGES);
   const statuses = items
-    .filter(
-      (item) =>
-        typeof item.http_status === "number" &&
-        Number.isInteger(item.http_status),
-    )
+    .filter((item) => isInt(item.http_status))
     .map(
-      (item) => [item.src || "(no src)", item.http_status as number] as const,
+      (item) =>
+        [item.src || "(no src)", item.http_status as number, item.content_type] as const,
     );
   if (statuses.length === 0) {
     return outcome(
@@ -2291,8 +2816,25 @@ export function checkBrokenImages(ev: PageEvidence): CheckOutcome {
     );
   }
   const broken = statuses
-    .filter(([, status]) => status >= 400)
+    .filter(
+      ([, status, contentType]) =>
+        status === 0 ||
+        status >= 400 ||
+        (typeof contentType === "string" &&
+          !contentType.toLowerCase().startsWith("image/")),
+    )
     .map(([src]) => src);
+  if (broken.length === 0 && statuses.length < items.length) {
+    return outcome(
+      "n_a",
+      null,
+      `Only ${statuses.length} of ${items.length} inventoried images returned a status; ` +
+        "the unchecked remainder prevents a reliable all-clear.",
+      0,
+      null,
+      RECAPTURE_PAGE,
+    );
+  }
   if (broken.length === 0) {
     return outcome(
       "pass",
@@ -2462,12 +3004,19 @@ export function checkSoft404Detection(ev: PageEvidence): CheckOutcome {
       evidence,
     );
   }
-  if (words < SOFT_404_EMPTY_MAX_WORDS) {
+  // Word count alone is the thin-content check's finding. A soft 404 needs an
+  // error-page signal (not-found phrasing, above) or a page with no extracted
+  // content at all: nothing counted AND no heading anywhere.
+  const blank =
+    words < SOFT_404_EMPTY_MAX_WORDS &&
+    !(ev.headings && ev.headings.length) &&
+    !ev.h1Count;
+  if (blank && ev.headings !== null && ev.headings !== undefined) {
     return outcome(
       "warn",
       40,
-      `This page answers HTTP 200 with only ${words} words — there is nothing ` +
-        "here, which is what a broken or removed page usually looks like.",
+      `This page answers HTTP 200 with only ${words} words and no heading — there ` +
+        "is nothing here, which is what a broken or removed page usually looks like.",
       1,
       evidence,
     );
@@ -2484,11 +3033,12 @@ export function checkSoft404Detection(ev: PageEvidence): CheckOutcome {
   }
   if (nearlyEmpty) {
     return outcome(
-      "warn",
-      70,
-      `This page answers HTTP 200 with only ${words} words — thin enough that a ` +
-        "search engine may treat it as an error page rather than content.",
-      1,
+      "pass",
+      100,
+      `This page answers HTTP 200 with ${words} words but shows no error-page ` +
+        "signal (no not-found title, headings present) — short, not broken; the " +
+        "thin-content check covers its length.",
+      0,
       evidence,
     );
   }
@@ -2535,8 +3085,8 @@ export function checkHttpsEnforcement(ev: PageEvidence): CheckOutcome {
     return outcome(
       "n_a",
       null,
-      "This page is served securely. We can't yet tell whether an insecure " +
-        "copy of it is also reachable — our crawler doesn't check that today.",
+      "This page is served securely. We haven't checked whether an insecure " +
+        "copy of it is also reachable — this page wasn't in the sample we probed.",
       0,
       { scheme: "https" },
     );
@@ -2787,8 +3337,11 @@ export function checkOgImageValidity(ev: PageEvidence): CheckOutcome {
     return outcome(
       "fail",
       45,
-      "No share image (og:image) — links to this page post as a bare gray " +
-        "rectangle everywhere, which collapses how often anyone clicks them.",
+      "No share image (og:image) — links to this page may share without a " +
+        "picture on networks that read Open Graph tags." +
+        (String(ev.twitter?.["twitter:image"] || "").trim()
+          ? " X can still show the twitter:image."
+          : ""),
       1,
     );
   }
@@ -2835,11 +3388,14 @@ export function checkSocialMetaCompleteness(ev: PageEvidence): CheckOutcome {
     );
   }
   const og = ev.og ?? {};
-  const missing = SOCIAL_REQUIRED_OG_TAGS.filter((tag) => {
+  // og:image is judged — and reported — by `checkOgImageValidity` only; this
+  // check covers the other four (contract amended 2026-10-14: /4).
+  const required = SOCIAL_REQUIRED_OG_TAGS.filter((tag) => tag !== "og:image");
+  const missing = required.filter((tag) => {
     const value = og[tag];
     return !(typeof value === "string" && value.trim());
   });
-  const present = SOCIAL_REQUIRED_OG_TAGS.length - missing.length;
+  const present = required.length - missing.length;
   const twitterCard = ev.twitter?.["twitter:card"];
   const hasTwitterCard =
     typeof twitterCard === "string" && Boolean(twitterCard.trim());
@@ -2854,7 +3410,7 @@ export function checkSocialMetaCompleteness(ev: PageEvidence): CheckOutcome {
       !sameTarget(ogUrl, canonical),
   );
 
-  let score = pythonRound((100 * present) / SOCIAL_REQUIRED_OG_TAGS.length);
+  let score = pythonRound((100 * present) / required.length);
   if (conflicts) score -= SOCIAL_OG_URL_CONFLICT_PENALTY;
   if (!hasTwitterCard) score -= SOCIAL_NO_TWITTER_CARD_PENALTY;
   score = clampScore(score);
@@ -2879,8 +3435,9 @@ export function checkSocialMetaCompleteness(ev: PageEvidence): CheckOutcome {
     return outcome(
       "pass",
       score,
-      "Share preview is complete: all five Open Graph tags plus a Twitter " +
-        `card ("${twitterCard}"), and og:url agrees with the canonical URL.`,
+      "Share tags are complete: Open Graph title, description, url and type plus " +
+        `a Twitter card ("${twitterCard}"), and og:url agrees with the canonical URL ` +
+        "(the share image is judged separately).",
       0,
       evidence,
     );
@@ -3033,12 +3590,43 @@ function missingProperties(
 /** Which rich-result contract a block is claiming, if any. */
 export function richResultTypeOf(types: string[]): string | null {
   for (const declared of types) {
-    if (declared in RICH_RESULT_REQUIRED_PROPERTIES) return declared;
+    if (Object.hasOwn(RICH_RESULT_REQUIRED_PROPERTIES, declared)) return declared;
+  }
+  for (const declared of types) {
+    // Google publishes recommended-only properties for some types
+    // (Organization) and NO required ones; such a type is still validated,
+    // just never "required".
+    if (Object.hasOwn(RICH_RESULT_RECOMMENDED_PROPERTIES, declared)) return declared;
   }
   for (const declared of types) {
     if (LOCAL_BUSINESS_SUBTYPES.has(declared)) return "LocalBusiness";
   }
   return null;
+}
+
+/**
+ * Keys a microdata/RDFa extraction adds around a scope's content. A block
+ * whose data holds nothing else is an `itemscope` with no `itemprop` inside —
+ * a theme wrapper whose "value" is just the element's text. It states no
+ * facts, so it cannot be missing any.
+ */
+const SCOPE_WRAPPER_KEYS: ReadonlySet<string> = new Set([
+  "type",
+  "types",
+  "value",
+  "@type",
+  "@context",
+  "@id",
+  "id",
+]);
+
+function isPropertylessScope(
+  block: Record<string, unknown>,
+  data: Record<string, unknown>,
+): boolean {
+  const source = String(block["source"] || "").toLowerCase();
+  if (source === "json-ld" || source === "jsonld" || source === "") return false;
+  return Object.keys(data).every((key) => SCOPE_WRAPPER_KEYS.has(key));
 }
 
 /**
@@ -3118,12 +3706,13 @@ export function checkStructuredDataValidity(ev: PageEvidence): CheckOutcome {
       continue;
     }
     const node = data as Record<string, unknown>;
+    if (isPropertylessScope(block, node)) continue;
     const richType = richResultTypeOf(blockTypes(block));
     if (richType === null) continue;
     validated.push(richType);
     const required = missingProperties(
       node,
-      RICH_RESULT_REQUIRED_PROPERTIES[richType],
+      RICH_RESULT_REQUIRED_PROPERTIES[richType] ?? [],
     );
     if (required.length) {
       missingRequired.push({ type: richType, missing: required });
@@ -3415,17 +4004,48 @@ function labOrReason(
   return [lab, null];
 }
 
+/** Python `str.capitalize()` — first character upper, the rest lower. */
+function pyCapitalize(text: string): string {
+  return text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
+}
+
+/** "in a simulated phone test on <date>" — a lab number is an estimate. */
+function labEstimatePhrase(lab: LabPerformance): string {
+  const device = lab.strategy === "mobile" ? "phone" : lab.strategy;
+  const when = lab.observedAt ? ` on ${lab.observedAt.slice(0, 10)}` : "";
+  return `in a simulated ${device} test${when}`;
+}
+
+function fieldPhrase(fieldEntry: FieldMetric): string {
+  const scope = fieldEntry.level === "page" ? "this page" : "this site's pages";
+  return `real visitors to ${scope} (Google's 28-day field data)`;
+}
+
 function measuredOn(lab: LabPerformance): string {
   const where = lab.strategy === "mobile" ? "on a phone" : `on ${lab.strategy}`;
   const when = lab.observedAt ? ` on ${lab.observedAt.slice(0, 10)}` : "";
   return `${where}${when}`;
 }
 
+/** The number to grade: real-visitor field data first, lab estimate second. */
+function cwvValue(
+  lab: LabPerformance,
+  fieldKey: string,
+  labValue: number | null | undefined,
+): [number | null, FieldMetric | null] {
+  const entry = lab.fieldMetrics?.[fieldKey];
+  if (entry !== null && entry !== undefined) {
+    return [Number(entry.value), entry];
+  }
+  return [labValue ?? null, null];
+}
+
 export function checkCwvLcp(ev: PageEvidence): CheckOutcome {
   const [lab, blocked] = labOrReason(ev);
   if (blocked !== null) return blocked;
   if (lab === null) return blocked as never;
-  if (lab.lcpMs === null || lab.lcpMs === undefined) {
+  const [lcp, fieldEntry] = cwvValue(lab, "lcp_ms", lab.lcpMs);
+  if (lcp === null) {
     return outcome(
       "n_a",
       null,
@@ -3436,7 +4056,6 @@ export function checkCwvLcp(ev: PageEvidence): CheckOutcome {
       COLLECT_PAGESPEED,
     );
   }
-  const lcp = lab.lcpMs;
   const seconds = `${pyFixed(lcp / 1000, 1)}s`;
   let score: number;
   if (lcp <= LCP_GOOD_MS) {
@@ -3448,33 +4067,81 @@ export function checkCwvLcp(ev: PageEvidence): CheckOutcome {
       pythonRound(CWV_POOR_CEILING - (lcp - LCP_POOR_MS) / LCP_POOR_MS_PER_POINT),
     );
   }
-  const evidence = { lcp_ms: lcp, strategy: lab.strategy };
+  const source = fieldEntry ? "field" : "lab";
+  const evidence = { lcp_ms: lcp, strategy: lab.strategy, source };
+  const who = fieldEntry ? fieldPhrase(fieldEntry) : labEstimatePhrase(lab);
   if (score >= PERFORMANCE_PASS_SCORE) {
     return outcome(
       "pass",
       score,
-      `The main content of this page appears in ${seconds} ` +
-        `(${measuredOn(lab)}) — inside Google's 2.5 second target.`,
+      (fieldEntry
+        ? `For ${who}, the main content appears in ${seconds} (75th percentile)`
+        : `${pyCapitalize(who)}, the main content appeared in ${seconds} (a lab estimate)`) +
+        " — inside Google's 2.5 second target.",
       0,
       evidence,
     );
   }
+  const lead = fieldEntry
+    ? `For ${who}, the main content takes ${seconds} to appear (75th percentile).`
+    : `${pyCapitalize(who)}, the main content took ${seconds} to appear. That is ` +
+      "a lab estimate, not a measurement of your real visitors.";
   return outcome(
     performanceStatus(score),
     score,
-    `The main content of this page takes ${seconds} to appear ` +
-      `(${measuredOn(lab)}). Google's target is 2.5 seconds and it treats ` +
-      "anything over 4 as poor; visitors leave before a slow page finishes, " +
-      "so this costs both rankings and the visits you already earned.",
+    `${lead} Google's target is 2.5 seconds and it treats anything over 4 as ` +
+      "poor; visitors leave before a slow page finishes, so this costs both " +
+      "rankings and the visits you already earned.",
     1,
     evidence,
   );
 }
 
+/**
+ * Responsiveness: real-visitor INP when Google has it, else lab TBT.
+ *
+ * INP is the Core Web Vital Google ranks on. TBT is a lab stand-in for it and
+ * is NOT a ranking signal, so it is only ever described as an estimate.
+ */
 export function checkCwvInpTbt(ev: PageEvidence): CheckOutcome {
   const [lab, blocked] = labOrReason(ev);
   if (blocked !== null) return blocked;
   if (lab === null) return blocked as never;
+  const inp = lab.fieldMetrics?.inp_ms;
+  if (inp !== null && inp !== undefined) {
+    const value = Number(inp.value);
+    let score: number;
+    if (value <= INP_GOOD_MS) {
+      score = linearBand(value, 0, INP_GOOD_MS, CWV_GOOD_BAND);
+    } else if (value <= INP_POOR_MS) {
+      score = linearBand(value, INP_GOOD_MS, INP_POOR_MS, CWV_MID_BAND);
+    } else {
+      score = clampScore(
+        pythonRound(CWV_POOR_CEILING - (value - INP_POOR_MS) / INP_POOR_MS_PER_POINT),
+      );
+    }
+    const evidence = { inp_ms: value, strategy: lab.strategy, source: "field" };
+    const who = fieldPhrase(inp);
+    if (score >= PERFORMANCE_PASS_SCORE) {
+      return outcome(
+        "pass",
+        score,
+        `For ${who}, the page reacts to taps and clicks within ${pythonRound(value)}ms ` +
+          "(INP, 75th percentile) — inside Google's 200ms target.",
+        0,
+        evidence,
+      );
+    }
+    return outcome(
+      performanceStatus(score),
+      score,
+      `For ${who}, the page takes ${pythonRound(value)}ms to react to taps and clicks ` +
+        "(INP, 75th percentile; Google's target is 200ms, and INP is a " +
+        "ranking signal). The usual cause is too much JavaScript running.",
+      1,
+      evidence,
+    );
+  }
   if (lab.tbtMs === null || lab.tbtMs === undefined) {
     return outcome(
       "n_a",
@@ -3497,13 +4164,14 @@ export function checkCwvInpTbt(ev: PageEvidence): CheckOutcome {
       pythonRound(CWV_POOR_CEILING - (tbt - TBT_POOR_MS) / TBT_POOR_MS_PER_POINT),
     );
   }
-  const evidence = { tbt_ms: tbt, strategy: lab.strategy };
+  const evidence = { tbt_ms: tbt, strategy: lab.strategy, source: "lab" };
+  const when = labEstimatePhrase(lab);
   if (score >= PERFORMANCE_PASS_SCORE) {
     return outcome(
       "pass",
       score,
-      "While loading, this page ignores taps and clicks for only " +
-        `${pythonRound(tbt)}ms (${measuredOn(lab)}) — comfortably responsive.`,
+      `${pyCapitalize(when)}, this page ignored taps and clicks for only ` +
+        `${pythonRound(tbt)}ms while loading (a lab estimate) — comfortably responsive.`,
       0,
       evidence,
     );
@@ -3511,11 +4179,11 @@ export function checkCwvInpTbt(ev: PageEvidence): CheckOutcome {
   return outcome(
     performanceStatus(score),
     score,
-    `While loading, this page is busy running scripts for ${pythonRound(tbt)}ms ` +
-      `(${measuredOn(lab)}) and cannot react to taps or clicks during that ` +
-      "time. Visitors read that as broken and tap again, and Google measures " +
-      "it directly as a ranking signal. The usual cause is too much JavaScript " +
-      "running before the page is usable.",
+    `${pyCapitalize(when)}, this page was busy running scripts for ${pythonRound(tbt)}ms ` +
+      "while loading and could not react to taps or clicks during that time. " +
+      "This is a lab estimate of responsiveness (Total Blocking Time), not a " +
+      "measurement of your real visitors and not itself a ranking signal. The " +
+      "usual cause is too much JavaScript running before the page is usable.",
     1,
     evidence,
   );
@@ -3525,7 +4193,8 @@ export function checkCwvCls(ev: PageEvidence): CheckOutcome {
   const [lab, blocked] = labOrReason(ev);
   if (blocked !== null) return blocked;
   if (lab === null) return blocked as never;
-  if (lab.cls === null || lab.cls === undefined) {
+  const [cls, fieldEntry] = cwvValue(lab, "cls", lab.cls);
+  if (cls === null) {
     return outcome(
       "n_a",
       null,
@@ -3536,7 +4205,6 @@ export function checkCwvCls(ev: PageEvidence): CheckOutcome {
       COLLECT_PAGESPEED,
     );
   }
-  const cls = lab.cls;
   let score: number;
   if (cls <= CLS_GOOD) {
     score = linearBand(cls, 0, CLS_GOOD, CWV_GOOD_BAND);
@@ -3547,25 +4215,34 @@ export function checkCwvCls(ev: PageEvidence): CheckOutcome {
       pythonRound(CWV_POOR_CEILING - (cls - CLS_POOR) * CLS_POOR_PENALTY_PER_UNIT),
     );
   }
-  const evidence = { cls, strategy: lab.strategy };
+  const evidence = {
+    cls,
+    strategy: lab.strategy,
+    source: fieldEntry ? "field" : "lab",
+  };
+  const who = fieldEntry ? fieldPhrase(fieldEntry) : labEstimatePhrase(lab);
   if (score >= PERFORMANCE_PASS_SCORE) {
+    const subject = fieldEntry ? `For ${who}` : pyCapitalize(who);
     return outcome(
       "pass",
       score,
-      `This page holds still as it loads (layout shift ${pyFixed(cls, 3)}, ` +
-        `${measuredOn(lab)}) — under Google's 0.1 limit.`,
+      `${subject}, this page holds still as it loads (layout shift ` +
+        `${pyFixed(cls, 3)}) — under Google's 0.1 limit.`,
       0,
       evidence,
     );
   }
+  const subject = fieldEntry
+    ? `For ${who}`
+    : `${pyCapitalize(who)} (a lab estimate)`;
   return outcome(
     performanceStatus(score),
     score,
-    "Content on this page jumps around while it loads (layout shift " +
-      `${pyFixed(cls, 3)}, ${measuredOn(lab)}; Google's limit is 0.1). That is the ` +
-      "effect where someone goes to tap one thing and hits another because an " +
-      "image or advert pushed the page down. It is usually fixed by giving " +
-      "images and embeds a declared width and height.",
+    `${subject}, content on this page jumps around while it loads (layout ` +
+      `shift ${pyFixed(cls, 3)}; Google's limit is 0.1). That is the effect where ` +
+      "someone goes to tap one thing and hits another because an image or " +
+      "advert pushed the page down. It is usually fixed by giving images and " +
+      "embeds a declared width and height.",
     1,
     evidence,
   );
@@ -3586,7 +4263,13 @@ export function checkAssetDelivery(ev: PageEvidence): CheckOutcome {
       COLLECT_PAGESPEED,
     );
   }
-  const savings = lab.deliverySavingsMs;
+  // Lighthouse's per-audit savings overlap (the same slow first byte feeds
+  // several of them), so their SUM overstates what one fix would win. Grade
+  // and headline the single largest measured saving; the rest are secondary.
+  const offenders = Object.entries(lab.deliveryAudits ?? {})
+    .filter(([, ms]) => ms > 0)
+    .sort((left, right) => right[1] - left[1]);
+  const savings = offenders.length ? offenders[0][1] : 0;
   let score: number;
   if (savings <= DELIVERY_SAVINGS_GOOD_MS) {
     score = linearBand(savings, 0, DELIVERY_SAVINGS_GOOD_MS, CWV_GOOD_BAND);
@@ -3608,11 +4291,9 @@ export function checkAssetDelivery(ev: PageEvidence): CheckOutcome {
       ),
     );
   }
-  const offenders = Object.entries(lab.deliveryAudits ?? {})
-    .filter(([, ms]) => ms > 0)
-    .sort((left, right) => right[1] - left[1]);
   const evidence = {
-    total_savings_ms: savings,
+    largest_saving_ms: savings,
+    largest_saving_audit: offenders.length ? offenders[0][0] : null,
     audits: Object.fromEntries(offenders.slice(0, CHECK_EVIDENCE_SAMPLE_LIMIT)),
     strategy: lab.strategy,
   };
@@ -3620,26 +4301,61 @@ export function checkAssetDelivery(ev: PageEvidence): CheckOutcome {
     return outcome(
       "pass",
       score,
-      `How this page's files are delivered costs it about ${pythonRound(savings)}ms ` +
+      `The biggest delivery cost on this page is about ${pythonRound(savings)}ms ` +
         `(${measuredOn(lab)}) — nothing worth chasing.`,
       0,
       evidence,
     );
   }
-  const names = offenders
-    .slice(0, 4)
+  const [topName, topMs] = offenders[0];
+  const topLabel = DELIVERY_AUDIT_LABELS[topName] ?? topName;
+  const others = offenders
+    .slice(1, 4)
     .map(([name]) => DELIVERY_AUDIT_LABELS[name] ?? name)
     .join(", ");
+  const secondary = others
+    ? ` Smaller, overlapping causes (their savings are not additive): ${others}.`
+    : "";
   return outcome(
     performanceStatus(score),
     score,
-    `About ${pyFixed(pythonRound(savings) / 1000, 1)}s of this page's load is spent on how ` +
-      "its files are delivered rather than on the page itself " +
-      `(${measuredOn(lab)}). The measured causes: ${names}. These are the ` +
-      "standard build-and-hosting fixes — nothing about your content has to change.",
+    `The biggest delivery cost on this page is ${topLabel}: about ` +
+      `${pyFixed(pythonRound(topMs) / 1000, 1)}s of its load (${measuredOn(lab)}).${secondary} ` +
+      "This is a build-and-hosting fix — nothing about your content has to change.",
     offenders.length,
     evidence,
   );
+}
+
+const SECOND_LEVEL_LABELS: ReadonlySet<string> = new Set([
+  "co",
+  "com",
+  "org",
+  "net",
+  "gov",
+  "ac",
+  "edu",
+]);
+
+/**
+ * Registrable domain of a host (`cdn.example.co.uk` -> `example.co.uk`).
+ * Heuristic, no public-suffix list: good enough to separate the page owner's
+ * own hosts (incl. its CDN subdomain) from other companies' hosts.
+ */
+function siteKey(host: string): string {
+  const labels = host
+    .toLowerCase()
+    .split(":")[0]
+    .split(".")
+    .filter((label) => label !== "");
+  if (
+    labels.length >= 3 &&
+    labels[labels.length - 1].length === 2 &&
+    SECOND_LEVEL_LABELS.has(labels[labels.length - 2])
+  ) {
+    return labels.slice(-3).join(".");
+  }
+  return labels.slice(-2).join(".");
 }
 
 export function checkCachingPolicy(ev: PageEvidence): CheckOutcome {
@@ -3657,21 +4373,67 @@ export function checkCachingPolicy(ev: PageEvidence): CheckOutcome {
       COLLECT_PAGESPEED,
     );
   }
-  const staticBytes = lab.cacheStaticBytes;
+  const pageSite = siteKey(urlSplit(ev.url).netloc);
+  const byHost = lab.cacheStaticBytesByHost ?? {};
+  const hasByHost = Object.keys(byHost).length > 0;
+  let staticBytes = hasByHost
+    ? Object.entries(byHost)
+        .filter(([host]) => siteKey(host) === pageSite)
+        .reduce((total, [, bytes]) => total + bytes, 0)
+    : lab.cacheStaticBytes;
+
+  const firstParty = (resource: CacheShortTtlResource): boolean =>
+    siteKey(urlSplit(String(resource?.url || "")).netloc) === pageSite;
+
+  const allShort = (lab.cacheShortTtlResources ?? []).filter((resource) => {
+    const lifetime = labNumber(resource?.cache_lifetime_ms);
+    return lifetime !== null && lifetime < CACHE_WELL_CACHED_MIN_MS;
+  });
+  const shortTtl = allShort.filter((resource) => firstParty(resource));
+  const thirdParty = allShort.filter((resource) => !firstParty(resource));
+  const thirdPartyHosts = [
+    ...new Set(
+      thirdParty.map((resource) => urlSplit(String(resource?.url || "")).netloc),
+    ),
+  ]
+    .filter((host) => host !== "")
+    .sort();
+  if (!hasByHost) {
+    // Without a per-host breakdown the denominator still contains third
+    // parties; remove the ones we can see so they never count against it.
+    staticBytes = Math.max(
+      0,
+      staticBytes -
+        thirdParty.reduce(
+          (total, resource) => total + (labNumber(resource?.total_bytes) ?? 0),
+          0,
+        ),
+    );
+  }
+  const evidence: Record<string, unknown> = {
+    static_bytes: staticBytes,
+    strategy: lab.strategy,
+    third_party_not_yours: sampleUrls(
+      thirdParty.map((resource) => String(resource?.url || "")),
+    ),
+    third_party_hosts: thirdPartyHosts.slice(0, CHECK_EVIDENCE_SAMPLE_LIMIT),
+  };
+  const thirdNote = thirdParty.length
+    ? ` ${thirdParty.length} more file(s) from other companies ` +
+      `(${thirdPartyHosts.slice(0, 3).join(", ")}) also expire early, but they are ` +
+      "not yours to change and are not counted."
+    : "";
   if (staticBytes < CACHE_NEGLIGIBLE_STATIC_BYTES) {
     return outcome(
       "pass",
       100,
       "This page loads almost no images, styling or code files of its own, " +
-        "so how long they are cached makes no practical difference.",
+        "so how long they are cached makes no practical difference." +
+        thirdNote,
       0,
-      { static_bytes: staticBytes },
+      evidence,
     );
   }
-  const shortTtl = (lab.cacheShortTtlResources ?? []).filter((resource) => {
-    const lifetime = labNumber(resource?.cache_lifetime_ms);
-    return lifetime !== null && lifetime < CACHE_WELL_CACHED_MIN_MS;
-  });
   const poorlyCachedBytes = Math.min(
     staticBytes,
     shortTtl.reduce(
@@ -3681,33 +4443,35 @@ export function checkCachingPolicy(ev: PageEvidence): CheckOutcome {
   );
   const wellCachedBytes = Math.max(0, staticBytes - poorlyCachedBytes);
   const score = clampScore(pythonRound((100 * wellCachedBytes) / staticBytes));
-  const evidence = {
-    static_bytes: staticBytes,
-    well_cached_bytes: wellCachedBytes,
-    short_ttl_urls: sampleUrls(
-      shortTtl.map((resource) => String(resource?.url ?? "")),
-    ),
-    strategy: lab.strategy,
-  };
+  evidence.well_cached_bytes = wellCachedBytes;
+  evidence.short_ttl_urls = sampleUrls(
+    shortTtl.map((resource) => String(resource?.url || "")),
+  );
+  evidence.list_truncated = lab.cacheListTruncated ?? false;
   if (score >= PERFORMANCE_PASS_SCORE) {
     return outcome(
       "pass",
       score,
-      "Visitors' browsers keep this page's images, styling and code for a " +
-        "month or more, so returning visits reuse them instead of " +
-        "re-downloading them.",
+      "Visitors' browsers keep this page's own images, styling and code for " +
+        "a month or more, so returning visits reuse them instead of " +
+        "re-downloading them." +
+        thirdNote,
       0,
       evidence,
     );
   }
   const share = pythonRound((100 * poorlyCachedBytes) / staticBytes);
+  const truncated = lab.cacheListTruncated === true;
+  const count = truncated ? `at least ${shortTtl.length}` : String(shortTtl.length);
+  const shareText = truncated ? `At least ${share}%` : `${share}%`;
   return outcome(
     performanceStatus(score),
     score,
-    `${share}% of this page's images, styling and code are told to expire in ` +
-      `under a month (${shortTtl.length} files, ${measuredOn(lab)}), so people ` +
+    `${shareText} of this page's own images, styling and code are told to ` +
+      `expire in under a month (${count} files, ${measuredOn(lab)}), so people ` +
       "who come back download them all over again — a slower repeat visit for " +
-      "no benefit. It is a one-line hosting setting, not a content change.",
+      "no benefit. It is a one-line hosting setting, not a content change." +
+      thirdNote,
     shortTtl.length,
     evidence,
   );
@@ -3717,6 +4481,175 @@ export function checkCachingPolicy(ev: PageEvidence): CheckOutcome {
 function labNumber(value: unknown): number | null {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
   return value;
+}
+
+// ---------------------------------------------------------------------------
+// JS app shells and dead ends — mirror of seo_audit.page_is_js_shell,
+// check_content_needs_rendering, check_dead_end_page.
+// ---------------------------------------------------------------------------
+
+/**
+ * KNOB MIRROR: `knowledge.scraper.audit.js_shell_word_limit` = 20 (Python
+ * `app_shell.JS_SHELL_WORD_LIMIT_DEFAULT`). Fewer visible words than this, plus the
+ * other shell signals, is an unrendered app frame.
+ */
+export const JS_SHELL_WORD_LIMIT = 20;
+
+/** The `is_js_shell` page fact; null when a signal was never captured. */
+export function pageIsJsShell(
+  ev: PageEvidence,
+  wordLimit: number = JS_SHELL_WORD_LIMIT,
+): boolean | null {
+  const words =
+    ev.appShellWords !== null && ev.appShellWords !== undefined
+      ? ev.appShellWords
+      : ev.wordCount;
+  const headingCount =
+    ev.headings === null || ev.headings === undefined ? null : ev.headings.length;
+  const signals = [
+    ev.appRoot,
+    ev.executableScript,
+    words,
+    headingCount,
+    ev.linkCount,
+    ev.imageCount,
+  ];
+  if (signals.some((signal) => signal === null || signal === undefined)) {
+    return null;
+  }
+  return Boolean(
+    ev.appRoot &&
+      ev.executableScript &&
+      (words ?? 0) < wordLimit &&
+      headingCount === 0 &&
+      ev.linkCount === 0 &&
+      ev.imageCount === 0,
+  );
+}
+
+export const JS_SHELL_NOT_APPLICABLE_REASON =
+  "This page draws its content with JavaScript after it loads, and this crawl read it " +
+  "without running that JavaScript, so there is no content to judge here. See the " +
+  '"content needs rendering" finding for how to crawl it rendered.';
+
+export function jsShellNotApplicable(ev: PageEvidence): CheckOutcome | null {
+  if (pageIsJsShell(ev)) {
+    return outcome("n_a", null, JS_SHELL_NOT_APPLICABLE_REASON);
+  }
+  return null;
+}
+
+/** Wrap a CONTENT check so an app shell answers n_a instead of a false finding. */
+function unlessJsShell(
+  check: (ev: PageEvidence) => CheckOutcome,
+): (ev: PageEvidence) => CheckOutcome {
+  return (ev: PageEvidence) => jsShellNotApplicable(ev) ?? check(ev);
+}
+
+function isIndexable2xx(ev: PageEvidence): boolean {
+  const status = ev.httpStatus;
+  return (
+    status !== null &&
+    status !== undefined &&
+    status >= 200 &&
+    status < 300 &&
+    ev.noindex === false &&
+    ev.canonicalMatches !== false
+  );
+}
+
+function shellWords(ev: PageEvidence): number {
+  const words =
+    ev.appShellWords !== null && ev.appShellWords !== undefined
+      ? ev.appShellWords
+      : ev.wordCount;
+  return words ?? 0;
+}
+
+export function checkContentNeedsRendering(ev: PageEvidence): CheckOutcome {
+  const status = ev.httpStatus;
+  if (status !== null && status !== undefined && !(status >= 200 && status < 300)) {
+    return outcome(
+      "n_a",
+      null,
+      `This URL answers with HTTP ${status}, so it has no page content to render.`,
+    );
+  }
+  const shell = pageIsJsShell(ev);
+  if (shell === null) {
+    return outcome(
+      "n_a",
+      null,
+      "We haven't recorded whether this page is drawn by JavaScript yet.",
+      0,
+      null,
+      RECAPTURE_PAGE,
+    );
+  }
+  if (!shell) {
+    return outcome("pass", 100, "The page's content is in the HTML we fetched.");
+  }
+  return outcome(
+    "fail",
+    20,
+    `The HTML we fetched is an empty app frame (${shellWords(ev)} words, no headings, ` +
+      "links or images) that JavaScript fills in after it loads. This crawl read it without " +
+      "running JavaScript, so its content was not audited. Turn on rendered crawling: in " +
+      'this site\'s settings set Render mode to "Browser always", then crawl again.',
+    1,
+  );
+}
+
+export function checkDeadEndPage(ev: PageEvidence): CheckOutcome {
+  const status = ev.httpStatus;
+  if (status !== null && status !== undefined && !(status >= 200 && status < 300)) {
+    return outcome(
+      "n_a",
+      null,
+      `This URL answers with HTTP ${status}, so it is not a page people land on.`,
+    );
+  }
+  if (
+    ev.internalLinkCount === null ||
+    ev.internalLinkCount === undefined ||
+    ev.noindex === null ||
+    ev.noindex === undefined ||
+    status === null ||
+    status === undefined
+  ) {
+    return outcome(
+      "n_a",
+      null,
+      "We haven't recorded this page's links yet.",
+      0,
+      null,
+      RECAPTURE_PAGE,
+    );
+  }
+  const shell = jsShellNotApplicable(ev);
+  if (shell) return shell;
+  if (!isIndexable2xx(ev)) {
+    return outcome(
+      "n_a",
+      null,
+      "This page is noindexed or names another page as its canonical, so it is not " +
+        "meant to be a page people arrive on from search.",
+    );
+  }
+  if (ev.internalLinkCount > 0) {
+    return outcome(
+      "pass",
+      100,
+      `${ev.internalLinkCount} internal link(s) lead on from this page.`,
+    );
+  }
+  return outcome(
+    "warn",
+    70,
+    "This page has no links to any other page on the site — a visitor who lands here " +
+      "from search has nowhere to go next, and crawlers stop here.",
+    1,
+  );
 }
 
 /**
@@ -3733,12 +4666,12 @@ export const PAGE_CHECKS: Record<
   title_length: checkTitleLength,
   meta_description_presence: checkMetaDescriptionPresence,
   meta_description_length: checkMetaDescriptionLength,
-  h1_presence: checkH1Presence,
-  heading_hierarchy: checkHeadingHierarchy,
-  thin_content: checkThinContent,
-  content_depth: checkContentDepth,
-  text_html_ratio: checkTextHtmlRatio,
-  image_alt_presence: checkImageAltPresence,
+  h1_presence: unlessJsShell(checkH1Presence),
+  heading_hierarchy: unlessJsShell(checkHeadingHierarchy),
+  thin_content: unlessJsShell(checkThinContent),
+  content_depth: unlessJsShell(checkContentDepth),
+  text_html_ratio: unlessJsShell(checkTextHtmlRatio),
+  image_alt_presence: unlessJsShell(checkImageAltPresence),
   image_dimension_attrs: checkImageDimensionAttrs,
   image_lazy_loading: checkImageLazyLoading,
   image_modern_format: checkImageModernFormat,
@@ -3757,7 +4690,9 @@ export const PAGE_CHECKS: Record<
   redirect_chain: checkRedirectChain,
   redirect_loop: checkRedirectLoop,
   temporary_redirect_usage: checkTemporaryRedirectUsage,
-  soft_404_detection: checkSoft404Detection,
+  soft_404_detection: unlessJsShell(checkSoft404Detection),
+  content_needs_rendering: checkContentNeedsRendering,
+  dead_end_page: checkDeadEndPage,
   pagination_markup: checkPaginationMarkup,
   mixed_content: checkMixedContent,
   https_enforcement: checkHttpsEnforcement,
