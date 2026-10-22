@@ -7,7 +7,7 @@
 // LAZY vs STATIC (2026-10-13, first-load campaign): component slots load through ONE
 // implementation module (chatUiRegistrationBaseImpl.ts) via `lazySlot` below. STATIC on purpose:
 //   · DockedSidePanel — the (core) shell's chat dock draws it on first paint.
-//   · CopyButtons, EntityRef — drawn inside kind trees rendered synchronously (static markup /
+//   · CopyButtons — drawn inside kind trees rendered synchronously (static markup /
 //     SSR) and reached statically elsewhere anyway (modeled saving ~0).
 //   · AnswerValueView → AnswerValueSlot: text draws at once; a structured value loads the kind
 //     stack through the kind front door's existing lazy edge (a static AnswerValueView here put
@@ -38,7 +38,6 @@ import {
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { AnswerValueSlot } from "@/components/official/structured-value/AnswerValueSlot";
-import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { DockedSidePanel } from "@/components/official/side-panel/DockedSidePanel";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
@@ -247,7 +246,6 @@ registerChatUi({
   InfoHint,
   AnswerValueView: AnswerValueSlot,
   ErrorAlchemyMenu,
-  EntityRef,
   AdvancedMenu,
   DockedSidePanel,
   EditableContextMenu,
