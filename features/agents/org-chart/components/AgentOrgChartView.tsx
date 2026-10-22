@@ -235,9 +235,12 @@ export function AgentOrgChartView({
   const health = orgChartHealth(forest, {
     activity: activity.byAgentId,
     spreadWarnAt,
-    isOpenPosition: (id) => {
+    seatGap: (id) => {
       const p = positions.find((x) => x.id === id);
-      return Boolean(p && !p.filledByUserId && !(p.mandateId && seatJobs[p.mandateId]?.holderAgentId));
+      if (!p || p.filledByUserId) return null;
+      if (!p.mandateId) return "open";
+      const job = seatJobs[p.mandateId];
+      return job && !job.retired && job.holderAgentId ? null : "needs_agent";
     },
   });
   const seriousCount = health.filter((h) => h.serious).reduce((n, h) => n + h.keys.length, 0);
