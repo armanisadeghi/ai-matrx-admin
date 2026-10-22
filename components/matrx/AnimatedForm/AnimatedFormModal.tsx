@@ -92,12 +92,15 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
                             style={{ maxHeight: "90dvh" }} // Set max height to 90% of the viewport height to ensure modal is contained within the viewport
                             {...props}
                         >
-                            <button
-                                onClick={closeModal}
-                                className="absolute top-2 right-2 text-foreground hover:text-primary"
-                            >
-                                &times;
-                            </button>
+                            <div className="flex items-center justify-end gap-2 pb-2">
+                                <button
+                                    onClick={closeModal}
+                                    aria-label="Close"
+                                    className="shrink-0 text-foreground hover:text-primary"
+                                >
+                                    &times;
+                                </button>
+                            </div>
                             <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary max-h-[70dvh]"> {/* Ensure form content can scroll */}
                                 <AnimatedForm
                                     fields={fields}

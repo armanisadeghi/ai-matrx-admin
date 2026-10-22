@@ -323,8 +323,8 @@ export default function EnumsContainer({
                   </label>
                   <div className="w-[150px]">
                     {customSchemaSearch ? (
-                      <div className="relative">
-                        <Input adornment="end"
+                      <div className="flex items-center gap-1">
+                        <Input
                           type="text"
                           placeholder="Enter schema name..."
                           value={filter.schema || ""}
@@ -336,7 +336,7 @@ export default function EnumsContainer({
                           icon={<X />} aria-label="Close"
                           type="button"
                           variant="quiet"
-                          className="absolute right-0 top-0"
+                          className="shrink-0"
                           onClick={() => setCustomSchemaSearch(false)}
                         />
                       </div>

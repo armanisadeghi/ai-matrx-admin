@@ -139,19 +139,19 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                             style={{maxHeight: "95dvh"}}
                             {...props}
                         >
-                            <button
-                                onClick={closeModal}
-                                className="absolute top-2 right-2 text-foreground hover:text-primary"
-                            >
-                                &times;
-                            </button>
-
-                            {(title || description) && (
-                                <div className="mb-2">
+                            <div className="mb-2 flex items-start gap-2">
+                                <div className="min-w-0 flex-1">
                                     {title && <h2 className="text-xl font-semibold">{title}</h2>}
                                     {description && <p className="text-sm text-muted-foreground">{description}</p>}
                                 </div>
-                            )}
+                                <button
+                                    onClick={closeModal}
+                                    aria-label="Close"
+                                    className="shrink-0 text-foreground hover:text-primary"
+                                >
+                                    &times;
+                                </button>
+                            </div>
 
                             {tabs || customTab ? (
                                 <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
