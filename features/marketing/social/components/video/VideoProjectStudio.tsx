@@ -48,7 +48,7 @@ import { useExpiredSessionGuard } from "../../video/session";
 import { useLocalRenderAllowed } from "../../video/studio-hooks";
 import type { VariantAnswer, VideoProjectAnswer } from "../../video/types";
 import { useSocials } from "../SocialsContext";
-import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, OutputDownload, RunLog, ZipAllButton, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
+import { CaptionLookPicker, CompositionPreview, CostLine, FailureLine, MountWhenVisible, OutputDownload, RunLog, ZipAllButton, closeSteps, pendingMediaCount, pushStep, type RunStep } from "./StudioParts";
 import { mediaLabel } from "./VideoCloneNew";
 import { MusicPicker } from "./MusicPicker";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -982,7 +982,9 @@ function VariantCard({ v, doc, head, outcome, projectName, blocked, fileId }: { 
         </Badge>
       </div>
       {materialized?.ok ? (
-        <CompositionPreview doc={materialized.doc} />
+        <MountWhenVisible ratio={`${materialized.doc.timeline.width} / ${materialized.doc.timeline.height}`}>
+          <CompositionPreview doc={materialized.doc} />
+        </MountWhenVisible>
       ) : (
         <div className="flex items-center justify-center rounded-lg bg-muted p-4 type-meta text-muted-foreground" style={{ aspectRatio: "9 / 16" }}>
           {rebased ? `Can't show this on v${head} (made on v${v.baseVersion}); it is rebased when rendered` : "Can't preview"}
