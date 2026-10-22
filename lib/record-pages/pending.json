@@ -858,7 +858,6 @@
   "route:/toast-copy-check",
   "route:/tool-call-visualization/admin",
   "route:/tools/pdf-extractor",
-  "route:/tools/pdf-extractor/admin",
   "route:/tools/product-capture",
   "route:/tools/product-capture/admin",
   "route:/tools/product-capture/all",

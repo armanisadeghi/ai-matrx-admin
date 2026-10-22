@@ -78,7 +78,6 @@ export const ADMIN_LANE_PATH_PREFIXES = [
   "/reports/admin",
   "/shapes/admin",
   "/tool-call-visualization/admin",
-  "/tools/pdf-extractor/admin",
   "/tools/product-capture/admin",
   "/transcripts/admin",
   "/war-room/admin",

@@ -364,7 +364,6 @@ route	tree node	how found today	note
 /files/admin	Productivity › Drive	no menu; linked in-app (2 places)	
 /files/all/[[...path]]	Productivity › Drive	opened from a list (under menu: Files)	
 /files/f/[fileId]	Productivity › Drive	opened from a record link	
-/files/f/[fileId]/studio	Productivity › Drive	opened from a record link	
 /files/folders	Productivity › Drive	menu: Files › Folders	
 /files/google-drive	Productivity › Drive	menu: Files › Google Drive	
 /files/photos	Productivity › Drive	menu: Files › Photos	

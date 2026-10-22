@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import PdfStudioRouteClient from "./PdfStudioRouteClient";
 import PdfExtractorLanding from "@/features/auth/components/module-landing/landings/PdfExtractorLanding";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
@@ -26,6 +27,9 @@ export default async function PdfExtractorStudioPage({
   const { isAuthenticated } = await getSessionVerdict();
   if (!isAuthenticated) return <PdfExtractorLanding />;
   const { file, doc } = await searchParams;
+  // A file opens in the PDF workspace. The studio below stays for processed documents (`?doc=`) and the
+  // document list, whose AI clean / chunker / stores / lineage tools are not in the workspace yet.
+  if (file && !doc) redirect(`/pdf/${encodeURIComponent(file)}`);
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
       <Suspense fallback={null}>

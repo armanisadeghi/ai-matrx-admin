@@ -34,7 +34,8 @@ describe("the /pdf pages", () => {
 
   it("the workspace route mounts its surface and the package chrome", () => {
     const route = read("features/pdf/workspace/PdfWorkspaceRoute.tsx");
-    expect(route).toContain('"matrx-user/pdf-workspace"');
+    expect(route).toContain("PDF_WORKSPACE_SURFACE_NAME");
+    expect(read("features/pdf/workspace/WorkspaceSurface.tsx")).toContain('"matrx-user/analysis-studio"');
     expect(route).toContain("<RecordPageHeader");
     expect(route).toContain("<PdfWorkspace host={host}");
   });

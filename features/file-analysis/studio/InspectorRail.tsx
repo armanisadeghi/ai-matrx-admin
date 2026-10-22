@@ -122,6 +122,9 @@ const TABS: Array<{
   { id: "search", label: "Search", icon: FileSearch, group: "tools" },
 ];
 
+/** Every tab the inspector offers (the workspace capability test reads this list). */
+export const STUDIO_INSPECTOR_TAB_IDS: readonly StudioInspectorTab[] = TABS.map((t) => t.id);
+
 export function InspectorRail({
   fileId,
   activeTab,

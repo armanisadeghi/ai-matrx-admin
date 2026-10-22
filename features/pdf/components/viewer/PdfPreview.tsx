@@ -30,7 +30,7 @@
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
-import { usePdfRemoteSource } from "@/features/files/hooks/usePdfRemoteSource";
+import { usePdfRemoteSource } from "@/features/pdf/hooks/usePdfRemoteSource";
 import { isAuthenticatedFileBytesUrl } from "@/features/files/handler/utils/python-base";
 import { PdfDocumentViewer, PdfSourceUnavailable } from "@ai-matrx/media/viewers/pdf";
 

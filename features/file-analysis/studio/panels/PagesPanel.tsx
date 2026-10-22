@@ -46,7 +46,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { usePages } from "@/features/file-analysis/hooks/usePages";
 import { usePageThumbnail } from "@/features/file-analysis/hooks/usePageThumbnail";
-import { usePdfClient as usePdfDemoApi } from "@/features/pdf/api/client";
+import { usePdfClient } from "@/features/pdf/api/client";
 import type { PdfBinaryResult as BinaryResult } from "@/features/pdf/api/client";
 import * as Api from "@/features/file-analysis/api/file-analysis";
 import { buildPdfSourceFromFileId } from "@/features/pdf/utils/source";
@@ -62,7 +62,7 @@ interface Props {
 
 export function PagesPanel({ fileId, activePageNumber, onSelectPage }: Props) {
   const { pages, loading, error: pagesError, refetch } = usePages(fileId);
-  const pdfApi = usePdfDemoApi();
+  const pdfApi = usePdfClient();
   const downloadBlob = useDownloadBlob();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
