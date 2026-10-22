@@ -51,23 +51,63 @@
  *   pnpm check:parse --fix           # repair the injected-import class, then re-check
  *   pnpm check:parse --advisory      # report, exit 0 (human triage only)
  *   pnpm check:parse --self-test     # prove the guard catches the exact 2026-09-07 shape
+ *   pnpm check:parse --staged        # the STAGED (index) content of staged code files — pre-commit
+ *   node scripts/check-parse.mjs --files <path…>   # files just written — the edit-time agent hook
+ *   pnpm check:parse:write-time-self-test          # prove --staged and --files red, then green
+ *
+ * WRITE TIME, NEVER RELEASE TIME (Arman, 2026-10-22: "nothing can stop the release, once it's
+ * triggered"). 12 of 20 production builds failed in two days, several 7-9 min into the compile on
+ * "Merge conflict marker encountered" / "Expression expected". The catch is where the file is
+ * written: `--files` runs from the agents' PostToolUse hook on every Edit/Write (matrx Claude
+ * plugin, hooks/edit_parse_guard.py), `--staged` from scripts/githooks/pre-commit; the sweep
+ * (scripts/sync-main.py) holds a file that does not parse via check-sweep-resolves.mjs and skips
+ * a marked one. `--files` / `--staged` also judge `.js/.jsx/.mjs/.cjs`, and `--files` checks any
+ * other text file for conflict-marker lines. Under MATRX_RELEASE_PATH=1 `--staged` reports only.
  *
  * Exit: 0 clean · 1 unparseable file(s) · 3 self-test failed
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
 import ts from "typescript";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+// `--staged` judges the repository it is run IN (the pre-commit hook's cwd); everything else this one.
+const ROOT = process.argv.includes("--staged")
+  ? execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim()
+  : resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ARGS = process.argv.slice(2);
 const ADVISORY = ARGS.includes("--advisory");
 const SELF_TEST = ARGS.includes("--self-test");
 const CHANGED = ARGS.includes("--changed");
 const FIX = ARGS.includes("--fix");
+const STAGED = ARGS.includes("--staged");
+const FILES = ARGS.includes("--files") ? ARGS.slice(ARGS.indexOf("--files") + 1).filter((a) => !a.startsWith("--")) : null;
+const WRITE_TIME_SELF_TEST = ARGS.includes("--write-time-self-test");
+
+/** Code files the write-time modes judge (the full sweep stays `.ts`/`.tsx`). */
+const CODE_FILE = /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/;
+const PROSE_FILE = /\.(md|mdx|txt|rst)$/i;
+/** A git conflict-marker line: `<<<<<<< ` / `>>>>>>> ` anywhere; a bare `=======` too outside prose. */
+const MARKER_LINE = /^(<{7}|>{7})(?: |$)/m;
+const MID_MARKER_LINE = /^={7}(?: |$)/m;
+
+function scriptKindOf(file) {
+  if (/\.(tsx|jsx|js)$/.test(file)) return ts.ScriptKind.TSX; // Next accepts JSX in .js
+  if (/\.(mjs|cjs)$/.test(file)) return ts.ScriptKind.JS;
+  return ts.ScriptKind.TS;
+}
+
+/** A conflict-marker line in a NON-code file (code files get the parser's own TS1185). */
+export function markerFinding(file, source) {
+  const m = MARKER_LINE.exec(source) ?? (PROSE_FILE.test(file) ? null : MID_MARKER_LINE.exec(source));
+  if (!m) return null;
+  const line = source.slice(0, m.index).split("\n").length;
+  return { code: "MARKER", line, column: 1, message: "git conflict marker line; resolve the conflict and delete the marker lines" };
+}
 
 /* ── the parser ───────────────────────────────────────────────────────────── */
 
@@ -82,7 +122,7 @@ export function parseErrors(file, source) {
     source,
     ts.ScriptTarget.Latest,
     /* setParentNodes */ false,
-    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    scriptKindOf(file),
   );
   // `parseDiagnostics` is where the TS parser records TS1003/TS1005/TS1128 and
   // friends. It is not on the public SourceFile type, hence the cast-by-index.
@@ -137,7 +177,7 @@ export function duplicateImportFindings(file, source) {
     source,
     ts.ScriptTarget.Latest,
     false,
-    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    scriptKindOf(file),
   );
   const seen = new Set();
   const findings = [];
@@ -220,6 +260,15 @@ const git = (args) =>
     .filter(Boolean);
 
 function repoFiles() {
+  if (FILES) {
+    return FILES.map((f) => (f.startsWith("/") ? f : resolve(process.cwd(), f)))
+      .map((f) => (f.startsWith(`${ROOT}/`) ? f.slice(ROOT.length + 1) : f))
+      .filter((f) => !f.includes("node_modules/"));
+  }
+  if (STAGED) {
+    return git(["diff", "--cached", "--name-only", "--diff-filter=ACMR"])
+      .filter((f) => CODE_FILE.test(f) && !f.includes("node_modules/") && !f.startsWith("_conflicts/"));
+  }
   const isTs = (f) => /\.tsx?$/.test(f) && !f.includes("node_modules/");
   if (!CHANGED) return git(["ls-files", "*.ts", "*.tsx"]).filter(isTs);
 
@@ -337,7 +386,50 @@ function selfTest() {
 
 /* ── main ─────────────────────────────────────────────────────────────────── */
 
+/** RED then GREEN for `--files` and `--staged`, in a throwaway git repo (never this checkout). */
+function writeTimeSelfTest() {
+  const dir = mkdtempSync(resolve(tmpdir(), "parse-write-time-"));
+  const me = fileURLToPath(import.meta.url);
+  const run = (args) => {
+    try { execFileSync(process.execPath, [me, ...args], { cwd: dir, stdio: "pipe", env: { ...process.env, MATRX_RELEASE_PATH: "0" } }); return { code: 0, out: "" }; }
+    catch (e) { return { code: e.status, out: String(e.stderr) }; }
+  };
+  const g = (...a) => execFileSync("git", a, { cwd: dir, stdio: "pipe" });
+  const put = (f, src) => { mkdirSync(dirname(resolve(dir, f)), { recursive: true }); writeFileSync(resolve(dir, f), src); };
+  const results = [];
+  const check = (name, ok) => results.push({ name, ok });
+  try {
+    g("init", "-q"); g("config", "user.email", "t@example.com"); g("config", "user.name", "t");
+    put("a.tsx", "export const A = 1;\n<<<<<<< HEAD\nconst b = 1;\n=======\nconst b = 2;\n>>>>>>> origin/main\n");
+    put("b.ts", "export const x = (;\n");
+    put("c.mjs", "export const y = 1;\n");
+    put("d.css", ".a{}\n>>>>>>> theirs\n");
+    put("doc.md", "Title\n=======\n");
+    let r = run(["--files", resolve(dir, "a.tsx")]);
+    check("--files: a conflict marker in .tsx is RED, naming file:line", r.code === 1 && /a\.tsx:2:/.test(r.out));
+    r = run(["--files", resolve(dir, "b.ts")]);
+    check("--files: 'Expression expected' is RED", r.code === 1 && /Expression expected/.test(r.out));
+    check("--files: a marker in a stylesheet is RED", run(["--files", resolve(dir, "d.css")]).code === 1);
+    check("--files: clean .mjs and a prose ======= underline are GREEN", run(["--files", resolve(dir, "c.mjs"), resolve(dir, "doc.md")]).code === 0);
+    g("add", "a.tsx", "b.ts", "c.mjs");
+    r = run(["--staged"]);
+    check("--staged: staged marker + syntax error are RED", r.code === 1 && /a\.tsx/.test(r.out) && /b\.ts/.test(r.out));
+    put("a.tsx", "export const A = 1;\n"); // fixed on disk only: the INDEX is what is judged
+    check("--staged judges the index, not the disk", run(["--staged"]).code === 1);
+    put("b.ts", "export const x = 1;\n");
+    g("add", "a.tsx", "b.ts");
+    check("--staged: fixed and re-staged is GREEN", run(["--staged"]).code === 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+  for (const r of results) console.log(`  ${r.ok ? "✓" : "✗"} ${r.name}`);
+  const ok = results.every((r) => r.ok);
+  console.log(ok ? "[parse] write-time self-test PASSED" : "[parse] write-time self-test FAILED");
+  process.exit(ok ? 0 : 3);
+}
+
 function main() {
+  if (WRITE_TIME_SELF_TEST) writeTimeSelfTest();
   if (SELF_TEST) {
     console.log(
       "[parse] self-test — the injected-import class (2026-09-07, 7 files, shared dev server down):",
@@ -356,9 +448,16 @@ function main() {
     .map((file) => {
       let source;
       try {
-        source = readFileSync(resolve(ROOT, file), "utf8");
+        source = STAGED
+          ? execFileSync("git", ["show", `:${file}`], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 << 20 })
+          : readFileSync(resolve(ROOT, file), "utf8");
       } catch {
         return null; // deleted between listing and read
+      }
+      if (!CODE_FILE.test(file)) {
+        if (source.includes("\0")) return null; // binary
+        const marker = markerFinding(file, source);
+        return marker ? { file, errors: [marker] } : null;
       }
       const errors = parseErrors(file, source);
       const nul = nulByteFinding(file, source);
@@ -382,6 +481,28 @@ function main() {
     findings = findings.filter((f) => !repaired.includes(f.file));
   }
 
+  if (FILES || STAGED) {
+    if (findings.length === 0) {
+      if (STAGED) console.log(`[parse] OK — ${files.length} staged code file(s) parse.`);
+      process.exit(0);
+    }
+    console.error(
+      FILES
+        ? `[parse] THE FILE YOU JUST WROTE DOES NOT BUILD. Fix it now, before any other step — Turbopack refuses it and every release fails until it is fixed:`
+        : `COMMIT REFUSED: staged file(s) do not parse — Turbopack refuses them and the release build fails:`,
+    );
+    for (const { file, errors } of findings) {
+      for (const e of errors.slice(0, 3)) {
+        console.error(`  ${file}:${e.line}:${e.column}  ${typeof e.code === "number" ? `TS${e.code}: ` : ""}${e.message}`);
+      }
+    }
+    if (STAGED && process.env.MATRX_RELEASE_PATH === "1") {
+      console.error("  (MATRX_RELEASE_PATH=1: reported, not refused)");
+      process.exit(0);
+    }
+    process.exit(1);
+  }
+
   if (findings.length === 0) {
     console.log(
       `[parse] OK — all ${files.length} tracked TypeScript file(s) parse.` +
@@ -403,7 +524,7 @@ function main() {
     console.error(`  ${file}`);
     for (const e of errors.slice(0, 5)) {
       console.error(
-        e.code === "NUL" || e.code === "DUP-IMPORT"
+        typeof e.code !== "number"
           ? `    ${file}:${e.line}:${e.column} — ${e.message}`
           : `    ${file}:${e.line}:${e.column}  TS${e.code}: ${e.message}`,
       );
