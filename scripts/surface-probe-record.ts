@@ -32,125 +32,21 @@
 import process from "node:process";
 import { connectDirect, loadDbEnv } from "./lib/direct-db";
 
-export const SURFACE_PROBE_VERSION = "surface-probe@2026-10-22.w0d";
-/** The sanctioned test identity. A probe signed in as anyone else is never recorded. */
-export const PROBE_IDENTITY = "admin@admin.com";
-
-export interface ProbeRecordInput {
-  surface: string;
-  route: string;
-  recordId: string | null;
-  base: string;
-  supplied: string[];
-  suppliedEmpty: string[];
-  /** A deployment without keyed rows: label + preview line per row ("Not available" = absent). */
-  byLabel?: { label: string; line: string }[];
-  surfaceNamed: boolean;
-  signedIn: boolean;
-  probedAs: { email: string | null; userId: string | null; role: string };
-  errors: string[];
-}
-
-export interface ChainValue {
-  name: string;
-  label: string | null;
-  always_available: boolean;
-  auto_context: boolean | null;
-}
-
-export interface LastCheckProbe {
-  status: "pass" | "fail";
-  at: string;
-  route: string;
-  recordId: string | null;
-  base: string;
-  declaredOn: string[];
-  required: string[];
-  conditional: string[];
-  suppliedValues: string[];
-  suppliedEmpty: string[];
-  readMode: "keys" | "labels";
-  unmappedLabels: string[];
-  missing: string[];
-  conditionalMissing: string[];
-  reasons: string[];
-  probedAs: { email: string | null; userId: string | null; role: string };
-  probeVersion: string;
-}
-
-/** Pure: the done-bar (c) verdict from the chain's values and what the page supplied. */
-export function judgeProbe(input: ProbeRecordInput, chain: ChainValue[], at: string): LastCheckProbe {
-  const declaredOn = chain.filter((v) => v.auto_context !== false).map((v) => v.name).sort();
-  const required = chain
-    .filter((v) => v.auto_context !== false && v.always_available)
-    .map((v) => v.name)
-    .sort();
-  const conditional = declaredOn.filter((n) => !required.includes(n));
-  const reasons: string[] = [];
-  if (!input.signedIn) reasons.push("not signed in");
-  if (!input.surfaceNamed) reasons.push(`the page on ${input.route} did not name ${input.surface}`);
-  // A page that named a DIFFERENT surface supplied that surface's values, not
-  // this one's: record nothing as supplied rather than credit the wrong row.
-  const fromLabels: string[] = [];
-  const emptyFromLabels: string[] = [];
-  const unmappedLabels: string[] = [];
-  const byLabel = input.byLabel ?? [];
-  if (byLabel.length) {
-    const nameByLabel = new Map<string, string>();
-    for (const v of chain) {
-      if (v.label) nameByLabel.set(v.label.trim().toLowerCase(), v.name);
-      nameByLabel.set(v.name.toLowerCase(), v.name);
-    }
-    for (const row of byLabel) {
-      if (row.line === "Not available") continue;
-      const name = nameByLabel.get(row.label.trim().toLowerCase());
-      if (!name) unmappedLabels.push(row.label);
-      else if (row.line === "Empty") emptyFromLabels.push(name);
-      else fromLabels.push(name);
-    }
-  }
-  const emptyAll = [...input.suppliedEmpty, ...emptyFromLabels];
-  const suppliedRaw = input.surfaceNamed
-    ? [...new Set([...input.supplied, ...fromLabels, ...emptyAll])]
-    : [];
-  const supplied = new Set(suppliedRaw);
-  const missing = required.filter((n) => !supplied.has(n));
-  const conditionalMissing = conditional.filter((n) => !supplied.has(n));
-  if (missing.length) reasons.push(`${missing.length} always-available value(s) not supplied`);
-  if (declaredOn.length === 0) reasons.push("the surface declares no on values");
-  return {
-    status: reasons.length === 0 ? "pass" : "fail",
-    at,
-    route: input.route,
-    recordId: input.recordId,
-    base: input.base,
-    declaredOn,
-    required,
-    conditional,
-    suppliedValues: suppliedRaw.sort(),
-    suppliedEmpty: input.surfaceNamed ? [...new Set(emptyAll)].sort() : [],
-    readMode: byLabel.length ? "labels" : "keys",
-    unmappedLabels,
-    missing,
-    conditionalMissing,
-    reasons,
-    probedAs: input.probedAs,
-    probeVersion: SURFACE_PROBE_VERSION,
-  };
-}
-
-const CHAIN_SQL = `
-with recursive chain as (
-  select s.name as ancestor_name, 0 as depth
-    from ui.ui_surface s where s.name = $1 and s.deleted_at is null
-  union all
-  select p.parent_surface_name, c.depth + 1
-    from chain c join ui.ui_surface p on p.name = c.ancestor_name and p.deleted_at is null
-   where p.parent_surface_name is not null and p.parent_surface_name <> p.name and c.depth < 8
-)
-select distinct on (v.name) v.name, v.label, v.always_available, v.auto_context
-  from chain c join ui.ui_surface_value v on v.surface_name = c.ancestor_name and v.deleted_at is null
- order by v.name, c.depth`;
+export {
+  CHAIN_SQL,
+  judgeProbe,
+  PROBE_IDENTITY,
+  SURFACE_PROBE_VERSION,
+} from "./lib/surface-probe-judge";
+export type { ChainValue, LastCheckProbe, ProbeRecordInput } from "./lib/surface-probe-judge";
+import {
+  CHAIN_SQL,
+  judgeProbe,
+  PROBE_IDENTITY,
+  SURFACE_PROBE_VERSION,
+  type ChainValue,
+  type ProbeRecordInput,
+} from "./lib/surface-probe-judge";
 
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
