@@ -16,8 +16,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bot, ClipboardList, Network, Plus, RotateCcw, Trash2, Wand2, X } from "lucide-react";
+import { useState } from "react";
+import { ClipboardList, ListChecks, Network, Plus, RotateCcw, Trash2, X } from "lucide-react";
+import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
@@ -136,10 +137,6 @@ function Body({
   const [orchestra, setOrchestra] = useState<{ conductorId: string; warnings: string[] } | null>(null);
   const [undone, setUndone] = useState(false);
 
-  useEffect(() => {
-    if (plan && !leaderName) setLeaderName(`${plan.department || "Department"} lead`);
-  }, [plan, leaderName]);
-
   const patchRun = (key: string, patch: Partial<SeatRun>) =>
     setRuns((cur) => ({ ...cur, [key]: { ...cur[key], ...patch } }));
   const patchSeat = (key: string, patch: Partial<PlannedSeat>) =>
@@ -164,7 +161,9 @@ function Body({
           ...(request.existingTeam.length ? { existing_team: request.existingTeam.join("\n") } : {}),
         },
       });
-      setPlan(coerceDepartmentPlan(value, () => newKey()));
+      const planned = coerceDepartmentPlan(value, () => newKey());
+      setPlan(planned);
+      if (!leaderName) setLeaderName(`${planned.department || "Department"} lead`);
       setStep("review");
     } catch (e) {
       setError(e instanceof Error ? e.message : "No plan came back.");
@@ -383,7 +382,7 @@ function Body({
             </Button>
             <Button
               variant="primary"
-              icon={<Wand2 />}
+              icon={<ListChecks />}
               disabled={!description.trim() || planner.isRunning}
               onClick={() => void planIt()}
             >
@@ -597,7 +596,7 @@ function Body({
               </Button>
             )}
             {!undone && jobCount > 0 && builtCount < jobCount && (
-              <Button variant="outline" icon={<Bot />} disabled={working !== null} onClick={() => void buildAll()}>
+              <Button variant="outline" icon={<AGENT_ICON />} disabled={working !== null} onClick={() => void buildAll()}>
                 {working === "agents" ? "Building agents…" : "Build their agents"}
               </Button>
             )}
