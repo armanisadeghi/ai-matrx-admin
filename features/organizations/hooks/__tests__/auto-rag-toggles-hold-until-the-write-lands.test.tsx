@@ -51,7 +51,10 @@ jest.mock("@/utils/supabase/client", () => ({
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: (sel: () => unknown) => sel() }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectUserId: () => "user-1" }));
-jest.mock("@/lib/redux/slices/appContextSlice", () => ({ selectOrganizationId: () => "org-1" }));
+let orgIdForTest: string | null = "org-1";
+jest.mock("@/lib/redux/slices/appContextSlice", () => ({
+  selectOrganizationId: () => orgIdForTest,
+}));
 
 import { useOrgAutoRagPreference } from "../useOrgAutoRagPreference";
 import { useAutoRagPreference } from "@/features/kg-suggestions/hooks/useAutoRagPreference";
@@ -76,6 +79,7 @@ const AUTO_RAG = "knowledge.auto_rag_enabled";
 
 beforeEach(() => {
   jest.clearAllMocks();
+  orgIdForTest = "org-1";
   resolved = { [AUTO_RAG]: true, "knowledge.suggestion_sweeps_enabled": false };
 });
 
@@ -177,7 +181,92 @@ describe("the person's auto knowledge-graph switch", () => {
     h.unmount();
   });
 
-  it("a refusal is said in words", async () => {
+  it("a FAILED write is said in words too, not just a refusal", async () => {
+    // `callKnobOverrideSet` throws a real Error WITH a message for every
+    // transport / permission / RPC failure, so a catch that tested
+    // `err instanceof Error && err.message` could not tell it from a refusal
+    // whose sentence was already set — and set no message at all.
+    setKnobOverride.mockRejectedValue(
+      new Error("knob_override_set failed: permission denied for table user_preferences"),
+    );
+    const h = mount(() => useAutoRagPreference());
+    await flush();
+    await act(async () => { await h.current().setEnabled(false).catch(() => undefined); });
+    await flush();
+    expect(h.current().enabled).toBe(true);
+    // The point: a message IS set. Before this fix the catch tested
+    // `err instanceof Error && err.message`, which matched this throw as well as
+    // a refusal whose sentence was already set — so it set nothing and the pane
+    // showed a stale sentence or none at all.
+    expect(h.current().error).toBeTruthy();
+    expect(h.current().error).toMatch(/could not turn off auto knowledge-graph/i);
+    expect(h.current().error).not.toMatch(RAW);
+    h.unmount();
+  });
+
+  it("a new failure replaces an older message instead of leaving it standing", async () => {
+    // THE STICKY-ERROR BUG. The catch used to fire only when React's `error` was
+    // null — read from the closure of the render the callback was made in, so it
+    // could never see a message set earlier in the same callback either. Walk it:
+    // the organization overrules an ON (success path sets a sentence), then the
+    // next press fails. With the old test the screen kept claiming the
+    // organization overruled them while the write had actually failed.
+    resolved = { ...resolved, [AUTO_RAG]: false };
+    setKnobOverride.mockResolvedValue({ ok: true, effective_value: false, origin: "organization" });
+    const h = mount(() => useAutoRagPreference());
+    await flush();
+    await act(async () => { await h.current().setEnabled(true); });
+    await flush();
+    expect(h.current().error).toMatch(/organization has turned this off/i);
+
+    setKnobOverride.mockRejectedValue(new Error("knob_override_set failed: network unreachable"));
+    await act(async () => { await h.current().setEnabled(true).catch(() => undefined); });
+    await flush();
+    expect(h.current().error).not.toMatch(/organization has turned this off/i);
+    expect(h.current().error).toMatch(/could not turn on auto knowledge-graph/i);
+    h.unmount();
+  });
+
+  it("does not claim success when there is nobody to write a rung for", async () => {
+    // Returning the REQUESTED value here made Privacy compare it to what it
+    // asked for and toast "enabled" with nothing written anywhere.
+    orgIdForTest = null;
+    const h = mount(() => useAutoRagPreference());
+    await flush();
+    expect(h.current().canChange).toBe(false);
+    await act(async () => {
+      await expect(h.current().setEnabled(false)).rejects.toThrow(/choose an organization/i);
+    });
+    await flush();
+    expect(setKnobOverride).not.toHaveBeenCalled();
+    expect(h.current().error).toMatch(/choose an organization/i);
+    h.unmount();
+  });
+
+  it("never shows the register DEFAULT in the gap a write opens", async () => {
+    // A successful write calls `invalidateEffectiveKnob`, which clears the whole
+    // snapshot — so `resolved` goes back to undefined until the refetch lands.
+    // Reading that as the default made a switch just turned OFF render ON.
+    setKnobOverride.mockResolvedValue({ ok: true, effective_value: false, origin: "user" });
+    const h = mount(() => useAutoRagPreference());
+    await flush();
+    expect(h.current().enabled).toBe(true);
+
+    await act(async () => {
+      await h.current().setEnabled(false);
+      resolved = {}; // what invalidateEffectiveKnob leaves behind
+    });
+    expect(h.current().enabled).toBe(false); // the door's own answer, not the default
+    expect(h.current().loading).toBe(false);
+    h.unmount();
+  });
+
+  it("shows the DOOR's own refusal, not a generic wrapper around it", async () => {
+    // The door says exactly why. The catch used to replace that sentence with
+    // `describeWriteFailure`'s "Could not … Try again." wrapper, because it
+    // decided whether a message was already set by reading React state — which
+    // this callback's closure holds from the render it was created in, so it
+    // always looked unset. The door's own words are the useful ones.
     setKnobOverride.mockResolvedValue({
       ok: false,
       reason: "not_overridable",
@@ -186,8 +275,10 @@ describe("the person's auto knowledge-graph switch", () => {
     const h = mount(() => useAutoRagPreference());
     await flush();
     await act(async () => { await h.current().setEnabled(false).catch(() => undefined); });
+    await flush();
     expect(h.current().enabled).toBe(true);
-    expect(h.current().error).toBeTruthy();
+    expect(h.current().error).toBe("not_overridable — This setting is decided by the platform.");
+    expect(h.current().error).not.toMatch(/Could not/i);
     expect(h.current().error).not.toMatch(RAW);
     h.unmount();
   });

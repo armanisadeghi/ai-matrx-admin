@@ -1232,6 +1232,7 @@
 ["change","exact_count_limit"],
 ["change","inline_row_budget"],
 ["change","remember_answers"],
+["chat.confidential","require_own_hardware"],
 ["chat.default_new_chat","test_seat_agent_id"],
 ["chat.history","nest_child_sessions"],
 ["chat.history","sidebar"],

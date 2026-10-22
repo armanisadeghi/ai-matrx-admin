@@ -90,8 +90,30 @@ export function useOrgAutoRagPreference(
   // decided, never what the admin happens to have chosen for themselves.
   const resolvedEnabled = useEffectiveKnob(organizationId, null, AUTO_RAG_KNOB);
   const resolvedSweeps = useEffectiveKnob(organizationId, null, SUGGESTION_SWEEPS_KNOB);
-  const enabled = asKnobBoolean(resolvedEnabled, AUTO_RAG_DEFAULT);
-  const suggestionSweeps = asKnobBoolean(resolvedSweeps, SUGGESTION_SWEEPS_DEFAULT);
+  // 🚨 ABSENT IS UNKNOWN, NEVER THE DEFAULT. A successful write calls
+  // `invalidateEffectiveKnob`, which does `snapshots.clear()`, so between the
+  // write and the refetch the snapshot answers `undefined`. Reading that as the
+  // register default made a switch just turned OFF render ON for a frame. The
+  // last value actually known — from the snapshot, or from the door's own
+  // `effective_value`, which is authoritative and immediate — covers the gap.
+  const [lastKnown, setLastKnown] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    if (typeof resolvedEnabled === "boolean") {
+      setLastKnown((prev) => ({ ...prev, [AUTO_RAG_KEY]: resolvedEnabled }));
+    }
+  }, [resolvedEnabled]);
+  useEffect(() => {
+    if (typeof resolvedSweeps === "boolean") {
+      setLastKnown((prev) => ({ ...prev, [SUGGESTION_SWEEPS_KEY]: resolvedSweeps }));
+    }
+  }, [resolvedSweeps]);
+
+  const knownEnabled =
+    typeof resolvedEnabled === "boolean" ? resolvedEnabled : lastKnown[AUTO_RAG_KEY];
+  const knownSweeps =
+    typeof resolvedSweeps === "boolean" ? resolvedSweeps : lastKnown[SUGGESTION_SWEEPS_KEY];
+  const enabled = asKnobBoolean(knownEnabled, AUTO_RAG_DEFAULT);
+  const suggestionSweeps = asKnobBoolean(knownSweeps, SUGGESTION_SWEEPS_DEFAULT);
   const [budgetUsd, setBudgetState] = useState<number>(DEFAULT_BUDGET_USD);
   const [usedTodayUsd, setUsedTodayState] = useState<number>(0);
   const [windowStart, setWindowStart] = useState<string | null>(null);
@@ -186,23 +208,35 @@ export function useOrgAutoRagPreference(
       if (!organizationId) return;
       setSaving(true);
       setPendingField(field);
+      // Whether the DOOR refused, which is the only case whose sentence is
+      // already set. It must be a local flag: `callKnobOverrideSet` throws a
+      // real `Error` WITH a message for every transport, permission and RPC
+      // failure, so an `err instanceof Error && err.message` test can never
+      // tell the two apart — it matched both, so a genuinely failed write set
+      // NO message and the pane kept showing a stale sentence or nothing.
+      let refused = false;
       try {
         const result = await setKnobOverride({
           feature: KNOWLEDGE_FEATURE,
           key,
           scopeKind: "organization",
           scopeId: organizationId,
-          organizationId,
           value: next,
+          organizationId,
         });
         if (!result.ok) {
           const sentence = knobRefusalSentence(result);
+          refused = true;
           setError(sentence);
           throw new Error(sentence);
         }
+        setLastKnown((prev) => ({
+          ...prev,
+          [key]: asKnobBoolean(result.effective_value, next),
+        }));
         setError(null);
       } catch (err) {
-        if (!(err instanceof Error) || !err.message) {
+        if (!refused) {
           const words = describeWriteFailure(err, {
             action: FIELD_ACTION[field],
             remedy: "Try again.",
@@ -243,7 +277,7 @@ export function useOrgAutoRagPreference(
   // would be replaced by the register DEFAULT for a frame and then by the real
   // value — a switch that visibly changes state on its own.
   const knobsPending =
-    Boolean(organizationId) && (resolvedEnabled === undefined || resolvedSweeps === undefined);
+    Boolean(organizationId) && (knownEnabled === undefined || knownSweeps === undefined);
 
   return {
     enabled,

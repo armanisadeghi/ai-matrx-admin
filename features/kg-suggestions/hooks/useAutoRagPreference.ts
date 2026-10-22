@@ -22,7 +22,7 @@
 
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AUTO_RAG_DEFAULT,
   AUTO_RAG_KEY,
@@ -37,14 +37,22 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { knobRefusalSentence, setKnobOverride } from "@/lib/scoped-config/service";
 
+/** Said when there is nobody, or no organization, to write a rung for. */
+export const NO_WRITE_TARGET =
+  "Sign in and choose an organization to change this setting.";
+
 export interface UseAutoRagPreferenceResult {
   enabled: boolean;
   loading: boolean;
   saving: boolean;
+  /** False when there is no person or no organization to write a rung for — the
+   * control must not be clickable, because nothing could be written. */
+  canChange: boolean;
   error: string | null;
   /** Resolves to the value that is actually IN EFFECT afterwards. It differs
    * from `next` when the organization's rung overrules the person's — the knob
-   * is `lower_only` — so a caller can say so instead of claiming success. */
+   * is `lower_only` — so a caller can say so instead of claiming success.
+   * Rejects when nothing was written. */
   setEnabled: (next: boolean) => Promise<boolean>;
 }
 
@@ -59,17 +67,43 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const enabled = asKnobBoolean(resolved, AUTO_RAG_DEFAULT);
-  const loading = resolved === undefined && Boolean(userId) && Boolean(organizationId);
+  // 🚨 ABSENT IS UNKNOWN, NEVER THE DEFAULT. A successful write calls
+  // `invalidateEffectiveKnob`, which does `snapshots.clear()` — so between the
+  // write and the refetch the snapshot answers `undefined`. Reading that as the
+  // register default made the switch JUMP to ON right after being turned off and
+  // then snap back, and show ON for a moment even when the organization's rung
+  // had just overruled the person's. The last value actually known (from the
+  // snapshot, or from the door's own `effective_value`, which is authoritative
+  // and immediate) covers that gap instead.
+  const [lastKnown, setLastKnown] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (typeof resolved === "boolean") setLastKnown(resolved);
+  }, [resolved]);
+
+  const canChange = Boolean(userId) && Boolean(organizationId);
+  const known = typeof resolved === "boolean" ? resolved : lastKnown;
+  const enabled = known ?? AUTO_RAG_DEFAULT;
+  const loading = canChange && known === null;
 
   const setEnabled = useCallback(
     async (next: boolean): Promise<boolean> => {
-      if (!userId || !organizationId) return next;
+      if (!userId || !organizationId) {
+        // Returning `next` here reported SUCCESS for a write that never
+        // happened — the caller compared it to what it asked for and toasted
+        // "enabled". Refuse in words instead.
+        setError(NO_WRITE_TARGET);
+        throw new Error(NO_WRITE_TARGET);
+      }
       // PENDING, NEVER OPTIMISTIC (GATES-TAIL-2): the switch keeps its value (and shows busy via
-      // `saving`) until the row is written; a refusal leaves it as it was, said in words. The
-      // displayed value comes from the resolved snapshot, which the write busts, so there is
-      // nothing to set here — the read is the single source.
+      // `saving`) until the row is written; a refusal leaves it as it was, said in words.
       setSaving(true);
+      // Whether the DOOR refused, which is the only case whose sentence is
+      // already set. Checked here rather than through `error`, whose closure
+      // still holds the value from the render this callback was created in —
+      // `setError` above cannot have re-rendered yet, so reading state would
+      // always look like "no message set" and overwrite the door's own words
+      // with a generic wrapper.
+      let refused = false;
       try {
         const result = await setKnobOverride({
           feature: KNOWLEDGE_FEATURE,
@@ -80,8 +114,10 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
           value: next,
         });
         if (!result.ok) {
-          setError(knobRefusalSentence(result));
-          throw new Error(knobRefusalSentence(result));
+          const sentence = knobRefusalSentence(result);
+          refused = true;
+          setError(sentence);
+          throw new Error(sentence);
         }
         // THE ORGANIZATION CAN OVERRULE THIS, AND IT IS NEVER SILENT. The knob is
         // `lower_only`: a person asking to turn auto-RAG back ON while their
@@ -90,6 +126,7 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
         // mind), the door answers ok — and the effective value is still OFF. Say
         // so, rather than let the switch claim a state the platform will not honour.
         const effective = asKnobBoolean(result.effective_value, next);
+        setLastKnown(effective);
         setError(
           effective === next
             ? null
@@ -98,7 +135,7 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
         );
         return effective;
       } catch (err) {
-        if (err instanceof Error && err.message && error === null) {
+        if (!refused) {
           const w = describeWriteFailure(err, {
             action: next ? "turn on auto knowledge-graph" : "turn off auto knowledge-graph",
             remedy: "Try again.",
@@ -110,9 +147,8 @@ export function useAutoRagPreference(): UseAutoRagPreferenceResult {
         setSaving(false);
       }
     },
-    // `error` is read only to avoid overwriting a refusal sentence the door already gave.
-    [userId, organizationId, error],
+    [userId, organizationId],
   );
 
-  return { enabled, loading, saving, error, setEnabled };
+  return { enabled, loading, saving, canChange, error, setEnabled };
 }

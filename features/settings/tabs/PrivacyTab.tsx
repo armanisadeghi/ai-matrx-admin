@@ -147,7 +147,10 @@ export default function PrivacyTab() {
           description="In this organization: finds links you then accept."
           checked={autoRag.enabled}
           onCheckedChange={handleAutoRagChange}
-          disabled={autoRag.loading || autoRag.saving}
+          // `canChange` is false with no signed-in person or no organization to
+          // write the rung for. Leaving it pressable let someone turn a switch
+          // that wrote nothing and still be told it saved.
+          disabled={autoRag.loading || autoRag.saving || !autoRag.canChange}
           last
         />
       </SettingsSection>
