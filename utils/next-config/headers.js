@@ -31,8 +31,16 @@ const PERMISSIONS_POLICY = [
 const DESKTOP_FRAME_ANCESTORS_VALUE =
     "frame-ancestors 'self' tauri://localhost http://tauri.localhost https://tauri.localhost http://localhost:1420";
 
+// HSTS with includeSubDomains only on our own aimatrx.com hosts. Customer custom
+// domains are served by this same app; pinning every subdomain they own to HTTPS
+// for two years is not ours to decide (Vercel's own default HSTS still applies there).
+const OWN_HOST_HSTS_RULE = {
+    source: "/:path*",
+    has: [{ type: "host", value: "(?:.*\\.)?aimatrx\\.com" }],
+    headers: [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }],
+};
+
 const GLOBAL_SECURITY_HEADERS = [
-    { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
     { key: "Permissions-Policy", value: PERMISSIONS_POLICY },
@@ -74,10 +82,11 @@ const FRAME_RULE_EXCLUSIONS = [
 // routes get only the keys they never set themselves.
 const OWN_POLICY_EXCLUSION = OWN_FRAME_POLICY_ROUTES.map((p) => `${p}(?:/|$)`).join("|");
 const TRANSPORT_AND_FEATURES = GLOBAL_SECURITY_HEADERS.filter(
-    (h) => h.key === "Strict-Transport-Security" || h.key === "Permissions-Policy",
+    (h) => h.key === "Permissions-Policy",
 );
 
 const securityHeaders = () => [
+    OWN_HOST_HSTS_RULE,
     { source: `/:path((?!${OWN_POLICY_EXCLUSION}).*)`, headers: GLOBAL_SECURITY_HEADERS },
     ...OWN_FRAME_POLICY_ROUTES.map((p) => ({ source: `/${p}/:path*`, headers: TRANSPORT_AND_FEATURES })),
     { source: `/:path((?!${FRAME_RULE_EXCLUSIONS}).*)`, headers: SAME_ORIGIN_FRAMING },
