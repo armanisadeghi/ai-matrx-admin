@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { ArrowRight, FileText, Loader2, AlertCircle, ExternalLink, File, Globe } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
     PickerSearchField,
     PickerView,
@@ -269,11 +269,11 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
                         </div>
                         {suggestedType && onSwitchTo && (
                             <Button
-                                size="sm"
-                                className="h-9 w-full text-sm pointer-coarse:h-11"
+                                icon={<Globe />}
+                                variant="primary"
+                                className="w-full"
                                 onClick={() => onSwitchTo(suggestedType, url)}
                             >
-                                <Globe className="mr-1.5 h-4 w-4" />
                                 Switch to {suggestedType === 'webpage' ? 'Web page' : suggestedType === 'youtube' ? 'YouTube' : 'Image link'}
                             </Button>
                         )}
@@ -313,11 +313,11 @@ export function FileUrlResourcePicker({ onBack, onSelect, onSwitchTo, initialUrl
             {previewFile && (
                 <div className="shrink-0 border-t border-border p-1.5">
                     <Button
+                        icon={<FileText />}
+                        variant="primary"
                         onClick={handleSelect}
-                        className="h-9 w-full text-sm pointer-coarse:h-11"
-                        size="sm"
+                        className="w-full"
                     >
-                        <FileText className="mr-2 h-4 w-4" />
                         Add file
                     </Button>
                 </div>

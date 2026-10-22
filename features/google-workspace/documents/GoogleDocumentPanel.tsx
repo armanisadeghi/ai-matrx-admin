@@ -15,7 +15,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { Archive, ExternalLink, FolderOpen, Lock, Plug, TriangleAlert } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
@@ -158,7 +158,6 @@ function UnavailableActions({
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
-          size="sm"
           variant="outline"
           onClick={reconnect}
           data-google-document-reconnect
@@ -168,14 +167,13 @@ function UnavailableActions({
         </Button>
         {connectionId ? (
           <Button
+            icon={<FolderOpen />}
             type="button"
-            size="sm"
             variant="outline"
             disabled={picking}
             onClick={() => void repick()}
             data-google-document-repick
           >
-            <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
             {picking ? "Opening Google…" : "Choose the file again"}
           </Button>
         ) : null}
@@ -289,26 +287,24 @@ function KeepAndArchiveActions({
     <div className="flex flex-wrap items-center gap-2" data-google-document-record-actions>
       {detached ? null : (
         <Button
+          icon={<Lock />}
           type="button"
-          size="sm"
           variant="outline"
           disabled={running !== null}
           onClick={() => void keep()}
           data-google-document-keep
         >
-          <Lock className="mr-1.5 h-3.5 w-3.5" />
           {running === "keep" ? "Keeping…" : "Keep as AI Matrx data"}
         </Button>
       )}
       <Button
+        icon={<Archive />}
         type="button"
-        size="sm"
         variant="outline"
         disabled={running !== null}
         onClick={() => void archive()}
         data-google-document-archive
       >
-        <Archive className="mr-1.5 h-3.5 w-3.5" />
         {running === "archive" ? "Archiving…" : "Archive this record"}
       </Button>
     </div>
@@ -486,12 +482,11 @@ function AppendComposer({
             {block}
           </pre>
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" size="sm" disabled={sending} onClick={() => void send()}>
+            <Button variant="primary" type="button" disabled={sending} onClick={() => void send()}>
               {sending ? "Adding…" : "Append"}
             </Button>
             <Button
               type="button"
-              size="sm"
               variant="outline"
               disabled={sending}
               onClick={() => {
@@ -507,8 +502,7 @@ function AppendComposer({
             </Button>
             <Button
               type="button"
-              size="sm"
-              variant="ghost"
+              variant="quiet"
               disabled={sending}
               onClick={() => setText("")}
             >

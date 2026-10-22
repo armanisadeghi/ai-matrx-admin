@@ -470,9 +470,8 @@ export default function TaskDetailsPanel({
       <ShareButton
         resourceType="task"
         resourceId={task.id}
-        resourceName={task.title}
-        size="icon"
-        variant="ghost"
+        resourceName={task.title} iconOnly
+        variant="quiet"
       />
 
       <DropdownMenu>

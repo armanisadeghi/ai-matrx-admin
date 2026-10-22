@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Share2, Globe } from "lucide-react";
-import { cn } from "@/utils/cn";
 import { useSharingStatus } from "@/utils/permissions/hooks";
 import type { ResourceType } from "@/utils/permissions/types";
 import { ShareModal } from "./ShareModal";
@@ -20,10 +19,12 @@ interface ShareButtonProps {
   resourceName: string;
   /** OPTIONAL override — omit it and the modal resolves ownership itself. */
   isOwner?: boolean;
-  variant?: "default" | "outline" | "ghost";
-  size?: "default" | "sm" | "lg" | "icon";
+  /** A tone of THE control Button — the same 28px box as every action beside it. */
+  variant?: "primary" | "outline" | "quiet";
+  /** The glyph alone (a 28px circle); the label rides the tooltip and aria-label. */
+  iconOnly?: boolean;
   showStatus?: boolean;
-  /** Sizing/spacing override for dense chrome (compact toolbars, header rows). */
+  /** Placement only (width, flex, margin) — the control owns its look. */
   className?: string;
   /**
    * The organization the resource belongs to, for the contact picker — which must
@@ -52,7 +53,7 @@ export function ShareButton({
   resourceName,
   isOwner,
   variant = "outline",
-  size = "default",
+  iconOnly = false,
   showStatus = true,
   className,
   organizationId,
@@ -77,26 +78,35 @@ export function ShareButton({
 
   const { icon: Icon, label, state } = getButtonContent();
 
-  const button = (
+  // THE control Button (28px, locked) — the legacy package-root Button rendered
+  // a 36px box here, a size bigger than every action in the same header row.
+  const title = state ? `${label} · ${state}` : label;
+  const button = iconOnly ? (
     <Button
       variant={variant}
-      size={size}
+      icon={<Icon />}
       onClick={() => setIsModalOpen(true)}
-      className={cn("gap-2", className)}
-      title={state ? `${label} · ${state}` : label}
-      // An icon-only share control had NO accessible name: a tooltip describes
-      // a button, it never names one, so a screen reader announced "button".
-      // The label the tooltip shows is the label the button carries.
-      aria-label={size === "icon" ? label : undefined}
+      className={className}
+      title={title}
+      // A tooltip describes a button, it never names one: the label the
+      // tooltip shows is the label the button carries.
+      aria-label={label}
+    />
+  ) : (
+    <Button
+      variant={variant}
+      icon={<Icon />}
+      onClick={() => setIsModalOpen(true)}
+      className={className}
+      title={title}
     >
-      <Icon className="w-4 h-4" />
-      {size !== "icon" && <span>{label}</span>}
+      {label}
     </Button>
   );
 
   return (
     <>
-      {size === "icon" ? (
+      {iconOnly ? (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>{button}</TooltipTrigger>

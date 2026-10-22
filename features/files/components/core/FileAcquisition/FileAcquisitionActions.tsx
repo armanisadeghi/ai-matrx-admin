@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Cloud, FileUp, FolderOpen, FolderUp, Loader2 } from "lucide-react";
 import { GoogleDriveLogo as GoogleDrive } from "@/components/icons/google-brand";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
 import { GOOGLE_SCOPE } from "@/lib/googleScopes";
@@ -467,13 +467,13 @@ export function FileAcquisitionActions({
         const busy = action.key === "google-drive" && googleBusy;
         return (
           <Button
+            icon={<Icon className={cn("h-4 w-4", busy && "animate-spin")} />}
             key={action.key}
             type="button"
-            variant={action.key === "files" ? "default" : "outline"}
+            variant={action.key === "files" ? "primary" : "outline"}
             onClick={() => runAction(action.key)}
             disabled={disabled || busy}
           >
-            <Icon className={cn("h-4 w-4", busy && "animate-spin")} />
             {action.label}
           </Button>
         );

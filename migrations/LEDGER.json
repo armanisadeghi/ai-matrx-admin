@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-22T12:00:33.763Z",
+  "generated_at": "2026-10-22T18:08:35.923Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -499,6 +499,12 @@
       "filename": "20261022090000_closeshare_d_a_table_known_through_a_shared_row_opens_by_id.sql",
       "checksum": "502ffba020ef5da8b062e641606a60499e715618a973f006d4ebb9014092824b",
       "applied_at": "2026-10-22 09:06:11.144877+00"
+    },
+    "migrations/campaign/20261022181500_closeformula_c_a_number_filter_asks_the_number.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261022181500_closeformula_c_a_number_filter_asks_the_number.sql",
+      "checksum": "f4768d2ee826e56c19d6288dc6ff017f170f40da318b34b51ff8b1d5025482bf",
+      "applied_at": "2026-10-22 17:56:10.034804+00"
     },
     "migrations/campaign/20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql": {
       "source": "matrx-frontend",
@@ -1111,6 +1117,12 @@
       "filename": "argsruled_three_more_second_ids.sql",
       "checksum": "7c1073a0539d0b658e256944ee98237c4372b6395e76c99a240adb6fd7d70b82",
       "applied_at": "2026-09-21 23:21:51.010153+00"
+    },
+    "migrations/campaign/askworkspace_a_the_workspace_ask_knobs.sql": {
+      "source": "matrx-frontend",
+      "filename": "askworkspace_a_the_workspace_ask_knobs.sql",
+      "checksum": "a1fedc9aa7f2738f02895c6373753a41d42215794445d63e6bd5d3130b7b36f8",
+      "applied_at": "2026-10-22 18:08:34.90404+00"
     },
     "migrations/campaign/asof_a_share_is_recorded.sql": {
       "source": "matrx-frontend",
@@ -2257,6 +2269,12 @@
       "filename": "closeperf_a_a_a_door_probe_follows_its_door_when_an_argument_is_added.sql",
       "checksum": "0a4b961d6a0b873fba6e99b98771e9e08fed89b30cfdda74405d508dc5f7cbd2",
       "applied_at": "2026-10-21 16:55:38.822935+00"
+    },
+    "migrations/campaign/closeview_a_a_built_in_source_filter_nests_all_any_none_groups.sql": {
+      "source": "matrx-frontend",
+      "filename": "closeview_a_a_built_in_source_filter_nests_all_any_none_groups.sql",
+      "checksum": "fb3faced994c8b298b6f81eff6a955c4a2bca16a115908aa7fda00eb7917ef3c",
+      "applied_at": "2026-10-22 18:06:11.143228+00"
     },
     "migrations/campaign/confstructure_a_the_hide_structure_knob.sql": {
       "source": "matrx-frontend",
@@ -6781,6 +6799,72 @@
       "filename": "orgdel_the_undo_is_not_swept_away_with_the_logs.sql",
       "checksum": "027f65f5f7eb953962064d608b58ac1b627140ead2c914c275d9ffb624a4e990",
       "applied_at": "2026-09-20 03:48:13.637573+00"
+    },
+    "migrations/campaign/orgdelfk_a01_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a01_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "c8c551d7d0e6def7f7e95afd63bf34788d555246b169f2996ee7c3b32c2aa2b9",
+      "applied_at": "2026-10-22 17:50:50.095279+00"
+    },
+    "migrations/campaign/orgdelfk_a02_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a02_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "26cc8c34868872fe44180190d81ff7394c88ca5da0a167d4fd995c4e65976aba",
+      "applied_at": "2026-10-22 17:51:25.679334+00"
+    },
+    "migrations/campaign/orgdelfk_a03_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a03_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "2592d1243955710d251affa8bf5a80f0a77043f34fb5a4ac2e4ead9d7ae01059",
+      "applied_at": "2026-10-22 17:51:58.268986+00"
+    },
+    "migrations/campaign/orgdelfk_a04_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a04_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "9328b6ffe513f90ea5dc0443a39eabc181314cf3e027b29e4934397aefd1a498",
+      "applied_at": "2026-10-22 17:52:37.19744+00"
+    },
+    "migrations/campaign/orgdelfk_a05_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a05_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "4e0bd979a9f5e1b15e1378d1fce13b568f8c631ff491d9ef25326b0160ca40c8",
+      "applied_at": "2026-10-22 17:53:12.389433+00"
+    },
+    "migrations/campaign/orgdelfk_a06_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a06_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "5e73367276e27d135f5b28f71046652096ed09b4bfe2e1b41006a9a49da566c6",
+      "applied_at": "2026-10-22 17:53:50.333114+00"
+    },
+    "migrations/campaign/orgdelfk_a07_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a07_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "43a14db8a46fe8a97151bb0340c4f42209be3b6cf0988b24c1799e7e3cb6a370",
+      "applied_at": "2026-10-22 17:54:19.883163+00"
+    },
+    "migrations/campaign/orgdelfk_a08_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a08_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "cb236e72a12aaaf429a1906cd8841350933f99f179319cbd9c56749eb8bd11f0",
+      "applied_at": "2026-10-22 17:54:47.090696+00"
+    },
+    "migrations/campaign/orgdelfk_a09_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a09_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "58a6336a6db680df913c1184da00af2025b72012485da9d8e109e30c79852dad",
+      "applied_at": "2026-10-22 17:55:14.634605+00"
+    },
+    "migrations/campaign/orgdelfk_a10_deleting_a_parent_takes_its_rows_with_it.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_a10_deleting_a_parent_takes_its_rows_with_it.sql",
+      "checksum": "e92f2eb56cbc919ab78433c3de950259fca308685a11f8886991460bf6db2f87",
+      "applied_at": "2026-10-22 17:55:42.023895+00"
+    },
+    "migrations/campaign/orgdelfk_v_the_cascading_keys_are_validated.sql": {
+      "source": "matrx-frontend",
+      "filename": "orgdelfk_v_the_cascading_keys_are_validated.sql",
+      "checksum": "6a45e606e596d423198f7a9718b9056b4a8256ae4a6e28ef3a831884575c794a",
+      "applied_at": "2026-10-22 17:56:12.893784+00"
     },
     "migrations/campaign/orphanchoices_an_adopted_lists_choices_take_its_organization.sql": {
       "source": "matrx-frontend",

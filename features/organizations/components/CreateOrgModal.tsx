@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/lib/toast";
@@ -466,9 +466,9 @@ export function CreateOrgModal({
               Cancel
             </Button>
             <Button
+              variant="primary"
               type="submit"
               disabled={!isFormValid || isSubmitting}
-              className="bg-blue-500 hover:bg-blue-600"
             >
               {isSubmitting ? (
                 <>

@@ -179,6 +179,7 @@ export function FileMenu({
                   </ToolbarButton>
                 ) : (
                   <Button
+                    type="submit"
                     icon={vertical ? <MoreVertical /> : <MoreHorizontal />}
                     aria-label={`Actions for ${name}`}
                     title="More actions"

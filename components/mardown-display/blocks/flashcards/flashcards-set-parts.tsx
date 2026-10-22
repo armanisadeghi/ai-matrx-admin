@@ -13,7 +13,7 @@ import {
   Save,
 } from "lucide-react";
 import Link from "@/components/navigation/AppLink";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { WrenchTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { cn } from "@/styles/themes/utils";
 import FlashcardItem from "./FlashcardItem";
@@ -229,42 +229,36 @@ export function LayoutToggle({
   return (
     <div className="flex gap-1">
       <Button
-        variant="ghost"
-        size="sm"
-        className={cn(btnClass, layoutMode === "grid" && "bg-accent")}
+        icon={<Grid2x2 className={iconClass} />} aria-label="Grid view (2 columns)"
+        variant="quiet"
+        className={btnClass}
         onClick={(e) => {
           e.stopPropagation();
           onLayoutChange("grid");
         }}
         title="Grid view (2 columns)"
-      >
-        <Grid2x2 className={iconClass} />
-      </Button>
+      />
       <Button
-        variant="ghost"
-        size="sm"
-        className={cn(btnClass, layoutMode === "list" && "bg-accent")}
+        icon={<LayoutList className={iconClass} />} aria-label="List view (1 per row)"
+        variant="quiet"
+        className={btnClass}
         onClick={(e) => {
           e.stopPropagation();
           onLayoutChange("list");
         }}
         title="List view (1 per row)"
-      >
-        <LayoutList className={iconClass} />
-      </Button>
+      />
       {onMobileView && (
         <Button
-          variant="ghost"
-          size="sm"
+          icon={<Smartphone className={iconClass} />} aria-label="Mobile swipe mode"
+          variant="quiet"
           className={btnClass}
           onClick={(e) => {
             e.stopPropagation();
             onMobileView();
           }}
           title="Mobile swipe mode"
-        >
-          <Smartphone className={iconClass} />
-        </Button>
+        />
       )}
     </div>
   );
@@ -383,34 +377,28 @@ export function FlashcardsSetControls({
         />
         <div className="flex items-center gap-1">
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs text-muted-foreground"
+            icon={<Printer />}
+            variant="quiet"
             onClick={onPrint}
           >
-            <Printer className="h-3 w-3" />
             Print
           </Button>
           {!deckHref && onSaveDeck && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
+              icon={<Save />}
+              variant="quiet"
               onClick={onSaveDeck}
               disabled={savingDeck}
               aria-label="Save deck"
               title="Save as a flashcard deck"
             >
-              <Save className="h-3 w-3" />
               <span className="hidden sm:inline">Save deck</span>
             </Button>
           )}
           {deckHref && (
             <Button
               asChild
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
+              variant="quiet"
             >
               <Link
                 href={deckHref}
@@ -425,23 +413,19 @@ export function FlashcardsSetControls({
             </Button>
           )}
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+            icon={<ArrowUpRight />}
+            variant="quiet"
             onClick={onOpenCanvas}
             disabled={openingCanvas}
           >
-            <ArrowUpRight className="h-3 w-3" />
             Canvas
           </Button>
           {showFullscreen && onFullscreen && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
+              icon={<Maximize2 />}
+              variant="quiet"
               onClick={onFullscreen}
             >
-              <Maximize2 className="h-3 w-3" />
               Full
             </Button>
           )}

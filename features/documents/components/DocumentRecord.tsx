@@ -575,8 +575,7 @@ export function DocumentRecord({
         resourceId={doc.id}
         resourceName={doc.document_name}
         isOwner={isOwner}
-        variant="ghost"
-        size="sm"
+        variant="quiet"
       />
     </div>
   ) : null;
@@ -633,9 +632,7 @@ export function DocumentRecord({
                   resourceId={doc.id}
                   resourceName={doc.document_name}
                   isOwner={isOwner}
-                  variant="default"
-                  size="sm"
-                  className="rounded-full px-4 max-sm:px-2.5 max-sm:[&>span]:hidden"
+                  variant="primary"
                 />
               </>
             ),

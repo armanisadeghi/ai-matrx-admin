@@ -7,6 +7,9 @@
 // document, one combined file, the certificate); a copy or a template from it; and an honest
 // history. Once complete the page previews the signed copy and the certificate.
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ESIGN_ENVELOPE_SURFACE_NAME } from "@/features/surfaces/manifests/esign-envelope.manifest";
 import { useEffect, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -246,8 +249,33 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
 
   const copyFiles = state.documents.map((d) => ({ name: text(d, "name") ?? "Document", fileId: signedCopies[String(d.id)] ?? text(asRecord(d.metadata), "signed_copy_file_id") })).filter((c) => c.fileId);
 
+  // matrx-user/esign-envelope on a sent envelope: read-only (void, resend, correct stay the person's).
+  const getSurfaceScope = () =>
+    ({
+      editor_mode: "sent",
+      envelope_id: envelopeId,
+      envelope_status: status,
+      envelope_title: title,
+      email_subject: text(e, "email_subject") ?? "",
+      envelope_message: text(e, "message") ?? "",
+      sent_at: text(e, "sent_at"),
+      expires_at: text(e, "expires_at"),
+      completed_at: text(e, "completed_at"),
+      void_reason: text(e, "void_reason"),
+      signing_order: text(e, "signing_order"),
+      documents: state.documents.map((d) => ({ key: String(d.id), name: text(d, "name") ?? "Document", page_count: null })),
+      recipients: state.signers.map((s) => ({
+        key: String(s.id),
+        role: text(s, "role") ?? "signer",
+        full_name: text(s, "full_name") ?? "",
+        email: text(s, "email") ?? "",
+        status: text(s, "status") ?? "pending",
+        is_member: text(s, "actor_type") === "internal_user",
+      })),
+    }) as SurfaceScopePayload;
+
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={ESIGN_ENVELOPE_SURFACE_NAME} getScope={getSurfaceScope} isEditable={false}>
       <RecordPageHeader
         backHref="/esign"
         parents={[{ label: "E-Signatures", href: "/esign" }]}
@@ -532,7 +560,7 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }
 

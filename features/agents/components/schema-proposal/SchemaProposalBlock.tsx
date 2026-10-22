@@ -20,7 +20,7 @@ import nextDynamic from "next/dynamic";
 import { ChevronDown, ChevronRight, FileJson, Shapes, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import type { OutputSchema } from "@ai-matrx/chat/agents/types/json-schema";
 import { ApplySchemaDialog } from "./ApplySchemaDialog";
 
@@ -130,15 +130,13 @@ const SchemaProposalBlock: React.FC<SchemaProposalBlockProps> = ({
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <Button
-            size="sm"
+            icon={<Shapes />}
             variant="outline"
             onClick={() => setShapeDialogOpen(true)}
           >
-            <Shapes className="mr-1.5 h-3.5 w-3.5" />
             Create a Shape
           </Button>
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
-            <Zap className="mr-1.5 h-3.5 w-3.5" />
+          <Button icon={<Zap />} variant="primary" onClick={() => setDialogOpen(true)}>
             Apply to an agent
           </Button>
         </div>

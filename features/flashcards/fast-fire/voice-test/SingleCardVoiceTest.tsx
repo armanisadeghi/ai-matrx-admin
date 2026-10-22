@@ -18,7 +18,7 @@ import {
   X,
   Volume2,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
@@ -433,10 +433,11 @@ export function SingleCardVoiceTest({
                   no dead wait. `finishAnswer` is idempotent with the timeout,
                   so whichever fires first wins and the other no-ops. */}
               <Button
-                className="mt-1 gap-1.5"
+                icon={<CheckCircle2 />}
+                variant="primary"
+                className="mt-1"
                 onClick={finishAnswer}
               >
-                <CheckCircle2 className="h-4 w-4" />
                 Done answering
               </Button>
             </>
@@ -519,8 +520,7 @@ function ResultView({
       </div>
 
       <div className="flex w-full flex-col gap-2 sm:flex-row">
-        <Button className="flex-1 gap-1.5" onClick={onAgain}>
-          <RotateCcw className="h-4 w-4" />
+        <Button icon={<RotateCcw />} variant="primary" className="flex-1" onClick={onAgain}>
           Go again
         </Button>
         <Button variant="outline" className="flex-1" onClick={onDone}>

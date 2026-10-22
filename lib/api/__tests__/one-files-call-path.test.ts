@@ -8,7 +8,7 @@
  *   - a second files client (`createMatrxFilesClient(`; build it with `createFiles({ api })`),
  *   - a hand-built file-server URL or path (`${base}/files/${id}`, `` `/files/${id}/…` ``,
  *     `"/files/{file_id}/…"`) — use the generated operation instead.
- * The two files below predate the rule and still build their paths for python-client; they are
+ * The files below predate the rule and still build their paths for python-client; they are
  * pinned at today's count so the number only goes down (convert them to generated operations and
  * delete their rows).
  */
@@ -23,7 +23,12 @@ const SCANNED = ["features", "lib", "components", "app", "hooks", "providers", "
 const KNOWN_HAND_BUILT_PATHS: Record<string, number> = {
   "features/file-analysis/api/file-analysis.ts": 9,
   "features/rag/api/rag-jobs.ts": 2,
+  "features/hr/exports/components/ExportArtifactDownload.tsx": 1,
+  "app/(dev)/demos/cloud-files-debug/CloudFilesDebugClient.tsx": 2,
 };
+
+/** App PAGE routes under /files (a redirect between the app's own pages), never a server call. */
+const APP_PAGE_ROUTE_FILES = new Set(["app/(core)/files/[...path]/page.tsx"]);
 
 /** Where a files host literal is the routing default itself (the env fallback), not a call. */
 const HOST_LITERAL_HOMES = new Set(["lib/api/service-routing.ts"]);
@@ -104,6 +109,7 @@ describe("one call path to the files server", () => {
     const known = new Map<string, number>();
     const unexpected: Violation[] = [];
     for (const v of found) {
+      if (APP_PAGE_ROUTE_FILES.has(v.file)) continue;
       if (v.rule === "hand-built files URL" && v.file in KNOWN_HAND_BUILT_PATHS) {
         known.set(v.file, (known.get(v.file) ?? 0) + 1);
         continue;

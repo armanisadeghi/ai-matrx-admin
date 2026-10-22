@@ -25,7 +25,7 @@
 
 import { useCallback, useState } from "react";
 import { Loader2, Play } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import type { LLMParams } from "@ai-matrx/chat/agents/types/agent-api-types";
 import { useKindActionRunner } from "./useKindActionRunner";
@@ -96,17 +96,17 @@ export function KindAgentActionButton({
 
   return (
     <Button
+      icon={isLaunching ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <Play />
+      )}
+      variant="primary"
       type="button"
-      size={size}
       className={className}
       onClick={handleClick}
       disabled={isLaunching}
     >
-      {isLaunching ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Play className="h-4 w-4" />
-      )}
       {label ?? "Run agent"}
     </Button>
   );

@@ -1,5 +1,5 @@
 -- LANE CLOSE-FORMULA — CD-FORMULA-06 ("A formula column can be filtered like any other column": Total is 60.5).
--- RED before 20261022180000_closeformula_c_a (a worked-out number reads "60.50", the question "60.5", no row matches), GREEN after.
+-- RED before 20261022181500_closeformula_c_a (a worked-out number reads "60.50", the question "60.5", no row matches), GREEN after.
 -- One transaction, always ROLLBACK: python3 scripts/campaign-tests/viewlink_run.py <this file> [<migration>]
 -- Fixture made inside the transaction by admin@admin.com in the walk organization, so nothing is left behind.
 do $t$

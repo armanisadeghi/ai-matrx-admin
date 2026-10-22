@@ -186,6 +186,7 @@ export function parseProposeIntentsResult(raw: unknown): ProposeIntentsRunResult
     rendition_retargeted: readNumber(raw.rendition_retargeted),
     dropped_unknown_slug: readNumber(raw.dropped_unknown_slug),
     dropped_locked: readNumber(raw.dropped_locked),
+    stance_corrected: readNumber(raw.stance_corrected),
     kept_existing: readNumber(raw.kept_existing),
     by_disposition: readCounts(raw.by_disposition),
     queue_pending: readNumber(raw.queue_pending),

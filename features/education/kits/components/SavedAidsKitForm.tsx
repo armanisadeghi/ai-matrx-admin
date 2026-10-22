@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ProInput } from "@/components/official/ProInput";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { kitSourceRefs, pickedFileAnchor } from "@/features/education/onboard/kitSources";
@@ -216,7 +216,7 @@ export function SavedAidsKitForm({
           {!onMade && (
             <Button variant="outline" onClick={() => { clearDraft(); router.push("/education/kits"); }}>Cancel</Button>
           )}
-          <Button className="flex-1" disabled={saving || !saveReady} onClick={() => void save()}>
+          <Button variant="primary" className="flex-1" disabled={saving || !saveReady} onClick={() => void save()}>
             {saving ? "Saving…" : "Create kit"}
           </Button>
         </div>

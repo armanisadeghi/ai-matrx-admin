@@ -10,7 +10,7 @@ import {
   Globe,
   Upload,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   PickerRow,
   PickerSearchField,
@@ -190,11 +190,11 @@ export function ImageUrlResourcePicker({
             </div>
             {suggestedType && onSwitchTo && (
               <Button
-                size="sm"
-                className="h-9 w-full text-sm pointer-coarse:h-11"
+                icon={<Globe />}
+                variant="primary"
+                className="w-full"
                 onClick={() => onSwitchTo(suggestedType, url)}
               >
-                <Globe className="mr-1.5 h-4 w-4" />
                 Switch to{" "}
                 {suggestedType === "webpage"
                   ? "Web page"
@@ -239,11 +239,11 @@ export function ImageUrlResourcePicker({
       {previewImage && (
         <div className="shrink-0 border-t border-border p-1.5">
           <Button
+            icon={<ImageIcon />}
+            variant="primary"
             onClick={handleSelect}
-            className="h-9 w-full text-sm pointer-coarse:h-11"
-            size="sm"
+            className="w-full"
           >
-            <ImageIcon className="mr-2 h-4 w-4" />
             Add image
           </Button>
         </div>

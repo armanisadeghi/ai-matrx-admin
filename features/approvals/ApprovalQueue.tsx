@@ -34,6 +34,8 @@
  * `__tests__/ApprovalQueue.decision-lifecycle.test.tsx`).
  */
 
+import { useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Check,
@@ -800,7 +802,13 @@ export function ApprovalQueue({
   onFocusResolved,
   tableId,
   className,
+  surfaceName = null,
 }: {
+  /**
+   * The page surface this queue is the body of (`matrx-user/approvals` on /approvals): the queue
+   * contributes what is waiting there. Read-only — an agent never decides an approval.
+   */
+  surfaceName?: string | null;
   scope: ApprovalScope;
   /**
    * Override the registry — tests only. Production mounts use THE registry so
@@ -1125,6 +1133,26 @@ export function ApprovalQueue({
    * decided" there is the screen lying (Bugbot MEDIUM #2, 2026-09-17). The
    * queue therefore reads that id directly and reports what the store says.
    */
+  useSurfaceScopeContribution(surfaceName, "approval-queue", () =>
+    ({
+      approvals_load_status: loading ? "loading" : failed.length ? "partly_failed" : "loaded",
+      approvals_waiting_count: count,
+      approvals: allItems.slice(0, 40).map((item) => ({
+        key: item.key,
+        kind: sections.find((section) => section.kind.id === item.kindId)?.kind.label ?? item.kindId,
+        headline: item.headline,
+        approve_does: item.acceptEffect,
+        reject_does: item.rejectEffect,
+        proposed_by: item.proposedBy ?? null,
+        proposed_at: item.proposedAt ?? null,
+        auto_applies_at: item.autoApplyAt ?? null,
+        blocked: item.blocked?.reason ?? null,
+        decided: decidedByKey.get(item.key) ?? null,
+      })),
+      focused_approval_key: focusedKey,
+    }) as SurfaceScopePayload,
+  );
+
   useEffect(() => {
     if (!focusItemId) return;
     if (focusedKey) {

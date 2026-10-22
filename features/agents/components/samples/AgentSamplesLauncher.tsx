@@ -12,7 +12,7 @@
  */
 
 import { FlaskConical } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useOpenAgentTestCasesWindow } from "@/features/overlays/definitions/agentTestCasesWindow.overlay";
 
@@ -34,15 +34,12 @@ export function AgentSamplesLauncher({
   return (
     <div className={cn("flex justify-end", className)}>
       <Button
-        size="icon"
-        variant="ghost"
-        className="h-11 w-11 rounded-full border border-glass-edge bg-glass text-muted-foreground shadow-glass backdrop-blur-glass backdrop-saturate-glass hover:bg-glass-hover hover:text-foreground md:h-8 md:w-8"
+        icon={<FlaskConical />}
+        variant="quiet"
         title="Samples"
         aria-label="Open samples"
         onClick={() => openTestCases({ agentId, conversationId })}
-      >
-        <FlaskConical className="h-4 w-4" />
-      </Button>
+      />
     </div>
   );
 }

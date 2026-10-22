@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectAgentMessages } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import {
@@ -58,34 +58,28 @@ export function AddMessageButtons({ agentId }: AddMessageButtonsProps) {
   return (
     <>
       <Button
+        icon={<Plus />}
         variant="outline"
-        size="sm"
-        className="h-7 text-xs"
         onClick={() => handleAddMessage("user")}
         disabled={!allMessages}
       >
-        <Plus className="w-3 h-3 mr-1" />
         User
       </Button>
       <Button
+        icon={<Plus />}
         variant="outline"
-        size="sm"
-        className="h-7 text-xs"
         onClick={() => handleAddMessage("assistant")}
         disabled={!allMessages}
       >
-        <Plus className="w-3 h-3 mr-1" />
         Assistant
       </Button>
       <Button
+        icon={<Plus />}
         variant="outline"
-        size="sm"
-        className="h-7 text-xs"
         onClick={handleAddExample}
         disabled={!allMessages}
         title="Add an example exchange: a user turn and the answer it should get"
       >
-        <Plus className="w-3 h-3 mr-1" />
         Example
       </Button>
     </>

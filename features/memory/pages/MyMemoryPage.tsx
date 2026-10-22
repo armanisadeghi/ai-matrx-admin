@@ -16,7 +16,7 @@ export function MyMemoryPage() {
       actions={[{ label: "Memory settings", icon: Settings, href: "/user-settings/ai/memory", showLabel: true }]}
     >
       <Suspense fallback={<RegionSkeleton shape="rows" count={6} />}>
-        <MemoryManager />
+        <MemoryManager asSurface />
       </Suspense>
     </MemoryPageFrame>
   );

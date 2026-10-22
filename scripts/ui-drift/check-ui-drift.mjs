@@ -27,6 +27,10 @@
  *                            (`bg-[#0af]`, a `#rrggbb` in a style prop) instead of a semantic token.
  *   spinner-outside-spinner  `animate-spin` outside a spinner/loader component.
  *   styled-raw-button        a raw `<button>` carrying visual classes (a hand-rolled control).
+ *   legacy-root-button       `Button` imported from the package ROOT under its own name — the old cva
+ *                            Button (36px default, shadcn sizes) beside 28px controls. Only the
+ *                            `Button as SurfaceButton` alias (a card/tile/hero, not a control) is allowed
+ *                            (2026-10-22: the brand header's Share sat 8px taller than its row).
  *   hand-rolled-overlay      a hand-written scrim (`fixed inset-0` + a backdrop color/blur) or an
  *                            element with role="dialog" | "alertdialog" | "tablist".
  *   glass-tap-on-solid       a glass tap button (TapTargetButton, a `*TapButton` with no variant or
@@ -138,6 +142,10 @@ export const RULES = {
   "styled-raw-button": {
     title: "styled raw <button>",
     fix: "Use the shared control (Button / a tap button) instead of styling a raw <button>.",
+  },
+  "legacy-root-button": {
+    title: "legacy package-root Button",
+    fix: "Import Button from @/components/ui/button (THE 28px control: variant primary|outline|quiet|danger, icon=, aria-label for icon-only, no size). A card/tile/hero that is not a control imports `Button as SurfaceButton` from the package root.",
   },
   "hand-rolled-overlay": {
     title: "hand-written scrim, dialog or tablist",
@@ -389,6 +397,11 @@ export function scanSource(file, text) {
   for (const st of sf.statements) {
     if (!ts.isImportDeclaration(st) || st.moduleSpecifier.text !== "@ai-matrx/design-system") continue;
     const nb = st.importClause?.namedBindings;
+    for (const e of nb && ts.isNamedImports(nb) ? nb.elements : []) {
+      if ((e.propertyName || e.name).text === "Button" && e.name.text !== "SurfaceButton" && !e.isTypeOnly && !st.importClause.isTypeOnly) {
+        sites.push({ rule: "legacy-root-button", file, line: sf.getLineAndCharacterOfPosition(st.getStart(sf)).line + 1, what: `Button as ${e.name.text} from the package root` });
+      }
+    }
     if (nb && ts.isNamedImports(nb) && nb.elements.some((e) => (e.propertyName || e.name).text === "SegmentedControl")) {
       sites.push({ rule: "hand-built-segmented", file, line: sf.getLineAndCharacterOfPosition(st.getStart(sf)).line + 1, what: "SegmentedControl from the package root" });
     }
@@ -727,7 +740,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; import { Tabs, TabsList, TabsContent } from "@/components/ui/tabs";
 import { TapTargetButton, CopyTapButton, TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { SegmentedControl } from "@ai-matrx/design-system";
+import { SegmentedControl, Button as OldButton } from "@ai-matrx/design-system";
 export function Bad() {
   return (
     <Card>
@@ -763,7 +776,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; import { Tabs, TabsList, TabsContent } from "@/components/ui/tabs";
 import { TapTargetButton, CopyTapButton, TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl } from "@ai-matrx/design-system/controls"; import { Button as SurfaceButton } from "@ai-matrx/design-system";
 export function Good() {
   return (
     <Card>
@@ -817,6 +830,7 @@ const PLANTED_SITES = [
   "secondary-as-accent :: <i> hover:text-secondary to-secondary/20",
   "primitive-visual-class :: <TabsList> bg-muted rounded-lg",
   "hand-built-segmented :: SegmentedControl from the package root",
+  "legacy-root-button :: Button as OldButton from the package root",
   "hand-built-segmented :: <div> bg-muted inline-flex p-0.5 rounded-md",
 ];
 

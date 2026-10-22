@@ -25,6 +25,7 @@ import {
   type TermListDraft,
 } from "../service";
 import {
+  ENTRY_KINDS,
   MODALITIES,
   MODALITY_LABELS,
   isModality,
@@ -38,6 +39,14 @@ import { termListBulkActions } from "./termListBulkActions";
 import { TermEntriesTable } from "./TermEntriesTable";
 import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  SurfaceRuntimeProvider,
+  useSurfaceScopeContribution,
+  useSurfaceWriteHandlers,
+} from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { TERM_LISTS_SURFACE_NAME } from "@/features/surfaces/manifests/term-lists.manifest";
 import { ArchivedDisclosure, ReadFailure } from "@ai-matrx/design-system";
 
 const EMPTY_ORGS: { id: string; name: string }[] = [];
@@ -132,7 +141,16 @@ export function TermListsWorkspace() {
     }
   };
 
+  // matrx-user/term-lists — the lists; the open editor below contributes its draft and takes drafts.
+  const getSurfaceScope = () =>
+    ({
+      term_lists_load_status: listsError ? "failed" : lists === null ? "loading" : "loaded",
+      term_lists: (lists ?? []).slice(0, 50).map((l) => ({ id: l.id, name: l.name, modalities: l.modalities, entry_count: l.entries.length })),
+      open_term_list_id: selectedId,
+    }) as SurfaceScopePayload;
+
   return (
+    <SurfaceRuntimeProvider surfaceName={TERM_LISTS_SURFACE_NAME} getScope={getSurfaceScope}>
     <div className="flex h-full overflow-hidden pt-[var(--shell-header-h)]">
       <RouteHeader
         left={
@@ -280,6 +298,7 @@ export function TermListsWorkspace() {
         )}
       </main>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }
 
@@ -298,6 +317,77 @@ export function TermListEditor({
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [loadAttempt, setLoadAttempt] = useState(0);
+
+  // The open list as edited (nothing saves until the person presses Save); its notes and entries take
+  // an agent's draft. Registered only under the term-lists page surface (a no-op elsewhere).
+  useSurfaceScopeContribution(TERM_LISTS_SURFACE_NAME, "term-list-editor", () =>
+    ({
+      open_term_list: draft
+        ? {
+            name: draft.name,
+            modalities: draft.modalities,
+            source_language: draft.source_language ?? null,
+            entries: draft.entries,
+            unsaved_changes: !!base && JSON.stringify(draftOf(base)) !== JSON.stringify(draft),
+            problems: validateEntries(draft.entries).map((p) => `Row ${p.row}: ${p.message}`),
+          }
+        : null,
+      term_list_notes: draft?.context ?? "",
+    }) as SurfaceScopePayload,
+  );
+  const parseEntries = (value: unknown) => {
+    const items = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
+    if (!items.length || items.length > 200) refuseSurfaceWrite("add_term_entries takes a JSON array of 1-200 entries.");
+    const problems: string[] = [];
+    const entries = items.map((item, i) => {
+      const term = typeof item?.term === "string" ? item.term.trim() : "";
+      const kind = item?.kind as EntryKind;
+      if (!term) problems.push(`Item ${i + 1}: "term" is required.`);
+      if (!ENTRY_KINDS.includes(kind)) problems.push(`Item ${i + 1}: "kind" must be one of ${ENTRY_KINDS.join(", ")}.`);
+      if (item?.value !== undefined && typeof item.value !== "string") problems.push(`Item ${i + 1}: "value" must be text.`);
+      if (item?.language !== undefined && typeof item.language !== "string") problems.push(`Item ${i + 1}: "language" must be text.`);
+      return {
+        term,
+        kind,
+        ...(typeof item?.value === "string" ? { value: item.value } : {}),
+        ...(typeof item?.language === "string" ? { language: item.language } : {}),
+        ...(typeof item?.case_sensitive === "boolean" ? { case_sensitive: item.case_sensitive } : {}),
+      };
+    });
+    if (problems.length) refuseSurfaceWrite(`${problems.join(" ")} Nothing was changed.`);
+    return entries;
+  };
+  useSurfaceWriteHandlers(TERM_LISTS_SURFACE_NAME, {
+    add_term_entries: {
+      validate: (value: unknown) => {
+        if (!draft) refuseSurfaceWrite("No term list is open.");
+        parseEntries(value);
+      },
+      apply: (value: unknown) => {
+        if (!draft) refuseSurfaceWrite("No term list is open.");
+        const added = parseEntries(value);
+        const next = [...draft!.entries, ...added];
+        setDraft({ ...draft!, entries: next });
+        const problems = validateEntries(next);
+        return {
+          summary: `Added ${added.length} entr${added.length === 1 ? "y" : "ies"} to the list. Nothing is saved until the person presses Save.${problems.length ? ` The page flags: ${problems.slice(0, 3).map((p) => `row ${p.row} ${p.message}`).join("; ")}.` : ""}`,
+          data: { added: added.length, total: next.length },
+        };
+      },
+    },
+    term_list_notes: {
+      validate: (value: unknown) => {
+        if (!draft) refuseSurfaceWrite("No term list is open.");
+        if (typeof value !== "string") refuseSurfaceWrite("term_list_notes takes text.");
+      },
+      apply: (value: unknown) => {
+        if (!draft) refuseSurfaceWrite("No term list is open.");
+        const text = String(value);
+        setDraft({ ...draft!, context: text || null });
+        return { summary: "The notes are filled in. Nothing is saved until the person presses Save.", data: { term_list_notes: text } };
+      },
+    },
+  });
 
   useEffect(() => {
     let active = true;

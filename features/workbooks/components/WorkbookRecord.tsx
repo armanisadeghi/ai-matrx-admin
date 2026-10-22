@@ -211,7 +211,7 @@ export function WorkbookRecord({
             workbook_permissions: {
               is_owner: isOwner,
               can_edit: canEdit,
-              is_public: workbook.is_public,
+              is_public: workbook.visibility === "public",
             },
             open_workbook: {
               id: workbook.id,
@@ -219,7 +219,7 @@ export function WorkbookRecord({
               description: workbook.description,
               source: workbook.source,
               version: workbook.version,
-              is_public: workbook.is_public,
+              is_public: workbook.visibility === "public",
               original_file_id: workbook.original_file_id,
               created_at: workbook.created_at,
               updated_at: workbook.updated_at,
@@ -291,9 +291,7 @@ export function WorkbookRecord({
                 resourceId={workbook.id}
                 resourceName={workbook.workbook_name}
                 isOwner={isOwner}
-                variant="default"
-                size="sm"
-                className="rounded-full px-4 max-sm:px-2.5 max-sm:[&>span]:hidden"
+                variant="primary"
               />
             ),
             ...(canEdit ? { onRename: applyRename } : {}),

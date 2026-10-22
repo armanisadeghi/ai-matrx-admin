@@ -6,7 +6,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown, Database, FileText, Upload } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import AdvancedTranscriptViewer from "@/components/mardown-display/blocks/transcripts/AdvancedTranscriptViewer";
 import { ImportTranscriptModal } from "@/features/transcripts/components/ImportTranscriptModal";
 import { parseTranscript, type ParsedTranscript } from "./transcript-parser";
@@ -60,21 +60,20 @@ const TranscriptBlock: React.FC<TranscriptBlockProps> = ({ content, parsed: give
           />
         </CollapsibleTrigger>
         <Button
-          size="sm"
-          variant="ghost"
+          icon={<Upload />}
+          variant="quiet"
           onClick={(e) => {
             e.stopPropagation();
             setIsImportModalOpen(true);
           }}
-          className="mr-2 h-8 px-3"
+          className="mr-2"
         >
-          <Upload className="h-4 w-4" />
           Import
         </Button>
         {openSaveToTable && parsed.segments.length > 0 ? (
           <Button
-            size="sm"
-            variant="ghost"
+            icon={<Database />}
+            variant="quiet"
             onClick={(e) => {
               e.stopPropagation();
               openSaveToTable({
@@ -82,9 +81,8 @@ const TranscriptBlock: React.FC<TranscriptBlockProps> = ({ content, parsed: give
                 title: parsed.title ?? "Transcript",
               });
             }}
-            className="mr-2 h-8 px-3"
+            className="mr-2"
           >
-            <Database className="h-4 w-4" />
             Save to a table
           </Button>
         ) : null}

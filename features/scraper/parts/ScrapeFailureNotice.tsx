@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import { AlertCircle, ChevronDown, ChevronRight } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ScraperHookErrorDetails } from "@/features/scraper/parts/ScraperHookErrorDetails";
 import type { ScrapeFailure } from "@/features/scraper/failure/scrapeFailure";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -91,8 +91,8 @@ export function ScrapeFailureNotice({
 
       {remedyAction ? (
         <Button
-          size="sm"
-          className={isPage ? "h-8 w-fit text-xs" : "h-7 w-full text-xs"}
+          variant="primary"
+          className={isPage ? "w-fit" : "w-full"}
           onClick={remedyAction.onClick}
         >
           {remedyAction.label}

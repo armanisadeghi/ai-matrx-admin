@@ -21,7 +21,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   useFileUpload,
@@ -749,12 +749,12 @@ export function InlineUploadArea({
 
         {!isProcessing && (
           <Button
+            icon={<Upload />}
+            type="submit"
             variant="outline"
-            size="sm"
-            className="h-9 w-full rounded-lg text-sm pointer-coarse:h-11"
+            className="w-full"
             onClick={clearAndReset}
           >
-            <Upload className="mr-1.5 h-4 w-4" />
             {hasErrors ? "Try again" : "Upload more"}
           </Button>
         )}
@@ -820,9 +820,8 @@ export function InlineUploadArea({
           />
           <Button
             type="submit"
-            size="sm"
             variant="outline"
-            className="h-9 shrink-0 rounded-lg text-sm pointer-coarse:h-11"
+            className="shrink-0"
             disabled={!link.trim() || fetchingLink}
           >
             {fetchingLink ? (

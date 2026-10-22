@@ -613,7 +613,6 @@ export function AppletSettingsContent({ appId }: AppletSettingsContentProps) {
                   resourceName={app.name}
                   organizationId={app.organization_id ?? undefined}
                   showStatus={false}
-                  size="sm"
                 />
               </Row>
               <Row label="Web address">

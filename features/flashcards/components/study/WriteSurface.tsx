@@ -18,7 +18,6 @@ import {
   ArrowRight,
   BookOpen,
   CheckCircle2,
-  Loader2,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -284,7 +283,7 @@ export function WriteSurface({ setId }: { setId: string }) {
                     studyContext: deckStudyContext(setId),
                   })}
                   iconOnly
-                  variant="ghost"
+                  variant="quiet"
                 />
               ) : null}
               <RoundSizeMenu
@@ -495,8 +494,8 @@ function CheckingBanner() {
       role="status"
       className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-muted-foreground"
     >
-      <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
-      <span className="text-base font-semibold">Checking meaning</span>
+      <MatrxMiniLoader />
+      <span className="type-label">Checking meaning</span>
     </div>
   );
 }

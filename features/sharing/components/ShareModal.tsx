@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Users,
   Globe,
@@ -373,19 +373,18 @@ export function ShareModal({
               </DialogDescription>
             </div>
             <Button
+              icon={emailingLink ? (
+                <Loader2 className="animate-spin" />
+              ) : emailSent ? (
+                <CheckCircle className="text-green-500" />
+              ) : (
+                <Mail />
+              )}
               variant="outline"
-              size="sm"
               onClick={handleEmailLink}
               disabled={emailingLink}
               className="flex-shrink-0"
             >
-              {emailingLink ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : emailSent ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              ) : (
-                <Mail className="h-4 w-4" />
-              )}
               <span className="ml-1.5 hidden sm:inline">
                 {emailSent ? "Sent!" : "Email link"}
               </span>

@@ -33,9 +33,10 @@
 import { RichContentServer } from "@ai-matrx/rich-content/levels/server/RichContentServer";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 
 import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
-import { publicBooking } from "@/features/booking/service";
+import { publicBooking, refreshBusyIfDue } from "@/features/booking/service";
 
 import { BookingPicker } from "@/features/booking/BookingPicker";
 import { PaymentNotice } from "@/features/payments/PaymentNotice";
@@ -80,6 +81,9 @@ export default async function PublicBookingPage({
   const query = await searchParams;
   const page = await publicBooking(bookingId);
   if (!page) notFound();
+  // CD-PAGE-10: a connected calendar is re-read after the page is sent (never holding the visitor's page up); the
+  // hold re-reads before it holds, so a time the owner just became busy at is never booked.
+  after(() => refreshBusyIfDue(bookingId).then(() => undefined));
   const payment = await paymentNoticeFor(bookingId, query, `/b/${bookingId}`);
 
   // PAID IS THE END OF THE VISIT: say it is confirmed, not a fresh picker that reads as "book again".

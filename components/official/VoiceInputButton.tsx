@@ -123,7 +123,6 @@ export function VoiceInputButton({
             </div>
           ) : (
             <MicrophoneButton
-              size="icon"
               onClick={handleClick}
               disabled={disabled}
               className={className}

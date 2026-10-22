@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -19,8 +19,9 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
 interface SaveToScratchButtonProps {
   content: string;
-  variant?: "default" | "outline" | "ghost" | "secondary";
-  size?: "default" | "sm" | "lg" | "icon";
+  variant?: "primary" | "outline" | "quiet";
+  /** Glyph only. Default true; pass a `label` and `iconOnly={false}` for a labelled button. */
+  iconOnly?: boolean;
   label?: string;
   className?: string;
 }
@@ -31,8 +32,8 @@ interface SaveToScratchButtonProps {
  */
 export function SaveToScratchButton({
   content,
-  variant = "ghost",
-  size = "icon",
+  variant = "quiet",
+  iconOnly = true,
   label,
   className,
 }: SaveToScratchButtonProps) {
@@ -74,20 +75,28 @@ export function SaveToScratchButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={variant}
-            size={size}
-            onClick={handleSave}
-            disabled={isSaving || !content.trim()}
-            className={className}
-          >
-            {justSaved ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <FileText className="h-4 w-4" />
-            )}
-            {label && <span className="ml-2">{label}</span>}
-          </Button>
+          {iconOnly || !label ? (
+            <Button
+              variant={variant}
+              icon={justSaved ? <Check /> : <FileText />}
+              glyphTone={justSaved ? "success" : undefined}
+              onClick={handleSave}
+              disabled={isSaving || !content.trim()}
+              className={className}
+              aria-label={label || "Save to Scratch"}
+            />
+          ) : (
+            <Button
+              variant={variant}
+              icon={justSaved ? <Check /> : <FileText />}
+              glyphTone={justSaved ? "success" : undefined}
+              onClick={handleSave}
+              disabled={isSaving || !content.trim()}
+              className={className}
+            >
+              {label}
+            </Button>
+          )}
         </TooltipTrigger>
         <TooltipContent>
           {justSaved ? "Saved!" : "Save to Scratch"}

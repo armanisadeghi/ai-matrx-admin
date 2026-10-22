@@ -30,7 +30,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Plus, Trash2, X } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
@@ -384,10 +384,9 @@ export function ChoiceOptionsEditor({
                   Already in this column
                 </span>
                 <Button
+                  icon={<Check />}
                   type="button"
-                  variant="secondary"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
+                  variant="outline"
                   onClick={() =>
                     setChoices([
                       ...choices,
@@ -395,7 +394,6 @@ export function ChoiceOptionsEditor({
                     ])
                   }
                 >
-                  <Check className="mr-1 h-3 w-3" />
                   Add all {unclaimed.length}
                 </Button>
               </div>
@@ -460,15 +458,12 @@ export function ChoiceOptionsEditor({
                     </SelectContent>
                   </Select>
                   <Button
+                    icon={<Trash2 />}
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    variant="quiet"
                     aria-label={`Remove ${choice.value}`}
                     onClick={() => removeChoice(index)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  />
                 </div>
               ))}
             </div>
@@ -487,9 +482,8 @@ export function ChoiceOptionsEditor({
                 {moveTargets.length > 0 && (
                   <>
                     <Button
+                      variant="primary"
                       type="button"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
                       disabled={moveTo === ""}
                       onClick={() => answer({ then: "move", to: moveTo })}
                     >
@@ -510,14 +504,14 @@ export function ChoiceOptionsEditor({
                   </>
                 )}
                 {options.allowOther !== false && (
-                  <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => answer({ then: "keep" })}>
+                  <Button type="button" variant="outline" onClick={() => answer({ then: "keep" })}>
                     Keep the words as other values
                   </Button>
                 )}
-                <Button type="button" variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => answer({ then: "clear" })}>
+                <Button type="button" variant="outline" onClick={() => answer({ then: "clear" })}>
                   Clear them
                 </Button>
-                <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setAsking([])}>
+                <Button type="button" variant="quiet" onClick={() => setAsking([])}>
                   Cancel
                 </Button>
               </div>
@@ -559,8 +553,6 @@ export function ChoiceOptionsEditor({
             <Button
               type="button"
               variant="outline"
-              size="sm"
-              className="h-8"
               onClick={() => {
                 addChoice(draftValue);
                 setDraftValue("");

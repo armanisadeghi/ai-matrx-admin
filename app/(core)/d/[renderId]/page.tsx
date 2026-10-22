@@ -40,6 +40,9 @@ import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument"
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { createClient } from "@/utils/supabase/client";
 import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { RENDERED_DOCUMENT_SURFACE_NAME } from "@/features/surfaces/manifests/rendered-document.manifest";
 
 /** What `custom.doc_render_read` answers — the frozen bytes, what they are of, and where they live. */
 interface RenderedDocument {
@@ -101,8 +104,25 @@ export default function RenderedDocumentRoute({
 
     const organizationName = document?.organization_name ?? "its organization";
 
+    // matrx-user/rendered-document — read-only: the words are frozen (what a signature is over).
+    const getScope = () =>
+        ({
+            render_id: renderId,
+            document_load_status: refusal ? "refused" : document ? "loaded" : "loading",
+            ...(document
+                ? {
+                      document_body: document.body,
+                      rendered_at: document.rendered_at,
+                      document_version: document.document_version,
+                      template_id: document.template_id,
+                      record_id: document.record_id,
+                      document_organization_name: document.organization_name,
+                  }
+                : {}),
+        }) as SurfaceScopePayload;
+
     return (
-        <>
+        <SurfaceRuntimeProvider surfaceName={RENDERED_DOCUMENT_SURFACE_NAME} getScope={getScope} isEditable={false}>
             <RecordPageHeader record={{ name: "Document" }} />
             <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] p-4 pb-[var(--matrx-page-runway)]" data-matrx-page-runway="">
                 {refusal ? (
@@ -136,6 +156,6 @@ export default function RenderedDocumentRoute({
                     </div>
                 )}
             </div>
-        </>
+        </SurfaceRuntimeProvider>
     );
 }

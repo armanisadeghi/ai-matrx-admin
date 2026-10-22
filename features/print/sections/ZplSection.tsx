@@ -22,6 +22,14 @@ import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, byteLength, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_ZPL_LABELS } from "./sample-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_ZPL_FIELDS,
+    PRINT_ZPL_FORM_TARGET,
+    PRINT_ZPL_SURFACE_NAME,
+    createPrintZplScope,
+} from "@/features/surfaces/manifests/print-zpl.manifest";
 
 const ROLL_TEMPLATES: LabelTemplate[] = LABEL_TEMPLATES.filter((t) => t.kind === "roll");
 const DPI_OPTIONS: ZplDpi[] = [203, 300];
@@ -62,7 +70,41 @@ export function ZplSection() {
 
     const verdict = assertZplScannable(template, byteLength(qrValue), { dpi });
 
+    const getScope = () =>
+        createPrintZplScope({
+            roll_stock: template?.id ?? "",
+            dpi: String(dpi),
+            qr_value: qrValue,
+            caption,
+            badge,
+            detail_lines: detail,
+            roll_stock_name: template ? `${template.stockCode} — ${template.name}` : "",
+            scan_check: verdict.ok
+                ? `Scannable — QR version ${verdict.version} at ${verdict.moduleSizeMm.toFixed(2)} mm per module.`
+                : (verdict.message ?? "This payload will not scan reliably off this stock."),
+            ...(zpl ? { zpl } : {}),
+            ...(genError ? { generation_error: genError } : {}),
+            roll_stock_options: ROLL_TEMPLATES.map((t) => ({ id: t.id, name: `${t.stockCode} — ${t.name}` })),
+        });
+
+    const getWriteHandlers = () =>
+        printToolWriteHandlers(
+            PRINT_ZPL_FIELDS,
+            PRINT_ZPL_FORM_TARGET,
+            (patch) => {
+                if (typeof patch.roll_stock === "string") setTemplateId(patch.roll_stock);
+                if (typeof patch.dpi === "string") setDpi(Number(patch.dpi) as ZplDpi);
+                if (typeof patch.qr_value === "string") setQrValue(patch.qr_value);
+                if (typeof patch.caption === "string") setCaption(patch.caption);
+                if (typeof patch.badge === "string") setBadge(patch.badge);
+                if (typeof patch.detail_lines === "string") setDetail(patch.detail_lines);
+            },
+            { roll_stock: ROLL_TEMPLATES.map((t) => t.id) },
+        );
+
     return (
+        // surface-write-handlers: zpl_settings, qr_value, caption, badge, detail_lines
+        <SurfaceRuntimeProvider surfaceName={PRINT_ZPL_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="ZPL (raw thermal)"
             entry="@ai-matrx/print/zpl"
@@ -156,5 +198,6 @@ export function ZplSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

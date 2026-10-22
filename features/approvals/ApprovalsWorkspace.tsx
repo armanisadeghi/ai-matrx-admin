@@ -31,12 +31,18 @@ import type {
   ApprovalFocusDetail,
   ApprovalFocusResolution,
 } from "./types";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { APPROVALS_SURFACE_NAME } from "@/features/surfaces/manifests/approvals.manifest";
 import { useState } from "react";
 
 export function ApprovalsWorkspace({
   focusItemId,
   className,
+  asPage = false,
 }: {
+  /** True on the /approvals route: the workspace is then the `matrx-user/approvals` page surface (never in the window). */
+  asPage?: boolean;
   /**
    * The row a link asked for — `/approvals?item=<id>`, which is where an
    * assist chip and every deep link land. The route reads it from
@@ -139,9 +145,10 @@ export function ApprovalsWorkspace({
   const settled = summary !== null && !summary.loading;
   const empty = settled && summary.count === 0 && summary.errors === 0;
 
-  return (
+  const body = (
     <div className={className}>
       <ApprovalQueue
+        surfaceName={asPage ? APPROVALS_SURFACE_NAME : null}
         scope={{ key: userId, organizationId, userId }}
         tableId="approvals"
         title="Waiting on your approval"
@@ -216,5 +223,12 @@ export function ApprovalsWorkspace({
         </div>
       ) : null}
     </div>
+  );
+  return asPage ? (
+    <SurfaceRuntimeProvider surfaceName={APPROVALS_SURFACE_NAME} getScope={() => ({}) as SurfaceScopePayload} isEditable={false}>
+      {body}
+    </SurfaceRuntimeProvider>
+  ) : (
+    body
   );
 }

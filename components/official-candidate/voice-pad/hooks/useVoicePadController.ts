@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   selectVoicePadDraftText,
   selectVoicePadEntries,
@@ -76,7 +76,7 @@ export function useVoicePadController(
       dispatch(
         openOverlay({
           overlayId: "saveToNotes",
-          instanceId: crypto.randomUUID(),
+          instanceId: mintInstanceId("saveToNotes"),
           data: {
             initialContent: currentText,
             bucketTag: "Voice Notes",

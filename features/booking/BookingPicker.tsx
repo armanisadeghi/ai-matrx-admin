@@ -474,7 +474,9 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
                     <Button variant="outline" disabled={stage.kind === "holding"} onClick={() => void hold(slot)}>
                       {stage.kind === "holding" && stage.slotKey === slot.key
                         ? "Holding…"
-                        : clockText(slot.at, zone)}
+                        : (slot.seats ?? 1) > 1 && typeof slot.left === "number"
+                          ? `${clockText(slot.at, zone)} · ${slot.left} left`
+                          : clockText(slot.at, zone)}
                     </Button>
                   )}
                 </li>

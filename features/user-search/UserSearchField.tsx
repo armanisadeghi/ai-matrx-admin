@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { useOpenUserSearchWindow } from "./useOpenUserSearchWindow";
@@ -84,17 +84,15 @@ export function UserSearchField({
         autoComplete="off"
       />
       <Button
+        icon={<Search />}
         type="button"
         variant="outline"
-        size="icon"
         disabled={disabled}
         aria-label={ariaLabel}
         title={ariaLabel}
         className="shrink-0"
         onClick={() => void openSearch()}
-      >
-        <Search className="h-4 w-4" />
-      </Button>
+      />
     </div>
   );
 }

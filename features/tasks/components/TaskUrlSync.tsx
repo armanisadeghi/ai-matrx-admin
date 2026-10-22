@@ -7,6 +7,7 @@ import {
   selectSelectedTaskId,
   setSelectedTaskId,
 } from "@/features/tasks/redux/taskUiSlice";
+import { useTasksGroupUrl } from "./useTasksGroupUrl";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 
 /**
@@ -23,6 +24,7 @@ export function TaskUrlSync() {
   const selectedTaskId = useAppSelector(selectSelectedTaskId);
 
   useNavTree();
+  useTasksGroupUrl();
 
   // ONE bidirectional bridge. A write-only mirror is why Back looked broken:
   // Back rewrote the URL, then this effect wrote the stale Redux value

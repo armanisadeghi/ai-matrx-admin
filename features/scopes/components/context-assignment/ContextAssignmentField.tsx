@@ -59,7 +59,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Input, MiddleTruncate } from "@ai-matrx/design-system/controls";
@@ -463,10 +463,10 @@ function InlineAdd({
         }}
         placeholder={placeholder}
       />
-      <Button size="sm" className="h-8" onClick={() => onCommit(v)}>
+      <Button variant="primary" onClick={() => onCommit(v)}>
         Add
       </Button>
-      <Button size="sm" variant="ghost" className="h-8 px-2" onClick={onCancel}>
+      <Button variant="quiet" onClick={onCancel}>
         <X className="h-4 w-4" />
       </Button>
     </div>
@@ -1980,16 +1980,16 @@ export function ContextAssignmentField({
             </span>
           ) : mode === "assignment" && (
             <Button
-              size="sm"
+              icon={busy ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Save />
+              )}
+              variant="primary"
               onClick={() => void save()}
               disabled={busy || loadingTree}
               className="shrink-0"
             >
-              {busy ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-1.5 h-4 w-4" />
-              )}
               Save
             </Button>
           )}

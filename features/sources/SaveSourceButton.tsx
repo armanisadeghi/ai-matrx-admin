@@ -13,7 +13,7 @@
 import { useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { Bookmark, CheckCircle2, ExternalLink } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -66,13 +66,11 @@ export function SaveSourceButton({
         </span>
       ) : (
         <Button
+          icon={<Bookmark />}
           type="button"
-          size="sm"
           variant="outline"
-          className="h-7 gap-1 text-xs"
           onClick={() => setOpen(true)}
-        >
-          <Bookmark className="h-3.5 w-3.5" /> Save
+        > Save
         </Button>
       )}
       <Link

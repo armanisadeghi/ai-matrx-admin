@@ -43,7 +43,6 @@ export function ShareControl({
             resourceType={CLOUD_BROWSER_RESOURCE_TYPE}
             resourceId={profileId}
             resourceName={profileName}
-            size="sm"
           />
         ) : !isPersistedProfile ? (
           <span className="text-xs text-muted-foreground">

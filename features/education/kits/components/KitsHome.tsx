@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { NEW_KIT_HREF } from "@/features/education/onboard/startRoutes";
 import { Package } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
@@ -169,7 +169,7 @@ export function KitsHome() {
           <p className="text-sm text-muted-foreground">
             Keep saved study aids together with their material.
           </p>
-          <Button asChild size="sm" className="gap-1.5">
+          <Button variant="primary" asChild>
             <Link href={NEW_KIT_HREF} data-tap-target>
               <AGENT_ICON className="h-4 w-4" />
               Create kit
@@ -201,7 +201,6 @@ export function KitsHome() {
             <Package className="h-8 w-8 text-amber-600 dark:text-amber-500" />
             <p className="text-sm text-muted-foreground">{error} <ErrorAlchemyMenu error={error} /></p>
             <Button
-              size="sm"
               variant="outline"
               onClick={() => setReloadTick((tick) => tick + 1)}
             >
@@ -216,7 +215,7 @@ export function KitsHome() {
               you get flashcards, a summary, a quiz, a mind map and more — all
               kept together.
             </p>
-            <Button asChild size="sm" className="gap-1.5">
+            <Button variant="primary" asChild>
               <Link href={NEW_KIT_HREF}>
                 <AGENT_ICON className="h-4 w-4" />
                 Create your first kit

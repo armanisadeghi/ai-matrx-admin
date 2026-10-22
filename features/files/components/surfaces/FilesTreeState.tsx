@@ -1,7 +1,7 @@
 "use client";
 
 import { FolderOpen, RefreshCw, TriangleAlert } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -67,8 +67,7 @@ export function FilesTreeErrorState({
             {error || "The files service did not return a usable listing."}
           </p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+        <Button icon={<RefreshCw aria-hidden="true" />} type="button" variant="outline" onClick={onRetry}>
           Try again
         </Button>
       </div>

@@ -244,7 +244,6 @@ function CaptureObservationsDialog({
               resourceType="web_screenshot"
               resourceId={screenshot.id}
               resourceName={captureLabel}
-              size="sm"
               showStatus={false}
             />
           </div>

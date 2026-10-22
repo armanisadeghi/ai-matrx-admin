@@ -16,7 +16,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import JSON5 from "json5";
 import { TextareaLegacy as Textarea } from "@/components/ui/textarea";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { AlertTriangle, GitCompareArrows } from "lucide-react";
 import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
 import { extractErrorMessage } from "@/utils/errors";
@@ -274,9 +274,9 @@ export function SettingsJsonEditor({
           </span>
           {text !== lastInitialRef.current && (
             <Button
+              icon={<GitCompareArrows />}
               type="button"
               variant="outline"
-              size="sm"
               onClick={() =>
                 openDiff({
                   original: lastInitialRef.current,
@@ -289,9 +289,7 @@ export function SettingsJsonEditor({
                   defaultView: "split",
                 })
               }
-              className="h-7 gap-1.5 text-xs"
             >
-              <GitCompareArrows className="h-3.5 w-3.5" />
               Compare
             </Button>
           )}
@@ -299,19 +297,16 @@ export function SettingsJsonEditor({
             <Button
               type="button"
               variant="outline"
-              size="sm"
               onClick={handleReset}
-              className="h-7 text-xs"
             >
               Reset
             </Button>
           )}
           <Button
+            variant="primary"
             type="button"
-            size="sm"
             onClick={handleApply}
             disabled={!parseResult.ok}
-            className="h-7 text-xs"
           >
             Apply
           </Button>

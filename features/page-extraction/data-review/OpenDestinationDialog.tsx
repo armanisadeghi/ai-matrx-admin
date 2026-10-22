@@ -25,7 +25,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayId } from "@ai-matrx/summon/open";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -110,8 +110,7 @@ export function OpenDestinationDialog({
           {note}
         </p>
       )}
-      <Button variant="default" className="justify-start" onClick={openHere}>
-        <ArrowRight className="mr-2 h-4 w-4" /> Open here
+      <Button icon={<ArrowRight />} variant="primary" className="justify-start" onClick={openHere}> Open here
       </Button>
       <Button variant="outline" className="justify-start" onClick={openNewTab}>
         {/* new-tab-icon: handler calls window.open(..., "_blank", ...) defined elsewhere in this file */}
@@ -119,14 +118,14 @@ export function OpenDestinationDialog({
       </Button>
       {windowOverlay && (
         <Button
+          icon={<PanelRight />}
           variant="outline"
           className="justify-start"
           onClick={openWindow}
-        >
-          <PanelRight className="mr-2 h-4 w-4" /> Open as window
+        > Open as window
         </Button>
       )}
-      <Button variant="ghost" className="justify-start" onClick={close}>
+      <Button variant="quiet" className="justify-start" onClick={close}>
         Stay here
       </Button>
     </div>

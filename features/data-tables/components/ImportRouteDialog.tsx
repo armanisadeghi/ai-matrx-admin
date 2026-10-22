@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -100,10 +100,9 @@ export function ImportRouteDialog({
           <Button variant="outline" onClick={onClose} disabled={isCommitting}>
             Cancel
           </Button>
-          <Button onClick={() => void onCommit(choice)} disabled={isCommitting}>
-            {isCommitting ? (
-              <Loader2 className="size-4 mr-2 animate-spin" />
-            ) : null}
+          <Button icon={isCommitting ? (
+              <Loader2 className="animate-spin" />
+            ) : null} variant="primary" onClick={() => void onCommit(choice)} disabled={isCommitting}>
             Import as{" "}
             {choice === "typed" ? "Typed Dataset" : "Workbook"}
           </Button>

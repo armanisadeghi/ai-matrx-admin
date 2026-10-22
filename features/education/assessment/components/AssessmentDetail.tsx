@@ -376,7 +376,7 @@ export function AssessmentDetail({
 
           {/* Owner / editor actions */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            {(access.isOwner || access.level === "admin") && <ShareButton resourceType="assessment" resourceId={assessment.id} resourceName={assessment.title} organizationId={assessment.organization_id} showStatus={false} size="sm" />}
+            {(access.isOwner || access.level === "admin") && <ShareButton resourceType="assessment" resourceId={assessment.id} resourceName={assessment.title} organizationId={assessment.organization_id} showStatus={false} />}
             {canEdit ? (
               <>
                 {/* Edit is another UI for THIS record, so it is an anchor —

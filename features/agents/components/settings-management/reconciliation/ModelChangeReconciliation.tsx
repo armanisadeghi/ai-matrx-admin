@@ -15,7 +15,7 @@
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import React, { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -156,36 +156,28 @@ export function ModelChangeReconciliation({
       {/* Global actions */}
       <div className="flex flex-wrap gap-1.5 pb-2 border-b border-border">
         <Button
-          size="sm"
           variant="outline"
-          className="h-7 text-xs"
           onClick={handleFixIncompatibleOnly}
           title="Apply the suggested action for each incompatible setting; keep compatible ones as-is"
         >
           Fix incompatibilities only
         </Button>
         <Button
-          size="sm"
           variant="outline"
-          className="h-7 text-xs"
           onClick={handleUseNewDefaults}
           title="Drop all current settings, use the new model's defaults"
         >
           Use new model defaults
         </Button>
         <Button
-          size="sm"
           variant="outline"
-          className="h-7 text-xs"
           onClick={handleKeepMine}
           title="Commit the model change but keep every current setting — warnings will show"
         >
           Keep my settings
         </Button>
         <Button
-          size="sm"
           variant="outline"
-          className="h-7 text-xs text-destructive hover:text-destructive"
           onClick={handleClearAll}
           title="Wipe all settings to empty"
         >
@@ -295,10 +287,10 @@ export function ModelChangeReconciliation({
 
       {/* Footer */}
       <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-        <Button variant="outline" onClick={onClose} className="h-8">
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button onClick={handleApplySuggested} className="h-8">
+        <Button variant="primary" onClick={handleApplySuggested}>
           Apply & switch model
         </Button>
       </div>

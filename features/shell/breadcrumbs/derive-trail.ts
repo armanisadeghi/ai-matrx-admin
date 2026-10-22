@@ -16,6 +16,8 @@ import type {
   CrumbOption,
 } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { trailOverrideFor, TRAIL_LABEL_OVERRIDES } from "./trail-overrides";
+import { isPagelessLevel } from "./pageless-levels";
+import { PAGELESS_LEVELS } from "./pageless-levels.generated";
 
 /** The slice of a menu node the derivation reads (ShellNavItem / ShellNavChild satisfy it). */
 export interface TrailNavNode {
@@ -51,7 +53,14 @@ export interface DeriveTrailInput {
   overrides?: Readonly<Record<string, string | null>>;
   /** Siblings of the level at `parentHref` from the route tree (called when the dropdown opens). */
   loadSiblings?: (parentHref: string, activeSegment: string) => Promise<CrumbOption[]>;
+  /**
+   * Is this address a folder with no page of its own? Default: the route manifest's table
+   * (pageless-levels.generated.ts). Such a level is never a crumb (it could only be a 404 or text).
+   */
+  isPageless?: (href: string) => boolean;
 }
+
+const manifestPageless = (href: string) => isPagelessLevel(href, PAGELESS_LEVELS);
 
 interface NavHit {
   node: TrailNavNode;
@@ -106,7 +115,7 @@ function prettySegment(segment: string): string {
 }
 
 export function deriveTrail(input: DeriveTrailInput): Crumb[] {
-  const { nav, records = {}, overrides = TRAIL_LABEL_OVERRIDES, loadSiblings } = input;
+  const { nav, records = {}, overrides = TRAIL_LABEL_OVERRIDES, loadSiblings, isPageless = manifestPageless } = input;
   const segments = bare(input.pathname).split("/").filter(Boolean);
   const index = navIndex(nav);
   const crumbs: Crumb[] = [];
@@ -170,8 +179,17 @@ export function deriveTrail(input: DeriveTrailInput): Crumb[] {
       optionsLabel = parentLabel;
     }
 
+    // EVERY CRUMB IS A REAL DOOR (Arman, 2026-10-22): a level whose address has no page of its own
+    // (`…/smart-add/validate`, parent of `/validate/<id>`) is no crumb at all — a link there is a 404
+    // and text there is a dead end. Its name still tells the next level what kind it is.
+    if (!isLast && !moduleRow && isPageless(href)) {
+      parentLabel = label;
+      return;
+    }
+
     crumbs.push({
       label,
+      at: href,
       // A module's crumb opens where the menu opens it (its list), not the bare address.
       href: isLast ? undefined : (moduleRow?.href ?? href),
       options,

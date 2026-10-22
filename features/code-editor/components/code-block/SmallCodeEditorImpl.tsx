@@ -7,7 +7,7 @@ import { useMonaco } from "@monaco-editor/react";
 import Editor from "@monaco-editor/react";
 import { useEffectsAttached } from "@ai-matrx/kit/hooks";
 import { useMeasure } from "@ai-matrx/kit/hooks";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Zap,
   Copy,
@@ -405,12 +405,10 @@ const SmallCodeEditor = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    icon={<Zap />}
                     variant="outline"
-                    size="sm"
                     onClick={handleFormatCode}
-                    className="h-8 px-3"
                   >
-                    <Zap className="h-4 w-4 mr-2" />
                     Format
                   </Button>
                 </TooltipTrigger>
@@ -427,9 +425,7 @@ const SmallCodeEditor = ({
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={handleCopyCode}
-                    className="h-8 px-3"
                   >
                     {copied ? (
                       <>
@@ -456,12 +452,10 @@ const SmallCodeEditor = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
+                    icon={<RotateCcw />}
                     variant="outline"
-                    size="sm"
                     onClick={handleResetCode}
-                    className="h-8 px-3"
                   >
-                    <RotateCcw className="h-4 w-4 mr-2" />
                     Reset
                   </Button>
                 </TooltipTrigger>
@@ -477,12 +471,10 @@ const SmallCodeEditor = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={wordWrap === "on" ? "default" : "outline"}
-                    size="sm"
+                    icon={<WrapText />}
+                    variant={wordWrap === "on" ? "primary" : "outline"}
                     onClick={handleToggleWordWrap}
-                    className="h-8 px-3"
                   >
-                    <WrapText className="h-4 w-4 mr-2" />
                     Wrap
                   </Button>
                 </TooltipTrigger>
@@ -498,12 +490,10 @@ const SmallCodeEditor = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={minimapEnabled ? "default" : "outline"}
-                    size="sm"
+                    icon={<Maximize2 />}
+                    variant={minimapEnabled ? "primary" : "outline"}
                     onClick={handleToggleMinimap}
-                    className="h-8 px-3"
                   >
-                    <Maximize2 className="h-4 w-4 mr-2" />
                     Map
                   </Button>
                 </TooltipTrigger>
@@ -556,7 +546,7 @@ const SmallCodeEditor = ({
         </div>
 
         {runCode && (
-          <Button variant="default" className="w-full mt-2" onClick={runCode}>
+          <Button variant="primary" className="w-full mt-2" onClick={runCode}>
             Run Code
           </Button>
         )}

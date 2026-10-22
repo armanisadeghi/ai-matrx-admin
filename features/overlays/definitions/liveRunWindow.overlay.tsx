@@ -31,6 +31,7 @@ import type { AppStore } from "@/lib/redux/store";
 import type { OverlayWire } from "./overlay-types";
 import { openLiveRunWindowAction, type OpenLiveRunWindowOptions } from "./liveRunWindow.action";
 import { createOpener } from "@ai-matrx/summon/opener";
+import { mintInstanceId } from "@ai-matrx/summon/boot";
 
 const OVERLAY_ID = "liveRunWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);
@@ -49,7 +50,7 @@ export interface LiveRunWindowHandle {
 export function createLiveRunWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (opts: OpenLiveRunWindowOptions = {}): LiveRunWindowHandle => {
-    const instanceId = opts.instanceId ?? `${OVERLAY_ID}-${Date.now()}`;
+    const instanceId = opts.instanceId ?? mintInstanceId(OVERLAY_ID);
     let current: OpenLiveRunWindowOptions = { ...opts };
 
     const push = () =>

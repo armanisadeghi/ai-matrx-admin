@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toSlug } from "@ai-matrx/records/scopes";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
@@ -178,11 +178,12 @@ export function ScopeForm({
             Cancel
           </Button>
           <Button
+            icon={saving && <Loader2 className="animate-spin" />}
+            variant="primary"
             className="flex-1"
             onClick={handleSubmit}
             disabled={!name.trim() || saving}
           >
-            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isEdit ? "Save Changes" : `Create ${scopeType.label_singular}`}
           </Button>
         </div>

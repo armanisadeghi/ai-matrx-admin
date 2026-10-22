@@ -23,7 +23,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Rainbow,
@@ -229,14 +229,11 @@ export function FullPromptOptimizer({
                 Current Prompt Object
               </Label>
               <Button
-                variant="ghost"
-                size="sm"
+                icon={<Copy />} aria-label="Copy to clipboard"
+                variant="quiet"
                 onClick={handleCopyOriginal}
-                className="h-7 w-7 p-0"
                 title="Copy to clipboard"
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </Button>
+              />
             </div>
             <div className="flex-1 bg-gray-50 dark:bg-gray-900 border-border rounded-lg overflow-hidden">
               <div className="h-full overflow-y-auto p-3">
@@ -257,14 +254,11 @@ export function FullPromptOptimizer({
               <Label className="text-sm font-medium">AI Response</Label>
               {streamingText && !isOptimizing && (
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  icon={<Copy />} aria-label="Copy raw response to clipboard"
+                  variant="quiet"
                   onClick={handleCopyRawResponse}
-                  className="h-7 w-7 p-0"
                   title="Copy raw response to clipboard"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                </Button>
+                />
               )}
             </div>
             <div className="flex-1 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-700 rounded-lg overflow-hidden">
@@ -328,12 +322,11 @@ export function FullPromptOptimizer({
                         changes.
                       </span>
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        icon={<Copy />}
+                        variant="quiet"
                         onClick={handleCopyOptimized}
-                        className="h-6 text-xs ml-auto"
+                        className="ml-auto"
                       >
-                        <Copy className="h-3 w-3" />
                         Copy JSON
                       </Button>
                     </div>
@@ -364,10 +357,8 @@ export function FullPromptOptimizer({
         <div className="px-6 py-3 border-t space-y-2">
           {!showGuidanceInput ? (
             <Button
-              variant="ghost"
-              size="sm"
+              variant="quiet"
               onClick={() => setShowGuidanceInput(true)}
-              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 h-8"
             >
               + Add additional guidance (optional)
             </Button>
@@ -406,43 +397,41 @@ export function FullPromptOptimizer({
           </div>
           <div className="flex items-center gap-2">
             <Button
+              icon={<X />}
               variant="outline"
               onClick={handleClose}
               disabled={isOptimizing}
             >
-              <X className="h-4 w-4 mr-2" />
               Cancel
             </Button>
 
             {hasOptimizedObject && !isOptimizing ? (
               <>
-                <Button variant="outline" onClick={handleOptimize}>
-                  <Rainbow className="h-4 w-4 mr-2" />
+                <Button icon={<Rainbow />} variant="outline" onClick={handleOptimize}>
                   Re-optimize
                 </Button>
                 {onAcceptAsCopy && (
                   <Button
+                    icon={<Check />}
                     variant="outline"
                     onClick={handleAcceptAsCopy}
-                    className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-950"
                   >
-                    <Check className="h-4 w-4 mr-2" />
                     Save as Copy
                   </Button>
                 )}
                 <Button
+                  icon={<Check />}
+                  variant="primary"
                   onClick={handleAccept}
-                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
                 >
-                  <Check className="h-4 w-4 mr-2" />
                   Accept & Replace
                 </Button>
               </>
             ) : (
               <Button
+                variant="primary"
                 onClick={handleOptimize}
                 disabled={isOptimizing || !currentPromptObject}
-                className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
               >
                 {isOptimizing ? (
                   <>

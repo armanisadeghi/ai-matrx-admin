@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import { Check, Loader2, Send, Undo2 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -155,17 +155,16 @@ export function RequestAccessPanel({
           <ErrorAlchemyMenu />
         </p>
         <Button
-          className="mt-3 h-8"
-          size="sm"
+          icon={busy ? (
+            <Loader2 className="animate-spin" aria-hidden />
+          ) : (
+            <Undo2 aria-hidden />
+          )}
+          className="mt-3"
           variant="outline"
           disabled={busy}
           onClick={() => void withdraw()}
         >
-          {busy ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden />
-          ) : (
-            <Undo2 className="mr-1.5 h-3.5 w-3.5" aria-hidden />
-          )}
           Withdraw request
         </Button>
       </div>
@@ -188,12 +187,11 @@ export function RequestAccessPanel({
           </p>
         ) : null}
         <Button
-          className="mt-3 h-8"
-          size="sm"
+          icon={<Send aria-hidden />}
+          className="mt-3"
           variant="outline"
           onClick={() => setReasking(true)}
         >
-          <Send className="mr-1.5 h-3.5 w-3.5" aria-hidden />
           Ask again
         </Button>
       </div>
@@ -234,16 +232,16 @@ export function RequestAccessPanel({
       />
 
       <Button
+        icon={busy ? (
+          <Loader2 className="animate-spin" aria-hidden />
+        ) : (
+          <Send aria-hidden />
+        )}
+        variant="primary"
         className="mt-3"
-        size="sm"
         disabled={busy}
         onClick={() => void send()}
       >
-        {busy ? (
-          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden />
-        ) : (
-          <Send className="mr-1.5 h-4 w-4" aria-hidden />
-        )}
         Request access
       </Button>
     </div>

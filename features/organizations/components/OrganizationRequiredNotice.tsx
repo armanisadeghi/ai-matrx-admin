@@ -38,7 +38,7 @@ import {
   useOrganizationRequired,
   type OrganizationState,
 } from "@/features/organizations/useOrganizationRequired";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import Link from "@/components/navigation/AppLink";
 
@@ -108,11 +108,11 @@ export function OrganizationRequiredNotice({
   // bottom sheet the header uses (`OrganizationPickerPopover`).
   const actions = (
     <div className={compact ? "flex flex-wrap items-center gap-2" : "flex flex-wrap items-center justify-center gap-2"}>
-      <Button asChild size="sm" variant="outline">
+      <Button asChild variant="outline">
         <Link href="/organizations">Create an organization</Link>
       </Button>
       {onRetry ? (
-        <Button size="sm" variant="ghost" onClick={onRetry}>
+        <Button variant="quiet" onClick={onRetry}>
           Try again
         </Button>
       ) : null}
@@ -197,7 +197,7 @@ function SignInFirstNotice({
       <p className={compact ? "mt-1 text-xs text-muted-foreground" : "text-sm text-muted-foreground"}>
         {sentence}
       </p>
-      <Button asChild size="sm">
+      <Button variant="primary" asChild>
         <a href={href}>Sign in</a>
       </Button>
     </>
@@ -357,7 +357,7 @@ function OrganizationUnavailableNotice({
         operation="Check which organization you are working in"
         className={compact ? "m-3" : "mx-auto my-6 max-w-md"}
         actions={
-          <Button size="sm" variant="outline" onClick={onClick}>
+          <Button variant="outline" onClick={onClick}>
             Try again
           </Button>
         }

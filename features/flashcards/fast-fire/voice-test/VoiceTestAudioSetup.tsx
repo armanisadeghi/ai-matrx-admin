@@ -12,7 +12,7 @@ import {
   AlertCircle,
   Mic,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MediaDevicesPanel } from "@/features/audio/components/devices/MediaDevicesPanel";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -105,8 +105,8 @@ export function VoiceTestAudioSetup({
       )}
 
       <Button
-        size="lg"
-        className="w-full gap-2"
+        variant="primary"
+        className="w-full"
         disabled={!canStart}
         onClick={() => onStart(spokenFrontFileId)}
       >
@@ -131,17 +131,15 @@ export function VoiceTestAudioSetup({
       <div className="flex flex-wrap items-center justify-center gap-2 border-t border-border pt-3">
         {!audioReady && (
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1.5 text-xs text-muted-foreground"
+            icon={prepping ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Volume2 />
+            )}
+            variant="quiet"
             disabled={prepping || checkingCache}
             onClick={prepareAudio}
           >
-            {prepping ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Volume2 className="h-3.5 w-3.5" />
-            )}
             {prepping
               ? "Preparing…"
               : prepError
@@ -156,21 +154,15 @@ export function VoiceTestAudioSetup({
           </span>
         )}
         <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "h-8 gap-1.5 text-xs",
-            showDevices ? "text-foreground" : "text-muted-foreground",
+          icon={<Headphones />} iconEnd={showDevices ? (
+            <ChevronDown />
+          ) : (
+            <ChevronRight />
           )}
+          variant="quiet"
           onClick={() => setShowDevices((v) => !v)}
         >
-          <Headphones className="h-3.5 w-3.5" />
           Audio settings
-          {showDevices ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
         </Button>
       </div>
 

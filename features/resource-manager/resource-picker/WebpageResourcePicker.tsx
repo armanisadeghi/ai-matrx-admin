@@ -14,7 +14,7 @@ import {
   Check,
   Scissors,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
@@ -421,11 +421,11 @@ export function WebpageResourcePickerCore({
           </div>
           {onSwitchTo && suggestedType !== "youtube_channel" && (
             <Button
-              size="sm"
-              className="h-9 w-full text-sm pointer-coarse:h-11"
+              icon={<Globe />}
+              variant="primary"
+              className="w-full"
               onClick={() => onSwitchTo(suggestedType, url)}
             >
-              <Globe className="mr-1.5 h-4 w-4" />
               Switch to{" "}
               {suggestedType === "youtube"
                 ? "YouTube"
@@ -470,8 +470,6 @@ export function WebpageResourcePickerCore({
           <div className="flex justify-end gap-2">
             <Button
               variant="outline"
-              size="sm"
-              className="h-9 text-sm pointer-coarse:h-11"
               onClick={() => {
                 setPasteOpen(false);
                 setPastedText("");
@@ -480,8 +478,7 @@ export function WebpageResourcePickerCore({
               Cancel
             </Button>
             <Button
-              size="sm"
-              className="h-9 text-sm pointer-coarse:h-11"
+              variant="primary"
               disabled={!pastedText.trim()}
               onClick={() => {
                 const text = pastedText.trim();
@@ -750,16 +747,13 @@ export function WebpageResourcePickerCore({
                   <Button
                     variant="outline"
                     onClick={handleClosePreview}
-                    size="sm"
-                    className="h-9 pointer-coarse:h-11"
                   >
                     Cancel
                   </Button>
                   <Button
+                    variant="primary"
                     onClick={handleConfirm}
                     disabled={!effectiveContent.trim()}
-                    size="sm"
-                    className="h-9 pointer-coarse:h-11"
                   >
                     Add page
                   </Button>

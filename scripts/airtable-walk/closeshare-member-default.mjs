@@ -15,8 +15,12 @@ const a = await admin();
 const m = await member();
 const id = await seedTable(a.client, "member-default");
 say("org", ORG, "table", id);
+// The setting reaches a Table's ROWS; a Table itself is structure, which membership never lifts above View
+// (iam._member_default_level_now, Arman 2026-10-05), so the member's level is read on one of its rows.
+let rowId = null;
 const level = async () => {
-  const r = await m.sb.schema("custom").rpc("my_level", { p_organization_id: ORG, p_id: id, p_type: "table" });
+  if (!rowId) rowId = (await a.client.listPage({ table_id: id, limit: 1, offset: 0, sort: [], search: null, filter: {}, view_id: null })).data.rows[0].id;
+  const r = await m.sb.schema("custom").rpc("my_level", { p_organization_id: ORG, p_id: rowId, p_type: "record" });
   return r.error ? "ERR " + r.error.message : r.data;
 };
 const rowOf = (page) => page.locator("div, li, section").filter({ hasText: LABEL }).filter({ has: page.getByRole("combobox") }).last();
@@ -35,7 +39,7 @@ try {
   say("row before", (await row.innerText()).slice(0, 300).replace(/\n/g, " | "));
   await A.page.screenshot({ path: SHOT + "15-1-before.png" });
   await row.getByRole("combobox").first().click();
-  await A.page.getByRole("option", { name: /^Viewer$/ }).first().click();
+  await A.page.getByRole("option", { name: /^Commenter$/ }).first().click();
   await A.page.waitForTimeout(1500);
   const save = row.getByRole("button", { name: /^Save$/ });
   if (await save.count()) await save.first().click();
@@ -45,15 +49,17 @@ try {
   await A.page.getByText(LABEL).first().scrollIntoViewIfNeeded();
   await A.page.waitForTimeout(2500);
   const after = (await rowOf(A.page).innerText()).replace(/\n/g, " | ");
+  const shown = (await rowOf(A.page).getByRole("combobox").first().innerText()).trim();
+  say("picker shows after reload", shown);
   say("row after reload", after.slice(0, 300));
   await A.page.screenshot({ path: SHOT + "15-2-after.png" });
-  check(/Viewer/.test(after), "the setting reads back Viewer after a reload", after.slice(0, 160));
+  check(/Commenter/.test(shown), "the setting reads back Commenter after a reload", shown);
   await new Promise((r) => setTimeout(r, 2000));
   const now = await level();
-  check(now === "viewer", "a plain member now holds View on a table nobody shared with them", `${before} -> ${now}`);
+  check(before !== "commenter" && now === "commenter", "a plain member now holds Comment on a row nobody shared with them", `${before} -> ${now}`);
 } finally {
   // put it back: remove this organization's answer so it inherits the platform default again
-  const r = await a.sb.schema("platform").rpc("knob_override_set", { p_feature: "custom", p_key: "member_default_level", p_scope_kind: "organization", p_scope_id: ORG, p_organization_id: ORG, p_value: null, p_note: "CLOSE-SHARE walk: back to inherit" }).catch((e) => ({ error: e }));
+  const r = await a.sb.schema("platform").rpc("knob_override_set", { p_feature: "custom", p_key: "member_default_level", p_scope_kind: "organization", p_scope_id: ORG, p_organization_id: ORG, p_value: null, p_note: "CLOSE-SHARE walk: back to inherit" }).then((x) => x, (e) => ({ error: e }));
   say("override cleared", r?.error ? "ERR " + (r.error.message ?? r.error) : JSON.stringify(r.data));
   say("member level after clearing", await level());
   try { const t = await a.client.tableArchive({ table_id: id }); say("archived", id, t.ok); } catch (e) { say("archive failed", e.message); }

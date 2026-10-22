@@ -12,7 +12,7 @@
 
 import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight, Undo2, X } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import type { ReversibleFoundAt, ReversibleTier } from "@ai-matrx/kit/reversible";
 import { foundAtHref } from "@ai-matrx/kit/reversible";
 import { cn } from "@/lib/utils";
@@ -87,13 +87,12 @@ export function ReversibleNotice({ tier, title, foundAt, shortcut, onUndo, onDis
       ) : null}
 
       <div className={cn("flex flex-wrap items-center", teach ? "gap-2" : "gap-1.5")}>
-        <Button size={teach ? "default" : "sm"} onClick={onUndo} data-reversible-undo="">
-          <Undo2 className="mr-1.5 h-4 w-4" aria-hidden />
+        <Button icon={<Undo2 aria-hidden />} variant="primary" onClick={onUndo} data-reversible-undo="">
           Undo
           <Shortcut keys={shortcut} className="ml-2" />
         </Button>
         {foundAt && tier !== "plain" ? (
-          <Button asChild size={teach ? "default" : "sm"} variant="outline">
+          <Button asChild variant="outline">
             <Link href={foundAtHref(foundAt)} target="_blank" rel="noopener" onClick={onDismiss} data-reversible-found="">
               Open {foundAt.label}
               <ArrowUpRight className="ml-1 h-3.5 w-3.5" aria-hidden />
@@ -101,7 +100,7 @@ export function ReversibleNotice({ tier, title, foundAt, shortcut, onUndo, onDis
           </Button>
         ) : null}
         {teach ? (
-          <Button size="default" variant="ghost" onClick={onDismiss}>
+          <Button variant="quiet" onClick={onDismiss}>
             Got it
           </Button>
         ) : null}

@@ -26,7 +26,7 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import type { CoppaGateReason } from "../types";
 
 export function AiConsentRequiredDialog({
@@ -102,13 +102,13 @@ export function AiConsentRequiredDialog({
           </DrawerHeader>
           <DrawerFooter className="flex-row gap-2">
             <Button
-              variant="ghost"
+              variant="quiet"
               className="flex-1"
               onClick={() => onOpenChange(false)}
             >
               Not now
             </Button>
-            <Button asChild className="flex-1">
+            <Button variant="primary" asChild className="flex-1">
               {familyLink}
             </Button>
           </DrawerFooter>
@@ -138,10 +138,10 @@ export function AiConsentRequiredDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:justify-between">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="quiet" onClick={() => onOpenChange(false)}>
             Not now
           </Button>
-          <Button asChild>{familyLink}</Button>
+          <Button variant="primary" asChild>{familyLink}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

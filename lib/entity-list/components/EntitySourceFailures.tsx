@@ -11,7 +11,7 @@
 // canceling statement due to statement timeout` (2026-09-26).
 
 import { RotateCcw } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { plainFailureReason } from "@/lib/entity-list/failure";
 
@@ -52,8 +52,7 @@ export function EntitySourceFailures({
       details={details}
       actions={
         onRetry ? (
-          <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={onRetry}>
-            <RotateCcw className="mr-1 h-3 w-3" />
+          <Button icon={<RotateCcw />} variant="quiet" onClick={onRetry}>
             Try again
           </Button>
         ) : undefined

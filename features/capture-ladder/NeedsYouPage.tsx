@@ -27,6 +27,9 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { NeedsYouList } from "@/features/capture-ladder/NeedsYouList";
 import { useNeedsYou } from "@/features/capture-ladder/useNeedsYou";
 import { EXTENSION_SETUP_ROUTE } from "@/features/capture-ladder/needsYouAssist";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { CAPTURE_NEEDS_YOU_SURFACE_NAME } from "@/features/surfaces/manifests/capture-needs-you.manifest";
 import {
   handToOwnBrowser,
   hasOwnBrowserExtension,
@@ -148,8 +151,25 @@ export function NeedsYouPage() {
   } = useNeedsYou();
   const organizationId = useAppSelector(selectOrganizationId);
 
+  // matrx-user/capture-needs-you — read-only: only the person's own browser can open these.
+  const getScope = () =>
+    ({
+      needs_you_status: state.kind,
+      needs_you_count: handoffs.length,
+      needs_you_items: handoffs.slice(0, 50).map((h) => ({
+        id: h.id,
+        url: h.url,
+        title: h.title || null,
+        kind: h.handoff_kind ?? "item",
+        status: h.status,
+        reason: h.reason,
+        what_to_do: h.what_to_do,
+      })),
+      reader_liveness: livenessSentence ?? null,
+    }) as SurfaceScopePayload;
+
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={CAPTURE_NEEDS_YOU_SURFACE_NAME} getScope={getScope} isEditable={false}>
       <RouteHeader
         left={
           <div className="flex min-w-0 items-center">
@@ -198,7 +218,7 @@ export function NeedsYouPage() {
           </div>
         </div>
       </div>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }
 

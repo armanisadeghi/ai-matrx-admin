@@ -42,7 +42,8 @@ import { getToolDisplayName } from "@ai-matrx/chat/tool-call-visualization/regis
 import { MatrxDynamicPanelHost } from "@/components/matrx/resizable/MatrxDynamicPanelHost";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system";
+import { Button as SurfaceButton } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -1014,17 +1015,14 @@ function ServerToolsTab({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5 text-muted-foreground hover:text-foreground"
-                    title="Copy enabled tools"
-                  >
-                    {copiedFormat ? (
-                      <Check className="h-3 w-3 text-success" />
+                    icon={copiedFormat ? (
+                      <Check className="text-success" />
                     ) : (
-                      <Copy className="h-3 w-3" />
-                    )}
-                  </Button>
+                      <Copy />
+                    )} aria-label="Copy enabled tools"
+                    variant="quiet"
+                    title="Copy enabled tools"
+                  />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64">
                   <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -1100,9 +1098,7 @@ function ServerToolsTab({
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                variant="quiet"
                 onClick={clearAll}
               >
                 Clear all
@@ -1212,14 +1208,12 @@ function ServerToolsTab({
             <div className="px-3 py-2.5 border-b border-border shrink-0 flex items-center gap-2">
               {/* Mobile: category filter button */}
               <Button
+                icon={<SlidersHorizontal />} aria-label="Filter by category"
                 variant="outline"
-                size="icon"
-                className="h-8 w-8 shrink-0 sm:hidden"
+                className="shrink-0 sm:hidden"
                 onClick={() => setMobileCategorySheetOpen(true)}
                 title="Filter by category"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-              </Button>
+              />
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                 <Input
@@ -1277,9 +1271,7 @@ function ServerToolsTab({
                   <div className="flex items-center gap-0.5">
                     {allVisibleSelected ? (
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                        variant="quiet"
                         onClick={deselectAllVisible}
                         title="Deselect all visible tools"
                       >
@@ -1289,9 +1281,7 @@ function ServerToolsTab({
                       <>
                         {someVisibleSelected && (
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                            variant="quiet"
                             onClick={deselectAllVisible}
                             title="Deselect all visible tools"
                           >
@@ -1300,9 +1290,7 @@ function ServerToolsTab({
                         )}
                         {modelSupportsTools && (
                           <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
+                            variant="quiet"
                             onClick={selectAllVisible}
                             title="Select all visible tools"
                           >
@@ -1317,16 +1305,14 @@ function ServerToolsTab({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+                        icon={copiedFormat ? (
+                          <Check className="text-success" />
+                        ) : (
+                          <Copy />
+                        )}
+                        variant="quiet"
                         title="Copy enabled tools"
                       >
-                        {copiedFormat ? (
-                          <Check className="h-3 w-3 text-success" />
-                        ) : (
-                          <Copy className="h-3 w-3" />
-                        )}
                         <span>{copiedFormat ? "Copied" : "Copy"}</span>
                       </Button>
                     </DropdownMenuTrigger>
@@ -1472,10 +1458,8 @@ function ServerToolsTab({
               <div className="flex items-center justify-between px-4 py-2 border-t border-border shrink-0 bg-muted/20">
                 <Button
                   variant="outline"
-                  size="sm"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="h-7 text-xs"
                 >
                   Previous
                 </Button>
@@ -1484,10 +1468,8 @@ function ServerToolsTab({
                 </span>
                 <Button
                   variant="outline"
-                  size="sm"
                   disabled={page >= toolsList.page_count}
                   onClick={() => setPage((p) => p + 1)}
-                  className="h-7 text-xs"
                 >
                   Next
                 </Button>
@@ -1648,9 +1630,7 @@ function OrphanedToolsBanner({
           </span>
           {orphanedTools.length > 1 && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-5 px-1.5 text-[10px] text-yellow-700 dark:text-yellow-300 hover:text-destructive"
+              variant="quiet"
               onClick={onRemoveAll}
             >
               Remove all
@@ -1734,13 +1714,11 @@ function OrphanedToolsBanner({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                    icon={<Trash2 />} aria-label="Remove from agent"
+                    variant="quiet"
+                    className="shrink-0"
                     onClick={() => onRemove(id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  />
                 </TooltipTrigger>
                 <TooltipContent side="left" className="type-secondary">
                   Remove from agent
@@ -1813,9 +1791,8 @@ function CustomToolsTab({
         </div>
         {!isAdding && (
           <Button
+            icon={<Plus />}
             variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1"
             disabled={!modelSupportsTools}
             title={
               modelSupportsTools
@@ -1827,7 +1804,6 @@ function CustomToolsTab({
               setEditingIndex(null);
             }}
           >
-            <Plus className="w-3 h-3" />
             Add Tool
           </Button>
         )}
@@ -1923,22 +1899,22 @@ function CustomToolCard({
           )}
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
-          <Button
+          <SurfaceButton
             variant="ghost"
             size="icon"
             className="h-6 w-6"
             onClick={onEdit}
           >
             <Pencil className="h-3 w-3" />
-          </Button>
-          <Button
+          </SurfaceButton>
+          <SurfaceButton
             variant="ghost"
             size="icon"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
             onClick={onDelete}
           >
             <Trash2 className="h-3 w-3" />
-          </Button>
+          </SurfaceButton>
         </div>
       </div>
 
@@ -2136,12 +2112,10 @@ function CustomToolForm({
             Parameters
           </Label>
           <Button
-            variant="ghost"
-            size="sm"
-            className="h-5 text-[10px] px-1.5"
+            icon={<Plus />}
+            variant="quiet"
             onClick={addParam}
           >
-            <Plus className="w-2.5 h-2.5 mr-0.5" />
             Add
           </Button>
         </div>
@@ -2192,14 +2166,14 @@ function CustomToolForm({
                   />
                   <span className="type-meta text-muted-foreground">Req</span>
                 </div>
-                <Button
+                <SurfaceButton
                   variant="ghost"
                   size="icon"
                   className="h-5 w-5 text-muted-foreground hover:text-destructive"
                   onClick={() => removeParam(idx)}
                 >
                   <X className="h-3 w-3" />
-                </Button>
+                </SurfaceButton>
               </div>
             ))}
           </div>
@@ -2208,16 +2182,13 @@ function CustomToolForm({
 
       <div className="flex justify-end gap-2 pt-1">
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs"
+          variant="quiet"
           onClick={onCancel}
         >
           Cancel
         </Button>
         <Button
-          size="sm"
-          className="h-7 text-xs"
+          variant="primary"
           onClick={handleSave}
           disabled={!canSave}
         >
@@ -2686,11 +2657,10 @@ function McpToolsTab({
             </p>
           </div>
           <Button
-            size="sm"
-            className="h-8 text-xs gap-1.5"
+            icon={<Plus />}
+            variant="primary"
             onClick={() => setShowCatalog(true)}
           >
-            <Plus className="w-3.5 h-3.5" />
             Browse Catalog ({catalog.length} servers)
           </Button>
         </div>
@@ -2717,12 +2687,10 @@ function McpToolsTab({
           </p>
         </div>
         <Button
+          icon={<Plus />}
           variant="outline"
-          size="sm"
-          className="h-7 text-xs gap-1"
           onClick={() => setShowCatalog(true)}
         >
-          <Plus className="w-3 h-3" />
           Add from Catalog
         </Button>
       </div>
@@ -2785,9 +2753,8 @@ function McpToolsTab({
                 server(s) referenced but not found in catalog
               </span>
               <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 px-1.5 text-[10px] ml-auto text-yellow-700 dark:text-yellow-300 hover:text-destructive"
+                variant="quiet"
+                className="ml-auto"
                 onClick={() => {
                   const validIds = agentMcpServers.filter((id) =>
                     catalog.find((c) => c.serverId === id),
@@ -2898,8 +2865,6 @@ function McpAgentServerCard({
             entry.authStrategy !== "none" && (
               <Button
                 variant="outline"
-                size="sm"
-                className="h-6 text-[10px] px-2"
                 disabled={isConnecting}
                 onClick={() => {
                   if (needsCredentialForm) {
@@ -2918,9 +2883,7 @@ function McpAgentServerCard({
             )}
           {entry.connectionStatus === "connected" && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 text-[10px] px-2 text-muted-foreground hover:text-destructive"
+              variant="quiet"
               onClick={() => onDisconnect(entry.serverId)}
             >
               Disconnect
@@ -2936,14 +2899,14 @@ function McpAgentServerCard({
               <ChevronRight className="w-3.5 h-3.5" />
             )}
           </button>
-          <Button
+          <SurfaceButton
             variant="ghost"
             size="icon"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
             onClick={onRemove}
           >
             <Trash2 className="h-3 w-3" />
-          </Button>
+          </SurfaceButton>
         </div>
       </div>
 
@@ -3107,16 +3070,16 @@ export function BearerTokenForm({ entry }: { entry: McpCatalogEntry }) {
         </p>
       )}
       <Button
-        size="sm"
-        className="h-7 text-[11px] gap-1.5 w-full"
+        icon={isSaving ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          <Save />
+        )}
+        variant="primary"
+        className="w-full"
         disabled={isSaving || !token.trim()}
         onClick={handleSubmit}
       >
-        {isSaving ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
-        ) : (
-          <Save className="w-3 h-3" />
-        )}
         {isSaving ? "Saving..." : "Save & Connect"}
       </Button>
     </div>
@@ -3224,16 +3187,16 @@ export function ApiKeyForm({ entry }: { entry: McpCatalogEntry }) {
         </p>
       )}
       <Button
-        size="sm"
-        className="h-7 text-[11px] gap-1.5 w-full"
+        icon={isSaving ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          <Save />
+        )}
+        variant="primary"
+        className="w-full"
         disabled={isSaving || !apiKey.trim()}
         onClick={handleSubmit}
       >
-        {isSaving ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
-        ) : (
-          <Save className="w-3 h-3" />
-        )}
         {isSaving ? "Saving..." : "Save & Connect"}
       </Button>
     </div>
@@ -3448,16 +3411,16 @@ export function EnvVarForm({ entry }: { entry: McpCatalogEntry }) {
       )}
 
       <Button
-        size="sm"
-        className="h-7 text-[11px] gap-1.5 w-full"
+        icon={isSaving ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          <Save />
+        )}
+        variant="primary"
+        className="w-full"
         disabled={isSaving}
         onClick={handleSubmit}
       >
-        {isSaving ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
-        ) : (
-          <Save className="w-3 h-3" />
-        )}
         {isSaving ? "Saving..." : "Save & Connect"}
       </Button>
     </div>
@@ -3535,12 +3498,10 @@ function McpCatalogPicker({
           </p>
         </div>
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs"
+          icon={<X />}
+          variant="quiet"
           onClick={onBack}
         >
-          <X className="w-3 h-3 mr-1" />
           Close
         </Button>
       </div>
@@ -3770,21 +3731,19 @@ function McpCatalogCard({
           <div className="w-20 flex justify-end">
             {needsAuth && (
               <Button
+                icon={<KeyRound />}
                 variant="outline"
-                size="sm"
-                className="h-6 text-[10px] px-2 w-full"
+                className="w-full"
                 disabled={isConnecting}
                 onClick={onConnect}
               >
-                <KeyRound className="w-3 h-3 mr-1" />
                 {isConnecting ? "..." : "Connect"}
               </Button>
             )}
             {entry.connectionStatus === "connected" && (
               <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-[10px] px-2 w-full text-muted-foreground hover:text-destructive"
+                variant="quiet"
+                className="w-full"
                 onClick={onDisconnect}
               >
                 Disconnect
@@ -3795,7 +3754,7 @@ function McpCatalogCard({
           {/* Add button — fixed width */}
           <div className="w-7 flex justify-end">
             {!isOnAgent && !isUnavailable && (
-              <Button size="sm" className="h-6 w-6 p-0" onClick={onAdd}>
+              <Button variant="primary" onClick={onAdd}>
                 <Plus className="w-3 h-3" />
               </Button>
             )}

@@ -21,7 +21,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRightLeft, Loader2 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Select } from "@ai-matrx/design-system/controls";
 import {
   Dialog,
@@ -209,15 +209,14 @@ export function TransferTableOwnership({
         <DialogFooter>
           {loaded.state === "ready" && n > 0 && !done ? (
             <>
-              <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
+              <Button variant="quiet" onClick={() => onOpenChange(false)} disabled={busy}>
                 Cancel
               </Button>
-              <Button onClick={() => void transfer()} disabled={busy} data-transfer-go>
-                {busy ? (
-                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              <Button icon={busy ? (
+                  <Loader2 className="animate-spin" />
                 ) : (
-                  <ArrowRightLeft className="mr-1.5 h-4 w-4" />
-                )}
+                  <ArrowRightLeft />
+                )} variant="primary" onClick={() => void transfer()} disabled={busy} data-transfer-go>
                 {n === 1 ? "Transfer the table" : `Transfer ${n} tables`}
               </Button>
             </>

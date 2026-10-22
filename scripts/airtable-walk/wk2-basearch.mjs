@@ -1,0 +1,24 @@
+// FW2- item 2: archive the empty base on the live site; capture the error (console + failed/4xx responses).
+import { live, say } from "./ba-lib.mjs";
+const ID = process.argv[2] ?? "dc452837-7385-4c05-9ec7-4b42b80f5a0a";
+const { page, who } = await live(false);
+say("who", who);
+const net = [];
+page.on("response", async (r) => { if (r.status() >= 400 || /base|identity|rpc/.test(r.url()) && r.request().method() !== "GET") { net.push(`${r.status()} ${r.request().method()} ${r.url().slice(0, 140)} ${(await r.text().catch(() => "")).slice(0, 300)}`); } });
+page.on("console", (m) => m.type() === "error" && net.push("CONSOLE " + m.text().slice(0, 300)));
+await page.goto(`https://www.aimatrx.com/data/bases/${ID}`, { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(9000);
+say("BODY0", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(0, 400));
+say("MAIN", (await page.locator("main").innerText().catch(() => "")).replace(/\n+/g, " | ").slice(0, 500));
+say("BTNS", (await page.getByRole("button").allInnerTexts()).filter(Boolean).slice(-40));
+await page.getByRole("button", { name: "Archive base" }).first().click({ timeout: 5000 });
+await page.waitForTimeout(1500);
+say("AFTERCLICK", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(-700));
+const c = page.locator("[role=dialog],[role=alertdialog]").getByRole("button", { name: /^Archive$/ });
+say("confirm", await c.count());
+await c.last().click();
+await page.waitForTimeout(6000);
+say("URL", page.url());
+say("BODY", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(0, 600));
+say("NET", net);
+process.exit(0);

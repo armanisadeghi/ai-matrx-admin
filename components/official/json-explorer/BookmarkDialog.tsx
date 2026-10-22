@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { BookmarkDialogProps } from "./types";
 import { generateAccessPath } from "./json-utils";
@@ -56,7 +56,7 @@ const BookmarkDialog: React.FC<BookmarkDialogProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={onSave}>Save</Button>
+          <Button variant="primary" onClick={onSave}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

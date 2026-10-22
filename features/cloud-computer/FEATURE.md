@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-17`
+**Last updated:** `2026-10-22`
 
 ---
 
@@ -21,6 +21,8 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
   (`cloud-browser/hooks/useOpenCloudBrowserCanvas.ts` → `browserBelongsToComputer`).
 - `ComputerView({ conversationId? })` is self-contained (no canvas coupling) so the agent
   dashboard can mount it; `conversationId` only binds Take control to that chat's agent.
+- Agents messenger (`/messenger/agents`) › agent details › **Computer** tab → `ComputerThumbnail` →
+  `ComputerView variant="thumbnail"`; a press opens the one Computer tab.
 
 ## Files
 
@@ -32,6 +34,7 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 | `AccountSetupPanel.tsx` | "Set up an account": the person signs up for an outside service themselves on the desktop (`POST /browser-manager/account-setup/start` opens the page on a profile kept for that account); one save (`POST /browser-manager/runs/{id}/account-setup/save`) puts the login in their Vault bound to that profile, then the authenticator key via `/api/authenticator/enroll`. What they type goes to the vault, never to an agent. |
 | `ScaledFrame.tsx` | One live Selkies iframe scaled to any box; measures on the next animation frame. `interactive` turns input on in the same frame and makes it own the keyboard (focus on control start / press; a self-focusing field elsewhere hands it back). |
 | `liveStream.ts` | Which held stream is the live picture (`liveStream`): any held stream on a watch-capable server, else only this revision's control stream. |
+| `ComputerThumbnail.tsx` | The Computer at a glance for another surface: mounts `ComputerView variant="thumbnail"` only while on screen (`useInView`) and the page is visible; a press opens the Computer tab. |
 | `useOpenCloudComputerCanvas.ts` | Canvas item; identity `CLOUD_COMPUTER_CANVAS_SOURCE_ID` — ONE per person, never per chat. |
 
 ---
@@ -89,6 +92,11 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
    window took it) → "Opened somewhere else" + Take over, never an automatic take-back. Take control
    / Stop say "Taking control…" / "Stopping…" while the server works.
 
+12. **Thumbnail = the same view.** `variant="thumbnail"` never wakes the machine (Asleep / Waking up… /
+   Saving… / Could not start), mounts the screen only when the machine is `ready`, opens only a watch
+   stream, takes only a FREE viewer seat (never steals it from the Computer tab) and says "On the
+   Computer tab" while another viewer holds it, then reopens once the seat is free. No Take control.
+
 ## Invariants & gotchas
 
 - **One viewer per run.** A newer control claim supersedes older ones server-side; two mounted
@@ -107,6 +115,10 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 - `features/canvas/` — host pane.
 
 ## Change log
+
+- **2026-10-22** — Dashboard thumbnail: `ComputerView variant="thumbnail"` + `ComputerThumbnail`, shown in
+  the agents messenger's Computer tab (`@ai-matrx/chat` `renderComputer`). common-docs
+  FIX-DASHBOARD-COMPUTER-2026-10-22.
 
 - **2026-10-18 (c)** — Held Cloud folder deletes: `CloudFolderNotice` (in the Computer screen) shows a
   hold with **Delete N in cloud** / **Restore to folder** and the skipped-entry count (aidream

@@ -26,7 +26,7 @@ import {
   CheckCircle2,
   Shapes,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAgentOutputSchema } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import {
@@ -162,13 +162,11 @@ export function OutputSchemaTab({
       {/* Validation tool — advisory only, never mutates or auto-applies. */}
       <div className="flex items-center gap-2 border-t border-border pt-2 flex-shrink-0">
         <Button
+          icon={<ShieldCheck />}
           type="button"
           variant="outline"
-          size="sm"
           onClick={() => setReport(validateOutputSchema(parsed))}
-          className="h-7 text-xs"
         >
-          <ShieldCheck className="h-3.5 w-3.5 mr-1" />
           Validate
         </Button>
         <InfoHint text="Reports issues; never changes or applies the schema." />

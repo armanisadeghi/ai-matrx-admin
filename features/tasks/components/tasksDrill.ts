@@ -1,5 +1,4 @@
 import type { MatrxDataTableLocalDrillConfig } from "@ai-matrx/design-system/data-table";
-import type { TaskGroupBy } from "@/features/tasks/redux/taskUiSlice";
 
 /**
  * LEVELS of the task table. A project asks which tasks are open and how late they run; a
@@ -31,22 +30,3 @@ export const TASKS_DRILL: MatrxDataTableLocalDrillConfig = {
     },
   },
 };
-
-/** The sidebar's group-by as the table's drill Dimension (Scope and Flat have none: flat). */
-const GROUP_BY_DIMENSION: Partial<Record<TaskGroupBy, string>> = {
-  project: "project",
-  status: "status",
-  priority: "priority",
-  dueDate: "dueDate:month",
-};
-
-/**
- * THE TABLE GROUPS AS THE SIDEBAR SAYS (live walk 2026-10-22): "Group: Project" in the sidebar,
- * flat rows in the table. The table's drill starts grouped by the sidebar's field; the person's own
- * drill choice in the address still wins, and the table remounts when the sidebar choice changes.
- */
-export function tasksDrillFor(groupBy: TaskGroupBy): MatrxDataTableLocalDrillConfig {
-  const by = GROUP_BY_DIMENSION[groupBy];
-  if (!by) return TASKS_DRILL;
-  return { ...TASKS_DRILL, question: { by: [by], show: ["count"], where: [] } };
-}

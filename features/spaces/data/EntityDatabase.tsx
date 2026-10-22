@@ -41,6 +41,8 @@ import { useParams } from "next/navigation";
 import { writeNewEntityRow } from "./entity-row-add";
 import { entityBoardColumn, entityBoardRows, entityCardColumns, entityChoiceColumnsOf, entityDateColumns, entityDateFor, entityField, entityPageSize, entityReadRows, entitySettingsFor, entitySubGroups } from "./entity-views";
 import { CARD_SIZES, LOAD_LIMITS, blockPageSize, type CardSize } from "./view-spec";
+import { AdvancedFilter, conditionCount } from "./advanced-filter";
+import { entityViewWhere, entityWhereOf } from "./entity-where";
 
 /** The layouts a built-in source draws today. */
 const ENTITY_LAYOUTS: Array<{ id: SpaceViewLayout; label: string; icon: typeof Table2 }> = [
@@ -97,7 +99,8 @@ function entityStateOf(token: string, read: EntityFirstRead, question: string): 
 function useEntityRows(token: string, view: SpaceDbView, search: string) {
   const client = useRecordsClient();
   const [tick, setTick] = useState(0);
-  const where = JSON.stringify(view.filters ?? {});
+  // The view's plain filters AND its advanced filter (CD-VIEW-11: And / Or / None groups, asked of the store).
+  const where = JSON.stringify(entityViewWhere(view));
   const sortKey = JSON.stringify(view.sorts?.[0] ?? null);
   // Notion's "Load limit": the view's own first page and "Load more" size (CD-VIEW-11), else 50.
   const pageSize = entityPageSize(view);
@@ -105,7 +108,7 @@ function useEntityRows(token: string, view: SpaceDbView, search: string) {
   // Round 36: the server's answers for this first question (this block's seed), drawn without asking again.
   const answers = useBlockSeedAnswers();
   const [seeded] = useState(() => {
-    const first = seededEntityFirst(answers, token, view.filters ?? {}, view.sorts?.[0] ?? null, search, pageSize);
+    const first = seededEntityFirst(answers, token, entityViewWhere(view), view.sorts?.[0] ?? null, search, pageSize);
     return first ? (first as EntityFirstRead) : null;
   });
   const seededFor = useRef<string | null>(seeded ? question : null);
@@ -403,6 +406,7 @@ function EntityFrame({ token, props, raw, onChange, editable }: EntityDatabasePr
             onChoice={(c) => setFilterChoices((all) => ({ ...all, [active.id]: c }))}
             canSave={shape}
             onSave={(filters) => saveView({ filters })}
+            onSaveWhere={shape ? (where) => saveView({ where }) : undefined}
           />
           <ViewerSortButton
             view={active}
@@ -490,7 +494,7 @@ function EntityBody({ token, entity, view, onOpen, search, onNew }: { token: str
           source={{ kind: "entity", token }}
           kind={CHART_KIND[view.chart?.type ?? "donut"] ?? "donut"}
           by={by ?? undefined}
-          where={view.filters && Object.keys(view.filters).length ? view.filters : undefined}
+          where={Object.keys(entityViewWhere(view)).length ? entityViewWhere(view) : undefined}
           title={view.name}
           centerValue={view.chart?.centerValue ?? true}
           variant="bare"
@@ -716,6 +720,7 @@ function EntityFilter({
   onChoice,
   canSave,
   onSave,
+  onSaveWhere,
 }: {
   view: SpaceDbView;
   columns: EntityColumn[];
@@ -723,21 +728,35 @@ function EntityFilter({
   onChoice: (next: FilterChoice) => void;
   canSave: boolean;
   onSave: (filters: NonNullable<SpaceDbView["filters"]>) => void;
+  /** Save the view's advanced filter (And / Or groups, CD-VIEW-11); left out, it is read only. */
+  onSaveWhere?: (where: Record<string, unknown> | null) => void;
 }) {
   const [field, setField] = useState<string | null>(null);
   const [value, setValue] = useState("");
+  const [advanced, setAdvanced] = useState(false);
   const filters = shownFilters(view, viewerChoice);
   const onView = (p: { filters: NonNullable<SpaceDbView["filters"]> }) => onChoice(p.filters);
-  const count = Object.keys(filters).length;
+  const count = Object.keys(filters).length + conditionCount(view.where);
+  const showAdvanced = advanced || (!!view.where && !!onSaveWhere);
+  const conditionFields = columns.filter((c) => !c.lookup).map((c, i) => entityField(c, i));
   const col = columns.find((c) => c.api_name === field);
   const labelOf = (k: string) => columns.find((c) => c.api_name === k)?.name ?? k;
   return (
-    <Popover onOpenChange={(o) => (o ? null : setField(null))}>
+    <Popover
+      onOpenChange={(o) => {
+        if (o) return;
+        setField(null);
+        setAdvanced(false);
+      }}
+    >
       <PopoverTrigger asChild>
         <Button variant="quiet" icon={<ListFilter size={15} strokeWidth={1.8} />} aria-label="Filter" title="Filter" data-on={count ? "true" : undefined} />
       </PopoverTrigger>
-      <PopoverContent surface="solid" align="end" width="md" padding="xs">
-        {Object.entries(filters).map(([k, v]) => (
+      <PopoverContent surface="solid" align="end" width={showAdvanced ? "xl" : "md"} padding={showAdvanced ? "sm" : "xs"}>
+        {showAdvanced ? (
+          <AdvancedFilter view={view} fields={conditionFields} onSave={onSaveWhere} onClose={() => setAdvanced(false)} refusal={(draft) => entityWhereOf(draft).refused?.says ?? null} />
+        ) : null}
+        {showAdvanced ? null : Object.entries(filters).map(([k, v]) => (
           <MenuRow
             key={k}
             label={Array.isArray(v) ? `${labelOf(k)} is any of ${v.join(", ")}` : `${labelOf(k)} is ${String(v)}`}
@@ -748,7 +767,7 @@ function EntityFilter({
             }}
           />
         ))}
-        {col?.choices?.length ? (
+        {showAdvanced ? null : col?.choices?.length ? (
           <div className="flex flex-col p-1">
             <span className="px-1 pb-1 type-secondary text-muted-foreground">{col.name.trim()} is any of</span>
             {col.choices.map((choice) => {
@@ -787,7 +806,10 @@ function EntityFilter({
             />
           </div>
         ) : (
-          <FieldList fields={asFields(columns.filter((c) => !c.lookup))} onPick={setField} />
+          <>
+            <FieldList fields={asFields(columns.filter((c) => !c.lookup))} onPick={setField} />
+            {onSaveWhere ? <MenuRow icon={<Plus size={15} />} label="Add advanced filter" onClick={() => setAdvanced(true)} /> : null}
+          </>
         )}
         {filtersDiffer(view, viewerChoice) ? (
           <ViewerSaveBar

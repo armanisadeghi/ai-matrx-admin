@@ -388,7 +388,34 @@ import { productCaptureManifest } from "./product-capture.manifest";
 import { productCaptureAnswerManifest } from "./product-capture-answer.manifest";
 import { productCaptureItemManifest } from "./product-capture-item.manifest";
 // W2 area: print-rag-memory
+import { printBookletManifest } from "./print-booklet.manifest";
+import { printBrandedQrManifest } from "./print-branded-qr.manifest";
+import { printCertificatesManifest } from "./print-certificates.manifest";
+import { printEducationManifest } from "./print-education.manifest";
+import { printExamsManifest } from "./print-exams.manifest";
+import { printFlashcardsManifest } from "./print-flashcards.manifest";
+import { printLabelsManifest } from "./print-labels.manifest";
+import { printOrderManifest } from "./print-order.manifest";
+import { printQrManifest } from "./print-qr.manifest";
+import { printZplManifest } from "./print-zpl.manifest";
+import { compareManifest } from "./compare.manifest";
+import { myMemoryManifest } from "./my-memory.manifest";
 // W2 area: core-rest
+import { spacePageManifest } from "./space-page.manifest";
+import { esignEnvelopeManifest } from "./esign-envelope.manifest";
+import { esignTemplateManifest } from "./esign-template.manifest";
+import { messengerManifest } from "./messenger.manifest";
+import { notificationsManifest } from "./notifications.manifest";
+import { trashManifest } from "./trash.manifest";
+import { approvalsManifest } from "./approvals.manifest";
+import { renderedDocumentManifest } from "./rendered-document.manifest";
+import { captureNeedsYouManifest } from "./capture-needs-you.manifest";
+import { decisionReviewManifest } from "./decision-review.manifest";
+import { deviceConsoleManifest } from "./device-console.manifest";
+import { exportLibraryManifest } from "./export-library.manifest";
+import { sourceLibraryManifest } from "./source-library.manifest";
+import { termListsManifest } from "./term-lists.manifest";
+import { acquisitionConsoleManifest } from "./acquisition-console.manifest";
 // W2 area: route-groups
 
 /**
@@ -771,7 +798,34 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   productCaptureAnswerManifest,
   productCaptureItemManifest,
   // W2 area: print-rag-memory
+  printBookletManifest,
+  printBrandedQrManifest,
+  printCertificatesManifest,
+  printEducationManifest,
+  printExamsManifest,
+  printFlashcardsManifest,
+  printLabelsManifest,
+  printOrderManifest,
+  printQrManifest,
+  printZplManifest,
+  compareManifest,
+  myMemoryManifest,
   // W2 area: core-rest
+  spacePageManifest,
+  esignEnvelopeManifest,
+  esignTemplateManifest,
+  messengerManifest,
+  notificationsManifest,
+  trashManifest,
+  approvalsManifest,
+  renderedDocumentManifest,
+  captureNeedsYouManifest,
+  decisionReviewManifest,
+  deviceConsoleManifest,
+  exportLibraryManifest,
+  sourceLibraryManifest,
+  termListsManifest,
+  acquisitionConsoleManifest,
   // W2 area: route-groups
 ];
 

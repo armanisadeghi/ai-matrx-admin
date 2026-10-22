@@ -40,7 +40,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { RequestAccessPanel } from "@/features/access-gate/components/RequestAccessPanel";
@@ -91,7 +91,8 @@ function RestoreArchived({
   return (
     <>
       <Button
-        size="sm"
+        icon={<RotateCcw aria-hidden />}
+        variant="primary"
         disabled={busy}
         onClick={async () => {
           setBusy(true);
@@ -107,7 +108,6 @@ function RestoreArchived({
           }
         }}
       >
-        <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden />
         {busy ? "Restoring…" : "Restore"}
       </Button>
       {failure ? (
@@ -520,7 +520,7 @@ export function AccessDeniedView({
         {/* Always a real way forward. */}
         <div className="mt-5 flex flex-wrap items-center gap-2">
           {context.status === "anonymous" ? (
-            <Button asChild size="sm">
+            <Button variant="primary" asChild>
               <Link href={signInHref} data-tap-target>
                 <LogIn className="mr-1.5 h-4 w-4" aria-hidden />
                 Sign in
@@ -543,29 +543,27 @@ export function AccessDeniedView({
 
           {(context.status === "ok" || context.status === "error") &&
           onRetry ? (
-            <Button size="sm" onClick={onRetry}>
-              <RefreshCw className="mr-1.5 h-4 w-4" aria-hidden />
+            <Button icon={<RefreshCw aria-hidden />} variant="primary" onClick={onRetry}>
               Try again
             </Button>
           ) : null}
 
           {ancestor && ancestorHref ? (
-            <Button asChild size="sm" variant="outline">
+            <Button asChild variant="outline">
               <Link href={ancestorHref} data-tap-target>
                 <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden />
                 Open {ancestor.title ?? ancestor.label.toLowerCase()}
               </Link>
             </Button>
           ) : fallbackHref ? (
-            <Button asChild size="sm" variant="outline">
+            <Button asChild variant="outline">
               <Link href={fallbackHref} data-tap-target>
                 <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden />
                 {fallbackLabel ?? "Back to what you can see"}
               </Link>
             </Button>
           ) : (
-            <Button size="sm" variant="outline" onClick={() => router.back()}>
-              <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden />
+            <Button icon={<ArrowLeft aria-hidden />} variant="outline" onClick={() => router.back()}>
               Go back
             </Button>
           )}

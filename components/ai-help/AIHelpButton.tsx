@@ -2,7 +2,7 @@
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import {useState} from 'react';
-import {Button} from "@ai-matrx/design-system";
+import {Button} from "@/components/ui/button";
 import {HelpCircle} from 'lucide-react';
 import {useToast} from '@/components/ui/use-toast';
 import {useContextCollection} from '@/hooks/useContextCollection';
@@ -15,8 +15,7 @@ import { downloadFile, downloadUrl } from "@ai-matrx/kit/download";
 interface AIHelpButtonProps {
     helpDocs?: Record<string, string>;
     className?: string;
-    size?: 'default' | 'sm' | 'lg' | 'icon';
-    variant?: 'default' | 'ghost' | 'outline';
+    variant?: 'primary' | 'quiet' | 'outline';
     onHelpGenerated?: (response: AIHelpResponse) => void;
     suggestedActions?: {
         label: string;
@@ -30,8 +29,7 @@ export function AIHelpButton(
     {
         helpDocs = {},
         className = '',
-        size = 'icon',
-        variant = 'ghost',
+        variant = 'quiet',
         suggestedActions,
         onHelpGenerated
     }: AIHelpButtonProps) {
@@ -86,12 +84,11 @@ export function AIHelpButton(
         <>
             <Button
                 variant={variant}
-                size={size}
+                icon={<HelpCircle />}
+                aria-label="AI help"
                 className={className}
                 onClick={handleOpen}
-            >
-                <HelpCircle className="h-4 w-4" />
-            </Button>
+            />
 
             <AIHelpDialog
                 isOpen={isOpen}

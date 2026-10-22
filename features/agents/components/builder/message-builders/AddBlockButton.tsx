@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -562,20 +562,17 @@ export function BlockEditor({
 
       <div className="flex items-center justify-end gap-1.5">
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 text-xs px-2"
+          variant="quiet"
           onClick={onCancel}
         >
           Cancel
         </Button>
         <Button
-          size="sm"
-          className="h-6 text-xs px-2"
+          icon={<Check />}
+          variant="primary"
           onClick={handleConfirm}
           disabled={!primaryValue}
         >
-          <Check className="w-3 h-3 mr-1" />
           {isEdit ? "Save" : "Add"}
         </Button>
       </div>
@@ -669,7 +666,7 @@ export function BlockRow({
                 {JSON.stringify(block, null, 2)}
               </pre>
             </ScrollArea>
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => setOpen(false)}>
               Close
             </Button>
           </DialogContent>

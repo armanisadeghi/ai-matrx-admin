@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import {
   Link2,
@@ -461,16 +461,16 @@ export function ShareLinkPanel({
           </div>
         </div>
         <Button
-          size="sm"
+          icon={creating ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <Plus />
+          )}
+          variant="primary"
           onClick={handleCreate}
           disabled={creating}
           className="flex-shrink-0"
         >
-          {creating ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
           <span className="ml-1 hidden sm:inline">
             {hasLink ? "New link" : "Create link"}
           </span>
@@ -509,45 +509,39 @@ export function ShareLinkPanel({
                   {link.useCount}
                 </span>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-11 w-11 flex-shrink-0 sm:h-8 sm:w-8"
+                  icon={copiedId === link.id ? (
+                    <Check className="text-green-500" />
+                  ) : (
+                    <Copy />
+                  )}
+                  variant="quiet"
+                  className="flex-shrink-0"
                   onClick={() => copyLink(link)}
                   disabled={!!unavailableReason}
                   title={unavailableReason ?? "Copy link"}
                   aria-label="Copy share link"
-                >
-                  {copiedId === link.id ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </Button>
+                />
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-11 w-11 flex-shrink-0 sm:h-8 sm:w-8"
+                  icon={refreshing ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <MessageSquareText />
+                  )}
+                  variant="quiet"
+                  className="flex-shrink-0"
                   onClick={() => prepareTextShare(link.id)}
                   disabled={!!unavailableReason || refreshing}
                   title={unavailableReason ?? "Review before sharing by text"}
                   aria-label="Share by text"
-                >
-                  {refreshing ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <MessageSquareText className="w-4 h-4" />
-                  )}
-                </Button>
+                />
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-11 w-11 flex-shrink-0 text-destructive sm:h-8 sm:w-8"
+                  icon={<Trash2 />}
+                  variant="quiet"
+                  className="flex-shrink-0"
                   onClick={() => setRevokeTarget(link)}
                   title="Turn off link"
                   aria-label="Turn off share link"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                />
               </div>
             );
           })}
@@ -561,13 +555,12 @@ export function ShareLinkPanel({
         >
           <span>{shareError}</span>
           <Button
+            icon={<RefreshCw />}
             type="button"
             variant="outline"
-            size="sm"
             disabled={isLoading}
             onClick={() => refresh()}
           >
-            <RefreshCw className="mr-1 h-3.5 w-3.5" />
             Refresh
           </Button>
           <ErrorAlchemyMenu className="ml-auto" />
@@ -618,13 +611,13 @@ export function ShareLinkPanel({
                 </p>
               </div>
               <Button
+                icon={<Copy />}
                 type="button"
                 variant="outline"
-                className="min-h-11 w-full sm:min-h-0"
+                className="w-full"
                 disabled={handoffBusy}
                 onClick={handleCopyReviewedMessage}
               >
-                <Copy className="mr-2 h-4 w-4" />
                 Copy message
               </Button>
               <p className="text-xs text-muted-foreground">

@@ -33,7 +33,11 @@ try {
   check(A.who === "admin@admin.com", "admin browser signed in", A.who);
   await gotoTable(A.page, id);
   await A.page.getByText("Alpha", { exact: true }).first().dblclick();
-  await A.page.waitForTimeout(3000);
+  // The record opens beside the grid with its own Share; wait for it, or the table's Share (the only one) would be pressed.
+  await A.page.waitForFunction(() => [...document.querySelectorAll("button")].filter((b) => b.textContent.trim() === "Share").length >= 2, null, { timeout: 120000 });
+  await A.page.waitForTimeout(1500);
+  await A.page.screenshot({ path: SHOT + "14-0-record-open.png" });
+  say("share buttons", await A.page.getByRole("button", { name: /Share/ }).evaluateAll((els) => els.map((e) => ({ text: e.textContent.trim(), label: e.getAttribute("aria-label"), inDialog: !!e.closest("[role=dialog]") }))));
   await A.page.getByRole("button", { name: "Share", exact: true }).last().click();
   // "Who could see this on…" sits in the Share window's Access tab, under who has access today.
   await A.page.getByRole("tab", { name: /Access/ }).last().click({ timeout: 60000 }).catch(async (e) => { await A.page.screenshot({ path: SHOT + "14-0-no-access-tab.png" }); throw e; });

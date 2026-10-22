@@ -5,7 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@ai-matrx/design-system";
+import { Button as SurfaceButton } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@ai-matrx/design-system";
 import { Separator } from "@/components/ui/separator";
@@ -313,12 +314,10 @@ const TranscriptSegmentItem = React.memo(
               <div className="flex items-center gap-2">
                 {showTimecodes && (
                   <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 p-1 font-mono text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                    icon={<Clock />}
+                    variant="quiet"
                     onClick={() => onTimeClick(segment.seconds)}
                   >
-                    <Clock className="mr-1 h-3 w-3" />
                     {segment.timecode}
                   </Button>
                 )}
@@ -341,30 +340,24 @@ const TranscriptSegmentItem = React.memo(
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7"
-                      onClick={() => onCopy(segment.text, segment.id)}
-                    >
-                      {copiedSegmentId === segment.id ? (
-                        <CheckCheck className="h-4 w-4 text-green-500" />
+                      icon={copiedSegmentId === segment.id ? (
+                        <CheckCheck className="text-green-500" />
                       ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
+                        <Copy />
+                      )} aria-label="Copy text"
+                      variant="quiet"
+                      onClick={() => onCopy(segment.text, segment.id)}
+                    />
                   </TooltipTrigger>
                   <TooltipContent>Copy text</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 w-7"
+                      icon={<Edit />} aria-label="Edit segment"
+                      variant="quiet"
                       onClick={() => onEdit(segment)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    />
                   </TooltipTrigger>
                   <TooltipContent>Edit segment</TooltipContent>
                 </Tooltip>
@@ -373,56 +366,44 @@ const TranscriptSegmentItem = React.memo(
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7"
+                          icon={<Scissors />} aria-label="Split Segment"
+                          variant="quiet"
                           onClick={() => onSplit(segment)}
-                        >
-                          <Scissors className="h-4 w-4" />
-                        </Button>
+                        />
                       </TooltipTrigger>
                       <TooltipContent>Split Segment</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7"
+                          icon={<MergeIcon />} aria-label="Merge with Next"
+                          variant="quiet"
                           onClick={() => onMerge(segment.id)}
                           disabled={isLastSegment}
-                        >
-                          <MergeIcon className="h-4 w-4" />
-                        </Button>
+                        />
                       </TooltipTrigger>
                       <TooltipContent>Merge with Next</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7"
+                          icon={<Link />} aria-label="Copy Timestamp Link"
+                          variant="quiet"
                           onClick={() => {
                             const timeText = `${window.location.href.split("#")[0]}#t=${segment.seconds}`;
                             void copyToClipboard(timeText, "Timestamp link copied");
                           }}
-                        >
-                          <Link className="h-4 w-4" />
-                        </Button>
+                        />
                       </TooltipTrigger>
                       <TooltipContent>Copy Timestamp Link</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          icon={<Trash />} aria-label="Delete Segment"
+                          variant="quiet"
                           onClick={() => onDelete(segment.id)}
-                        >
-                          <Trash className="h-4 w-4" />
-                        </Button>
+                        />
                       </TooltipTrigger>
                       <TooltipContent>Delete Segment</TooltipContent>
                     </Tooltip>
@@ -961,7 +942,7 @@ const AdvancedTranscriptViewer = ({
                       ? `${currentSearchIndex + 1}/${searchResults.length}`
                       : "0/0"}
                   </Badge>
-                  <Button
+                  <SurfaceButton
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7"
@@ -969,8 +950,8 @@ const AdvancedTranscriptViewer = ({
                     disabled={searchResults.length === 0}
                   >
                     <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button
+                  </SurfaceButton>
+                  <SurfaceButton
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7"
@@ -978,7 +959,7 @@ const AdvancedTranscriptViewer = ({
                     disabled={searchResults.length === 0}
                   >
                     <ArrowDown className="h-4 w-4" />
-                  </Button>
+                  </SurfaceButton>
                 </div>
               )}
             </div>
@@ -1016,13 +997,10 @@ const AdvancedTranscriptViewer = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      size="sm"
+                      icon={<Copy />} aria-label="Copy all transcript text"
                       variant="outline"
-                      className="h-7 px-2 text-xs"
                       onClick={() => setIsCopyAllOpen(true)}
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                    </Button>
+                    />
                   </TooltipTrigger>
                   <TooltipContent>Copy all transcript text</TooltipContent>
                 </Tooltip>
@@ -1127,7 +1105,7 @@ const AdvancedTranscriptViewer = ({
             <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleEditSave}>Save Changes</Button>
+            <Button variant="primary" onClick={handleEditSave}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1210,7 +1188,7 @@ const AdvancedTranscriptViewer = ({
             >
               Cancel
             </Button>
-            <Button onClick={handleSplitSave}>Split</Button>
+            <Button variant="primary" onClick={handleSplitSave}>Split</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1261,7 +1239,7 @@ const AdvancedTranscriptViewer = ({
             <Button variant="outline" onClick={() => setIsCopyAllOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCopyAll} disabled={copyAllSuccess}>
+            <Button variant="primary" onClick={handleCopyAll} disabled={copyAllSuccess}>
               {copyAllSuccess ? (
                 <>
                   <CheckCheck className="mr-2 h-4 w-4" /> Copied!

@@ -20,6 +20,14 @@ import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, controlClass, svgToImgSrc } from "@/features/print/components/shared";
 import { SAMPLE_CODE, SAMPLE_ORIGIN } from "./sample-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_BRANDED_QR_FIELDS,
+    PRINT_BRANDED_QR_FORM_TARGET,
+    PRINT_BRANDED_QR_SURFACE_NAME,
+    createPrintBrandedQrScope,
+} from "@/features/surfaces/manifests/print-branded-qr.manifest";
 
 const DOT_STYLES: StyledQrDotStyle[] = ["square", "dots", "rounded", "classy", "extra-rounded"];
 const CORNER_STYLES: StyledQrCornerStyle[] = ["square", "dot", "extra-rounded"];
@@ -87,7 +95,32 @@ export function StyledQrSection() {
         reader.readAsDataURL(file);
     };
 
+    const getScope = () =>
+        createPrintBrandedQrScope({
+            qr_value: value,
+            dot_style: dotStyle,
+            corner_style: cornerStyle,
+            module_color: color,
+            background_color: backgroundColor,
+            error_correction: ecLevel,
+            ...(logoName ? { logo_name: logoName } : {}),
+            preview_status: !hasValue ? "empty" : shownSvg ? "ready" : error ? "failed" : "rendering",
+            ...(hasValue && error ? { render_error: error } : {}),
+        });
+
+    const getWriteHandlers = () =>
+        printToolWriteHandlers(PRINT_BRANDED_QR_FIELDS, PRINT_BRANDED_QR_FORM_TARGET, (patch) => {
+            if (typeof patch.qr_value === "string") setValue(patch.qr_value);
+            if (typeof patch.dot_style === "string") setDotStyle(patch.dot_style as StyledQrDotStyle);
+            if (typeof patch.corner_style === "string") setCornerStyle(patch.corner_style as StyledQrCornerStyle);
+            if (typeof patch.module_color === "string") setColor(patch.module_color);
+            if (typeof patch.background_color === "string") setBackgroundColor(patch.background_color);
+            if (typeof patch.error_correction === "string") setEcLevel(patch.error_correction as StyledQrEcLevel);
+        });
+
     return (
+        // surface-write-handlers: qr_value, branded_qr_style
+        <SurfaceRuntimeProvider surfaceName={PRINT_BRANDED_QR_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="Styled QR"
             entry="@ai-matrx/print/qr-styled"
@@ -194,5 +227,6 @@ export function StyledQrSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

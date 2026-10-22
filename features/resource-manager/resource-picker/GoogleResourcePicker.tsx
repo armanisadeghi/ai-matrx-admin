@@ -28,7 +28,7 @@ import {
   type GoogleWorkspaceResourceType,
 } from "@/features/google-workspace/resource-types";
 import { isGoogleWorkspaceFileRow } from "@/features/marketing/google/types";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useGoogleConnectionInventory } from "@/features/marketing/google/hooks";
 import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { GoogleAccountSelect } from "@/features/google-workspace/GoogleAccountSelect";
@@ -141,8 +141,7 @@ export function GoogleResourcePicker({
                 <p className="text-sm text-muted-foreground">
                   No Google files chosen yet.
                 </p>
-                <Button variant="outline" onClick={connect}>
-                  <Plus className="mr-1.5 h-4 w-4" />
+                <Button icon={<Plus />} variant="outline" onClick={connect}>
                   {googleWorkspacePickLabel()}
                 </Button>
               </div>

@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import Link from "@/components/navigation/AppLink";
 import { flashcardDeckHref } from "../routes";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
@@ -253,7 +253,7 @@ export function CanvasFlashcardsView({
           grading={grading}
           onClose={() => setDeckOpen(false)}
           toolsPanel={
-            <Button asChild variant="outline" size="sm" className="w-full">
+            <Button asChild variant="outline" className="w-full">
               <Link href={flashcardDeckHref({ id: linkedSetId })}>
                 <Library className="h-4 w-4" />
                 Open in Flashcards
@@ -307,21 +307,17 @@ export function CanvasFlashcardsView({
         <div className="flex items-center gap-1">
           {isMobile && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
+              icon={<Maximize2 />}
+              variant="quiet"
               onClick={() => setDeckOpen(true)}
               title="Study full screen"
             >
-              <Maximize2 className="h-3.5 w-3.5" />
               Full screen
             </Button>
           )}
           <Button
             asChild
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
+            variant="quiet"
           >
             <Link
               href={flashcardDeckHref({ id: linkedSetId })}
@@ -389,13 +385,11 @@ export function CanvasFlashcardsView({
         )}
       >
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 text-xs"
+          icon={<ChevronLeft />}
+          variant="quiet"
           onClick={prev}
           disabled={currentIndex === 0}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
           Prev
         </Button>
 
@@ -419,14 +413,12 @@ export function CanvasFlashcardsView({
         </div>
 
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 text-xs"
+          iconEnd={<ChevronRight />}
+          variant="quiet"
           onClick={next}
           disabled={currentIndex === cards.length - 1}
         >
           Next
-          <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
     </div>

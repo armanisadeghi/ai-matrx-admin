@@ -22,7 +22,8 @@ import { MessageCircleQuestion } from "lucide-react";
 import type { FormulaHelpAsk, RecordsUiHost, TableSettingsAgent } from "@ai-matrx/records-ui";
 import { FORMULA_FUNCTIONS } from "@ai-matrx/kit/formula";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
-import { Button, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   SurfaceLayerBoundary,
   SurfaceRuntimeProvider,
@@ -88,8 +89,7 @@ function FormulaHelp({ ask }: { ask: FormulaHelpAsk }) {
   return (
     <Popover open={open} onOpenChange={(next) => (next ? setOpen(true) : close())}>
       <PopoverTrigger asChild>
-        <Button type="button" size="sm" variant="ghost" className="h-6 gap-1 px-1.5 text-[11px]" data-formula-help-open="">
-          <MessageCircleQuestion className="h-3.5 w-3.5" />
+        <Button icon={<MessageCircleQuestion />} type="button" variant="quiet" data-formula-help-open="">
           Help with this…
         </Button>
       </PopoverTrigger>

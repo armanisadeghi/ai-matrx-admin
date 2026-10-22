@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { Youtube } from "@/components/icons/brand-icons";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
     PickerSearchField,
     PickerView,
@@ -255,9 +255,9 @@ export function YouTubeResourcePicker({ onBack, onSelect, initialUrl }: YouTubeR
             {videoPreview && (
                 <div className="shrink-0 border-t border-border p-1.5">
                     <Button
+                        variant="primary"
                         onClick={handleSelect}
-                        className="h-9 w-full text-sm pointer-coarse:h-11"
-                        size="sm"
+                        className="w-full"
                     >
                         <Youtube className="mr-2 h-4 w-4" />
                         Add video

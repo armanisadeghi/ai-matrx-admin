@@ -6,7 +6,7 @@
  * state). Mounted by the deferred singleton core; an open they trigger loads the overlay world.
  */
 import { Suspense, useEffect } from "react";
-import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, selectIsOverlayOpen, type OverlayId, type StateWithOverlays } from "@ai-matrx/summon/open";
+import { allOverlayMeta, closeAllInstancesOfOverlay, openOverlay, selectIsOverlayOpen, type OverlayId, type StateWithOverlays, mintInstanceId } from "@ai-matrx/summon/open";
 import { OverlayLinkManager } from "@ai-matrx/summon/url";
 import { OverlayPersistence } from "@ai-matrx/summon/persistence";
 import { useAppStore } from "@/lib/redux/hooks";
@@ -37,7 +37,7 @@ export function OverlayServices() {
       ids: () => allOverlayMeta().map((m) => m.id),
       open: (id, data) => {
         const multi = allOverlayMeta().find((m) => m.id === id)?.instance === "multi";
-        const instanceId = multi ? `sweep-${Date.now()}` : "default";
+        const instanceId = multi ? mintInstanceId(id) : "default";
         store.dispatch(openOverlay({ overlayId: id as OverlayId, instanceId, data: data ?? {} }));
         return instanceId;
       },

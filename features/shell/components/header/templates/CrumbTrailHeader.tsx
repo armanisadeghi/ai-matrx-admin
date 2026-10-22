@@ -47,6 +47,8 @@ export interface Crumb {
   label: string;
   /** Where clicking the crumb's text navigates. Omit on the current level. */
   href?: string;
+  /** The level's own address (derived trails), even on the current level — how a header placed in a layout finds the levels below it. */
+  at?: string;
   /** Sibling links shown in the crumb's chevron dropdown. */
   options?: CrumbOption[];
   /** Optional heading above the options list (e.g. "Sites"). */

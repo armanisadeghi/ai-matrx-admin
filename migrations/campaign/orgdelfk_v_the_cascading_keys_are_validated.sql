@@ -1,0 +1,56 @@
+-- chair-step: VALIDATES the 52 cascading foreign keys that were VALIDATED before the orgdelfk_a* swaps re-added them NOT VALID. A pure check: no row is written, SHARE UPDATE EXCLUSIVE on each child and ROW SHARE on the parent, so readers and writers keep going. Inverse: migrations/campaign/orgdelfk_v_the_cascading_keys_are_validated.inverse.sql.
+-- lock: iam
+-- lane: ORG-DELETE-FK
+
+alter table agent.cmp_response_feedback validate constraint cmp_response_feedback_organization_id_fkey;
+alter table agent.definition validate constraint agx_agent_org_fk;
+alter table agent.message_template validate constraint content_template_organization_id_fkey;
+alter table agent.shortcut validate constraint agx_shortcut_org_fk;
+alter table agent.template validate constraint agx_agent_templates_org_fk;
+alter table canvas.canvas_item_state validate constraint canvas_item_state_organization_id_fkey;
+alter table canvas.canvas_items validate constraint canvas_items_organization_id_fkey;
+alter table chat.conversation validate constraint cx_conversation_organization_id_fkey;
+alter table context.user_active_context validate constraint user_active_context_organization_id_fkey;
+alter table docproc.page_extraction_jobs validate constraint page_extraction_jobs_organization_id_fkey;
+alter table education.quiz_sessions validate constraint quiz_sessions_organization_id_fkey;
+alter table education.study_structured_section validate constraint study_structured_section_organization_id_fkey;
+alter table files.file_rag_jobs validate constraint cld_file_rag_jobs_organization_id_fkey;
+alter table files.webhooks validate constraint webhooks_organization_id_fkey;
+alter table iam.org_admin_audit validate constraint org_admin_audit_organization_id_fkey;
+alter table iam.org_member_controls validate constraint org_member_controls_organization_id_fkey;
+alter table legal.ingest_runs validate constraint ingest_runs_organization_id_fkey;
+alter table legal.wc_claim validate constraint wc_claim_organization_id_fkey;
+alter table pdf.pdf_redaction_key_escrow validate constraint pdf_redaction_key_escrow_organization_id_fkey;
+alter table podcast.pc_articles validate constraint pc_articles_organization_id_fkey;
+alter table podcast.pc_episodes validate constraint pc_episodes_organization_id_fkey;
+alter table projects.tasks validate constraint tasks_organization_id_fkey;
+alter table public.app_instances validate constraint app_instances_organization_id_fkey;
+alter table public.sandbox_instances validate constraint sandbox_instances_organization_id_fkey;
+alter table rag.kg_chunks validate constraint kg_chunks_organization_id_fkey;
+alter table rag.kg_clusters validate constraint kg_clusters_organization_id_fkey;
+alter table rag.kg_entities validate constraint kg_entities_organization_id_fkey;
+alter table rag.kg_entity_aliases validate constraint kg_entity_aliases_organization_id_fkey;
+alter table rag.retrieval_audit validate constraint retrieval_audit_organization_id_fkey;
+alter table rag.scope_association_suggestions validate constraint scope_association_suggestions_organization_id_fkey;
+alter table rag.scope_item_value_suggestions validate constraint scope_item_value_suggestions_organization_id_fkey;
+alter table research.rs_analysis validate constraint rs_analysis_organization_id_fkey;
+alter table research.rs_document validate constraint rs_document_organization_id_fkey;
+alter table research.rs_keyword validate constraint rs_keyword_organization_id_fkey;
+alter table research.rs_media validate constraint rs_media_organization_id_fkey;
+alter table research.rs_synthesis validate constraint rs_synthesis_organization_id_fkey;
+alter table research.rs_tag validate constraint rs_tag_organization_id_fkey;
+alter table research.rs_template validate constraint rs_template_organization_id_fkey;
+alter table skill.definition validate constraint skill_definition_organization_id_fkey;
+alter table transcripts.studio_session_settings validate constraint studio_session_settings_organization_id_fkey;
+alter table transcripts.studio_sessions validate constraint studio_sessions_organization_id_fkey;
+alter table transcripts.transcripts validate constraint transcripts_organization_id_fkey;
+alter table users.user_achievements validate constraint user_achievements_organization_id_fkey;
+alter table users.user_stats validate constraint user_stats_organization_id_fkey;
+alter table workbench.notes validate constraint notes_organization_id_fkey;
+alter table workbench.udt_documents validate constraint udt_documents_organization_id_fkey;
+alter table workbench.udt_workbooks validate constraint udt_workbooks_organization_id_fkey;
+alter table chat.media validate constraint cx_media_conversation_id_fkey;
+alter table communication.meet_chat_messages validate constraint meet_chat_messages_session_id_fkey;
+alter table communication.meet_notes validate constraint meet_notes_session_id_fkey;
+alter table communication.meet_recordings validate constraint meet_recordings_session_id_fkey;
+alter table communication.meet_transcript_segments validate constraint meet_transcript_segments_session_id_fkey;

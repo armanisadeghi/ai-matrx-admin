@@ -22,7 +22,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useCallback, useEffect, useState } from "react";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -289,14 +289,12 @@ export function RowControls({
             <div className="flex items-center gap-1.5 rounded-md border bg-background p-1.5">
               <span className="min-w-0 flex-1 truncate px-1 font-mono text-xs">{publicUrl}</span>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 flex-shrink-0"
+                icon={copied ? <Check /> : <Copy />} aria-label="Copy web address"
+                variant="quiet"
+                className="flex-shrink-0"
                 onClick={() => void copyAddress()}
                 title="Copy web address"
-              >
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              </Button>
+              />
             </div>
           )}
         </div>

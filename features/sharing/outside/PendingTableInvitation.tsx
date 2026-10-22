@@ -13,7 +13,7 @@
 import { useEffect, useState } from "react";
 import Link from "@/components/navigation/AppLink";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 import { myPendingTableInvitations, type MyPendingTableInvitation } from "./outsideShareService";
 
@@ -48,7 +48,7 @@ export function PendingTableInvitation({ invitation }: { invitation: MyPendingTa
       <p className="max-w-prose text-xs text-muted-foreground">
         {invitation.say} Open the invitation once and the table opens here from then on.
       </p>
-      <Button size="sm" asChild>
+      <Button variant="primary" asChild>
         <Link href={`/invitations/table/accept/${encodeURIComponent(invitation.token)}`}>
           Open the invitation
         </Link>

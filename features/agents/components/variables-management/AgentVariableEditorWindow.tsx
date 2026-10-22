@@ -30,7 +30,7 @@
  */
 
 import React, { useEffect, useRef } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
@@ -145,13 +145,12 @@ export default function AgentVariableEditorWindow({
       footerRight={
         <div className="flex items-center gap-2">
           {justCreated && exists && (
-            <Button variant="outline" size="sm" onClick={handleDiscard}>
+            <Button variant="outline" onClick={handleDiscard}>
               Discard
             </Button>
           )}
           <Button
-            variant={justCreated ? "default" : "outline"}
-            size="sm"
+            variant={justCreated ? "primary" : "outline"}
             onClick={onClose}
           >
             Done

@@ -19,7 +19,7 @@ import { Building2 } from "lucide-react";
 import { RecordsMount, TablesHome } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { TEMPLATE_GALLERY_HREF } from "./gallery/galleryHref";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectActiveOrganizationName } from "@/features/scopes/redux/selectors/active-context";
@@ -65,8 +65,7 @@ export function SavesTo() {
       align="end"
       closeOnChoose
       trigger={
-        <Button size="sm" variant="ghost" className="max-w-full gap-1.5 text-muted-foreground" data-make-saves-to={active.organizationState}>
-          <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        <Button icon={<Building2 aria-hidden />} type="submit" variant="quiet" className="max-w-full" data-make-saves-to={active.organizationState}>
           <span className="truncate">{label}</span>
         </Button>
       }

@@ -7,13 +7,12 @@
 
 import React from "react";
 import { FileCode } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
 
@@ -23,9 +22,7 @@ export interface SaveToCodeButtonProps {
   suggestedName?: string;
   defaultFolderId?: string | null;
   className?: string;
-  iconClassName?: string;
-  variant?: React.ComponentProps<typeof Button>["variant"];
-  size?: React.ComponentProps<typeof Button>["size"];
+  variant?: "primary" | "outline" | "quiet";
   label?: string;
   iconOnly?: boolean;
   tooltip?: string;
@@ -37,9 +34,7 @@ export function SaveToCodeButton({
   suggestedName,
   defaultFolderId = null,
   className,
-  iconClassName,
-  variant = "ghost",
-  size = "sm",
+  variant = "quiet",
   label = "Save to Code",
   iconOnly = false,
   tooltip = "Save to your code files",
@@ -61,18 +56,26 @@ export function SaveToCodeButton({
     );
   };
 
-  const button = (
+  const button = iconOnly ? (
     <Button
       type="button"
       variant={variant}
-      size={size}
+      icon={<FileCode />}
       onClick={handleClick}
       disabled={!content?.trim()}
-      className={cn("gap-1.5", iconOnly && "h-8 w-8 p-0", className)}
-      aria-label={tooltip}
+      className={className}
+      aria-label={tooltip || label}
+    />
+  ) : (
+    <Button
+      type="button"
+      variant={variant}
+      icon={<FileCode />}
+      onClick={handleClick}
+      disabled={!content?.trim()}
+      className={className}
     >
-      <FileCode className={cn("h-4 w-4", iconClassName)} />
-      {!iconOnly && <span className="text-xs">{label}</span>}
+      {label}
     </Button>
   );
 

@@ -8,7 +8,7 @@ import {
   isPathHidden as checkPathHidden, 
 } from "./utils/hidden-path-utils";
 import { extractValueByPath } from "./utils/wildcard-utils";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 
@@ -292,7 +292,6 @@ const ProcessorExtractorBody = ({ jsonData, configKey }: ProcessorExtractorProps
                                 </pre>
                                 <div className="mt-2 flex justify-end">
                                     <Button 
-                                        size="xs" 
                                         variant="outline"
                                         onClick={() => {
                                             // Convert wildcard path back to a specific path with this index

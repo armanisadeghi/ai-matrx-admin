@@ -36,6 +36,7 @@ import { cache } from "react";
 import { storeDoors as storeDoorsOf } from "@ai-matrx/records/core";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { busyFromIcs } from "./ics-busy";
 
 /**
  * Schema `custom` is deliberately not in `types/database.types.ts`: the record
@@ -68,6 +69,9 @@ export interface BookingSlot {
   /** Only on the manage page: the appointment this person already has. */
   mine?: boolean;
   member_user_id: string | null;
+  /** CD-PAGE-10: places at this time (hosts x capacity) and how many are still free. Absent on pages made before places. */
+  seats?: number;
+  left?: number;
 }
 
 /** The hours an organization offers, as `custom._booking_availability` normalized them. */
@@ -129,6 +133,61 @@ export const publicBooking = cache(
     return (row as PublicBooking | undefined) ?? null;
   },
 );
+
+/**
+ * CD-PAGE-10 — A CONNECTED CALENDAR'S BUSY TIMES. A booking page may carry its owner's private iCal address
+ * (Google, Outlook or Apple Calendar each give one). The store keeps that address and the busy moments read from it
+ * (`custom.booking_busy_due` / `custom.booking_busy_set`, server lane only — the address is the owner's secret and
+ * never reaches a browser) and never offers a busy time. This re-reads the calendar when the store says it is due
+ * (knob booking/busy_refresh_minutes). A calendar that cannot be read keeps the last good list and the reason goes on
+ * the page's builder; nothing here throws into the visitor's page.
+ */
+// A bound on one read of the owner's calendar, not a tunable: past it the read counts as failed and is said.
+const CALENDAR_READ_WAIT_MS = 4000;
+
+export async function refreshBusyIfDue(formId: string): Promise<{ read: boolean; busy?: number; problem?: string | null }> {
+  if (!isUuidShape(formId)) return { read: false };
+  const doors = storeDoors();
+  const due = await doors.rpc("booking_busy_due", { p_form_id: formId });
+  if (due.error) {
+    console.error(`[booking] custom.booking_busy_due refused for ${formId}: ${due.error.message}`);
+    return { read: false, problem: due.error.message };
+  }
+  const row = (Array.isArray(due.data) ? due.data[0] : due.data) as
+    | { feed: string | null; due: boolean; timezone: string | null; days: number | null }
+    | undefined;
+  if (!row?.feed || !row.due) return { read: false };
+  let busy: Array<{ from: string; to: string }> = [];
+  let problem: string | null = null;
+  try {
+    const res = await fetch(row.feed.trim().replace(/^webcals?:\/\//i, "https://"), {
+      signal: AbortSignal.timeout(CALENDAR_READ_WAIT_MS),
+      headers: { accept: "text/calendar, text/plain;q=0.8, */*;q=0.5" },
+      cache: "no-store",
+    });
+    if (!res.ok) problem = `The connected calendar answered ${res.status} — check its private address.`;
+    else {
+      const text = await res.text();
+      if (!/BEGIN:VCALENDAR/i.test(text)) problem = "The connected calendar's address does not give a calendar file.";
+      else {
+        const from = new Date();
+        const to = new Date(from.getTime() + ((row.days ?? 14) + 1) * 86_400_000);
+        busy = busyFromIcs(text, { from, to }, row.timezone ?? "UTC").busy;
+      }
+    }
+  } catch (err) {
+    problem =
+      err instanceof Error && err.name === "TimeoutError"
+        ? "The connected calendar took too long to answer."
+        : `The connected calendar could not be read (${err instanceof Error ? err.message : String(err)}).`;
+  }
+  const set = await doors.rpc("booking_busy_set", { p_form_id: formId, p_busy: busy, p_problem: problem });
+  if (set.error) {
+    console.error(`[booking] custom.booking_busy_set refused for ${formId}: ${set.error.message}`);
+    return { read: true, problem: set.error.message };
+  }
+  return { read: true, busy: busy.length, problem };
+}
 
 /** What a hold answers. `state` is the store's own word, never derived here. */
 export interface HoldOutcome {

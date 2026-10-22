@@ -1,6 +1,6 @@
 // BookmarkManagerActions.jsx
 import React, { useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { SettingsIcon } from "lucide-react";
 import BookmarkManager from "./BookmarkManager";
 
@@ -10,13 +10,11 @@ const BookmarkManagerActions = ({ jsonStr }: { jsonStr: string }) => {
   return (
     <div className="flex space-x-2">
       <Button
-        size="xs"
+        icon={<SettingsIcon />} aria-label="Manage Bookmarks"
         variant="outline"
         onClick={() => setIsManagerOpen(true)}
         title="Manage Bookmarks"
-      >
-        <SettingsIcon className="w-3 h-3" />
-      </Button>
+      />
       <BookmarkManager open={isManagerOpen} onOpenChange={setIsManagerOpen} />
     </div>
   );

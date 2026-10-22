@@ -21,7 +21,8 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { Label } from "@/components/ui/label";
 import { LabelKeyField } from "@/features/agents/components/shared/LabelKeyField";
 import { SwitchLegacy as Switch } from "@/components/ui/switch";
-import { Button, TextInputDialog } from "@ai-matrx/design-system";
+import { TextInputDialog } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Loader2, WandSparkles } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -531,18 +532,17 @@ export function AgentVariableEditor({
             </p>
           </div>
           <Button
+            icon={isConvertingPicklist ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <WandSparkles />
+            )}
             type="button"
             variant="outline"
-            size="sm"
             className="w-full justify-center"
             onClick={handleConvertOptionsToPicklist}
             disabled={isConvertingPicklist}
           >
-            {isConvertingPicklist ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <WandSparkles className="h-4 w-4" />
-            )}
             Convert to pick list
           </Button>
         </div>

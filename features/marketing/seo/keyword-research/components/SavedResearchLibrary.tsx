@@ -189,8 +189,7 @@ export default function SavedResearchLibrary({
                     row.title ??
                     `Keyword research: ${row.artifact.primary_keyword}`
                   }
-                  size="sm"
-                  variant="ghost"
+                  variant="quiet"
                 />
               </div>
             ))

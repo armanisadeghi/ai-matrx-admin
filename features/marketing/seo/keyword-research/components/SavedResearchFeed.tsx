@@ -64,7 +64,6 @@ export default function SavedResearchFeed({
             resourceType="content_ir_kind_instance"
             resourceId={instanceId}
             resourceName={`Keyword research: ${artifact.primary_keyword}`}
-            size="sm"
             variant="outline"
           />
         </div>

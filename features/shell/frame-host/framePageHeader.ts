@@ -24,7 +24,14 @@ export interface FramePageCrumbOption {
 /** One level of the page's trail (the template's `Crumb`, minus what only the classic row draws). */
 export interface FramePageCrumb {
   label: string;
+  /**
+   * Where the crumb goes. On a template's LAST level it is the template's own address
+   * (`useOwnAddress`): when that is an ancestor of the page shown (a header kept in a layout), the
+   * level is a link and the levels below it come from the address (`resolvePageTrail`).
+   */
   href?: string;
+  /** The level's own address (derived trails) — how the levels above and below a template are found. */
+  at?: string;
   options?: readonly FramePageCrumbOption[];
   optionsLabel?: string;
   optionsAllHref?: string;
@@ -167,6 +174,7 @@ export function frameCrumbOf(crumb: FramePageCrumb): FramePageCrumb {
   return {
     label: crumb.label,
     href: crumb.href,
+    at: crumb.at,
     options: crumb.options,
     optionsLabel: crumb.optionsLabel,
     optionsAllHref: crumb.optionsAllHref,
@@ -184,8 +192,57 @@ export function frameHostCrumbs(
   declared: readonly FramePageCrumb[] | null,
   derived: readonly FramePageCrumb[],
   go: (href: string) => void,
+  pathname?: string,
 ): FrameCrumb[] {
-  return pageTrailCrumbs(product, declared && declared.length > 0 ? declared : derived.map(frameCrumbOf), go);
+  return pageTrailCrumbs(product, resolvePageTrail(declared, derived.map(frameCrumbOf), pathname), go);
+}
+
+const bareAddress = (href: string) => `/${href.split(/[?#]/, 1)[0]!.split("/").filter(Boolean).join("/")}`;
+const isBelow = (child: string, parent: string) => child !== parent && child.startsWith(parent === "/" ? "/" : `${parent}/`);
+const sameLabel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/**
+ * EVERY CRUMB IS A REAL DOOR (Arman, 2026-10-22: "I don't want fake things!!"). The page's declared
+ * trail, completed from the address-derived one so no level is text that goes nowhere:
+ * - a template kept in a LAYOUT declares its own address on its last level; when the page shown is
+ *   deeper, that level links back to it and the derived levels below it follow (Smart Add brand ›
+ *   Validate on /marketing/brands/smart-add/validate/<id>);
+ * - a template that declared only its own level gets the derived levels above it (Marketing › Brands);
+ * - an ancestor declared without an address takes the derived level of the same name, else is
+ *   dropped (a crumb that cannot open is not drawn).
+ * No declaration: the derived trail.
+ */
+export function resolvePageTrail(
+  declared: readonly FramePageCrumb[] | null,
+  derived: readonly FramePageCrumb[],
+  pathname?: string,
+): FramePageCrumb[] {
+  if (!declared || declared.length === 0) return [...derived];
+  const here = pathname ? bareAddress(pathname) : null;
+  const last = declared[declared.length - 1]!;
+  const own = last.href ? bareAddress(last.href) : null;
+  const inLayout = here != null && own != null && isBelow(here, own);
+  const levelAt = (c: FramePageCrumb) => (c.at ? bareAddress(c.at) : null);
+  const above =
+    declared.length === 1 && own != null
+      ? derived.filter((c) => {
+          const at = levelAt(c);
+          return at != null && isBelow(own, at);
+        })
+      : [];
+  const below = inLayout
+    ? derived.filter((c) => {
+        const at = levelAt(c);
+        return at != null && isBelow(at, own!);
+      })
+    : [];
+  const ancestors = declared.slice(0, -1).flatMap((c): FramePageCrumb[] => {
+    if (c.href) return [c];
+    const match = derived.find((d) => d.href && sameLabel(d.label, c.label));
+    return match?.href ? [{ ...c, href: match.href }] : [];
+  });
+  const self: FramePageCrumb = inLayout ? last : { ...last, href: undefined };
+  return [...above, ...ancestors, self, ...below];
 }
 
 /**

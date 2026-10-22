@@ -14,13 +14,17 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { generateRouteManifest } from "../lib/route-manifest/generate";
+import { pagelessLevelsOf, renderPagelessLevelsModule } from "../features/shell/breadcrumbs/pageless-levels";
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(REPO_ROOT, "lib", "route-manifest", "manifest.generated.json");
+// Breadcrumbs never link to a folder with no page: the small table the browser reads (pageless-levels.ts).
+const PAGELESS_OUT = path.join(REPO_ROOT, "features", "shell", "breadcrumbs", "pageless-levels.generated.ts");
 
 async function main() {
   const manifest = await generateRouteManifest(REPO_ROOT);
   writeFileSync(OUT, JSON.stringify(manifest, null, 2) + "\n", "utf8");
+  writeFileSync(PAGELESS_OUT, renderPagelessLevelsModule(pagelessLevelsOf(manifest.routes.map((r) => r.pattern))), "utf8");
   const placeholders = manifest.routes.filter((r) => r.status === "placeholder");
   console.log(
     `route manifest: ${manifest.routeCount} routes — ` +

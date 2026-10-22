@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { CopyIcon, RefreshCw, BookmarkIcon, Brackets, BookMarked } from "lucide-react";
 import { ActionButtonsProps } from "./types";
@@ -34,12 +34,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       )}
       {onOpenCopyPathObjectDialog && (
         <Button
-          size="xs"
+          icon={<Brackets />}
           variant="outline"
           onClick={onOpenCopyPathObjectDialog}
           title="Copy Path Object"
         >
-          <Brackets className="w-3 h-3" />
           Path Object
         </Button>
       )}
@@ -47,18 +46,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       <BookmarkManagerActions jsonStr={jsonStr} />
 
       <Button
-        size="xs"
+        icon={<BookMarked />}
         variant="outline"
         onClick={onOpenBookmarksDialog}
         title="View Saved Paths"
       >
-        <BookMarked className="w-3 h-3" />
         Paths
       </Button>
 
       {bookmarks.length > 0 && (
         <Button
-          size="sm"
           variant="outline"
           onClick={onExportBookmarks}
           title="Export All Bookmarks"
@@ -70,17 +67,15 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
       {generateAccessPath(currentPath) !== "data" && (
         <>
           <Button
-            size="xs"
+            icon={<BookmarkIcon />}
             variant="outline"
             onClick={onOpenBookmarkDialog}
             title="Save Current Path"
           >
-            <BookmarkIcon className="w-3 h-3" />
             Save
           </Button>
 
           <Button
-            size="xs"
             variant="outline"
             onClick={onCopyPath}
             title="Copy Access Path"
@@ -90,18 +85,14 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
         </>
       )}
 
-      <Button size="xs" variant="outline" onClick={onReset} title="Reset">
-        <RefreshCw className="w-3 h-3" />
-      </Button>
+      <Button icon={<RefreshCw />} aria-label="Reset" variant="outline" onClick={onReset} title="Reset" />
 
       <Button
-        size="xs"
+        icon={<CopyIcon />} aria-label="Copy JSON"
         variant="outline"
         onClick={() => copyToClipboard(jsonStr)}
         title="Copy JSON"
-      >
-        <CopyIcon className="w-3 h-3" />
-      </Button>
+      />
     </div>
   );
 };

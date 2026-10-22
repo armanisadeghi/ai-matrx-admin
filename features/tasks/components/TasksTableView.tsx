@@ -1,6 +1,13 @@
 "use client";
 
-import { tasksDrillFor } from "./tasksDrill";
+import { TASKS_DRILL } from "./tasksDrill";
+import {
+  TASK_GROUPABLE_COLUMN_IDS,
+  columnIdToGroupBy,
+  groupByToColumnId,
+  taskBandKey,
+  taskBandLabel,
+} from "./tasksGrouping";
 import { getStore } from "@/lib/redux/store-singleton";
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
@@ -21,6 +28,7 @@ import {
   selectFilterOrgId,
   setFilterOrgId,
   selectGroupBy,
+  setGroupBy,
 } from "@/features/tasks/redux/taskUiSlice";
 import {
   deleteTaskThunk,
@@ -101,9 +109,13 @@ function priorityLabel(priority: TaskWithProject["priority"]): string {
 export default function TasksTableView() {
   const dispatch = useAppDispatch();
   const tasks = useAppSelector(selectFilteredTasks);
-  // The sidebar's "Group" choice groups the table too (live walk 2026-10-22: it drew flat rows).
+  // The sidebar's "Group" choice draws the table's grouping bands (task rows under collapsible
+  // bands); the table's own Group menu writes back to it. A column with no sidebar twin is held here
+  // until the sidebar choice moves again.
   const groupBy = useAppSelector(selectGroupBy);
-  const drill = React.useMemo(() => tasksDrillFor(groupBy), [groupBy]);
+  const [ownColumn, setOwnColumn] = React.useState<{ from: string; id: string | null } | null>(null);
+  const groupColumnId =
+    ownColumn && ownColumn.from === groupBy ? ownColumn.id : groupByToColumnId(groupBy);
   const filterOrgId = useAppSelector(selectFilterOrgId);
   const tasksRead = useTasksRead();
   const selectedTaskId = useAppSelector(selectSelectedTaskId);
@@ -628,10 +640,31 @@ export default function TasksTableView() {
   return (
     <div className="h-full min-h-0 flex flex-col">
       <MatrxDataTable<TaskWithProject>
-        // A new sidebar choice starts the table over at that grouping (the drill reads its first
-        // question once).
-        key={`tasks-table-${groupBy}`}
-        drill={drill}
+        drill={TASKS_DRILL}
+        grouping={{
+          columnId: groupColumnId,
+          groupableColumnIds: TASK_GROUPABLE_COLUMN_IDS,
+          rowNoun: "task",
+          order: "value-asc",
+          emptyLabel: "No value",
+          onColumnIdChange: (id) => {
+            const twin = columnIdToGroupBy(id);
+            if (twin) {
+              setOwnColumn(null);
+              dispatch(setGroupBy(twin));
+            } else setOwnColumn({ from: groupBy, id });
+          },
+          readCell: (task, columnId) =>
+            columnId === "status" || columnId === "priority" || columnId === "dueDate"
+              ? taskBandKey(columnId, task, todayStr, weekStr)
+              : task.projectId === UNASSIGNED_PROJECT_ID || !task.projectId
+                ? "Unassigned"
+                : task.projectName,
+          renderLabel: (group) =>
+            groupColumnId === "status" || groupColumnId === "priority" || groupColumnId === "dueDate"
+              ? taskBandLabel(groupColumnId, String(group.value))
+              : group.label,
+        }}
         tableId="tasks-table"
         data={tasks}
         columns={columns}

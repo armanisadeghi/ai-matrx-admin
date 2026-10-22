@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Columns3 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -55,8 +55,7 @@ export function MillerColumnsPopover({
     onOpenChange?.(next);
   };
   const triggerNode = trigger ?? (
-    <Button variant="outline" size="sm" className="gap-1.5">
-      <Columns3 className="h-3.5 w-3.5" />
+    <Button icon={<Columns3 />} type="submit" variant="outline">
       Select scopes
     </Button>
   );

@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import { History, Loader2 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { DateTimeField } from "@ai-matrx/design-system/controls";
 import { storeDoors } from "@ai-matrx/records/core";
 
@@ -59,8 +59,7 @@ export function WhoCouldSeeOn({ recordId }: { recordId: string }) {
           onValueChange={(v) => setAt(v ?? "")}
           className="min-w-0 flex-1"
         />
-        <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || at === ""} onClick={() => void ask()} data-who-could-see-ask="">
-          {busy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
+        <Button icon={busy ? <Loader2 className="animate-spin" /> : null} variant="outline" disabled={busy || at === ""} onClick={() => void ask()} data-who-could-see-ask="">
           Ask
         </Button>
       </div>

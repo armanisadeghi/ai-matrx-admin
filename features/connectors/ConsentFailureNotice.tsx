@@ -19,7 +19,7 @@
 import { useId, useState } from "react";
 import { AlertTriangle, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -61,15 +61,13 @@ export function ConsentFailureNotice({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                icon={<X aria-hidden />}
                 type="button"
-                variant="ghost"
-                size="icon"
+                variant="quiet"
                 onClick={() => setDismissedKey(failureKey)}
                 aria-label="Dismiss error"
-                className="-mr-2 -mt-2 h-11 w-11 shrink-0 text-destructive-ink hover:bg-destructive/10"
-              >
-                <X className="h-3.5 w-3.5" aria-hidden />
-              </Button>
+                className="-mr-2 -mt-2 shrink-0"
+              />
             </TooltipTrigger>
             <TooltipContent>Dismiss error</TooltipContent>
           </Tooltip>
@@ -79,9 +77,8 @@ export function ConsentFailureNotice({
         <Button
           type="button"
           variant="link"
-          size="sm"
           onClick={action.onPress}
-          className="mt-1 min-h-9 px-0 text-xs"
+          className="mt-1"
         >
           {action.label}
         </Button>
@@ -89,18 +86,17 @@ export function ConsentFailureNotice({
       {failure.details ? (
         <>
           <Button
+            icon={<ChevronDown
+              className={cn("h-3 w-3 transition-transform", !open && "-rotate-90")}
+              aria-hidden
+            />}
             type="button"
             variant="link"
-            size="sm"
             onClick={() => setOpenKey(open ? null : failureKey)}
             aria-expanded={open}
             aria-controls={detailsId}
-            className="mt-1 min-h-11 gap-1 px-0 text-xs sm:min-h-8"
+            className="mt-1"
           >
-            <ChevronDown
-              className={cn("h-3 w-3 transition-transform", !open && "-rotate-90")}
-              aria-hidden
-            />
             {open ? "Hide details" : "Show details"}
           </Button>
           {open ? (

@@ -100,7 +100,6 @@ export function TopicalMapHomeCard({
             resourceId={map.id}
             resourceName={map.name}
             variant="outline"
-            size="sm"
           />
           <Button variant="primary" asChild>
             <Link href={outline}>Open</Link>

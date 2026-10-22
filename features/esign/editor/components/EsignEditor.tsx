@@ -24,6 +24,18 @@ import type { FieldKindV2 } from "../../contract/fieldModel";
 import { useSenderName } from "../useSenderName";
 import { withPlacedBox } from "../fieldSizing";
 import { clampBox, effectiveSubject, fieldRecipients, newField, newId, sendBlockers } from "../model";
+import { SurfaceRuntimeProvider, type SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { ESIGN_ENVELOPE_SURFACE_NAME } from "@/features/surfaces/manifests/esign-envelope.manifest";
+import { ESIGN_TEMPLATE_SURFACE_NAME } from "@/features/surfaces/manifests/esign-template.manifest";
+import {
+  applyCreateRecipients,
+  applyDeleteRecipients,
+  buildEsignEditorScope,
+  parseCreateRecipients,
+  parseDeleteRecipients,
+  parseText,
+  parseUpdateRecipients,
+} from "../agent-writes";
 import { useDraftHistory } from "../history";
 import { useDraftSync, type SaveStatus } from "../useDraftSync";
 import { DraftRefusal, type DetectCandidate, type EditorApi, type SendResult } from "../api/types";
@@ -612,10 +624,64 @@ export function EsignEditor(props: EsignEditorProps) {
 
   const blockers = sendBlockers(draft);
   const statusLabel = templateMode ? (templateState?.id ? `Template v${templateState.version}` : "New template") : STATUS_TEXT[sync.status];
+  // matrx-user/esign-envelope | esign-template — the composition an agent reads (sampled at Run) and what
+  // it may change: text and recipients, through the editor's own undoable `edit`. Send is never a target.
+  const getSurfaceScope = () =>
+    buildEsignEditorScope({
+      mode: templateMode ? "template" : "envelope",
+      envelopeId: templateMode ? null : boot.id,
+      template: templateState,
+      draft,
+      subject: effectiveSubject(draft, senderName),
+      saveState: templateMode ? null : sync.status,
+    });
+  const textTarget = (target: "envelope_title" | "email_subject" | "envelope_message", key: "title" | "email_subject" | "message") => ({
+    validate: (value: unknown) => void parseText(target, value),
+    apply: (value: unknown) => {
+      const v = parseText(target, value);
+      edit((d) => ({ ...d, [key]: v }));
+      return { summary: `${target} filled in. Nothing is sent until the person presses Send.`, data: { [target]: v } };
+    },
+  });
+  const getSurfaceWriteHandlers = (): SurfaceWriteHandlers => ({
+    envelope_title: textTarget("envelope_title", "title"),
+    email_subject: textTarget("email_subject", "email_subject"),
+    envelope_message: textTarget("envelope_message", "message"),
+    create_recipients: {
+      validate: (value: unknown) => void parseCreateRecipients(value, draft),
+      apply: (value: unknown) => {
+        const seeds = parseCreateRecipients(value, draft);
+        const { draft: next, added } = applyCreateRecipients(draft, seeds);
+        edit(() => next);
+        return {
+          summary: `Added ${added.length} recipient(s). Nothing is sent until the person presses Send.`,
+          data: { recipients: added.map((r) => ({ key: r.key, full_name: r.full_name, email: r.email, role: r.role, order: r.order })) },
+        };
+      },
+    },
+    update_recipients: {
+      validate: (value: unknown) => void parseUpdateRecipients(value, draft),
+      apply: (value: unknown) => {
+        const plans = parseUpdateRecipients(value, draft);
+        edit((d) => ({ ...d, recipients: d.recipients.map((r) => ({ ...r, ...(plans.find((p) => p.key === r.key)?.change ?? {}) })) }));
+        return { summary: `Changed ${plans.length} recipient(s).`, data: { changed: plans.map((p) => ({ key: p.key, fields: Object.keys(p.change) })) } };
+      },
+    },
+    delete_recipients: {
+      validate: (value: unknown) => void parseDeleteRecipients(value, draft),
+      apply: (value: unknown) => {
+        const keys = parseDeleteRecipients(value, draft);
+        const lostFields = draft.fields.filter((f) => keys.includes(f.recipient_key)).length;
+        edit((d) => applyDeleteRecipients(d, keys));
+        return { summary: `Removed ${keys.length} recipient(s) and their ${lostFields} field(s). The person can undo.`, data: { removed: keys, fields_removed: lostFields } };
+      },
+    },
+  });
+
   const onlyMe = !!props.me && draft.recipients.length > 0 && draft.recipients.every((r) => r.user_id === props.me?.user_id);
 
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={templateMode ? ESIGN_TEMPLATE_SURFACE_NAME : ESIGN_ENVELOPE_SURFACE_NAME} getScope={getSurfaceScope} getWriteHandlers={getSurfaceWriteHandlers}>
       <RecordPageHeader
         backHref={props.backHref ?? "/esign"}
         record={{ name: draft.title.trim() || (templateMode ? "New template" : "New envelope") }}
@@ -685,7 +751,7 @@ export function EsignEditor(props: EsignEditorProps) {
       <TemplateDialog key={String(templateOpen)} open={templateOpen} initialName={templateState?.name ?? draft.title} saving={templateSaving} error={templateError} onClose={() => setTemplateOpen(false)} onSave={(n, d) => void saveTemplate(n, d)} />
       {previewOpen && <PreviewDialog open draft={draft} initialRecipient={activeRecipient} onClose={() => setPreviewOpen(false)} />}
       <span className="sr-only" aria-live="polite">{effectiveSubject(draft, senderName)} {blockers.length ? "" : "ready"}</span>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }
 

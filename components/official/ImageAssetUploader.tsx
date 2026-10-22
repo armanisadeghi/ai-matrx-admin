@@ -58,7 +58,7 @@ import { getAssetForFile, addAssetVariants } from "@/features/files/api/assets";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
 import { extractErrorMessage } from "@/utils/errors";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input, Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   Select,
@@ -570,11 +570,11 @@ function UrlTabContent({
           aria-label="Image URL"
         />
         <Button
+          variant="primary"
           type="button"
-          size="sm"
           onClick={handleSubmit}
           disabled={!url.trim() || state === "processing"}
-          className="h-8 px-3 text-xs shrink-0"
+          className="shrink-0"
         >
           {state === "processing" ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -732,13 +732,13 @@ function GenerateTabContent({
       </div>
 
       <Button
+        variant="primary"
         type="button"
-        size="sm"
         onClick={() => void handleGenerate()}
         disabled={
           !IMAGE_STUDIO_BACKEND_CAPABILITIES.generate || !prompt.trim() || busy
         }
-        className="h-8 text-xs w-full"
+        className="w-full"
       >
         {genState === "generating" ? (
           <>

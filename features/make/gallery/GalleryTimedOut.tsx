@@ -9,7 +9,8 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, ErrorNotice } from "@ai-matrx/design-system";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 /** How long the page waits before its one automatic second ask. */
 export const GALLERY_RETRY_PAUSE_MS = 1500;
@@ -37,7 +38,7 @@ export function GalleryTimedOut() {
         error={{ code: "timed_out" }}
         operation="read the template gallery"
         actions={
-          <Button type="button" size="sm" variant="outline" data-error-retry="" disabled={pending} onClick={() => start(() => router.refresh())}>
+          <Button type="button" variant="outline" data-error-retry="" disabled={pending} onClick={() => start(() => router.refresh())}>
             Try again
           </Button>
         }

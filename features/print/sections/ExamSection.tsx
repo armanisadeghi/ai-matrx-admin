@@ -21,6 +21,17 @@ import { toast } from "@/lib/toast";
 import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_PRACTICE_TEST } from "./sample-data";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+    printSettingsAsFields,
+    printSettingsSnapshot,
+    printToolWriteHandlers,
+} from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_EXAMS_SETTINGS_TARGET,
+    PRINT_EXAMS_SURFACE_NAME,
+    createPrintExamsScope,
+} from "@/features/surfaces/manifests/print-exams.manifest";
 
 const VARIANT_ICON: Record<PracticeTestVariant, typeof Printer> = {
     "question-booklet": FileQuestion,
@@ -51,7 +62,36 @@ export function ExamSection() {
         }
     };
 
+    const printerSettings = practiceTestPrinter.settings ?? [];
+
+    const getScope = () =>
+        createPrintExamsScope({
+            print_settings: printSettingsSnapshot(printerSettings, settings),
+            test_title: SAMPLE_PRACTICE_TEST.title,
+            instructions: SAMPLE_PRACTICE_TEST.instructions ?? "",
+            question_count: questions.length,
+            multiple_choice_count: multipleChoiceCount,
+            free_response_count: freeResponseCount,
+            total_points: totalPoints,
+            questions: questions.map((question, index) => ({
+                number: index + 1,
+                prompt: question.prompt,
+                ...(question.choices?.length
+                    ? { choice_count: question.choices.length }
+                    : { free_response_lines: question.workSpaceLines ?? 0 }),
+                ...(question.points ? { points: question.points } : {}),
+            })),
+            documents: practiceTestPrinter.variants.map((v) => ({ id: v.id, label: v.label, description: v.description ?? "" })),
+        });
+
+    const getWriteHandlers = () =>
+        printToolWriteHandlers(printSettingsAsFields(printerSettings), PRINT_EXAMS_SETTINGS_TARGET, (patch) =>
+            setSettings((prev) => ({ ...prev, ...patch })),
+        );
+
     return (
+        // surface-write-handlers: exam_print_settings
+        <SurfaceRuntimeProvider surfaceName={PRINT_EXAMS_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="Practice test & bubble sheet"
             entry="@ai-matrx/print/exam"
@@ -244,5 +284,6 @@ export function ExamSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

@@ -40,7 +40,7 @@ import {
   Pencil,
   XCircle,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   REVIEW_VOCABULARY_LABELS,
@@ -134,61 +134,57 @@ export function RuleDecisionActions({
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <Button
-        size={size}
+        icon={<CheckCircle2 />}
+        variant="primary"
         className={heightClass}
         onClick={onApprove}
         disabled={off("approve")}
         title={verbTitles.approve}
       >
-        <CheckCircle2 className="h-4 w-4" />
         {label("approve")}
       </Button>
       {/* "Mine but wrong" sits where the Expert reads it — between "mine" and
           "not mine" — and only when the surface handed us the handler. */}
       {onRequestChanges ? (
         <Button
-          size={size}
+          icon={<MessageSquareWarning />}
           variant="outline"
           className={heightClass}
           onClick={onRequestChanges}
           disabled={off("requestChanges")}
           title={verbTitles.requestChanges}
         >
-          <MessageSquareWarning className="h-4 w-4" />
           {label("requestChanges")}
         </Button>
       ) : null}
       <Button
-        size={size}
+        icon={<MessageSquareText />}
         variant="outline"
         className={heightClass}
         onClick={onImprove}
         disabled={off("improve")}
         title={verbTitles.improve}
       >
-        <MessageSquareText className="h-4 w-4" />
         {label("improve")}
       </Button>
       <Button
-        size={size}
+        icon={<XCircle />}
         variant="outline"
         className={heightClass}
         onClick={onReject}
         disabled={off("reject")}
         title={verbTitles.reject}
       >
-        <XCircle className="h-4 w-4" />
         {label("reject")}
       </Button>
       <Button
-        size={size}
+        icon={<Pencil />}
         variant="outline"
         className={heightClass}
         onClick={onEdit}
         disabled={off("edit")}
         title={verbTitles.edit}
       >
-        <Pencil className="h-4 w-4" />
         {label("edit")}
       </Button>
     </div>

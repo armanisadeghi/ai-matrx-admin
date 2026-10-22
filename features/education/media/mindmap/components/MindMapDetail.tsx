@@ -315,7 +315,6 @@ export function MindMapDetail({ mediaId, edit = false }: { mediaId: string; edit
                   resourceId={media.id}
                   resourceName={media.title}
                   isOwner
-                  size="sm"
                 />
                 <Button
                   icon={<RefreshCw className="text-muted-foreground" />}

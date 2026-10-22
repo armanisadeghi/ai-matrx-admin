@@ -13,7 +13,7 @@
 import { useState } from "react";
 import { Shapes, ChevronDown, Loader2 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Command,
@@ -78,19 +78,16 @@ export function KindBindPicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          icon={loading ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <Shapes />
+          )} iconEnd={<ChevronDown className="opacity-60" />}
           type="button"
           variant="outline"
-          size="sm"
-          className="h-7 text-xs"
           disabled={loading || !entries || !resolve}
         >
-          {loading ? (
-            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-          ) : (
-            <Shapes className="h-3.5 w-3.5 mr-1" />
-          )}
           Bind to a kind
-          <ChevronDown className="h-3 w-3 ml-1 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent sizing="content" className="p-0" align="start">

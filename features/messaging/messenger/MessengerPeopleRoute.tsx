@@ -23,6 +23,7 @@ import { ConversationPane } from "@/features/messaging/components/ConversationPa
 import { NewConversationDialog } from "@/features/messaging/components/NewConversationDialog";
 import { useMessagePins } from "@/features/messaging/lib/useMessagePins";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
+import { MESSENGER_SURFACE_NAME } from "@/features/surfaces/manifests/messenger.manifest";
 
 export function MessengerPeopleRoute() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export function MessengerPeopleRoute() {
         showHeader={false}
         appearance="messenger"
         getApplicationScope={getScope}
+        surfaceName={MESSENGER_SURFACE_NAME}
         className="min-h-0 flex-1"
       />
     ),
@@ -71,7 +73,7 @@ export function MessengerPeopleRoute() {
   });
 
   return (
-    <SurfaceRuntimeProvider surfaceName="matrx-user/messages" getScope={getScope} isEditable={false}>
+    <SurfaceRuntimeProvider surfaceName={MESSENGER_SURFACE_NAME} getScope={getScope}>
       <MessengerShell source={source} />
       <NewConversationDialog
         open={newOpen}

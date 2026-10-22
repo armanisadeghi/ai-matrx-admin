@@ -32,7 +32,7 @@ import {
   attachedKey,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -428,8 +428,7 @@ export function SaveSourcePanel({
         <div className="flex items-center justify-end gap-2">
           {onCancel ? (
             <Button
-              variant="ghost"
-              size="sm"
+              variant="quiet"
               onClick={onCancel}
               disabled={busy}
             >
@@ -437,15 +436,15 @@ export function SaveSourcePanel({
             </Button>
           ) : null}
           <Button
-            size="sm"
+            icon={busy ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Save />
+            )}
+            variant="primary"
             onClick={() => void handleSave()}
             disabled={busy || !canSave}
           >
-            {busy ? (
-              <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Save className="mr-1 h-3.5 w-3.5" />
-            )}
             {save ? "Save" : "File"}
           </Button>
         </div>

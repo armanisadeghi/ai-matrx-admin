@@ -321,9 +321,7 @@ function TaskEditorInner({
                 resourceType="task"
                 resourceId={taskId}
                 resourceName={effective.title || "Task"}
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
+                variant="quiet" iconOnly
               />
               {isDirty && (
                 <>

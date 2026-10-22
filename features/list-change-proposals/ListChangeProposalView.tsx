@@ -44,7 +44,7 @@ import {
   Plus,
 } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/lib/toast";
@@ -378,9 +378,9 @@ export function ListChangeProposalView({
       {canDecide && openProposals.length > 1 ? (
         <div className="flex flex-wrap items-center gap-1.5">
           <Button
+            icon={<Check aria-hidden />}
             type="button"
-            size="sm"
-            variant="default"
+            variant="primary"
             disabled={busyId !== null}
             onClick={() =>
               openRemovals.length > 0 || openEdits.length > 0
@@ -388,17 +388,15 @@ export function ListChangeProposalView({
                 : void runAcceptAll()
             }
           >
-            <Check className="h-3.5 w-3.5" aria-hidden />
             Accept all {openProposals.length}
           </Button>
           <Button
+            icon={<CircleSlash aria-hidden />}
             type="button"
-            size="sm"
             variant="outline"
             disabled={busyId !== null}
             onClick={() => void runRejectAll()}
           >
-            <CircleSlash className="h-3.5 w-3.5" aria-hidden />
             Reject all {openProposals.length}
           </Button>
         </div>
@@ -560,27 +558,23 @@ function ProposalRow({
           ) : (
             <>
               <Button
+                icon={<Check aria-hidden />}
                 type="button"
-                size="sm"
-                variant="ghost"
+                variant="quiet"
                 disabled={loading}
                 onClick={onAccept}
                 aria-label={`Accept: ${item.title}`}
                 title="Accept"
-              >
-                <Check className="h-3.5 w-3.5" aria-hidden />
-              </Button>
+              />
               <Button
+                icon={<CircleSlash aria-hidden />}
                 type="button"
-                size="sm"
-                variant="ghost"
+                variant="quiet"
                 disabled={loading}
                 onClick={onReject}
                 aria-label={`Reject: ${item.title}`}
                 title="Reject"
-              >
-                <CircleSlash className="h-3.5 w-3.5" aria-hidden />
-              </Button>
+              />
             </>
           )}
         </div>

@@ -3,7 +3,7 @@
 import React, { lazy, Suspense, useState, useCallback } from "react";
 import { Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   selectVoicePadEntries,
   selectVoicePadDraftText,
@@ -96,7 +96,7 @@ export default function VoicePadAdvanced({ instanceId }: VoicePadAdvancedProps) 
       dispatch(
         openOverlay({
           overlayId: "saveToNotes",
-          instanceId: crypto.randomUUID(),
+          instanceId: mintInstanceId("saveToNotes"),
           data: {
             initialContent: currentText,
             bucketTag: "Voice Notes",

@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import { PencilRuler } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ADMIN_KIND_REGISTRY_SURFACE_NAME } from "@/features/surfaces/manifests/admin-kind-registry.manifest";
 import { useKindAgentLaunch } from "@/features/content-ir/studio/useKindAgentLaunch";
 import type { KindAgentIntentInput } from "@/features/content-ir/studio/kind-agent-intents";
@@ -33,15 +33,13 @@ interface KindAgentButtonProps extends KindAgentIntentInput {
   roleName?: string;
   /** Facts the page already holds (doctor row, skills, …) for the agent. */
   extraKindContext?: Record<string, unknown>;
-  variant?: "default" | "outline" | "ghost" | "secondary";
-  size?: "default" | "sm";
+  variant?: "primary" | "outline" | "quiet";
   className?: string;
 }
 
 export default function KindAgentButton({
   children,
   variant = "outline",
-  size = "sm",
   className,
   surfaceName = ADMIN_KIND_REGISTRY_SURFACE_NAME,
   roleName = ADMIN_KIND_EDITOR_ROLE,
@@ -65,14 +63,13 @@ export default function KindAgentButton({
     <Button
       type="button"
       variant={variant}
-      size={size}
+      icon={<PencilRuler />}
       className={className}
       disabled={launching || preparing}
       // An expensive click names its consequence first: this starts a run.
       title="Starts an agent run in a window on this page"
       onClick={() => void start()}
     >
-      <PencilRuler className="mr-1.5 h-3.5 w-3.5" />
       {children}
     </Button>
   );

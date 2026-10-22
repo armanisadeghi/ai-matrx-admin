@@ -17,7 +17,7 @@ import {
   Loader2,
   Zap,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import {
   Tooltip,
@@ -302,9 +302,7 @@ function IssueTable({
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-50/40 dark:bg-yellow-950/30 border-b border-yellow-200 dark:border-yellow-800/50 flex-wrap">
             {onFixAll && fixableCount > 0 && (
               <Button
-                size="sm"
                 variant="outline"
-                className="h-6 text-[11px] px-2"
                 onClick={onFixAll}
                 title="Apply the suggested fix to every fixable issue"
               >
@@ -313,9 +311,7 @@ function IssueTable({
             )}
             {onRemoveAllUnknown && unknownCount > 0 && (
               <Button
-                size="sm"
                 variant="outline"
-                className="h-6 text-[11px] px-2"
                 onClick={onRemoveAllUnknown}
                 title="Remove every unknown/unsupported key"
               >
@@ -324,9 +320,8 @@ function IssueTable({
             )}
             {onResetAll && (
               <Button
-                size="sm"
                 variant="outline"
-                className="h-6 text-[11px] px-2 text-destructive hover:text-destructive ml-auto"
+                className="ml-auto"
                 onClick={() => setResetConfirmOpen(true)}
                 title="Clear every setting — starts from an empty object"
               >
@@ -391,13 +386,10 @@ function IssueTable({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                      icon={<Eye />} aria-label="View in Raw JSON"
+                      variant="quiet"
                       onClick={() => onView(issue.key)}
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
+                    />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="type-secondary">
                     View in Raw JSON
@@ -408,13 +400,10 @@ function IssueTable({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        icon={<Trash2 />} aria-label="Remove this key"
+                        variant="quiet"
                         onClick={() => onRemove(issue.key)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      />
                     </TooltipTrigger>
                     <TooltipContent side="top" className="type-secondary">
                       Remove this key
@@ -424,13 +413,10 @@ function IssueTable({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-orange-500"
+                        icon={<WrenchIcon />} aria-label="Reset to default value"
+                        variant="quiet"
                         onClick={() => onFixEnum(issue.key)}
-                      >
-                        <WrenchIcon className="h-3.5 w-3.5" />
-                      </Button>
+                      />
                     </TooltipTrigger>
                     <TooltipContent side="top" className="type-secondary">
                       Reset to default value
@@ -1156,7 +1142,6 @@ export function AgentSettingsCore({
                 actions={
                   classPinRefused ? (
                     <Button
-                      size="sm"
                       variant="outline"
                       onClick={() => handleOfferingPinChange(undefined)}
                     >

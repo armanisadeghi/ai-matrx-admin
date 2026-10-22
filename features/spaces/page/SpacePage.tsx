@@ -77,6 +77,10 @@ import { isContentEditOnly } from "./content-edit";
 import { StructureProvider } from "./structure";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 import { useSpacesImport } from "../sidebar/ImportMenu";
+import { SurfaceRuntimeProvider, type SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { SPACE_PAGE_SURFACE_NAME } from "@/features/surfaces/manifests/space-page.manifest";
+import { buildSpacePageScope, planBodyEdit } from "./page-surface";
 
 type Editable = Pick<SpaceDoc, "title" | "icon" | "cover" | "settings" | "blocks" | "properties">;
 
@@ -918,9 +922,74 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
     });
   };
 
+  // matrx-user/space-page — what an agent on this page reads (sampled at Run) and the two writes it may
+  // make: both land in the live editor, which saves them the way it saves typing.
+  const getSurfaceScope = () =>
+    buildSpacePageScope({
+      spaceId,
+      doc: docRef.current ?? doc,
+      liveBlocks: editorRef.current ? fromEngine(editorRef.current.document as unknown as EngineBlock[]) : null,
+      ctx: mdContext,
+      subPages: spaces.childrenOf(doc.id).map((p) => ({ id: p.id, title: p.title || "Untitled" })),
+      path: path.filter((p) => p.id !== doc.id).map((p) => ({ id: p.id, title: p.title || "Untitled" })),
+      editable,
+      canEdit,
+      inTrash,
+      locked,
+      saveState,
+    });
+  const refuseUnlessEditable = () => {
+    if (!canEdit) refuseSurfaceWrite("The person can read this page but not edit it.");
+    if (inTrash) refuseSurfaceWrite("The page is in Trash; restore it first.");
+    if (locked) refuseSurfaceWrite("The page is locked; the person unlocks it from the top bar.");
+  };
+  const getSurfaceWriteHandlers = (): SurfaceWriteHandlers => ({
+    page_body: {
+      validate: (value: unknown) => {
+        refuseUnlessEditable();
+        if (typeof value !== "string") refuseSurfaceWrite("page_body takes the body as Markdown text.");
+        if (!editorRef.current) refuseSurfaceWrite("The editor is still loading.");
+      },
+      apply: (value: unknown) => {
+        const editor = editorRef.current;
+        if (!editor) refuseSurfaceWrite("The editor is still loading.");
+        const live = fromEngine(editor!.document as unknown as EngineBlock[]);
+        const plan = planBodyEdit(live, String(value), mdContext);
+        if (!plan) return { summary: "Nothing changed: the page already reads that way." };
+        const made = toEngine(plan.blocks) as never[];
+        const { replaceIds } = plan;
+        if (replaceIds.length && made.length) editor!.replaceBlocks(replaceIds, made);
+        else if (replaceIds.length) editor!.removeBlocks(replaceIds);
+        else if (made.length) {
+          const before = live[plan.keepHead - 1];
+          const after = live[plan.keepHead];
+          if (before) editor!.insertBlocks(made, before.id, "after");
+          else if (after) editor!.insertBlocks(made, after.id, "before");
+          else editor!.replaceBlocks(editor!.document, made);
+        }
+        return {
+          summary: `Page content changed: ${replaceIds.length} block(s) replaced by ${made.length}; ${plan.keepHead + plan.keepTail} untouched. It saves like typing.${plan.warnings.length ? ` Not mapped one-to-one: ${plan.warnings.join("; ")}` : ""}`,
+          data: { space_id: spaceId, replaced: replaceIds.length, added: made.length, kept: plan.keepHead + plan.keepTail },
+        };
+      },
+    },
+    page_title: {
+      validate: (value: unknown) => {
+        refuseUnlessEditable();
+        if (typeof value !== "string" || /\n/.test(value.trim())) refuseSurfaceWrite("page_title takes one line of text.");
+      },
+      apply: (value: unknown) => {
+        const title = String(value).trim();
+        update({ title });
+        return { summary: `Renamed to "${title || "Untitled"}". It saves like typing.`, data: { space_id: spaceId, title } };
+      },
+    },
+  });
+
   const fontClass = doc.settings.font === "serif" ? "spaces-font-serif" : doc.settings.font === "mono" ? "spaces-font-mono" : "";
 
   return (
+    <SurfaceRuntimeProvider surfaceName={SPACE_PAGE_SURFACE_NAME} getScope={getSurfaceScope} getWriteHandlers={getSurfaceWriteHandlers}>
     <div className="spaces-page" data-full-width={doc.settings.fullWidth ? "true" : undefined} data-small-text={doc.settings.smallText ? "true" : undefined}>
       <header className="spaces-topbar">
         {/* Both buttons are always in the tree and the width picks one with CSS (spaces.css data-width):
@@ -1214,5 +1283,6 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
       ) : null}
       </div>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

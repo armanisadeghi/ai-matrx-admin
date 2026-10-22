@@ -2423,9 +2423,8 @@ function RulebookDetailPageInstance({ rulebookId }: { rulebookId: string }) {
                 <ShareButton
                   resourceType="rulebook"
                   resourceId={rulebook.id}
-                  resourceName={rulebook.name}
-                  size="icon"
-                  variant="ghost"
+                  resourceName={rulebook.name} iconOnly
+                  variant="quiet"
                   showStatus={false}
                 />
                 {/* THE MATRX LIBRARY — sharing by NAME (above) reaches people

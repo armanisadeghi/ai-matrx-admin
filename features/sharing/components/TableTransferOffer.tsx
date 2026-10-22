@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRightLeft } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
@@ -68,8 +68,7 @@ export function TableTransferOffer({
         say why, {ownerName} is told and stays on as an editor, and the transfer is kept in the
         organization&apos;s audit log.
       </p>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)} data-table-transfer-open>
-        <ArrowRightLeft className="mr-1.5 h-4 w-4" />
+      <Button icon={<ArrowRightLeft />} variant="outline" onClick={() => setOpen(true)} data-table-transfer-open>
         Transfer ownership…
       </Button>
       {open && (

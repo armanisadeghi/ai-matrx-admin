@@ -374,7 +374,7 @@ export function AssessmentTaker({
                             })
                       }
                       label="Tutor"
-                      variant="ghost"
+                      variant="quiet"
                     />
                   ) : null}
                   <span className="text-xs text-muted-foreground">

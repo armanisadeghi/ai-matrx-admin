@@ -29,7 +29,7 @@ import {
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { AlertCircle } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { CONTROLS_CONTAINER_NAME, ControlScope } from "@ai-matrx/design-system/controls";
 import { ItemContextMenu } from "@ai-matrx/design-system/item";
 import {
@@ -582,7 +582,6 @@ export function EntityListPage<TRow>({
     // in place, so the "way out" button would have left the user staring at
     // the same empty result.
     <Button
-      size="sm"
       variant="outline"
       onClick={() => {
         list.setSearch("");
@@ -596,7 +595,6 @@ export function EntityListPage<TRow>({
   // ONE CLICK, to exactly the rows the sentence above it just counted.
   const archivedDoor = (
     <Button
-      size="sm"
       variant="outline"
       onClick={() => list.patchQuery({ archived: "archived" })}
     >
@@ -641,7 +639,7 @@ export function EntityListPage<TRow>({
               ? `You are not on a team in ${teamOrgName}, so My team has no ${plural} to show. Owners and admins of ${teamOrgName} set up teams in its settings.`
               : `You are not on a team in any of your organizations, so My team has no ${plural} to show. An organization's owners and admins set up teams in its settings.`,
             action: (
-              <Button size="sm" variant="outline" asChild>
+              <Button variant="outline" asChild>
                 <Link
                   href={
                     teamOrgId
@@ -706,7 +704,6 @@ export function EntityListPage<TRow>({
               {otherLaneHits.slice(0, 3).map((hit) => (
                 <Button
                   key={hit.kind}
-                  size="sm"
                   variant="outline"
                   onClick={() => list.setScope(makeScope(hit.kind))}
                 >
@@ -767,7 +764,7 @@ export function EntityListPage<TRow>({
             title: `No live ${plural} in this view`,
             description: `Nothing live is listed here, and the check for archived ${plural} did not answer — so this page cannot tell you whether any exist. Open Filters & Sort → Archived to look for yourself.`,
             action: (
-              <Button size="sm" variant="outline" onClick={list.refresh}>
+              <Button variant="outline" onClick={list.refresh}>
                 Try again
               </Button>
             ),
@@ -1391,7 +1388,7 @@ export function EntityListPage<TRow>({
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span className="flex-1">{list.error.message}</span>
             {list.error.retryable && (
-              <Button size="sm" variant="ghost" onClick={list.refresh}>
+              <Button variant="quiet" onClick={list.refresh}>
                 Retry
               </Button>
             )}
@@ -1731,7 +1728,6 @@ function LoadMoreFooter({
       </span>
       <div className="flex items-center gap-1">
         <Button
-          size="sm"
           variant="outline"
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
@@ -1739,7 +1735,6 @@ function LoadMoreFooter({
           Previous
         </Button>
         <Button
-          size="sm"
           variant="outline"
           disabled={openEnded ? !hasMore : shownThrough >= total}
           onClick={() => onPage(page + 1)}

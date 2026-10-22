@@ -370,7 +370,7 @@ export function LearnSurface({ setId }: { setId: string }) {
           actions={
             <div className="flex items-center gap-1">
               {tutorSeed && !roundOver ? (
-                <AskTutorButton seed={tutorSeed} iconOnly variant="ghost" />
+                <AskTutorButton seed={tutorSeed} iconOnly variant="quiet" />
               ) : null}
               <RoundSizeMenu
                 dealt={roundSize}

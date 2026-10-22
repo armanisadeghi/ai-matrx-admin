@@ -19,7 +19,7 @@ import {
   PopoverTrigger,
 } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
 import {
   useAssociateTask,
@@ -224,8 +224,7 @@ export default function AssociateTaskButton(props: AssociateTaskButtonProps) {
             )}
           </button>
         ) : (
-          <Button size="sm" variant="outline" className={cn("h-7", className)}>
-            <Link2 className="w-3.5 h-3.5 mr-1" />
+          <Button icon={<Link2 />} type="submit" variant="outline" className={className}>
             {label_text}
             {(existing.length > 0 || existingError) && (
               <span className="ml-1.5 text-[10px] text-primary">
@@ -392,16 +391,16 @@ export default function AssociateTaskButton(props: AssociateTaskButtonProps) {
               rows={2}
             />
             <Button
-              size="sm"
+              icon={isBusy ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Plus />
+              )}
+              variant="primary"
               onClick={handleCreate}
               disabled={!newTitle.trim() && !query.trim()}
-              className="w-full h-7 text-xs"
+              className="w-full"
             >
-              {isBusy ? (
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-              ) : (
-                <Plus className="w-3 h-3 mr-1" />
-              )}
               Create & attach
             </Button>
           </div>

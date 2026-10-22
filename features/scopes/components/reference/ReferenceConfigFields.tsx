@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from "react";
 import { AlertTriangle, Eye, Link2, Search, X } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Field } from "@/components/official/Field";
 import {
@@ -381,16 +381,10 @@ export function ReferenceConfigFields({
                   <Button
                     key={st.id}
                     type="button"
-                    size="sm"
                     variant="outline"
                     disabled={disabled}
                     onClick={() => onToggleAllowedScopeType(st.id)}
                     aria-pressed={active}
-                    className={
-                      active
-                        ? "border-primary/50 bg-primary/10 text-foreground hover:bg-primary/15 hover:text-foreground"
-                        : "text-muted-foreground"
-                    }
                   >
                     {st.label_singular}
                   </Button>

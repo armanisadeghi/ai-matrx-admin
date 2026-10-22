@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { getDataAtPath } from "./utils/json-path-navigation-util";
 import { PathArray } from "./types";
 
@@ -60,8 +60,7 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
           return (
             <Button
               key={key}
-              size="xs"
-              variant={isSelected ? "default" : "outline"}
+              variant={isSelected ? "primary" : "outline"}
               data-json-key={key}
               onClick={() => onKeySelect(rowIndex, key)}
               className={`text-xs ${isHidden ? 'bg-yellow-200 dark:bg-yellow-800 hover:bg-yellow-300 dark:hover:bg-yellow-900 text-foreground dark:text-muted-foreground' : ''}`}

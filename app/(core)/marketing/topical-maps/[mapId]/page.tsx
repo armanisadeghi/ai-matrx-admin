@@ -135,7 +135,6 @@ export default async function TopicalMapDoor({
               resourceId={map.id}
               resourceName={map.name}
               variant="outline"
-              size="sm"
             />
             <Link href="/marketing" className="text-sm underline">
               Marketing

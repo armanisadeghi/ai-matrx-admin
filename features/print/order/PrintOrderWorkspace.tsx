@@ -94,6 +94,24 @@ import type {
   LuluTrimOption,
 } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { printToolWriteHandlers, type PrintFormPatch } from "@/features/print/surfaces/print-tool-writes";
+import {
+  PRINT_ORDER_FIELDS,
+  PRINT_ORDER_FORM_TARGET,
+  PRINT_ORDER_SURFACE_NAME,
+  createPrintOrderScope,
+} from "@/features/surfaces/manifests/print-order.manifest";
+
+/** The book-option write keys, in selection order, and the dimension each sets. */
+const ORDER_DIMENSION_KEYS: readonly [string, LuluDimension][] = [
+  ["trim_id", "trim"],
+  ["binding_id", "binding"],
+  ["color_id", "color"],
+  ["paper_id", "paper"],
+  ["cover_finish_id", "coverFinish"],
+];
 
 // ---------------------------------------------------------------------------
 // Demo destinations — a cost calculation needs a real deliverable address.
@@ -677,10 +695,102 @@ export default function LuluPricingDemoPage() {
     pageWindow.max !== null &&
     selection.pageCount > pageWindow.max;
 
+  // ── Surface: what the page shows, and the one write (book options) ──────
+  const choicesFor = (dimension: LuluDimension, options: LuluOption[]) =>
+    options.map((option) => {
+      const availability = catalog
+        ? availabilityFor(catalog, selection, dimension, option.id)
+        : { available: false, reason: null };
+      return { id: option.id, label: option.label, available: availability.available, reason: availability.reason };
+    });
+
+  const getScope = () =>
+    createPrintOrderScope({
+      catalog_status: catalogState.status,
+      ...(selection.trimId ? { trim_id: selection.trimId } : {}),
+      ...(selection.pageCount !== null ? { page_count: selection.pageCount } : {}),
+      ...(selection.bindingId ? { binding_id: selection.bindingId } : {}),
+      ...(selection.colorId ? { color_id: selection.colorId } : {}),
+      ...(selection.paperId ? { paper_id: selection.paperId } : {}),
+      ...(selection.coverFinishId ? { cover_finish_id: selection.coverFinishId } : {}),
+      quantity,
+      destination: destination.id,
+      ...(shippingLevel ? { shipping_level: shippingLevel } : {}),
+      ...Object.fromEntries(
+        specRows
+          .filter((row) => row.value !== null && row.id !== "pages")
+          .map((row) => [row.id === "color" ? "interior" : row.id === "coverFinish" ? "cover" : row.id === "trim" ? "size" : row.id, row.value]),
+      ),
+      destination_label: destination.label,
+      ...(missingFields.length ? { missing_fields: missingFields.join(", ") } : {}),
+      ...(pageHint ? { page_window: pageHint } : {}),
+      price_status: priceState.status,
+      ...(priceState.status === "ready"
+        ? {
+            price_total: `${priceState.data.totalCostInclTax ?? "?"} ${priceState.data.currency ?? ""}`.trim(),
+            price_breakdown: priceState.data,
+          }
+        : {}),
+      ...(shippingState.status === "ready"
+        ? { shipping_options: shippingState.data.map((o) => ({ level: o.level, label: o.label })) }
+        : {}),
+      ...(catalog
+        ? {
+            book_option_choices: {
+              trims: catalog.trims.map((t) => ({ ...choicesFor("trim", [t])[0], label: trimName(t) })),
+              bindings: choicesFor("binding", catalog.bindings),
+              colors: choicesFor("color", catalog.colors),
+              papers: choicesFor("paper", catalog.papers),
+              cover_finishes: choicesFor("coverFinish", catalog.coverFinishes),
+              destinations: DESTINATIONS.map((d) => ({ id: d.id, label: d.label, available: true, reason: null })),
+            },
+          }
+        : {}),
+    });
+
+  function applyBookOptions(patch: PrintFormPatch) {
+    if (!catalog) refuseSurfaceWrite("The print catalog has not loaded yet.");
+    let next = selection;
+    for (const [key, dimension] of ORDER_DIMENSION_KEYS) {
+      const id = patch[key];
+      if (typeof id === "string") {
+        next = pruneInvalidSelections(catalog, { ...next, ...selectionPatch(dimension, id) }, dimension);
+      }
+    }
+    if (typeof patch.page_count === "number") {
+      const pageCount = Math.floor(patch.page_count);
+      setPageCountText(String(pageCount));
+      next = pruneInvalidSelections(catalog, { ...next, pageCount });
+    }
+    setSelection(next);
+    if (typeof patch.quantity === "number") setQuantity(Math.floor(patch.quantity));
+    const nextDestination =
+      typeof patch.destination === "string"
+        ? (DESTINATIONS.find((d) => d.id === patch.destination) ?? destination)
+        : destination;
+    if (typeof patch.destination === "string") setDestinationId(nextDestination.id);
+    if (typeof patch.shipping_level === "string") {
+      setShippingChoice({ key: nextDestination.countryCode, level: patch.shipping_level });
+    }
+  }
+
+  const getWriteHandlers = () =>
+    printToolWriteHandlers(PRINT_ORDER_FIELDS, PRINT_ORDER_FORM_TARGET, applyBookOptions, {
+      trim_id: catalog?.trims.map((t) => t.id) ?? [],
+      binding_id: catalog?.bindings.map((b) => b.id) ?? [],
+      color_id: catalog?.colors.map((c) => c.id) ?? [],
+      paper_id: catalog?.papers.map((p) => p.id) ?? [],
+      cover_finish_id: catalog?.coverFinishes.map((c) => c.id) ?? [],
+      destination: DESTINATIONS.map((d) => d.id),
+      shipping_level: shippingState.status === "ready" ? shippingState.data.map((o) => o.level) : [],
+    });
+
   return (
-    // No title block: the route header owns this page's identity
-    // (core-route-headers, failure class 3), and PrintSectionFrame owns the
-    // max width and the top offset under the glass header.
+    // surface-write-handlers: book_options
+    <SurfaceRuntimeProvider surfaceName={PRINT_ORDER_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
+    {/* No title block: the route header owns this page's identity
+        (core-route-headers, failure class 3), and PrintSectionFrame owns the
+        max width and the top offset under the glass header. */}
     <div className="w-full">
       <header className="mb-8 max-w-3xl space-y-2">
         <p className="text-sm leading-relaxed text-muted-foreground">
@@ -1082,5 +1192,6 @@ export default function LuluPricingDemoPage() {
 
       <MobilePriceBar state={priceState} quantity={quantity} />
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

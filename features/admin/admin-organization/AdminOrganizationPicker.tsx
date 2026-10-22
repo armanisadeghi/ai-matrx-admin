@@ -11,7 +11,7 @@
 // chooser searches server-side and pages.
 
 import { X } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useSetting } from "@/features/settings/hooks/useSetting";
 
@@ -24,9 +24,7 @@ export function AdminOrganizationPicker() {
     <div className="flex items-center gap-1" aria-label="Admin org: admin pages run work in this org">
       <OrganizationChooser value={declared ?? null} placeholder="Current org" onChange={(org) => setDeclared(org.id)} />
       {declared ? (
-        <Button variant="ghost" size="icon" aria-label="Use the current org" onClick={() => setDeclared(null)}>
-          <X aria-hidden />
-        </Button>
+        <Button icon={<X aria-hidden />} variant="quiet" aria-label="Use the current org" onClick={() => setDeclared(null)} />
       ) : null}
     </div>
   );

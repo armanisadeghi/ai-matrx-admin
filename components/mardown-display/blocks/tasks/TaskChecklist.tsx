@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -468,13 +468,10 @@ const TaskChecklist = ({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover/task-row:opacity-100 transition-opacity"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Actions</span>
-                    </Button>
+                      icon={<MoreHorizontal />} aria-label="Actions"
+                      variant="quiet"
+                      className="opacity-0 group-hover/task-row:opacity-100 transition-opacity"
+                    />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => openEditModal(item)}>
@@ -695,14 +692,13 @@ const TaskChecklist = ({
           {hideActions && makeTasks && (
             <div className="mt-3 flex justify-end">
               <Button
-                size="xs"
+                icon={<ListPlus />}
                 variant="outline"
                 onClick={() => setIsImportModalOpen(true)}
-                className="flex items-center gap-1"
+                className="flex"
                 aria-label="Make tasks"
                 title="Turn this checklist into real tasks"
-              >
-                <ListPlus className="h-3.5 w-3.5" /> Make tasks
+              > Make tasks
               </Button>
             </div>
           )}
@@ -711,10 +707,9 @@ const TaskChecklist = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size="xs"
                     variant="outline"
                     onClick={handleReset}
-                    className="flex items-center"
+                    className="flex"
                   >
                     {resetSuccess ? (
                       <>
@@ -733,10 +728,9 @@ const TaskChecklist = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size="xs"
                     onClick={handleSave}
-                    className="flex items-center"
-                    variant={saveSuccess ? "outline" : "ghost"}
+                    className="flex"
+                    variant={saveSuccess ? "outline" : "quiet"}
                   >
                     {saveSuccess ? (
                       <>
@@ -755,9 +749,9 @@ const TaskChecklist = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    size="xs"
+                    variant="primary"
                     onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-center px-1 bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="flex"
                   >
                     Save as Tasks
                   </Button>
@@ -820,8 +814,7 @@ const TaskChecklist = ({
             <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleEditSave}>
-              <Check className="h-4 w-4 mr-2" />
+            <Button icon={<Check />} variant="primary" onClick={handleEditSave}>
               {addPosition ? "Add" : "Save"}
             </Button>
           </DialogFooter>

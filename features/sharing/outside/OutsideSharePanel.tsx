@@ -37,7 +37,7 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
@@ -196,7 +196,7 @@ export function OutsideSharePanel({
             <p className="mt-1 break-words text-xs text-muted-foreground">{loadError}</p>
           </div>
         </div>
-        <Button size="sm" variant="outline" className="mt-2" onClick={() => void refresh()}>
+        <Button variant="outline" className="mt-2" onClick={() => void refresh()}>
           Try again
         </Button>
       </div>
@@ -279,7 +279,12 @@ export function OutsideSharePanel({
             </Select>
           </div>
           <Button
-            size="sm"
+            icon={busy === "invite" ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Send />
+            )}
+            variant="primary"
             disabled={!email.trim() || busy === "invite"}
             onClick={() =>
               void run("invite", async () => {
@@ -294,11 +299,6 @@ export function OutsideSharePanel({
               })
             }
           >
-            {busy === "invite" ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="mr-1.5 h-4 w-4" />
-            )}
             Share
           </Button>
         </div>
@@ -333,8 +333,12 @@ export function OutsideSharePanel({
                       accepted row has nothing left to open. */}
                   {row.accept_path ? (
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      icon={copied === row.invitation_id ? (
+                        <Check />
+                      ) : (
+                        <Link2 />
+                      )}
+                      variant="quiet"
                       title="Copy invitation link"
                       onClick={() =>
                         void copyLink(
@@ -344,11 +348,6 @@ export function OutsideSharePanel({
                         )
                       }
                     >
-                      {copied === row.invitation_id ? (
-                        <Check className="mr-1.5 h-4 w-4" />
-                      ) : (
-                        <Link2 className="mr-1.5 h-4 w-4" />
-                      )}
                       <span className="text-xs">
                         {copied === row.invitation_id ? "Copied" : "Copy link"}
                       </span>
@@ -356,8 +355,12 @@ export function OutsideSharePanel({
                   ) : null}
                   {!row.joined ? (
                     <Button
-                      size="sm"
-                      variant="ghost"
+                      icon={busy === `resend:${row.invitation_id}` ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <RotateCw />
+                      )} aria-label="Send a fresh link"
+                      variant="quiet"
                       title="Send a fresh link"
                       disabled={busy === `resend:${row.invitation_id}`}
                       onClick={() =>
@@ -365,17 +368,15 @@ export function OutsideSharePanel({
                           resendOutside(organizationId, row.invitation_id),
                         )
                       }
-                    >
-                      {busy === `resend:${row.invitation_id}` ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <RotateCw className="h-4 w-4" />
-                      )}
-                    </Button>
+                    />
                   ) : null}
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    icon={busy === `revoke:${row.invitation_id}` ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <Trash2 />
+                    )} aria-label={row.joined ? "Take their access away" : "Withdraw the invitation"}
+                    variant="quiet"
                     title={row.joined ? "Take their access away" : "Withdraw the invitation"}
                     disabled={busy === `revoke:${row.invitation_id}`}
                     onClick={() =>
@@ -397,13 +398,7 @@ export function OutsideSharePanel({
                         );
                       })()
                     }
-                  >
-                    {busy === `revoke:${row.invitation_id}` ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
+                  />
                 </div>
               ) : null}
             </li>

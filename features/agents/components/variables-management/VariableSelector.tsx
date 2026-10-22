@@ -1,6 +1,6 @@
 import React from "react";
 import { Braces } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 
 interface VariableSelectorProps {
@@ -34,11 +34,10 @@ export function VariableSelector({
         >
             <PopoverTrigger asChild>
                 <Button
-                    variant="ghost"
-                    size="sm"
+                    icon={<Braces />}
+                    variant="quiet"
                     aria-label={ariaLabel}
                     title={ariaLabel}
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                     onMouseDown={(e) => {
                         // Prevent textarea from losing focus
                         e.preventDefault();
@@ -47,9 +46,7 @@ export function VariableSelector({
                     onClick={(e) => {
                         e.stopPropagation();
                     }}
-                >
-                    <Braces className="w-3.5 h-3.5" />
-                </Button>
+                />
             </PopoverTrigger>
             <PopoverContent sizing="content" 
                 className="sm:max-w-md p-2" 
@@ -64,9 +61,8 @@ export function VariableSelector({
                         variables.map((variable) => (
                             <Button
                                 key={variable}
-                                variant="ghost"
-                                size="sm"
-                                className="w-full justify-start h-8 px-2 text-xs text-foreground hover:bg-accent whitespace-nowrap"
+                                variant="quiet"
+                                className="w-full justify-start"
                                 onClick={() => {
                                     onVariableSelected(variable);
                                     setPopoverOpen(false);

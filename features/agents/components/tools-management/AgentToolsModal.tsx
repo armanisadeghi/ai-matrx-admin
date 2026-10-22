@@ -4,7 +4,8 @@ import { useState, useRef, useCallback } from "react";
 import { Wrench, ClipboardList, FileText, AlignLeft } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button } from "@ai-matrx/design-system";
+import { Button as SurfaceButton } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -155,12 +156,10 @@ export function AgentToolsModal({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+              icon={<ClipboardList />}
+              variant="quiet"
               title="Copy tool list to clipboard"
             >
-              <ClipboardList className="h-3.5 w-3.5" />
               Copy list
             </Button>
           </DropdownMenuTrigger>
@@ -195,21 +194,19 @@ export function AgentToolsModal({
         </DropdownMenu>
       )}
       <Button
-        variant="ghost"
-        size="sm"
-        className="h-8 text-xs"
+        variant="quiet"
         onClick={handleCancel}
       >
         Cancel
       </Button>
-      <Button size="sm" className="h-8 text-xs" onClick={handleDone}>
+      <Button variant="primary" onClick={handleDone}>
         Done
       </Button>
     </div>
   );
 
   const defaultTrigger = (
-    <Button
+    <SurfaceButton
       variant="ghost"
       size="icon"
       className="h-7 w-7 relative"
@@ -222,7 +219,7 @@ export function AgentToolsModal({
           {enabledCount > 9 ? "9+" : enabledCount}
         </span>
       )}
-    </Button>
+    </SurfaceButton>
   );
 
   const trigger = renderTrigger ? renderTrigger(handleOpen) : defaultTrigger;

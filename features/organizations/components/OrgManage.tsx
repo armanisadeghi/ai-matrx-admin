@@ -40,7 +40,6 @@ import {
   Gauge,
   PlugZap,
   Plug,
-  Database,
   BadgeDollarSign,
   Trash2,
 } from "lucide-react";
@@ -76,7 +75,6 @@ import { OrganizationAbbreviation } from "./OrganizationAbbreviation";
 import { OrgCompetitorLabelsSettings } from "@/features/marketing/competitors/OrgCompetitorLabelsSettings";
 import { SpendBudgetCard } from "@/features/entitlements/guardrails/SpendBudgetCard";
 import { ProviderAccountsSection } from "@/features/organizations/provider-accounts/ProviderAccountsSection";
-import { OrgDataSwitches } from "@/features/unified-data/cutover/OrgDataSwitches";
 import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
 import { recordPageCapture } from "@/components/agent-copy/page-capture/pageCapture";
 import { PageCaptureButton } from "@/components/agent-copy/page-capture/PageCaptureButton";
@@ -162,9 +160,6 @@ export function OrgManage({
       icon: FolderTree,
       show: canManageSettings,
     },
-    // Every member may SEE which of the organization's data runs on the old or the new system;
-    // only an owner may switch (the door decides, and says so on the section).
-    { id: "data", label: "Data", icon: Database, show: true },
     {
       id: "mandates",
       label: "Mandates",
@@ -539,17 +534,6 @@ export function OrgManage({
               </Card>
             </section>
           )}
-
-          <SectionCard
-            anchor="data"
-            tabIndex={-1}
-            bodyClassName="p-5"
-            icon={Database}
-            title="Data"
-            about="Where this organization's data lives while the old and new systems run side by side. Each part switches to the new system with one press by an owner, and back with one press."
-          >
-            <OrgDataSwitches organizationId={displayOrganization.id} />
-          </SectionCard>
 
           {canManageSettings && (
             <SectionCard

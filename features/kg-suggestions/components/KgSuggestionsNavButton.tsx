@@ -9,15 +9,14 @@
 "use client";
 
 import { Lightbulb } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
-import { cn } from "@/utils/cn";
+import { Button } from "@/components/ui/button";
 import { useKgSuggestions } from "@/features/kg-suggestions/hooks/useKgSuggestions";
 import { useOpenKgSuggestions } from "@/features/kg-suggestions/canvas/kgSuggestionsKind";
 import type { KgGlobalFilter } from "@/features/kg-suggestions/types";
 
 export interface KgSuggestionsNavButtonProps {
   className?: string;
-  variant?: "default" | "outline" | "ghost" | "secondary";
+  variant?: "primary" | "outline" | "quiet";
   /** Hide entirely when there are no pending suggestions. Default false. */
   hideWhenEmpty?: boolean;
   label?: string;
@@ -39,18 +38,13 @@ export function KgSuggestionsNavButton({
     <Button
       type="button"
       variant={variant}
-      size="sm"
+      icon={<Lightbulb />}
+      // read-gate-exempt: badge renders only when count is above 0, so a failed read hides it rather than saying 0
+      badge={count > 0 ? count : undefined}
       onClick={() => openInbox()}
-      className={cn("relative gap-1.5", className)}
+      className={className}
     >
-      <Lightbulb className="h-3.5 w-3.5" />
-      <span>{label}</span>
-      {count > 0 ? (
-        <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold tabular-nums text-primary-foreground">
-          {/* read-gate-exempt: badge renders only when count is above 0, so a failed read hides it rather than saying 0 */}
-          {count}
-        </span>
-      ) : null}
+      {label}
     </Button>
   );
 }

@@ -1254,7 +1254,6 @@ export function PageWorkspace({ pageId }: { pageId: string }) {
                 resourceType="web_page"
                 resourceId={page.id}
                 resourceName={page.url}
-                size="sm"
                 showStatus={false}
               />
               <PageTaskButton

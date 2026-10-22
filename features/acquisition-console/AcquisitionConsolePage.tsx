@@ -21,6 +21,10 @@
 // which is precisely the defect this project has hit four times already.
 
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { SurfaceRuntimeProvider, type SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { ACQUISITION_SURFACE_NAME } from "@/features/surfaces/manifests/acquisition-console.manifest";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -164,8 +168,41 @@ export function AcquisitionConsolePage() {
   // One read feeds all three tables: a refused read is never "Nothing from this expert yet" (RC-B12 r13).
   const consoleRead = readOf({ loading, error: failure }, { what: "this workspace's sources", onRetry: () => void refresh() });
 
+  // matrx-user/acquisition-console — the three answers as counted here (nothing is stored), and one
+  // view target: narrow to a rulebook. Connecting, unsticking and opening rows stay the person's.
+  const getSurfaceScope = () =>
+    ({
+      acquisition_load_status: failure ? "failed" : loading ? "loading" : "loaded",
+      acquisition_failure: failure,
+      acquisition_org_filter: organizationId,
+      acquisition_rulebook: chosenRulebook ? { id: chosenRulebook.id, name: chosenRulebook.name } : null,
+      acquisition_rulebooks: data.rulebooks.map((r) => ({ id: r.id, name: r.name, source_count: r.sourceCount })),
+      acquisition_have: data.have.slice(0, 40),
+      acquisition_have_count: data.have.length,
+      acquisition_connected: data.connected.slice(0, 30),
+      acquisition_blocked: data.blocked.slice(0, 30),
+      acquisition_blocked_count: data.blocked.length,
+      acquisition_problems: data.problems,
+    }) as SurfaceScopePayload;
+  const getSurfaceWriteHandlers = (): SurfaceWriteHandlers => ({
+    acquisition_rulebook: {
+      validate: (value: unknown) => {
+        const id = typeof value === "string" ? value : String((value as { id?: unknown })?.id ?? "");
+        if (id !== "all" && !data.rulebooks.some((r) => r.id === id)) {
+          refuseSurfaceWrite(`"${id}" is not one of acquisition_rulebooks; send an id from it, or "all".`);
+        }
+      },
+      apply: (value: unknown) => {
+        const id = typeof value === "string" ? value : String((value as { id?: unknown })?.id ?? "");
+        setRulebook(id);
+        const name = data.rulebooks.find((r) => r.id === id)?.name;
+        return { summary: id === "all" ? "Showing every source again." : `Narrowed to the rulebook "${name}".`, data: { rulebook: id } };
+      },
+    },
+  });
+
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={ACQUISITION_SURFACE_NAME} getScope={getSurfaceScope} getWriteHandlers={getSurfaceWriteHandlers}>
       <PageHeader>
         <div className="flex min-w-0 items-center gap-2">
           <h1 className="truncate text-sm font-medium">Acquisition</h1>
@@ -344,6 +381,6 @@ export function AcquisitionConsolePage() {
           />
         </Section>
       </div>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }

@@ -35,7 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Input } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { cn } from "@/lib/utils";
 import { HighlightedText } from "@/features/agents/components/variables-management/HighlightedText";
@@ -883,13 +883,11 @@ export function DecisionQuestionsEditor({
         <BudgetMeter reading={reading} />
         <div className="ml-auto flex items-center gap-1">
           <Button
+            icon={<Plus />}
             type="button"
-            size="sm"
             variant="outline"
-            className="h-7 px-2 text-xs"
             onClick={addQuestion}
           >
-            <Plus className="mr-1 h-3.5 w-3.5" />
             Add question
           </Button>
           {onRemovePart && (

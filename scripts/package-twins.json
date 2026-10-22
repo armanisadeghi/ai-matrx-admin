@@ -14,76 +14,278 @@
     "A SHAPE rule (`shapeWhy` + `shapeAllow` + `shapeCensus` on a row) catches the same capability under an UNREGISTERED name, or with no name at all. `shapeAllow` = provably NOT this capability, silent. `shapeCensus` = pre-existing bodies that ARE it and are not collapsed yet: loud every run, shrink-only, and a stale entry fails the guard."
   ],
   "vendored": [],
-  "contentLane": { "mode": "app-vs-packages", "packagesRoot": "../aidream/apps/shared", "exclude": [] },
+  "contentLane": {
+    "mode": "app-vs-packages",
+    "packagesRoot": "../aidream/apps/shared",
+    "exclude": []
+  },
   "contentCensus": [
-    { "pair": "features/access-gate/cant-remove/CantRemoveDialogHostBody.tsx|sharing/src/access/react/CantRemoveDialogHostBody.tsx", "reason": "Near-copy of the sharing package file; the app copy now asks through summon (requestOverlay), the package copy still on kit/opener (2026-10-21). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/cant-remove/cantRemoveOpener.ts|sharing/src/access/react/cantRemoveOpener.ts", "reason": "Near-copy of the sharing package file; the app copy now asks through summon (requestOverlay), the package copy still on kit/opener (2026-10-21). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/AccessDenied.tsx|sharing/src/access/react/AccessDenied.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/AccessGate.tsx|sharing/src/access/react/AccessGate.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/AccessRequestsSurface.tsx|sharing/src/access/react/AccessRequestsSurface.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/BlindAccessAsk.tsx|sharing/src/access/react/BlindAccessAsk.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/GovernedActionDialog.tsx|sharing/src/access/react/GovernedActionDialog.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/HiddenByMeButton.tsx|sharing/src/access/react/HiddenByMeButton.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/HiddenFilter.tsx|sharing/src/access/react/HiddenFilter.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/RequestAccess.tsx|sharing/src/access/react/RequestAccess.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/RequestAccessPanel.tsx|sharing/src/access/react/RequestAccessPanel.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/ResourceActionRequestButtons.tsx|sharing/src/access/react/ResourceActionRequestButtons.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/ServerReadRecheck.tsx|sharing/src/access/react/ServerReadRecheck.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/SettingAccessGate.tsx|sharing/src/access/react/SettingAccessGate.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/SettingRequestActionButtons.tsx|sharing/src/access/react/SettingRequestActionButtons.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/SlugAccessGate.tsx|sharing/src/access/react/SlugAccessGate.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/components/UnresolvedEntityRef.tsx|sharing/src/access/react/UnresolvedEntityRef.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/hooks/useAccessGate.ts|sharing/src/access/react/useAccessGate.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/hooks/useAccessStates.ts|sharing/src/access/react/useAccessStates.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/hooks/useHiddenByMe.ts|sharing/src/access/react/useHiddenByMe.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/hooks/useRequestAccess.ts|sharing/src/access/react/useRequestAccess.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/service/accessDeniedContext.ts|data/src/access/service/accessDeniedContext.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/access-gate/types.ts|data/src/access/types.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/canvas/host/kindHeaderSlot.tsx|canvas/src/react/headerSlot.tsx", "reason": "canvas/src/react/headerSlot.tsx has no public subpath in @ai-matrx/canvas exports yet; add ./headerSlot, publish, then the app file becomes a re-export. Owner: Packages - Shared UI parts lane (canvas). DEBT: delete this line then." },
-    { "pair": "features/code-editor/agent-code-editor/agents.ts|rich-content/src/code-block/code-editor-agents.ts", "reason": "rich-content/src/code-block/code-editor-agents.ts has no public subpath in @ai-matrx/rich-content exports yet (the app copy has 9 importers); add it, publish, then re-export. Owner: Packages - Shared UI parts lane (rich-content). DEBT: delete this line then." },
-    { "pair": "features/data-tables/validation.ts|design-system/src/data-table/validation.ts", "reason": "Not a pure copy: the app file keeps its own PATTERN_WORDS_BY_FORMAT/RuleAudience rules while the design-system file carries serializeValidationRules; reconcile the two into design-system/data-table/validation (already exported), then re-export. Owner: Packages - Shared UI parts lane (data tables). DEBT: delete this line then." },
-    { "pair": "features/organizations/organizationsToCreateIn.ts|sharing/src/core/organizationsToCreateIn.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/organizations/service/orgMemberRows.ts|sharing/src/core/orgMemberRows.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/secrets/empty-read.ts|vault/src/io/empty-read.ts", "reason": "Identical to vault/src/io/empty-read.ts, and @ai-matrx/vault now exports emptyReadAlarm/holdingsDoorIsAbsent from its root (2026-10-22, unpublished); after the next vault publish the app file becomes a re-export (vault-service.ts and its test import it). Owner: Packages - Shared UI parts lane (vault). DEBT: delete this line then." },
-    { "pair": "features/sharing/components/AccessSummaryPanel.tsx|sharing/src/react/sheet/AccessSummaryPanel.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/AddEveryoneInOrg.tsx|sharing/src/react/sheet/AddEveryoneInOrg.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/OrgAvailabilityNote.tsx|sharing/src/react/sheet/OrgAvailabilityNote.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/PermissionBadge.tsx|sharing/src/react/sheet/PermissionBadge.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/PermissionsList.tsx|sharing/src/react/sheet/PermissionsList.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/RowControls.tsx|sharing/src/react/sheet/RowControls.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/ShareLinkPanel.tsx|sharing/src/react/sheet/ShareLinkPanel.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/ShareModal.tsx|sharing/src/react/sheet/ShareModal.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/WhoCanSeeThis.tsx|sharing/src/react/sheet/WhoCanSeeThis.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/WhoCouldSeeOn.tsx|sharing/src/react/sheet/WhoCouldSeeOn.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/tabs/PublicAccessTab.tsx|sharing/src/react/sheet/PublicAccessTab.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/components/tabs/ShareWithUserTab.tsx|sharing/src/react/sheet/ShareWithUserTab.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/format.ts|sharing/src/core/format.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/hooks/shareText.ts|sharing/src/core/shareText.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/hooks/useAccessSummary.ts|sharing/src/react/sheet/useAccessSummary.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/hooks/useGrantableLevels.ts|sharing/src/react/sheet/useGrantableLevels.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/hooks/useShare.tsx|sharing/src/react/sheet/useShare.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/indexed/SearchEngineIndexedSwitch.tsx|sharing/src/react/sheet/SearchEngineIndexedSwitch.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/outside/OutsideSharePanel.tsx|sharing/src/react/sheet/OutsideSharePanel.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/outside/outsideShareService.ts|sharing/src/core/outsideShareService.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/secure/SecureLinkPanel.tsx|sharing/src/react/sheet/SecureLinkPanel.tsx", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/secure/secureDeliveryService.ts|sharing/src/core/secureDeliveryService.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/sharing/service/accessSummary.ts|sharing/src/core/accessSummary.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "features/workflow-emit/EmitRendererErrorBoundary.tsx|chat/src/tool-call-visualization/db-renderer/ToolRendererErrorBoundary.tsx", "reason": "chat/src/tool-call-visualization/db-renderer/ToolRendererErrorBoundary.tsx is not in @ai-matrx/chat exports yet; add the subpath, publish, then re-export. Owner: Packages - Shared UI parts lane (chat). DEBT: delete this line then." },
-    { "pair": "lib/api/door-refusal.ts|data/src/access/service/doorRefusal.ts", "reason": "Identical to data/src/access/service/doorRefusal.ts, and @ai-matrx/data/access now exports describeDoorRefusal/doorBody/doorIssues (2026-10-22, unpublished); after the next data publish the app file becomes a re-export (3 importers incl. access-gate). Owner: Packages - Shared UI parts lane (data access). DEBT: delete this line then." },
-    { "pair": "lib/audio/pcm.ts|browser-audio/src/pcm.ts", "reason": "Audio: owned by the Files and media lane (browser-audio vs lib/audio pcm/wav), which does the switch-over. DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "lib/audio/wav.ts|browser-audio/src/wav.ts", "reason": "Audio: owned by the Files and media lane (browser-audio vs lib/audio pcm/wav), which does the switch-over. DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "lib/diagnostics/captureReactError.ts|rich-content/src/host/captureReactError.ts", "reason": "Host-wired: the package function reports through rich-content's own capture hook (captureRichContentRenderError) while the app reports to its errorCaptureStore; collapse by injecting the app store as the package's capture host, then re-export. Owner: Packages - Shared UI parts lane (rich-content host). DEBT: delete this line then." },
-    { "pair": "lib/list-scope/shownTo.ts|sharing/src/core/shownTo.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "lib/media/durability.ts|rich-content/src/host/durability.ts", "reason": "Host-wired: same body as rich-content/src/host/durability.ts except it reports violations to the app errorCaptureStore instead of the package capture hook; inject the app store as the capture host, then re-export (13 importers). Owner: Files and media lane (media durability). DEBT: delete this line then." },
-    { "pair": "utils/permissions/hooks.ts|sharing/src/react/permissionHooks.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "utils/permissions/levels.ts|sharing/src/core/levels.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "utils/permissions/publicLane.ts|sharing/src/core/publicLane.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "utils/permissions/registry.ts|sharing/src/core/registry.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "utils/permissions/service.ts|sharing/src/core/service.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "utils/permissions/shareLinks.ts|sharing/src/core/shareLinks.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." },
-    { "pair": "utils/permissions/types.ts|sharing/src/core/types.ts", "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line." }
+    {
+      "pair": "features/access-gate/cant-remove/CantRemoveDialogHostBody.tsx|sharing/src/access/react/CantRemoveDialogHostBody.tsx",
+      "reason": "Near-copy of the sharing package file; the app copy now asks through summon (requestOverlay), the package copy still on kit/opener (2026-10-21). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/cant-remove/cantRemoveOpener.ts|sharing/src/access/react/cantRemoveOpener.ts",
+      "reason": "Near-copy of the sharing package file; the app copy now asks through summon (requestOverlay), the package copy still on kit/opener (2026-10-21). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/AccessDenied.tsx|sharing/src/access/react/AccessDenied.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/AccessGate.tsx|sharing/src/access/react/AccessGate.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/AccessRequestsSurface.tsx|sharing/src/access/react/AccessRequestsSurface.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/BlindAccessAsk.tsx|sharing/src/access/react/BlindAccessAsk.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/GovernedActionDialog.tsx|sharing/src/access/react/GovernedActionDialog.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/HiddenByMeButton.tsx|sharing/src/access/react/HiddenByMeButton.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/HiddenFilter.tsx|sharing/src/access/react/HiddenFilter.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/RequestAccess.tsx|sharing/src/access/react/RequestAccess.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/RequestAccessPanel.tsx|sharing/src/access/react/RequestAccessPanel.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/ResourceActionRequestButtons.tsx|sharing/src/access/react/ResourceActionRequestButtons.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/ServerReadRecheck.tsx|sharing/src/access/react/ServerReadRecheck.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/SettingAccessGate.tsx|sharing/src/access/react/SettingAccessGate.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/SettingRequestActionButtons.tsx|sharing/src/access/react/SettingRequestActionButtons.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/SlugAccessGate.tsx|sharing/src/access/react/SlugAccessGate.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/components/UnresolvedEntityRef.tsx|sharing/src/access/react/UnresolvedEntityRef.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/hooks/useAccessGate.ts|sharing/src/access/react/useAccessGate.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/hooks/useAccessStates.ts|sharing/src/access/react/useAccessStates.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/hooks/useHiddenByMe.ts|sharing/src/access/react/useHiddenByMe.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/hooks/useRequestAccess.ts|sharing/src/access/react/useRequestAccess.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/service/accessDeniedContext.ts|data/src/access/service/accessDeniedContext.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/access-gate/types.ts|data/src/access/types.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/canvas/host/kindHeaderSlot.tsx|canvas/src/react/headerSlot.tsx",
+      "reason": "canvas/src/react/headerSlot.tsx has no public subpath in @ai-matrx/canvas exports yet; add ./headerSlot, publish, then the app file becomes a re-export. Owner: Packages - Shared UI parts lane (canvas). DEBT: delete this line then."
+    },
+    {
+      "pair": "features/code-editor/agent-code-editor/agents.ts|rich-content/src/code-block/code-editor-agents.ts",
+      "reason": "rich-content/src/code-block/code-editor-agents.ts has no public subpath in @ai-matrx/rich-content exports yet (the app copy has 9 importers); add it, publish, then re-export. Owner: Packages - Shared UI parts lane (rich-content). DEBT: delete this line then."
+    },
+    {
+      "pair": "features/data-tables/validation.ts|design-system/src/data-table/validation.ts",
+      "reason": "Not a pure copy: the app file keeps its own PATTERN_WORDS_BY_FORMAT/RuleAudience rules while the design-system file carries serializeValidationRules; reconcile the two into design-system/data-table/validation (already exported), then re-export. Owner: Packages - Shared UI parts lane (data tables). DEBT: delete this line then."
+    },
+    {
+      "pair": "features/organizations/organizationsToCreateIn.ts|sharing/src/core/organizationsToCreateIn.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/organizations/service/orgMemberRows.ts|sharing/src/core/orgMemberRows.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/secrets/empty-read.ts|vault/src/io/empty-read.ts",
+      "reason": "Identical to vault/src/io/empty-read.ts, and @ai-matrx/vault now exports emptyReadAlarm/holdingsDoorIsAbsent from its root (2026-10-22, unpublished); after the next vault publish the app file becomes a re-export (vault-service.ts and its test import it). Owner: Packages - Shared UI parts lane (vault). DEBT: delete this line then."
+    },
+    {
+      "pair": "features/sharing/components/AccessSummaryPanel.tsx|sharing/src/react/sheet/AccessSummaryPanel.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/AddEveryoneInOrg.tsx|sharing/src/react/sheet/AddEveryoneInOrg.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/OrgAvailabilityNote.tsx|sharing/src/react/sheet/OrgAvailabilityNote.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/PermissionBadge.tsx|sharing/src/react/sheet/PermissionBadge.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/PermissionsList.tsx|sharing/src/react/sheet/PermissionsList.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/RowControls.tsx|sharing/src/react/sheet/RowControls.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/ShareLinkPanel.tsx|sharing/src/react/sheet/ShareLinkPanel.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/ShareModal.tsx|sharing/src/react/sheet/ShareModal.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/WhoCanSeeThis.tsx|sharing/src/react/sheet/WhoCanSeeThis.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/WhoCouldSeeOn.tsx|sharing/src/react/sheet/WhoCouldSeeOn.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/tabs/PublicAccessTab.tsx|sharing/src/react/sheet/PublicAccessTab.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/components/tabs/ShareWithUserTab.tsx|sharing/src/react/sheet/ShareWithUserTab.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/format.ts|sharing/src/core/format.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/hooks/shareText.ts|sharing/src/core/shareText.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/hooks/useAccessSummary.ts|sharing/src/react/sheet/useAccessSummary.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/hooks/useGrantableLevels.ts|sharing/src/react/sheet/useGrantableLevels.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/hooks/useShare.tsx|sharing/src/react/sheet/useShare.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/indexed/SearchEngineIndexedSwitch.tsx|sharing/src/react/sheet/SearchEngineIndexedSwitch.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/outside/OutsideSharePanel.tsx|sharing/src/react/sheet/OutsideSharePanel.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/outside/outsideShareService.ts|sharing/src/core/outsideShareService.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/secure/SecureLinkPanel.tsx|sharing/src/react/sheet/SecureLinkPanel.tsx",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/secure/secureDeliveryService.ts|sharing/src/core/secureDeliveryService.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/sharing/service/accessSummary.ts|sharing/src/core/accessSummary.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "features/workflow-emit/EmitRendererErrorBoundary.tsx|chat/src/tool-call-visualization/db-renderer/ToolRendererErrorBoundary.tsx",
+      "reason": "chat/src/tool-call-visualization/db-renderer/ToolRendererErrorBoundary.tsx is not in @ai-matrx/chat exports yet; add the subpath, publish, then re-export. Owner: Packages - Shared UI parts lane (chat). DEBT: delete this line then."
+    },
+    {
+      "pair": "lib/api/door-refusal.ts|data/src/access/service/doorRefusal.ts",
+      "reason": "Identical to data/src/access/service/doorRefusal.ts, and @ai-matrx/data/access now exports describeDoorRefusal/doorBody/doorIssues (2026-10-22, unpublished); after the next data publish the app file becomes a re-export (3 importers incl. access-gate). Owner: Packages - Shared UI parts lane (data access). DEBT: delete this line then."
+    },
+    {
+      "pair": "lib/audio/pcm.ts|browser-audio/src/pcm.ts",
+      "reason": "Audio: owned by the Files and media lane (browser-audio vs lib/audio pcm/wav), which does the switch-over. DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "lib/audio/wav.ts|browser-audio/src/wav.ts",
+      "reason": "Audio: owned by the Files and media lane (browser-audio vs lib/audio pcm/wav), which does the switch-over. DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "lib/diagnostics/captureReactError.ts|rich-content/src/host/captureReactError.ts",
+      "reason": "Host-wired: the package function reports through rich-content's own capture hook (captureRichContentRenderError) while the app reports to its errorCaptureStore; collapse by injecting the app store as the package's capture host, then re-export. Owner: Packages - Shared UI parts lane (rich-content host). DEBT: delete this line then."
+    },
+    {
+      "pair": "lib/list-scope/shownTo.ts|sharing/src/core/shownTo.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "lib/media/durability.ts|rich-content/src/host/durability.ts",
+      "reason": "Host-wired: same body as rich-content/src/host/durability.ts except it reports violations to the app errorCaptureStore instead of the package capture hook; inject the app store as the capture host, then re-export (13 importers). Owner: Files and media lane (media durability). DEBT: delete this line then."
+    },
+    {
+      "pair": "utils/permissions/hooks.ts|sharing/src/react/permissionHooks.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "utils/permissions/levels.ts|sharing/src/core/levels.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "utils/permissions/publicLane.ts|sharing/src/core/publicLane.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "utils/permissions/registry.ts|sharing/src/core/registry.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "utils/permissions/service.ts|sharing/src/core/service.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "utils/permissions/shareLinks.ts|sharing/src/core/shareLinks.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    },
+    {
+      "pair": "utils/permissions/types.ts|sharing/src/core/types.ts",
+      "reason": "Waits on @ai-matrx/sharing first npm publish (name registration), then the app switches over. Owner: Packages - Shared UI parts lane (sharing cutover). DEBT: collapse the app file into an import of the package and delete this line."
+    }
   ],
-  "$catalogFloor": 189,
+  "$catalogFloor": 190,
   "twins": [
     {
       "name": "isUuidShape",
@@ -3316,6 +3518,12 @@
       "name": "fieldsFromRow",
       "package": "@ai-matrx/detail",
       "why": "frontend audit 2026-09-29 detail-001: lib/detail/** was a maintained 15-module MIRROR of @ai-matrx/detail held even by a byte-parity test; the mirror and the parity mechanism were deleted 2026-09-30 when the frontend adopted the package (0.1.3). A local body of the Detail primitive is a re-grown mirror.",
+      "allow": []
+    },
+    {
+      "name": "LucideIcon",
+      "package": "@ai-matrx/design-system/icons",
+      "why": "The lucide glyph wrapper (an inline <svg> that carries the `lucide lucide-<name>` class the optical glyph trim reads). Every glyph is now drawn once, in @ai-matrx/design-system/icons (lucideProps + one function per glyph); the packages that held their own copies (media, diff, meet, capture, associations, detail, canvas, coding-sessions, content-ir-core, agents, summon, office, vault, messaging, records-ui, design-system's table/peek/contact files) are aliases of it.",
       "allow": []
     }
   ]

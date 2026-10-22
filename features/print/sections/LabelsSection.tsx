@@ -23,6 +23,16 @@ import { toast } from "@/lib/toast";
 import { Select, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, byteLength, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_FORMAT_ROWS } from "./sample-data";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_LABELS_FIELDS,
+    PRINT_LABELS_FORM_TARGET,
+    PRINT_LABELS_SURFACE_NAME,
+    createPrintLabelsScope,
+    parseLabelRows,
+} from "@/features/surfaces/manifests/print-labels.manifest";
 
 const EC_LEVELS: QrEcLevel[] = ["L", "M", "Q"];
 
@@ -111,7 +121,70 @@ export function LabelsSection() {
         }
     };
 
+    const labelsPerSheet = template.cols * template.rows;
+
+    const getScope = () =>
+        createPrintLabelsScope({
+            label_stock: template.id,
+            label_format: format.id,
+            error_correction: ecLevel,
+            start_at_label: startAtLabel,
+            preview_mode: calibration ? "calibration" : "labels",
+            label_rows: rows,
+            row_fields: fields,
+            label_stock_name: `${template.stockCode} — ${template.name}`,
+            label_format_name: format.name,
+            label_count: labels.length,
+            labels_per_sheet: labelsPerSheet,
+            longest_payload_bytes: longestPayload,
+            ...(scan
+                ? {
+                      scan_check:
+                          scan.message ??
+                          `Scannable — version ${scan.version}, ${scan.moduleSizeMm.toFixed(2)} mm modules (floor ${scan.minModuleSizeMm} mm).`,
+                  }
+                : {}),
+            label_stock_options: LABEL_TEMPLATES.map((t) => ({ id: t.id, name: `${t.stockCode} — ${t.name}`, kind: t.kind })),
+            label_format_options: LABEL_FORMAT_PRESETS.map((f) => ({ id: f.id, name: f.name })),
+        });
+
+    const getWriteHandlers = () => ({
+        ...printToolWriteHandlers(
+            PRINT_LABELS_FIELDS,
+            PRINT_LABELS_FORM_TARGET,
+            (patch) => {
+                if (typeof patch.label_stock === "string") setTemplateId(patch.label_stock);
+                if (typeof patch.label_format === "string") setFormatId(patch.label_format);
+                if (typeof patch.error_correction === "string") setEcLevel(patch.error_correction as QrEcLevel);
+                if (typeof patch.start_at_label === "number") {
+                    setStartAtLabel(Math.min(labelsPerSheet, Math.floor(patch.start_at_label)));
+                }
+                if (typeof patch.preview_mode === "string") setCalibration(patch.preview_mode === "calibration");
+            },
+            {
+                label_stock: LABEL_TEMPLATES.map((t) => t.id),
+                label_format: LABEL_FORMAT_PRESETS.map((f) => f.id),
+            },
+        ),
+        label_rows: {
+            validate: (value: unknown) => {
+                try {
+                    parseLabelRows(value, fields);
+                } catch (err) {
+                    refuseSurfaceWrite((err as Error).message);
+                }
+            },
+            apply: (value: unknown) => {
+                const next = parseLabelRows(value, fields);
+                setRowsByFormat((prev) => ({ ...prev, [format.id]: next }));
+                return { summary: `${next.length} rows are now on the ${format.name} form. Nothing was printed.`, data: next };
+            },
+        },
+    });
+
     return (
+        // surface-write-handlers: label_settings
+        <SurfaceRuntimeProvider surfaceName={PRINT_LABELS_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="Label sheets"
             entry="@ai-matrx/print/labels · @ai-matrx/print/react → LabelSheetPreview"
@@ -280,5 +353,6 @@ export function LabelsSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

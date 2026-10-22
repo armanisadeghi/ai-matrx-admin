@@ -46,7 +46,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@ai-matrx/design-system";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -327,13 +327,11 @@ export function SpeechScriptEditor({
         </span>
         <div className="ml-auto flex items-center gap-2">
           <Button
+            icon={<Plus />}
             type="button"
-            size="sm"
             variant="outline"
-            className="h-7 text-xs px-2"
             onClick={() => onChange([...turns, newSpeechTurn(turns)])}
           >
-            <Plus className="h-3.5 w-3.5 mr-1" />
             Add turn
           </Button>
           {onRemovePart && (

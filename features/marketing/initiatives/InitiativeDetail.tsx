@@ -96,7 +96,6 @@ export function InitiativeDetail({ id }: { id: string }) {
               resourceType="marketing_initiative"
               resourceId={row.id}
               resourceName={row.name}
-              size="sm"
               showStatus={false}
             />
             <Button icon={<Pencil />} variant="primary" onClick={() => setEditing(true)} aria-label="Edit">

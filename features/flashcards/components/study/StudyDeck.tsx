@@ -1011,8 +1011,7 @@ export function StudyDeck(props: StudyDeckProps) {
             card={{ id: voiceTest.cardId, front: card.front, back: card.back }}
             spokenFrontFileId={voiceTest.spokenFrontFileId}
             label="Quiz me"
-            variant="ghost"
-            className={STUDY_TOOL_BUTTON}
+            variant="quiet"
           />
         )}
 
@@ -1042,8 +1041,7 @@ export function StudyDeck(props: StudyDeckProps) {
                 ...(setId ? { studyContext: { entityType: "fc_set", entityId: setId, title: "This deck" } } : {}),
               }}
               label="Tutor"
-              variant="ghost"
-              className={STUDY_TOOL_BUTTON}
+              variant="quiet"
             />
           </>
         )}

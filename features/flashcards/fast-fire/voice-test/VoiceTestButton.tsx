@@ -9,9 +9,8 @@
 
 import { useState } from "react";
 import { Mic } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { MicTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { cn } from "@/lib/utils";
 import { CardVoiceTestDialog } from "./CardVoiceTestDialog";
 
 export interface VoiceTestButtonProps {
@@ -21,8 +20,7 @@ export interface VoiceTestButtonProps {
   label?: string;
   /** Compact mic icon — for embedding on flashcard corners. */
   iconOnly?: boolean;
-  variant?: "outline" | "secondary" | "ghost" | "default";
-  size?: "sm" | "default" | "lg";
+  variant?: "primary" | "outline" | "quiet";
   className?: string;
 }
 
@@ -33,7 +31,6 @@ export function VoiceTestButton({
   label = "Test me",
   iconOnly = false,
   variant = "outline",
-  size = "sm",
   className,
 }: VoiceTestButtonProps) {
   const [open, setOpen] = useState(false);
@@ -53,8 +50,8 @@ export function VoiceTestButton({
         <Button
           type="button"
           variant={variant}
-          size={size}
-          className={cn("gap-1.5", className)}
+          icon={<Mic />}
+          className={className}
           title={label}
           aria-label={label}
           onClick={(e) => {
@@ -62,7 +59,6 @@ export function VoiceTestButton({
             handleOpen();
           }}
         >
-          <Mic className="h-4 w-4" />
           {label}
         </Button>
       )}

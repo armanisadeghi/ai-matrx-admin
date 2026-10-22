@@ -12,13 +12,11 @@
 import { readVersionNow, updateRecordAt } from "@/lib/records/record-versions";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
-import { ConditionGroup, DashboardCanvas, FieldEditor, FormBuilder, FormLookFrame, NotifyRuleEditor, Peek, RecordForm, ViewSwitcher } from "@/features/data-tables/records-ui-host/recordsUiLazy";
-import type { ConditionField } from "@ai-matrx/records-ui";
+import { DashboardCanvas, FieldEditor, FormBuilder, FormLookFrame, NotifyRuleEditor, Peek, RecordForm, ViewSwitcher } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import type { PublicForm } from "@/features/forms/service";
 import { PublicFormRunner } from "@/app/(link)/f/[formId]/PublicFormRunner";
 import { spacesFormForAnswering } from "./form-actions";
 import { AutomationsPanel } from "./Automations";
-import type { RuleExpression } from "@ai-matrx/records";
 import { tableShapeChanged, useFields, useRecord, useRecordsClient, useTable, type Field } from "@ai-matrx/records/react";
 import {
   ArrowDownUp,
@@ -73,6 +71,7 @@ import { useUrlView } from "./url-view";
 import { useStructureEdit } from "../page/structure";
 import { DatabaseLoadingBox } from "../editor/database-loading-box";
 import { ReservedBody } from "./database-body-reserve";
+import { AdvancedFilter, conditionCount } from "./advanced-filter";
 import { frameControls, type TabControl, type ToolControl } from "./database-frame-shape";
 import { newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
 
@@ -679,49 +678,6 @@ function FormToAnswer({ formId }: { formId: string | null }) {
       <FormLookFrame look={null} title={form.title}>
         <PublicFormRunner form={form} />
       </FormLookFrame>
-    </div>
-  );
-}
-
-/** How many rules a nested question holds (the Filter icon is "on" when any is). */
-function conditionCount(expr: unknown): number {
-  if (!expr || typeof expr !== "object" || Array.isArray(expr)) return 0;
-  const node = expr as { op?: unknown; args?: unknown };
-  if ((node.op === "and" || node.op === "or" || node.op === "not") && Array.isArray(node.args)) return node.args.reduce<number>((n, a) => n + conditionCount(a), 0);
-  return 1;
-}
-
-/** Notion's advanced filter depth: a group, and a group inside it. */
-const ADVANCED_FILTER_DEPTH = 2;
-
-/**
- * N7 — Notion's advanced filter: rules joined by And / Or, filter groups two levels deep, saved with
- * the view. The builder is records-ui's one condition builder; the draft applies with one press.
- */
-function AdvancedFilter({ view, fields, onSave, onClose }: { view: SpaceDbView; fields: Field[]; onSave?: (where: Record<string, unknown> | null) => void; onClose: () => void }) {
-  const [draft, setDraft] = useState<RuleExpression | null>((view.where ?? null) as RuleExpression | null);
-  const conditionFields: ConditionField[] = fields.map((f) => ({ id: f.id, key: f.key, label: f.label || f.key, field: f }));
-  const changed = JSON.stringify(draft) !== JSON.stringify(view.where ?? null);
-  return (
-    <div className="spaces-db-advanced" data-testid="spaces-advanced-filter">
-      <ConditionGroup lead="Where" expr={draft} fields={conditionFields} onChange={setDraft} emptyLabel="every row" maxDepth={ADVANCED_FILTER_DEPTH} />
-      {onSave ? (
-        <div className="spaces-db-advanced-bar">
-          <Button
-            variant="quiet"
-            onClick={() => {
-              setDraft(null);
-              onSave(null);
-              onClose();
-            }}
-          >
-            Delete filter
-          </Button>
-          <Button variant="primary" disabled={!changed} onClick={() => onSave(draft as unknown as Record<string, unknown> | null)}>
-            Apply
-          </Button>
-        </div>
-      ) : null}
     </div>
   );
 }

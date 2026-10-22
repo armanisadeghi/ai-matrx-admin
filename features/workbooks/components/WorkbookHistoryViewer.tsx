@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { toast } from "@/components/ui/use-toast";
 import { operationFailed } from "@/utils/errors";
@@ -248,17 +248,16 @@ function SnapshotRow({
         </div>
         {!isCurrent && editable && (
           <Button
-            variant="ghost"
-            size="sm"
+            icon={restoringId === snapshot.id ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <RotateCcw />
+            )}
+            variant="quiet"
             disabled={restoringId !== null}
             onClick={() => onRestore(snapshot.id)}
             title="Restore this snapshot as the new current state"
           >
-            {restoringId === snapshot.id ? (
-              <Loader2 className="size-3 animate-spin mr-1" />
-            ) : (
-              <RotateCcw className="size-3 mr-1" />
-            )}
             Restore
           </Button>
         )}

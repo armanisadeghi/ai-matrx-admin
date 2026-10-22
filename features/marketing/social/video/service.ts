@@ -208,3 +208,39 @@ export async function readVideoStructure(postId: string): Promise<VideoStructure
     whyItWorks: p.why_it_works ?? null,
   };
 }
+
+
+/** A variant batch the server holds for a project: what a reloaded page shows while it runs, and after it stopped. */
+export interface ActiveBatch {
+  runId: string;
+  /** `processing` while it runs. */
+  status: string;
+  createdAt: string;
+  heartbeatAt: string | null;
+  variantIds: string[];
+  rows: Array<{ variant_id: string; status: string; stage?: string | null; message?: string | null; error?: string | null }>;
+}
+
+/**
+ * The newest variant batch (last 6 hours, the signed-in person's) that names any of these variants, read from the run
+ * record the batch writes at every step boundary. A reload finds a batch still going here instead of showing nothing.
+ */
+export async function readActiveBatch(variantIds: readonly string[]): Promise<ActiveBatch | null> {
+  if (!variantIds.length) return null;
+  const since = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
+  const { data, error } = await supabase
+    .schema("chat")
+    .from("agent_run")
+    .select("id,status,created_at,last_heartbeat_at,request,result")
+    .eq("kind", "video_variant_batch")
+    .is("deleted_at", null)
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(8)
+    .returns<Array<{ id: string; status: string; created_at: string; last_heartbeat_at: string | null; request: { variants?: string[] } | null; result: { variants?: ActiveBatch["rows"] } | null }>>();
+  if (error) throw error;
+  const mine = new Set(variantIds);
+  const row = (data ?? []).find((r) => (r.request?.variants ?? []).some((v) => mine.has(v)));
+  if (!row) return null;
+  return { runId: row.id, status: row.status, createdAt: row.created_at, heartbeatAt: row.last_heartbeat_at, variantIds: row.request?.variants ?? [], rows: row.result?.variants ?? [] };
+}

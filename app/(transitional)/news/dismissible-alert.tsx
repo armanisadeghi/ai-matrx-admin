@@ -2,7 +2,7 @@
 'use client';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { X } from 'lucide-react';
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -34,14 +34,12 @@ export function DismissibleAlert({ sourceName, title, url, index }: DismissibleA
                     </AlertDescription>
                 </div>
                 <Button
-                    variant="ghost"
-                    size="icon"
+                    icon={<X />}
+                    variant="quiet"
                     className="shrink-0"
                     aria-label="Dismiss"
                     onClick={handleDismiss}
-                >
-                    <X className="h-4 w-4" />
-                </Button>
+                />
             </div>
         </Alert>
     );

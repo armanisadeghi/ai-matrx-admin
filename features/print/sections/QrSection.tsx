@@ -22,6 +22,14 @@ import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, byteLength, controlClass, svgToImgSrc } from "@/features/print/components/shared";
 import { SAMPLE_CODE, SAMPLE_GTIN, SAMPLE_ORIGIN } from "./sample-data";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_QR_FIELDS,
+    PRINT_QR_FORM_TARGET,
+    PRINT_QR_SURFACE_NAME,
+    createPrintQrScope,
+} from "@/features/surfaces/manifests/print-qr.manifest";
 
 const EC_LEVELS: QrEcLevel[] = ["L", "M", "Q", "H"];
 
@@ -105,7 +113,40 @@ export function QrSection() {
         gs1Error = err instanceof Error ? err.message : "Invalid GS1 input.";
     }
 
+    const getScope = () =>
+        createPrintQrScope({
+            qr_value: value,
+            error_correction: ecLevel,
+            resolver_origin: origin,
+            resolver_code: code,
+            gs1_origin: gs1Origin,
+            gtin,
+            lot,
+            serial,
+            expiry,
+            symbol: describeSymbol(value, ecLevel),
+            preview_status: !hasValue ? "empty" : shownSvg ? "ready" : error ? "failed" : "rendering",
+            ...(hasValue && error ? { render_error: error } : {}),
+            ...(resolverError ? { resolver_error: resolverError } : { resolver_url: resolverUrl }),
+            ...(gs1Error ? { gs1_error: gs1Error } : { gs1_url: gs1Url }),
+        });
+
+    const getWriteHandlers = () =>
+        printToolWriteHandlers(PRINT_QR_FIELDS, PRINT_QR_FORM_TARGET, (patch) => {
+            if (typeof patch.qr_value === "string") setValue(patch.qr_value);
+            if (typeof patch.error_correction === "string") setEcLevel(patch.error_correction as QrEcLevel);
+            if (typeof patch.resolver_origin === "string") setOrigin(patch.resolver_origin);
+            if (typeof patch.resolver_code === "string") setCode(patch.resolver_code);
+            if (typeof patch.gs1_origin === "string") setGs1Origin(patch.gs1_origin);
+            if (typeof patch.gtin === "string") setGtin(patch.gtin);
+            if (typeof patch.lot === "string") setLot(patch.lot);
+            if (typeof patch.serial === "string") setSerial(patch.serial);
+            if (typeof patch.expiry === "string") setExpiry(patch.expiry);
+        });
+
     return (
+        // surface-write-handlers: qr_value, qr_settings, resolver_origin, resolver_code, gs1_origin, gtin, lot, serial, expiry
+        <SurfaceRuntimeProvider surfaceName={PRINT_QR_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="QR codes"
             entry="@ai-matrx/print/qr"
@@ -234,5 +275,6 @@ export function QrSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

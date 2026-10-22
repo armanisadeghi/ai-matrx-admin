@@ -235,8 +235,7 @@ export default function TaskItem({
                 isOwner={Boolean(
                   currentUserId && task.userId === currentUserId,
                 )}
-                variant="ghost"
-                size="icon"
+                variant="quiet" iconOnly
                 showStatus={false}
               />
             </div>

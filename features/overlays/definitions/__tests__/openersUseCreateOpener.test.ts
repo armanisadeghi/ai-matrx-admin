@@ -6,7 +6,7 @@
  * Fails on:
  *   1. a `<id>.overlay.ts(x)` that dispatches `openOverlay`/`closeOverlay` or hand-writes a Controller
  *      (`useEffect`) and is not in HAND_OPENERS below (and on a stale HAND_OPENERS line);
- *   2. a hand-copied summon instance-id mint (`${id}-${Date.now()}-${Math.random()…}`) in any app file
+ *   2. a hand-built instance id (`Date.now()` / `randomUUID()` / `Math.random()`) in any app file
  *      that opens overlays: use `mintInstanceId` (`@ai-matrx/summon/boot`) or `appOpener({ multi: true })`;
  *   3. a local `DEFAULT_INSTANCE_ID` declaration anywhere in the app (import summon's);
  *   4. `appOpener(…, { multi: true })` on an overlay whose definition is `instance: "single"`
@@ -32,7 +32,9 @@ const HAND_OPENERS: Readonly<Record<string, string>> = {
 };
 
 const HAND_WRITTEN = /\b(openOverlay|closeOverlay)\(|\buseEffect\(/;
-const MINT = /-\$\{Date\.now\(\)\}-\$\{Math\.random\(\)\.toString\(36\)\.slice\(2, 8\)\}`/;
+// Any overlay instance id built by hand from a clock or random source: `${id}-${Date.now()}`, `x:${crypto.randomUUID()}`,
+// `instanceId: crypto.randomUUID()`, `…-${Math.random().toString(36)…}` (dup-census-2 TRUE-1). One mint: summon `mintInstanceId`.
+const MINT = /[iI]nstanceId\s*(?:\?\?|[:=])[^;,]{0,160}?(?:Date\.now\(\)|randomUUID\(\)|Math\.random\(\))/s;
 const OPENS_OVERLAYS = /\b(openOverlay|instanceId)\b/;
 const LOCAL_DEFAULT_INSTANCE = /\b(const|let|var)\s+DEFAULT_INSTANCE_ID\s*=/;
 

@@ -705,7 +705,6 @@ export function KitHub({
         studyContext: { entityType: kit.sourceType, entityId: kit.sourceId, title: kit.title },
       }}
       label="Tutor"
-      className={proposedButton}
     />
   );
   const actionRow = proposedLayout ? (

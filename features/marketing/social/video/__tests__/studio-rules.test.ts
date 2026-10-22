@@ -5,7 +5,7 @@ import { summarizeEstimate, estimateLabel, confirmLine, outputRows, downloadName
 import { brandNameIn, hookPrefill } from "../hook-brand";
 import { joinOverlayLines } from "../text";
 import { cutText, hasBrokenCharacter, nameFromCaption } from "../text";
-import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../variants";
+import { batchStanding, batchCounts, batchProgressText, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, zipEntryNames, zipFileName } from "../variants";
 import { plainRenderMessage } from "../render-errors";
 
 describe("conflict rebase", () => {
@@ -213,5 +213,57 @@ describe("finished download names come from the server's record of which variant
     const [a, b] = rows.map((r) => finishedDownloadName("Tea", r, taken));
     expect(a).not.toBe(b);
     expect(rows[0].variantLabel).toBeNull();
+  });
+});
+
+describe("variant matrix (C6)", () => {
+  const label = (id: string) => ({ a: "Look A", b: "Look B" })[id] ?? id;
+  it("parses pasted hook lines: trimmed, empties and repeats dropped", () => {
+    const text = "  First line  \n\nsecond\r\nFIRST line\n   \nthird";
+    expect(parseHookLines(text)).toEqual(["First line", "second", "third"]);
+  });
+  it("makes hooks x looks variants: 10 hooks and 2 looks are 20", () => {
+    const hooks = Array.from({ length: 10 }, (_, i) => `Hook number ${i}`);
+    const sets = buildMatrix({ hooks, looks: ["a", "b"], shapes: [] }, label);
+    expect(sets).toHaveLength(20);
+    expect(matrixSize({ hooks: 10, looks: 2, shapes: 0 })).toBe(20);
+    expect(new Set(sets.map((s) => s.label.toLowerCase())).size).toBe(20);
+    expect(sets[0]).toEqual({ label: "Hook: Hook number 0 · Captions: Look A", hook_text: "Hook number 0", caption_preset: "a" });
+  });
+  it("a one-axis row keeps the label the single-row builder makes, so it is the same variant", () => {
+    expect(buildMatrix({ hooks: ["Hi"], looks: [], shapes: [] }, label)[0]!.label).toBe("Hook: Hi");
+    expect(buildMatrix({ hooks: [], looks: ["a"], shapes: [] }, label)[0]!.label).toBe("Captions: Look A");
+    expect(buildMatrix({ hooks: [], looks: [], shapes: ["1:1"] }, label)[0]).toEqual({ label: "Shape 1:1", aspect: "1:1" });
+    expect(buildMatrix({ hooks: [], looks: [], shapes: [] }, label)).toEqual([]);
+  });
+  it("two long hooks that start the same never share a label", () => {
+    const long = "x".repeat(60);
+    const sets = buildMatrix({ hooks: [`${long} one`, `${long} two`], looks: [], shapes: [] }, label);
+    expect(new Set(sets.map((s) => s.label)).size).toBe(2);
+  });
+  it("counts a running batch and says where it stands; a variant with no event yet is waiting", () => {
+    const ids = ["a", "b", "c", "d", "e"];
+    const c = batchCounts(ids, { a: { status: "rendered" }, b: { status: "rendering" }, c: { status: "failed" }, d: { status: "queued" } });
+    expect(c).toMatchObject({ total: 5, rendered: 1, rendering: 1, failed: 1, queued: 2, finished: 2 });
+    expect(batchProgressText(c)).toBe("1 of 5 rendered · 1 rendering · 2 waiting · 1 failed");
+  });
+  it("zip entries never collide", () => {
+    expect(zipEntryNames(["A.mp4", "a.mp4", "B.mp4"])).toEqual(["A.mp4", "a 2.mp4", "B.mp4"]);
+    expect(zipFileName("My project")).toBe("My project variants.zip");
+  });
+});
+
+describe("batch standing from the run record (C6)", () => {
+  const now = Date.parse("2026-10-22T12:00:00Z");
+  const at = (secondsAgo: number) => new Date(now - secondsAgo * 1000).toISOString();
+  it("is running while it beats, stopped when the beat goes quiet, over once the run ended", () => {
+    expect(batchStanding(null, now)).toBe("none");
+    expect(batchStanding({ status: "processing", createdAt: at(300), heartbeatAt: at(10) }, now)).toBe("running");
+    expect(batchStanding({ status: "processing", createdAt: at(300), heartbeatAt: at(200) }, now)).toBe("stopped");
+    expect(batchStanding({ status: "completed", createdAt: at(300), heartbeatAt: at(200) }, now)).toBe("over");
+  });
+  it("a run from before beats existed is judged by its start", () => {
+    expect(batchStanding({ status: "processing", createdAt: at(120), heartbeatAt: null }, now)).toBe("running");
+    expect(batchStanding({ status: "processing", createdAt: at(3600), heartbeatAt: null }, now)).toBe("stopped");
   });
 });

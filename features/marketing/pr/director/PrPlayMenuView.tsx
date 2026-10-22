@@ -19,7 +19,7 @@ import { useCallback, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Compass, Lightbulb, Play } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
@@ -73,13 +73,11 @@ export function PrPegRow({ peg }: { peg: PrPegView }) {
         </p>
         {brand ? (
           <Button
-            size="sm"
+            icon={<Lightbulb aria-hidden />}
             variant="outline"
-            className="h-7 text-xs"
             disabled={state === "running"}
             onClick={() => void run()}
           >
-            <Lightbulb className="mr-1 size-3.5" aria-hidden />
             {state === "running" ? "Finding angles…" : "Find angles"}
           </Button>
         ) : null}
@@ -189,8 +187,7 @@ export function PrPlayMenuView({ plays, nextMove, peg = null, conversationId }: 
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {action?.type === "open_surface" ? (
                 href ? (
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => router.push(href)}>
-                    <Compass className="mr-1 size-3.5" aria-hidden />
+                  <Button icon={<Compass aria-hidden />} variant="outline" onClick={() => router.push(href)}>
                     Open it
                   </Button>
                 ) : (
@@ -200,13 +197,11 @@ export function PrPlayMenuView({ plays, nextMove, peg = null, conversationId }: 
                 )
               ) : conversationId ? (
                 <Button
-                  size="sm"
-                  variant={i === 0 ? "default" : "outline"}
-                  className="h-7 text-xs"
+                  icon={<Play aria-hidden />}
+                  variant={i === 0 ? "primary" : "outline"}
                   disabled={executing}
                   onClick={() => startPlay(play)}
                 >
-                  <Play className="mr-1 size-3.5" aria-hidden />
                   {started === play.title ? "Started" : "Start this play"}
                 </Button>
               ) : (

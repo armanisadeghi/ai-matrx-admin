@@ -23,7 +23,7 @@
 
 import { NextResponse } from "next/server";
 
-import { bucketFor, holdSlot, publicBooking } from "@/features/booking/service";
+import { bucketFor, holdSlot, publicBooking, refreshBusyIfDue } from "@/features/booking/service";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +62,9 @@ export async function POST(
   }
 
   const { origin, bucket } = bucketFor(request);
+  // CD-PAGE-10: a connected calendar that is due a re-read is read before the hold, so the store judges the time
+  // against the owner's calendar as it is now (a failed read keeps the last good list and never stops the hold).
+  await refreshBusyIfDue(bookingId).catch((err: unknown) => console.error("[booking] busy re-read failed", err));
   try {
     const outcome = await holdSlot({
       formId: bookingId,

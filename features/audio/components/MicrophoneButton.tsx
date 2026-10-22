@@ -9,15 +9,14 @@
 
 import React from 'react';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
-import { Button } from "@ai-matrx/design-system";
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
 
 export interface MicrophoneButtonProps {
   isRecording?: boolean;
   isProcessing?: boolean;
   disabled?: boolean;
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  /** Tone while idle; recording always reads as `danger`. */
+  variant?: 'primary' | 'outline' | 'quiet';
   onClick?: () => void;
   className?: string;
   tooltip?: string;
@@ -28,8 +27,7 @@ export function MicrophoneButton({
   isRecording = false,
   isProcessing = false,
   disabled = false,
-  size = 'icon',
-  variant = 'ghost',
+  variant = 'quiet',
   onClick,
   className,
   tooltip,
@@ -39,41 +37,33 @@ export function MicrophoneButton({
   // Determine icon based on state
   const Icon = isProcessing ? Loader2 : isRecording ? MicOff : Mic;
   
-  // Dynamic classes for recording state
-  const buttonClasses = cn(
-    'transition-all duration-200',
-    isRecording && !isProcessing && 'bg-red-500 hover:bg-red-600 text-white animate-pulse',
-    isProcessing && 'cursor-wait',
-    className
-  );
+  const title =
+    tooltip || (isRecording ? 'Stop recording' : isProcessing ? 'Processing...' : 'Start recording');
+  const glyph = <Icon className={isProcessing ? 'animate-spin' : undefined} />;
+  const tone = isRecording && !isProcessing ? 'danger' : variant;
 
-  // Size mapping for icons
-  const iconSizeMap = {
-    default: 'h-4 w-4',
-    sm: 'h-3 w-3',
-    lg: 'h-5 w-5',
-    icon: 'h-4 w-4',
-  };
-
-  const iconSize = iconSizeMap[size];
-
-  return (
+  return showLabel ? (
     <Button
       type="button"
-      size={size}
-      variant={variant}
+      variant={tone}
+      icon={glyph}
       onClick={onClick}
       disabled={disabled || isProcessing}
-      className={buttonClasses}
-      title={tooltip || (isRecording ? 'Stop recording' : isProcessing ? 'Processing...' : 'Start recording')}
+      className={className}
+      title={title}
     >
-      <Icon className={cn(iconSize, isProcessing && 'animate-spin')} />
-      {showLabel && (
-        <span className="ml-2">
-          {isProcessing ? 'Processing...' : isRecording ? 'Recording' : 'Record'}
-        </span>
-      )}
+      {isProcessing ? 'Processing...' : isRecording ? 'Recording' : 'Record'}
     </Button>
+  ) : (
+    <Button
+      type="button"
+      variant={tone}
+      icon={glyph}
+      onClick={onClick}
+      disabled={disabled || isProcessing}
+      className={className}
+      title={title}
+      aria-label={title}
+    />
   );
 }
-

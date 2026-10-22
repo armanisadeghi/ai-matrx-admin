@@ -125,7 +125,6 @@ export function SnapshotDetail({
               resourceType="web_snapshot"
               resourceId={row.id}
               resourceName={row.final_url || `Snapshot ${displayId(row.id)}`}
-              size="sm"
               showStatus={false}
             />
             <CopyButtons size="icon" {...snapshotCopy} />

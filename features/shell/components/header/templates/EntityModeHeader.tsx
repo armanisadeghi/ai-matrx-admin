@@ -57,6 +57,7 @@ import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { frameCrumbOf, useDeclareFrameActions, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { useOwnAddress } from "@/features/shell/breadcrumbs/useOwnAddress";
 import type { FrameAction } from "@/features/shell/frame/types";
 
 const EXTERNAL_HREF_RE = /^(https?:|mailto:|tel:)/;
@@ -324,9 +325,12 @@ export function EntityModeHeader({
   useDeclareCurrentRecord({ label: entityLabel, token: entityRecord?.token ?? null, id: entityRecord?.id ?? null });
   // THE NEW APP FRAME: the trail and the name go to the frame's crumb row (one title, the page's
   // real levels); this header keeps only the status, the modes and the actions. Classic: no frame.
+  // EVERY CRUMB IS A REAL DOOR: in a layout (Smart Add) the page shown is deeper than this header's
+  // level, so the name is a link back to it — never text that goes nowhere (useOwnAddress).
+  const own = useOwnAddress();
   const inFrame = useDeclareFrameCrumbs([
     ...(trail ?? []).map(frameCrumbOf),
-    { label: entityLabel, options: entityOptions },
+    { label: entityLabel, href: own.href, options: entityOptions },
   ]);
   const [sheetOpen, setSheetOpen] = useState(false);
   // On a phone the shell's ⋮ hosts this header's options directly.
@@ -458,8 +462,16 @@ export function EntityModeHeader({
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
+            ) : own.isCurrent ? (
               <span className="flex min-w-0 items-center ps-[3px]">{label}</span>
+            ) : (
+              <NavLink
+                href={own.href}
+                data-entity-own-link=""
+                className="flex min-w-0 items-center rounded-md ms-[3px] px-1 hover:bg-[var(--matrx-glass-bg-active)] transition-colors"
+              >
+                {label}
+              </NavLink>
             )}
             </>
             )}

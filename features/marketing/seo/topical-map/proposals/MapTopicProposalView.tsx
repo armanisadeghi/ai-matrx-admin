@@ -35,7 +35,7 @@ import {
   AppWindow,
 } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { TopicTree } from "@/components/official/topic-tree/TopicTree";
@@ -284,52 +284,47 @@ function ProposalDoors({
         {canDecide ? (
           <>
             <Button
+              icon={<Check aria-hidden />}
               type="button"
-              size="sm"
-              variant="default"
+              variant="primary"
               disabled={busy}
               onClick={() => setPending("accept")}
             >
-              <Check className="h-3.5 w-3.5" aria-hidden />
               Accept {checkedCount > 0 ? `${checkedCount} checked` : "all"}
             </Button>
             <Button
+              icon={<CircleSlash aria-hidden />}
               type="button"
-              size="sm"
               variant="outline"
               disabled={busy}
               onClick={() => setPending("reject")}
             >
-              <CircleSlash className="h-3.5 w-3.5" aria-hidden />
               Reject {checkedCount > 0 ? `${checkedCount} checked` : "all"}
             </Button>
             <span className="mx-1 h-4 w-px bg-border" aria-hidden />
           </>
         ) : null}
         <Button
+          icon={<PanelRightOpen aria-hidden />}
           type="button"
-          size="sm"
-          variant="ghost"
+          variant="quiet"
           onClick={() => openCanvas({ mapId, screen: "outline" })}
           title="Open this map in the side canvas"
         >
-          <PanelRightOpen className="h-3.5 w-3.5" aria-hidden />
           Open in canvas
         </Button>
         <Button
+          icon={<AppWindow aria-hidden />}
           type="button"
-          size="sm"
-          variant="ghost"
+          variant="quiet"
           onClick={() => openWindow({ mapId, screen: "outline" })}
           title="Open this map as a floating window"
         >
-          <AppWindow className="h-3.5 w-3.5" aria-hidden />
           Open as window
         </Button>
         <Button
           type="button"
-          size="sm"
-          variant="ghost"
+          variant="quiet"
           onClick={() =>
             openMandate({
               initialMandateKey: MAP_CURATION_MANDATE_KEY,

@@ -11,6 +11,14 @@ import { bookletSizeWarning, imposeBooklet, printBooklet } from "@ai-matrx/print
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, controlClass } from "@/features/print/components/shared";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_BOOKLET_FIELDS,
+    PRINT_BOOKLET_FORM_TARGET,
+    PRINT_BOOKLET_SURFACE_NAME,
+    createPrintBookletScope,
+} from "@/features/surfaces/manifests/print-booklet.manifest";
 
 const PAGE_STYLES = `
   .booklet-page { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; font-family: Georgia, "Times New Roman", serif; }
@@ -44,7 +52,24 @@ export function BookletSection() {
         }
     };
 
+    const getScope = () =>
+        createPrintBookletScope({
+            page_count: safeCount,
+            padded_page_count: imposition.paddedPageCount,
+            sheet_count: imposition.sheets.length,
+            sheets: imposition.sheets.map((sheet, index) => ({ sheet: index + 1, front: sheet.front, back: sheet.back })),
+            needs_short_edge_duplex: imposition.requiresShortEdgeDuplex,
+            ...(warning ? { size_warning: warning } : {}),
+        });
+
+    const getWriteHandlers = () =>
+        printToolWriteHandlers(PRINT_BOOKLET_FIELDS, PRINT_BOOKLET_FORM_TARGET, (patch) => {
+            if (typeof patch.page_count === "number") setPageCount(Math.floor(patch.page_count));
+        });
+
     return (
+        // surface-write-handlers: booklet_settings
+        <SurfaceRuntimeProvider surfaceName={PRINT_BOOKLET_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="Booklet imposition"
             entry="@ai-matrx/print/booklet"
@@ -111,5 +136,6 @@ export function BookletSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

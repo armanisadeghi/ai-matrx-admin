@@ -13,7 +13,7 @@
  *   2. The sheet holds all five; an empty canvas is an ENABLED row (it opens
  *      the canvas — owner, 2026-09-30: "always available and clickable");
  *      Messages and Notifications open their canvas tabs (owner, 2026-10-02);
- *      a guest reaching for Intelligence, Messages or Notifications gets the
+ *      a guest reaching for Agents for this page, Messages or Notifications gets the
  *      auth gate, never a dead row.
  *
  * The Canvas row runs on the REAL `@ai-matrx/canvas` controller: a standalone
@@ -193,7 +193,7 @@ describe("HeaderPhoneOverflow — the same four, the same states", () => {
     mount(true);
     openSheet();
     expect(row("Search")).toBeDefined();
-    expect(row("Intelligence")).toBeDefined();
+    expect(row("Agents for this page")).toBeDefined();
     expect(row("Messages")?.textContent).toContain("2");
     expect(row("Notifications")).toBeDefined();
     const canvas = row("Canvas");
@@ -279,17 +279,17 @@ describe("HeaderPhoneOverflow — the same four, the same states", () => {
     expect(canvasStore.getState().isOpen).toBe(true);
   });
 
-  it("signed in, Intelligence opens the page's agents in the sheet", () => {
+  it("signed in, Agents for this page opens the page's agents in the sheet", () => {
     mount(true);
     openSheet();
-    click(row("Intelligence"));
+    click(row("Agents for this page"));
     expect(document.querySelector('[data-testid="agents-panel"]')).not.toBeNull();
   });
 
-  it("a guest reaching for Intelligence, Messages or Notifications gets the auth gate, never a dead row", () => {
+  it("a guest reaching for Agents for this page, Messages or Notifications gets the auth gate, never a dead row", () => {
     mount(false);
     openSheet();
-    click(row("Intelligence"));
+    click(row("Agents for this page"));
     expect(openAuthGate).toHaveBeenCalledWith(expect.objectContaining({ featureName: "Agents" }));
     openSheet();
     click(row("Messages"));
@@ -297,6 +297,29 @@ describe("HeaderPhoneOverflow — the same four, the same states", () => {
     openSheet();
     click(row("Notifications"));
     expect(openAuthGate).toHaveBeenCalledWith(expect.objectContaining({ featureName: "Inbox" }));
+  });
+});
+
+describe("HeaderPhoneOverflow — Agents for this page is reachable at phone width (defect 95, Q-05)", () => {
+  /** Q-05 at 390 px: the desktop button is display:none, so the sheet row is the ONLY door. A runner and a
+   *  person look for the desktop button's own name; the row used to be called "Intelligence". */
+  it("at 390 px the sheet's row carries the desktop button's name and opens the page's agents", () => {
+    const prevWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+    try {
+      mount(true);
+      const trigger = host.querySelector('button[aria-label^="Search, intelligence"]');
+      expect(trigger?.getAttribute("aria-label")).toContain("agents for this page");
+      openSheet();
+      const agents = row("Agents for this page");
+      expect(agents).toBeDefined();
+      expect(agents?.disabled).toBe(false);
+      click(agents);
+      expect(document.querySelector('[data-testid="agents-panel"]')).not.toBeNull();
+      expect(document.body.textContent).toContain("Agents for this page");
+    } finally {
+      Object.defineProperty(window, "innerWidth", { configurable: true, value: prevWidth });
+    }
   });
 });
 

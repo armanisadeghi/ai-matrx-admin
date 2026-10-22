@@ -8,7 +8,7 @@
 // with the membership fingerprint), then the kit page re-reads.
 
 import { useState, type ReactNode } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -85,7 +85,7 @@ export function AddSavedAidsDialog({
         {error && <ErrorNotice size="inline" message={error} error={error} operation="Add saved study aids" />}
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button disabled={saving || selected.length === 0} onClick={() => void add()}>
+          <Button variant="primary" disabled={saving || selected.length === 0} onClick={() => void add()}>
             {saving ? "Adding…" : selected.length > 0 ? `Add ${selected.length}` : "Add"}
           </Button>
         </DialogFooter>

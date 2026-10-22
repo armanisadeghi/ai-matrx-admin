@@ -35,7 +35,8 @@ import {
 } from "@ai-matrx/coding-sessions/react";
 import "@ai-matrx/coding-sessions/react/styles.css";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
-import { Button, StatusDot } from "@ai-matrx/design-system";
+import { StatusDot, Button as SurfaceButton } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Select } from "@ai-matrx/design-system/controls";
 import { useMediaQuery } from "@ai-matrx/kit/media-query";
 
@@ -177,11 +178,8 @@ function SessionsBody(props: SessionsPanelProps & { transport: DesktopCodingTran
         <div className="min-w-0 flex-1">
           <Select aria-label="Show" icon={<ListFilter className="h-4 w-4" />} value={scope} onValueChange={(v) => setScope(v)} options={SCOPES} />
         </div>
-        <Button size="sm" variant="ghost" aria-label="Refresh" onClick={() => void transport.call("listSessions")}>
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-        <Button size="sm" onClick={() => setNewOpen(true)} className="gap-1">
-          <Plus className="h-4 w-4" /> New
+        <Button icon={<RefreshCw />} variant="quiet" aria-label="Refresh" onClick={() => void transport.call("listSessions")} />
+        <Button icon={<Plus />} variant="primary" onClick={() => setNewOpen(true)}> New
         </Button>
       </div>
       <ul className="min-h-0 flex-1 overflow-y-auto" aria-label="Sessions">
@@ -277,7 +275,7 @@ function SessionRow({ row, providers, now, selected, onOpen }: { row: RecentChat
   const facts = rowFacts(row, providers);
   return (
     <li>
-      <Button
+      <SurfaceButton
         type="button"
         variant="ghost"
         onClick={onOpen}
@@ -302,7 +300,7 @@ function SessionRow({ row, providers, now, selected, onOpen }: { row: RecentChat
             {facts.from ? <span className="shrink-0">· {facts.from}</span> : null}
           </span>
         </span>
-      </Button>
+      </SurfaceButton>
     </li>
   );
 }

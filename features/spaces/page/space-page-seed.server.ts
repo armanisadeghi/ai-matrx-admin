@@ -35,6 +35,7 @@ import { createClient } from "@/utils/supabase/server";
 import type { SpaceBlock, SpaceDoc } from "../contract";
 import { entityPageSize } from "../data/entity-views";
 import { activeView, chartTileSpecs, DEFAULT_CHART, ENTITY_PAGE, entityChartBy, entityRowsArgs, entityShownColumns, hasListFilter } from "../data/first-reads";
+import { entityViewWhere } from "../data/entity-where";
 import { viewSpec } from "../data/view-spec";
 import { usesThisRow } from "../data/this-row";
 import { opensNoteLine, opensStateOf } from "../data/opens-note";
@@ -210,7 +211,8 @@ async function entityBlockSeed(reads: PageReads, { props }: DatabaseOnPage, knob
   if (props.source.kind !== "entity") return null;
   const token = props.source.token;
   const view = activeView(props.views, props.activeViewId);
-  const filters = (view.filters ?? {}) as Record<string, unknown>;
+  // The block's whole question: plain filters AND the advanced filter (CD-VIEW-11), as EntityDatabase asks it.
+  const filters = entityViewWhere(view);
   const sort = view.sorts?.[0] ?? null;
   if (!(await reads.knob(await knobOrg))) return null;
   // The view's own load limit (CD-VIEW-11), so the seeded first page is the one the block asks for.

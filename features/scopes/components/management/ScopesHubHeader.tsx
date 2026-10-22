@@ -24,7 +24,7 @@ export function ScopesHubHeader() {
       center={<RouteModeNav items={HUB_NAV_ITEMS} />}
       right={
         <div className="hidden sm:flex items-center gap-1">
-          <KgSuggestionsNavButton variant="outline" className="h-8" />
+          <KgSuggestionsNavButton variant="outline" />
           {/* Tap buttons space themselves: grouped with no gap. */}
           <div className="flex items-center">
             <TapTargetButton

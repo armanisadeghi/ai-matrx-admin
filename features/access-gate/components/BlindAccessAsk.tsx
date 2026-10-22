@@ -13,7 +13,7 @@
 
 import { useState } from "react";
 import { KeyRound } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { askForAccessBlind, BLIND_ASK_ANSWER } from "@/features/access-gate/service/accessRequests";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -41,7 +41,8 @@ export function BlindAccessAsk({
   return (
     <div className="flex flex-col items-start gap-2" data-blind-ask={state.kind}>
       <Button
-        size="sm"
+        icon={<KeyRound aria-hidden />}
+        variant="primary"
         disabled={state.kind === "asking"}
         aria-busy={state.kind === "asking"}
         onClick={() => {
@@ -61,7 +62,6 @@ export function BlindAccessAsk({
         }}
         data-tap-target
       >
-        <KeyRound className="mr-1.5 h-4 w-4" aria-hidden />
         {state.kind === "asking" ? "Asking…" : "Ask for access"}
       </Button>
       {state.kind === "failed" ? (

@@ -37,6 +37,9 @@ import {
   type VaultRecoveryPreview,
 } from "@/features/trash/service";
 import { TrashList } from "@/features/trash/components/TrashList";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { TRASH_SURFACE_NAME } from "@/features/surfaces/manifests/trash.manifest";
 import { VaultTrashRestoreDialog } from "@/features/trash/VaultTrashRestoreDialog";
 import {
   getVaultExportActor,
@@ -316,8 +319,18 @@ export default function TrashPage() {
     }
   };
 
+  // matrx-user/trash — the page's counts and retention schedule; <TrashList> contributes the rows and
+  // registers restore. No agent target deletes anything for good.
+  const getSurfaceScope = () =>
+    ({
+      trash_total: total,
+      trash_counts: counts.map((c) => ({ kind: c.label, kind_key: c.artifact_kind, count: Number(c.n) })),
+      pending_deletion: pending.map((g) => ({ kind: g.label ?? g.entity_token, rows: g.rows, wipe_on: g.wipe_on, days_left: g.days_left })),
+      archived_groups: archived.length,
+    }) as SurfaceScopePayload;
+
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={TRASH_SURFACE_NAME} getScope={getSurfaceScope}>
       <RouteHeader
         left={
           <span className="flex items-center gap-2 font-medium">
@@ -367,6 +380,7 @@ export default function TrashPage() {
         )}
 
         <TrashList
+          surfaceName={TRASH_SURFACE_NAME}
           scope={{
             mode: "personal",
             isVaultItem: isVaultCredentialTrashItem,
@@ -452,6 +466,6 @@ export default function TrashPage() {
           void loadNotice();
         }}
       />
-    </>
+    </SurfaceRuntimeProvider>
   );
 }

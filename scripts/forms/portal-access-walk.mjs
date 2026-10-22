@@ -57,7 +57,7 @@ const field = (t, spec) => door("field_declare", { p_table_id: t, p_spec: spec }
 const write = (t, doc) => door("record_write", { p_table_id: t, p_data: doc });
 
 const target = testTarget();
-let managers = null, calls = null, portal = null, persona = null;
+let managers = null, calls = null, portal = null, persona = null, strangerPage = null;
 const browser = await chromium.launch({ headless: true });
 try {
   managers = await table("Property managers", "Property manager", "Property managers",
@@ -84,13 +84,20 @@ try {
     await page.goto(`${ADMIN_ORIGIN}/make?make=portal&org=${ORG}&id=${portal}`, { waitUntil: "domcontentloaded" });
     const editor = page.locator("[data-portal-access-editor]");
     await editor.waitFor({ timeout: 300000 });
+    // A switch pressed before the page hydrates does not stay on: press until it says it is on.
     for (const key of ["self_signup", "password", "google", "notify_comments"]) {
-      await editor.locator(`[data-portal-access-switch="${key}"]`).click();
+      const sw = editor.locator(`[data-portal-access-switch="${key}"]`);
+      for (let t = 0; t < 10 && (await sw.getAttribute("aria-checked")) !== "true"; t++) {
+        await sw.click();
+        await page.waitForTimeout(1500);
+      }
     }
-    await editor.getByRole("combobox", { name: "Name goes in" }).click();
-    await page.getByRole("option", { name: "Building" }).click();
-    await editor.getByRole("combobox", { name: "Email goes in" }).click();
-    await page.getByRole("option", { name: "Manager email" }).click();
+    await page.screenshot({ path: `${SHOTS}/cd-page-12-0-owner-switches-on.png` });
+    // The design-system Select is a menu button (role button, its choices menuitemradio).
+    await editor.getByRole("button", { name: "Name goes in" }).click();
+    await page.getByRole("menuitemradio", { name: "Building" }).click();
+    await editor.getByRole("button", { name: "Email goes in" }).click();
+    await page.getByRole("menuitemradio", { name: "Manager email" }).click();
     await editor.locator("[data-portal-access-save]").click();
     await editor.locator("[data-portal-access-said]").waitFor({ timeout: 60000 });
     const said = await editor.locator("[data-portal-access-said]").innerText();
@@ -109,6 +116,7 @@ try {
   const ctx = await browser.newContext({ viewport: { width: 420, height: 900 } });
   ctx.setDefaultNavigationTimeout(300000);
   const page = await ctx.newPage();
+  strangerPage = page;
   await page.goto(`${ORIGIN}/portal/c/${slug}`, { waitUntil: "domcontentloaded" });
   await page.locator("[data-portal-ways-in]").waitFor({ timeout: 300000 });
   const ways = await page.locator("[data-portal-ways-in]").innerText();
@@ -185,6 +193,10 @@ try {
 } catch (e) {
   fails++;
   say("WALK ERROR", e.message);
+  if (strangerPage) {
+    await strangerPage.screenshot({ path: `${SHOTS}/cd-page-12-error.png`, fullPage: true }).catch(() => {});
+    say("stranger page at error:", strangerPage.url(), (await strangerPage.locator("body").innerText().catch(() => "")).replace(/\s+/g, " ").slice(0, 400));
+  }
 } finally {
   await browser.close();
   if (portal) say("cleanup portal:", JSON.stringify(await c.rpc("portal_archive", { p_organization_id: ORG, p_portal_id: portal, p_confirm_title: "Your service calls", p_reason: "CD-PAGE-12 walk fixture" }).then((r) => r.error?.message ?? "archived")));

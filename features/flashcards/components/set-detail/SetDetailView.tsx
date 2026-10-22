@@ -1370,10 +1370,8 @@ export function DeckDetailView({
                     resourceId={setId}
                     resourceName={data.set.name}
                     organizationId={data.set.organization_id}
-                    showStatus={false}
-                    size="icon"
-                    variant="ghost"
-                    className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                    showStatus={false} iconOnly
+                    variant="quiet"
                   />
                 )}
                 {!deckEmpty && (
@@ -1448,15 +1446,14 @@ export function DeckDetailView({
                     resourceId={setId}
                     returnPath={`${EDU_BASE}/${setId}`}
                     label="Make a copy"
-                    size="default"
-                    variant="default"
+                    variant="primary"
                   />
                 )}
                 {canEdit && (
                   <div className="ml-2">
                     <AddMoreCardsButton
                       label="Add"
-                      variant="default"
+                      variant="primary"
                       setId={setId}
                       existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
                       deckName={data.set.name}
@@ -1550,7 +1547,7 @@ export function DeckDetailView({
                   <div className="ml-auto">
                     <AddMoreCardsButton
                       label="Add"
-                      variant="default"
+                      variant="primary"
                       setId={setId}
                       existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
                       deckName={data.set.name}
@@ -1569,8 +1566,7 @@ export function DeckDetailView({
                   resourceId={setId}
                   returnPath={`${EDU_BASE}/${setId}`}
                   label="Make an editable copy"
-                  size="default"
-                  variant="default"
+                  variant="primary"
                 />
               )}
             </div>
@@ -2033,8 +2029,7 @@ export function DeckDetailView({
                           resourceId={setId}
                           resourceName={data.set.name}
                           organizationId={data.set.organization_id}
-                          showStatus={false}
-                          className="h-11 justify-start"
+                          showStatus={false} className="justify-start"
                         />
                       )}
                       {access.isOwner && (

@@ -14,12 +14,11 @@
 
 import { Lightbulb } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
 import { useOpenAgentSkillsWindow } from "@/features/overlays/definitions/agentSkillsWindow.overlay";
 import { selectAgentSkillConfig } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
-import { cn } from "@/lib/utils";
 
 interface AgentSkillsButtonProps {
   agentId: string;
@@ -41,18 +40,13 @@ export function AgentSkillsButton({ agentId }: AgentSkillsButtonProps) {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
-      className={cn("relative h-7 w-7", isOpen && "bg-accent")}
+      variant="quiet"
+      icon={<Lightbulb />}
+      pressed={isOpen}
+      badge={totalCount}
       onClick={() => openSkillsWindow(agentId)}
       title="Skills"
-    >
-      <Lightbulb className="h-4 w-4" />
-      {totalCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold leading-none text-primary-foreground">
-          {totalCount > 9 ? "9+" : totalCount}
-        </span>
-      )}
-    </Button>
+      aria-label="Skills"
+    />
   );
 }

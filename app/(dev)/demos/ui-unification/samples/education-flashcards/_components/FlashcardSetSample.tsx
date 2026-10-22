@@ -1269,10 +1269,8 @@ export function FlashcardSetSample({
                         resourceId={setId}
                         resourceName={data.set.name}
                         organizationId={data.set.organization_id}
-                        showStatus={false}
-                        size="icon"
-                        variant="ghost"
-                        className="text-muted-foreground hover:text-foreground"
+                        showStatus={false} iconOnly
+                        variant="quiet"
                       />
                     </span>
                   )}
@@ -1371,8 +1369,7 @@ export function FlashcardSetSample({
                         resourceId={setId}
                         returnPath={`${EDU_BASE}/${setId}`}
                         label="Make a copy"
-                        size="default"
-                        variant="default"
+                        variant="primary"
                       />
                     </span>
                   )}
@@ -1380,7 +1377,7 @@ export function FlashcardSetSample({
                     <span className="uk-adopt contents">
                       <AddMoreCardsButton
                         label="Add"
-                        variant="default"
+                        variant="primary"
                         setId={setId}
                         existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
                         deckName={data.set.name}
@@ -1448,8 +1445,7 @@ export function FlashcardSetSample({
                       resourceId={setId}
                       returnPath={`${EDU_BASE}/${setId}`}
                       label="Make an editable copy"
-                      size="default"
-                      variant="default"
+                      variant="primary"
                     />
                   </div>
                 )}
@@ -1853,8 +1849,7 @@ export function FlashcardSetSample({
                           resourceId={setId}
                           resourceName={data.set.name}
                           organizationId={data.set.organization_id}
-                          showStatus={false}
-                          className="justify-start"
+                          showStatus={false} className="justify-start"
                         /></span>
                       )}
                       {chatHref && (

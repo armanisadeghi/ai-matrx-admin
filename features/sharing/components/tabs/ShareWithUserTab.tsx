@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -685,9 +685,10 @@ export function ShareWithUserTab({
         </div>
 
         <Button
+          variant="primary"
           onClick={handleShare}
           disabled={isLoading || !email.trim() || chosenWhy !== null}
-          className="w-full h-9"
+          className="w-full"
         >
           {isLoading ? (
             <>

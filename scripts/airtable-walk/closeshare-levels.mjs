@@ -17,12 +17,16 @@ async function readLevels(page, name) {
   await trigger.waitFor({ timeout: 120000 });
   await trigger.click();
   await page.waitForTimeout(1000);
-  const options = await page.evaluate(() => [...document.querySelectorAll("[role=option]")].map((o) => o.textContent.trim()));
+  // the picker's own list (aria-controls of its trigger); the record's History list also uses role=option
+  const listId = await trigger.getAttribute("aria-controls");
+  const options = await page.evaluate((lid) => [...(lid && document.getElementById(lid) ? document.getElementById(lid).querySelectorAll("[role=option]") : document.querySelectorAll("[data-radix-popper-content-wrapper] [role=option]"))].map((o) => o.textContent.trim()), listId);
   await page.screenshot({ path: SHOT + `01-${name}-levels.png` });
   await page.keyboard.press("Escape");
-  check(JSON.stringify(options) === JSON.stringify(WANT), `${name}: the level picker offers exactly ${WANT.join(", ")}`, options);
+  // The order is the host's wording choice (Notion-style hosts list Full access first); the set is the rule.
+  check(JSON.stringify([...options].sort()) === JSON.stringify([...WANT].sort()), `${name}: the level picker offers exactly ${WANT.join(", ")}`, options);
   await page.keyboard.press("Escape");
   await page.waitForTimeout(800);
+  if (await page.getByRole("dialog").count()) { await page.keyboard.press("Escape"); await page.waitForTimeout(800); }
 }
 
 const a = await admin();
@@ -37,8 +41,11 @@ try {
   await A.page.waitForTimeout(2500);
   await readLevels(A.page, "table");
   await A.page.getByText("Alpha", { exact: true }).first().dblclick();
-  await A.page.waitForTimeout(3000);
-  await A.page.getByRole("button", { name: "Share", exact: true }).last().click();
+  // The record opens beside the grid with its own Share; wait for it, or the table's Share would be pressed again.
+  await A.page.waitForFunction(() => [...document.querySelectorAll("button")].filter((b) => b.textContent.trim() === "Share").length >= 2, null, { timeout: 120000 });
+  await A.page.waitForTimeout(1500);
+  // the record's own Share: the last enabled one outside any dialog (an Invite window left open has a disabled Share)
+  await A.page.locator("button:not([disabled])").filter({ hasText: /^Share$/ }).filter({ hasNot: A.page.locator("[role=dialog]") }).last().click();
   await A.page.waitForTimeout(2500);
   await readLevels(A.page, "record");
   if (process.env.SPACE) {

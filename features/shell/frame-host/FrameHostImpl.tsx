@@ -44,6 +44,7 @@ import { useFramePins } from "./useFramePins";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import { FrameSidebarSlotContext } from "./frameSidebarSlot";
 import { useFrameProductSidebar } from "./frameProductSidebar";
+import { FrameProductTop } from "./FrameProductTop";
 import { menuGoToEntries } from "./goToMenuEntries";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
@@ -198,11 +199,17 @@ export default function FrameHostImpl({
   // family's registered menu, else the route table's rows (frameProductSidebar.tsx).
   const ProductIcon = product.icon;
   const { slotHost, sidebarContent, productRows, ownsTop } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
-  // THE TOP OF EVERY PRODUCT SIDEBAR (owner, 2026-10-22) is wired here once the design-system
-  // release carrying ProductSidebarTop is installed (FrameProductTop.tsx); until then none.
-  void ownsTop;
-  void productRows;
-  const sidebarTop = undefined;
+  // THE TOP OF EVERY PRODUCT SIDEBAR (owner, 2026-10-22): Search, chosen related places, More —
+  // unless the body draws its own (the chat menu). The product's own pages go under More when the
+  // body is a module menu or a page's sidebar that is not the whole menu.
+  const sidebarTop = ownsTop ? undefined : (
+    <FrameProductTop
+      product={product}
+      products={products}
+      ownPagesInMore={sidebarContent != null && productRows}
+      onGo={go}
+    />
+  );
 
   // The page's own "…" items (declared through the page-header channel) first, then the frame's.
   const actions: FrameAction[] = [

@@ -40,6 +40,7 @@
  *   node scripts/ui-rollout/button-door-codemod.mjs --head-index <out>   # transform HEAD blobs,
  *        write them to the object store and print `update-index --index-info` lines to <out>
  *   --census <path>  (default scripts/ui-rollout/button-door-census.json)
+ *   --lift-lanes     convert the formerly excluded lanes too (only components/ui/ stays out)
  *
  * Re-runnable: a converted site has no `size`, a canonical variant and no
  * legacy import, so a second run is a no-op.
@@ -989,8 +990,13 @@ function main() {
   for (const file of files) {
     if (!file.endsWith(".tsx")) continue;
     const abs = path.join(ROOT, file);
-    const excluded =
-      builder.has(file) || EXCLUDED_PREFIXES.some((p) => file.startsWith(p)) || EXCLUDED_RE.some((re) => re.test(file));
+    // --lift-lanes (2026-10-22): the Wave 1A lane exclusions were temporary; their files kept the
+    // legacy root Button and drifted from the 28px row beside them (the brand header's Share).
+    // Only the primitives folder itself stays out.
+    const liftLanes = args.includes("--lift-lanes");
+    const excluded = liftLanes
+      ? file.startsWith("components/ui/")
+      : builder.has(file) || EXCLUDED_PREFIXES.some((p) => file.startsWith(p)) || EXCLUDED_RE.some((re) => re.test(file));
     const ctx = { excluded, overrides, deriveLabels: args.includes("--derive-labels") };
     if (headOut) {
       let headText;

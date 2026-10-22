@@ -236,7 +236,6 @@ function Header({
             resourceId={media.id}
             resourceName={media.title}
             isOwner
-            size="sm"
           />
           <Button
             icon={<Trash2 className="text-muted-foreground" />}

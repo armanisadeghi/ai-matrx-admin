@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { Columns2, Loader2, MessagesSquare, ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { OutputPreview } from "@/features/mandates/admin/bench-output-preview";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
 import { cn } from "@/lib/utils";
@@ -163,9 +163,8 @@ function Toolbar({
     <div className="flex flex-wrap items-center gap-1" data-candidate-run-toolbar>
       {live !== null && cand !== null ? (
         <Button
-          size="sm"
+          icon={<Columns2 />}
           variant="outline"
-          className="h-7 gap-1 text-xs"
           onClick={() =>
             openDiff({
               original: live,
@@ -177,15 +176,12 @@ function Toolbar({
             })
           }
         >
-          <Columns2 className="h-3.5 w-3.5" />
           Compare text
         </Button>
       ) : null}
       {candidate ? (
         <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 text-xs"
+          variant="quiet"
           onClick={() => openSummary(candidate.id)}
         >
           All {candidate.counts.runs_wanted} runs
@@ -300,15 +296,13 @@ function Agreement({ run, onRun }: { run: LiveCandidateRun; onRun: (run: LiveCan
         const chosen = run.human_agreement === choice;
         return (
           <Button
+            icon={<Icon />}
             key={choice}
-            size="sm"
-            variant={chosen ? "default" : "outline"}
-            className="h-7 gap-1 text-xs"
+            variant={chosen ? "primary" : "outline"}
             aria-pressed={chosen}
             disabled={busy !== null}
             onClick={() => void choose(choice)}
           >
-            <Icon className="h-3.5 w-3.5" />
             {choice === "agree" ? "Agree" : "Disagree"}
           </Button>
         );
@@ -622,20 +616,19 @@ function SawButton({
   }
   const button = (
     <Button
-      size="sm"
+      icon={resolving ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <MessagesSquare />
+      )}
       variant="outline"
-      className="h-7 w-full gap-1 text-xs"
+      className="w-full"
       data-candidate-saw={side}
       data-request-id={requestId ?? undefined}
       data-conversation-id={conversationId}
       aria-busy={resolving || undefined}
       onClick={() => void open()}
     >
-      {resolving ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-      ) : (
-        <MessagesSquare className="h-3.5 w-3.5" />
-      )}
       {label}
     </Button>
   );

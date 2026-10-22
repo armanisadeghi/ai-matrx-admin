@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button as SurfaceButton } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -284,14 +285,14 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                         <SelectItem value="type">Type</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button
+                    <SurfaceButton
                       variant="ghost"
                       size="icon"
                       onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                       className="h-7 w-7"
                     >
                       {sortOrder === "asc" ? "↑" : "↓"}
-                    </Button>
+                    </SurfaceButton>
                   </div>
                 </div>
                 
@@ -353,7 +354,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                       customActions: (bookmark) => (
                         <div className="flex justify-end space-x-1">
                               {onJumpToBookmark && (
-                                <Button
+                                <SurfaceButton
                                   size="icon"
                                   variant="ghost"
                                   onClick={(e) => {
@@ -363,9 +364,9 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                   className="h-8 w-8"
                                 >
                                   <ArrowRightIcon className="h-4 w-4" />
-                                </Button>
+                                </SurfaceButton>
                               )}
-                              <Button
+                              <SurfaceButton
                                 size="icon"
                                 variant="ghost"
                                 onClick={(e) => {
@@ -375,8 +376,8 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                 className="h-8 w-8"
                               >
                                 <CopyIcon className="h-4 w-4" />
-                              </Button>
-                              <Button
+                              </SurfaceButton>
+                              <SurfaceButton
                                 size="icon"
                                 variant="ghost"
                                 onClick={(e) => {
@@ -386,8 +387,8 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                 className="h-8 w-8"
                               >
                                 <PencilIcon className="h-4 w-4" />
-                              </Button>
-                              <Button
+                              </SurfaceButton>
+                              <SurfaceButton
                                 size="icon"
                                 variant="ghost"
                                 onClick={(e) => {
@@ -397,7 +398,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                 className="h-8 w-8 text-red-500"
                               >
                                 <TrashIcon className="h-4 w-4" />
-                              </Button>
+                              </SurfaceButton>
                             </div>
                       ),
                     },
@@ -472,16 +473,14 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                 <div className="bg-textured p-3 rounded-md border-border shadow-sm">
                                   <div className="type-title text-foreground dark:text-muted-foreground mb-2 pb-1 border-b flex justify-between items-center">
                                     <span>Full Path</span>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      className="h-6 text-xs"
+                                    <Button
+                                      icon={<CopyIcon />} 
+                                      variant="quiet"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         copyToClipboard(bookmark.path);
                                       }}
                                     >
-                                      <CopyIcon className="h-3 w-3" />
                                       Copy
                                     </Button>
                                   </div>
@@ -516,11 +515,12 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
               <p className="type-secondary text-muted-foreground mb-3">
                 Export your bookmarks to share with others or back them up.
               </p>
-              <Button 
+              <Button
+                icon={<FileUp />}
+                variant="primary" 
                 onClick={handleExport} 
-                className="flex items-center"
+                className="flex"
               >
-                <FileUp className="w-4 h-4 mr-2" />
                 Copy to Clipboard
               </Button>
             </div>
@@ -541,12 +541,13 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                   placeholder="Paste JSON bookmarks here..."
                 />
                 <div className="flex justify-end">
-                  <Button 
+                  <Button
+                    icon={<ImportIcon />}
+                    variant="primary" 
                     onClick={handleImport} 
-                    className="flex items-center"
+                    className="flex"
                     disabled={!importJson.trim()}
                   >
-                    <ImportIcon className="w-4 h-4 mr-2" />
                     Import
                   </Button>
                 </div>
@@ -641,8 +642,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
               <Button variant="outline" onClick={() => setEditingBookmark(null)}>
                 Cancel
               </Button>
-              <Button onClick={saveEditedBookmark}>
-                <SaveIcon className="w-4 h-4 mr-2" />
+              <Button icon={<SaveIcon />} variant="primary" onClick={saveEditedBookmark}>
                 Save Changes
               </Button>
             </div>

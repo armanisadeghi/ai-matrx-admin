@@ -14,6 +14,7 @@ import { isValidOAuthState } from "@ai-matrx/chat/agents/services/mcp-oauth/stat
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { buildMatrxRequestUrl } from "@ai-matrx/api";
+import { vendorOAuthErrorMessage } from "@/lib/mcp/vendorOAuthError";
 
 interface OAuthSession {
   serverId: string;
@@ -95,7 +96,7 @@ export async function GET(req: NextRequest) {
     return buildErrorRedirect(
       req,
       session.returnUrl,
-      errorDescription ?? `OAuth error from vendor: ${error}`,
+      vendorOAuthErrorMessage(session.serverSlug, getBaseUrl(req), errorDescription, error),
     );
   }
 

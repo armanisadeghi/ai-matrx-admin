@@ -38,7 +38,6 @@ export const EXEMPT: Readonly<Record<string, string>> = {
   "platform.relation_set": "compares two local variables (v_id, v_rec_ids)",
   "platform.list_dimension_ids": "EXPLAIN: the same index plan either way (idx_assoc_target_live)",
   "platform._drill_person_words": "already narrowed to the caller's peers by id; the text test only filters",
-  "platform._cutover_carry_back": "reads a retired workbench table that no longer exists",
   "platform.cutover_older_removal_rows": "reads a retired workbench table that no longer exists",
 };
 

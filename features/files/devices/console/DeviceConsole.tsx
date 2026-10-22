@@ -26,6 +26,9 @@ import { SessionsPanel } from "./sessions/SessionsPanel";
 import { StatusPill } from "./StatusPill";
 import { TerminalPanel } from "./TerminalPanel";
 import { useDeviceClient } from "./useDeviceClient";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { DEVICE_CONSOLE_SURFACE_NAME } from "@/features/surfaces/manifests/device-console.manifest";
 
 type View = "terminal" | "files" | "sessions" | "info";
 
@@ -87,7 +90,28 @@ export function DeviceConsole({ device }: { device: DeviceRow }) {
     </div>
   );
 
+  // matrx-user/device-console — read-only: the terminal and files are the person's own hands on their
+  // computer; an agent never types into it through this page.
+  const getSurfaceScope = () =>
+    ({
+      device_id: device.id,
+      device_name: name,
+      device_platform: device.platform,
+      device_os_version: device.os_version,
+      device_app_version: device.app_version,
+      device_hostname: device.hostname ?? null,
+      device_status: status.pill,
+      device_status_label: status.label,
+      device_status_detail: offlineLine || null,
+      device_connected: live,
+      console_view: view,
+      files_path: search.get("path"),
+      terminal_session_id: search.get("t"),
+      selected_session: search.get("s"),
+    }) as SurfaceScopePayload;
+
   return (
+    <SurfaceRuntimeProvider surfaceName={DEVICE_CONSOLE_SURFACE_NAME} getScope={getSurfaceScope} isEditable={false}>
     <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)] lg:flex-row">
       <PageHeader>{header}</PageHeader>
 
@@ -139,5 +163,6 @@ export function DeviceConsole({ device }: { device: DeviceRow }) {
         </div>
       </main>
     </div>
+    </SurfaceRuntimeProvider>
   );
 }

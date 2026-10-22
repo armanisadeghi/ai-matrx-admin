@@ -231,9 +231,45 @@ export function runStatusLabel(status: string): string {
   if (status === "failed" || status === "error" || status === "refused") return "Failed";
   if (status === "cancelled") return "Stopped";
   if (status === "queued") return "Queued";
-  if (status === "fetching") return "Fetching";
-  if (status === "waiting_for_provider") return "Waiting";
-  if (status === "storing") return "Saving";
+  if (status === "fetching") return "Sending your request";
+  if (status === "waiting_for_provider") return "Collecting at the source";
+  if (status === "storing") return "Saving rows";
   if (isOpenStatus(status)) return "Running";
   return status;
+}
+
+/** Finished runs sampled to learn how long a source usually takes. */
+const TYPICAL_SAMPLE = 30;
+
+/** The median of the finished runs' lengths, in ms; null when fewer than two finished (one is not "typical"). Pure. */
+export function medianRunMs(runs: ReadonlyArray<Pick<FetchJobRow, "status" | "created_at" | "finished_at">>): number | null {
+  const lengths = runs
+    .filter((r) => r.status === "done" && r.finished_at)
+    .map((r) => Date.parse(r.finished_at as string) - Date.parse(r.created_at))
+    .filter((ms) => Number.isFinite(ms) && ms > 0)
+    .sort((a, b) => a - b);
+  if (lengths.length < 2) return null;
+  const mid = Math.floor(lengths.length / 2);
+  return lengths.length % 2 ? lengths[mid] : Math.round((lengths[mid - 1] + lengths[mid]) / 2);
+}
+
+/** How long this source usually takes (median of its finished runs under RLS), for the in-flight hint. */
+export function useTypicalRunMs(sourceKey: string | null | undefined) {
+  return useQuery({
+    queryKey: ["data-sources", "typical-run-ms", sourceKey ?? null],
+    queryFn: async (): Promise<number | null> => {
+      const { data, error } = await jobs()
+        .select("status, created_at, finished_at")
+        .eq("source_key", sourceKey ?? "")
+        .eq("status", "done")
+        .is("deleted_at", null)
+        .not("finished_at", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(TYPICAL_SAMPLE);
+      if (error) throw error;
+      return medianRunMs((data as unknown as FetchJobRow[] | null) ?? []);
+    },
+    enabled: Boolean(sourceKey),
+    staleTime: 5 * 60_000,
+  });
 }

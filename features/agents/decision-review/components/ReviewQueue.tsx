@@ -13,6 +13,9 @@
  * ledger's agreement writer; the calibration view reads them.
  */
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { DECISION_REVIEW_SURFACE_NAME } from "@/features/surfaces/manifests/decision-review.manifest";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Check, ChevronLeft, ChevronRight, LineChart, ListChecks, X } from "lucide-react";
@@ -255,7 +258,31 @@ export function ReviewQueue({
   const setFilter = <K extends keyof QueueFilters>(key: K, value: QueueFilters[K]) =>
     setFilters((f) => ({ ...f, [key]: value }));
 
-  return (
+  // matrx-user/decision-review (the combined /decisions/review queue only; one agent's queue lives on
+  // its own page) — read-only: the true answer is the person's judgment, never an agent's.
+  const describe = (i: ReviewItem) => ({
+    id: i.id,
+    source: i.source,
+    question: i.question,
+    answer_type: i.answerType,
+    agent_answer: i.verdict,
+    confidence: i.confidence,
+    options: i.options.map((o) => o.label),
+    true_answer: i.label,
+    agreed: i.agreed,
+    model: i.model,
+    created_at: i.createdAt,
+  });
+  const getSurfaceScope = () =>
+    ({
+      review_load_status: loadError ? "failed" : items === null ? "loading" : "loaded",
+      review_filters: filters,
+      review_listed_count: items?.length ?? 0,
+      review_items: (items ?? []).slice(0, 25).map(describe),
+      review_selected: selected ? { ...describe(selected), instructions: selected.instructions } : null,
+    }) as SurfaceScopePayload;
+
+  const body = (
     <div className="flex h-full min-h-0 flex-col pt-[var(--shell-header-h)]">
       {/* One row of controls. */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
@@ -506,5 +533,12 @@ export function ReviewQueue({
         </div>
       </div>
     </div>
+  );
+  return combined ? (
+    <SurfaceRuntimeProvider surfaceName={DECISION_REVIEW_SURFACE_NAME} getScope={getSurfaceScope} isEditable={false}>
+      {body}
+    </SurfaceRuntimeProvider>
+  ) : (
+    body
   );
 }

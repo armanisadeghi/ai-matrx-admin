@@ -48,7 +48,7 @@ import {
   DrawerDescription,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { useContentConverter } from "./useContentConverter";
@@ -523,13 +523,11 @@ function TargetRow({
         )}
       </div>
       {done ? (
-        <Button size="sm" variant="secondary" onClick={() => onOpen(state.result.href)}>
+        <Button iconEnd={<ArrowRight />} variant="outline" onClick={() => onOpen(state.result.href)}>
           Open
-          <ArrowRight className="ml-1 h-3.5 w-3.5" />
         </Button>
       ) : (
         <Button
-          size="sm"
           variant="outline"
           disabled={disabled}
           onClick={() =>

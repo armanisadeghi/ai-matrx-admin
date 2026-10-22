@@ -8,7 +8,8 @@
 
 import { useState } from "react";
 import { Building2 } from "lucide-react";
-import { Button, OrganizationPicker, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { OrganizationPicker, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { pagedPickerProps, usePagedOrganizations } from "@/features/organizations/hooks/usePagedOrganizations";
 import type { OrganizationWithRole } from "@/features/organizations/types";
@@ -53,8 +54,7 @@ export function OrganizationChooser({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" disabled={disabled} className={className} data-testid="organization-chooser">
-          <Building2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+        <Button icon={<Building2 aria-hidden="true" />} variant="outline" disabled={disabled} className={className} data-testid="organization-chooser">
           <span className="truncate">{label}</span>
         </Button>
       </PopoverTrigger>

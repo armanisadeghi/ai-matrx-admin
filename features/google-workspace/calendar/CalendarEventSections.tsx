@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { Archive, Lock, PlugZap, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
@@ -287,26 +287,24 @@ function CalendarEventKeepAndArchiveActions({
     <div className="flex flex-wrap items-center gap-2" data-calendar-event-record-actions>
       {detached ? null : (
         <Button
+          icon={<Lock />}
           type="button"
-          size="sm"
           variant="outline"
           disabled={running !== null}
           onClick={() => void keep()}
           data-calendar-event-keep
         >
-          <Lock className="mr-1.5 h-3.5 w-3.5" />
           {running === "keep" ? "Keeping…" : "Keep as AI Matrx data"}
         </Button>
       )}
       <Button
+        icon={<Archive />}
         type="button"
-        size="sm"
         variant="outline"
         disabled={running !== null}
         onClick={() => void archive()}
         data-calendar-event-archive
       >
-        <Archive className="mr-1.5 h-3.5 w-3.5" />
         {running === "archive" ? "Archiving…" : "Archive this event"}
       </Button>
     </div>
@@ -347,7 +345,6 @@ function CalendarEventReconnectAction({ event }: { event: CalendarEventRow }) {
     <div className="space-y-1.5">
       <Button
         type="button"
-        size="sm"
         variant="outline"
         onClick={() =>
           openGoogleConnect({

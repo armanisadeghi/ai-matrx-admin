@@ -13,6 +13,9 @@ import { MarkdownErrorBoundary } from "@ai-matrx/rich-content/display/chat-markd
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { useSurfaceScopeContribution, useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { MESSENGER_SURFACE_NAME } from "@/features/surfaces/manifests/messenger.manifest";
 
 // One user-triggered boundary for the picker family, never loaded for a closed menu.
 const Tools = dynamic(() => import("./MessagesComposerTools"), {
@@ -36,6 +39,21 @@ export function MessagesComposerInput({
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const selection = useRef({ start: 0, end: 0 });
+  // `composer_text` is declared only on matrx-user/messenger (the messages surface deliberately has no
+  // write target): the box contributes its text and takes an agent's draft there, never sends.
+  const draftSurface = surfaceName === MESSENGER_SURFACE_NAME ? surfaceName : null;
+  useSurfaceScopeContribution(draftSurface, "messenger-composer", () => ({ composer_text: input.value }) as SurfaceScopePayload);
+  useSurfaceWriteHandlers(draftSurface, {
+    composer_text: {
+      validate: (value: unknown) => {
+        if (typeof value !== "string") refuseSurfaceWrite("composer_text takes the message text.");
+      },
+      apply: (value: unknown) => {
+        input.onChange(String(value));
+        return { summary: "The message box is filled in. Nothing is sent until the person presses Send.", data: { composer_text: String(value) } };
+      },
+    },
+  });
   const [pickerError, setPickerError] = useState<Error | null>(null);
   const [menu, setMenu] = useState<"attach" | "emoji" | null>(null);
   // A narrow line (a phone, a side panel) folds the emoji button into "+",

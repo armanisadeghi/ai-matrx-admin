@@ -858,7 +858,6 @@ export function AiVisibilityWorkspace({
                 resourceType="seo_collection_run"
                 resourceId={latestCommandId}
                 resourceName={`${site.name} AI Visibility Report`}
-                size="sm"
                 showStatus={false}
               />
             ) : null}

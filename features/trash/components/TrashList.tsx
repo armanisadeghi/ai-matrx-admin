@@ -17,6 +17,9 @@
  * scope. No purge button anywhere — destruction is the retention engine's job.
  */
 
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { useSurfaceScopeContribution, useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import SearchableSelect from "@/components/matrx/SearchableSelect";
 import { Loader2, RotateCcw, Trash2 } from "lucide-react";
@@ -111,6 +114,11 @@ export interface TrashListProps {
   includeKind?: (kind: string) => boolean;
   /** Words that narrow the rows by title (a host's search box). */
   filterText?: string;
+  /**
+   * The page surface this list belongs to (`matrx-user/trash`): the list contributes `trash_items`
+   * and registers `restore_trash_items` there. Omit where the host is not that surface.
+   */
+  surfaceName?: string | null;
 }
 
 const trashRowKey = (item: TrashListItem) => `${item.entity_token}:${item.id}`;
@@ -131,6 +139,7 @@ export function TrashList({
   rowClassName,
   includeKind,
   filterText,
+  surfaceName = null,
 }: TrashListProps) {
   const org = scope.mode === "organization" ? scope : null;
   const organizationId = org?.organizationId ?? null;
@@ -324,6 +333,73 @@ export function TrashList({
 
   const busyId = scope.mode === "personal" ? (scope.busyId ?? null) : null;
 
+  /** One row back where it came from; throws the server's reason when it is not restored. */
+  const restoreOne = async (item: TrashListItem) => {
+    if (organizationId) {
+      const res = await restoreFromOrgTrash(organizationId, item.entity_token, item.id);
+      if (!res.restored) throw new Error(res.message ?? "Not restored.");
+    } else {
+      await sourceForItem(PERSONAL_TRASH_SOURCES, item).restore(item);
+    }
+  };
+
+  // matrx-user/trash: the rows as listed and restore (never permanent delete — destruction is the
+  // retention engine's job). Vault credentials are refused: they restore through their own review.
+  useSurfaceScopeContribution(surfaceName, "trash-list", () =>
+    ({
+      trash_kind_filter: kind,
+      trash_items: shownItems.slice(0, 50).map((i) => ({
+        key: trashRowKey(i),
+        kind: i.label,
+        title: i.title?.trim() || null,
+        deleted_at: i.deleted_at,
+        ...(i.owner_label ? { owner: i.owner_label } : {}),
+      })),
+      trash_listed_count: shownItems.length,
+      trash_has_more: more,
+    }) as SurfaceScopePayload,
+  );
+  const parseRestore = (value: unknown): TrashListItem[] => {
+    const keys = Array.isArray(value) ? value.map((v) => (typeof v === "string" ? v : String((v as { key?: unknown })?.key ?? ""))) : [];
+    if (!keys.length || keys.length > 50) refuseSurfaceWrite("restore_trash_items takes a JSON array of 1-50 keys from trash_items.");
+    const problems: string[] = [];
+    const rows = keys.map((key, i) => {
+      const item = items.find((it) => trashRowKey(it) === key);
+      if (!item) problems.push(`Item ${i + 1}: "${key}" is not listed in the trash.`);
+      else if (scope.mode === "personal" && scope.isVaultItem?.(item)) problems.push(`Item ${i + 1}: a Vault credential restores only through its own review on the page.`);
+      return item as TrashListItem;
+    });
+    if (new Set(keys).size !== keys.length) problems.push("A key is listed twice.");
+    if (problems.length) refuseSurfaceWrite(`${problems.join(" ")} Nothing was restored.`);
+    return rows;
+  };
+  useSurfaceWriteHandlers(surfaceName, {
+    restore_trash_items: {
+      validate: (value: unknown) => void parseRestore(value),
+      apply: async (value: unknown) => {
+        const rows = parseRestore(value);
+        const done: string[] = [];
+        for (const [i, item] of rows.entries()) {
+          try {
+            await restoreOne(item);
+            done.push(trashRowKey(item));
+          } catch (e) {
+            void loadItems();
+            void loadCounts();
+            const left = rows.slice(i + 1).map(trashRowKey);
+            throw new Error(
+              `Restored ${done.length} of ${rows.length}. "${item.title?.trim() || item.label}" was not restored: ${e instanceof Error ? e.message : String(e)}.${left.length ? ` Not attempted: ${left.join(", ")}.` : ""}`,
+            );
+          }
+        }
+        void loadItems();
+        void loadCounts();
+        for (const item of rows) onRestoredRef.current?.(item);
+        return { summary: `Restored ${done.length} item(s); each is back where it came from.`, data: { restored: done } };
+      },
+    },
+  });
+
   const bulkActions: EntityBulkAction<TrashListItem>[] = [
     {
       id: "trash-restore",
@@ -334,12 +410,7 @@ export function TrashList({
           sel,
           async (_key, item) => {
             if (!item) throw new Error("No longer in the list.");
-            if (organizationId) {
-              const res = await restoreFromOrgTrash(organizationId, item.entity_token, item.id);
-              if (!res.restored) throw new Error(res.message ?? "Not restored.");
-            } else {
-              await sourceForItem(PERSONAL_TRASH_SOURCES, item).restore(item);
-            }
+            await restoreOne(item);
           },
           {
             done: "Restored",

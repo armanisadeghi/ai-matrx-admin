@@ -26,7 +26,7 @@ import { readOrganizationMemberRows } from "@/features/organizations/service/org
 import { listTeamMembers, listTeams, type Team } from "@/features/organizations/service/teamsService";
 import React, { useEffect, useState } from "react";
 import { Building2, CheckCircle, Loader2, Users, XCircle } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -220,9 +220,10 @@ export function AddEveryoneInOrg({
   if (!open) {
     return (
       <Button
+        icon={<Users />}
         type="button"
         variant="outline"
-        className="w-full h-9"
+        className="w-full"
         onClick={() => {
           // Start on the thing's own organization when the person is in it.
           if (!orgId && defaultOrgId && orgs.some((o) => o.id === defaultOrgId))
@@ -230,7 +231,6 @@ export function AddEveryoneInOrg({
           setOpen(true);
         }}
       >
-        <Users className="w-4 h-4 mr-2" />
         Add everyone in an organization or team
       </Button>
     );
@@ -407,10 +407,11 @@ export function AddEveryoneInOrg({
       ) : null}
       {members && members.length > 0 && (chosen.length > 0 || running) ? (
         <Button
+          variant="primary"
           type="button"
           onClick={run}
           disabled={running || chosen.length === 0}
-          className="w-full h-9"
+          className="w-full"
         >
           {running ? (
             <>

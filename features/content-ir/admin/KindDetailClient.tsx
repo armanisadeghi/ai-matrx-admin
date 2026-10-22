@@ -241,7 +241,6 @@ export default function KindDetailClient({
                 contentBlocks: detail.contentBlocks,
                 warnings: detail.warnings,
               }}
-              className="min-h-10"
             >
               Edit with agent
             </KindAgentButton>

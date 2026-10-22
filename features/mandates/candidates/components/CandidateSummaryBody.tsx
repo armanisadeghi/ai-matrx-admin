@@ -13,7 +13,7 @@
 import { useState } from "react";
 import { ArrowUpCircle, ChevronRight, Undo2, XCircle } from "lucide-react";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -84,9 +84,7 @@ export function CandidateSummaryBody({ row }: { row: CandidateSummaryRow }) {
     <div className="space-y-5" data-candidate-summary-body>
       <div className="flex flex-wrap items-center gap-1">
         <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 text-xs"
+          variant="quiet"
           onClick={() => openMandate({ initialMandateKey: storedMandateKey(candidate.mandate_key) })}
         >
           Open the mandate
@@ -297,31 +295,26 @@ function Decisions({
       <div className="flex flex-wrap gap-1.5">
         {open ? (
           <>
-            <Button size="sm" className="h-8 gap-1" onClick={() => setPending("promote")} data-candidate-promote>
-              <ArrowUpCircle className="h-4 w-4" />
+            <Button icon={<ArrowUpCircle />} variant="primary" onClick={() => setPending("promote")} data-candidate-promote>
               Promote
             </Button>
             <Button
-              size="sm"
+              icon={<XCircle />}
               variant="outline"
-              className="h-8 gap-1"
               onClick={() => setPending("discard")}
               data-candidate-discard
             >
-              <XCircle className="h-4 w-4" />
               Discard
             </Button>
           </>
         ) : null}
         {putBack ? (
           <Button
-            size="sm"
+            icon={<Undo2 />}
             variant="outline"
-            className="h-8 gap-1"
             onClick={() => setPending("put-back")}
             data-candidate-put-back
           >
-            <Undo2 className="h-4 w-4" />
             Put back
           </Button>
         ) : null}

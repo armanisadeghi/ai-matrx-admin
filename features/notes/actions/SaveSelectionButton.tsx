@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -19,8 +19,9 @@ import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 interface SaveSelectionButtonProps {
   /** The bucket tag the note is stamped with. */
   tag?: string;
-  variant?: "default" | "outline" | "ghost" | "secondary";
-  size?: "default" | "sm" | "lg" | "icon";
+  variant?: "primary" | "outline" | "quiet";
+  /** Glyph only. Default true; pass a `label` and `iconOnly={false}` for a labelled button. */
+  iconOnly?: boolean;
   label?: string;
   className?: string;
 }
@@ -31,8 +32,8 @@ interface SaveSelectionButtonProps {
  */
 export function SaveSelectionButton({
   tag = "Scratch",
-  variant = "ghost",
-  size = "icon",
+  variant = "quiet",
+  iconOnly = true,
   label,
   className,
 }: SaveSelectionButtonProps) {
@@ -80,20 +81,28 @@ export function SaveSelectionButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={variant}
-            size={size}
-            onClick={handleSave}
-            disabled={isSaving}
-            className={className}
-          >
-            {justSaved ? (
-              <Check className="h-4 w-4 text-green-500" />
-            ) : (
-              <Highlighter className="h-4 w-4" />
-            )}
-            {label && <span className="ml-2">{label}</span>}
-          </Button>
+          {iconOnly || !label ? (
+            <Button
+              variant={variant}
+              icon={justSaved ? <Check /> : <Highlighter />}
+              glyphTone={justSaved ? "success" : undefined}
+              onClick={handleSave}
+              disabled={isSaving}
+              className={className}
+              aria-label={label || "Save selection"}
+            />
+          ) : (
+            <Button
+              variant={variant}
+              icon={justSaved ? <Check /> : <Highlighter />}
+              glyphTone={justSaved ? "success" : undefined}
+              onClick={handleSave}
+              disabled={isSaving}
+              className={className}
+            >
+              {label}
+            </Button>
+          )}
         </TooltipTrigger>
         <TooltipContent>
           {justSaved ? "Saved!" : `Save selection to ${tag}`}

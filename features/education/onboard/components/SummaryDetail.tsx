@@ -215,7 +215,7 @@ export function SummaryDetail({ id, edit = false }: { id: string; edit?: boolean
           )}
           label="Tutor"
         />
-        {(access.isOwner || access.level === "admin") ? <ShareButton resourceType="study_media" resourceId={row.id} resourceName={row.title} organizationId={row.organization_id} showStatus={false} size="sm" /> : null}
+        {(access.isOwner || access.level === "admin") ? <ShareButton resourceType="study_media" resourceId={row.id} resourceName={row.title} organizationId={row.organization_id} showStatus={false} /> : null}
         <Button icon={<Download />} variant="outline" onClick={onExport}> Markdown
         </Button>
         {canEdit ? <Button icon={<Pencil />} variant="outline" onClick={() => router.push(`/education/summaries/${row.id}/edit`)}>Edit</Button> : null}

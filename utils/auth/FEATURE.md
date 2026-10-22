@@ -215,8 +215,24 @@ as a second comma-separated `external_google_client_id`; the first ID stays the 
 allows the prompt only on origins registered on that client: `https://www.aimatrx.com` and
 `http://localhost:3000` are; `http://localhost:3001` and `*.localhost` session hosts are not.
 
+## Phone sign-up and sign-in — a texted code (2026-10-22)
+
+`features/auth/phone/`: `/login` and `/sign-up` show an Email | Phone choice (`AuthMethodSwitch`, email is the
+default). Phone: number → `sendPhoneCode` (normalized by `toE164Phone` in `lib/sms/phoneUtils.ts`, then
+`signInWithOtp({ phone, shouldCreateUser: true })`) → 6-digit code → `verifyPhoneCode` (`verifyOtp` inside
+`handOverSession`, the found search, `signInDestination`) → full-document navigation to the destination. One flow
+on both pages: a new number creates the account, a known one signs in. Supabase Auth phone provider = Twilio,
+our messaging service (`TWILIO_MESSAGING_SERVICE_SID`), code valid 10 minutes, template "Your AI Matrx code is …".
+A coupon texted to a number (`/sign-up?coupon=`, `coupon_preview.recipient_phone`, no recipient email) opens on
+Phone with that number filled in (editable); the coupon rides `redirectTo=/redeem?code=` like the email path.
+Auth stores a phone as bare digits (`19495550123`): DB readers add the `+` (`crm.ensure_user_party_in_org`), and
+the CRM party at sign-up never blocks the sign-up (`crm._provision_signed_up_user_party` records
+`signup_crm_party_failed` instead). Test only to the loopback handsets; codes land in
+`communication.test_handset_inbox`.
+
 ## Change Log
 
+- 2026-10-22 — Phone sign-up/sign-in with a texted code (section above); Supabase phone provider repointed from a Verify SID to our Twilio messaging service.
 - 2026-10-14 — Google One Tap for signed-out visitors (section above); knob `auth.one_tap_auto_select` seeded live.
 - 2026-10-09 (lane F12): `/sign-up` and `/login` show "Your N records come with you." to a guest (`lib/guest/guest-record-count.ts`, `AuthPageContainer note`); the primary button of a `HardRedirectForm` says "Getting ready…" and stays disabled until the page's script has loaded (`SubmitButton needsScript`) — an early press was a silent no-op.
 - 2026-10-09 — G2 guest data: the one session handover (`lib/guest/session-handover.ts`); the fail-open OAuth transfer (`lib/services/guest-oauth-transfer.ts`) and fingerprint-keyed `guest-promotion.ts` deleted; guard `check:session-handover`.

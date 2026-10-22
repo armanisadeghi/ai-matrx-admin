@@ -1,0 +1,14 @@
+import { live, gotoTable, openAutomations, say } from "./ba-lib.mjs";
+const { browser, page, shot } = await live(false);
+await gotoTable(page, process.env.TID);
+await openAutomations(page);
+const dlg = page.locator("[role=dialog]").last();
+await dlg.getByRole("button",{name:"New automation"}).click(); await page.waitForTimeout(2000);
+await dlg.getByRole("button",{name:"Make a document"}).click(); await page.waitForTimeout(2500);
+await shot("wk2-auto-9");
+say("DOC", (await dlg.innerText()).replace(/\n+/g," | ").match(/Step 1.{0,300}/)?.[0]);
+const cb = dlg.locator("[role=combobox]"); say("combos", await cb.count());
+await page.mouse.click(790, (await page.locator("text=Step 1").first().boundingBox()).y+50); await page.waitForTimeout(1500);
+say("OPTS", await page.locator("[role=option],[role^=menuitem]").allInnerTexts());
+await shot("wk2-auto-10");
+process.exit(0);

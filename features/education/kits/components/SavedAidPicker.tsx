@@ -9,7 +9,8 @@
 // reports each page it reads (`onVisibleRows`) for the agent surface scope.
 
 import { useEffect, useEffectEvent, useState } from "react";
-import { Button, Input } from "@ai-matrx/design-system";
+import { Input } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { fetchEducationLibraryPage } from "@/features/education/library/service";
 import type { EducationLibraryRow } from "@/features/education/library/types";
 import { educationLibraryHref } from "@/features/education/library/types";

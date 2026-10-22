@@ -30,7 +30,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
 import { OrganizationPickerPanel } from "@/features/organizations/components/OrganizationPickerPanel";
@@ -126,12 +126,12 @@ export function OrganizationPickerButton({
       align={align}
       trigger={
         <Button
-          size="sm"
+          icon={<Building2 aria-hidden="true" />}
+          type="submit"
           variant="outline"
           className={className}
           data-testid="organization-picker-button"
         >
-          <Building2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           {label}
         </Button>
       }

@@ -20,6 +20,9 @@
  * door that cannot is not a fallback, it is the bug.
  */
 
+import { SurfaceRuntimeProvider, useSurfaceScopeContribution } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { SOURCE_LIBRARY_SURFACE_NAME } from "@/features/surfaces/manifests/source-library.manifest";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CircleAlert, RefreshCw } from "lucide-react";
@@ -62,7 +65,20 @@ import { listsCataloguedSources } from "../catalog/cataloguedSources";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LIBRARIES_PATH } from "@/features/knowledge/modulePaths";
 
+/** The page, as the `matrx-user/source-library` surface; the body contributes what it has loaded. */
 export function LibraryPage({ libraryId }: { libraryId: string }) {
+    return (
+        <SurfaceRuntimeProvider
+            surfaceName={SOURCE_LIBRARY_SURFACE_NAME}
+            getScope={() => ({ source_library_id: libraryId }) as SurfaceScopePayload}
+            isEditable={false}
+        >
+            <LibraryPageBody libraryId={libraryId} />
+        </SurfaceRuntimeProvider>
+    );
+}
+
+function LibraryPageBody({ libraryId }: { libraryId: string }) {
     const dispatch = useAppDispatch();
     const router = useRouter();
     const params = useSearchParams();
@@ -443,6 +459,33 @@ export function LibraryPage({ libraryId }: { libraryId: string }) {
     // The Library row could not be read and we hold none: the one thing this
     // page is about is unavailable (denied, deleted, missing, or a real fault).
     // A failed POLL while a row is already held keeps the notice below instead.
+    // matrx-user/source-library — read-only: the server Actions on a selection spend money and stay
+    // the person's press.
+    useSurfaceScopeContribution(SOURCE_LIBRARY_SURFACE_NAME, "library-page", () =>
+        ({
+            source_library_load_status: library ? "loaded" : rowUnavailable || loadError ? "failed" : "loading",
+            ...(library
+                ? {
+                      source_library_name: library.name,
+                      source_library_source: library.adapter,
+                      source_library_kind: library.kind,
+                      source_library_url: library.canonical_url,
+                      source_library_description: library.description,
+                  }
+                : {}),
+            source_library_metrics: live?.metrics
+                ? {
+                      total: live.metrics.total,
+                      counts_by_kind: live.metrics.counts_by_kind,
+                      date_range: live.metrics.date_range,
+                      total_hours: live.metrics.length.total_hours,
+                      median_seconds: live.metrics.length.median_seconds,
+                  }
+                : null,
+            source_library_job_count: jobIds.length,
+        }) as SurfaceScopePayload,
+    );
+
     if (!library && rowUnavailable) {
         return (
             <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">

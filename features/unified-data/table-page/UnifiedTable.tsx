@@ -28,7 +28,7 @@ import { ExpectedRows, TablePageSkeleton } from "@ai-matrx/records-ui/skeleton";
 import { skeletonLayoutFor } from "@ai-matrx/records-ui/helpers";
 import type { PageView, RecordsMountProps, TablePageActionHost, ViewAddressState } from "@ai-matrx/records-ui";
 import type { RecordFilter } from "@ai-matrx/records";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { TableTransferOffer } from "@/features/sharing/components/TableTransferOffer";
@@ -418,7 +418,7 @@ export function UnifiedTableBody({
           The record store did not answer, so nothing was opened. This is not an answer about
           your access. {object.why}
         </p>
-        <Button size="sm" variant="outline" onClick={object.retry}>
+        <Button variant="outline" onClick={object.retry}>
           Try again
         </Button>
       </div>

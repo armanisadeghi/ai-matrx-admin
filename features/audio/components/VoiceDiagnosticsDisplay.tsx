@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle, XCircle, RefreshCw, Mic, Settings, ExternalLink, Loader2 } from 'lucide-react';
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
 import { runMicrophoneDiagnostics, getFixInstructions, canUserFixIssue, DiagnosticResult } from '../utils/microphone-diagnostics';
 import { acquireMicStream, releaseMicStream } from '@ai-matrx/browser-audio/core';
@@ -102,8 +102,7 @@ export function VoiceDiagnosticsDisplay({
             <ErrorAlchemyMenu error={diagnosticsError} />
           </p>
         ) : null}
-        <Button onClick={runDiagnostics} disabled={isRunning}>
-          <RefreshCw className={cn('h-4 w-4 mr-2', isRunning && 'animate-spin')} />
+        <Button icon={<RefreshCw className={cn('h-4 w-4 mr-2', isRunning && 'animate-spin')} />} variant="primary" onClick={runDiagnostics} disabled={isRunning}>
           {diagnosticsError ? 'Try again' : 'Run Diagnostics'}
         </Button>
       </div>
@@ -298,7 +297,7 @@ export function VoiceDiagnosticsDisplay({
           onClick={testMicrophone}
           disabled={testResult === 'testing' || !diagnostics.hasMediaDevices}
           className="w-full"
-          variant={testResult === 'success' ? 'default' : 'outline'}
+          variant={testResult === 'success' ? "primary" : "outline"}
         >
           {testResult === 'testing' ? (
             <>
@@ -334,20 +333,20 @@ export function VoiceDiagnosticsDisplay({
       {/* Actions */}
       <div className="flex flex-wrap gap-2 border-t pt-4">
         <Button
+          icon={<RefreshCw className={cn('h-4 w-4 mr-2', isRunning && 'animate-spin')} />}
           variant="outline"
           onClick={runDiagnostics}
           disabled={isRunning}
           className="min-w-max flex-1 basis-auto"
         >
-          <RefreshCw className={cn('h-4 w-4 mr-2', isRunning && 'animate-spin')} />
           Re-run Diagnostics
         </Button>
         <Button
+          icon={<ExternalLink />}
           variant="outline"
           onClick={() => openOutbound('https://support.google.com/chrome/answer/2693767', '_blank')}
           className="min-w-max flex-1 basis-auto"
         >
-          <ExternalLink className="h-4 w-4 mr-2" />
           Browser Help
         </Button>
       </div>

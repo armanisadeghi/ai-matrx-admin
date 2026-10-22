@@ -18,7 +18,7 @@ import { Loader2 } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
 import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -116,8 +116,7 @@ export const ApplySchemaDialog: React.FC<ApplySchemaDialogProps> = ({
           >
             Cancel
           </Button>
-          <Button onClick={handleApply} disabled={!selectedAgent || applying}>
-            {applying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button icon={applying && <Loader2 className="animate-spin" />} variant="primary" onClick={handleApply} disabled={!selectedAgent || applying}>
             Apply schema
           </Button>
         </DialogFooter>

@@ -352,7 +352,6 @@ export function MemoryDetail({ mediaId, edit = false }: { mediaId: string; edit?
               resourceId={media.id}
               resourceName={media.title}
               isOwner
-              size="sm"
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button icon={<Ellipsis />} variant="quiet" aria-label="More memory aid actions" /></DropdownMenuTrigger>

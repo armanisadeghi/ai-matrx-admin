@@ -435,7 +435,6 @@ export default function KindAssetsTab({
               label={detail.label}
               part="skill"
               emittedJsonSchema={detail.emittedJsonSchema}
-              className="min-h-10"
             >
               Create with agent
             </KindAgentButton>
@@ -485,7 +484,6 @@ export default function KindAssetsTab({
             label={detail.label}
             part="content_block"
             emittedJsonSchema={detail.emittedJsonSchema}
-            className="min-h-10"
           >
             Create with agent
           </KindAgentButton>
@@ -563,7 +561,6 @@ export default function KindAssetsTab({
                 label={detail.label}
                 part="component"
                 emittedJsonSchema={detail.emittedJsonSchema}
-                className="min-h-10"
               >
                 Create with agent
               </KindAgentButton>
@@ -606,7 +603,6 @@ export default function KindAssetsTab({
                 label={detail.label}
                 part="surface"
                 emittedJsonSchema={detail.emittedJsonSchema}
-                className="min-h-10"
               >
                 Create with agent
               </KindAgentButton>

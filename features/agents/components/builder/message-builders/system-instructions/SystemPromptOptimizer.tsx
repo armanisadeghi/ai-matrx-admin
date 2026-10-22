@@ -32,7 +32,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -287,15 +287,13 @@ export function SystemPromptOptimizer({
               </div>
               {showExperimentalButton && (
                 <Button
+                  icon={<Zap />}
                   variant="outline"
-                  size="sm"
                   onClick={() => {
                     handleClose();
                     setIsFullOptimizerOpen(true);
                   }}
-                  className="h-8 text-xs border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
                 >
-                  <Zap className="h-3.5 w-3.5 mr-1.5" />
                   Full Prompt Optimizer
                   <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30">
                     BETA
@@ -328,13 +326,11 @@ export function SystemPromptOptimizer({
                 <Label className="text-sm font-medium">Optimized Version</Label>
                 {hasOptimizedText && !isOptimizing && (
                   <Button
+                    icon={<GitCompareArrows />}
                     variant="outline"
-                    size="sm"
                     onClick={handleCompareOptimized}
-                    className="h-7 gap-1.5"
                     title="Compare the current prompt with the optimized version"
                   >
-                    <GitCompareArrows className="h-3.5 w-3.5" />
                     Compare
                   </Button>
                 )}
@@ -384,10 +380,8 @@ export function SystemPromptOptimizer({
             )}
             {!showGuidanceInput ? (
               <Button
-                variant="ghost"
-                size="sm"
+                variant="quiet"
                 onClick={() => setShowGuidanceInput(true)}
-                className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 h-8"
               >
                 + Add additional guidance (optional)
               </Button>
@@ -427,22 +421,22 @@ export function SystemPromptOptimizer({
             </div>
             <div className="flex items-center gap-2">
               <Button
+                icon={<X />}
                 variant="outline"
                 onClick={handleClose}
                 disabled={isOptimizing}
               >
-                <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
 
               {hasOptimizedText && !isOptimizing ? (
                 <>
                   <Button
+                    icon={<Zap />}
                     variant="outline"
                     onClick={handleOptimize}
                     disabled={isSavingCopy}
                   >
-                    <Zap className="h-4 w-4 mr-2" />
                     Re-optimize
                   </Button>
                   {fullPromptObject && (
@@ -450,7 +444,6 @@ export function SystemPromptOptimizer({
                       variant="outline"
                       onClick={handleSaveAsCopy}
                       disabled={isSavingCopy}
-                      className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-950"
                     >
                       {isSavingCopy ? (
                         <>
@@ -466,16 +459,17 @@ export function SystemPromptOptimizer({
                     </Button>
                   )}
                   <Button
+                    icon={<Check />}
+                    variant="primary"
                     onClick={handleAccept}
                     disabled={isSavingCopy}
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   >
-                    <Check className="h-4 w-4 mr-2" />
                     Accept & Replace
                   </Button>
                 </>
               ) : (
                 <Button
+                  variant="primary"
                   onClick={handleOptimize}
                   disabled={
                     isOptimizing ||
@@ -483,7 +477,6 @@ export function SystemPromptOptimizer({
                     !shortcutReady ||
                     !!shortcutLoadError
                   }
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                 >
                   {isOptimizing ? (
                     <>

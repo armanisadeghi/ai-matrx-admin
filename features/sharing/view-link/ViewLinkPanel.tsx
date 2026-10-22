@@ -10,7 +10,7 @@
 import { DateField } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 import { Check, Copy, CopyX, Link2, Loader2, Lock } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 import { listViewLinks, makeViewLink, protectViewLink, setViewLinkCopy, turnOffViewLink, viewLinkUrl, type ViewLink, type ViewLinkProtection } from "./viewLinkService";
 
@@ -121,7 +121,7 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
           <Link2 className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">Share “{name}”</span>
         </span>
-        <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={onClose} data-view-link-done="">
+        <Button variant="quiet" onClick={onClose} data-view-link-done="">
           Done
         </Button>
       </div>
@@ -142,8 +142,7 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
                 className="h-7 min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 text-[11px]"
                 data-view-link-url=""
               />
-              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => void copy(link)} data-view-link-copy="">
-                {copied === link.id ? <Check className="mr-1 h-3.5 w-3.5" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
+              <Button icon={copied === link.id ? <Check /> : <Copy />} variant="outline" onClick={() => void copy(link)} data-view-link-copy="">
                 {copied === link.id ? "Copied" : "Copy"}
               </Button>
             </div>
@@ -154,34 +153,31 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
               </span>
               {confirmOff === link.id ? (
                 <span className="flex shrink-0 items-center gap-1">
-                  <Button size="sm" variant="destructive" className="h-6 px-2 text-[11px]" disabled={busy} onClick={() => void turnOff(link.id)} data-view-link-off-confirm="">
+                  <Button variant="danger" disabled={busy} onClick={() => void turnOff(link.id)} data-view-link-off-confirm="">
                     Turn off
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => setConfirmOff(null)}>
+                  <Button variant="quiet" onClick={() => setConfirmOff(null)}>
                     Keep
                   </Button>
                 </span>
               ) : (
-                <Button size="sm" variant="ghost" className="h-6 shrink-0 px-2 text-[11px]" onClick={() => setConfirmOff(link.id)} data-view-link-off="">
+                <Button variant="quiet" className="shrink-0" onClick={() => setConfirmOff(link.id)} data-view-link-off="">
                   Turn off
                 </Button>
               )}
             </div>
             <div className="flex items-center gap-1">
-              <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => openOptions(link)} data-view-link-options="">
-                <Lock className="mr-1 h-3 w-3" />
+              <Button icon={<Lock />} variant="quiet" onClick={() => openOptions(link)} data-view-link-options="">
                 {link.hasPassword ? "Password on" : "Password"}
               </Button>
               <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 px-2 text-[11px]"
+                icon={<CopyX />}
+                variant="quiet"
                 disabled={busy}
                 aria-pressed={link.restrictCopy}
                 onClick={() => void switchCopy(link)}
                 data-view-link-restrict-copy={link.restrictCopy ? "on" : "off"}
               >
-                <CopyX className="mr-1 h-3 w-3" />
                 {link.restrictCopy ? "Copying off" : "Stop copying"}
               </Button>
             </div>
@@ -197,11 +193,11 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
                     className="h-7 min-w-0 flex-1 rounded border border-border bg-transparent px-1.5 text-base"
                     data-view-link-password=""
                   />
-                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || password.length < 4} onClick={() => void protect(link.id, { password })} data-view-link-password-set="">
+                  <Button variant="outline" disabled={busy || password.length < 4} onClick={() => void protect(link.id, { password })} data-view-link-password-set="">
                     {link.hasPassword ? "Change" : "Set"}
                   </Button>
                   {link.hasPassword ? (
-                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" disabled={busy} onClick={() => void protect(link.id, { password: "" })} data-view-link-password-clear="">
+                    <Button variant="quiet" disabled={busy} onClick={() => void protect(link.id, { password: "" })} data-view-link-password-clear="">
                       Remove
                     </Button>
                   ) : null}
@@ -213,11 +209,11 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
                     onValueChange={(v) => setEndDate(v ?? "")}
                     className="min-w-0 flex-1"
                   />
-                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" disabled={busy || endDate === ""} onClick={() => void protect(link.id, { expiresAt: new Date(`${endDate}T23:59:59`) })} data-view-link-end-set="">
+                  <Button variant="outline" disabled={busy || endDate === ""} onClick={() => void protect(link.id, { expiresAt: new Date(`${endDate}T23:59:59`) })} data-view-link-end-set="">
                     Set end
                   </Button>
                   {link.expiresAt ? (
-                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" disabled={busy} onClick={() => void protect(link.id, { expiresAt: null })} data-view-link-end-clear="">
+                    <Button variant="quiet" disabled={busy} onClick={() => void protect(link.id, { expiresAt: null })} data-view-link-end-clear="">
                       Never
                     </Button>
                   ) : null}
@@ -228,8 +224,7 @@ export function ViewLinkPanel({ viewId, name, onClose }: ViewLinkPanelProps) {
         ))
       )}
       {links !== null ? (
-        <Button size="sm" variant={links.length === 0 ? "default" : "ghost"} className="h-7 justify-start px-2 text-xs" disabled={busy} onClick={() => void make()} data-view-link-make="">
-          {busy ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : null}
+        <Button icon={busy ? <Loader2 className="animate-spin" /> : null} variant={links.length === 0 ? "primary" : "quiet"} className="justify-start" disabled={busy} onClick={() => void make()} data-view-link-make="">
           {links.length === 0 ? "Create link" : "Add another link"}
         </Button>
       ) : null}

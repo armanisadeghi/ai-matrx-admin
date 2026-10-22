@@ -43,7 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   Collapsible,
@@ -987,16 +987,18 @@ function ConnectorConsentContent({
     <div className="flex w-full flex-col items-stretch gap-2">
       {finished && onDone ? (
         <Button
+          variant="primary"
           onClick={onDone}
-          className="h-11 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
+          className="w-full"
         >
           Done
         </Button>
       ) : (
         <Button
+          variant="primary"
           onClick={() => void connect()}
           disabled={busy || !runner.ready}
-          className="h-11 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
+          className="w-full"
         >
           {busy ? (
             <>
@@ -1018,17 +1020,16 @@ function ConnectorConsentContent({
       {!finished ? (
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
+          variant="quiet"
           onClick={() => void connect(true)}
           disabled={busy || !runner.ready}
-          className="mx-auto min-h-9 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
+          className="mx-auto"
         >
           Pop-ups blocked? Continue in this tab
         </Button>
       ) : null}
       {presentation === "dialog" && onDone && !finished ? (
-        <Button variant="ghost" onClick={onDone} className="h-10 w-full">
+        <Button variant="quiet" onClick={onDone} className="w-full">
           Cancel
         </Button>
       ) : null}
@@ -1171,8 +1172,7 @@ function ConnectorConsentContent({
         <div className="flex items-center justify-end gap-1">
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="quiet"
             onClick={selectAll}
             disabled={busy || actionableProductKeys.length === 0}
           >
@@ -1180,8 +1180,7 @@ function ConnectorConsentContent({
           </Button>
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="quiet"
             onClick={clearOptional}
             disabled={busy || selected.every((key) => heldSelection.includes(key))}
           >

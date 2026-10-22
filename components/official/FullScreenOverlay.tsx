@@ -1,6 +1,6 @@
 "use client";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -426,7 +426,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
         {errorMessage ? (
           <div role="alert" className="mr-auto px-2 type-body text-destructive">
             {errorMessage}
-            {onRetry ? <Button variant="link" size="sm" onClick={onRetry}>Retry</Button> : null}
+            {onRetry ? <Button variant="link" onClick={onRetry}>Retry</Button> : null}
             <ErrorAlchemyMenu className="ml-auto" />
           </div>
         ) : null}
@@ -434,16 +434,13 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
         {showCancelButton &&
           (isMobile ? (
             <Button
+              icon={<X />}
               variant="outline"
-              size="icon"
               onClick={handleCancel}
               disabled={isPending}
               aria-label={cancelButtonLabel}
               title={cancelButtonLabel}
-              className="h-9 w-9"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            />
           ) : (
             <Button variant="outline" onClick={handleCancel} disabled={isPending}>
               {cancelButtonLabel}
@@ -452,18 +449,15 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
         {showSaveButton &&
           (isMobile ? (
             <Button
-              size="icon"
+              icon={<Save />}
+              variant="primary"
               onClick={handleSave}
               disabled={saveButtonDisabled || isPending}
               aria-label={saveButtonLabel}
               title={saveButtonLabel}
-              className="h-9 w-9"
-            >
-              <Save className="h-4 w-4" />
-            </Button>
+            />
           ) : (
-            <Button onClick={handleSave} disabled={saveButtonDisabled || isPending}>
-              <Save className="h-4 w-4 mr-2" />
+            <Button icon={<Save />} variant="primary" onClick={handleSave} disabled={saveButtonDisabled || isPending}>
               {saveButtonLabel}
             </Button>
           ))}

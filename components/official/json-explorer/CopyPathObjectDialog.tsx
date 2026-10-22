@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { generateAccessPath, parseAccessPathToArray } from "./json-utils";
@@ -114,7 +114,7 @@ const CopyPathObjectDialog: React.FC<CopyPathObjectDialogProps> = ({
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button onClick={handleCopy} disabled={!name.trim()}>
+          <Button variant="primary" onClick={handleCopy} disabled={!name.trim()}>
             Copy to Clipboard
           </Button>
         </DialogFooter>

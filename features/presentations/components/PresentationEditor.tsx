@@ -617,9 +617,7 @@ export function PresentationEditor({ presentationId, embedded = false, onName }:
                 resourceName={row.name}
                 isOwner={isOwner}
                 organizationId={row.organization_id}
-                variant="default"
-                size="sm"
-                className="rounded-full px-4 max-sm:px-2.5 max-sm:[&>span]:hidden"
+                variant="primary"
               />
             ) : null}
           </>

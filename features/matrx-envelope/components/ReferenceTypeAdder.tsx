@@ -23,7 +23,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Link2, Loader2, Search } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Input } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -113,14 +113,13 @@ export function ReferenceTypeAdder({
 function FileTypeAdder({ onBrowseFiles }: { onBrowseFiles: () => void }) {
   return (
     <Button
+      icon={<FileText />}
       data-reference-autofocus
       type="button"
-      size="sm"
-      variant="secondary"
+      variant="outline"
       className="w-full"
       onClick={onBrowseFiles}
     >
-      <FileText className="mr-1.5 h-3.5 w-3.5" />
       Browse files
     </Button>
   );
@@ -171,8 +170,7 @@ function UrlTypeAdder({
         value={label}
         onChange={(e) => setLabel(e.target.value)}
       />
-      <Button type="submit" size="sm" className="w-full" disabled={!valid}>
-        <Link2 className="mr-1.5 h-3.5 w-3.5" />
+      <Button icon={<Link2 />} variant="primary" type="submit" className="w-full" disabled={!valid}>
         Add link
       </Button>
     </form>

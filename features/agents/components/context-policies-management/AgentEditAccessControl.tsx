@@ -17,7 +17,7 @@
 
 import { Lock, PencilLine } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   AGENT_EDIT_ACCESS_LABEL,
@@ -81,17 +81,10 @@ export function AgentEditAccessControl({
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  variant="ghost"
-                  size="sm"
+                  variant="quiet"
                   disabled={Boolean(disabledReason)}
                   title={disabledReason}
                   onClick={() => onChange({ ...value, saveMode: mode.id })}
-                  className={cn(
-                    "h-7 px-2.5 text-xs font-normal",
-                    selected
-                      ? "bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-                      : "text-muted-foreground",
-                  )}
                 >
                   {mode.label}
                 </Button>

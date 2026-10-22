@@ -1,6 +1,0 @@
-{ "extends": "./tsconfig.typecheck.json", "include": [], "files": [
- "next-env.d.ts",
- "features/hr/shared/HrFrameMenu.tsx","features/hr/shared/useHrNav.ts","features/hr/shared/HrShell.tsx","features/hr/shared/HrSubShell.tsx","features/hr/shared/hr-nav.ts",
- "app/(core)/hr/layout.tsx","features/shell/frame-host/frameSidebarSlot.tsx","features/shell/frame-host/frameProductSidebar.tsx","features/shell/frame-host/FrameHostImpl.tsx",
- "features/shell/frame/AppFrame.tsx","features/shell/frame/FrameSidebar.tsx",
- "features/hr/shared/__tests__/hr-menu-in-frame.test.tsx","features/shell/frame-host/__tests__/product-sidebar-in-frame.test.tsx"] }

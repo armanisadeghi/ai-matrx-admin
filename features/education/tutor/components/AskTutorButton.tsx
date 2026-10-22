@@ -15,9 +15,8 @@
 
 import { useState } from "react";
 import { GraduationCap, ExternalLink } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
-import { cn } from "@/lib/utils";
 import type { TutorGroundingSeed } from "../grounding";
 import { EducationTutorClient } from "./EducationTutorClient";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -27,8 +26,7 @@ export interface AskTutorButtonProps {
   seed: TutorGroundingSeed;
   label?: string;
   iconOnly?: boolean;
-  variant?: "outline" | "secondary" | "ghost" | "default";
-  size?: "sm" | "default" | "lg";
+  variant?: "primary" | "outline" | "quiet";
   className?: string;
 }
 
@@ -37,27 +35,37 @@ export function AskTutorButton({
   label = "Ask my tutor",
   iconOnly = false,
   variant = "outline",
-  size = "sm",
   className,
 }: AskTutorButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <Button
-        type="button"
-        variant={variant}
-        size={size}
-        className={cn("gap-1.5 text-xs", className)}
-        // Toggles the tutor's canvas tab; pressed while it is open.
-        onClick={() => setOpen((current) => !current)}
-        aria-pressed={open}
-        aria-label={label}
-        title={label}
-      >
-        <GraduationCap className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        {!iconOnly && label}
-      </Button>
+      {iconOnly ? (
+        <Button
+          type="button"
+          variant={variant}
+          icon={<GraduationCap />}
+          className={className}
+          // Toggles the tutor's canvas tab; pressed while it is open.
+          onClick={() => setOpen((current) => !current)}
+          pressed={open}
+          aria-label={label}
+          title={label}
+        />
+      ) : (
+        <Button
+          type="button"
+          variant={variant}
+          icon={<GraduationCap />}
+          className={className}
+          onClick={() => setOpen((current) => !current)}
+          pressed={open}
+          title={label}
+        >
+          {label}
+        </Button>
+      )}
       <AskTutorPanel seed={seed} open={open} onOpenChange={setOpen} />
     </>
   );

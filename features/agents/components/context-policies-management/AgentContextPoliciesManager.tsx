@@ -16,7 +16,7 @@ import { BuilderRowAction } from "@/features/agents/components/builder/BuilderRo
 import { useState, useCallback, useMemo } from "react";
 import { Plus, X, ChevronDown, Layers, Search, Link2, Pencil } from "lucide-react";
 import { useOpenScopeBatchImportWindow } from "@/features/overlays/definitions/scopeBatchImportWindow.overlay";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@ai-matrx/design-system";
@@ -321,21 +321,20 @@ function PolicyEditorFields({
               onSelect={(agentId) => onChange({ summaryAgentId: agentId })}
               triggerSlot={
                 <Button
+                  iconEnd={<ChevronDown />}
                   type="button"
                   variant="outline"
-                  size="sm"
-                  className="h-9 shrink-0 gap-1"
+                  className="shrink-0"
                 >
-                  Pick agent <ChevronDown className="w-3 h-3" />
+                  Pick agent
                 </Button>
               }
             />
             {form.summaryAgentId.trim() && (
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="h-9 shrink-0"
+                variant="quiet"
+                className="shrink-0"
                 onClick={() => onChange({ summaryAgentId: "" })}
               >
                 <X className="w-3 h-3" />
@@ -764,7 +763,7 @@ export function AgentContextPoliciesManager({
         <Button variant="outline" onClick={() => setEditorOpen(false)}>
           Cancel
         </Button>
-        <Button onClick={handleSave} disabled={!canSave}>
+        <Button variant="primary" onClick={handleSave} disabled={!canSave}>
           {editIndex === null ? "Add policy" : "Save changes"}
         </Button>
       </div>

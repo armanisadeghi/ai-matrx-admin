@@ -381,7 +381,6 @@ export function ConversationShareLens({
               resourceId={result.resourceId}
               returnPath={`/s/${token}`}
               shareToken={token}
-              size="default"
             />
           )}
           <Button asChild variant="outline">

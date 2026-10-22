@@ -15,7 +15,7 @@ import { resolveComposition } from "@ai-matrx/media/video";
 import { CAPTION_PRESETS, CAPTION_PRESET_IDS, loadVideoFonts, programInputFromComposition } from "@ai-matrx/media/video/engine";
 import { VideoPlayer } from "@ai-matrx/media/video/react";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
-import { downloadUrl } from "@ai-matrx/kit/download";
+import { downloadFile, downloadUrl } from "@ai-matrx/kit/download";
 import { useMediaClient } from "@ai-matrx/media/core";
 
 import { toast } from "@/lib/toast";
@@ -25,6 +25,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
 import { points } from "../../video/clone";
+import { zipEntryNames } from "../../video/variants";
 import { plainFailureText } from "../../video/render-errors";
 import { isSessionExpired, useExpiredSessionGuard } from "../../video/session";
 import { useFileUrls } from "../../video/studio-hooks";
@@ -270,6 +271,32 @@ export function pendingMediaCount(doc: Composition): number {
  * The composition, played by the engine's own player over the resolved timeline. A document the resolver refuses
  * (a voice not generated yet, a voice edit waiting for a new take) says why instead of showing a broken frame.
  */
+/**
+ * Mounts its children only once they come near the screen, and keeps them mounted after. A grid of 25 variant previews
+ * would otherwise start 25 players (fonts, files, decoders) at once; this starts the ones a person is looking at.
+ */
+export function MountWhenVisible({ children, ratio, className }: { children: React.ReactNode; ratio: string; className?: string }) {
+  const box = useRef<HTMLDivElement | null>(null);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || seen) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const t = setTimeout(() => setSeen(true), 0);
+      return () => clearTimeout(t);
+    }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        setSeen(true);
+        io.disconnect();
+      }
+    }, { rootMargin: "240px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [seen]);
+  return seen ? <>{children}</> : <div ref={box} className={cn("rounded-lg bg-muted", className)} style={{ aspectRatio: ratio }} aria-hidden />;
+}
+
 export function CompositionPreview({ doc, className }: { doc: Composition; className?: string }) {
   const client = useMediaClient();
   const readMediaBytes = useCallback(async (mediaId: string): Promise<ArrayBuffer | null> => {
@@ -347,6 +374,48 @@ export function OutputDownload({ fileId, label, fileName }: { fileId: string; la
         {busy ? "Downloading…" : "Download"}
       </Button>
     </div>
+  );
+}
+
+/**
+ * One zip of many finished videos ("download all"): 25 variants are 25 clicks otherwise. Each video comes through the media
+ * door as a blob and is stored (mp4 is already compressed) in a zip written in the browser; the zip.js library loads only when
+ * pressed. Entries keep distinct names; one video that cannot be read is named in the message and the rest are still zipped.
+ */
+export function ZipAllButton({ items, zipName }: { items: ReadonlyArray<{ fileId: string; fileName: string }>; zipName: string }) {
+  const client = useMediaClient();
+  const [state, setState] = useState<null | { done: number }>(null);
+  const run = async () => {
+    setState({ done: 0 });
+    const names = zipEntryNames(items.map((i) => i.fileName));
+    const missed: string[] = [];
+    try {
+      const { BlobReader, BlobWriter, ZipWriter } = await import("@zip.js/zip.js");
+      const zip = new ZipWriter(new BlobWriter("application/zip"), { level: 0 });
+      for (const [i, item] of items.entries()) {
+        try {
+          const handle = await client.getBlob({ file_id: item.fileId, mime_type: "video/mp4" });
+          const blob = await (await fetch(handle.url)).blob();
+          await zip.add(names[i] ?? item.fileName, new BlobReader(blob));
+        } catch {
+          missed.push(names[i] ?? item.fileName);
+        }
+        setState({ done: i + 1 });
+      }
+      const out = await zip.close();
+      if (missed.length === items.length) throw new Error("None of the videos could be read");
+      downloadFile(zipName, out, "application/zip");
+      if (missed.length) toast.error(`${missed.length} video${missed.length === 1 ? "" : "s"} could not be added: ${missed.slice(0, 3).join(", ")}${missed.length > 3 ? "…" : ""}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't make the zip");
+    } finally {
+      setState(null);
+    }
+  };
+  return (
+    <Button variant="outline" icon={<Download />} disabled={state !== null} onClick={() => void run()}>
+      {state ? `Zipping ${state.done} of ${items.length}…` : `Download all ${items.length} as zip`}
+    </Button>
   );
 }
 

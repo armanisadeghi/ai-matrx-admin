@@ -103,7 +103,6 @@ export function PublicResourceView({ resource }: { resource: PublicResource }) {
           resourceType={resource.resourceType}
           resourceId={resource.resourceId}
           returnPath={returnPath}
-          size="sm"
         />
       )}
       <Button asChild variant="outline">
@@ -133,7 +132,6 @@ export function PublicResourceView({ resource }: { resource: PublicResource }) {
                 resourceType={resource.resourceType}
                 resourceId={resource.resourceId}
                 returnPath={returnPath}
-                size="sm"
                 variant="outline"
               />
             ) : undefined

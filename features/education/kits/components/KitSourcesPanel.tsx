@@ -15,7 +15,7 @@
 import { useRef, useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { FileText, Plus, X } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -89,8 +89,7 @@ export function KitSourcesPanel({
         <h2 id="kit-sources-heading" className="text-sm font-semibold text-foreground">
           Sources <span className="font-normal text-muted-foreground">{kit.sources.length}</span>
         </h2>
-        <Button size="sm" variant="outline" className="min-h-11 gap-1.5 sm:min-h-0" onClick={() => setAdding(true)}>
-          <Plus className="h-4 w-4" />
+        <Button icon={<Plus />} variant="outline" onClick={() => setAdding(true)}>
           Add sources
         </Button>
       </div>
@@ -110,15 +109,13 @@ export function KitSourcesPanel({
                 )}
                 {multi && (
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    icon={<X />}
+                    variant="quiet"
                     aria-label={`Remove ${source.title}`}
                     title="Remove from kit"
                     disabled={busy === source.edgeId}
                     onClick={() => void remove(source)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  />
                 )}
               </li>
             );

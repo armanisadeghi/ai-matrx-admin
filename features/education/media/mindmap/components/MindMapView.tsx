@@ -156,9 +156,8 @@ function NodePanel({
           <AskTutorButton
             seed={seed}
             label="Ask my tutor about this"
-            variant="default"
-            size="default"
-            className="w-full justify-center text-sm"
+            variant="primary"
+            className="w-full"
           />
         </div>
       </div>

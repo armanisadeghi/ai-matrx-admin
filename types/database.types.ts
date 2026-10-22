@@ -3835,6 +3835,43 @@ export type Database = {
         }
         Returns: string
       }
+      get_agent_conversations: {
+        Args: {
+          p_agent_id: string
+          p_limit?: number
+          p_offset?: number
+          p_version_number?: number
+        }
+        Returns: {
+          agent_version_number: number
+          conversation_id: string
+          created_at: string
+          description: string
+          initial_agent_version_id: string
+          is_favorite: boolean
+          last_model_id: string
+          message_count: number
+          source_app: string
+          source_feature: string
+          status: string
+          title: string
+          updated_at: string
+        }[]
+      }
+      get_agent_usage_stats: {
+        Args: { p_agent_id: string; p_version_number?: number }
+        Returns: {
+          avg_duration_ms: number
+          first_used_at: string
+          last_used_at: string
+          total_conversations: number
+          total_cost: number
+          total_executions: number
+          total_input_tokens: number
+          total_output_tokens: number
+          total_tokens: number
+        }[]
+      }
       json_in_authored_order: {
         Args: { p_authored: Json; p_value: Json }
         Returns: Json
@@ -12464,6 +12501,23 @@ export type Database = {
         Returns: undefined
       }
       external_vendor_category: { Args: { p_vendor: string }; Returns: string }
+      fn_get_user_usage_snapshot: {
+        Args: { p_user_id: string }
+        Returns: {
+          auth_type: string
+          blocked_reason: string
+          cost_24h_mcents: number
+          cost_6h_mcents: number
+          daily_blocked: boolean
+          requests_24h: number
+          requests_6h: number
+          tokens_24h: number
+          tokens_6h: number
+          window_24h_starts_at: string
+          window_6h_starts_at: string
+          window_blocked: boolean
+        }[]
+      }
       free_allowance_report: { Args: { p_limit?: number }; Returns: Json }
       free_feature_usage: { Args: { p_user: string }; Returns: Json }
       free_months_apply: {
@@ -13450,6 +13504,14 @@ export type Database = {
           points: number
           usd: number
         }[]
+      }
+      transfer_guest_data_to_user: {
+        Args: {
+          p_anon_user_id: string
+          p_fingerprint?: string
+          p_new_user_id: string
+        }
+        Returns: Json
       }
       unattributed_paid_sources: {
         Args: { p_since: string }
@@ -19506,6 +19568,27 @@ export type Database = {
       }
       delete_conversation_for_user: {
         Args: { p_conversation_id: string }
+        Returns: boolean
+      }
+      find_dm_direct_conversation: {
+        Args: { p_user1_id: string; p_user2_id: string }
+        Returns: string
+      }
+      get_cx_conversation_lane_facets: {
+        Args: never
+        Returns: {
+          lane: string
+          n: number
+          source_app: string
+          source_feature: string
+        }[]
+      }
+      get_dm_unread_count: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: number
+      }
+      is_dm_participant: {
+        Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
       kind_readable_text: { Args: { p: string }; Returns: string }
@@ -34196,6 +34279,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      list_context_value_refs: {
+        Args: { p_ref_key: string; p_ref_type: string }
+        Returns: Json
+      }
       named_system_context_items: {
         Args: { p_refs: string[] }
         Returns: {
@@ -34241,6 +34328,10 @@ export type Database = {
       reference_item_ref_key: {
         Args: { p_item: Json; p_type: string }
         Returns: string
+      }
+      scope_system_inspect: {
+        Args: { p_include_values?: boolean; p_org_id: string }
+        Returns: Json
       }
       slugify: { Args: { p: string }; Returns: string }
       system_item_org_values: { Args: { p_org: string }; Returns: Json }
@@ -53372,9 +53463,46 @@ export type Database = {
         }
         Returns: number
       }
+      dict_get_settings_for: {
+        Args: { p_level: string; p_owner_id: string; p_user_id: string }
+        Returns: Json
+      }
       dict_owner_org: {
         Args: { p_level: string; p_owner_id: string }
         Returns: string
+      }
+      dict_resolve_for: {
+        Args: {
+          p_all?: boolean
+          p_include_user?: boolean
+          p_organization_ids?: string[]
+          p_scope_ids?: string[]
+          p_scope_type_ids?: string[]
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      dict_restore_entries_for: {
+        Args: {
+          p_ids: string[]
+          p_level: string
+          p_owner_id: string
+          p_user_id: string
+        }
+        Returns: number
+      }
+      dict_rollup_for: {
+        Args: { p_level: string; p_owner_id: string }
+        Returns: Json
+      }
+      dict_set_settings_for: {
+        Args: {
+          p_level: string
+          p_max_inline_chars: number
+          p_owner_id: string
+          p_user_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
@@ -57055,6 +57183,14 @@ export type Database = {
         Args: { p_week_start?: string }
         Returns: number
       }
+      education_streak_rollover: {
+        Args: { p_rollover_date?: string }
+        Returns: {
+          protected: number
+          reset: number
+          scanned: number
+        }[]
+      }
       fc_set_folder_ids: { Args: { p_set_id: string }; Returns: string[] }
       fc_set_list_counts: {
         Args: {
@@ -58880,6 +59016,7 @@ export type Database = {
         }
         Returns: Json
       }
+      esign_certificate_public_keys: { Args: never; Returns: Json }
       esign_correct_recipient: {
         Args: { p_changes: Json; p_signer_id: string }
         Returns: Json
@@ -58908,6 +59045,10 @@ export type Database = {
         Returns: Json
       }
       esign_remove_recipient: { Args: { p_signer_id: string }; Returns: Json }
+      esign_resend_signer: {
+        Args: { p_email?: string; p_signer_id: string }
+        Returns: Json
+      }
       esign_saved_signature_delete: { Args: { p_id: string }; Returns: Json }
       esign_saved_signature_set_default: {
         Args: { p_id: string }
@@ -61572,10 +61713,19 @@ export type Database = {
           variant_id: string
         }[]
       }
+      ensure_folder_chain: {
+        Args: {
+          p_folder_path: string
+          p_organization_id: string
+          p_owner_id: string
+        }
+        Returns: string
+      }
       file_path_matches_parent: {
         Args: { p_file_id: string }
         Returns: boolean
       }
+      hard_delete_file: { Args: { p_file_id: string }; Returns: Json }
       has_access_for: {
         Args: {
           p_file_id: string
@@ -61658,6 +61808,8 @@ export type Database = {
         }[]
       }
       record_closed_level: { Args: { p_record: string }; Returns: string }
+      restore_folder: { Args: { p_folder_id: string }; Returns: Json }
+      soft_delete_file: { Args: { p_file_id: string }; Returns: boolean }
       ultimate_parent_record: {
         Args: { p_file_id: string }
         Returns: Record<string, unknown>
@@ -85196,15 +85348,72 @@ export type Database = {
         Args: { p_delegation_id: string; p_reason: string }
         Returns: Json
       }
+      hr_authority_delegation_request: {
+        Args: {
+          p_authority_id: string
+          p_delegate_employment_id: string
+          p_effective_from: string
+          p_effective_to: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+      hr_authority_revoke: {
+        Args: { p_authority_id: string; p_reason: string }
+        Returns: Json
+      }
       hr_calendar_upsert: { Args: { p_payload: Json }; Returns: Json }
+      hr_capability: {
+        Args: {
+          p_at?: string
+          p_capability: string
+          p_organization_id?: string
+          p_subject_employment?: string
+        }
+        Returns: boolean
+      }
       hr_code_upsert: {
         Args: { p_kind: string; p_payload: Json }
         Returns: Json
+      }
+      hr_earning_code_id: {
+        Args: { p_code: string; p_organization_id: string }
+        Returns: string
       }
       hr_emergency_contact_remove: { Args: { p_id: string }; Returns: Json }
       hr_employee_grant_missing_membership: {
         Args: { p_employee_id: string }
         Returns: Json
+      }
+      hr_export_claim: {
+        Args: {
+          p_export_format: string
+          p_idempotency_key: string
+          p_includes_pii?: boolean
+          p_organization_id: string
+          p_pay_period_id: string
+          p_supersedes_export_id?: string
+        }
+        Returns: {
+          export_id: string
+          export_version: number
+          replayed: boolean
+          supersedes_export_id: string
+        }[]
+      }
+      hr_export_finish: {
+        Args: {
+          p_adjustment_ids: string[]
+          p_artifact_file_id: string
+          p_artifact_sha256: string
+          p_disputes_carried: Json
+          p_export_id: string
+          p_lines: Json
+          p_organization_id: string
+          p_total_amount: string
+          p_total_hours: string
+        }
+        Returns: number
       }
       hr_goal_archive: { Args: { p_goal_id: string }; Returns: Json }
       hr_goal_list: { Args: { p_employment_id: string }; Returns: Json }
@@ -85232,6 +85441,47 @@ export type Database = {
         }
         Returns: Json
       }
+      hr_jurisdiction_evaluate: {
+        Args: {
+          p_as_of: string
+          p_facts: Json
+          p_input: Json
+          p_jurisdiction_key: string
+          p_kind: string
+          p_organization_id: string
+          p_subject_id?: string
+          p_subject_type?: string
+        }
+        Returns: Json
+      }
+      hr_leave_accrual_apply: {
+        Args: {
+          p_actor_employment_id?: string
+          p_actor_type?: string
+          p_actor_user_id?: string
+          p_amount?: number
+          p_calc?: Json
+          p_clamps?: Json
+          p_employment_id: string
+          p_engine_key?: string
+          p_engine_version?: string
+          p_entry_kind: string
+          p_exception?: Json
+          p_hours_delta: number
+          p_jurisdiction_key?: string
+          p_leave_policy_id: string
+          p_note?: string
+          p_occurred_on: string
+          p_period_key: string
+          p_prospective?: boolean
+          p_rate?: number
+          p_rule_version_ids?: string[]
+          p_snapshot_inputs?: Json
+          p_source_workweek_id?: string
+          p_subject_id?: string
+        }
+        Returns: Json
+      }
       hr_leave_case_entitlement: {
         Args: { p_as_of?: string; p_case_id: string }
         Returns: Json
@@ -85252,6 +85502,18 @@ export type Database = {
           p_starts_on: string
         }
         Returns: Json
+      }
+      hr_leave_figures: {
+        Args: {
+          p_as_of?: string
+          p_employment_id: string
+          p_leave_policy_id: string
+        }
+        Returns: Json
+      }
+      hr_leave_lead_days: {
+        Args: { p_key: string; p_organization_id?: string }
+        Returns: number[]
       }
       hr_leave_policy_deactivate: {
         Args: {
@@ -85279,6 +85541,31 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      hr_recompute_apply: {
+        Args: {
+          p_employment_id: string
+          p_engine?: Json
+          p_idempotency_key?: string
+          p_intervals: Json
+          p_workweek: Json
+        }
+        Returns: Json
+      }
+      hr_record_access_audit: {
+        Args: {
+          p_action: string
+          p_basis: string
+          p_granted: boolean
+          p_organization_id: string
+          p_purpose: string
+          p_row_count?: number
+          p_sensitivity_tier?: string
+          p_subject_employment_id?: string
+          p_target_ids?: string[]
+          p_target_token: string
+        }
+        Returns: string
+      }
       hr_reporting_line_upsert: { Args: { p_payload: Json }; Returns: Json }
       hr_resolve_rules: {
         Args: {
@@ -85286,6 +85573,18 @@ export type Database = {
           p_classes?: string[]
           p_jurisdiction_key: string
           p_organization_id: string
+        }
+        Returns: Json
+      }
+      hr_resolve_rules_for_subject: {
+        Args: {
+          p_as_of: string
+          p_classes: string[]
+          p_facts: Json
+          p_jurisdiction_key?: string
+          p_organization_id: string
+          p_subject_id: string
+          p_subject_type: string
         }
         Returns: Json
       }
@@ -85408,6 +85707,10 @@ export type Database = {
         Args: { p_assignment_id: string; p_reason: string }
         Returns: Json
       }
+      hr_ssn_probe_authorize: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       hr_structure_deactivate: {
         Args: { p_id: string; p_kind: string }
         Returns: Json
@@ -85424,6 +85727,30 @@ export type Database = {
         Returns: Json
       }
       hr_transfer: { Args: { p_payload: Json }; Returns: Json }
+      hr_write_calculation_snapshot: {
+        Args: {
+          p_actor_id?: string
+          p_actor_type: string
+          p_applicability_facts: Json
+          p_as_of: string
+          p_calculation_kind: string
+          p_clamps?: Json
+          p_employment_id?: string
+          p_engine_key: string
+          p_engine_version: string
+          p_inputs: Json
+          p_jurisdiction_key: string
+          p_organization_id: string
+          p_outputs: Json
+          p_prospective?: boolean
+          p_recalculation_batch_id?: string
+          p_resolution: Json
+          p_subject_id: string
+          p_subject_type: string
+          p_supersedes_id?: string
+        }
+        Returns: string
+      }
       incident_excluded: {
         Args: { p_incident: string; p_user: string }
         Returns: boolean
@@ -90600,6 +90927,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_organizations: {
+        Args: { user_id: string }
+        Returns: {
+          id: string
+          name: string
+          role: Database["public"]["Enums"]["org_role"]
+          slug: string
+        }[]
+      }
       governance_columns: { Args: { p_token: string }; Returns: string[] }
       grant_addressed_level: {
         Args: {
@@ -90817,6 +91153,7 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_super_admin_user: { Args: { p_user: string }; Returns: boolean }
       is_trusted_backend: { Args: never; Returns: boolean }
       kernel_batch_on: { Args: { p_person: string }; Returns: boolean }
       kernel_memo_compare: {
@@ -91583,6 +91920,22 @@ export type Database = {
         Args: { p_id: string; p_person: string; p_type: string }
         Returns: string[]
       }
+      setting_access_request_create: {
+        Args: {
+          p_action_key: string
+          p_action_payload?: Json
+          p_message?: string
+          p_org_id: string
+          p_setting_href: string
+          p_setting_key: string
+          p_setting_label: string
+        }
+        Returns: Json
+      }
+      setting_access_request_decide: {
+        Args: { p_decision: string; p_note?: string; p_request_id: string }
+        Returns: Json
+      }
       share_link_authorizes: {
         Args: {
           p_resource_id: string
@@ -91590,6 +91943,10 @@ export type Database = {
           p_token: string
         }
         Returns: boolean
+      }
+      share_link_child_file: {
+        Args: { p_file_id: string; p_token: string }
+        Returns: Json
       }
       share_with_person: {
         Args: {
@@ -111843,6 +112200,7 @@ export type Database = {
           referencing_table_name: string
         }[]
       }
+      get_schema: { Args: never; Returns: Json }
       heal_reachability_drift: { Args: never; Returns: Json }
       held_by_its_organization: {
         Args: { p_depth?: number; p_id: string; p_type: string }
@@ -112333,6 +112691,10 @@ export type Database = {
         }
       }
       list_rpc_once: { Args: { p_args?: Json; p_fn: string }; Returns: Json }
+      list_trash: {
+        Args: { p_limit?: number; p_offset?: number; p_user_id: string }
+        Returns: Json
+      }
       listed_in_my_organizations: {
         Args: { r: Database["platform"]["Tables"]["rulebook"]["Row"] }
         Returns: boolean
@@ -113656,6 +114018,7 @@ export type Database = {
         Args: { p: Json; p_target_id: string; p_target_type: string }
         Returns: string
       }
+      to_snake_case: { Args: { input_text: string }; Returns: string }
       token_is_detail: { Args: { p_token: string }; Returns: boolean }
       transcription_grant_admit: {
         Args: { p_bytes: number; p_ip?: unknown; p_secret: string }
@@ -113859,6 +114222,18 @@ export type Database = {
           is_format_valid: boolean
           slug: string
         }[]
+      }
+      version_current: {
+        Args: { p_id: string; p_token: string }
+        Returns: Json
+      }
+      version_diff: {
+        Args: { p_from: number; p_id: string; p_to: number; p_token: string }
+        Returns: Json
+      }
+      version_prune: {
+        Args: { p_id: string; p_keep?: number; p_token: string }
+        Returns: number
       }
       write_is_a_persons_own: { Args: never; Returns: boolean }
     }
@@ -129035,6 +129410,11 @@ export type Database = {
         Args: { p_member_limit?: number; p_store_id: string }
         Returns: Json
       }
+      fn_kg_cost_list_orgs: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      fn_kg_cost_unit_economics: { Args: { p_days?: number }; Returns: Json }
       fn_kg_inspector_entities: {
         Args: {
           p_kind?: string
@@ -132811,6 +133191,7 @@ export type Database = {
         Returns: Json
       }
       realtime_topic_admits: { Args: { p_topic: string }; Returns: boolean }
+      sch_enqueue_manual_run: { Args: { p_task_id: string }; Returns: string }
       sch_run_claim: {
         Args: {
           p_lease_seconds?: number
@@ -134127,6 +134508,71 @@ export type Database = {
           },
         ]
       }
+      ai_visibility_design_artifact: {
+        Row: {
+          artifact_name: string
+          artifact_version: number
+          content: Json
+          content_hash: string
+          created_at: string
+          created_by: string | null
+          design_run_id: string
+          id: string
+          metadata: Json
+          organization_id: string
+          panel_id: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          artifact_name: string
+          artifact_version?: number
+          content?: Json
+          content_hash: string
+          created_at?: string
+          created_by?: string | null
+          design_run_id: string
+          id?: string
+          metadata?: Json
+          organization_id: string
+          panel_id: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          artifact_name?: string
+          artifact_version?: number
+          content?: Json
+          content_hash?: string
+          created_at?: string
+          created_by?: string | null
+          design_run_id?: string
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          panel_id?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_visibility_design_artifact_panel_id_fkey"
+            columns: ["panel_id"]
+            isOneToOne: false
+            referencedRelation: "ai_visibility_panel"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_visibility_panel: {
         Row: {
           brand_id: string | null
@@ -134248,6 +134694,102 @@ export type Database = {
             columns: ["coverage_tracker_id"]
             isOneToOne: false
             referencedRelation: "coverage_tracker"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_visibility_panel_current_version_id_fkey"
+            columns: ["current_version_id"]
+            isOneToOne: false
+            referencedRelation: "ai_visibility_panel_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_visibility_panel_version: {
+        Row: {
+          approvals: Json
+          change_ledger: Json
+          content_hashes: Json
+          created_at: string
+          created_by: string | null
+          design_run_id: string | null
+          id: string
+          limitations: Json
+          metadata: Json
+          next_review_date: string | null
+          organization_id: string
+          panel_id: string
+          partitions: Json
+          selected_candidate_ids: string[]
+          semver: string
+          statistics: Json
+          status: string
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          waivers: Json
+          weights: Json
+        }
+        Insert: {
+          approvals?: Json
+          change_ledger?: Json
+          content_hashes?: Json
+          created_at?: string
+          created_by?: string | null
+          design_run_id?: string | null
+          id?: string
+          limitations?: Json
+          metadata?: Json
+          next_review_date?: string | null
+          organization_id: string
+          panel_id: string
+          partitions?: Json
+          selected_candidate_ids?: string[]
+          semver: string
+          statistics?: Json
+          status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          waivers?: Json
+          weights?: Json
+        }
+        Update: {
+          approvals?: Json
+          change_ledger?: Json
+          content_hashes?: Json
+          created_at?: string
+          created_by?: string | null
+          design_run_id?: string | null
+          id?: string
+          limitations?: Json
+          metadata?: Json
+          next_review_date?: string | null
+          organization_id?: string
+          panel_id?: string
+          partitions?: Json
+          selected_candidate_ids?: string[]
+          semver?: string
+          statistics?: Json
+          status?: string
+          test_expires_at?: string | null
+          test_run_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+          waivers?: Json
+          weights?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_visibility_panel_version_panel_id_fkey"
+            columns: ["panel_id"]
+            isOneToOne: false
+            referencedRelation: "ai_visibility_panel"
             referencedColumns: ["id"]
           },
         ]
@@ -134410,6 +134952,13 @@ export type Database = {
             columns: ["keyword_id"]
             isOneToOne: false
             referencedRelation: "keyword"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_visibility_response_panel_version_id_fkey"
+            columns: ["panel_version_id"]
+            isOneToOne: false
+            referencedRelation: "ai_visibility_panel_version"
             referencedColumns: ["id"]
           },
           {
@@ -150362,6 +150911,38 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_mcp_catalog_for_user: {
+        Args: never
+        Returns: {
+          auth_strategy: Database["public"]["Enums"]["mcp_auth_strategy"]
+          category: Database["public"]["Enums"]["mcp_server_category"]
+          color: string
+          connected_at: string
+          connection_id: string
+          connection_ready: boolean
+          connection_status: Database["public"]["Enums"]["mcp_connection_status"]
+          description: string
+          docs_url: string
+          endpoint_url: string
+          has_local: boolean
+          has_remote: boolean
+          icon_url: string
+          is_featured: boolean
+          is_official: boolean
+          last_used_at: string
+          name: string
+          products: Json
+          server_id: string
+          server_status: Database["public"]["Enums"]["mcp_server_status"]
+          slug: string
+          supports_mcp_apps: boolean
+          token_expires_at: string
+          transport: Database["public"]["Enums"]["mcp_transport"]
+          transport_used: Database["public"]["Enums"]["mcp_transport"]
+          vendor: string
+          website_url: string
+        }[]
+      }
       global_execution_exists: { Args: { p_id: string }; Returns: boolean }
       provider_set_state: {
         Args: {
@@ -150376,7 +150957,114 @@ export type Database = {
         Args: { p_slug?: string }
         Returns: Json
       }
+      tool_executor_walk_parents: {
+        Args: { p_name: string }
+        Returns: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string
+          id: string
+          is_active: boolean
+          mcp_server_id: string | null
+          metadata: Json
+          name: string
+          organization_id: string
+          parent_executor_name: string | null
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          test_expires_at: string | null
+          test_run_id: string | null
+          updated_at: string
+          updated_by: string | null
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "executor"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      tool_register: {
+        Args: { p_def: Json; p_executor_names?: string[] }
+        Returns: string
+      }
+      tool_register_mcp_discovered: {
+        Args: { p_server_id: string; p_tool_specs: Json }
+        Returns: number
+      }
       tool_reliability: { Args: { p_tool_ids: string[] }; Returns: Json }
+      tool_resolve_bundle: {
+        Args: { p_bundle_name: string }
+        Returns: {
+          admin_only: boolean
+          annotations: Json | null
+          category: string | null
+          created_at: string
+          created_by: string | null
+          deactivated_at: string | null
+          dedupe_exempt: boolean
+          deleted_at: string | null
+          description: string
+          gating: Json
+          icon: string | null
+          id: string
+          is_active: boolean
+          managed_by_server_id: string | null
+          max_client_wait_seconds: number | null
+          metadata: Json
+          name: string
+          organization_id: string
+          output_schema: Json | null
+          parameters: Json
+          published_to_web: boolean
+          published_to_web_at: string | null
+          published_to_web_by: string | null
+          semver: string | null
+          shown_to: Database["platform"]["Enums"]["shown_to"] | null
+          side_effect_class: string | null
+          source_kind: string
+          tags: string[] | null
+          test_expires_at: string | null
+          test_run_id: string | null
+          tier: string | null
+          tool_group: string
+          updated_at: string
+          updated_by: string | null
+          updated_by_system: string | null
+          updated_by_tier: string | null
+          validation_exempt: boolean
+          version: number
+          visibility: Database["platform"]["Enums"]["visibility"]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "definition"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      tool_resolve_for_request: {
+        Args: {
+          p_active_server_executors?: string[]
+          p_client_executor: string
+          p_surface_name: string
+          p_user_id: string
+        }
+        Returns: {
+          annotations: Json
+          arg_defaults: Json
+          description: string
+          parameters: Json
+          tool_id: string
+          tool_name: string
+        }[]
+      }
       tool_set_paused: {
         Args: {
           p_actor?: string
@@ -150385,6 +151073,26 @@ export type Database = {
           p_tool: string
         }
         Returns: Json
+      }
+      tool_surface_walk_parents: {
+        Args: { p_surface_name: string }
+        Returns: Database["ui"]["Tables"]["ui_surface"]["Row"][]
+        SetofOptions: {
+          from: "*"
+          to: "ui_surface"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      upsert_mcp_connection: {
+        Args: {
+          p_config_id?: string
+          p_endpoint_override?: string
+          p_organization_id?: string
+          p_server_id: string
+          p_transport?: Database["public"]["Enums"]["mcp_transport"]
+        }
+        Returns: string
       }
       watchtower_for_attention: {
         Args: never
@@ -160880,6 +161588,7 @@ export type Database = {
           ok: boolean
         }[]
       }
+      __brand_non_person_seat_ids_selftest: { Args: never; Returns: Json }
       __decision_retraction_selftest: {
         Args: never
         Returns: {

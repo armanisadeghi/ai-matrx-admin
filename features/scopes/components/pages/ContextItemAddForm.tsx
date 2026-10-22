@@ -8,7 +8,7 @@ import {
   Tag as TagIcon,
   X,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import {
   Select,
@@ -541,26 +541,24 @@ export function ContextItemAddForm({
       <div className="flex items-center justify-end gap-1.5 pt-0.5">
         <Button
           type="button"
-          variant="ghost"
-          size="sm"
+          variant="quiet"
           onClick={onClose}
           disabled={busy}
         >
           Cancel
         </Button>
         <Button
+          icon={busy && <Loader2 className="animate-spin" />}
           type="button"
           variant="outline"
-          size="sm"
           onClick={() => submit(true)}
           disabled={busy || !name.trim()}
         >
-          {busy && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
           Add &amp; next
         </Button>
         <Button
+          variant="primary"
           type="button"
-          size="sm"
           onClick={() => submit(false)}
           disabled={busy || !name.trim()}
         >

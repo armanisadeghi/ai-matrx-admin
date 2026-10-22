@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, Variable, AlertCircle, Trash2, X } from "lucide-react";
 import { isControlVariable } from "@ai-matrx/agents";
 import { cn } from "@/lib/utils";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
@@ -360,8 +360,7 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
               {unplacedBound.has(selection.name) && (
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="ml-auto mr-2 h-6 px-2 text-[11px]"
+                  className="ml-auto mr-2"
                   onClick={() => handlePlace(selection.name)}
                   title={`Add {{${selection.name}}} to the system prompt`}
                   aria-label={`Place ${selection.name} in the system prompt`}
@@ -371,23 +370,15 @@ export function AgentVariablesPanel({ agentId }: AgentVariablesPanelProps) {
               )}
 
               <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-6 w-6",
-                  selectedIsFresh
-                    ? "text-muted-foreground hover:text-foreground"
-                    : "text-muted-foreground hover:text-destructive",
-                )}
+                icon={selectedIsFresh ? (
+                  <X />
+                ) : (
+                  <Trash2 />
+                )} aria-label={selectedIsFresh ? "Discard" : "Delete variable"}
+                variant="quiet"
                 onClick={() => handleDelete(selection.name)}
                 title={selectedIsFresh ? "Discard" : "Delete variable"}
-              >
-                {selectedIsFresh ? (
-                  <X className="h-3.5 w-3.5" />
-                ) : (
-                  <Trash2 className="h-3.5 w-3.5" />
-                )}
-              </Button>
+              />
             </div>
 
             <ScrollArea className="flex-1">

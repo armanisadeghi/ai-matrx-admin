@@ -36,6 +36,16 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { memoryBulkActions } from "./memoryBulkActions";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
+import {
+  MY_MEMORY_SURFACE_NAME,
+  createMyMemoryScope,
+  parseMemoryFileDeletes,
+  parseMemoryFileWrites,
+  type MemoryFileWrite,
+} from "@/features/surfaces/manifests/my-memory.manifest";
 
 const PATH_RE = /^[A-Za-z0-9._/-]+$/;
 
@@ -46,7 +56,12 @@ const memoryChannel = defineChannelNamespace({
   description: "users.user_memory rows for one user",
 });
 
-export default function MemoryManager() {
+/**
+ * `asSurface` (the /memory/my-memory page) mounts the `matrx-user/my-memory`
+ * surface around the editor: its values and write targets. The Settings tab
+ * renders the same editor without it.
+ */
+export default function MemoryManager({ asSurface = false }: { asSurface?: boolean } = {}) {
   const [entries, setEntries] = useState<MemoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<unknown>(null);
@@ -186,7 +201,81 @@ export default function MemoryManager() {
     ? draft.length > 0 || newPath.length > 0
     : selectedPath !== null && draft !== loadedContentRef.current;
 
-  return (
+  // ── Surface (only when the page mounts it) ────────────────────────────────
+  const getScope = () =>
+    createMyMemoryScope({
+      load_status: loading ? "loading" : loadError && entries.length === 0 ? "failed" : "loaded",
+      memory_file_count: entries.length,
+      memory_files: entries.map((e) => ({ path: e.path, chars: e.content.length, updated_at: e.updated_at })),
+      ...(creatingNew ? { open_file_path: newPath, is_new_file: true } : selectedPath ? { open_file_path: selectedPath, is_new_file: false } : {}),
+      ...(creatingNew || selectedPath ? { open_file_content: draft, unsaved_changes: dirty } : {}),
+    });
+
+  const paths = () => entries.map((e) => e.path);
+
+  /** After an agent save: refresh the list, and reload the open file unless it holds unsaved edits. */
+  const afterAgentSave = async (touched: string[]) => {
+    const data = await refresh();
+    if (selectedPath && touched.includes(selectedPath) && !dirty) {
+      const saved = data.find((e) => e.path === selectedPath);
+      if (saved) selectEntry(saved);
+      else {
+        setSelectedPath(null);
+        setDraft("");
+        loadedContentRef.current = "";
+      }
+    }
+  };
+
+  const getWriteHandlers = () => ({
+    open_file_content: {
+      validate: (value: unknown) => {
+        if (!creatingNew && selectedPath === null) refuseSurfaceWrite("No file is open. Ask the person to open one, or use create_memory_files.");
+        if (typeof value !== "string") refuseSurfaceWrite("The file text takes a plain string.");
+      },
+      apply: (value: unknown) => {
+        setDraft(String(value));
+        return { summary: "The editor text is replaced. Nothing is saved until the person presses Save." };
+      },
+    },
+    ...collectionWriteHandlers(
+      {
+        plural: "memory_files",
+        singular: "memory file",
+        create: {
+          parse: (value: unknown) => parseMemoryFileWrites(value, paths(), "create"),
+          run: async (file: MemoryFileWrite) => {
+            await upsertMemory(file.path, file.content);
+            await afterAgentSave([file.path]);
+            return { id: file.path, name: file.path };
+          },
+          nameOf: (file: MemoryFileWrite) => file.path,
+        },
+        update: {
+          parse: (value: unknown) => parseMemoryFileWrites(value, paths(), "update"),
+          run: async (file: MemoryFileWrite) => {
+            await upsertMemory(file.path, file.content);
+            await afterAgentSave([file.path]);
+            return { id: file.path, name: file.path };
+          },
+          nameOf: (file: MemoryFileWrite) => file.path,
+          changedOf: () => ["content"],
+        },
+        delete: {
+          parse: (value: unknown) => parseMemoryFileDeletes(value, paths()),
+          run: async (path: string) => {
+            await deleteMemory(path);
+            await afterAgentSave([path]);
+            return { id: path, name: path };
+          },
+          nameOf: (path: string) => path,
+        },
+      },
+      refuseSurfaceWrite,
+    ),
+  });
+
+  const body = (
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-2">
         <Brain className="h-4 w-4 text-primary mt-0.5 shrink-0" />
@@ -321,5 +410,12 @@ export default function MemoryManager() {
         </div>
       </div>
     </div>
+  );
+
+  if (!asSurface) return body;
+  return (
+    <SurfaceRuntimeProvider surfaceName={MY_MEMORY_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
+      {body}
+    </SurfaceRuntimeProvider>
   );
 }

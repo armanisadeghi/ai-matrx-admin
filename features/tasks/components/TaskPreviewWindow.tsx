@@ -28,7 +28,7 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { DateField, Input, Select } from "@ai-matrx/design-system/controls";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAssociateTask } from "@/features/tasks/hooks/useAssociateTask";
@@ -267,10 +267,8 @@ export default function TaskPreviewWindow({
         <div className="px-4 py-3 space-y-1">
           <div className="flex items-center justify-between pb-2 border-b border-border/40">
             <Button
-              variant="ghost"
-              size="sm"
+              variant="quiet"
               onClick={() => toggleAll(true)}
-              className="h-6 text-[11px]"
             >
               Select all
             </Button>
@@ -278,10 +276,8 @@ export default function TaskPreviewWindow({
               {selectedCount} selected
             </span>
             <Button
-              variant="ghost"
-              size="sm"
+              variant="quiet"
               onClick={() => toggleAll(false)}
-              className="h-6 text-[11px]"
             >
               Clear
             </Button>
@@ -358,21 +354,22 @@ export default function TaskPreviewWindow({
           <DrawerFooter className="shrink-0 border-t border-border/50">
             <div className="flex items-center justify-end gap-2">
               <Button
-                variant="ghost"
+                variant="quiet"
                 onClick={() => onOpenChange(false)}
                 disabled={isBusy}
               >
                 Cancel
               </Button>
               <Button
+                icon={isBusy ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Check />
+                )}
+                variant="primary"
                 onClick={handleConfirm}
                 disabled={selectedCount === 0 || isBusy}
               >
-                {isBusy ? (
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                ) : (
-                  <Check className="w-3.5 h-3.5 mr-1.5" />
-                )}
                 Create {selectedCount} task{selectedCount !== 1 ? "s" : ""}
               </Button>
             </div>
@@ -394,21 +391,22 @@ export default function TaskPreviewWindow({
         {body}
         <DialogFooter className="shrink-0 p-3 border-t border-border/50">
           <Button
-            variant="ghost"
+            variant="quiet"
             onClick={() => onOpenChange(false)}
             disabled={isBusy}
           >
             Cancel
           </Button>
           <Button
+            icon={isBusy ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Check />
+            )}
+            variant="primary"
             onClick={handleConfirm}
             disabled={selectedCount === 0 || isBusy}
           >
-            {isBusy ? (
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-            ) : (
-              <Check className="w-3.5 h-3.5 mr-1.5" />
-            )}
             Create {selectedCount} task{selectedCount !== 1 ? "s" : ""}
           </Button>
         </DialogFooter>

@@ -62,7 +62,7 @@ export function MatchSurface({ setId }: { setId: string }) {
                 <AskTutorButton
                   seed={deckTutorSeed(game.set.name, [...pairs.values()], deckStudyContext(setId))}
                   iconOnly
-                  variant="ghost"
+                  variant="quiet"
                 />
               ) : null}
               <FixGiveawayCardsAction setId={setId} />

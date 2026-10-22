@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
@@ -530,22 +530,19 @@ export function PermissionsList({
                     </Select>
 
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
+                      icon={isRevoking ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <X />
+                      )}
+                      variant="quiet"
                       aria-label={`Revoke access for ${getPermissionLabel(permission)}`}
                       title={`Revoke access for ${getPermissionLabel(permission)}`}
                       onClick={() =>
                         setConfirmRevoke({ open: true, permission })
                       }
                       disabled={isUpdating || isRevoking}
-                    >
-                      {isRevoking ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <X className="w-3 h-3" />
-                      )}
-                    </Button>
+                    />
                   </>
                 ) : (
                   <>

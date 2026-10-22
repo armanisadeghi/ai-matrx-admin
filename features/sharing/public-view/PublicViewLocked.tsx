@@ -3,7 +3,7 @@
 // Server-rendered, no client code: a plain form that posts to `/v/<token>/unlock`. It names nothing about the view, so a
 // stranger holding only the link learns only that a password is needed. A wrong password says so and nothing else.
 
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 
 export function PublicViewLocked({
   token,

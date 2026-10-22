@@ -24,6 +24,14 @@ import { toast } from "@/lib/toast";
 import { SectionShell, StatusChip, announcePrintOutcome } from "@/features/print/components/shared";
 import { SAMPLE_CHEAT_SHEET, SAMPLE_GLOSSARY, SAMPLE_STUDY_CALENDAR } from "./sample-data";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_EDUCATION_FIELDS,
+    PRINT_EDUCATION_FORM_TARGET,
+    PRINT_EDUCATION_SURFACE_NAME,
+    createPrintEducationScope,
+} from "@/features/surfaces/manifests/print-education.manifest";
 
 type ArtifactId = "cheat-sheet" | "glossary" | "study-calendar";
 
@@ -201,7 +209,24 @@ export function EducationSection() {
         });
     };
 
+    const getScope = () =>
+        createPrintEducationScope({
+            artifact: artifact.id,
+            artifact_label: artifact.label,
+            artifact_title: (artifact.data as { title?: string }).title ?? artifact.label,
+            artifact_summary: artifact.summary,
+            artifact_content: artifact.data,
+            layouts: artifact.printer.variants.map((v) => ({ id: v.id, label: v.label, description: v.description ?? "" })),
+        });
+
+    const getWriteHandlers = () =>
+        printToolWriteHandlers(PRINT_EDUCATION_FIELDS, PRINT_EDUCATION_FORM_TARGET, (patch) => {
+            if (typeof patch.artifact === "string") setArtifactId(patch.artifact as ArtifactId);
+        });
+
     return (
+        // surface-write-handlers: study_printable
+        <SurfaceRuntimeProvider surfaceName={PRINT_EDUCATION_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="Education artifacts"
             entry="@ai-matrx/print/education"
@@ -233,5 +258,6 @@ export function EducationSection() {
                 onPrinted={(outcome) => announcePrintOutcome(outcome, artifact.printLabel)}
             />
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

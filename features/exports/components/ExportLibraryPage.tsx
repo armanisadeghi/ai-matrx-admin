@@ -17,6 +17,9 @@
 // running after a disconnect and a page that believed only the stream would
 // show an empty export after a refresh.
 
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { EXPORT_LIBRARY_SURFACE_NAME } from "@/features/surfaces/manifests/export-library.manifest";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { commitUrlParams, useUrlSearchParams } from "@ai-matrx/kit/url-state";
@@ -325,8 +328,22 @@ export function ExportLibraryPage({ libraryId }: { libraryId: string }) {
     [urlParams],
   );
 
+  // matrx-user/export-library — read-only: sending items somewhere stays the person's press.
+  const getSurfaceScope = () =>
+    ({
+      export_library_id: libraryId,
+      export_load_status: readError ? "failed" : library ? "loaded" : "loading",
+      export_read_error: readError,
+      export_name: library?.name ?? null,
+      export_source: library?.adapter_label ?? library?.adapter ?? null,
+      export_status: library?.status ?? null,
+      export_index_phase: indexState.phase,
+      export_counts: counts,
+      export_filter_description: facts?.filterDescription ?? "",
+    }) as SurfaceScopePayload;
+
   return (
-    <>
+    <SurfaceRuntimeProvider surfaceName={EXPORT_LIBRARY_SURFACE_NAME} getScope={getSurfaceScope} isEditable={false}>
       <PageHeader>
         <ExportsHeader libraryName={libraryName} />
       </PageHeader>
@@ -409,6 +426,6 @@ export function ExportLibraryPage({ libraryId }: { libraryId: string }) {
           })
         }
       />
-    </>
+    </SurfaceRuntimeProvider>
   );
 }

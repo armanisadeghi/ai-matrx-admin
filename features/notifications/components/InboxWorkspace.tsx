@@ -68,6 +68,10 @@ import { NoticeRow } from "./NoticeRow";
 import { NoticeDetail } from "./NoticeDetail";
 import { NO_STATE, SourceItem } from "./PlacesStrip";
 import { HiddenElsewhere } from "./HiddenElsewhere";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { useSurfaceScopeContribution, useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
+import { NOTIFICATIONS_SURFACE_NAME } from "@/features/surfaces/manifests/notifications.manifest";
 
 export type InboxTab = "inbox" | "needs_you" | "updates" | "snoozed" | "done";
 
@@ -311,6 +315,66 @@ export function InboxWorkspace({ mode, initialTab = "inbox", orgFilter, onOrgFil
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
+  });
+
+  // matrx-user/notifications (the /notifications page only; the bell panel is not a page surface):
+  // the view as shown, and triage of what is listed through the page's own `actions.act`.
+  const pageSurface = mode === "page" ? NOTIFICATIONS_SURFACE_NAME : null;
+  const describe = (g: NoticeGroup) => ({
+    key: g.key,
+    title: noticeTitle(g.lead),
+    preview: plainPreview(g.lead.body, 160),
+    context: noticeContext(g.lead),
+    category: categoryFor(g.lead.event_key).key,
+    bucket: g.bucket,
+    unread: g.unread,
+    count: g.rows.length,
+    actors: g.actors.slice(0, 3),
+    at: g.lead.created_at,
+  });
+  useSurfaceScopeContribution(pageSurface, "inbox-workspace", () =>
+    ({
+      inbox_view: tab,
+      inbox_search: search,
+      inbox_category: category,
+      unread_only: unreadOnly,
+      inbox_load_status: feed.rows.length ? "loaded" : "empty_or_loading",
+      unread_total: counts.summary?.unread ?? null,
+      listed_count: groups.length,
+      notices: groups.slice(0, 25).map(describe),
+      open_notice: current ? { ...describe(current), body: plainPreview(current.lead.body, 2000) } : null,
+      checked_keys: checkedGroups.map((g) => g.key),
+    }) as SurfaceScopePayload,
+  );
+  const ACTIONS = triage ? ["read", "done", "snooze"] : ["read", "snooze"];
+  const parseTriage = (value: unknown) => {
+    const items = Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
+    if (!items.length || items.length > 50) refuseSurfaceWrite("triage_notices takes a JSON array of 1-50 objects { key, action }.");
+    const problems: string[] = [];
+    const plans = items.map((item, i) => {
+      const group = groups.find((g) => g.key === item?.key);
+      const action = String(item?.action ?? "");
+      const until = typeof item?.until === "string" ? new Date(item.until) : null;
+      if (!group) problems.push(`Item ${i + 1}: "${String(item?.key)}" is not listed on the page.`);
+      if (!ACTIONS.includes(action)) problems.push(`Item ${i + 1}: action must be ${ACTIONS.map((a) => `"${a}"`).join(", ")}.`);
+      if (action === "snooze" && (!until || Number.isNaN(until.getTime()) || until.getTime() <= Date.now())) problems.push(`Item ${i + 1}: snooze needs "until", a future ISO date-time.`);
+      return { group: group as NoticeGroup, action: action as "read" | "done" | "snooze", until: until ?? undefined };
+    });
+    if (problems.length) refuseSurfaceWrite(`${problems.join(" ")} Nothing was changed.`);
+    return plans;
+  };
+  useSurfaceWriteHandlers(pageSurface, {
+    triage_notices: {
+      validate: (value: unknown) => void parseTriage(value),
+      apply: async (value: unknown) => {
+        const plans = parseTriage(value);
+        for (const plan of plans) await actions.act(plan.group.rows, plan.action, plan.until ? { until: plan.until } : {});
+        return {
+          summary: `Applied ${plans.length} change(s): ${plans.map((p) => `${p.action} "${noticeTitle(p.group.lead)}"`).join("; ")}. A change that did not save shows as an error toast.`,
+          data: { applied: plans.map((p) => ({ key: p.group.key, action: p.action })) },
+        };
+      },
+    },
   });
 
   const summary = counts.summary;

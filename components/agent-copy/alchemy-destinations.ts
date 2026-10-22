@@ -5,7 +5,7 @@ import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { alchemyOrganizationId } from "./alchemy-organization";
 import { saveDocumentThroughDoor, saveNotesThroughDoor, saveWorkbookThroughDoor } from "./alchemy-door";
-import { openOverlay } from "@ai-matrx/summon/boot";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/boot";
 import { setPendingSource } from "@/features/tasks/redux/taskUiSlice";
 import { clearFocus } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.slice";
 import { bumpFreshSession } from "@ai-matrx/chat/agents/redux/chat/chat-route.slice";
@@ -57,9 +57,9 @@ export function createAlchemyDestinationPorts(host: Host) {
     // created record's link from the receipt; a refusal is the door's own sentence and remedy.
     saveDocument: async (content) => { identity(); return savedRecord(await saveDocumentThroughDoor({ markdown: content.markdown, name: content.label })); },
     saveWorkbook: async (content) => { identity(); if (!content.table) throw new Error("A workbook requires tabular content."); return savedRecord(await saveWorkbookThroughDoor(content.table)); },
-    openNotes: (content) => { host.dispatch(openOverlay({ overlayId: "saveToNotes", instanceId: `alchemy-notes:${crypto.randomUUID()}`, data: { initialContent: content.markdown, title: content.label } })); },
+    openNotes: (content) => { host.dispatch(openOverlay({ overlayId: "saveToNotes", instanceId: mintInstanceId("saveToNotes"), data: { initialContent: content.markdown, title: content.label } })); },
     openTask: (content) => { host.dispatch(setPendingSource({ entity_type: null, entity_id: null, label: content.label, metadata: { source: "alchemy", sourceId: content.draft.sourceId }, prePopulate: { title: content.label, description: content.markdown } })); },
-    openCode: (content) => { host.dispatch(openOverlay({ overlayId: "saveToCode", instanceId: `alchemy-code:${crypto.randomUUID()}`, data: { initialContent: content.plainText, initialLanguage: "plaintext", suggestedName: content.label, defaultFolderId: null } })); },
+    openCode: (content) => { host.dispatch(openOverlay({ overlayId: "saveToCode", instanceId: mintInstanceId("saveToCode"), data: { initialContent: content.plainText, initialLanguage: "plaintext", suggestedName: content.label, defaultFolderId: null } })); },
     openAttachment: (target) => { host.dispatch(openOverlay({ overlayId: "contextAssignment", instanceId: `alchemy-attach:${target.id}`, data: { subject: { entityType: "note", entityId: target.id, title: target.label } } })); },
     openChat: async (content, mode, current) => {
       const { resolveMandateAsking } = await import("@ai-matrx/chat/mandates/resolve-asking");
@@ -75,7 +75,7 @@ export function createAlchemyDestinationPorts(host: Host) {
         stashChatDraftTransfer({ targetAgentId: mandate.agentId, text: "", resources: [resource], ...current });
         host.dispatch(clearFocus(chatRouteSurfaceKey(mandate.agentId))); host.dispatch(bumpFreshSession()); host.navigate("/chat/new"); return;
       }
-      const instanceId = `alchemy-chat:${crypto.randomUUID()}`;
+      const instanceId = mintInstanceId("agentRunWindow");
       host.dispatch(openOverlay({ overlayId: "agentRunWindow", instanceId, data: { initialAgentId: mandate.agentId, initialResources: [resource], initialResourceIdentity: current, initialAutoRun: false, initialToolsOpen: mode === "tools", mandateKey: DEFAULT_NEW_CHAT_MANDATE_KEY, surfaceName: null, seedNonce: Date.now() } }));
     },
   });

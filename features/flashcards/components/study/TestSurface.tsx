@@ -88,7 +88,7 @@ export function TestSurface({ setId }: { setId: string }) {
                         })
                   }
                   iconOnly
-                  variant="ghost"
+                  variant="quiet"
                 />
               ) : null}
               <RoundSizeMenu

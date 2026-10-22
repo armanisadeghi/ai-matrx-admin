@@ -16,7 +16,7 @@ import { useBlockState } from "@/features/block-state/useBlockState";
 import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 import TaskPreviewWindow from "@/features/tasks/components/TaskPreviewWindow";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import type { ArtifactRendererProps } from "../types";
@@ -218,12 +218,10 @@ function TasksArtifactTracked({
               Proposed — not yet tracked as tasks
             </span>
             <Button
-              size="sm"
+              icon={<ListPlus />}
               variant="outline"
-              className="h-7 gap-1 text-xs"
               onClick={() => setConvertOpen(true)}
             >
-              <ListPlus className="h-3.5 w-3.5" />
               Convert to tasks
             </Button>
           </>

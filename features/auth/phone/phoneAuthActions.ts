@@ -44,8 +44,10 @@ export async function verifyPhoneCode(input: {
   if (token.length < 6) return { error: "Enter the 6-digit code." };
 
   const supabase = await createClient();
+  // TODO(phone-auth): "phone_otp" once @ai-matrx/auth > 0.4.6 is installed (aidream 591d02c8f1 adds it);
+  // until then the guest claim is recorded under the other one-time-code label.
   const { data, error } = await handOverSession(
-    "phone_otp",
+    "email_otp",
     () => supabase.auth.verifyOtp({ phone, token, type: "sms" }),
     { visitorId: input.guestFingerprint },
   );

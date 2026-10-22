@@ -22,7 +22,7 @@
 
 import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -158,12 +158,10 @@ export function ReferenceValuePicker({
         >
           <PopoverTrigger asChild>
             <Button
+              icon={<Plus />}
               type="button"
               variant="outline"
-              size="sm"
-              className="h-7 gap-1.5 text-xs"
             >
-              <Plus className="h-3.5 w-3.5" />
               Add {typeLabel(activeAddType)}
             </Button>
           </PopoverTrigger>

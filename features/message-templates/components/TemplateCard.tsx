@@ -68,8 +68,7 @@ export function TemplateCard({
               resourceId={template.id}
               resourceName={template.label ?? "Template"}
               isOwner={true}
-              variant="ghost"
-              size="icon"
+              variant="quiet" iconOnly
               showStatus={false}
             />
           )}

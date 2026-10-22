@@ -7,7 +7,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import BasicMarkdownContent from "@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent";
@@ -97,10 +97,9 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
               <div className="flex justify-between items-center">
                 <span>Structured Information</span>
                 <Button 
-                  variant="ghost" 
-                  size="sm" 
+                  variant="quiet" 
                   onClick={handleCopy}
-                  className="h-7 text-xs flex items-center gap-1"
+                  className="flex"
                 >
                   {copiedSection === 'full' ? (
                     <>
@@ -114,21 +113,19 @@ const StructuredPlanViewer: React.FC<StructuredPlanViewerProps> = ({
                 </Button>
                 <div className="flex items-center gap-1">
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    icon={<NotebookPen />}
+                    variant="quiet"
                     onClick={() => makeReal.saveToNotes("Structured information", content)}
-                    className="h-7 text-xs flex items-center gap-1"
-                  >
-                    <NotebookPen className="h-3.5 w-3.5" /> Save to notes
+                    className="flex"
+                  > Save to notes
                   </Button>
                   {isContact && (
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      icon={<Contact />}
+                      variant="quiet"
                       onClick={() => makeReal.saveAsContact(content)}
-                      className="h-7 text-xs flex items-center gap-1"
-                    >
-                      <Contact className="h-3.5 w-3.5" /> Save as contact
+                      className="flex"
+                    > Save as contact
                     </Button>
                   )}
                 </div>

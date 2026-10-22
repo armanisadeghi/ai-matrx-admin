@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 
 interface QuickCaptureButtonProps {
   defaultContent?: string;
   bucketTag?: string;
-  variant?: "default" | "outline" | "ghost" | "secondary";
-  size?: "default" | "sm" | "lg" | "icon";
+  variant?: "primary" | "outline" | "quiet";
+  /** Glyph only (the label becomes the accessible name). */
+  iconOnly?: boolean;
   label?: string;
   className?: string;
 }
@@ -29,8 +30,8 @@ interface QuickCaptureButtonProps {
 export function QuickCaptureButton({
   defaultContent = "",
   bucketTag,
-  variant = "default",
-  size = "default",
+  variant = "primary",
+  iconOnly = false,
   label = "Quick Note",
   className,
 }: QuickCaptureButtonProps) {
@@ -40,7 +41,7 @@ export function QuickCaptureButton({
     dispatch(
       openOverlay({
         overlayId: "saveToNotes",
-        instanceId: crypto.randomUUID(),
+        instanceId: mintInstanceId("saveToNotes"),
         data: {
           initialContent: defaultContent,
           bucketTag,
@@ -54,15 +55,24 @@ export function QuickCaptureButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button
-            variant={variant}
-            size={size}
-            onClick={handleClick}
-            className={className}
-          >
-            <Plus className="h-4 w-4" />
-            {size !== "icon" && label && <span className="ml-2">{label}</span>}
-          </Button>
+          {iconOnly || !label ? (
+            <Button
+              variant={variant}
+              icon={<Plus />}
+              aria-label={label || "Quick note"}
+              onClick={handleClick}
+              className={className}
+            />
+          ) : (
+            <Button
+              variant={variant}
+              icon={<Plus />}
+              onClick={handleClick}
+              className={className}
+            >
+              {label}
+            </Button>
+          )}
         </TooltipTrigger>
         <TooltipContent>Create quick note</TooltipContent>
       </Tooltip>

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1584,
+  "routeCount": 1587,
   "routes": [
     {
       "pattern": "/",
@@ -242,6 +242,11 @@
       "pattern": "/administration/agents/system-agents/agents/[id]/test",
       "status": "live",
       "source": "app/(admin)/administration/agents/system-agents/agents/[id]/test/page.tsx"
+    },
+    {
+      "pattern": "/administration/agents/system-agents/agents/[id]/test/agreement",
+      "status": "live",
+      "source": "app/(admin)/administration/agents/system-agents/agents/[id]/test/agreement/page.tsx"
     },
     {
       "pattern": "/administration/agents/system-agents/agents/[id]/v/[version]",
@@ -1774,6 +1779,11 @@
       "source": "app/(core)/agents/[id]/test/page.tsx"
     },
     {
+      "pattern": "/agents/[id]/test/agreement",
+      "status": "live",
+      "source": "app/(core)/agents/[id]/test/agreement/page.tsx"
+    },
+    {
       "pattern": "/agents/[id]/v/[version]",
       "status": "live",
       "source": "app/(core)/agents/[id]/v/[version]/page.tsx"
@@ -2307,6 +2317,11 @@
       "pattern": "/chat/new",
       "status": "live",
       "source": "app/(core)/chat/new/page.tsx"
+    },
+    {
+      "pattern": "/chat/on-device",
+      "status": "live",
+      "source": "app/(core)/chat/on-device/page.tsx"
     },
     {
       "pattern": "/chat/speed-test",

@@ -1142,7 +1142,6 @@ function EducationTutorClientInner({
                   resourceId={conversationIdProp}
                   resourceName="Tutor conversation"
                   isOwner
-                  size="sm"
                 />
               )}
             </div>

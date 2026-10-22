@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAgentAccessResolved,
@@ -59,9 +59,8 @@ export function AgentBuilderReadOnlyFrame({
             <span className="truncate font-medium">View only</span>
             <Button
               type="button"
-              size="sm"
-              variant="secondary"
-              className="h-6 shrink-0 px-2 text-xs"
+              variant="outline"
+              className="shrink-0"
               disabled={isDuplicating}
               onClick={() => void openDuplicate({ agentId })}
             >

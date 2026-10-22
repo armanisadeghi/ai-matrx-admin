@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Loader2, MessageSquare, ListChecks } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
@@ -29,8 +29,7 @@ export function DuplicateToEditButton({
   returnPath,
   shareToken,
   label,
-  size = "lg",
-  variant = "default",
+  variant = "primary",
   className,
 }: {
   resourceType: string;
@@ -46,8 +45,7 @@ export function DuplicateToEditButton({
   shareToken?: string;
   /** Override the default per-type verb ("Continue this chat", …). */
   label?: string;
-  size?: "sm" | "default" | "lg";
-  variant?: "default" | "outline" | "secondary";
+  variant?: "primary" | "outline";
   className?: string;
 }) {
   const router = useRouter();
@@ -102,12 +100,13 @@ export function DuplicateToEditButton({
   };
 
   return (
-    <Button size={size} variant={variant} onClick={onClick} disabled={busy} className={className}>
-      {busy ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <Icon className="mr-2 h-4 w-4" />
-      )}
+    <Button
+      variant={variant}
+      icon={busy ? <Loader2 className="animate-spin" /> : <Icon />}
+      onClick={onClick}
+      disabled={busy}
+      className={className}
+    >
       {resolvedLabel}
     </Button>
   );

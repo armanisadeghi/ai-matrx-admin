@@ -21,6 +21,7 @@ import {
   OUTCOME_STATUS_LABEL,
   VERDICT_META,
   doorLabel,
+  judgeAsShown,
   judgeMeta,
 } from "../verdicts";
 import type {
@@ -375,7 +376,7 @@ export function ResultDetail({
           <JudgeSection
             id={result.judgeVerdictId}
             resultId={result.id}
-            outcome={result.outcome?.judge ?? null}
+            outcome={judgeAsShown(result.outcome?.judge ?? null, result.verdict)}
           />
         ) : null}
 

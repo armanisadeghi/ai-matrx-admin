@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { SlidersHorizontal, AlertTriangle, X } from "lucide-react";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -83,14 +83,11 @@ export function AgentSettingsModal({
 
   const trigger = isControlled ? null : (
     <Button
-      variant="ghost"
-      size="icon"
-      className="h-7 w-7"
+      icon={<SlidersHorizontal />} aria-label="Model settings"
+      variant="quiet"
       onClick={handleOpen}
       title="Model settings"
-    >
-      <SlidersHorizontal className="h-4 w-4" />
-    </Button>
+    />
   );
 
   const footer = showUnappliedConfirm ? (
@@ -104,17 +101,13 @@ export function AgentSettingsModal({
       <div className="flex items-center gap-2 shrink-0">
         <Button
           variant="outline"
-          size="sm"
           onClick={() => setShowUnappliedConfirm(false)}
-          className="h-7 text-xs"
         >
           Keep editing
         </Button>
         <Button
-          variant="destructive"
-          size="sm"
+          variant="danger"
           onClick={closeClean}
-          className="h-7 text-xs"
         >
           Discard &amp; close
         </Button>
@@ -129,10 +122,8 @@ export function AgentSettingsModal({
         </span>
       )}
       <Button
-        size="sm"
-        variant={hasUnappliedEdits ? "destructive" : "default"}
+        variant={hasUnappliedEdits ? "danger" : "primary"}
         onClick={handleRequestClose}
-        className="h-7 text-xs"
       >
         Close
       </Button>
@@ -193,13 +184,11 @@ export function AgentSettingsModal({
             </DialogDescription>
             <DialogClose asChild>
               <Button
-                variant="ghost"
-                size="icon"
-                className="h-11 w-11 shrink-0"
+                icon={<X />}
+                variant="quiet"
+                className="shrink-0"
                 aria-label="Close model settings"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              />
             </DialogClose>
           </DialogHeader>
           <div className="flex-1 min-h-0 flex flex-col px-3 py-1 overflow-hidden">

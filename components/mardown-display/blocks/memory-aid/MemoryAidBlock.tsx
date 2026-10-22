@@ -24,7 +24,7 @@
 
 import { Chip } from "@ai-matrx/design-system/controls";
 import { Brain, Landmark, Lightbulb, Loader2, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   coerceMemoryAidPartial,
   type MemoryAidData,
@@ -346,19 +346,14 @@ function Section({
 }
 
 function AddItem({ kind, label, controls }: { kind: MemoryItemKind; label: string; controls: MemoryAidControls }) {
-  return <Button type="button" variant="ghost" size="sm" onClick={() => controls.onAdd(kind)}>
-    <Plus className="mr-1 h-3.5 w-3.5" />{label}
+  return <Button icon={<Plus />} type="button" variant="quiet" onClick={() => controls.onAdd(kind)}>{label}
   </Button>;
 }
 
 function ItemActions({ kind, index, controls }: { kind: MemoryItemKind; index: number; controls: MemoryAidControls }) {
   const noun = kind === "locus" ? "stop" : kind;
   return <div className="flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100">
-    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" aria-label={`Edit ${noun} ${index + 1}`} title={`Edit ${noun}`} onClick={() => controls.onEdit(kind, index)}>
-      <Pencil className="h-3.5 w-3.5" />
-    </Button>
-    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" aria-label={`Delete ${noun} ${index + 1}`} title={`Delete ${noun}`} onClick={() => controls.onDelete(kind, index)}>
-      <Trash2 className="h-3.5 w-3.5" />
-    </Button>
+    <Button icon={<Pencil />} type="button" variant="quiet" aria-label={`Edit ${noun} ${index + 1}`} title={`Edit ${noun}`} onClick={() => controls.onEdit(kind, index)} />
+    <Button icon={<Trash2 />} type="button" variant="quiet" aria-label={`Delete ${noun} ${index + 1}`} title={`Delete ${noun}`} onClick={() => controls.onDelete(kind, index)} />
   </div>;
 }

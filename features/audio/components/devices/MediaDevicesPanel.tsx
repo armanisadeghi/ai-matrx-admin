@@ -38,7 +38,7 @@ import {
   VideoOff,
   Volume2,
 } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -293,12 +293,10 @@ export function MediaDevicesPanel({
 
       <div className="flex justify-end">
         <Button
-          variant="ghost"
-          size="sm"
+          icon={<RefreshCw />}
+          variant="quiet"
           onClick={() => void refresh()}
-          className="gap-1.5 text-muted-foreground"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
           Refresh devices
         </Button>
       </div>
@@ -349,7 +347,7 @@ function PermissionRow({
         </span>
       </div>
       {!granted && (
-        <Button size="sm" onClick={onGrant} disabled={granting || denied}>
+        <Button variant="primary" onClick={onGrant} disabled={granting || denied}>
           {granting ? "Requesting…" : denied ? "Blocked" : "Grant access"}
         </Button>
       )}
@@ -420,17 +418,15 @@ function MicLevelMeter({ disabled }: { disabled: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <Button
-        variant={testing ? "secondary" : "outline"}
-        size="sm"
+        icon={testing ? (
+          <MicOff />
+        ) : (
+          <Mic />
+        )}
+        variant={testing ? "outline" : "outline"}
         disabled={disabled}
         onClick={() => (testing ? stop() : void start())}
-        className="gap-1.5"
       >
-        {testing ? (
-          <MicOff className="h-3.5 w-3.5" />
-        ) : (
-          <Mic className="h-3.5 w-3.5" />
-        )}
         {testing ? "Stop test" : "Test mic"}
       </Button>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
@@ -517,17 +513,16 @@ function TestSpeakerButton() {
 
   return (
     <Button
+      icon={playing ? (
+        <Volume2 className="animate-pulse" />
+      ) : (
+        <Play />
+      )}
       variant="outline"
-      size="sm"
       onClick={() => void play()}
       disabled={playing}
-      className="gap-1.5 self-start"
+      className="self-start"
     >
-      {playing ? (
-        <Volume2 className="h-3.5 w-3.5 animate-pulse" />
-      ) : (
-        <Play className="h-3.5 w-3.5" />
-      )}
       {playing ? "Playing…" : "Test speaker"}
     </Button>
   );
@@ -581,7 +576,7 @@ function CameraPermissionRow({
         </span>
       </div>
       {!granted && (
-        <Button size="sm" onClick={onGrant} disabled={granting || denied}>
+        <Button variant="primary" onClick={onGrant} disabled={granting || denied}>
           {granting ? "Requesting…" : denied ? "Blocked" : "Grant access"}
         </Button>
       )}
@@ -664,17 +659,15 @@ function CameraTestTile({ disabled }: { disabled: boolean }) {
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
         <Button
-          variant={running ? "secondary" : "outline"}
-          size="sm"
+          icon={running ? (
+            <VideoOff />
+          ) : (
+            <Video />
+          )}
+          variant={running ? "outline" : "outline"}
           disabled={disabled || starting}
           onClick={() => (running ? stop() : void start())}
-          className="gap-1.5"
         >
-          {running ? (
-            <VideoOff className="h-3.5 w-3.5" />
-          ) : (
-            <Video className="h-3.5 w-3.5" />
-          )}
           {starting ? "Starting…" : running ? "Stop camera" : "Test camera"}
         </Button>
         {running && summaryText && (

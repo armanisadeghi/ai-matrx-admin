@@ -11,12 +11,26 @@ import { PrintOptionsDialog, usePrintOptions } from "@ai-matrx/print/react";
 import { Button } from "@/components/ui/button";
 import { SectionShell, StatusChip, announcePrintOutcome } from "@/features/print/components/shared";
 import { SAMPLE_DECK_TITLE, SAMPLE_FLASHCARDS } from "./sample-data";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import {
+    PRINT_FLASHCARDS_SURFACE_NAME,
+    createPrintFlashcardsScope,
+} from "@/features/surfaces/manifests/print-flashcards.manifest";
 
 export function FlashcardsSection() {
     const deck = { title: SAMPLE_DECK_TITLE, cards: SAMPLE_FLASHCARDS };
     const { open, setOpen, triggerPrint } = usePrintOptions(flashcardsPrinter, deck);
 
+    const getScope = () =>
+        createPrintFlashcardsScope({
+            deck_title: SAMPLE_DECK_TITLE,
+            card_count: SAMPLE_FLASHCARDS.length,
+            cards: SAMPLE_FLASHCARDS.map((card) => ({ front: card.front, back: card.back })),
+            layouts: flashcardsPrinter.variants.map((v) => ({ id: v.id, label: v.label, description: v.description ?? "" })),
+        });
+
     return (
+        <SurfaceRuntimeProvider surfaceName={PRINT_FLASHCARDS_SURFACE_NAME} getScope={getScope}>
         <SectionShell
             title="Flashcards"
             entry="@ai-matrx/print/flashcards · @ai-matrx/print/react → PrintOptionsDialog"
@@ -74,5 +88,6 @@ export function FlashcardsSection() {
                 onPrinted={(outcome) => announcePrintOutcome(outcome, SAMPLE_DECK_TITLE)}
             />
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

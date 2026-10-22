@@ -64,7 +64,7 @@ export function EduNoteActionBar({ noteId }: { noteId: string }) {
         <AskTutorButton
           seed={documentTutorSeed("notes", label, content)}
           label="Tutor"
-          variant="ghost"
+          variant="quiet"
         />
         <Button icon={<Boxes />} variant="primary" onClick={openConvert}>
           Convert
@@ -74,7 +74,6 @@ export function EduNoteActionBar({ noteId }: { noteId: string }) {
           resourceId={noteId}
           resourceName={label}
           isOwner={access.isOwner}
-          size="sm"
           showStatus={false}
         />
       </div>

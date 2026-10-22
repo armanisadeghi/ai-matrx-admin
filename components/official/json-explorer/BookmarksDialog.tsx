@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { BookmarksDialogProps } from "./types";
 
 const BookmarksDialog: React.FC<BookmarksDialogProps> = ({
@@ -30,18 +30,14 @@ const BookmarksDialog: React.FC<BookmarksDialogProps> = ({
                     <h3 className="font-medium">{bookmark.name}</h3>
                     <div className="flex gap-2">
                       <Button 
-                        size="sm" 
-                        variant="ghost" 
+                        variant="quiet" 
                         onClick={() => onJumpToBookmark(bookmark)}
-                        className="text-foreground dark:text-muted-foreground"
                       >
                         Go
                       </Button>
                       <Button
-                        size="sm"
-                        variant="ghost"
+                        variant="quiet"
                         onClick={() => onDeleteBookmark(index)}
-                        className="text-red-500 dark:text-red-400"
                       >
                         Delete
                       </Button>

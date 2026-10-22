@@ -16,7 +16,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'dash_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -54,10 +53,10 @@ begin
          (v_org, 'organization', v_org, c_dana,  'member', 'active');
   -- Without the switch every door refuses a person: it is off globally by design.
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
-  values ('custom','system_enabled','organization', v_org, v_org, 'true'),
-  -- VIS-19: this organization shares deliberately, which is the only setting under which
-  -- "she sees her own numbers" is a different sentence from "she sees everything".
-         ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"');
+  values ('custom','system_enabled','organization', v_org, v_org, 'true');
+  -- The retired member-visibility knob is NOT written (access ladder T-17, 2026-10-03: every member opens
+  -- every Organization record, lists hide and never lock). The member's numbers are therefore the same
+  -- rows as the admin's, which is the rule PART 6 now asserts.
 
   insert into custom.record (organization_id, table_id, data_class, data, created_by)
   values (v_org, custom.organization_kernel_id(), 'record',
@@ -106,9 +105,10 @@ begin
       'amount', (100 * v_i)::text));
   end loop;
 
-  -- A step no client door covers: the records default to the store's `internal` visibility
-  -- and the share is what narrows them. Stepping out is stated, and NOTHING is asserted while
-  -- out — the shape of the fixture is not a claim about the product.
+  -- A step no client door covers: every record is "Only me" (its owner's setting) and TEN are SHARED to Dana,
+  -- as the Share dialog writes them. Under access ladder T-17 (retired knob) a member opens every Organization
+  -- record, but "Only me" lists a row for its owner alone; an explicit share lists it for the person it names
+  -- (DASH-SHARE-COUNT, chair ruling 2026-10-22). Stepping out is stated; NOTHING is asserted while out.
   perform set_config('role', v_boss, true);
   update custom.record set created_by = c_admin, visibility = 'personal'::platform.visibility
    where organization_id = v_org and table_id = v_tbl;
@@ -324,7 +324,30 @@ begin
   if v_n <> 10 then
     raise exception '6: she was shared ten records and the dashboard tells her % — this is the whole product', v_n;
   end if;
-  raise notice 'PART 6 PASSED — the admin is told 20 and the member, on the SAME dashboard in ONE call, is told 10';
+  select count(*) into v_i from custom.query_visible_ids(v_org, v_tbl, 'viewer');
+  if v_i <> v_n then
+    raise exception '6: the dashboard counts % for her and her list door lists %', v_n, v_i;
+  end if;
+  -- And as an OUTSIDER holding the same ten shares (and the dashboard itself) she reaches the doors and is told her ten.
+  perform set_config('role', v_boss, true);
+  delete from iam.memberships where organization_id = v_org and user_id = c_dana;
+  insert into iam.permissions (resource_type, resource_id, granted_to_user_id, permission_level, status)
+  values ('record', v_dash, c_dana, 'viewer', 'active');
+  perform set_config('role', 'authenticated', true);
+  v_out := custom.dashboard_run(v_org, v_dash, '{}'::jsonb);
+  select (e -> 'rows' -> 0 -> 'measures' ->> 'count')::integer into v_n
+    from jsonb_array_elements(v_out -> 'blocks') e where e ->> 'title' = 'Opened this month';
+  if v_n is distinct from 10 then
+    raise exception '6: a shared outsider is told % on the dashboard shared to her, not her ten', v_n;
+  end if;
+  -- Back to the member's seat for what follows.
+  perform set_config('role', v_boss, true);
+  delete from iam.permissions where resource_id = v_dash and granted_to_user_id = c_dana;
+  insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
+  values (v_org, 'organization', v_org, c_dana, 'member', 'active');
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claims', c_dana_j, true);
+  raise notice 'PART 6 PASSED — the admin is told 20; the member, on the SAME dashboard in ONE call, is told her 10, and so is a shared outsider';
 
   -- ══ PART 7 — A MEMBER MAY LOOK AND MAY NOT REWRITE ════════════════════════════════════
   begin

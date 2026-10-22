@@ -26,6 +26,16 @@ import { toast } from "@/lib/toast";
 import { Select } from "@ai-matrx/design-system/controls";
 import { Field, SectionShell, StatusChip, announcePrintOutcome, controlClass } from "@/features/print/components/shared";
 import { SAMPLE_CERTIFICATE, SAMPLE_WORKBOOK_SECTIONS } from "./sample-data";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { printToolWriteHandlers } from "@/features/print/surfaces/print-tool-writes";
+import {
+    PRINT_CERTIFICATES_FIELDS,
+    PRINT_CERTIFICATES_FORM_TARGET,
+    PRINT_CERTIFICATES_SURFACE_NAME,
+    createPrintCertificatesScope,
+    parseSignatureLines,
+} from "@/features/surfaces/manifests/print-certificates.manifest";
 
 export function CertificateSection() {
     const [cert, setCert] = useState<CertificateData>(SAMPLE_CERTIFICATE);
@@ -79,7 +89,63 @@ export function CertificateSection() {
         }
     };
 
+    const getScope = () =>
+        createPrintCertificatesScope({
+            recipient_name: cert.recipientName,
+            certificate_date: cert.date ?? "",
+            certificate_title: cert.title,
+            certificate_subtitle: cert.subtitle ?? "",
+            certificate_body: cert.body ?? "",
+            variant,
+            include_toc: includeToc,
+            end_on_certificate: endOnCertificate,
+            signatures: signatures.map((sig) => ({ name: sig.name ?? "", role: sig.role })),
+            workbook_title: workbookSpec.title,
+            workbook_sections: SAMPLE_WORKBOOK_SECTIONS.map((section) => ({
+                title: section.title,
+                content_pages: section.pagesHtml.length,
+            })),
+            workbook_page_count: composedPages.length,
+        });
+
+    const getWriteHandlers = () => ({
+        ...printToolWriteHandlers(
+            PRINT_CERTIFICATES_FIELDS,
+            PRINT_CERTIFICATES_FORM_TARGET,
+            (patch) => {
+                setCert((prev) => ({
+                    ...prev,
+                    ...(typeof patch.recipient_name === "string" ? { recipientName: patch.recipient_name } : {}),
+                    ...(typeof patch.certificate_date === "string" ? { date: patch.certificate_date } : {}),
+                    ...(typeof patch.certificate_title === "string" ? { title: patch.certificate_title } : {}),
+                    ...(typeof patch.certificate_subtitle === "string" ? { subtitle: patch.certificate_subtitle } : {}),
+                    ...(typeof patch.certificate_body === "string" ? { body: patch.certificate_body } : {}),
+                }));
+                if (typeof patch.variant === "string") setVariant(patch.variant as CertificateVariant);
+                if (typeof patch.include_toc === "boolean") setIncludeToc(patch.include_toc);
+                if (typeof patch.end_on_certificate === "boolean") setEndOnCertificate(patch.end_on_certificate);
+            },
+            { variant: certificatePrinter.variants.map((v) => v.id) },
+        ),
+        signatures: {
+            validate: (value: unknown) => {
+                try {
+                    parseSignatureLines(value, signatures.length);
+                } catch (err) {
+                    refuseSurfaceWrite((err as Error).message);
+                }
+            },
+            apply: (value: unknown) => {
+                const lines = parseSignatureLines(value, signatures.length);
+                setCert((prev) => ({ ...prev, signatures: lines }));
+                return { summary: `Set ${lines.length} signature lines on the form. Nothing was printed.`, data: lines };
+            },
+        },
+    });
+
     return (
+        // surface-write-handlers: recipient_name, certificate_date, certificate_title, certificate_subtitle, certificate_body, certificate_settings
+        <SurfaceRuntimeProvider surfaceName={PRINT_CERTIFICATES_SURFACE_NAME} getScope={getScope} getWriteHandlers={getWriteHandlers}>
         <SectionShell
             title="Certificate & workbook"
             entry="@ai-matrx/print/certificate"
@@ -237,5 +303,6 @@ export function CertificateSection() {
                 </div>
             </div>
         </SectionShell>
+        </SurfaceRuntimeProvider>
     );
 }

@@ -15,7 +15,7 @@
 
 import React, { useState } from "react";
 import { Building2, FolderKanban, ListTodo, Tags } from "lucide-react";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
@@ -248,12 +248,7 @@ export function EngagementPicker({
           aria-haspopup="dialog"
           aria-expanded={open}
           data-engagement-picker="field"
-          className={cn(
-            "h-8 w-full max-w-md justify-between gap-2 px-2 text-xs font-normal",
-            chain.length === 0 && tagCount === 0 && "text-muted-foreground",
-            missingProject && "border-destructive text-destructive",
-            className,
-          )}
+          className={cn("w-full max-w-md justify-between", className)}
         >
           <span className="flex min-w-0 items-center gap-1.5">
             <LeadIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />

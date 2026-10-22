@@ -21,7 +21,7 @@ import {
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -535,14 +535,12 @@ export function FieldFormatPicker({
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
+                    icon={<Settings2 />}
                     type="button"
                     variant="outline"
-                    size="icon"
-                    className="h-7 w-7 shrink-0"
+                    className="shrink-0"
                     aria-label={`Format options for ${def?.label ?? "Text"}`}
-                  >
-                    <Settings2 className="h-3.5 w-3.5" />
-                  </Button>
+                  />
                 </PopoverTrigger>
                 <PopoverContent
                   sizing="content"

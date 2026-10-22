@@ -106,8 +106,7 @@ export function DeckCard({
           resourceId={deck.id}
           returnPath={viewHref}
           label="Study a copy"
-          size="sm"
-          variant="secondary"
+          variant="outline"
         />
         {isSignedIn ? (
           <SuggestEditDialog deckId={deck.id} deckName={deck.name} />

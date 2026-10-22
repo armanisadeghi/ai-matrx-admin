@@ -105,7 +105,7 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectDisplayName } from "@/lib/redux/selectors/userSelectors";
 import { RemoteDocCarets } from "@/features/documents/components/RemoteDocCarets";
 import { useDocComments } from "@/features/documents/components/useDocComments";
-import { Button } from "@ai-matrx/design-system";
+import { Button } from "@/components/ui/button";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
@@ -1028,27 +1028,23 @@ export default function DocumentEditor({
           )}
           {editable && bootState === "ready" && (
             <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 px-2 text-xs"
+              icon={<Save />}
+              variant="quiet"
               onClick={handleSaveNow}
               disabled={saveStatus === "saving"}
               title="Save a labeled snapshot now (bypass autosave debounce)"
             >
-              <Save className="size-3" />
               <span className="hidden sm:inline">Save now</span>
             </Button>
           )}
           {bootState === "ready" && toolbarRightSlot}
           <Button
-            variant="ghost"
-            size="sm"
-            className={cn("h-7 gap-1 px-2 text-xs", snapshotHistory.isVisible && "bg-accent text-accent-foreground")}
+            icon={<History />}
+            variant="quiet"
             onClick={snapshotHistory.toggle}
             aria-pressed={snapshotHistory.isVisible}
             title="View snapshot history"
           >
-            <History className="size-3" />
             <span className="hidden sm:inline">History</span>
           </Button>
         </div>
