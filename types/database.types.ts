@@ -158642,6 +158642,17 @@ export type Database = {
           why: string
         }[]
       }
+      brand_audience_answer: {
+        Args: {
+          p_action?: string
+          p_brand_id: string
+          p_name: string
+          p_origin?: string
+          p_row: string
+          p_via?: string
+        }
+        Returns: Json
+      }
       brand_choice_correct: {
         Args: {
           p_action?: string
