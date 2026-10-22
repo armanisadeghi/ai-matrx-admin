@@ -76,7 +76,7 @@ def conn():
         if '=' in line and not line.lstrip().startswith('#'):
             k, v = line.split('=', 1)
             env[k.strip()] = v.strip().strip('"').strip("'")
-    return psycopg.connect(host=env['SUPABASE_MATRIX_HOST'], port=env['SUPABASE_MATRIX_PORT'],
+    return psycopg.connect(host=env['SUPABASE_MATRIX_HOST'], port=5432,
                            dbname=env['SUPABASE_MATRIX_DATABASE_NAME'], user=env['SUPABASE_MATRIX_USER'],
                            password=env['SUPABASE_MATRIX_PASSWORD'], autocommit=True, prepare_threshold=None)
 

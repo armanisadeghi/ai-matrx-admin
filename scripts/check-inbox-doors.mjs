@@ -27,7 +27,7 @@ const check = (name, ok, detail = "") => {
   console.log(`${ok ? "PASS" : "FAIL"} ${name}${detail ? " — " + detail : ""}`);
 };
 try {
-  await client.query("begin");
+  await client.query("begin read write");
   await client.query("set local lock_timeout = '2s'");
   await client.query("set local statement_timeout = '60s'");
   if (plant) {

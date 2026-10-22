@@ -7,7 +7,7 @@ import { dsnFor } from './lib/pooled-db.mjs';
 const db = new pg.Client({ connectionString: dsnFor('production', { app: 'stripe-lifecycle-proof' }) });
 await db.connect();
 try {
-  await db.query('begin');
+  await db.query('begin read write');
   await db.query("set local lock_timeout='2s'");
   await db.query("set local statement_timeout='15s'");
   await db.query("select set_config('app.actor_tier','system',true), set_config('app.actor_system','stripe.lifecycle.proof',true)");

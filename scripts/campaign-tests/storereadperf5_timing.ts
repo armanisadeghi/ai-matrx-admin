@@ -55,7 +55,7 @@ async function main() {
   console.log(`# timing on ${u} (${env.from}), ${RUNS} warm calls each, one transaction per call`);
 
   async function timed(uid: string, sql: string, params: unknown[], switchOn = false): Promise<number> {
-    await client.query("begin");
+    await client.query("begin read write");
     try {
       await client.query(
         "select set_config('request.jwt.claims', json_build_object('sub', $1::text, 'role', 'authenticated')::text, true)",

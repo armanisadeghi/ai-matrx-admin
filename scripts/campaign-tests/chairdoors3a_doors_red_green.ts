@@ -130,7 +130,7 @@ async function main() {
     let off: Answer = { ok: false, code: "?", message: "not run" }, leave: Answer = off;
     let proofTable: string | null = null;
     try {
-      await two.query("begin");
+      await two.query("begin read write");
       await two.query("set local lock_timeout = '120s'");
       await two.query("set local statement_timeout = '900s'");
       console.log("# E4/E5: a second connection makes the proof table …");
@@ -148,7 +148,7 @@ async function main() {
         [proofTable, "CLONE PROOF ONLY - not Arman's words: a clone-only table, archived by the same proof"]);
       await two.query("commit");
       const attempt = async (sql: string): Promise<Answer> => {
-        try { await two.query("begin"); await two.query("set local lock_timeout = '120s'"); await two.query(sql, [ORG, proofTable]); await two.query("rollback"); return { ok: true, rows: [] }; }
+        try { await two.query("begin read write"); await two.query("set local lock_timeout = '120s'"); await two.query(sql, [ORG, proofTable]); await two.query("rollback"); return { ok: true, rows: [] }; }
         catch (e) { await two.query("rollback").catch(() => {}); const err = e as { code?: string; message?: string }; return { ok: false, code: err.code ?? "?", message: err.message ?? "" }; }
       };
       off = await attempt("update custom.record set data = data - 'maker_is_reader' where organization_id = $1::uuid and id = $2::uuid");
@@ -156,7 +156,7 @@ async function main() {
     } finally {
       if (proofTable) {
         // The maker owns it again, then archives it through the Table's own door, as herself.
-        await two.query("begin");
+        await two.query("begin read write");
         await two.query("set local lock_timeout = '120s'");
         await two.query("select custom.set_table_confidential_arman_explicitly_approved($1::uuid, null, $2, current_date, false)", [proofTable, "CLONE PROOF ONLY - not Arman's words: the proof is over"]);
         await two.query("select set_config('request.jwt.claims', json_build_object('sub', $1::text, 'role', 'authenticated')::text, true)", [ADMIN]);
@@ -171,7 +171,7 @@ async function main() {
     return { off, leave };
   })();
 
-  await client.query("begin");
+  await client.query("begin read write");
   try {
     await client.query("set local statement_timeout = '900s'");
     console.log("# fixtures …");

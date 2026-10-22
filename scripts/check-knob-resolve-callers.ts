@@ -216,7 +216,7 @@ async function main(): Promise<number> {
 
   try {
     if (SELF_TEST) {
-      await client.query("begin");
+      await client.query("begin read write");
       let planted: Finding[] = [];
       try {
         await client.query(PLANT_SQL);

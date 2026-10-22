@@ -18,6 +18,11 @@
  *      always runs) (any file).
  *   R3 production on the transaction pooler — `6543`, or a DSN / PGPORT / port built from
  *      SUPABASE_MATRIX_PORT (production's value is 6543), in a file that can reach production.
+ *   R4 plain write-transaction `begin` — a bare `begin` / `start transaction` string inherits a LEAKED
+ *      `default_transaction_read_only = on` from a pooled backend ("cannot execute INSERT in a read-only
+ *      transaction", release v0.4.3450). Say `begin read write`, or go through a governed client (gate-db /
+ *      production-guard / direct-db / check-target), whose seam `withReadWriteBegin` does it for you. No
+ *      baseline: every hit fails (a file that reaches production and uses none of those seams).
  * R1, R2 and R3 are a RATCHET: files that held them on 2026-10-01 are counted in
  * scripts/lib/pooler-leak-grandfathered.json; a new file or a higher count fails. Move a file onto
  * pooled-db.mjs and the count drops (`--print-baseline` prints the current counts).
@@ -48,6 +53,11 @@ const R3_LITERAL = /(brsgrqvjdzwihsvnfqkf[^\s"'`]*:6543|aws-1-us-east-1\.pooler\
 const R3_READS_PORT = /(\w\s*\[\s*["']SUPABASE_MATRIX_PORT|\w\??\.SUPABASE_MATRIX_PORT|\$\{?SUPABASE_MATRIX_PORT|\(\s*["']SUPABASE_MATRIX_PORT)/;
 const R3_IN_CONNECTION = /(postgres(ql)?:\/\/|PGPORT|port\s*[:=(]|:\$\{|@\$\{|\bport\b|-p\b|make_conninfo|connect\()/i;
 const REACHES_PRODUCTION = /SUPABASE_MATRIX_(HOST|PASSWORD|PORT|USER)|loadDbEnv|direct-db|gate-db|dsnFor\(\s*["'`]production|brsgrqvjdzwihsvnfqkf|governProduction|guardIfProduction/;
+
+// A bare begin string (query("begin"), "BEGIN;", `begin`, a line `begin;`) — "begin read write" does not match.
+const R4_PLAIN_BEGIN = /(?:["'`]\s*|^\s*|;\s*)(?:begin|start\s+transaction)\s*(?:work|transaction)?\s*(?:;|["'`])/i;
+// The seams that rewrite a plain begin to READ WRITE (scripts/lib/gate-db.ts `withReadWriteBegin`).
+const GOVERNED_SEAM = /governProduction|guardIfProduction|openGateDb|withGateDb|connectDirect|openCheckDb|connectCheckDirect|governClient|governTransactions|resolveCheckDb|gate-db/;
 
 const EXT = new Set([".ts", ".tsx", ".mjs", ".js", ".cjs", ".sh", ".py", ".sql"]);
 const SKIP_DIR = new Set(["node_modules", ".git", ".next", "dist", "evidence"]);
@@ -81,6 +91,7 @@ export function scan(roots, base = REPO) {
     for (const f of files) {
       const text = readFileSync(f, "utf8");
       const prod = REACHES_PRODUCTION.test(text);
+      const governed = GOVERNED_SEAM.test(text);
       const file = relative(base, f);
       if (FIXTURES.has(file)) continue;
       text.split("\n").forEach((line, i) => {
@@ -89,6 +100,7 @@ export function scan(roots, base = REPO) {
         if (!line.includes(ALLOW_R0) && R0.some((re) => re.test(line))) add("R0");
         if (line.includes(ALLOW)) return;
         if (prod && !line.includes(ALLOW_R0) && ((R1_SET.test(line) && !R1_NOT_A_SESSION_SET.test(line)) || R1_SET_ROLE.test(line) || R1_SET_CONFIG.test(line))) add("R1");
+        if (prod && !governed && !/\.replace\(/.test(line) && R4_PLAIN_BEGIN.test(line)) add("R4");
         if (R2_DASH_C.test(line) && R2_BEGIN_RO.test(line)) add("R2");
         if (R3_LITERAL.test(line) || (prod && R3_READS_PORT.test(line) && R3_IN_CONNECTION.test(line))) add("R3");
       });
@@ -105,7 +117,7 @@ function counts(hits) {
 }
 
 export function judge(hits, baseline, { stale = true } = {}) {
-  const bad = hits.filter((h) => h.rule === "R0");
+  const bad = hits.filter((h) => h.rule === "R0" || h.rule === "R4");
   const now = counts(hits);
   for (const rule of ["R1", "R2", "R3"]) {
     for (const [file, n] of Object.entries(now[rule])) {
@@ -127,11 +139,12 @@ const REMEDY = {
   R0: "read-only is `begin read only` … `rollback` (or `set local` inside a transaction), never a session SET",
   R1: "a session SET outlives the transaction on a pooled backend — use `set local` inside the transaction (or pooled-db.mjs)",
   R2: "one `-c` string cannot guarantee its rollback — use psqlRead() from scripts/lib/pooled-db.mjs (stdin, ON_ERROR_STOP=0)",
+  R4: "a bare `begin` inherits a leaked read-only default on a pooled backend — write `begin read write` (or use a governed client from scripts/lib/gate-db.ts)",
   R3: "production is reached on the session pooler :5432 only — dsnFor('production') from scripts/lib/pooled-db.mjs",
 };
 
 function report(bad) {
-  if (!bad.length) { console.log("check:no-session-read-only — clean (R0–R3; R1–R3 within the grandfathered counts)"); return 0; }
+  if (!bad.length) { console.log("check:no-session-read-only — clean (R0–R4; R1–R3 within the grandfathered counts)"); return 0; }
   console.error(`check:no-session-read-only — ${bad.length} hit(s) that can leave state on a pooled backend:`);
   for (const h of bad) console.error(`  [${h.rule}] ${h.file}:${h.line}: ${h.text}${h.over ? `  (${h.over})` : ""}`);
   for (const r of new Set(bad.map((h) => h.rule))) console.error(`  ${r}: ${REMEDY[r]}`);
@@ -148,6 +161,7 @@ function selfTest() {
       R1: [`await c.query("set statement_timeout = '60s'");`, `spawnSync(PSQL, [dsn, "-c", "set lock_timeout='2s'; select 1"]);`,
         "await c.query(\"select set_config('search_path', 'public', false)\");", 'cur.execute("SET ROLE authenticated")'],
       R2: ['spawnSync(PSQL, [DSN, "-At", "-c", `begin read only; ${sql}; commit;`]);', 'psql "$DSN" -c "begin read only; select 1/0; rollback;"'],
+      R4: ['await c.query("begin");', "await c.query('BEGIN');", 'cur.execute("begin")', 'psql "$DSN" <<SQL\nbegin;\nSQL', 'await c.query(`start transaction`);'],
       R3: ['const dsn = "postgresql://postgres.brsgrqvjdzwihsvnfqkf:pw@aws-1-us-east-1.pooler.supabase.com:6543/postgres";',
         "const url = `postgresql://${u}:${p}@${h}:${process.env.SUPABASE_MATRIX_PORT}/postgres`;", 'export PGPORT="$SUPABASE_MATRIX_PORT"',
         '"PGPORT": e["SUPABASE_MATRIX_PORT"], "PGDATABASE": e["SUPABASE_MATRIX_DATABASE_NAME"]}',
@@ -155,6 +169,10 @@ function selfTest() {
     };
     const good = [
       'await c.query("begin read only");',
+      'await c.query("begin read write");',
+      'cur.execute("BEGIN READ WRITE")',
+      "begin read write;",
+      'body = body.replace("begin;\\n", "", 1)',
       "await c.query(\"set local statement_timeout = '60s'\");",
       "await c.query(\"select set_config('statement_timeout', '60s', true)\");",
       "create function f() returns int language sql security definer set search_path = pg_catalog as $$ select 1 $$;",
@@ -179,6 +197,10 @@ function selfTest() {
     writeFileSync(join(g, "good.ts"), [PROD, ...good].join("\n"));
     const fp = judge(scan([g], dir), { R1: {}, R2: {}, R3: {} });
     for (const h of fp) { ok = false; console.log(`  GREEN false positive [${h.rule}]: ${h.text}`); }
+    // R4 does not fire in a file that goes through a governed client (the seam rewrites the begin).
+    const gv = join(dir, "governed"); mkdirSync(gv);
+    writeFileSync(join(gv, "ok.ts"), `${PROD}\nimport { withGateDb } from "./lib/gate-db";\nawait c.query("begin");\n`);
+    for (const h of judge(scan([gv], dir), { R1: {}, R2: {}, R3: {} })) { ok = false; console.log(`  GREEN false positive (governed) [${h.rule}]: ${h.text}`); }
     // Ratchet: a grandfathered count passes; one more fails.
     const r = join(dir, "ratchet"); mkdirSync(r);
     writeFileSync(join(r, "old.ts"), `${PROD}\nawait c.query("set statement_timeout = '1s'");\n`);
@@ -190,7 +212,7 @@ function selfTest() {
     const stale = judge(scan([r], dir), base).some((h) => h.text.startsWith("stale"));
     if (!within || !over || !stale) { ok = false; console.log(`  ratchet wrong: within=${within} over=${over} stale=${stale}`); }
     const n = Object.values(cases).flat().length;
-    console.log(`self-test: ${n} red cases across R0–R3, ${good.length} green cases, ratchet within/over/stale — ${ok ? "ok" : "WRONG"}`);
+    console.log(`self-test: ${n} red cases across R0–R4, ${good.length} green cases, ratchet within/over/stale — ${ok ? "ok" : "WRONG"}`);
     return ok ? 0 : 1;
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }

@@ -30,7 +30,7 @@ function env() {
 }
 const e = env();
 const client = new pg.Client({
-  host: e.SUPABASE_MATRIX_HOST, port: Number(e.SUPABASE_MATRIX_PORT ?? 5432),
+  host: e.SUPABASE_MATRIX_HOST, port: 5432 /* session pooler */,
   database: e.SUPABASE_MATRIX_DATABASE_NAME ?? e.SUPABASE_MATRIX_DB_NAME ?? e.SUPABASE_MATRIX_DATABASE,
   user: e.SUPABASE_MATRIX_USER, password: e.SUPABASE_MATRIX_PASSWORD, ssl: { rejectUnauthorized: false },
 });

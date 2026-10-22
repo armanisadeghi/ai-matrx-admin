@@ -34,7 +34,7 @@ for (const line of readFileSync(resolve(ROOT, "../aidream/.env"), "utf8").split(
   if (m) env[m[1]] = m[2].replace(/^["']|["']$/g, "");
 }
 const client = new pg.Client({
-  host: env.SUPABASE_MATRIX_HOST, port: Number(env.SUPABASE_MATRIX_PORT), user: env.SUPABASE_MATRIX_USER,
+  host: env.SUPABASE_MATRIX_HOST, port: 5432 /* session pooler */, user: env.SUPABASE_MATRIX_USER,
   password: env.SUPABASE_MATRIX_PASSWORD, database: env.SUPABASE_MATRIX_DATABASE_NAME, ssl: { rejectUnauthorized: false },
   connectionTimeoutMillis: 15000,
 });

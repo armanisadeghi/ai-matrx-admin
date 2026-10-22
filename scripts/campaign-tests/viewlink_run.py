@@ -15,7 +15,7 @@ for line in open("/Users/armanisadeghi/code/aidream/.env"):
     m = re.match(r"^(SUPABASE_MATRIX_\w+)=(.*)$", line.strip())
     if m:
         env[m[1]] = m[2].strip().strip('"').strip("'")
-conn = psycopg.connect(host=env["SUPABASE_MATRIX_HOST"], port=env.get("SUPABASE_MATRIX_PORT", 5432), user=env["SUPABASE_MATRIX_USER"],
+conn = psycopg.connect(host=env["SUPABASE_MATRIX_HOST"], port=5432, user=env["SUPABASE_MATRIX_USER"],
                        password=env["SUPABASE_MATRIX_PASSWORD"], dbname=env["SUPABASE_MATRIX_DATABASE_NAME"], autocommit=False, prepare_threshold=None)
 notices = []
 conn.add_notice_handler(lambda d: notices.append(d.message_primary))

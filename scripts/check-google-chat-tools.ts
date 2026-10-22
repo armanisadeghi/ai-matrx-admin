@@ -55,7 +55,6 @@ async function main(): Promise<number> {
   const tools = GOOGLE_CHAT_TOOL_NAMES.filter((name) => !name.startsWith(BUNDLE_PREFIX));
   const bundles = GOOGLE_CHAT_TOOL_NAMES.filter((name) => name.startsWith(BUNDLE_PREFIX)).map((name) => name.slice(BUNDLE_PREFIX.length));
   const live = await withGateDb(env, { gate: "check:google-chat-tools" }, async (db) => {
-    await db.query("set role none");
     const definitions = await db.query("select name from tool.definition where name = any($1) and deleted_at is null", [tools]);
     const bundleRows = await db.query("select name from tool.bundle where name = any($1) and deleted_at is null", [bundles]);
     return { definitions: new Set(definitions.rows.map((r) => r.name as string)), bundles: new Set(bundleRows.rows.map((r) => r.name as string)) };

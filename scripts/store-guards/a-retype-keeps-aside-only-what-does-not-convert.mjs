@@ -55,7 +55,7 @@ function liveUrl() {
   const get = (k) => [...env.matchAll(new RegExp(`^${k}=(.*)$`, "gm"))].pop()?.[1]?.trim().replace(/^["']|["']$/g, "");
   return {
     host: get("SUPABASE_MATRIX_HOST"),
-    port: Number(get("SUPABASE_MATRIX_PORT") || 5432),
+    port: 5432 /* session pooler */,
     database: get("SUPABASE_MATRIX_DATABASE_NAME"),
     user: get("SUPABASE_MATRIX_USER"),
     password: get("SUPABASE_MATRIX_PASSWORD"),
@@ -70,7 +70,7 @@ await client.connect();
 const failures = [];
 const started = Date.now();
 try {
-  await client.query("begin");
+  await client.query("begin read write");
   await client.query("set local statement_timeout = '60s'");
   if (applyFile) await client.query(readFileSync(resolve(process.cwd(), applyFile), "utf8"));
   await client.query("select set_config('request.jwt.claims', $1, true), set_config('app.actor_system', 'store-guard/a-retype-keeps-aside-only-what-does-not-convert', true)", [ADMIN_CLAIMS]);

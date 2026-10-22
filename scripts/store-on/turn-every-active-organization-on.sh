@@ -110,7 +110,7 @@ flush() {
   (( ${#BUF} == 0 )) && return 0
   local LIST="$(print -r -- "${(j:,:)BUF}")"
   pg -X -q -v ON_ERROR_STOP=1 <<SQL
-begin;
+begin read write;
 set local lock_timeout = '2s';
 set local statement_timeout = '5min';
 do \$chunk\$

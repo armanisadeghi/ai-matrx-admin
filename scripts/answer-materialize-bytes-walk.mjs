@@ -87,7 +87,7 @@ for (let i = 0; i < 90 && !conversationId; i++) {
   conversationId = page.url().match(/\/chat\/(?:c\/)?([0-9a-f-]{36})/)?.[1] ?? null;
 }
 const db = new pg.Client({
-  host: dbEnv.SUPABASE_MATRIX_HOST, port: Number(dbEnv.SUPABASE_MATRIX_PORT ?? 5432),
+  host: dbEnv.SUPABASE_MATRIX_HOST, port: 5432 /* session pooler */,
   user: dbEnv.SUPABASE_MATRIX_USER, password: dbEnv.SUPABASE_MATRIX_PASSWORD,
   database: dbEnv.SUPABASE_MATRIX_DATABASE_NAME ?? "postgres", ssl: { rejectUnauthorized: false },
   application_name: "answer-materialize-bytes-walk",

@@ -112,6 +112,19 @@ export function gateSessionCap(requested: number, gate: string): number {
 
 const TIMEOUT_GUCS = "statement_timeout|lock_timeout|idle_in_transaction_session_timeout";
 const BEGIN_RE = /^\s*(begin|start\s+transaction)\b/i;
+/**
+ * THE READ-WRITE SEAM. A script that connects through the Supabase TRANSACTION pooler (:6543) can be handed a
+ * backend carrying another client's leaked `default_transaction_read_only = on`; a plain `BEGIN` inherits it and
+ * the first write fails "cannot execute INSERT in a read-only transaction" (release v0.4.3450, surface sync).
+ * Every transaction a governed client opens therefore names its access mode: a plain `begin` / `start transaction`
+ * (alone, or leading a batch) becomes `... read write`. An explicit `read only` / `read write` is left as written.
+ */
+export function withReadWriteBegin(sql: string): string {
+  const m = /^(\s*(?:begin|start\s+transaction)\b)([^;]*)(;|$)/i.exec(sql);
+  if (!m || /\bread\s+(only|write)\b/i.test(m[2]!)) return sql;
+  return `${m[1]!}${m[2]!.replace(/\s+$/, "")} read write${m[3]!}${sql.slice(m[0].length)}`;
+}
+
 const END_RE = /^\s*(commit|end|abort|rollback)(\s+(work|transaction))?\s*(and\s+(no\s+)?chain\s*)?;?\s*$/i;
 const SESSION_SET_RE = new RegExp(
   `(^|;)\\s*set\\s+(session\\s+)?(${TIMEOUT_GUCS})\\b`,
@@ -255,7 +268,12 @@ export function governTransactions<T extends { query: QueryFn; end: () => Promis
   let ended = false;
 
   const governed: QueryFn = async (...args: unknown[]) => {
-    const first = args[0];
+    let first = args[0];
+    if (typeof first === "string") args[0] = first = withReadWriteBegin(first);
+    else if (first && typeof first === "object" && typeof (first as { text?: unknown }).text === "string") {
+      const cfg = first as { text: string };
+      args[0] = first = { ...cfg, text: withReadWriteBegin(cfg.text) };
+    }
     const text =
       typeof first === "string"
         ? first
@@ -293,7 +311,7 @@ export function governTransactions<T extends { query: QueryFn; end: () => Promis
     }
 
     // A bare statement: its own short transaction, so the limits hold for it and die with it.
-    await raw("begin");
+    await raw("begin read write");
     try {
       await raw(limits);
       const out = await raw(...args);

@@ -48,7 +48,7 @@ TMP="$(mktemp -d)"
 # refuses an automated write that does not say which system it is.
 cleanup() {
   "$PSQL" "$DSN" -q -c "
-    begin;
+    begin read write;
     select set_config('app.actor_system','campaign-test/storet_b1', true);
     delete from custom.record          where organization_id='$ORG'::uuid;
     delete from custom.io_outbox       where organization_id='$ORG'::uuid;
@@ -75,7 +75,7 @@ fi
 # ONE TRANSACTION, because the connection is the transaction pooler: a session GUC set by one
 # statement is not there for the next one unless both are inside the same transaction.
 read -r TBL FLD <<<"$("$PSQL" "$DSN" -At -F' ' -v ON_ERROR_STOP=1 <<SQL | grep -E '^[0-9a-f-]{36} [0-9a-f-]{36}$' | tail -1
-begin;
+begin read write;
 do \$f\$
 declare v_home uuid; v_tbl uuid; v_fld uuid;
 begin
@@ -112,7 +112,7 @@ for who in a b; do
   cat > "$TMP/$who.sql" <<SQL
 \set ON_ERROR_STOP on
 \timing on
-begin;
+begin read write;
 set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"$ADMIN","role":"authenticated"}', true);
 select set_config('app.actor_system','campaign-test/storet_b1', true);

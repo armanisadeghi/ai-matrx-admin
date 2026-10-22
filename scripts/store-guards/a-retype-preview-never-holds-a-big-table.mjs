@@ -31,7 +31,7 @@ const WORDS = ["Ordered", "Shipped", "Received", "Backordered", "Returned"];
 function liveUrl() {
   const env = readFileSync(resolve(ROOT, "../aidream/.env"), "utf8");
   const get = (k) => [...env.matchAll(new RegExp(`^${k}=(.*)$`, "gm"))].pop()?.[1]?.trim().replace(/^["']|["']$/g, "");
-  return { host: get("SUPABASE_MATRIX_HOST"), port: Number(get("SUPABASE_MATRIX_PORT") || 5432), database: get("SUPABASE_MATRIX_DATABASE_NAME"),
+  return { host: get("SUPABASE_MATRIX_HOST"), port: 5432 /* session pooler */, database: get("SUPABASE_MATRIX_DATABASE_NAME"),
     user: get("SUPABASE_MATRIX_USER"), password: get("SUPABASE_MATRIX_PASSWORD"), ssl: { rejectUnauthorized: false } };
 }
 
@@ -41,7 +41,7 @@ const client = new pg.Client(liveUrl());
 await client.connect();
 const failures = [];
 try {
-  await client.query("begin");
+  await client.query("begin read write");
   await client.query("set local statement_timeout = '120s'");
   if (applyFile) await client.query(readFileSync(resolve(process.cwd(), applyFile), "utf8"));
   await client.query("select set_config('request.jwt.claims', $1, true), set_config('app.actor_system', 'store-guard/a-retype-preview-never-holds-a-big-table', true)", [ADMIN_CLAIMS]);

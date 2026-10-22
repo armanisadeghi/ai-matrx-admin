@@ -82,7 +82,7 @@ async function main() {
   async function grant() {
     for (let k = 0; k < 6; k++) {
       try {
-        await client.query("begin");
+        await client.query("begin read write");
         await client.query("select set_config('platform.definer_sweep', '1', true)");
         await client.query(`grant execute on function ${A}(uuid) to authenticated`);
         if (AS_BEFORE) await client.query(`grant execute on function ${B}(uuid) to authenticated`);
@@ -95,7 +95,7 @@ async function main() {
     }
     throw new Error("UNMEASURED: could not grant the pg_temp copy");
   }
-  await client.query("begin");
+  await client.query("begin read write");
   await client.query("select set_config('platform.definer_sweep', '1', true)");
   await client.query(bodyAs(A));
   if (AS_BEFORE) await client.query(bodyAs(B));
@@ -105,7 +105,7 @@ async function main() {
   async function inSeat<T>(uid: string, fn: () => Promise<T>, prep: string[] = []): Promise<T> {
     for (let k = 0; ; k++) {
       if (k > 0) await grant();
-      await client.query("begin");
+      await client.query("begin read write");
       try {
         for (const p of prep) await client.query(p);
         await client.query(

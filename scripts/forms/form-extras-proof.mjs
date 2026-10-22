@@ -57,7 +57,7 @@ const expectRaise = async (fn, words) => {
 };
 
 try {
-  await db.query("begin");
+  await db.query("begin read write");
   await db.query("set local statement_timeout = '60s'");
   if (rehearse) await db.query(fs.readFileSync(MIGRATION, "utf8"));
   const secret = randomBytes(24).toString("base64url");

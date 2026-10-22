@@ -178,7 +178,7 @@ async function rungCensus(plant?: string): Promise<
     if (plant) {
       // The self-test plants inside a transaction it ALWAYS rolls back, so the
       // live catalog and registry are never touched.
-      await client.query("begin");
+      await client.query("begin read write");
       await client.query(plant);
     }
     const named = new Map<string, Set<string>>();

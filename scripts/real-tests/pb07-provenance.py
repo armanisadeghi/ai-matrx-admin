@@ -391,7 +391,7 @@ def connect():
         if "=" in line and not line.startswith("#"):
             k, v = line.split("=", 1)
             env[k.strip()] = v.strip().strip('"')
-    return psycopg.connect(host=env["SUPABASE_MATRIX_HOST"], port=env.get("SUPABASE_MATRIX_PORT", "5432"),
+    return psycopg.connect(host=env["SUPABASE_MATRIX_HOST"], port=5432,
                            dbname=env["SUPABASE_MATRIX_DATABASE_NAME"], user=env["SUPABASE_MATRIX_USER"],
                            password=env["SUPABASE_MATRIX_PASSWORD"], sslmode="require")
 

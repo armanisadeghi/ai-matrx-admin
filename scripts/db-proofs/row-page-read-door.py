@@ -2,7 +2,7 @@
 import sys, json, psycopg
 from dotenv import dotenv_values
 e = dotenv_values('/Users/armanisadeghi/code/aidream/.env')
-c = psycopg.connect(host=e['SUPABASE_MATRIX_HOST'], port=e['SUPABASE_MATRIX_PORT'], user=e['SUPABASE_MATRIX_USER'], password=e['SUPABASE_MATRIX_PASSWORD'], dbname=e['SUPABASE_MATRIX_DATABASE_NAME'], autocommit=False)
+c = psycopg.connect(host=e['SUPABASE_MATRIX_HOST'], port=5432, user=e['SUPABASE_MATRIX_USER'], password=e['SUPABASE_MATRIX_PASSWORD'], dbname=e['SUPABASE_MATRIX_DATABASE_NAME'], autocommit=False)
 cur = c.cursor()
 cur.execute("set local statement_timeout='30s'; set local lock_timeout='5s'")
 cur.execute(open('/Users/armanisadeghi/code/matrx-frontend/migrations/campaign/row_pages_read_door.sql').read())

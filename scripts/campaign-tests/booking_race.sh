@@ -70,7 +70,7 @@ trap cleanup EXIT
 echo "── fixtures (organization $ORG) ─────────────────────────────────────────────"
 cat > "$WORK/up.sql" <<SQL
 \set ON_ERROR_STOP on
-begin;
+begin read write;
 -- Other lanes are writing this database continuously and iam.organizations is the busiest
 -- table on it. A two-second default turns contention into a red suite, which is the one
 -- thing a suite must never say when nothing is wrong.
@@ -153,7 +153,7 @@ echo "   racing for $SLOT"
 
 echo "── the race ─────────────────────────────────────────────────────────────────"
 cat > "$WORK/a.sql" <<SQL
-begin;
+begin read write;
 set local role service_role;
 select 'A|' || state || '|' || coalesce(hold_id::text,'-')
   from custom.booking_hold('$FORM'::uuid, '$SLOT', 'https://race.test', 'bucket-a', 'a');
@@ -161,7 +161,7 @@ select pg_sleep(5);
 commit;
 SQL
 cat > "$WORK/b.sql" <<SQL
-begin;
+begin read write;
 set local role service_role;
 select 'B|' || state || '|' || coalesce(message,'-')
   from custom.booking_hold('$FORM'::uuid, '$SLOT', 'https://race.test', 'bucket-b', 'b');

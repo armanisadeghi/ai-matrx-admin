@@ -94,7 +94,7 @@ const proofs = [
 ];
 await client.connect();
 const rehearse = process.argv.includes("--rehearse");
-await client.query("begin");
+await client.query("begin read write");
 if (rehearse) {
     for (const f of ["typeform_a_form_visit_is_counted_by_the_store.sql", "typeform_a_form_routes_scores_and_counts_itself.sql"]) {
         await client.query(fs.readFileSync(path.resolve("migrations/campaign", f), "utf8"));

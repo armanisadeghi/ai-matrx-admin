@@ -6,7 +6,7 @@ import { dsnFor } from './lib/pooled-db.mjs';
 const db = new pg.Client({ connectionString: dsnFor('production', { app: 'stripe-lease-proof' }) });
 await db.connect();
 try {
-  await db.query('begin');
+  await db.query('begin read write');
   await db.query("set local lock_timeout='2s'");
   const customer = (await db.query("select c.stripe_customer_id from billing.customer c join auth.users u on u.id=c.beneficiary_user_id where u.email='admin@admin.com' and not c.livemode")).rows[0]?.stripe_customer_id;
   assert.ok(customer, 'An admin sandbox checkout customer is required');

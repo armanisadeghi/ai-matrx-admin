@@ -87,7 +87,7 @@ async function linkTheProducerWrites() {
   });
   await client.connect();
   try {
-    await client.query("begin");
+    await client.query("begin read write");
     await client.query(
       "select hr._wf_notify($1::uuid, $2::uuid, 'hr.workflow.request_submitted', 'receipt', $3::uuid, $4::uuid)",
       [INSTANCE, STEP, USER, EMPLOYMENT],

@@ -29,7 +29,7 @@ const asUser = (id) => db.query("select set_config('request.jwt.claims', $1, tru
 const asServer = () => db.query("select set_config('request.jwt.claims', '', true)");
 
 try {
-  await db.query("begin");
+  await db.query("begin read write");
   await db.query("set local statement_timeout = '60s'");
   if (rehearse) await db.query(fs.readFileSync(MIGRATION, "utf8"));
   const portal = await one("select * from custom.portal where slug = $1", [SLUG]);

@@ -127,7 +127,7 @@ async function main() {
     const after = bodyFrom(UP, "sg_after");
     const floor = floorFrom(after);
     await client.query(`delete from platform.client_callable_door where reason = $1`, [DOOR_REASON]);
-    await client.query("begin");
+    await client.query("begin read write");
     for (const sql of [before, after, floor]) await client.query(sql);
     for (const fn of ["sg_before", "sg_after", "sg_floor"]) {
       await client.query(

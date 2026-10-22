@@ -83,7 +83,7 @@ describe("governProduction", () => {
   it("runs a bare statement inside its own stamped transaction", async () => {
     const c = governProduction(recorder(), "t");
     await c.query("select 1", []);
-    expect(c.sent).toEqual(["begin", productionLimitsSql("t"), "select 1", "commit"]);
+    expect(c.sent).toEqual(["begin read write", productionLimitsSql("t"), "select 1", "commit"]);
   });
 
   it("refuses a raise before anything is sent", async () => {

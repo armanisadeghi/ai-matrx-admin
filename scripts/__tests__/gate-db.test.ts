@@ -15,6 +15,7 @@ import {
   refusalFor,
   reserveGateSession,
   tryGateLock,
+  withReadWriteBegin,
 } from "../lib/gate-db";
 
 function recorder() {
@@ -69,7 +70,7 @@ describe("governClient", () => {
     const c = recorder();
     governClient(c, { gate: "check:demo" });
     await c.query("select 1", []);
-    expect(c.sent[0]).toBe("begin");
+    expect(c.sent[0]).toBe("begin read write");
     expect(c.sent[1]).toMatch(/set_config\('statement_timeout', '60000ms', true\)/);
     expect(c.sent[1]).toMatch(/set_config\('lock_timeout', '3000ms', true\)/);
     expect(c.sent[1]).toMatch(/set_config\('idle_in_transaction_session_timeout', '60000ms', true\)/);
@@ -84,11 +85,11 @@ describe("governClient", () => {
     await c.query("select 2");
     await c.query("rollback");
     await c.query("select 3");
-    expect(c.sent[0]).toBe("begin");
+    expect(c.sent[0]).toBe("begin read write");
     expect(c.sent[1]).toMatch(/^select set_config/);
     expect(c.sent[2]).toBe("select 2");
     expect(c.sent[3]).toBe("rollback");
-    expect(c.sent[4]).toBe("begin"); // select 3 is bare again, so it gets its own
+    expect(c.sent[4]).toBe("begin read write"); // select 3 is bare again, so it gets its own
   });
 
   it("heads a multi-statement batch with the limits and hides that extra result", async () => {
@@ -155,5 +156,27 @@ describe("tryGateLock", () => {
     const got = await tryGateLock(c as never, "census:x");
     expect(got).toBe(false);
     expect(c.sent[0]).toMatch(/pg_try_advisory_xact_lock/);
+  });
+});
+
+describe("withReadWriteBegin (a leaked pooler read-only default must not refuse a write transaction)", () => {
+  it("names READ WRITE on a plain begin, however it is spelled, alone or leading a batch", () => {
+    expect(withReadWriteBegin("begin")).toBe("begin read write");
+    expect(withReadWriteBegin("BEGIN;")).toBe("BEGIN read write;");
+    expect(withReadWriteBegin("start transaction")).toBe("start transaction read write");
+    expect(withReadWriteBegin("begin isolation level read committed")).toBe("begin isolation level read committed read write");
+    expect(withReadWriteBegin("begin; select 1; commit")).toBe("begin read write; select 1; commit");
+  });
+  it("leaves an explicit mode and non-begin text alone", () => {
+    expect(withReadWriteBegin("begin read only")).toBe("begin read only");
+    expect(withReadWriteBegin("BEGIN READ WRITE")).toBe("BEGIN READ WRITE");
+    expect(withReadWriteBegin("select 'begin'")).toBe("select 'begin'");
+    expect(withReadWriteBegin("do $$ begin null; end $$")).toBe("do $$ begin null; end $$");
+  });
+  it("a governed client sends begin read write for an explicit begin", async () => {
+    const c = recorder();
+    governClient(c, { gate: "t" });
+    await c.query("begin");
+    expect(c.sent[0]).toBe("begin read write");
   });
 });
