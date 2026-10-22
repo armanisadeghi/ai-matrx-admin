@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { Input } from "@ai-matrx/design-system/controls";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { useFlashcardStudy } from "../../data/useFlashcardStudy";
 import { useFlashcardStudySurface } from "./useFlashcardStudySurface";
@@ -233,12 +233,15 @@ export function WriteSurface({ setId }: { setId: string }) {
   // The suggestion the learner confirms: the meaning verdict when it landed,
   // else the spelling match.
   const suggested: ReviewResult | null = verdict?.result ?? autoGrade;
+  // No verdict (and no grading) until the meaning check has landed.
+  const checking = verdictLoading;
 
   // Keyboard after checking: Enter accepts the suggestion, 1/2/3 pick a grade.
   useEffect(() => {
     if (!submitted) return;
     const onKey = (e: KeyboardEvent): void => {
       if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (checking) return;
       const target = e.target as HTMLElement | null;
       if (
         target?.closest(
@@ -414,12 +417,13 @@ export function WriteSurface({ setId }: { setId: string }) {
                 </form>
               ) : (
                 <div className="mt-3 flex flex-col gap-3 sm:mt-4">
-                  {suggested ? (
+                  {checking ? (
+                    <CheckingBanner />
+                  ) : suggested ? (
                     <Verdict
                       grade={suggested}
                       onMeaning={verdict !== null}
                       reason={verdict?.reason ?? null}
-                      pending={verdictLoading}
                     />
                   ) : null}
 
@@ -458,7 +462,7 @@ export function WriteSurface({ setId }: { setId: string }) {
                           key={r}
                           type="button"
                           variant="outline"
-                          disabled={study.grading}
+                          disabled={study.grading || checking}
                           onClick={() => void confirmGrade(r)}
                           aria-keyshortcuts={String(i + 1)}
                           className={cn("min-w-0", isSuggested && ui.chosen)}
@@ -484,18 +488,29 @@ export function WriteSurface({ setId }: { setId: string }) {
   );
 }
 
+/** The only thing shown while the meaning check runs: no grade yet. */
+function CheckingBanner() {
+  return (
+    <div
+      role="status"
+      className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-muted-foreground"
+    >
+      <Loader2 className="h-5 w-5 shrink-0 animate-spin" />
+      <span className="text-base font-semibold">Checking meaning</span>
+    </div>
+  );
+}
+
 /** The suggested grade as one banner: what it is, and whether it was judged
  *  on meaning (the agent) or on spelling (instant). The learner confirms. */
 function Verdict({
   grade,
   onMeaning,
   reason,
-  pending,
 }: {
   grade: ReviewResult;
   onMeaning: boolean;
   reason: string | null;
-  pending: boolean;
 }) {
   const ui = GRADE_UI[grade];
   const Icon = ui.icon;
@@ -505,12 +520,8 @@ function Verdict({
         <Icon className="h-5 w-5 shrink-0" />
         <span className="text-base font-semibold">{ui.verdict}</span>
         <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium opacity-75">
-          {pending ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : onMeaning ? (
-            <AGENT_ICON className="h-3 w-3" />
-          ) : null}
-          {onMeaning ? "By meaning" : pending ? "Checking meaning" : "By spelling"}
+          {onMeaning ? <AGENT_ICON className="h-3 w-3" /> : null}
+          {onMeaning ? "By meaning" : "By spelling"}
         </span>
       </div>
       {reason ? <p className="mt-1 text-sm opacity-90">{reason}</p> : null}

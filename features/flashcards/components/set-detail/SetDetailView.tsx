@@ -1507,40 +1507,60 @@ export function DeckDetailView({
                   Study
                 </SurfaceButton>
               )}
-              <div className="flex items-center gap-2 [&>button]:flex-1">
+              <div className="flex items-center gap-2">
                 {!deckEmpty && (
                   <Button
                     icon={<GraduationCap />}
                     variant="outline"
+                    aria-label="More ways to study"
+                    title="More ways to study"
                     onClick={() => setStudyModesOpen(true)}
-                  >
-                    More ways
-                  </Button>
+                  />
+                )}
+                {!deckEmpty && (
+                  <Button
+                    icon={
+                      pendingAction === "sessions" ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        <TrendingUp />
+                      )
+                    }
+                    variant="outline"
+                    aria-label="Progress"
+                    title="Progress"
+                    data-deck-action="progress"
+                    onClick={() =>
+                      navigate("sessions", `${EDU_BASE}/${setId}/sessions`)
+                    }
+                    disabled={isPending}
+                  />
                 )}
                 <Button
                   icon={<Ellipsis />}
                   variant="outline"
-                  
+                  aria-label="Deck tools"
+                  title="Deck tools"
                   onClick={() => setDeckToolsOpen(true)}
-                >
-                  Deck tools
-                </Button>
-                {!deckEmpty && deckContentActions}
-              </div>
-              {canEdit && (
-                <div className="[&>button]:h-11 [&>button]:w-full">
-                <AddMoreCardsButton
-                  setId={setId}
-                  existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
-                  deckName={data.set.name}
-                  deckOrganizationId={data.set.organization_id}
-                  onAdded={() => {
-                    reload();
-                    setLineageKey((k) => k + 1);
-                  }}
                 />
-                </div>
-              )}
+                {!deckEmpty && deckContentActions}
+                {canEdit && (
+                  <div className="ml-auto">
+                    <AddMoreCardsButton
+                      label="Add"
+                      variant="default"
+                      setId={setId}
+                      existingCards={data.cards.map((c) => ({ front: c.front, back: c.back }))}
+                      deckName={data.set.name}
+                      deckOrganizationId={data.set.organization_id}
+                      onAdded={() => {
+                        reload();
+                        setLineageKey((k) => k + 1);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
               {viewOnly && (
                 <DuplicateToEditButton
                   resourceType="fc_set"

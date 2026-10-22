@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { useMatchGame } from "../../data/useMatchGame";
@@ -163,7 +163,7 @@ function Board({ game }: { game: ReturnType<typeof useMatchGame> }) {
               {/* The face renders through the flip card's own renderer. */}
               <span className="block h-full w-full overflow-y-auto overscroll-contain p-2.5 scrollbar-thin">
                 <span className="flex min-h-full w-full flex-col justify-center">
-                  <CardFaceBlock content={tile.text} />
+                  <CardFaceBlock content={tile.text} size="uniform" />
                 </span>
               </span>
             </button>

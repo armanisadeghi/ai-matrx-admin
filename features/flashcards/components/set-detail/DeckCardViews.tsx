@@ -59,9 +59,9 @@ import { getCardImages } from "../study/cardImages";
 
 export const DECK_VIEWS = [
   { id: "overview", label: "Overview", icon: LayoutGrid },
-  { id: "fronts", label: "Flashcards — fronts", icon: GalleryVerticalEnd },
-  { id: "backs", label: "Flashcards — backs", icon: FlipHorizontal2 },
-  { id: "list", label: "Question and answer list", icon: List },
+  { id: "fronts", label: "Fronts", icon: GalleryVerticalEnd },
+  { id: "backs", label: "Backs", icon: FlipHorizontal2 },
+  { id: "list", label: "List", icon: List },
   { id: "table", label: "Table", icon: Table2 },
 ] as const;
 
@@ -298,12 +298,13 @@ export function DeckCardTable({
         <button
           type="button"
           onClick={() => onOpen(row.card)}
-          className="text-left font-medium text-foreground hover:text-primary"
+          title={singleLine(deckCardFaces(row.card).front)}
+          className="block w-full truncate text-left font-medium text-foreground hover:text-primary"
         >
           <CardFaceContent
-            content={deckCardFaces(row.card).front}
+            content={singleLine(deckCardFaces(row.card).front)}
             variant="inline"
-            className="line-clamp-2"
+            className="line-clamp-1 break-normal"
           />
         </button>
       ),
