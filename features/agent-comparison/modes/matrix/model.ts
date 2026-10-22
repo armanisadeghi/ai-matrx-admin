@@ -16,7 +16,6 @@ import type {
   MatrixVariant,
 } from "./types";
 
-export const MATRIX_LEASE_MS = 90_000;
 export const MAX_REPEATS = 5;
 
 export function newVariantId(): string {
@@ -187,15 +186,12 @@ export function metadataToSetup(metadata: Record<string, unknown> | null): Matri
 
 const STATUSES: MatrixCellStatus[] = ["queued", "running", "completed", "failed", "cancelled"];
 
-export function entryToCell(row: ComparisonEntryRow, now: number): MatrixCell | null {
+export function entryToCell(row: ComparisonEntryRow): MatrixCell | null {
   const md = (row.metadata ?? {}) as Record<string, unknown>;
   if (md.kind !== "matrix_cell") return null;
   const status = STATUSES.includes(md.status as MatrixCellStatus)
     ? (md.status as MatrixCellStatus)
     : "queued";
-  const heartbeat = typeof md.heartbeat_at === "string" ? Date.parse(md.heartbeat_at) : NaN;
-  const started = typeof md.started_at === "string" ? Date.parse(md.started_at) : NaN;
-  const lastSign = Number.isFinite(heartbeat) ? heartbeat : started;
   return {
     entryId: row.id,
     conversationId: row.conversation_id,
@@ -203,7 +199,6 @@ export function entryToCell(row: ComparisonEntryRow, now: number): MatrixCell | 
     columnId: String(md.column_id ?? ""),
     repeat: typeof md.repeat === "number" ? md.repeat : 0,
     status,
-    stalled: isStalled(status, lastSign, now),
     attempt: typeof md.attempt === "number" ? md.attempt : 1,
     startedAt: typeof md.started_at === "string" ? md.started_at : null,
     finishedAt: typeof md.finished_at === "string" ? md.finished_at : null,
@@ -246,34 +241,24 @@ export function allCellConversationIds(
 /** What a cell's grid label says. Queued is never called running. */
 export function cellStatusLabel(cells: MatrixCell[]): string {
   if (cells.length === 0) return "Not run";
-  if (cells.some((c) => c.status === "running" && !c.stalled)) return "Running";
-  if (cells.some((c) => c.status === "queued" && !c.stalled)) return "Queued";
-  if (cells.some((c) => c.stalled)) return "Stalled";
+  if (cells.some((c) => c.status === "running")) return "Running";
+  if (cells.some((c) => c.status === "queued")) return "Queued";
   if (cells.some((c) => c.status === "failed")) return "Failed";
   if (cells.some((c) => c.status === "cancelled")) return "Canceled";
   return "Done";
 }
 
 /**
- * A queued or running cell holds a heartbeat lease. Past the lease (or with no
- * time signal at all) nothing is working on it: it is stalled, never live.
+ * Poll only while something can still change: a run call in flight, or a cell the server still
+ * holds as queued or running. The work queue owns liveness (it re-runs a crashed item), so the
+ * client keeps no lease or timer of its own: the set is terminal when no cell is queued or running.
  */
-export function isStalled(status: MatrixCellStatus, lastSign: number, now: number): boolean {
-  if (status !== "queued" && status !== "running") return false;
-  if (!Number.isFinite(lastSign)) return true;
-  return now - lastSign > MATRIX_LEASE_MS;
-}
-
-/** Poll only while something can still change: a run call in flight, or a live cell. */
 export function shouldPoll(cells: MatrixCell[], runInFlight: boolean): boolean {
   return runInFlight || cells.some(isLive);
 }
 
-/** Hard stop: no cell changed for this long means nothing is coming. */
-export const POLL_IDLE_LIMIT_MS = 5 * 60_000;
-
 export function isLive(cell: MatrixCell): boolean {
-  return (cell.status === "queued" || cell.status === "running") && !cell.stalled;
+  return cell.status === "queued" || cell.status === "running";
 }
 
 export function cellKey(rowId: string, columnId: string, repeat = 0): string {
@@ -342,7 +327,7 @@ export interface Metrics {
   total: number;
   cost: number;
   toolCalls: number;
-  /** Counted results that were not a completed run (failed, canceled, stalled). */
+  /** Counted results that were not a completed run (failed, canceled). */
   unfinished: number;
 }
 
@@ -369,7 +354,7 @@ function resultMetrics(r: MatrixCellResult, finished: boolean): Metrics {
 
 /** A completed run's numbers — what averages and comparisons use. */
 export function cellMetrics(cell: MatrixCell): Metrics | null {
-  if (cell.status !== "completed" || cell.stalled || !cell.result) return null;
+  if (cell.status !== "completed" || !cell.result) return null;
   return resultMetrics(cell.result, true);
 }
 
@@ -379,7 +364,7 @@ export function cellMetrics(cell: MatrixCell): Metrics | null {
  */
 export function cellSpend(cell: MatrixCell, withHistory: boolean): Metrics[] {
   const out: Metrics[] = [];
-  if (cell.result) out.push(resultMetrics(cell.result, cell.status === "completed" && !cell.stalled));
+  if (cell.result) out.push(resultMetrics(cell.result, cell.status === "completed"));
   if (withHistory) {
     for (const h of cell.history) {
       if (h.result) out.push(resultMetrics(h.result, h.status === "completed"));
@@ -392,15 +377,15 @@ export function spendOf(cells: MatrixCell[], withHistory: boolean): Metrics {
   return sumMetrics(cells.flatMap((c) => cellSpend(c, withHistory)));
 }
 
-/** Cells whose current attempt failed, was canceled, or stalled. */
+/** Cells whose current attempt failed or was canceled. */
 export function failedCellCount(cells: MatrixCell[]): number {
-  return cells.filter((c) => c.status === "failed" || c.status === "cancelled" || c.stalled).length;
+  return cells.filter((c) => c.status === "failed" || c.status === "cancelled").length;
 }
 
 /** "1 failed · 2 cancelled" — what a total leaves unfinished, by kind. Empty when none. */
 export function unfinishedLabel(cells: MatrixCell[]): string {
-  const failed = cells.filter((c) => c.status === "failed" || c.stalled).length;
-  const cancelled = cells.filter((c) => c.status === "cancelled" && !c.stalled).length;
+  const failed = cells.filter((c) => c.status === "failed").length;
+  const cancelled = cells.filter((c) => c.status === "cancelled").length;
   return [failed ? `${failed} failed` : "", cancelled ? `${cancelled} canceled` : ""]
     .filter(Boolean)
     .join(" · ");

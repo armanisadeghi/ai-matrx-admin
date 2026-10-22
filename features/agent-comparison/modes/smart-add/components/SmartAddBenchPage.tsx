@@ -145,8 +145,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
           },
         });
         setQueriesText(saved.queries.join("\n"));
-        const now = Date.now();
-        setCells(entries.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
+        setCells(entries.map((e) => entryToCell(e)).filter((c): c is MatrixCell => c !== null));
       })
       .catch((err: unknown) => alive && setLoadError(err instanceof Error ? err.message : String(err)))
       .finally(() => alive && setLoading(false));
@@ -177,7 +176,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
 
   // A REOPENED bench whose run is still going has no stream on this page: read its rows until it
   // settles (five quiet minutes at most). A run started here streams instead.
-  const live = cells.some((c) => (c.status === "queued" || c.status === "running") && !c.stalled);
+  const live = cells.some((c) => (c.status === "queued" || c.status === "running"));
   const signature = cells.map((c) => `${c.entryId}:${c.status}`).join("|");
   useEffect(() => {
     lastChange.current = Date.now();
@@ -189,8 +188,7 @@ export function SmartAddBenchPage({ setId = null }: { setId?: string | null }) {
       if (Date.now() - lastChange.current > 5 * 60_000) return;
       listMatrixEntries(activeSetId)
         .then((rows) => {
-          const now = Date.now();
-          setCells(rows.map((e) => entryToCell(e, now)).filter((c): c is MatrixCell => c !== null));
+          setCells(rows.map((e) => entryToCell(e)).filter((c): c is MatrixCell => c !== null));
         })
         .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : String(err)));
     }, POLL_MS);

@@ -266,13 +266,12 @@ const STATUS_DOT: Record<string, string> = {
   completed: "bg-emerald-500",
   failed: "bg-rose-500",
   cancelled: "bg-zinc-400",
-  stalled: "bg-amber-500",
   empty: "border border-dashed border-muted-foreground/50",
 };
 
 function statusOf(cell: MatrixCell | undefined): string {
   if (!cell) return "empty";
-  return cell.stalled ? "stalled" : cell.status;
+  return cell.status;
 }
 
 function CellButton({
@@ -294,8 +293,8 @@ function CellButton({
   // A failed or canceled run that spent money still shows what it spent.
   const spend = spendOf(cells, false);
   const shown = avg ?? (spend.n > 0 ? spend : null);
-  const running = cells.some((c) => c.status === "running" && !c.stalled);
-  const failed = cells.some((c) => c.status === "failed" || c.stalled);
+  const running = cells.some((c) => c.status === "running");
+  const failed = cells.some((c) => c.status === "failed");
   const label = cellStatusLabel(cells);
   const repeats = Array.from({ length: expectedRepeats }, (_, i) => cells.find((c) => c.repeat === i));
 
@@ -368,12 +367,11 @@ function CellDetail({
             Conversation
           </OutboundLink>
         )}
-        <Button variant="quiet" icon={<RotateCw />} onClick={onRerun} disabled={busy || (!!cell && (cell.status === "running" || cell.status === "queued") && !cell.stalled)} title={cell?.status === "completed" ? "Run this cell again; spends another run" : "Run this cell"}>
+        <Button variant="quiet" icon={<RotateCw />} onClick={onRerun} disabled={busy || (!!cell && (cell.status === "running" || cell.status === "queued"))} title={cell?.status === "completed" ? "Run this cell again; spends another run" : "Run this cell"}>
           {cell ? "Re-run" : "Run"}
         </Button>
       </div>
       {cell?.error && <div className="text-destructive break-words">{cell.error}<ErrorAlchemyMenu error={cell.error} /></div>}
-      {cell?.stalled && <div className="text-warning">Runner stopped responding</div>}
       {r && (
         <>
           <div className="grid grid-cols-4 gap-x-2 gap-y-0.5 tabular-nums">
