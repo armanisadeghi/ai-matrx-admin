@@ -13,6 +13,7 @@ import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useOrganizationLabel } from "@/features/organizations/hooks/useOrganizationLabel";
 import { createClient } from "@/utils/supabase/client";
+import { ErrorBoundaryWithCapture } from "@/lib/error-boundary/ErrorBoundaryWithCapture";
 
 interface Owner {
   organizationId: string | null;
@@ -70,6 +71,7 @@ export function NotSystemMandateNotice({
     <div className="p-4">
       <div
         role="status"
+        data-testid="not-a-system-mandate"
         className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border border-border bg-card px-3 py-2"
       >
         <p className="type-body flex min-w-0 flex-wrap items-center gap-x-1.5">
@@ -81,7 +83,14 @@ export function NotSystemMandateNotice({
             ) : owner === "unknown" ? (
               <span className="text-muted-foreground">an organization or a person</span>
             ) : (
-              <OwnerName owner={owner} />
+              // The refusal and its door never depend on the owner's name: a name that
+              // cannot draw leaves the plain words, never a blank page.
+              <ErrorBoundaryWithCapture
+                boundary="NotSystemMandateNotice.owner"
+                fallback={<span className="text-muted-foreground">an organization or a person</span>}
+              >
+                <OwnerName owner={owner} />
+              </ErrorBoundaryWithCapture>
             )}
           </span>
         </p>
