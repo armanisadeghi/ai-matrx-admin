@@ -65,6 +65,22 @@ async function call<T>(
 }
 
 /**
+ * `call`, with ONE more ask when the store cancels the statement on its time limit (57014). The data
+ * home's door walks every organization the person reaches; the first call after the database has gone
+ * cold can pass the request's 8 s limit (defect 84: 8.8 s cold, 1.4 s warm), and the second call reads
+ * what the first one warmed. Any other refusal, and a second timeout, is the store's answer, unedited.
+ */
+async function callRetryingATimeout<T>(
+  dataSource: RecordsDataSource,
+  fn: string,
+  args: Record<string, unknown>,
+): Promise<DoorAnswer<T>> {
+  const first = await call<T>(dataSource, fn, args);
+  if (first.ok || first.error.sqlstate !== "57014") return first;
+  return call<T>(dataSource, fn, args);
+}
+
+/**
  * Lane 7 W5 — the organization of one standard row, read AS THE PERSON (`custom.entity_record_home`,
  * SECURITY INVOKER). Answers `{organization_id}` or `{refused, reason}`; never raises. The
  * custom-fields section on every record view asks it, never the active organization.
@@ -798,7 +814,7 @@ export async function dataHome(
   organizationId: string | null = null,
   options: PlatformTablesOption = {},
 ): Promise<DoorAnswer<DataHomeAnswer>> {
-  const answered = await call<DataHomeAnswer | null>(dataSource, "data_home", {
+  const answered = await callRetryingATimeout<DataHomeAnswer | null>(dataSource, "data_home", {
     ...(organizationId ? { p_organization_id: organizationId } : {}),
     ...(options.includePlatformTables ? { p_include_platform_tables: true } : {}),
   });
@@ -851,7 +867,7 @@ export async function dataHomeSearch(
 ): Promise<DoorAnswer<DataHomeSearchAnswer>> {
   const q = search.trim();
   if (q === "") return { ok: true, data: { search: "", tables: [], items: [], changed_by: [] } };
-  const answered = await call<DataHomeSearchAnswer | null>(dataSource, "data_home", {
+  const answered = await callRetryingATimeout<DataHomeSearchAnswer | null>(dataSource, "data_home", {
     ...(organizationId ? { p_organization_id: organizationId } : {}),
     p_search: q,
     ...(options.includePlatformTables ? { p_include_platform_tables: true } : {}),
