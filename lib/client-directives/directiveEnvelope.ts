@@ -163,12 +163,27 @@ export type UsageStateChangedPayload = z.infer<
   typeof UsageStateChangedPayloadSchema
 >;
 
+/**
+ * `catalog_changed` — a platform catalog changed (today: the AI model catalog an
+ * admin edits on the Catalogs page; aidream announces after the edit commits,
+ * aidream/services/ai_catalog/local_models/catalog_notice.py). Names which
+ * catalog and, when known, which model and what kind of edit — never the values.
+ * Matrx 2 re-reads its model catalog on it.
+ */
+export const CatalogChangedPayloadSchema = z.object({
+  catalog: z.enum(["models"]),
+  model_id: z.string().nullish(),
+  change: z.enum(["listing", "facts", "placement", "promote"]).nullish(),
+});
+export type CatalogChangedPayload = z.infer<typeof CatalogChangedPayloadSchema>;
+
 /** Every directive action, and the schema its payload must satisfy. */
 export const DIRECTIVE_PAYLOAD_SCHEMAS = {
   settings_changed: SettingsChangedPayloadSchema,
   app_config_changed: AppConfigChangedPayloadSchema,
   refresh_required: RefreshRequiredPayloadSchema,
   usage_state_changed: UsageStateChangedPayloadSchema,
+  catalog_changed: CatalogChangedPayloadSchema,
 } as const;
 
 export const DIRECTIVE_ACTIONS = Object.keys(
