@@ -66,7 +66,10 @@ export function useSearchRoute({ guest = false }: { guest?: boolean } = {}) {
     if (isToolTab(searchParams.get("tab"))) return;
     const understood = understandInput(initial.query);
     if (understood.mode === "handle") {
+      // Words first (Google's way): the web answers for the text exactly as typed; the account lookup is a
+      // suggestion beside the results.
       inputs.submit();
+      void form.handleSearch({ query: initial.query, vertical: "web" });
       return;
     }
     if (
