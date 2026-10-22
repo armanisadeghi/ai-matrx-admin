@@ -25,8 +25,6 @@ import {
 import {
   supabase,
 } from "@ai-matrx/chat/host/db";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database as AppDatabase } from "@/types/database.types";
 import {
   isSignedOutVisitor,
   NotAuthenticatedError,
@@ -402,13 +400,6 @@ export const setAgentAutoContextDisabled = createAsyncThunk<
   },
 );
 /**
- * The `agent` schema through the APP's generated types. The package's `supabase` handle is typed from the
- * package's own (older) copy of the database types, which does not yet know the `agx_*` doors that moved
- * out of `public`; the runtime client is the same object.
- */
-const agentDb = () => (supabase as unknown as SupabaseClient<AppDatabase>).schema("agent");
-
-/**
  * "Reset to latest": puts the source agent's current instructions, tools, model and
  * settings back on a copy and turns following on again (`agx_reset_agent_to_source`,
  * run as the person — row security decides). The copy's own variable bindings stay.
@@ -416,7 +407,7 @@ const agentDb = () => (supabase as unknown as SupabaseClient<AppDatabase>).schem
 export const resetAgentToSource = createAsyncThunk<void, string, ThunkApi>(
   "agentDefinition/resetToSource",
   async (agentId, { dispatch }) => {
-    const { error } = await agentDb().rpc("agx_reset_agent_to_source", {
+    const { error } = await supabase.schema("agent").rpc("agx_reset_agent_to_source", {
       p_agent_id: agentId,
     });
     if (error) throw pgErrorToError(error);
@@ -459,7 +450,7 @@ export const updateAgentFromSource = createAsyncThunk<
   string,
   ThunkApi
 >("agentDefinition/updateFromSource", async (agentId, { dispatch }) => {
-  const { data, error } = await agentDb().rpc("agx_update_from_source", {
+  const { data, error } = await supabase.schema("agent").rpc("agx_update_from_source", {
     p_agent_id: agentId,
   });
 
@@ -772,7 +763,7 @@ export const syncLinkedAgents = createAsyncThunk<
     expectedToUpdatedAt,
     targetIsSystem = false,
   }) => {
-    const request = agentDb().rpc("agx_sync_linked_agents_reviewed", {
+    const request = supabase.schema("agent").rpc("agx_sync_linked_agents_reviewed", {
       p_from_id: fromId,
       p_to_id: toId,
       p_include_identity: includeIdentity,

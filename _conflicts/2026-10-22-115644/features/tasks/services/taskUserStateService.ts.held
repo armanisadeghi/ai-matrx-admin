@@ -1,0 +1,217 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/tasks/services/taskUserStateService.ts
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/tasks/services/taskUserStateService.ts
+  Both grew from the same COMMON version: commit 580fba04c6, 2026-10-22 12:38.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-22 10:41  1f47830c51  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-22 12:50  6a926311b8  "tasks: task_user_state service follows the canonical table (created_by, organization_id)"
+  Which side changed it last is UNKNOWN (the local edit was never committed and its save time was not recorded).
+
+SIZE: common version 115 lines, LOCAL 132 lines, GITHUB 128 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 18 lines and removed 5 lines.
+  GITHUB added 30 lines and removed 22 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 6 of the 30 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | * dismissed / pinned). Reads name the current user (`created_by`); every write
+      | * is an upsert keyed on (task_id, created_by), filed in the task's organization.
+      | import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+      | import type { Database } from "@/types/database.types";
+      | /** One person's state on one task; the person is `created_by` (unique with `task_id`). */
+      | export type TaskUserState =
+      | Database["projects"]["Tables"]["task_user_state"]["Row"];
+      | type TaskUserStatePatch = Partial<
+      | "seen_at" | "acknowledged_at" | "snoozed_until" | "dismissed_at" | "pinned_at"
+      | /** All of the current user's task states — scoped to them explicitly, never by RLS alone. */
+      | .select("*")
+      | .eq("created_by", requireUserId())
+      | .is("deleted_at", null);
+      | return data ?? [];
+      | /** The task's own organization: the state row is filed with the record it is about. */
+      | ... and 9 more
+    (some of those lines also appear in other changed files, which may be a coincidence: features/surfaces/services/surface-declaration.service.ts, features/content-ir/studio/inspection/useShapeInspection.ts)
+    Lines GITHUB deliberately REMOVED that LOCAL still has: 17
+      | export interface TaskUserState {
+      | task_id: string;
+      | seen_at: string | null;
+      | acknowledged_at: string | null;
+      | snoozed_until: string | null;
+      | dismissed_at: string | null;
+      | pinned_at: string | null;
+      | updated_at: string;
+      | /** All of the current user's task states (RLS returns only their rows). */
+      | .select("*");
+  GITHUB has 6 of the 18 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | * dismissed / pinned). Rows are RLS-scoped to the current user (created_by);
+      | * every write is an upsert keyed on (task_id, created_by) and carries the
+      | * task's own organization_id.
+      | created_by: string;
+      | organization_id: string;
+      | // The row belongs to its task's organization — the record's own org, read from the task.
+      | const { data: task, error: taskError } = await projectsDb(supabase)
+      | if (taskError || !task?.organization_id) {
+      | console.error(
+      | "task_user_state upsert failed: task organization unreadable:",
+      | taskError?.message ?? "no organization_id",
+      | organization_id: task.organization_id,
+    (some of those lines also appear in other changed files, which may be a coincidence: features/visual-map-lab/service.ts)
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 494b73dd69b0:'features/tasks/services/taskUserStateService.ts') <(git show 4e25b5d8d011:'features/tasks/services/taskUserStateService.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 4e25b5d8d011:'features/tasks/services/taskUserStateService.ts'
+  GITHUB: git show 494b73dd69b0:'features/tasks/services/taskUserStateService.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+/**
+ * taskUserStateService — the ONE client for projects.task_user_state, the
+ * per-user notification/triage state on tasks (seen / acknowledged / snoozed /
+ * dismissed / pinned). Rows are RLS-scoped to the current user (created_by);
+ * every write is an upsert keyed on (task_id, created_by) and carries the
+ * task's own organization_id.
+ *
+ * Snooze semantics: a snoozed task disappears from every attention view
+ * (Today, Overdue, Upcoming, Inbox) until `snoozed_until`, but stays in
+ * "All tasks". Reminders (email/cron) also respect it.
+ */
+import { supabase } from "@/utils/supabase/client";
+import { projectsDb } from "@/utils/supabase/projectsDb";
+import { requireUserId } from "@/utils/auth/getUserId";
+
+export interface TaskUserState {
+  id: string;
+  task_id: string;
+  created_by: string;
+  organization_id: string;
+  seen_at: string | null;
+  acknowledged_at: string | null;
+  snoozed_until: string | null;
+  dismissed_at: string | null;
+  pinned_at: string | null;
+  updated_at: string;
+}
+
+/** All of the current user's task states (RLS returns only their rows). */
+export async function listMyTaskUserStates(): Promise<TaskUserState[]> {
+  const { data, error } = await projectsDb(supabase)
+    .from("task_user_state")
+    .select("*");
+  if (error) {
+    console.error("listMyTaskUserStates failed:", error.message);
+    return [];
+  }
+  return (data ?? []) as TaskUserState[];
+}
+
+async function upsertState(
+  taskId: string,
+  patch: Partial<
+    Pick<
+      TaskUserState,
+      | "seen_at"
+      | "acknowledged_at"
+      | "snoozed_until"
+      | "dismissed_at"
+      | "pinned_at"
+    >
+  >,
+): Promise<TaskUserState | null> {
+  const userId = requireUserId();
+  // The row belongs to its task's organization — the record's own org, read from the task.
+  const { data: task, error: taskError } = await projectsDb(supabase)
+    .from("tasks")
+    .select("organization_id")
+    .eq("id", taskId)
+    .single();
+  if (taskError || !task?.organization_id) {
+    console.error(
+      "task_user_state upsert failed: task organization unreadable:",
+      taskError?.message ?? "no organization_id",
+    );
+    return null;
+  }
+  const { data, error } = await projectsDb(supabase)
+    .from("task_user_state")
+    .upsert(
+      {
+        task_id: taskId,
+        created_by: userId,
+        organization_id: task.organization_id,
+        ...patch,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "task_id,created_by" },
+    )
+    .select()
+    .single();
+  if (error) {
+    console.error("task_user_state upsert failed:", error.message);
+    return null;
+  }
+  return data as TaskUserState;
+}
+
+export function snoozeTask(taskId: string, until: Date) {
+  return upsertState(taskId, { snoozed_until: until.toISOString() });
+}
+
+export function unsnoozeTask(taskId: string) {
+  return upsertState(taskId, { snoozed_until: null });
+}
+
+/** Put a dismissed task back in the attention views (the bell's Snoozed view, "Turn back on"). */
+export function undismissTask(taskId: string) {
+  return upsertState(taskId, { dismissed_at: null });
+}
+
+export function acknowledgeTask(taskId: string) {
+  return upsertState(taskId, { acknowledged_at: new Date().toISOString() });
+}
+
+export function markTaskSeen(taskId: string) {
+  return upsertState(taskId, { seen_at: new Date().toISOString() });
+}
+
+export function pinTask(taskId: string, pinned: boolean) {
+  return upsertState(taskId, {
+    pinned_at: pinned ? new Date().toISOString() : null,
+  });
+}
+
+/** Canonical snooze presets (mirrors best-in-class reminder UX). */
+export function snoozePresets(): { key: string; label: string; until: Date }[] {
+  const now = new Date();
+  const laterToday = new Date(now);
+  laterToday.setHours(now.getHours() + 4);
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  tomorrow.setHours(9, 0, 0, 0);
+  const nextWeek = new Date(now);
+  nextWeek.setDate(now.getDate() + ((8 - now.getDay()) % 7 || 7));
+  nextWeek.setHours(9, 0, 0, 0);
+  return [
+    { key: "later", label: "Later today", until: laterToday },
+    { key: "tomorrow", label: "Tomorrow", until: tomorrow },
+    { key: "nextweek", label: "Next week", until: nextWeek },
+  ];
+}

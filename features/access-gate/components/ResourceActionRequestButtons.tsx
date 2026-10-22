@@ -22,7 +22,7 @@ import {
   reportAccessRequest,
 } from "@/features/access-gate/service/accessRequests";
 import { getResourceActionRequestAction } from "@/features/messaging/actions/resourceActionRequestRegistry";
-import type { AccessRequestStatus } from "@/features/access-gate/types";
+import type { AccessRequestStatus } from "@ai-matrx/data/access";
 
 export function ResourceActionRequestButtons({
   requestId,

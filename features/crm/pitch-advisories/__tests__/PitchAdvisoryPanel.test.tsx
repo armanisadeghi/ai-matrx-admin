@@ -22,7 +22,7 @@ jest.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: React.ReactNode }) => <a href={href}>{children}</a>,
 }));
 
-import { PitchAdvisoryPanel } from "../PitchAdvisoryPanel";
+import { PitchAdvisoryPanel, RULE_NAMES } from "../PitchAdvisoryPanel";
 import type { PitchAdvisory, PitchAdvisoryReport } from "../service";
 
 const E1: PitchAdvisory = {
@@ -78,11 +78,11 @@ function render(ui: React.ReactElement) {
 
 const idle = { loading: false, error: null, retry: () => undefined };
 
-test("renders each warning in the authors' words with its rule and the go-ahead promise", () => {
+test("renders each warning in the authors' words with its rule name and the go-ahead promise", () => {
   render(<PitchAdvisoryPanel state={{ ...idle, report: report([E1]) }} organizationId="org-1" actionLabel="the send" />);
   const text = container.textContent ?? "";
   expect(text).toContain("You're at 21 journalists. We're past the point where one pitch fits all of them.");
-  expect(text).toContain("E1");
+  expect(text).toContain("List size");
   expect(text).toContain("None of these stop you — the send still goes ahead, and we note that you saw them.");
   expect(container.querySelector('a[href="/organizations/org-1/settings/configuration"]')?.textContent).toBe(
     "Change these in your PR settings",
@@ -130,4 +130,17 @@ test("info-only reports carry no go-ahead line", () => {
   render(<PitchAdvisoryPanel state={{ ...idle, report: report([info]) }} />);
   expect(container.textContent).toContain("I draft. You send.");
   expect(container.querySelector('[data-testid="pitch-advisories-go-ahead-note"]')).toBeNull();
+});
+
+test("no rule code (E<number>) is ever shown to the person, only the plain rule name", () => {
+  // Break (fourth adversarial review): the panel printed "E8" beside the warning.
+  const rules = Object.keys(RULE_NAMES) as PitchAdvisory["rule"][];
+  expect(rules).toHaveLength(17);
+  const every: PitchAdvisory[] = rules.map((rule) => ({ ...E1, rule, code: `code_${rule}`, message: "A warning.", offer: null }));
+  render(<PitchAdvisoryPanel state={{ ...idle, report: report(every) }} />);
+  const text = container.textContent ?? "";
+  expect(text).not.toMatch(/\bE\d+\b/);
+  expect(text).toContain("Sensitive news");
+  expect(text).toContain("Coverage promise");
+  expect(text).toContain("Sender name");
 });

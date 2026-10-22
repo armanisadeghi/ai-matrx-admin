@@ -23,7 +23,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
-import type { AccessDeniedContext } from "@/features/access-gate/types";
+import type { AccessDeniedContext } from "@ai-matrx/data/access";
 
 /** Resolved answers, shared across surfaces. A denial is stable; re-asking is waste. */
 const CACHE = new Map<string, AccessDeniedContext>();

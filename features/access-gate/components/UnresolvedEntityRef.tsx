@@ -41,7 +41,7 @@ import { Button } from "@/components/ui/button";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import { cn } from "@/lib/utils";
 import { RequestAccessPanel } from "@/features/access-gate/components/RequestAccessPanel";
-import type { AccessDeniedContext } from "@/features/access-gate/types";
+import type { AccessDeniedContext } from "@ai-matrx/data/access";
 
 export interface UnresolvedEntityRefProps {
   /** The record's id — the resolver never echoes back an id the caller had. */

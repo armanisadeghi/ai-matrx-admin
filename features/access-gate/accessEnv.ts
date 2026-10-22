@@ -1,8 +1,9 @@
 /**
  * The app's inputs to `@ai-matrx/data/access` — injected once, the first time any access service
  * wrapper is loaded. The services themselves live in the package; this file only hands it the
- * browser Supabase client (called per use, never cached), the app's direct-message sender, and the
- * app's system organization id.
+ * browser Supabase client (called per use, never cached), the app's direct-message sender, the
+ * app's system organization id, the app's PINNED-KEY claims reader (no JWKS fetch on a cold page),
+ * the organization-carrying fetch, and the website/page tokens the CMS resolves itself.
  */
 import { configureAccess } from "@ai-matrx/data/access";
 import { createClient } from "@/utils/supabase/client";
@@ -11,6 +12,14 @@ import {
   type SendDirectActionMessageArgs,
 } from "@/features/messaging/service/sendDirectActionMessage";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
+import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
+import {
+  CMS_SITE_MEMBER_ADD_ACTION,
+  cmsAccessGateLabel,
+  cmsSiteAccessRequestKey,
+  isCmsAccessGateToken,
+} from "@/features/cms/accessGateTokens";
 
 let configured = false;
 
@@ -29,6 +38,17 @@ export function ensureAccessEnv(): void {
     sendDirectActionMessage: (args) =>
       sendDirectActionMessage(args as SendDirectActionMessageArgs),
     platformOrgIds: { systemOrganizationId: SYSTEM_ORGANIZATION_ID },
+    // Two installed copies of auth-js can differ by patch version; the shape used is identical.
+    getClaimsUser: (client) => getClaimsUser(client as unknown as Parameters<typeof getClaimsUser>[0]),
+    // The package passes an explicit organization positionally; the app's fetch takes it as an option.
+    fetchWithOrganization: (input, init, organizationId) =>
+      fetchWithOrganization(input, init, organizationId === undefined ? undefined : { organizationId }),
+    entityTokens: {
+      isCmsAccessGateToken,
+      cmsAccessGateLabel: (token) => (isCmsAccessGateToken(token) ? cmsAccessGateLabel(token) : "item"),
+      siteMemberAddAction: CMS_SITE_MEMBER_ADD_ACTION,
+      siteAccessRequestKey: cmsSiteAccessRequestKey,
+    },
   });
   configured = true;
 }

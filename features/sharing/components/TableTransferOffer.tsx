@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
-import type { AccessDeniedContext } from "@/features/access-gate/types";
+import type { AccessDeniedContext } from "@ai-matrx/data/access";
 import { useOrganizationMembers, useUserRole } from "@/features/organizations/hooks";
 import { TransferTableOwnership } from "./TransferTableOwnership";
 

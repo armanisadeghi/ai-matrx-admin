@@ -98,7 +98,7 @@ export interface PortalShareAccepted {
 export async function peekPortalShare(token: string): Promise<PortalSharePeek> {
   // `portal_share_peek` lives in schema `public` (its grant is anon + authenticated, off the token
   // alone); only the accept door is in `custom`. Asking `custom` for it answered "not found".
-  const { data, error } = await createClient().rpc("portal_share_peek", { p_token: token });
+  const { data, error } = await createClient().schema("iam").rpc("portal_share_peek", { p_token: token });
   if (error) throw new Error(error.message);
   return data as unknown as PortalSharePeek;
 }

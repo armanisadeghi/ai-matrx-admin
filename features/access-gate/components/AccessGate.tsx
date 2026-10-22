@@ -29,7 +29,7 @@ import {
 } from "@/features/access-gate/components/AccessDenied";
 import { classifyDataError, readServerRefusal } from "@ai-matrx/data/access";
 import { useAccessGate } from "@/features/access-gate/hooks/useAccessGate";
-import type { AccessRequestability } from "@/features/access-gate/types";
+import type { AccessRequestability } from "@ai-matrx/data/access";
 
 export interface AccessGateProps {
   /** Canonical entity token of the record the surface tried to open. */

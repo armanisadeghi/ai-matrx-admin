@@ -1,9 +1,8 @@
 /**
  * taskUserStateService — the ONE client for projects.task_user_state, the
  * per-user notification/triage state on tasks (seen / acknowledged / snoozed /
- * dismissed / pinned). Rows are RLS-scoped to the current user (created_by);
- * every write is an upsert keyed on (task_id, created_by) and carries the
- * task's own organization_id.
+ * dismissed / pinned). Reads name the current user (`created_by`); every write
+ * is an upsert keyed on (task_id, created_by), filed in the task's organization.
  *
  * Snooze semantics: a snoozed task disappears from every attention view
  * (Today, Overdue, Upcoming, Inbox) until `snoozed_until`, but stays in
@@ -12,78 +11,75 @@
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
 import { requireUserId } from "@/utils/auth/getUserId";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import type { Database } from "@/types/database.types";
 
-export interface TaskUserState {
-  id: string;
-  task_id: string;
-  created_by: string;
-  organization_id: string;
-  seen_at: string | null;
-  acknowledged_at: string | null;
-  snoozed_until: string | null;
-  dismissed_at: string | null;
-  pinned_at: string | null;
-  updated_at: string;
-}
+/** One person's state on one task; the person is `created_by` (unique with `task_id`). */
+export type TaskUserState =
+  Database["projects"]["Tables"]["task_user_state"]["Row"];
 
-/** All of the current user's task states (RLS returns only their rows). */
+type TaskUserStatePatch = Partial<
+  Pick<
+    TaskUserState,
+    "seen_at" | "acknowledged_at" | "snoozed_until" | "dismissed_at" | "pinned_at"
+  >
+>;
+
+/** All of the current user's task states — scoped to them explicitly, never by RLS alone. */
 export async function listMyTaskUserStates(): Promise<TaskUserState[]> {
   const { data, error } = await projectsDb(supabase)
     .from("task_user_state")
-    .select("*");
+    .select("*")
+    .eq("created_by", requireUserId())
+    .is("deleted_at", null);
   if (error) {
     console.error("listMyTaskUserStates failed:", error.message);
     return [];
   }
-  return (data ?? []) as TaskUserState[];
+  return data ?? [];
 }
 
-async function upsertState(
-  taskId: string,
-  patch: Partial<
-    Pick<
-      TaskUserState,
-      | "seen_at"
-      | "acknowledged_at"
-      | "snoozed_until"
-      | "dismissed_at"
-      | "pinned_at"
-    >
-  >,
-): Promise<TaskUserState | null> {
-  const userId = requireUserId();
-  // The row belongs to its task's organization — the record's own org, read from the task.
-  const { data: task, error: taskError } = await projectsDb(supabase)
+/** The task's own organization: the state row is filed with the record it is about. */
+async function taskOrganizationId(taskId: string): Promise<string> {
+  const { data, error } = await projectsDb(supabase)
     .from("tasks")
     .select("organization_id")
     .eq("id", taskId)
     .single();
-  if (taskError || !task?.organization_id) {
-    console.error(
-      "task_user_state upsert failed: task organization unreadable:",
-      taskError?.message ?? "no organization_id",
-    );
+  if (error) throw new Error(`task ${taskId} organization read failed: ${error.message}`);
+  return ensureOrgId(data.organization_id);
+}
+
+async function upsertState(
+  taskId: string,
+  patch: TaskUserStatePatch,
+): Promise<TaskUserState | null> {
+  const userId = requireUserId();
+  try {
+    const organizationId = await taskOrganizationId(taskId);
+    const { data, error } = await projectsDb(supabase)
+      .from("task_user_state")
+      .upsert(
+        {
+          task_id: taskId,
+          created_by: userId,
+          organization_id: organizationId,
+          ...patch,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "task_id,created_by" },
+      )
+      .select()
+      .single();
+    if (error) {
+      console.error("task_user_state upsert failed:", error.message);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error("task_user_state upsert failed:", err instanceof Error ? err.message : err);
     return null;
   }
-  const { data, error } = await projectsDb(supabase)
-    .from("task_user_state")
-    .upsert(
-      {
-        task_id: taskId,
-        created_by: userId,
-        organization_id: task.organization_id,
-        ...patch,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "task_id,created_by" },
-    )
-    .select()
-    .single();
-  if (error) {
-    console.error("task_user_state upsert failed:", error.message);
-    return null;
-  }
-  return data as TaskUserState;
 }
 
 export function snoozeTask(taskId: string, until: Date) {

@@ -15,6 +15,7 @@ import {
   adoptForeignStream,
   type ForeignStreamConsumer,
 } from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
+import { selectAllSurfaceFocus } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
 import {
   callApi,
   type ApiCallError,
@@ -70,15 +71,37 @@ export type LLMParamsBody = components["schemas"]["LLMParams"];
 // ADOPTED into `activeRequests` (the row the execution system makes) and the caller's
 // `onStreamEvent` still sees every event, forwarded by the adopter. `check:ai-watch`
 // fails a file that names an agent-turn door without this path.
+//
+// These helpers are HEADLESS (reply composer, debrief, assignment demo). The run is
+// always adopted under the SERVER's request id (that is what Watch AI follows), but
+// it is keyed to the real conversation only when a chat in this tab has that
+// conversation open: the adopter's conversation-keyed effects (instance status,
+// working-document deltas, overlay opens) are right there and wrong anywhere else.
+// Otherwise the adopter mints its own conversation id, so nothing reaches a
+// conversation nobody is looking at.
 
 type RunThunk = ThunkAction<Promise<ApiCallResult>, RootState, unknown, Action>;
+
+function isOpenInThisTabsChat(state: RootState, conversationId: string | null): boolean {
+  if (!conversationId) return false;
+  return Object.values(selectAllSurfaceFocus(state) ?? {}).some(
+    (focus) => focus.input === conversationId || focus.display === conversationId,
+  );
+}
 
 function watchableRun(
   onEvent: ((event: TypedStreamEvent) => void) | undefined,
   start: (consumeStream: ForeignStreamConsumer) => RunThunk,
 ): RunThunk {
   return (dispatch, getState, extra) => {
-    const consumeStream = dispatch(adoptForeignStream({ onEvent }) as never) as unknown as ForeignStreamConsumer;
+    const adopt = dispatch(adoptForeignStream({ onEvent }) as never) as unknown as ForeignStreamConsumer;
+    const consumeStream: ForeignStreamConsumer = (response, ids) =>
+      adopt(
+        response,
+        isOpenInThisTabsChat(getState(), ids.conversationId)
+          ? ids
+          : { requestId: ids.requestId, conversationId: null },
+      );
     return start(consumeStream)(dispatch, getState, extra);
   };
 }

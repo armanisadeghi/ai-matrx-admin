@@ -24,7 +24,7 @@ jest.mock("@/features/scopes/registry/entityRegistry", () => ({ tryGetEntityInfo
 jest.mock("@/features/access-gate/components/RequestAccessPanel", () => ({ RequestAccessPanel: () => null }));
 
 import { AccessDeniedView } from "../AccessDenied";
-import type { AccessDeniedContext } from "../../types";
+import type { AccessDeniedContext } from "@ai-matrx/data/access";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

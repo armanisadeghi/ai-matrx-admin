@@ -27,7 +27,7 @@ import { createCmsAccessRequest } from "@/features/cms/services/cmsAccessRequest
 import type {
   AccessDeniedContext,
   RequestedLevel,
-} from "@/features/access-gate/types";
+} from "@ai-matrx/data/access";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

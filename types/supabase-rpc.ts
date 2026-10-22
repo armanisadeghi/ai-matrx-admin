@@ -19,7 +19,7 @@
  *
  *   // In thunks.ts or types.ts, next to the interface:
  *   export interface AgentVersionHistoryItem
- *     extends DbRpcRow<"agx_get_version_history"> {
+ *     extends DbRpcRow<"agx_get_version_history", "agent"> {
  *     // No body needed — the extends IS the check.
  *     // Add fields here only when you need to narrow a type beyond what the DB returns.
  *   }
