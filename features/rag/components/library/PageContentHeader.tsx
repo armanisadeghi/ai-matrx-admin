@@ -8,7 +8,7 @@ import {
   GitCompareArrows,
   MoreHorizontal,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuEntry } from "@ai-matrx/chat/ui/item-types";
 import { PageJumperTapGroup } from "@/features/pdf/components/PageJumperTapGroup";
@@ -68,26 +68,16 @@ function TextModeTabs({
   onTabChange: (tab: "cleaned" | "raw") => void;
 }) {
   return (
-    <div className="matrx-glass-thin-border flex h-6 shrink-0 items-center rounded-full p-px">
-      {(["cleaned", "raw"] as const).map((value) => {
-        const active = tab === value;
-        return (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onTabChange(value)}
-            className={cn(
-              "inline-flex h-full items-center rounded-full px-2 text-[10px] font-medium leading-none capitalize transition-colors",
-              active
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {value}
-          </button>
-        );
-      })}
-    </div>
+    <SegmentedControl<"cleaned" | "raw">
+      aria-label="Text version"
+      value={tab}
+      onValueChange={onTabChange}
+      data={[
+        { value: "cleaned", label: "Cleaned" },
+        { value: "raw", label: "Raw" },
+      ]}
+      className="shrink-0"
+    />
   );
 }
 

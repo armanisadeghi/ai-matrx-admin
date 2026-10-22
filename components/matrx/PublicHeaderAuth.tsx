@@ -77,7 +77,7 @@ export function PublicHeaderAuth() {
         )}
 
         {/* User Avatar - Hidden on mobile */}
-        <div className="hidden md:flex items-center gap-1.5 p-1 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+        <div className="hidden md:flex items-center">
           <Avatar className="h-5 w-5">
             <AvatarImage src={profilePhoto || undefined} alt={displayName} />
             <AvatarFallback className="text-[10px] bg-gradient-to-r from-blue-600 to-violet-600 text-white">
