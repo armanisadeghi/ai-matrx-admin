@@ -68,6 +68,9 @@
 # (scripts/sync-main.py) — every saved file goes live, by design (Arman,
 # 2026-09-24; common-docs policies/shared-checkout.md).
 set -euo pipefail
+# THE RELEASE PATH IS NEVER BLOCKED (Arman 2026-10-02): scripts/githooks/pre-push reads this and REPORTS its
+# failures on the release push (banner + agent mail) instead of refusing it.
+export MATRX_RELEASE_PATH=1
 
 RELEASE_LOCK_HELD=false
 
@@ -734,6 +737,12 @@ if [[ "$RELEASE_PHASE" == "ship" ]]; then
     ship_mark "fetched $REMOTE/$BRANCH"
 
     SHIP_LOCAL_HEAD=$(git rev-parse HEAD)
+    # ship.sh sets RELEASE_REMOTE_MAIN_ONLY=1 when its sync failed: the sync held the local commits for a
+    # reason (printed and screamed there), so GitHub's main ships without them — never no release at all.
+    if [[ "${RELEASE_REMOTE_MAIN_ONLY:-0}" == "1" && -z "$WHILE_PAUSED_SHA" ]]; then
+        ship_finding "ERROR" "Git" "The sync did not push this checkout's local commits — released $REMOTE/$BRANCH without ${SHIP_LOCAL_HEAD:0:9}" "python3 scripts/sync-main.py"
+        SHIP_LOCAL_HEAD="$(git rev-parse "$REMOTE/$BRANCH")"
+    fi
 
     # This checkout's commits that are not on origin yet (the --ship commit,
     # other sessions' unpushed work) ride along. If they conflict, main ships.
