@@ -52,9 +52,12 @@ describe("surface-probe-record: item values are not page values", () => {
   it("still fails when a real page value is missing", () => {
     const chain: ChainValue[] = [
       { name: "selection", label: "Selection", always_available: true, auto_context: true, item_type: "" },
+      { name: "view_mode", label: "View mode", always_available: true, auto_context: true, item_type: "" },
       ...TABLE_ROW_VALUES,
     ];
-    const probe = judgeProbe(input([]), chain, "2026-10-22T00:00:00Z");
+    // The page loaded and supplied one value (a page that supplied NOTHING is inconclusive,
+    // scripts/__tests__/surface-probe-inconclusive.test.ts).
+    const probe = judgeProbe(input(["view_mode"]), chain, "2026-10-22T00:00:00Z");
     expect(probe.missing).toEqual(["selection"]);
     expect(probe.status).toBe("fail");
   });

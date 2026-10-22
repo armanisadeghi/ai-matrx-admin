@@ -60,7 +60,7 @@ export async function ForbiddenSurface() {
   const signInHref = loginHref(captureAuthDestination(pathname, search));
 
   return (
-    <div className="flex h-full min-h-64 w-full items-center justify-center p-6">
+    <div data-matrx-access-refused="" className="flex h-full min-h-64 w-full items-center justify-center p-6">
       <div className="w-full max-w-lg">
         <div className="flex items-start gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted">

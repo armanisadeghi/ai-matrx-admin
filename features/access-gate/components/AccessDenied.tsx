@@ -352,7 +352,7 @@ export function AccessDeniedView({
   const body = reason?.trim() || (absolute ? "" : explanation(context));
 
   return (
-    <div className="matrx-touch-targets flex h-full min-h-64 w-full items-center justify-center p-6">
+    <div data-matrx-access-refused="" className="matrx-touch-targets flex h-full min-h-64 w-full items-center justify-center p-6">
       <div className="w-full max-w-xl">
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted">

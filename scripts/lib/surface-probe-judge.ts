@@ -6,7 +6,7 @@
  * writes through.
  */
 
-export const SURFACE_PROBE_VERSION = "surface-probe@2026-10-22.w5b";
+export const SURFACE_PROBE_VERSION = "surface-probe@2026-10-22.w5c";
 /**
  * Longest value text kept in `last_check.values`. The page shows each value as one preview
  * line (already ≤140 chars); the cap keeps a stray long read from bloating the system row.
@@ -30,6 +30,10 @@ export interface ProbeRecordInput {
   signedIn: boolean;
   probedAs: { email: string | null; userId: string | null; role: string };
   errors: string[];
+  /** The page refused the probe (the access-gate refusal page was on screen). */
+  accessRefused?: boolean;
+  /** The "This page" window's runtime state: live | snapshot | error | none. */
+  runtimeStatus?: string | null;
 }
 
 export interface ChainValue {
@@ -47,8 +51,17 @@ export interface ChainValue {
   item_type: string;
 }
 
+/**
+ * `inconclusive` (2026-10-22): the probe could not judge supply — the page refused access, or
+ * nothing was loaded (no runtime, no record open, nothing read). It proves nothing either way,
+ * so it never overwrites a recorded pass or fail, and readiness reads it as unproven.
+ */
+export type ProbeStatus = "pass" | "fail" | "inconclusive";
+
 export interface LastCheckProbe {
-  status: "pass" | "fail";
+  status: ProbeStatus;
+  /** Why the probe could not judge (status inconclusive only). */
+  inconclusiveReason: string | null;
   at: string;
   route: string;
   recordId: string | null;
@@ -125,8 +138,21 @@ export function judgeProbe(input: ProbeRecordInput, allValues: ChainValue[], at:
   const conditionalMissing = conditional.filter((n) => !supplied.has(n));
   if (missing.length) reasons.push(`${missing.length} always-available value(s) not supplied`);
   if (declaredOn.length === 0) reasons.push("the surface declares no on values");
+  // Inconclusive, not fail: a refused page or a page with nothing loaded never read the
+  // surface's values, so a "fail" there blamed supply for an access or setup problem
+  // (organization-performance-reviews, 2026-10-22: a refused org recorded fail, 0 supplied).
+  const nothingRead = supplied.size === 0;
+  const inconclusiveReason = input.accessRefused
+    ? "access refused: the page showed its refusal, so no value could be read"
+    : input.signedIn && nothingRead
+      ? input.runtimeStatus && input.runtimeStatus !== "live" && input.runtimeStatus !== "snapshot"
+        ? "no record loaded: the page mounted no runtime (open a record, or pass --record)"
+        : "no record loaded: the page supplied nothing to read"
+      : null;
+  if (inconclusiveReason) reasons.unshift(inconclusiveReason);
   return {
-    status: reasons.length === 0 ? "pass" : "fail",
+    status: inconclusiveReason ? "inconclusive" : reasons.length === 0 ? "pass" : "fail",
+    inconclusiveReason,
     at,
     route: input.route,
     recordId: input.recordId,
@@ -145,6 +171,30 @@ export function judgeProbe(input: ProbeRecordInput, allValues: ChainValue[], at:
     probedAs: input.probedAs,
     probeVersion: SURFACE_PROBE_VERSION,
   };
+}
+
+/**
+ * What the recorder merges into `last_check`. An inconclusive probe never replaces a recorded
+ * pass or fail: it lands only as `lastInconclusive` beside them, so the verdict, its supplied
+ * values and readiness stay as the last real judgment left them.
+ */
+export function lastCheckPatch(
+  previousStatus: string | null | undefined,
+  probe: LastCheckProbe,
+): Record<string, unknown> {
+  if (probe.status === "inconclusive" && (previousStatus === "pass" || previousStatus === "fail")) {
+    return {
+      lastInconclusive: {
+        at: probe.at,
+        route: probe.route,
+        recordId: probe.recordId,
+        reason: probe.inconclusiveReason,
+        probedAs: probe.probedAs,
+        probeVersion: probe.probeVersion,
+      },
+    };
+  }
+  return { ...probe, lastInconclusive: null };
 }
 
 export const CHAIN_SQL = `

@@ -690,6 +690,14 @@ try {
       if (!(await resumeIfParked(page, result))) result.errors.push("the preview walk cap kept this tab parked at /__dev-walk");
       result.finalUrl = page.url().replace(/\?.*$/, "");
       result.signedIn = (await page.locator('input[type="email"]').count()) === 0;
+      // A refused page (the access gate's refusal on screen) can read nothing: the recorder
+      // marks it inconclusive, never a supply fail. The marker attribute ships with the access
+      // gate (2026-10-22); the headline match covers a deployment built before it.
+      result.accessRefused = await page.evaluate(() => {
+        if (document.querySelector("[data-matrx-access-refused]")) return true;
+        const heads = Array.from(document.querySelectorAll("main h1, h1")).map((h) => (h.textContent || "").trim());
+        return heads.some((t) => /^(You don't have access to this|You can't open this here|We couldn't find this|Sign in to open this)/.test(t));
+      });
       // --open: open a window/dialog BEFORE reading, so an overlay surface is
       // probed instead of the page underneath ('SELECTOR=>TEXT', repeatable,
       // run in order on this load).
@@ -714,6 +722,14 @@ try {
         result.errors.push('neither "This page" nor "Surface Context" found in the Agents popover');
       await page.waitForTimeout(4000);
       result.before = await readProbe(page);
+      // The "This page" window's runtime state (live | snapshot | error | none); null on a
+      // deployment without the attribute, where the label is read instead.
+      result.runtimeStatus = await page.evaluate(() => {
+        const el = document.querySelector("[data-runtime-status]");
+        if (el) return el.getAttribute("data-runtime-status");
+        const text = document.body.innerText || "";
+        return /\bNo runtime\b/.test(text) ? "none" : null;
+      });
       // The surface key is an admin-only diagnostic in the Agents popover (and
       // the admin lane is closed on user pages), so the page is also "named"
       // when the Surface Context window it opens shows the key.
@@ -835,6 +851,8 @@ if (opts.record && results[0]) {
     signedIn: Boolean(first.signedIn),
     probedAs: { email: probedAs?.email ?? null, userId: probedAs?.user_id ?? null, role: "admin" },
     errors: first.errors ?? [],
+    accessRefused: Boolean(first.accessRefused),
+    runtimeStatus: first.runtimeStatus ?? null,
   };
   const rec = spawnSync(path.join(root, "node_modules/.bin/tsx"), [path.join(root, "scripts/surface-probe-record.ts")], {
     input: JSON.stringify(input),

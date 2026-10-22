@@ -37,6 +37,7 @@ import { CopyForAiButton } from "@/components/agent-copy/CopyForAiButton";
 import { CopyForAiIcon } from "@/components/agent-copy/CopyForAiIcon";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { getManifest } from "@/features/surfaces/manifests/registry";
+import { useWindowSurfaceFollowsRoute } from "./follow-route-surface";
 import { SurfaceBoundAgentsList } from "@/features/surfaces/components/bind/SurfaceBoundAgentsList";
 import { useOpenSurfaceContextInspector } from "@/features/overlays/definitions/surfaceContextInspector.overlay";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
@@ -228,10 +229,12 @@ function SectionHeading({ title, count }: { title: string; count?: number }) {
 export default function SurfaceContextWindow({
   isOpen,
   onClose,
-  surfaceName,
+  surfaceName: openedSurfaceName,
   isEditable = false,
   initialSection = "values",
 }: SurfaceContextWindowProps) {
+  // The window stays open across navigation: after the route changes it shows the new page.
+  const surfaceName = useWindowSurfaceFollowsRoute(openedSurfaceName);
   const { copyText: copyTextKit } = useClipboard({ notify: copyNotify });
   const live = useLiveSurfaceScope({ enabled: isOpen, surfaceName });
   const isAdmin = useAppSelector(selectIsAdmin);
@@ -446,7 +449,7 @@ export default function SurfaceContextWindow({
           // data-declared-keys + each row's data-value-key/-state let
           // `pnpm surface:probe` read the page the way this window shows it,
           // including the declared values a person's seat does not list.
-          <ul data-declared-keys={declared.map((value) => value.name).join(" ")}>
+          <ul data-declared-keys={declared.map((value) => value.name).join(" ")} data-runtime-status={live.status}>
             {filteredItems.map((item) => {
               const raw = live.scope[item.key];
               const expanded = openKey === item.key;
@@ -709,7 +712,7 @@ export default function SurfaceContextWindow({
       }
       footerLeft={
         <div className="flex flex-wrap items-center gap-x-3 text-[11px] text-muted-foreground">
-          <span className={cn("flex items-center gap-1", presentation.className)}>
+          <span data-runtime-status={live.status} className={cn("flex items-center gap-1", presentation.className)}>
             {live.status === "live" ? <CircleDot className="h-2.5 w-2.5 fill-current" /> : null}
             {presentation.label}
           </span>

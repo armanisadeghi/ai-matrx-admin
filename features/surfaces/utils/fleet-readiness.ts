@@ -61,7 +61,14 @@ export function readinessGaps(m: ReadinessInputs | undefined): string[] {
   if (!m) return ["No fleet metric for this surface"];
   const gaps: string[] = [];
   if (m.probe_result !== "pass") {
-    gaps.push(m.probe_result ? "Last probe failed" : "Never probed");
+    // An inconclusive probe (refused page, nothing loaded) proved nothing: unproven, never "failed".
+    gaps.push(
+      m.probe_result === "inconclusive"
+        ? "Last probe inconclusive"
+        : m.probe_result
+          ? "Last probe failed"
+          : "Never probed",
+    );
   }
   if (m.values_declared_on === 0) gaps.push("No values declared on");
   else if (m.values_supplied < m.values_declared_on) {

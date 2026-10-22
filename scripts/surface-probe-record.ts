@@ -15,6 +15,9 @@
  * code-declared one: database-declared rows belong to an organization or a
  * person and are refused.
  *
+ * Status `inconclusive` (2026-10-22) when the page refused access or loaded nothing; it never
+ * overwrites a recorded pass or fail (`lastCheckPatch`).
+ *
  * Status (done bar (c)): `pass` when the probe signed in as the admin test
  * account, the page named the surface, and EVERY declared-on value that is
  * `always_available` (over the parent chain, nearest declaration wins — the
@@ -48,6 +51,7 @@ export type { ChainValue, LastCheckProbe, ProbeRecordInput } from "./lib/surface
 import {
   CHAIN_SQL,
   judgeProbe,
+  lastCheckPatch,
   PROBE_IDENTITY,
   SURFACE_PROBE_VERSION,
   type ChainValue,
@@ -74,8 +78,8 @@ async function main() {
   if ("missing" in env) refuse(`database variables missing: ${env.missing.join(", ")}`);
   const client = await connectDirect(env, "surface-probe-record");
   try {
-    const row = await client.query<{ declared_by: string }>(
-      "select declared_by from ui.ui_surface where name = $1 and deleted_at is null",
+    const row = await client.query<{ declared_by: string; status: string | null }>(
+      "select declared_by, last_check->>'status' as status from ui.ui_surface where name = $1 and deleted_at is null",
       [input.surface],
     );
     if (row.rowCount === 0) refuse(`no live ui.ui_surface row named ${input.surface}`);
@@ -84,15 +88,17 @@ async function main() {
     const chain = await client.query<ChainValue>(CHAIN_SQL, [input.surface]);
     const at = new Date().toISOString();
     const probe = judgeProbe(input, chain.rows, at);
+    // An inconclusive probe never overwrites a recorded pass or fail (lastCheckPatch).
+    const patch = lastCheckPatch(row.rows[0]!.status, probe);
     await client.query(
       `update ui.ui_surface
           set last_check = coalesce(last_check, '{}'::jsonb) || $2::jsonb,
               last_checked_at = $3::timestamptz,
               last_checked_by = $4
         where name = $1 and deleted_at is null and declared_by = 'code'`,
-      [input.surface, JSON.stringify(probe), at, `script:${SURFACE_PROBE_VERSION}`],
+      [input.surface, JSON.stringify(patch), at, `script:${SURFACE_PROBE_VERSION}`],
     );
-    console.log(JSON.stringify(probe));
+    console.log(JSON.stringify({ ...probe, kept: "lastInconclusive" in patch && !("status" in patch) ? row.rows[0]!.status : undefined }));
   } finally {
     await client.end();
   }
