@@ -58,6 +58,8 @@
     "check:outbound-referral:self-test": "node node_modules/@ai-matrx/kit/scripts/check-outbound-referral.mjs --self-test",
     "route-flow": "tsx --tsconfig tsconfig.json scripts/route-flow/extract.ts",
     "check:parse": "node scripts/check-parse.mjs",
+    "check:parse:staged": "node scripts/check-parse.mjs --staged",
+    "check:parse:write-time-self-test": "node scripts/check-parse.mjs --write-time-self-test",
     "check:parse:changed": "node scripts/check-parse.mjs --changed",
     "check:parse:fix": "node scripts/check-parse.mjs --fix",
     "check:parse:advisory": "node scripts/check-parse.mjs --advisory",

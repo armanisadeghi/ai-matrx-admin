@@ -47,6 +47,14 @@ if ! command -v node >/dev/null 2>&1; then
     exit 1
 fi
 
+# STAGED FILES PARSE (2026-10-22, Arman: "We need things that run when the agents are writing the code"):
+# a staged .ts/.tsx/.js/.mjs whose INDEX content does not parse is refused with file:line (~0.5 s).
+# Turbopack refuses it and every release build fails 7-9 min in. Never on the release path
+# (MATRX_RELEASE_PATH=1 reports only). Self-test: pnpm check:parse:write-time-self-test.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'; then
+    (cd "$ROOT" && node scripts/check-parse.mjs --staged) || exit 1
+fi
+
 # --message-file: git has not written the message yet at pre-commit, so the runner's
 # receipt is what carries the exemption here (prepare-commit-msg turns it into the
 # trailer that ends up in the commit). Both are the runner's, never a lane's sentence.
