@@ -37,6 +37,9 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { SourceDelivery } from "@ai-matrx/agents/sources/runtime";
 import type { EducationSources } from "./useEducationSources";
 
+/** Decks join Use existing on every Education create screen (the global list stays the nine). */
+export const EDUCATION_CREATE_EXTRA_KINDS: readonly string[] = ["fc_set"];
+
 export interface EducationCreatePageProps {
   /** The tool's name in the shell header ("New mind map"). */
   title: string;
@@ -48,6 +51,8 @@ export interface EducationCreatePageProps {
   purpose: string;
   /** How the AI may get a Source; omit for both. */
   deliveries?: readonly SourceDelivery[];
+  /** Kinds Use existing offers on this screen beyond the approved nine. */
+  extraKinds?: readonly string[];
   sources: EducationSources;
   /** The tool's Style and details controls. */
   children: ReactNode;
@@ -84,6 +89,7 @@ export function EducationCreatePage({
   surfaceKey,
   purpose,
   deliveries,
+  extraKinds = EDUCATION_CREATE_EXTRA_KINDS,
   sources,
   children,
   styleDraft,
@@ -125,6 +131,7 @@ export function EducationCreatePage({
               required
               attachTo={undefined}
               deliveries={deliveries}
+              extraKinds={extraKinds}
             />
           </CreateStep>
 

@@ -35,7 +35,7 @@ for (const s of steps) {
   try {
     if (s.goto) await page.goto(new URL(s.goto, process.env.ORIGIN ?? page.url()).toString(), { waitUntil: "domcontentloaded", timeout: 180000 });
     if (s.click) await loc(s.click).click({ timeout: s.timeout ?? 15000 });
-    if (s.fill) await loc(s.fill).fill(s.fill.value, { timeout: 15000 });
+    if (s.fill) await (s.fill.role ? page.getByRole(s.fill.role, { name: s.fill.name, exact: true }).first() : loc(s.fill)).fill(s.fill.value, { timeout: 15000 });
     if (s.press) await page.keyboard.press(s.press);
     if (s.upload) await page.locator(s.upload.css).first().setInputFiles(s.upload.file);
     if (s.wait) await page.waitForTimeout(s.wait);

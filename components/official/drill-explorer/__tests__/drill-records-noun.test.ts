@@ -22,3 +22,16 @@ describe("a records declaration's own noun", () => {
     expect(useRecordsNoun(def, recordsOf(def)!)).toBe("tool call");
   });
 });
+
+// night walk 2026-10-22: every Feature cell of a records list read "Reading the name…" forever, because
+// the records only asked the name book about relation Dimensions and `feature` is a host-named code.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+describe("records ask the name book for every host-named Dimension", () => {
+  it("the records page asks for names of a non-relation Dimension the host resolves", () => {
+    const src = readFileSync(join(__dirname, "..", "DrillRecords.tsx"), "utf8");
+    expect(src).toMatch(/dim\.kind !== "relation" && !book\.resolves\(dim\.key\)/);
+    expect(src).not.toMatch(/if \(!dim \|\| dim\.kind !== "relation"\) continue;/);
+  });
+});

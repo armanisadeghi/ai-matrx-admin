@@ -17,7 +17,7 @@ import { buildSheetMenus, type SheetChromeHost } from "../chrome/sheet-commands"
 import { flattenMenus } from "@ai-matrx/office/core";
 
 let promptAnswer: Record<string, string> | null = null;
-jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({
+jest.mock("@ai-matrx/chat/ui/valuePromptsOpener", () => ({
   promptForValues: async () => promptAnswer,
 }));
 

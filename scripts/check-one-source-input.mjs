@@ -59,7 +59,6 @@ const KNOWN_LOCAL = new Set([
   "app/(core)/transcripts/new/page.tsx",
   "features/marketing/seo/topical-map/start/startMapSources.ts",
   "features/marketing/seo/topical-map/start/StartMapScreen.tsx",
-  "features/education/media/mindmap/components/MindMapNew.tsx",
 ]);
 const EDU_CLASS = /(^|\/)features\/education\/classes\//;
 

@@ -120,10 +120,6 @@ jest.mock("@/lib/toast", () => ({
   __esModule: true,
   toast: { error: jest.fn(), success: jest.fn() },
 }));
-jest.mock("@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog", () => ({
-  __esModule: true,
-  ClipboardFallbackDialog: () => null,
-}));
 
 function knobs(overrides: Partial<TopicalMapKnobs> = {}): TopicalMapKnobs {
   return {

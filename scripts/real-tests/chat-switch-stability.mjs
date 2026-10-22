@@ -275,7 +275,8 @@ async function sidebarIds(page) {
     for (const a of document.querySelectorAll('a[href^="/chat/"]')) {
       const m = a.getAttribute("href").match(/^\/chat\/([0-9a-f-]{36})$/);
       const r = a.getBoundingClientRect();
-      if (m && r.height > 0 && r.top > 0 && r.bottom < innerHeight && !seen.includes(m[1])) seen.push(m[1]);
+      // Any listed row (the click scrolls it into view); hidden rows (height 0) never.
+      if (m && r.height > 0 && !seen.includes(m[1])) seen.push(m[1]);
     }
     return seen;
   });
@@ -341,6 +342,9 @@ try {
     clickedId: target,
     action: () => page.locator(`a[href="/chat/${target}"]`).first().click(),
   }));
+} catch (error) {
+  // Report what was measured before the walk broke, then fail.
+  steps.push({ label: "walk", kind: "walk", fails: [`walk stopped: ${error.message.split("\n")[0]}`] });
 } finally {
   await browser.close().catch(() => {});
 }

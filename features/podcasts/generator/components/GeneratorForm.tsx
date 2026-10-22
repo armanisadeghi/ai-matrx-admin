@@ -31,7 +31,7 @@
 // speakers (only when customized), post_prep_option, show_id,
 // prep_user_message, first_show_info_text, truncate_audio_for_testing.
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createPodcastStudioScope } from "@/features/surfaces/manifests/podcast-studio.manifest";
 import {
@@ -263,12 +263,12 @@ export function GeneratorForm({
   const [targetAudience, setTargetAudience] = useState("");
 
   // A reload brings the picked Sources back — open their tile so they are seen.
-  const restoredSourcesShown = useRef(false);
-  useEffect(() => {
-    if (restoredSourcesShown.current || sourceSet.restoring) return;
-    restoredSourcesShown.current = true;
+  // Adjusted while rendering (React's pattern for state derived from a change), not in an effect.
+  const [restoredSourcesShown, setRestoredSourcesShown] = useState(false);
+  if (!restoredSourcesShown && !sourceSet.restoring) {
+    setRestoredSourcesShown(true);
     if (sourceSet.sources.length > 0 && !text.trim()) setSourceKind("sources");
-  }, [sourceSet.restoring, sourceSet.sources.length, text]);
+  }
 
   const activeSource = GENERATOR_SOURCE_OPTIONS.find((o) => o.kind === sourceKind);
   if (!activeSource) {
@@ -284,7 +284,8 @@ export function GeneratorForm({
   const resolverBusy = usesSources && landingSources.length > 0;
   const sourceReadiness = usesSources
     ? landingSources.length > 0
-      ? { ready: false, message: "Wait until your sources finish adding." }
+      ? // Each card shows its own progress; waiting is not an error.
+        { ready: false, message: null }
       : // The server's gate reads the resolved text; the measured size mirrors it
         // (0 = not measured yet — the server decides).
         sourceSet.totalChars > 0 && sourceSet.totalChars < MIN_PODCAST_CONTENT_CHARS
@@ -633,7 +634,8 @@ export function GeneratorForm({
               deliveries={PODCAST_SOURCE_DELIVERIES}
             />
           ) : null}
-          {(hasSourceInput || resolverBusy) &&
+          {hasSourceInput &&
+            sourceReadiness.message &&
             !sourceReadiness.ready && (
               <p
                 role="alert"

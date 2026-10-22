@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LocaleService } from "@univerjs/core";
 
 import { toast } from "@/lib/toast";
-import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { promptForValues } from "@ai-matrx/chat/ui/valuePromptsOpener";
 import type { SheetChromeHost, SheetPanel } from "@/features/workbooks/chrome/sheet-commands";
 import {
   applyFilterView,

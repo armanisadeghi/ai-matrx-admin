@@ -189,6 +189,9 @@ const clusterSurface = (pathname: string | null, wide: boolean): string => {
 /** Breathing room an in-flow center keeps from the title and the actions. */
 export const CENTER_INFLOW_GUTTER = 16;
 
+/** The breathing room from the flanks a centered control keeps (useCenterControlFit's). */
+const CENTER_FLANK_GUTTER_PX = 32;
+
 export function centerSlotWidth(
   total: number,
   leftWidth: number,
@@ -445,7 +448,28 @@ export default function RouteHeader({
       // to an empty center (2026-10-03: /war-room/<id> beside the canvas drew
       // "Acme…" at 42px beside a blank 56px gap).
       const navMin = root.querySelector<HTMLElement>("[data-route-nav-min]")?.scrollWidth ?? 0;
-      setLeftMax(titleMaxWidth(root.clientWidth, rightWidth, navMin, floor));
+      // 🚨 THE CENTER CONTROL NEVER MOVES WITH THE TITLE (2026-10-21, chat-switch-stability).
+      // A long title used to push the center switch out of the true center (in flow, or
+      // its compact face), so every chat switch between a short and a long title moved
+      // the switch sideways. The title now yields first: it stops where the control's
+      // widest face, at the true center, begins — down to its floor; below that the
+      // old rule (smallest trigger) applies.
+      const navFull = Math.max(
+        0,
+        ...Array.from(
+          root.querySelectorAll<HTMLElement>("[data-route-header-center] [inert] > *"),
+        ).map((el) => el.scrollWidth),
+      );
+      const centeredCap =
+        navFull > 0
+          ? Math.floor((root.clientWidth - navFull) / 2 - CENTER_FLANK_GUTTER_PX / 2)
+          : null;
+      const inflowCap = titleMaxWidth(root.clientWidth, rightWidth, navMin, floor);
+      setLeftMax(
+        centeredCap != null && centeredCap >= floor && rightWidth <= centeredCap
+          ? Math.min(centeredCap, inflowCap ?? centeredCap)
+          : inflowCap,
+      );
     };
 
     measure();

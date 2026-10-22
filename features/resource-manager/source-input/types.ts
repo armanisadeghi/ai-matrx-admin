@@ -22,6 +22,12 @@ export interface SourceInputProps {
   surfaceKey: string;
   /** Which tiles appear ("existing" = Use existing + search). Omitted = every tile. */
   kinds?: readonly SourceInputKindId[];
+  /**
+   * Registry tokens this screen's Use existing offers IN ADDITION to the registry's pickable list
+   * (e.g. `["fc_set"]` for a study tool that works from a deck). Per screen only — the global list
+   * stays the nine Arman approved. Appended last, under the kind's own name.
+   */
+  extraKinds?: readonly string[];
   /** Most Sources the person may pick. Omitted = no limit. */
   max?: number;
   /** The host needs at least one Source (or a topic) before it can run. */

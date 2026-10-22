@@ -18,6 +18,8 @@ import { isArchivedSource } from "@/features/resource-manager/source-input/compo
 import { backfillFileIds, lineageSourcesOf } from "@/features/flashcards/data/generateDeckFromSources";
 import { unreadableRestoredIds } from "@/features/flashcards/data/draftSourceHonesty";
 import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import { nameFromSources } from "@/features/education/onboard/kitTitle";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { resolveTopicAudioSource } from "@/features/education/media/audio/resolveAudioSource";
 import {
@@ -48,6 +50,8 @@ export interface UseEducationSourcesOptions {
 }
 
 export function useEducationSources(surfaceKey: string, options: UseEducationSourcesOptions) {
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
   const set = useSourceSet(surfaceKey);
   const intake = useSourceIntake(set, { attachTo: undefined });
 
@@ -154,7 +158,7 @@ export function useEducationSources(surfaceKey: string, options: UseEducationSou
     const names = sourceNamesOf(set.sources);
     const resolving = set.resolve();
     resolving.catch(() => undefined);
-    await ensureOrgId(undefined);
+    const orgId = await ensureOrgId(undefined);
     // Citations open the real file only through its file id.
     const resolved = await backfillFileIds(await resolving);
     const content = groundedTextOf(resolved.sources);
@@ -163,7 +167,12 @@ export function useEducationSources(surfaceKey: string, options: UseEducationSou
     }
     return {
       content,
-      title: sourceTitleOf(resolved.sources.filter((s) => s.text.trim()).map((s) => s.label)),
+      // Several Sources are titled by THE kit namer (an equal share of each), "A, B and N more" only as its floor.
+      title: await nameFromSources(
+        resolved.sources,
+        { dispatch, store, orgId },
+        sourceTitleOf(resolved.sources.filter((s) => s.text.trim()).map((s) => s.label)),
+      ),
       source: mediaSourceOf(resolved.sources),
       trust: trustFromResolved(resolved.sources),
       deckIds: deckIdsOf(resolved.sources),

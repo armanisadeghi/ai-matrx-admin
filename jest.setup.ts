@@ -510,7 +510,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
       "@/hooks/sandbox/use-compute-targets": ["useComputeTargets"],
       "@/hooks/sandbox/use-sandbox": ["useSandboxInstances"],
       "@/hooks/sandbox/use-verified-binding": ["useVerifiedSandboxBinding"],
-      "@/components/dialogs/sandbox-gate/SandboxGateHost": ["openSandboxGate"],
+      "@/components/dialogs/sandbox-gate/sandboxGateOpener": ["openSandboxGate"],
       "@/features/code/views/sandboxes/CloneRepoDialog": ["CloneRepoDialog"],
       "@/features/code/views/sandboxes/SandboxDiagnosticsPanel": ["SandboxDiagnosticsPanel"],
     }) as Parameters<typeof computeSeam.registerChatComputeTargets>[0],
@@ -533,7 +533,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
  * ── The files engine host (@ai-matrx/media/files/engine) ─────────────────────
  * The app wires it in `features/files/files-host.ts`, imported by the store
  * module. Here every member is required at CALL time, so a suite's
- * `jest.mock("@/lib/api/server-api")` (or python-client, supabase client, toast, share links,
+ * `jest.mock("@/lib/python-client")` (or supabase client, toast, share links,
  * store singleton) is what the engine calls — exactly as when the engine lived
  * in the app.
  */
@@ -552,13 +552,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       return require("@/utils/supabase/client").supabase;
     },
-    get api() {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      return require("@/lib/api/server-api").serverApi;
-    },
-    wireHeaders: async (organizationId) =>
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      (await require("@/lib/python-client").buildHeaders(organizationId ? { organizationId } : {}, false)).headers,
+    server: lazy("@/lib/python-client"),
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     store: () => require("@/lib/redux/store-singleton").getStoreSingleton(),
     scope: (state) => {

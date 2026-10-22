@@ -95,7 +95,7 @@ Add to `vercel.json`:
 ## UI Components
 
 - **EmailPreferences** (`components/user-preferences/EmailPreferences.tsx`) - User preference toggles
-- **EmailInputDialog** (`components/dialogs/EmailInputDialog.tsx`) - Email input for public features
+- **EmailInputDialog** (`@ai-matrx/design-system`) - Email input for public features
 - **MessageOptionsMenu** - "Email to me" option in chat menu
 - **ExportTableModal** - Email tab for table exports
 - **ShareModal** - "Email link" button

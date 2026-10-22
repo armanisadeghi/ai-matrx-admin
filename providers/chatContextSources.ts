@@ -80,7 +80,7 @@ import { ACTIVE_EFFECTIVE_STATUSES, getEffectiveStatus, STATUS_LABELS, statusPil
 import { useComputeTargets } from "@/hooks/sandbox/use-compute-targets";
 import { useSandboxInstances } from "@/hooks/sandbox/use-sandbox";
 import { useVerifiedSandboxBinding } from "@/hooks/sandbox/use-verified-binding";
-import { openSandboxGate } from "@/components/dialogs/sandbox-gate/SandboxGateHost";
+import { openSandboxGate } from "@/components/dialogs/sandbox-gate/sandboxGateOpener";
 import { lazySlotsFrom, SlotLoadingPanel } from "@/providers/chatSlotLazy";
 
 // Sandbox dialogs/panels load on first use through ONE edge — see chatContextSourcesImpl.ts.

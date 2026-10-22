@@ -15,7 +15,7 @@ jest.mock("@/features/data-tables/pick-lists/pick-list-index", () => ({
 }));
 
 import { offeredKindsFrom } from "./UseExisting";
-import { sourceInputEntries, type SourceInputKindRow } from "../sourceInputKinds";
+import { sourceInputEntries, withExtraKinds, type SourceInputKindRow } from "../sourceInputKinds";
 import { fetchTablesPage, PICK_LIST_BADGE } from "../recordStoreKinds";
 import { dataHomeTables } from "@/features/unified-data/hub/doors";
 import { readPickListIndexOrThrow } from "@/features/data-tables/pick-lists/pick-list-index";
@@ -35,6 +35,19 @@ describe("Use existing kinds", () => {
     ]);
     const docs = kinds.find((k) => k.plural === "Docs")!;
     expect(docs.tokens).toEqual(["document", "udt_document"]);
+  });
+
+  it("shows exactly the nine approved entries by default; a screen's extraKinds adds Decks last, there only", () => {
+    const entries = sourceInputEntries(LIVE);
+    expect(offeredKindsFrom(withExtraKinds(entries, undefined)).map((k) => k.plural)).toHaveLength(9);
+    expect(offeredKindsFrom(withExtraKinds(entries, undefined)).map((k) => k.plural)).not.toContain("Decks");
+    const withDecks = offeredKindsFrom(withExtraKinds(entries, ["fc_set"]));
+    expect(withDecks.map((k) => k.plural)).toEqual([
+      "Files", "Notes", "Docs", "Websites", "Transcripts", "Conversations", "Tables", "Sheets", "Saved results", "Decks",
+    ]);
+    expect(withDecks.at(-1)).toMatchObject({ token: "fc_set", tokens: ["fc_set"] });
+    // A token the registry already offers is never listed twice.
+    expect(withExtraKinds(entries, ["file"])).toHaveLength(entries.length);
   });
 
   it("lists Websites from saved Sources and Tables from the record store, one token each", () => {

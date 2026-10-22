@@ -36,6 +36,7 @@ import {
   type MatrxDrillQuestion,
 } from "@ai-matrx/design-system/data-table";
 import type { EnvelopeMeta } from "@ai-matrx/alchemy/react/workspace";
+import { pluralNoun } from "./explorerWords";
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 
@@ -131,7 +132,7 @@ function otherRow(other: MatrxDrillOther, input: DrillExplainInput): { [key: str
   return {
     group: "Other",
     note: "Everything the group limit left out, so the rows add up to the total.",
-    [input.rowNoun === "record" ? "records" : `${input.rowNoun}s`]: other.row_count,
+    [pluralNoun(input.rowNoun, 2)]: other.row_count,
     measures: measuresOf({ measures: other.measures }, input, null),
   };
 }
@@ -149,7 +150,7 @@ function groupRow(
   };
   const label = drillValueLabel(input.dimensions, ref, raw, input.emptyLabel);
   if (raw !== null && raw !== label) row.value = raw;
-  row[input.rowNoun === "record" ? "records" : `${input.rowNoun}s`] = node.row.row_count;
+  row[pluralNoun(input.rowNoun, 2)] = node.row.row_count;
   row.measures = measuresOf(node.row, input, parent);
   if (columns && input.question.across) {
     const across: { [key: string]: Json } = {};
@@ -249,7 +250,7 @@ export function drillExplainPayload(input: DrillExplainInput): DrillExplainPaylo
       counted_through: input.asOf,
       money_shown_in: input.moneyUnit,
       total: {
-        [input.rowNoun === "record" ? "records" : `${input.rowNoun}s`]: tree.total.row_count,
+        [pluralNoun(input.rowNoun, 2)]: tree.total.row_count,
         measures: measuresOf(tree.total, input, null),
       },
       coverage,
