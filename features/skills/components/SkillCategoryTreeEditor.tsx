@@ -839,7 +839,7 @@ function CreateCategoryRow({
           keyTouchedRef.current = true;
           setKey(e.target.value);
         }}
-        className="w-40"
+        className="w-40 font-mono"
         data-identifier
         placeholder="category_key"
       />
