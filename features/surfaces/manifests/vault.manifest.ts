@@ -72,6 +72,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const vaultManifest: SurfaceManifest = {
   surfaceName: "matrx-user/vault",
+  situation:
+    "They are in their credential vault: {credential_count} saved credentials covering {credential_providers|no providers}. You see only names and providers, never a secret; they add, change or remove credentials themselves on this page.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

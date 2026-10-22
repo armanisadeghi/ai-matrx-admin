@@ -52,6 +52,8 @@ const values: SurfaceValue[] = [
 
 export const adminHardCostReconciliationManifest: SurfaceManifest = {
   surfaceName: ADMIN_HARD_COST_RECONCILIATION_SURFACE_NAME,
+  situation:
+    "As a super admin they are on the hard-cost reconciliation: for each window and AI provider, what the vendor says it charged against what our ledger recorded and the points charged. {row_count|No} rows exist; the newest result per provider is in your context. Nothing is edited here.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

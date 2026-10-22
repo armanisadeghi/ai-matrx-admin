@@ -246,6 +246,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminFeedbackManifest: SurfaceManifest = {
   surfaceName: ADMIN_FEEDBACK_SURFACE_NAME,
+  situation:
+    "As a platform admin they are in the feedback and announcements console for the whole platform, on the {active_tab} tab (all feedback, the agent work queue, announcements or categories). You can draft an announcement or a feedback category for them to save.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

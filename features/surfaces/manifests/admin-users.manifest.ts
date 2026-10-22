@@ -442,6 +442,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminUsersManifest: SurfaceManifest = {
   surfaceName: ADMIN_USERS_SURFACE_NAME,
+  situation:
+    "As a platform admin they are on the account list for the whole platform: {user_count} accounts loaded and {visible_user_count} showing after their search and filters. If they came here for one account, its details are in your context. They can search, filter and sort the list and open any account.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

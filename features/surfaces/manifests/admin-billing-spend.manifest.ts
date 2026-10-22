@@ -412,6 +412,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminBillingSpendManifest: SurfaceManifest = {
   surfaceName: ADMIN_BILLING_SPEND_SURFACE_NAME,
+  situation:
+    "As a super admin they are on the platform-wide spend dashboard. Spent today (USD): {today_spend_usd|not loaded}; month to date: {month_to_date_spend_usd|not loaded}; projected month: {month_projection_usd|not loaded}. It also shows cost sources, print orders and one window's batch savings. Nothing is edited here.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

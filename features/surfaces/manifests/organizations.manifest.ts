@@ -430,6 +430,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const organizationsManifest: SurfaceManifest = {
   surfaceName: ORGANIZATIONS_SURFACE_NAME,
+  situation:
+    "They are on their organizations ({current_view} view), belonging to {organization_count|some} organizations. Open: {org_name|none, they are choosing between them}, with {member_count|no} members; their role there is {viewer_role|not shown}. They can change the open organization's name, description, short name and website.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

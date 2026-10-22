@@ -625,6 +625,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const settingsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/settings",
+  situation:
+    "They are in their settings, on the {active_tab_label|first} tab, with the {theme_mode} theme. You can change their AI voice defaults, notification preferences, hidden models, theme, writing style, language defaults, assistant name and voice persona.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

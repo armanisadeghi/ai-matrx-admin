@@ -55,6 +55,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminUserRecordManifest: SurfaceManifest = {
   surfaceName: ADMIN_USER_RECORD_SURFACE_NAME,
+  situation:
+    "As a platform admin they are looking at another person's account, not their own: {person_name} ({person_email|no email}), {person_status}, on the {plan_name|unknown} plan with usage {usage_state|unknown}, {attention_count} items needing attention, on the {active_tab} tab.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

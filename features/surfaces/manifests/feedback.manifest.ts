@@ -269,6 +269,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const feedbackManifest: SurfaceManifest = {
   surfaceName: FEEDBACK_SURFACE_NAME,
+  situation:
+    "They have the feedback window open, filing a {feedback_type} report from {route}, with {attachment_count} attachments; sent as item {submitted_item_id|not sent yet}. The draft text is in your context. You can rewrite the draft into a clear report and add attachments.",
   inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
