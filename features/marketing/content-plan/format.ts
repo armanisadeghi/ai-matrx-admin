@@ -23,9 +23,6 @@ import type { PlanAiRunSummary } from "./hooks/usePlanAiRuns";
 import type { PlanSiteStats } from "./data/service";
 import type { RealityVerdict } from "./lib/page-reality";
 import type { PlanEntityRow, PlanNodeRow } from "./types";
-import { type CostUnit } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
-import { currentCostUnit } from "@/components/cost/costUnit";
 
 /** The workspace's leading metric strip, as data. */
 export interface ContentPlanKpis {
@@ -181,15 +178,12 @@ export function driftItemCsvRow(item: DriftItem): Record<string, unknown> {
 /** One recorded AI run, as the runs view renders it. */
 export function planAiRunSummary(
   run: PlanAiRunSummary,
-  rate: number | null,
-  unit: CostUnit = currentCostUnit(),
 ): string {
-  const cost = run.totalCost ? formatCost(run.totalCost, { rate, unit }) : "";
   return [
     `${run.kindLabel} — ${run.status || "unknown"}`,
     run.nodeRoute || null,
     run.error || run.headline || null,
-    [cost, run.createdAt].filter(Boolean).join(" "),
+    run.createdAt,
   ]
     .filter(Boolean)
     .join(" · ");

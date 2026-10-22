@@ -184,6 +184,7 @@ export function LessonScriptSectionCard({
     <section className="rounded-lg border border-border bg-card">
       <div className="flex items-center gap-2 px-3 py-2">
         <DisclosureHeader
+          chevron="end"
           open={open}
           onClick={() => setOpen((value) => !value)}
           title={section.heading}

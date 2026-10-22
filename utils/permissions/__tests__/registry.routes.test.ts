@@ -28,7 +28,7 @@ import { join } from "node:path";
 import {
   SHAREABLE_RESOURCE_REGISTRY,
   getResourceSharePath,
-} from "../registry";
+} from "@ai-matrx/sharing/core";
 
 const APP_DIR = join(__dirname, "..", "..", "..", "app");
 

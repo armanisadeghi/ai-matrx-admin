@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import { toast } from "@/lib/toast";
 import type { RichContentTableDoors } from "@ai-matrx/rich-content/host/types";
 
@@ -25,7 +25,7 @@ export function useTableDoors(): RichContentTableDoors {
         dispatch(
           openOverlay({
             overlayId: "saveToNotes",
-            instanceId: `table-notes:${crypto.randomUUID()}`,
+            instanceId: mintInstanceId("saveToNotes"),
             data: { initialContent: title ? `## ${title}\n\n${markdown}` : markdown },
           }),
         ),

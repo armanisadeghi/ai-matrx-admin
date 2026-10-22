@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3448",
+  "version": "0.4.3449",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -1098,6 +1098,7 @@
     "@ai-matrx/content-ir": "latest",
     "@ai-matrx/context-menu": "latest",
     "@ai-matrx/data": "latest",
+    "@ai-matrx/diagrams": "latest",
     "@ai-matrx/design-system": "latest",
     "@ai-matrx/desktop-protocol": "latest",
     "@ai-matrx/detail": "latest",
@@ -1113,6 +1114,7 @@
     "@ai-matrx/records": "latest",
     "@ai-matrx/records-ui": "latest",
     "@ai-matrx/rich-content": "latest",
+    "@ai-matrx/sharing": "latest",
     "@ai-matrx/summon": "latest",
     "@ai-matrx/terminal": "latest",
     "@ai-matrx/vault": "latest",

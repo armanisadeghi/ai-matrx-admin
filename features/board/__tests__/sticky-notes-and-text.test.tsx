@@ -100,6 +100,8 @@ describe("a sticky note's words are a Note", () => {
       content: "Pack the kitchen\nboxes in garage",
       tags: ["Sticky notes"],
       organization_id: "org-of-board",
+      // Internal row: never listed in the person's Notes.
+      metadata: { embedded: true, embedded_in: "board" },
     });
   });
 

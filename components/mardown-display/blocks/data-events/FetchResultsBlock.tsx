@@ -35,6 +35,7 @@ const FetchResultsBlock: React.FC<FetchResultsBlockProps> = ({
   return (
     <div className="rounded-lg border bg-card my-2 overflow-hidden">
       <DisclosureHeader
+        chevron="end"
         className="w-full"
         open={isExpanded}
         onClick={() => setIsExpanded((v) => !v)}

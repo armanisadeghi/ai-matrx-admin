@@ -152,7 +152,7 @@ export async function fetchKindItemsPage(args: {
   showSystemFiles?: boolean;
 }): Promise<KindItem[]> {
   const search = args.query?.trim();
-  const { data, error } = await supabase.rpc("reference_search_candidates", {
+  const { data, error } = await supabase.schema("platform").rpc("reference_search_candidates", {
     p_token: args.token,
     p_order: "recent",
     p_offset: args.offset,

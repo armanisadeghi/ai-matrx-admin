@@ -8,7 +8,7 @@ import type { createClient } from "@/utils/supabase/server";
 // may be working in a different organization — the exact arrival TAILS-3 measured
 // landing on "Select an organization first". Never build `?org=` by hand here.
 import { linkCarriesItsOrganization } from "@/lib/organizations/linkCarriesItsOrganization";
-import { getResourceSharePath } from "@/utils/permissions/registry";
+import { getResourceSharePath } from "@ai-matrx/sharing/core";
 import { documentHref } from "@/features/scopes/registry/entityRegistry";
 
 export type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;

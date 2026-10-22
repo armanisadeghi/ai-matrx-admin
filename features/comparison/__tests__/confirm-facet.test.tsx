@@ -49,7 +49,7 @@ afterEach(() => { document.body.innerHTML = ""; });
 describe("Is this them?", () => {
   const possible = { possible_url: "https://www.indeed.com/cmp/Alpha-Classifieds", possible_name: "Alpha Classifieds" };
 
-  it("one compact line with the page in a new tab, the points first, and a way out", async () => {
+  it("one compact line with the page in a new tab, the cost behind a door, and a way out", async () => {
     const confirm: FacetConfirm = { runId: "r1", price: jest.fn().mockResolvedValue(30), answer: jest.fn().mockResolvedValue(undefined) };
     const host = await render(make(possible), confirm);
     const line = host.querySelector('[data-testid="confirm-facet-line"]') as HTMLElement;
@@ -58,7 +58,8 @@ describe("Is this them?", () => {
     expect(link.getAttribute("href")).toBe(possible.possible_url);
     expect(link.textContent).toContain("Alpha Classifieds");
     expect(link.getAttribute("target")).toBe("_blank");
-    expect(button(host, "Yes, use it")?.textContent).toMatch(/30/);                  // the points, before the click
+    expect(button(host, "Yes, use it")?.textContent).not.toMatch(/30|point/i);        // the price is not on the button
+    expect(host.textContent).not.toMatch(/30 points/);                              // it sits behind the Cost door
     expect(button(host, "Not them")).toBeDefined();
     await act(async () => { button(host, "Not them")!.click(); });
     expect(confirm.answer).toHaveBeenCalledWith(expect.objectContaining({ item_id: "Alpha" }), "jobs", { reject: true });

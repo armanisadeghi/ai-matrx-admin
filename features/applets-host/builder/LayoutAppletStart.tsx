@@ -32,7 +32,8 @@ import { toast } from "@/lib/toast";
 import { AppletWritingBox } from "../AppletWritingBox";
 import { jobForHolder } from "./applet-job";
 import { holderNaming } from "./BuildAttachments";
-import { buildSeedHref, jobReference, layoutReference } from "./build-references";
+import { jobReference, layoutReference } from "./build-references";
+import { buildSeedHref } from "./build-seed";
 import { createLayoutApplet, LAYOUT_JOB_ALIAS } from "./layout-applet";
 
 const ACCENTS: { value: AppletLayoutAccent; label: string; dot: string }[] = [

@@ -74,7 +74,7 @@ export async function resolveServerCoppaVerdict(
 ): Promise<ServerCoppaVerdict> {
   try {
     const supabase = createAdminClient();
-    const { data, error } = await supabase.rpc("edu_coppa_gate_for", {
+    const { data, error } = await supabase.schema("education").rpc("edu_coppa_gate_for", {
       p_user_id: userId,
     });
     if (error || !data || typeof data !== "object") {

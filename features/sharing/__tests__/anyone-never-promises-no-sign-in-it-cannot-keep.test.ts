@@ -1,8 +1,8 @@
 // The Public tab's "Anyone" choice once said "no sign-in" for every type — a mandate,
 // agent or workflow set to Anyone is NOT readable signed out (no /p/e page; for a mandate
 // `anon` has no SELECT grant at all). The words must follow what the platform delivers.
-import { anyoneReachWords } from "@/features/sharing/components/tabs/PublicAccessTab";
-import { hasPublicPage } from "@/utils/permissions/publicLane";
+import { anyoneReachWords } from "@ai-matrx/sharing/react";
+import { hasPublicPage } from "@ai-matrx/sharing/core";
 
 describe("the Anyone choice never promises a signed-out read it cannot deliver", () => {
   it("a type with no public page (mandate) never says 'no sign-in'", () => {

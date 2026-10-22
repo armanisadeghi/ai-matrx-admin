@@ -40,7 +40,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import type {
   AccessRequestStatus,
   RequestedLevel,
-} from "@/features/access-gate/types";
+} from "@ai-matrx/data/access";
 import { useOpenAgentFindUsagesWindow } from "@ai-matrx/chat/host/window-openers";
 import type { MessageActionRenderer } from "@ai-matrx/messaging/react";
 import type {
@@ -50,7 +50,7 @@ import type {
   ResourceSharedActionPayload,
   TaskReminderActionPayload,
 } from "@/features/messaging/types";
-import { getResourceSharePath } from "@/utils/permissions/registry";
+import { getResourceSharePath } from "@ai-matrx/sharing/core";
 import { getResourceIcon } from "@/features/sharing/resourceIcons";
 import {
   EntityCard,

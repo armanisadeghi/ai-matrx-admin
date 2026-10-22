@@ -1460,6 +1460,7 @@ export const primaryNavItems: ShellNavItem[] = [
       },
       // Same destinations as the Workspace / Data / Utilities / Publish / Communications menus, linked here too so
       // everything authored is one click from Content (domain tree: content = spaces, notes, documents, workbooks, utilities).
+      { id: "content.visual-map-lab", label: "Visual Map Lab", href: "/visual-maps/lab", iconName: "Network", guestHidden: true, group: "Write" },
       { id: "content.e-signatures", label: "E-Signatures", href: "/esign", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { id: "content.e-sign-templates", label: "E-Sign Templates", href: "/esign/templates", iconName: "FileSignature", guestHidden: true, group: "Write" },
       { id: "content.notes-window", label: "Notes Window", href: "/notes", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-notes-panel" },

@@ -38,6 +38,31 @@ function SeverityIcon({ severity }: { severity: PitchAdvisory["severity"] }) {
   return <Info aria-label="Note" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />;
 }
 
+/**
+ * Each rule's plain name, the only label a person sees. The rule code ("E8") is an internal key: it
+ * stays on `data-rule` for tests and telemetry and is never rendered. Typed against the API's rule
+ * union, so a new rule fails the build until it has a name; an unknown one shows no label, never its code.
+ */
+export const RULE_NAMES: Record<PitchAdvisory["rule"], string> = {
+  E1: "List size",
+  E2: "List size",
+  E3: "List size",
+  E4: "First wave",
+  E5: "Same email",
+  E6: "Personal touch",
+  E7: "Follow-ups",
+  E8: "Sensitive news",
+  E9: "Beat check",
+  E10: "One per outlet",
+  E11: "Source replies",
+  E12: "Embargo",
+  E13: "Coverage promise",
+  E14: "Fact check",
+  E15: "Sender name",
+  E16: "Tracking & attachments",
+  E17: "Human review",
+};
+
 /** A host performs a local offer and returns true; false/absent → shown as guidance. */
 export type LocalOfferHandler = (advisory: PitchAdvisory, offer: AdvisoryOffer) => boolean | void;
 
@@ -153,7 +178,9 @@ export function PitchAdvisoryPanel({
               </div>
             )}
           </div>
-          <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{advisory.rule}</span>
+          {RULE_NAMES[advisory.rule] ? (
+            <span className="shrink-0 text-[10px] text-muted-foreground">{RULE_NAMES[advisory.rule]}</span>
+          ) : null}
         </div>
       ))}
       {warned && (

@@ -1,10 +1,10 @@
 "use client";
 
-import { formatCount } from "@ai-matrx/kit/format";
 import { Loader2, Radar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { shouldWarnAboutCost } from "@/components/cost/costTier";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { toast } from "@/lib/toast";
@@ -38,7 +38,7 @@ export function RunCheckButton({
     if (points != null && shouldWarnAboutCost(points)) {
       const ok = await confirm({
         title: "Run this check?",
-        description: `It uses about ${formatCount(points)} points.`,
+        description: <CostDoor points={points} prefix="about " />,
         confirmLabel: "Run check",
       });
       if (!ok) return;

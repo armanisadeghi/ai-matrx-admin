@@ -24,16 +24,16 @@ import { formatCount } from "@ai-matrx/kit/format";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsNumberInput } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSlider } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
 
 import { MediaApiError, getMediaSettings, putMediaSettings } from "../api";
 import type { MediaSettingKnob, MediaSettingsResponse } from "../types";

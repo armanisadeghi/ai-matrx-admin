@@ -13,7 +13,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay, closeOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, closeOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
 import {
   createMultiFileSmartCodeEditorCallbackGroup,
@@ -74,7 +74,7 @@ export function useOpenMultiFileSmartCodeEditorWindow() {
       options: OpenMultiFileSmartCodeEditorWindowOptions,
     ): MultiFileSmartCodeEditorWindowHandle => {
       const instanceId =
-        options.windowInstanceId ?? `${OVERLAY_ID}-${Date.now()}`;
+        options.windowInstanceId ?? mintInstanceId(OVERLAY_ID);
 
       const { callbackGroupId, dispose } =
         createMultiFileSmartCodeEditorCallbackGroup({

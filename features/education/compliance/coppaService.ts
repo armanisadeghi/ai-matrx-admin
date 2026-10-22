@@ -67,7 +67,7 @@ export const coppaService = {
             error: null,
           };
         }
-        const { data, error } = await supabase.rpc("edu_coppa_gate");
+        const { data, error } = await supabase.schema("education").rpc("edu_coppa_gate");
         if (error) return fail("coppa.getGate", error);
         return { data: mapCoppaGate(data as unknown as CoppaGateRow), error: null };
       } catch (e) {
@@ -150,7 +150,7 @@ export const coppaService = {
         });
         organizationId = undefined;
       }
-      const { data, error } = await supabase.rpc("edu_set_age_band", {
+      const { data, error } = await supabase.schema("education").rpc("edu_set_age_band", {
         p_band: band,
         ...(organizationId ? { p_organization_id: organizationId } : {}),
       });
@@ -175,7 +175,7 @@ export const coppaService = {
     band: AgeBand,
   ): Promise<StudyResult<AgeBandWriteResult>> {
     try {
-      const { data, error } = await supabase.rpc("edu_guardian_set_age_band", {
+      const { data, error } = await supabase.schema("education").rpc("edu_guardian_set_age_band", {
         p_student_user_id: studentUserId,
         p_band: band,
       });

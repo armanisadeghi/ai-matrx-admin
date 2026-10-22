@@ -72,16 +72,15 @@ jest.mock("@ai-matrx/chat/agents/components/context-items/contextItemsTab", () =
   useContextItemsTab: () => ({ isShowing: () => false, open: openAt }),
 }));
 
-// The host registers its file chip (P16f slot); this test registers a recording double.
-beforeEach(() =>
-  registerChatUi({
-    BlockHoverPreview,
-    FileResourceChip: (props: { fileId: string; nameOverride?: string }) => {
-      fileResourceChipProps(props);
-      return <span>{props.fileId}</span>;
-    },
-  }),
-);
+// Chat draws the files engine's chip directly (no slot); this test swaps in a recording double.
+jest.mock("@ai-matrx/media/files/engine/components/preview/FileResourceChip", () => ({
+  FileResourceChip: (props: { fileId: string; nameOverride?: string }) => {
+    fileResourceChipProps(props);
+    return <span>{props.fileId}</span>;
+  },
+}));
+
+beforeEach(() => registerChatUi({ BlockHoverPreview }));
 
 jest.mock("@ai-matrx/chat/agents/components/messages-display/user/ResourceAttachmentTile", () => ({
   ResourceAttachmentTile: ({

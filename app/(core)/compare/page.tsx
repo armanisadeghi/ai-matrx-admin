@@ -29,5 +29,5 @@ export default async function CompareRoutePage({
   const runRequiresAccount = policy?.runRequiresAccount ?? true;
   const params = await searchParams;
   if (!runRequiresAccount && (params.q || params.run)) return <GuestCompare />;
-  return <ComparePublicLanding runRequiresAccount={runRequiresAccount} guestFreeRuns={policy?.guestFreeRuns ?? null} />;
+  return <ComparePublicLanding runRequiresAccount={runRequiresAccount} />;
 }

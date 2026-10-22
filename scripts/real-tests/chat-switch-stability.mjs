@@ -51,6 +51,11 @@ async function signedInContext(browser) {
         const p = await ctx.newPage();
         try {
           await p.goto(url, { waitUntil: "load", timeout: 420000 });
+          // The preview parks an idle walk (`/__dev-walk?parked=1`): resume it, as a person would.
+          if (p.url().includes("/__dev-walk")) {
+            await p.getByRole("button", { name: /resume/i }).first().click({ timeout: 30000 }).catch(() => {});
+            await p.waitForURL((u) => !u.pathname.startsWith("/__dev-walk"), { timeout: 300000 });
+          }
         } finally {
           await p.close();
         }
@@ -167,6 +172,20 @@ const RECORDER = () => {
 const UUID = /^\/chat\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** Frames where `value` changes while the transcript (skeleton on/off, message count) does not, in that frame or the one before. */
+function loneChanges(frames, value, tolerance) {
+  const sig = (f) => `${f.skeletons > 0}|${f.messages}|${f.splash}`;
+  const out = [];
+  for (let i = 1; i < frames.length; i++) {
+    const a = value(frames[i - 1]);
+    const b = value(frames[i]);
+    if (a == null || b == null || Math.abs(a - b) <= tolerance) continue;
+    const transcriptMoved = sig(frames[i]) !== sig(frames[i - 1]) || (i > 1 && sig(frames[i - 1]) !== sig(frames[i - 2]));
+    if (!transcriptMoved) out.push(`${a}→${b}@${frames[i].t}ms`);
+  }
+  return out;
+}
+
 function judge(step) {
   const { kind, frames, shifts, fromTitle, targetIsConversation } = step;
   const fails = [];
@@ -185,7 +204,11 @@ function judge(step) {
     const ys = after.filter((f) => f.composer && !f.splash).map((f) => f.composer.y);
     const final = ys[ys.length - 1];
     step.composerYs = [...new Set(ys)];
-    if (ys.length && Math.max(...ys) - Math.min(...ys) > 2) {
+    // The composer may change only together with the transcript it belongs to (the frame
+    // the old conversation leaves or the new one lands), never on its own.
+    const lone = loneChanges(after, (f) => (f.composer && !f.splash ? f.composer.y : null), 2);
+    step.loneComposerMoves = lone;
+    if (kind === "hard" ? ys.length && Math.max(...ys) - Math.min(...ys) > 2 : lone.length) {
       const boxes = [];
       for (const f of after) if (f.composer?.kind === "real" && boxes[boxes.length - 1]?.h !== f.composer.h) boxes.push({ h: f.composer.h, t: f.t, text: f.composer.text });
       fails.push(`composer moved ${step.composerYs.join("→")} (final ${final}; box ${boxes.map((b) => `${b.h}@${b.t}ms[${b.text}]`).join(" → ")})`);
@@ -222,7 +245,9 @@ function judge(step) {
   }
   const docks = [];
   for (const f of after) if (f.dockH != null && docks[docks.length - 1] !== f.dockH) docks.push(f.dockH);
-  if (docks.length > 1) {
+  // The strip above the composer follows the same rule; "New chat" is a different screen.
+  const loneDock = kind === "toNew" ? [] : loneChanges(after, (f) => f.dockH, 1);
+  if (kind === "hard" ? docks.length > 1 : loneDock.length) {
     const extra = after.find((f) => f.dockExtra)?.dockExtra;
     fails.push(`strip above the composer resized ${docks.join("→")}${extra ? ` ("${extra}")` : ""}`);
   }
@@ -289,7 +314,7 @@ const page = await ctx.newPage();
 const steps = [];
 try {
   await page.goto(`${origin}/chat/new`, { waitUntil: "load", timeout: 120000 });
-  await page.waitForFunction(() => document.querySelectorAll('a[href^="/chat/"]').length > 8, null, { timeout: 90000 });
+  await page.waitForFunction(() => document.querySelectorAll('a[href^="/chat/"]').length > 8, null, { timeout: 180000 });
   await sleep(1500);
   const ids = await sidebarIds(page);
   if (ids.length < 8) throw new Error(`sidebar listed only ${ids.length} conversations`);

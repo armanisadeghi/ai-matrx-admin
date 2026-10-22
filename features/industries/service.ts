@@ -96,7 +96,7 @@ export async function upsertIndustry(input: {
   description?: string | null;
   sortOrder?: number;
 }): Promise<Industry> {
-  const { data, error } = await supabase.rpc("industry_upsert", {
+  const { data, error } = await supabase.schema("iam").rpc("industry_upsert", {
     p_slug: input.slug,
     p_name: input.name,
     p_facet: input.facet ?? "domain",
@@ -117,7 +117,7 @@ export async function setIndustryActive(
   industryId: string,
   isActive: boolean,
 ): Promise<Industry> {
-  const { data, error } = await supabase.rpc("industry_set_active", {
+  const { data, error } = await supabase.schema("iam").rpc("industry_set_active", {
     p_industry: industryId,
     p_active: isActive,
   });
@@ -130,7 +130,7 @@ export async function assignOrgIndustry(
   industryId: string,
   isPrimary = false,
 ): Promise<void> {
-  const { error } = await supabase.rpc("industry_assign_org", {
+  const { error } = await supabase.schema("iam").rpc("industry_assign_org", {
     p_organization_id: orgId,
     p_industry_id: industryId,
     p_is_primary: isPrimary,
@@ -142,7 +142,7 @@ export async function unassignOrgIndustry(
   orgId: string,
   industryId: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("industry_unassign_org", {
+  const { error } = await supabase.schema("iam").rpc("industry_unassign_org", {
     p_organization_id: orgId,
     p_industry_id: industryId,
   });
@@ -165,7 +165,7 @@ export interface IndustryCurator {
 export async function fetchIndustryCurators(
   industryId: string,
 ): Promise<IndustryCurator[]> {
-  const { data, error } = await supabase.rpc("industry_curator_list", {
+  const { data, error } = await supabase.schema("iam").rpc("industry_curator_list", {
     p_industry: industryId,
   });
   if (error) throw operationFailed("load this industry's curators", error);
@@ -186,7 +186,7 @@ export async function grantIndustryCurator(
   userId: string,
   industryId: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("industry_curator_grant", {
+  const { error } = await supabase.schema("iam").rpc("industry_curator_grant", {
     p_user: userId,
     p_industry: industryId,
   });
@@ -197,7 +197,7 @@ export async function revokeIndustryCurator(
   userId: string,
   industryId: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("industry_curator_revoke", {
+  const { error } = await supabase.schema("iam").rpc("industry_curator_revoke", {
     p_user: userId,
     p_industry: industryId,
   });

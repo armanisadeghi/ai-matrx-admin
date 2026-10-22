@@ -16217,33 +16217,6 @@
       "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
     },
     {
-      "file": "features/sharing/components/ShareLinkPanel.tsx",
-      "line": 54,
-      "column": 18,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "features/sharing",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "features/sharing/components/tabs/PublicAccessTab.tsx",
-      "line": 160,
-      "column": 5,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "features/sharing",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "features/sharing/hooks/useAccessSummary.ts",
-      "line": 55,
-      "column": 7,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "features/sharing",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
       "file": "features/shell/components/controls/SidebarAdminIndicatorToggle.tsx",
       "line": 26,
       "column": 5,
@@ -19131,60 +19104,6 @@
       "feature": "utils",
       "route": null,
       "message": "Error: Cannot access refs during render React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during re…"
-    },
-    {
-      "file": "utils/permissions/hooks.ts",
-      "line": 74,
-      "column": 7,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "utils",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "utils/permissions/hooks.ts",
-      "line": 120,
-      "column": 5,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "utils",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "utils/permissions/hooks.ts",
-      "line": 224,
-      "column": 7,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "utils",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "utils/permissions/hooks.ts",
-      "line": 298,
-      "column": 12,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "utils",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "utils/permissions/hooks.ts",
-      "line": 567,
-      "column": 5,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "utils",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
-    },
-    {
-      "file": "utils/permissions/hooks.ts",
-      "line": 619,
-      "column": 10,
-      "rule": "react-hooks/set-state-in-effect",
-      "feature": "utils",
-      "route": null,
-      "message": "Error: Calling setState synchronously within an effect can trigger cascading renders Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platf…"
     }
   ]
 }

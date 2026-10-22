@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1654 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1689 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "be9767401840";
+export const KIND_REGISTRY_FINGERPRINT = "156d907830fd";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -143,13 +143,26 @@ export interface AdvertisingSignal {
 }
 
 /**
+ * Where a context policy's value comes from (a registered inventory kind).
+ *  *
+ *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ */
+export interface AgentDefinitionContextPolicySource {
+  kind: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * One context policy, as the live column actually stores it (rich objects,
  * never bare strings — the Masterwork Conductor's ``platform_capabilities`` /
  * ``my_resources`` policies are the reference shape).
  *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ *  * From kind `agent_definition`.
  */
-export interface AgentDefinitionContextPolicy {
+export interface AgentDefinitionContextPolicy_AgentDefinition {
   key: string;
   type: string;
   label?: string;
@@ -161,19 +174,29 @@ export interface AgentDefinitionContextPolicy {
   mutable?: boolean;
   persist?: string;
   description?: string;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
 }
 
 /**
- * Where a context policy's value comes from (a registered inventory kind).
+ * One context policy, as the live column actually stores it (rich objects,
+ * never bare strings — the Masterwork Conductor's ``platform_capabilities`` /
+ * ``my_resources`` policies are the reference shape).
  *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ *  * From kind `agent_factory_build`.
  */
-export interface AgentDefinitionContextPolicySource {
-  kind: string;
+export interface AgentDefinitionContextPolicy_AgentFactoryBuild {
+  key: string;
+  type: string;
+  label?: string;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+  source?: AgentDefinitionContextPolicySource | null;
+  mutable?: boolean;
+  persist?: string;
+  description?: string;
 }
 
 /**
@@ -248,24 +271,6 @@ export interface AgentDefinitionTextBlock {
 }
 
 /**
- * One ``{{name}}`` placeholder the agent's messages reference.
- *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
- */
-export interface AgentDefinitionVariable {
-  name: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  control?: AgentDefinitionVariableControl | null;
-  helpText?: string | null;
-  required?: boolean;
-  defaultValue?: string;
-  customComponent?: AgentDefinitionVariableComponent | null;
-}
-
-/**
  * The input control a variable renders as. Omit for a plain textarea.
  *  *
  *  * Shared by 2 kinds (agent_definition, agent_factory_build).
@@ -299,6 +304,43 @@ export interface AgentDefinitionVariableControl {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * One ``{{name}}`` placeholder the agent's messages reference.
+ *  *
+ *  * From kind `agent_definition`.
+ */
+export interface AgentDefinitionVariable_AgentDefinition {
+  name: string;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  control?: AgentDefinitionVariableControl | null;
+  helpText?: string | null;
+  required?: boolean;
+  defaultValue?: string;
+  customComponent?: AgentDefinitionVariableComponent | null;
+}
+
+/**
+ * One ``{{name}}`` placeholder the agent's messages reference.
+ *  *
+ *  * From kind `agent_factory_build`.
+ */
+export interface AgentDefinitionVariable_AgentFactoryBuild {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  control?: AgentDefinitionVariableControl | null;
+  helpText?: string | null;
+  required?: boolean;
+  defaultValue?: string;
+  customComponent?: AgentDefinitionVariableComponent | null;
 }
 
 /**
@@ -1646,6 +1688,58 @@ export interface Bindings {
 }
 
 /**
+ * * From kind `org_chart_snapshot`.
+ */
+export interface Box {
+  /**
+   * An opaque key for this box within the snapshot (never a database id).
+   */
+  key: string;
+  /**
+   * The box name.
+   */
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  box_type: "agent" | "person" | "team" | "position";
+  children: Box[];
+  /**
+   * Its title or role line.
+   */
+  sublabel?: string;
+  /**
+   * How this box hangs under its parent.
+   */
+  link_kind?: "directs" | "reports_to";
+  /**
+   * A public avatar image, when the box has one.
+   */
+  avatar_url?: string;
+}
+
+/**
+ * An audience a marked word speaks to, in the row the brand session shows it in.
+ *  *
+ *  * From kind `brand_curation`.
+ */
+export interface BrandAudienceCategory {
+  /**
+   * who: a group of people; cares_about: something those people care about.
+   */
+  row: "who" | "cares_about";
+  /**
+   * The audience in a few words, a real group of buyers (e.g. 'fleet managers') or what they care about (e.g. 'no downtime').
+   */
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * One more place the same thing was said: the verbatim quote, the page and the value it came from.
  *  *
  *  * Shared by 3 kinds (brand_claim, brand_claim_decisions, brand_claim_set).
@@ -2157,6 +2251,10 @@ export interface BrandWordSignal {
    * Who this word draws, in a few words.
    */
   attracts: string;
+  /**
+   * Optional. The audiences this word speaks to, each in its row (who or cares_about); empty or absent when it speaks to no real audience.
+   */
+  categories?: BrandAudienceCategory[];
 }
 
 /**
@@ -2534,6 +2632,19 @@ export interface Checked {
 }
 
 /**
+ * * From kind `comparison_choice_needed_list`.
+ */
+export interface ChoiceNeededRow {
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  item_id: string;
+  candidates?: PlaceCandidate[];
+}
+
+/**
  * * From kind `listing_draft`.
  */
 export interface ClaimEvidence_ListingDraft {
@@ -2667,6 +2778,109 @@ export interface CommentItem {
 }
 
 /**
+ * One column of the aligned comparison — the shared field set is the same for every item.
+ *  *
+ *  * Shared by 3 kinds (compare_field_list, comparison_kind_info, comparison_result).
+ */
+export interface CompareField {
+  key: string;
+  help?: string;
+  type?: "rating" | "number" | "int" | "percent" | "money" | "text" | "hours" | "url" | "date" | "distribution" | "contact" | "status" | "tags" | "reviews";
+  facet?: string;
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  direction?: "higher_better" | "lower_better" | "none";
+  is_primary?: boolean;
+  facet_label?: string;
+}
+
+/**
+ * * Shared by 2 kinds (compared_item_list, comparison_result).
+ */
+export interface ComparedItem {
+  name: string;
+  rank?: number;
+  error?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  facets?: ItemFacet[];
+  job_id?: string | null;
+  points?: number;
+  values?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: ComparedValue | string | undefined;
+  };
+  item_id: string;
+  notices?: string[];
+  website?: string | null;
+  cost_usd?: number;
+  logo_url?: string | null;
+  table_id?: string | null;
+  candidates?: PlaceCandidate[];
+  item_index?: number;
+  source_key?: string;
+  source_url?: string | null;
+  table_name?: string | null;
+  thin_sample?: string | null;
+  cost_display?: string;
+  needs_choice?: boolean;
+  source_error?: string | null;
+  source_label?: string | null;
+  records_billed?: number;
+  raw_record_count?: number;
+}
+
+/**
+ * One aligned cell: the typed value, a ready-to-show string, and whether this item leads the field.
+ *  *
+ *  * Shared by 3 kinds (compared_item_list, comparison_result, comparison_values_by_item).
+ */
+export interface ComparedValue {
+  basis?: string;
+  value?: unknown;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  display?: string;
+  is_best?: boolean;
+}
+
+/**
+ * One thing to compare: a link, or the source's own input fields. ``label`` is the person's name
+ * for it before any facts arrive (shown while it loads, kept if the source gives no better name).
+ *  *
+ *  * Shared by 2 kinds (comparison_item_input_list, comparison_request).
+ */
+export interface ComparisonItemInput {
+  url?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * The source's input fields, when not a plain link.
+   */
+  inputs?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  website?: string | null;
+  logo_url?: string | null;
+}
+
+/**
  * * From kind `competitor_opportunity_autopsy_v1`.
  */
 export interface CompetitorAssessment {
@@ -2792,6 +3006,26 @@ export interface ComponentAuthoringBundle {
    */
   __kind?: string;
   compile_gate?: string;
+}
+
+/**
+ * The inclusive message positions the summary replaces.
+ *  *
+ *  * From kind `conversation_condensed`.
+ */
+export interface CondensedRange {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * Last position condensed (inclusive).
+   */
+  to_position: number;
+  /**
+   * First position condensed (inclusive).
+   */
+  from_position: number;
 }
 
 /**
@@ -3457,6 +3691,23 @@ export interface DigitalSection {
 }
 
 /**
+ * One candidate the found step showed, and what the person did with it.
+ *  *
+ *  * From kind `comparison_discovery_record`.
+ */
+export interface DiscoveryCandidate {
+  kept?: boolean;
+  name: string;
+  rank?: number | null;
+  added?: boolean;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  detail?: string;
+}
+
+/**
  * One block of a generated Word document.
  *  *
  *  * From kind `office_document`.
@@ -3976,6 +4227,28 @@ export interface Extraction {
 }
 
 /**
+ * One optional source of facts a kind can add to every item, shown to the person as an on/off
+ * option with exactly what it adds (``fields``) and what it costs (``points_per_item``) BEFORE anything
+ * runs. The kind's own source is not a facet; facets are what a company item can gather besides it.
+ *  *
+ *  * Shared by 3 kinds (comparison_facet_list, comparison_kind_info, comparison_result).
+ */
+export interface FacetInfo {
+  key: string;
+  adds?: string[];
+  help?: string;
+  label: string;
+  speed?: "fast" | "slow";
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  default_on?: boolean;
+  points_per_item?: number;
+  typical_seconds?: number | null;
+}
+
+/**
  * * From kind `topical_map_result`.
  */
 export interface FacetValueRow {
@@ -4081,6 +4354,57 @@ export interface FactsDecision {
 }
 
 /**
+ * * From kind `comparison_failed_item_list`.
+ */
+export interface FailedItemRow {
+  name?: string | null;
+  error?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  item_id: string;
+}
+
+/**
+ * One feed's health in one run: did it answer, with how many items, and how fresh the newest was.
+ *
+ * A feed that answers with a web page, nothing new for days, or far fewer items than it used to is
+ * named here per feed, so a moved or dying feed is visible in the run instead of hiding inside its
+ * provider's total.
+ *  *
+ *  * From kind `news_search_result`.
+ */
+export interface FeedHealth {
+  url: string;
+  error?: string | null;
+  items?: number;
+  __kind?: "news_feed_health";
+  status: "ok" | "empty" | "error" | "unavailable" | "not_configured";
+  newest_item_age_hours?: number | null;
+}
+
+/**
+ * * From kind `comparison_fetch_bookkeeping`.
+ */
+export interface FetchBookkeepingRow {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  job_id?: string | null;
+  points?: number | null;
+  cost_usd?: number | null;
+  table_id?: string | null;
+  source_key?: string | null;
+  source_url?: string | null;
+  table_name?: string | null;
+  cost_display?: string | null;
+  records_billed?: number | null;
+  raw_record_count?: number | null;
+}
+
+/**
  * * From kind `fetch_results`.
  */
 export interface FetchResultItem {
@@ -4092,6 +4416,22 @@ export interface FetchResultItem {
   __kind?: string;
   status?: string;
   content?: string;
+}
+
+/**
+ * * From kind `comparison_fetch_timings`.
+ */
+export interface FetchTimingRow {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  job_id?: string | null;
+  status?: string | null;
+  seconds?: number | null;
+  error_code?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
 }
 
 /**
@@ -4617,6 +4957,21 @@ export interface HashtagItem {
    * 0.0-1.0: how sure the agent is that this is true of THIS brand.
    */
   confidence: number;
+}
+
+/**
+ * A field the result does not show, and why (every item lacks it, or every item has the same value).
+ *  *
+ *  * Shared by 2 kinds (comparison_hidden_field_list, comparison_result).
+ */
+export interface HiddenField {
+  key: string;
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  reason: "missing" | "constant";
 }
 
 /**
@@ -5148,6 +5503,30 @@ export interface InterviewRoundContext {
 }
 
 /**
+ * What one facet gave one item: done, failed (in our words), or not asked.
+ *  *
+ *  * Shared by 3 kinds (compared_item_list, comparison_facets_by_item, comparison_result).
+ */
+export interface ItemFacet {
+  key: string;
+  error?: string | null;
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  points?: number;
+  status?: "done" | "failed" | "off";
+  seconds?: number | null;
+  cost_usd?: number;
+  rejected?: boolean;
+  table_id?: string | null;
+  source_url?: string | null;
+  possible_url?: string | null;
+  possible_name?: string | null;
+}
+
+/**
  * * From kind `comparison_facts_v1`.
  */
 export interface ItemFindings {
@@ -5160,6 +5539,30 @@ export interface ItemFindings {
   item_id: string;
   findings?: string[];
   clean_facts?: CleanFact[];
+}
+
+/**
+ * One item's stage record as the run row stored it (``RunItemState``; an older row may hold an older stage
+ * word, so ``stage`` is read as written).
+ *  *
+ *  * From kind `comparison_item_progress_list`.
+ */
+export interface ItemProgressRow {
+  done?: boolean;
+  error?: string | null;
+  index: number;
+  label: string;
+  stage?: string;
+  total?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  current?: number | null;
+  website?: string | null;
+  logo_url?: string | null;
+  error_code?: string | null;
+  stage_label?: string;
 }
 
 /**
@@ -5221,7 +5624,7 @@ export interface JobHighlight {
 }
 
 /**
- * * Shared by 138 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_finish_door_input, …).
+ * * Shared by 146 kinds (ad_creative, agent_assignment_batch_result, agent_build_assembly, agent_build_finish_door_input, …).
  */
 export type JsonValue = unknown;
 
@@ -5897,6 +6300,22 @@ export interface LogoVariant {
    * wordmark | icon | square | wide
    */
   variant: string;
+}
+
+/**
+ * One box of the "find it by name" form a kind offers instead of a link.
+ *  *
+ *  * From kind `comparison_kind_info`.
+ */
+export interface LookupField {
+  key: string;
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  example?: string | null;
+  required?: boolean;
 }
 
 /**
@@ -7344,6 +7763,21 @@ export interface OpportunityAssessment {
 }
 
 /**
+ * * From kind `organization_brand_list`.
+ */
+export interface OrganizationBrandRow {
+  id: string;
+  kind?: string | null;
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  website?: string | null;
+  industry?: string | null;
+}
+
+/**
  * * Shared by 6 kinds (asset_grading, commerce_intake.disposal_challenge.offer, commerce_intake.enrichment_bundle.offer, commerce_intake.extraction_dossier.offer, …).
  */
 export interface OtherIdentifier {
@@ -7811,6 +8245,25 @@ export interface PickListValue {
    */
   __kind?: string;
   hidden_text?: string;
+}
+
+/**
+ * One possible match for a name the person typed; ``pick`` goes back as ``inputs[pick_key]``.
+ *  *
+ *  * Shared by 4 kinds (compared_item_list, comparison_choice_needed_list, comparison_result, comparison_stored_item_facts).
+ */
+export interface PlaceCandidate {
+  url?: string | null;
+  name?: string;
+  pick: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  rating?: number | null;
+  address?: string;
+  category?: string;
+  reviews_count?: number | null;
 }
 
 /**
@@ -8614,6 +9067,23 @@ export interface RankedKeywordRow {
   difficulty?: number | null;
   search_volume?: number | null;
   traffic_estimate?: number | null;
+}
+
+/**
+ * * From kind `comparison_ranking`.
+ */
+export interface RankingRow {
+  name?: string | null;
+  rank?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  item_id: string;
+  /**
+   * The primary field's ready-to-show value.
+   */
+  primary_value?: string | null;
 }
 
 /**
@@ -10789,6 +11259,7 @@ export interface SourceLocator {
  */
 export interface SourceStatusEntry {
   error?: string | null;
+  feeds?: FeedHealth[];
   items?: number;
   __kind?: "news_source_status";
   status: "ok" | "empty" | "error" | "unavailable" | "not_configured";
@@ -10989,6 +11460,55 @@ export interface StepHolder {
 }
 
 /**
+ * One finished item as ``runs.facts_to_json`` stored it.
+ *  *
+ *  * From kind `comparison_stored_item_facts`.
+ */
+export interface StoredItemFactsRow {
+  error?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  facets?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | string | undefined;
+  };
+  job_id?: string | null;
+  points?: number | null;
+  item_id?: string | null;
+  notices?: string[];
+  records?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  website?: string | null;
+  cost_usd?: number | null;
+  logo_url?: string | null;
+  table_id?: string | null;
+  candidates?: PlaceCandidate[];
+  error_code?: string | null;
+  source_key?: string | null;
+  table_name?: string | null;
+  needs_choice?: boolean | null;
+  source_label?: string | null;
+  records_billed?: number | null;
+}
+
+/**
  * * From kind `agent_test_case_state`.
  */
 export interface StoredRef {
@@ -11057,6 +11577,82 @@ export interface StrandedExample {
   is_canonical?: boolean;
   kind_version?: number | null;
   validation_status?: string | null;
+}
+
+/**
+ * ``_class``: a class the learner filed the record under.
+ *  *
+ *  * From kind `study_record_class_fact`.
+ */
+export interface StudyRecordClass {
+  id: string;
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * ``_record_fact``: what the record is (empty facts are left out).
+ *  *
+ *  * From kind `study_record_record_fact`.
+ */
+export interface StudyRecordFacts {
+  id?: string | null;
+  /**
+   * flashcard set, quiz, practice test, notes…
+   */
+  kind?: string | null;
+  title?: string | null;
+  topic?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * The day it was made, YYYY-MM-DD.
+   */
+  made_at?: string | null;
+  difficulty?: string | null;
+  description?: string | null;
+}
+
+/**
+ * ``_related``: another study item from the same material or class.
+ *  *
+ *  * From kind `study_record_related_fact`.
+ */
+export interface StudyRecordRelated {
+  id: string;
+  why?: string | null;
+  kind?: string | null;
+  type: string;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
+ * ``_source``: one piece of material the record was made from, with its text when readable.
+ *  *
+ *  * From kind `study_record_source_fact`.
+ */
+export interface StudyRecordSource {
+  id: string;
+  text?: string | null;
+  type: string;
+  title?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * How much of the text is here, or why it is not.
+   */
+  text_note?: string | null;
 }
 
 /**
@@ -12849,7 +13445,7 @@ export interface AgentDebrief {
  * live ``agent.definition`` row (with its v1 snapshot); rendered, it is the
  * agent a person is watching being built.
  *  *
- *  * Kind `agent_definition` (registry v11).
+ *  * Kind `agent_definition` (registry v12).
  */
 export interface AgentDefinition {
   name: string;
@@ -12865,8 +13461,8 @@ export interface AgentDefinition {
   settings: AgentDefinitionSettings;
   description?: string;
   custom_tools?: string[];
-  context_policies?: AgentDefinitionContextPolicy[];
-  variable_definitions?: AgentDefinitionVariable[];
+  context_policies?: AgentDefinitionContextPolicy_AgentDefinition[];
+  variable_definitions?: AgentDefinitionVariable_AgentDefinition[];
 }
 
 /**
@@ -13629,7 +14225,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v11).
+ * Kind `agent_factory.proof_step.offer` (registry v12).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -13668,34 +14264,9 @@ export interface AgentFactoryProofStepOffer {
     accepts_user_input: boolean;
   };
   /**
-   * The Goal Writer's answer: role, objective, operating context, deliverable, weighted success criteria (gates marked), constraints, failure modes, charge.
+   * The locked job both answers are judged against: the job, output kind, required keys, output schema, the person's requested format and the rules code enforces downstream.
    */
-  goal_spec: {
-    goal: {
-    role?: string;
-    __kind: "agent_goal";
-    objective?: string;
-    constraints?: string[];
-    deliverable?: string;
-    failure_modes?: ({
-    name?: string;
-    __kind: "failure_mode";
-    description?: string;
-  })[];
-    success_criteria?: ({
-    gate?: boolean;
-    name?: string;
-    __kind: "success_criterion";
-    anchor?: string;
-    weight?: number;
-    criterion?: string;
-  })[];
-    operating_context?: string;
-  };
-    __kind: "agent_mandate_specification";
-    charge: string;
-    questions?: string[];
-  };
+  goal_spec: unknown;
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -17570,7 +18141,7 @@ export interface BrandConfirmedFacts {
  * Where each open brand candidate belongs, with a one-line reason and the words that carry meaning. A
  * suggestion only: the person decides.
  *  *
- *  * Kind `brand_curation` (registry v1).
+ *  * Kind `brand_curation` (registry v2).
  */
 export interface BrandCuration {
   /**
@@ -23543,6 +24114,39 @@ export interface CompanyProfile {
 }
 
 /**
+ * Kind `compare_field_list` (registry v1).
+ */
+export interface CompareFieldList {
+  items?: CompareField[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "compare_field_list";
+}
+
+/**
+ * Kind `compared_item_list` (registry v1).
+ */
+export interface ComparedItemList {
+  items?: ComparedItem[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "compared_item_list";
+}
+
+/**
+ * Kind `comparison_choice_needed_list` (registry v1).
+ */
+export interface ComparisonChoiceNeededList {
+  items?: ChoiceNeededRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_choice_needed_list";
+}
+
+/**
  * Kind `comparison_criterion` (registry v7).
  */
 export interface ComparisonCriterion {
@@ -23555,6 +24159,61 @@ export interface ComparisonCriterion {
   values: string[];
   weight?: number;
   higherIsBetter?: boolean;
+}
+
+/**
+ * How the list was found, when the platform found it.
+ *  *
+ *  * Kind `comparison_discovery_record` (registry v1).
+ */
+export interface ComparisonDiscoveryRecord {
+  of?: string;
+  how?: string[];
+  area?: string;
+  mode: "places" | "services" | "competitors" | "products" | "social";
+  topic?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_discovery_record";
+  branch: "A" | "C";
+  handle?: string;
+  method: string;
+  points?: number;
+  concept: string;
+  guessed?: boolean;
+  platform?: string;
+  searches?: number;
+  candidates?: DiscoveryCandidate[];
+  disclosure: string;
+}
+
+/**
+ * Kind `comparison_facet_list` (registry v1).
+ */
+export interface ComparisonFacetList {
+  items?: FacetInfo[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_facet_list";
+}
+
+/**
+ * Kind `comparison_facets_by_item` (registry v1).
+ */
+export interface ComparisonFacetsByItem {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_facets_by_item";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: ItemFacet[] | string | undefined;
+  };
 }
 
 /**
@@ -23578,6 +24237,301 @@ export interface ComparisonFactsV1 {
 }
 
 /**
+ * Kind `comparison_failed_item_list` (registry v1).
+ */
+export interface ComparisonFailedItemList {
+  items?: FailedItemRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_failed_item_list";
+}
+
+/**
+ * Kind `comparison_fetch_bookkeeping` (registry v1).
+ */
+export interface ComparisonFetchBookkeeping {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_fetch_bookkeeping";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: FetchBookkeepingRow | string | undefined;
+  };
+}
+
+/**
+ * Keyed by the item's position in the request (the run row's job map).
+ *  *
+ *  * Kind `comparison_fetch_timings` (registry v1).
+ */
+export interface ComparisonFetchTimings {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_fetch_timings";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: FetchTimingRow | string | undefined;
+  };
+}
+
+/**
+ * Kind `comparison_hidden_field_list` (registry v1).
+ */
+export interface ComparisonHiddenFieldList {
+  items?: HiddenField[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_hidden_field_list";
+}
+
+/**
+ * Kind `comparison_item_input_list` (registry v1).
+ */
+export interface ComparisonItemInputList {
+  items?: ComparisonItemInput[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_item_input_list";
+}
+
+/**
+ * Kind `comparison_item_progress_list` (registry v1).
+ */
+export interface ComparisonItemProgressList {
+  items?: ItemProgressRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_item_progress_list";
+}
+
+/**
+ * One comparison kind's definition: source, input hints, fields, primary field, facets.
+ *  *
+ *  * Kind `comparison_kind_info` (registry v1).
+ */
+export interface ComparisonKindInfo {
+  key: string;
+  label: string;
+  speed?: "fast" | "slow";
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_kind_info";
+  facets?: FacetInfo[];
+  fields?: CompareField[];
+  status?: "live" | "coming";
+  example?: string | null;
+  pick_key?: string;
+  input_hint?: string;
+  source_key: string;
+  description?: string;
+  input_label?: string;
+  records_are?: "entity" | "items";
+  finds_by_name?: boolean;
+  lookup_fields?: LookupField[];
+  lookup_points?: number;
+  primary_field?: string;
+  discovery_note?: string;
+  supported_sites?: string[];
+  typical_seconds?: number | null;
+  records_per_item?: number;
+}
+
+/**
+ * Whether one AI step on a comparison ran (``ai_layers._run_layer``'s record, without its answer).
+ *  *
+ *  * Kind `comparison_layer_status` (registry v1).
+ */
+export interface ComparisonLayerStatus {
+  built?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_layer_status";
+  status: "done" | "failed" | "no_agent_bound" | string;
+  mandate?: string | null;
+  message?: string | null;
+  checked_at?: string | null;
+  error_type?: string | null;
+  agent_run_id?: string | null;
+}
+
+/**
+ * Kind `comparison_leaders_by_field` (registry v1).
+ */
+export interface ComparisonLeadersByField {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_leaders_by_field";
+  /**
+   * field key -> item ids flagged best.
+   */
+  by_field?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string[] | string | undefined;
+  };
+}
+
+/**
+ * Kind `comparison_notices_by_item` (registry v1).
+ */
+export interface ComparisonNoticesByItem {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_notices_by_item";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string[] | string | undefined;
+  };
+}
+
+/**
+ * Rows of the facts pass's ``comparison_facts_v1`` answer (its ``items`` or ``decisions``), as it wrote them.
+ *  *
+ *  * Kind `comparison_object_list` (registry v1).
+ */
+export interface ComparisonObjectList {
+  items?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_object_list";
+}
+
+/**
+ * Kind `comparison_ranking` (registry v1).
+ */
+export interface ComparisonRanking {
+  items?: RankingRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_ranking";
+}
+
+/**
+ * Item position -> the fetched records kept on the run row, as the source returned them.
+ *  *
+ *  * Kind `comparison_raw_records_by_item` (registry v1).
+ */
+export interface ComparisonRawRecordsByItem {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_raw_records_by_item";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[] | string | undefined;
+  };
+}
+
+/**
+ * The ComparisonRequest exactly as the person sent it.
+ *  *
+ *  * Kind `comparison_request` (registry v1).
+ */
+export interface ComparisonRequest {
+  kind: string;
+  items: ComparisonItemInput[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_request";
+  facets?: string[] | null;
+  discovery?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  candidates?: number | null;
+  records_per_item?: number | null;
+}
+
+/**
+ * The whole aligned, ranked result as the run stored it.
+ *  *
+ *  * Kind `comparison_result` (registry v1).
+ */
+export interface ComparisonResult {
+  kind: string;
+  items?: ComparedItem[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_result";
+  facets?: FacetInfo[];
+  fields?: CompareField[];
+  status?: "live" | "coming";
+  notices?: string[];
+  /**
+   * Older runs only: how the items were ranked, in words.
+   */
+  rank_note?: string | null;
+  kind_label: string;
+  generated_at?: string | null;
+  total_points?: number;
+  hidden_fields?: HiddenField[];
+  primary_field?: string;
+  total_cost_usd?: number;
+  total_cost_display?: string;
+  total_records_billed?: number;
+}
+
+/**
+ * Kind `comparison_run_error` (registry v1).
+ */
+export interface ComparisonRunError {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_run_error";
+  /**
+   * The refusal in plain words.
+   */
+  message?: string | null;
+  /**
+   * The refusal's code.
+   */
+  error_code?: string | null;
+}
+
+/**
  * Kind `comparison_set` (registry v11).
  */
 export interface ComparisonSet {
@@ -23594,6 +24548,74 @@ export interface ComparisonSet {
      * The registered kind this payload is an instance of, when it is one.
      */
     __kind?: string;
+  };
+}
+
+/**
+ * Kind `comparison_stored_item_facts` (registry v1).
+ */
+export interface ComparisonStoredItemFacts {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_stored_item_facts";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: StoredItemFactsRow | string | undefined;
+  };
+}
+
+/**
+ * item_id -> field key -> one string (the ready-to-show value, or where it came from).
+ *  *
+ *  * Kind `comparison_text_by_item` (registry v1).
+ */
+export interface ComparisonTextByItem {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_text_by_item";
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: string | undefined;
+  } | string | undefined;
+  };
+}
+
+/**
+ * Kind `comparison_values_by_item` (registry v1).
+ */
+export interface ComparisonValuesByItem {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "comparison_values_by_item";
+  /**
+   * item_id -> field key -> value.
+   */
+  by_item?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: ComparedValue | string | undefined;
+  } | string | undefined;
   };
 }
 
@@ -24955,7 +25977,7 @@ export interface ContentPlanPlanReviewOffer {
 }
 
 /**
- * Kind `content_plan.plan_shape.offer` (registry v10).
+ * Kind `content_plan.plan_shape.offer` (registry v11).
  */
 export interface ContentPlanPlanShapeOffer {
   /**
@@ -24976,7 +25998,10 @@ export interface ContentPlanPlanShapeOffer {
    * The site archetypes this plan may be built from.
    */
   archetype_options: unknown;
-  target_page_count?: number;
+  /**
+   * A number or a range such as 30-60, as the setup wizard sends it.
+   */
+  target_page_count?: string;
   /**
    * The plan as it stands, when one already exists.
    */
@@ -24984,7 +26009,7 @@ export interface ContentPlanPlanShapeOffer {
 }
 
 /**
- * Kind `content_plan.research_wave.offer` (registry v20).
+ * Kind `content_plan.research_wave.offer` (registry v21).
  */
 export interface ContentPlanResearchWaveOffer {
   /**
@@ -25039,6 +26064,10 @@ export interface ContentPlanResearchWaveOffer {
    * What the brand is, when written.
    */
   brand_description?: string;
+  /**
+   * The most pages a candidate may hold: the page budget plus ten.
+   */
+  max_nodes_ceiling: number;
   /**
    * Binding instructions the operator typed for this run; absent when none.
    */
@@ -25527,6 +26556,34 @@ export interface ConversationLabelChatOffer {
 }
 
 /**
+ * Older turns of a conversation, condensed into one summary that replaces them.
+ *  *
+ *  * Kind `conversation_condensed` (registry v1).
+ */
+export interface ConversationCondensed {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "conversation_condensed";
+  /**
+   * The positions the summary replaces.
+   */
+  covers: CondensedRange;
+  /**
+   * Markdown that will REPLACE the condensed turns, read by the model from now on.
+   */
+  summary: string;
+  /**
+   * Things still unresolved at the end of the condensed range.
+   */
+  open_items?: string[];
+  /**
+   * Exact strings the summary relies on (ids, paths, URLs, numbers, names), each copied verbatim.
+   */
+  identifiers?: string[];
+}
+
+/**
  * Kind `cooking_recipe` (registry v8).
  */
 export interface CookingRecipe {
@@ -25897,7 +26954,7 @@ export interface CriterionCoverage {
 }
 
 /**
- * Kind `crm.chasebox_draft_review.offer` (registry v4).
+ * Kind `crm.chasebox_draft_review.offer` (registry v5).
  */
 export interface CrmChaseboxDraftReviewOffer {
   /**
@@ -25936,6 +26993,10 @@ export interface CrmChaseboxDraftReviewOffer {
    * Whether this draft is already approved — a reviewer that does not know this reopens settled work.
    */
   draft_approved?: boolean;
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * The personalization evidence behind the draft — what a review for unsupported claims must check the copy against.
    */
@@ -26029,7 +27090,7 @@ export interface CrmOutreachFactCheckOffer {
 }
 
 /**
- * Kind `crm.outreach_lists.offer` (registry v7).
+ * Kind `crm.outreach_lists.offer` (registry v8).
  */
 export interface CrmOutreachListsOffer {
   /**
@@ -26056,6 +27117,10 @@ export interface CrmOutreachListsOffer {
    * Just the ids of the campaigns on screen — the cheap tier when the full composite is not worth retrieving.
    */
   visible_list_ids?: string[];
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * The organizations this person can work outreach for.
    */
@@ -26926,6 +27991,71 @@ export interface DeferredWorkResult {
 }
 
 /**
+ * Kind `department_plan` (registry v2).
+ */
+export interface DepartmentPlan {
+  /**
+   * The seats the description implies, each with its job.
+   */
+  seats: ({
+    /**
+     * One or two plain sentences: what the seat is for and what a great result looks like.
+     */
+    goal: string;
+    /**
+     * The seat's name on the chart, e.g. 'Front Desk'.
+     */
+    name: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    /**
+     * What the seat is given each time it works.
+     */
+    inputs: ({
+    /**
+     * snake_case name of the input.
+     */
+    name: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    /**
+     * True when the seat cannot work without it.
+     */
+    required: boolean;
+    /**
+     * What it is, in plain words.
+     */
+    description: string;
+  })[];
+    /**
+     * What the seat hands back, concretely.
+     */
+    output: string;
+    /**
+     * The name of another seat in this plan it sits under. Left out when it sits directly under the department's box.
+     */
+    reports_to?: string;
+    /**
+     * One plain sentence on what the seat covers.
+     */
+    description: string;
+  })[];
+  __kind: "department_plan";
+  /**
+   * Choices only the person can make, including wider seats worth considering.
+   */
+  questions?: string[];
+  /**
+   * The department's name in plain words.
+   */
+  department: string;
+}
+
+/**
  * Search results that are sources, each beside the facts research stores for it.
  *  *
  *  * Kind `described_links` (registry v3).
@@ -27536,16 +28666,6 @@ export interface DraftCritique {
 }
 
 /**
- * Kind `e2e_throwaway_preview_d74998` (registry v1).
- */
-export interface E2eThrowawayPreviewD74998 {
-  items?: string[];
-  title?: string;
-  __kind: "e2e_throwaway_preview_d74998";
-  summary?: string;
-}
-
-/**
  * Kind `education.analytics_narrate.offer` (registry v10).
  */
 export interface EducationAnalyticsNarrateOffer {
@@ -27674,7 +28794,7 @@ export interface EducationCardImageGenerationOffer {
 }
 
 /**
- * Kind `education.card_image_prompt.offer` (registry v4).
+ * Kind `education.card_image_prompt.offer` (registry v5).
  */
 export interface EducationCardImagePromptOffer {
   /**
@@ -27701,10 +28821,14 @@ export interface EducationCardImagePromptOffer {
    * The card's front face text.
    */
   card_front: string;
+  /**
+   * The card values fused into one image brief (face, topic, front, back and what the image must teach) — built by CardImagePromptWriterAgent.prepare_variables.
+   */
+  intent_or_content: string;
 }
 
 /**
- * Kind `education.convert_source.offer` (registry v13).
+ * Kind `education.convert_source.offer` (registry v14).
  */
 export interface EducationConvertSourceOffer {
   /**
@@ -27793,7 +28917,7 @@ export interface EducationConvertSourceOffer {
    */
   source_document_id?: string;
   /**
-   * What kind of item the source was converted from — for example a flashcard set, an assessment, or a note.
+   * What kind of item the source was converted from — for example a flashcard deck, an assessment, or a note.
    */
   source_entity_type?: string;
   /**
@@ -28317,7 +29441,7 @@ export interface EducationTutorMessageOffer {
 }
 
 /**
- * Kind `education.voice_tutor.offer` (registry v7).
+ * Kind `education.voice_tutor.offer` (registry v8).
  */
 export interface EducationVoiceTutorOffer {
   /**
@@ -28341,7 +29465,7 @@ export interface EducationVoiceTutorOffer {
    */
   lapses?: number;
   /**
-   * The flashcard set.
+   * The flashcard deck.
    */
   set_id?: string;
   /**
@@ -30071,7 +31195,7 @@ export interface FlashcardsReviewBatchOffer {
 }
 
 /**
- * Kind `flashcards.tts_render.offer` (registry v10).
+ * Kind `flashcards.tts_render.offer` (registry v11).
  */
 export interface FlashcardsTtsRenderOffer {
   /**
@@ -30083,7 +31207,7 @@ export interface FlashcardsTtsRenderOffer {
    */
   __kind?: "flashcards.tts_render.offer";
   /**
-   * The flashcard set.
+   * The flashcard deck.
    */
   set_id?: string;
   /**
@@ -33483,7 +34607,7 @@ export interface KindComponentCode {
 /**
  * ``kindcomp_get_context`` — the full component-authoring bundle.
  *  *
- *  * Kind `kind_component_context` (registry v9).
+ *  * Kind `kind_component_context` (registry v10).
  */
 export interface KindComponentContext {
   kind: KindDefinitionSummary;
@@ -33508,6 +34632,13 @@ export interface KindComponentContext {
   canonical_example?: JsonValue | null;
   incidents_visible?: boolean;
   alternate_examples?: JsonValue[];
+  latest_inspections?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
   canonical_example_status?: string | null;
 }
 
@@ -40417,7 +41548,7 @@ export interface NewsResult {
 }
 
 /**
- * Kind `news_search_result` (registry v4).
+ * Kind `news_search_result` (registry v5).
  */
 export interface NewsSearchResult {
   hits?: NewsSearchHit[];
@@ -41257,6 +42388,60 @@ export interface OrgChartSeatJobSuggestionOffer {
    * A note about the organization: what it does, its size, its industry. Empty when unknown.
    */
   organization_context?: string;
+}
+
+/**
+ * Kind `org_chart_blurb` (registry v1).
+ */
+export interface OrgChartBlurb {
+  /**
+   * One line per top-level team or box under the top of the chart.
+   */
+  teams: ({
+    /**
+     * What that team does, in one short plain sentence.
+     */
+    does: string;
+    /**
+     * The box name exactly as it appears on the chart.
+     */
+    name: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * A short page title for the published chart, at most 60 characters.
+   */
+  title: string;
+  __kind: "org_chart_blurb";
+  /**
+   * Two or three plain sentences on what this organization or team is and how it is arranged.
+   */
+  summary: string;
+}
+
+/**
+ * Kind `org_chart_snapshot` (registry v1).
+ */
+export interface OrgChartSnapshot {
+  /**
+   * The top boxes of the published chart, each with its children nested.
+   */
+  roots: Box[];
+  __kind: "org_chart_snapshot";
+}
+
+/**
+ * Kind `organization_brand_list` (registry v1).
+ */
+export interface OrganizationBrandList {
+  items?: OrganizationBrandRow[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "organization_brand_list";
 }
 
 /**
@@ -50281,7 +51466,7 @@ export interface SeoAiVisibilityBlindQuestionWriterOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_buyer_jobs.offer` (registry v4).
+ * Kind `seo.ai_visibility_buyer_jobs.offer` (registry v7).
  */
 export interface SeoAiVisibilityBuyerJobsOffer {
   /**
@@ -50301,6 +51486,10 @@ export interface SeoAiVisibilityBuyerJobsOffer {
    */
   icp_hypotheses: unknown;
   /**
+   * The site's top Search Console queries: the words real buyers type.
+   */
+  gsc_top_queries?: string;
+  /**
    * Every recorded source with its class, grade and span.
    */
   source_manifest: unknown;
@@ -50311,7 +51500,7 @@ export interface SeoAiVisibilityBuyerJobsOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_evidence_icp.offer` (registry v4).
+ * Kind `seo.ai_visibility_evidence_icp.offer` (registry v7).
  */
 export interface SeoAiVisibilityEvidenceIcpOffer {
   /**
@@ -50331,6 +51520,10 @@ export interface SeoAiVisibilityEvidenceIcpOffer {
    */
   run_clock: string;
   /**
+   * The site's recorded competitors (site-evidence pool).
+   */
+  competitors?: string;
+  /**
    * What the company does, in the owner's own words.
    */
   description: string;
@@ -50342,10 +51535,26 @@ export interface SeoAiVisibilityEvidenceIcpOffer {
    * The brand profile, confirmed business facts, the Business Discovery business model and ideal customer results, and recorded competitors — every item marked company-asserted.
    */
   company_leads: unknown;
+  /**
+   * What the crawled pages of the site cover (site-evidence pool).
+   */
+  pages_summary?: string;
+  /**
+   * The site's identity from the platform's crawl (site-evidence pool).
+   */
+  site_identity?: string;
+  /**
+   * The site's top Search Console queries: the words real buyers type.
+   */
+  gsc_top_queries?: string;
+  /**
+   * The owner's written business guidance for the site, when written.
+   */
+  business_guidance?: string;
 }
 
 /**
- * Kind `seo.ai_visibility_panel_designer.offer` (registry v5).
+ * Kind `seo.ai_visibility_panel_designer.offer` (registry v8).
  */
 export interface SeoAiVisibilityPanelDesignerOffer {
   /**
@@ -50357,13 +51566,21 @@ export interface SeoAiVisibilityPanelDesignerOffer {
    */
   __kind?: "seo.ai_visibility_panel_designer.offer";
   /**
-   * The measurement charter (T3).
+   * The measurement charter (T3). Not sent by the one-call design (redesign 2026-10-22); code holds it.
    */
-  charter: unknown;
+  charter?: unknown;
   /**
    * T10's allocation and the priced cost of one wave.
    */
-  allocation: unknown;
+  allocation?: unknown;
+  /**
+   * How many question slots each set of the panel holds, e.g. 'core 12, aided 2'.
+   */
+  set_counts: string;
+  /**
+   * The price of one weekly wave, in points.
+   */
+  wave_price: string;
   /**
    * T13's pilot results, when a pilot has run.
    */
@@ -50375,15 +51592,19 @@ export interface SeoAiVisibilityPanelDesignerOffer {
   /**
    * The person's Gate 3 decisions.
    */
-  gate_3_decisions: unknown;
+  gate_3_decisions?: unknown;
   /**
    * Every revise, quarantine and reject decision, with its reason.
    */
-  rejection_ledger: unknown;
+  rejection_ledger?: unknown;
   /**
    * The declared campaigns, when any exist.
    */
   campaign_registry?: unknown;
+  /**
+   * The exact text of every question the panel will ask.
+   */
+  selected_questions: string[];
   /**
    * The prior panel version, when one exists.
    */
@@ -50391,11 +51612,11 @@ export interface SeoAiVisibilityPanelDesignerOffer {
   /**
    * The question slots.
    */
-  prompt_architecture: unknown;
+  prompt_architecture?: unknown;
   /**
    * The candidates QA passed and the person kept at Gate 3.
    */
-  qa_approved_candidates: unknown;
+  qa_approved_candidates?: unknown;
 }
 
 /**
@@ -50429,7 +51650,7 @@ export interface SeoAiVisibilityPanelReportOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_question_architect.offer` (registry v5).
+ * Kind `seo.ai_visibility_question_architect.offer` (registry v6).
  */
 export interface SeoAiVisibilityQuestionArchitectOffer {
   /**
@@ -50445,9 +51666,9 @@ export interface SeoAiVisibilityQuestionArchitectOffer {
    */
   budget: unknown;
   /**
-   * The measurement charter (T3).
+   * The measurement charter (T3). Not sent by the one-call design (redesign 2026-10-22); code holds it.
    */
-  charter: unknown;
+  charter?: unknown;
   /**
    * The locales the panel measures.
    */
@@ -50463,7 +51684,7 @@ export interface SeoAiVisibilityQuestionArchitectOffer {
   /**
    * The approved customer profiles.
    */
-  icp_hypotheses: unknown;
+  icp_hypotheses?: unknown;
   /**
    * The prior panel version's question slots, when one exists.
    */
@@ -52026,7 +53247,7 @@ export interface SeoPressClipReviewerOffer {
 }
 
 /**
- * Kind `seo.press_headlines.offer` (registry v4).
+ * Kind `seo.press_headlines.offer` (registry v5).
  */
 export interface SeoPressHeadlinesOffer {
   /**
@@ -52050,7 +53271,7 @@ export interface SeoPressHeadlinesOffer {
    */
   current_time: string;
   /**
-   * The sender's rendered voice fingerprint block, for subject lines written as a person.
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
    */
   voice_fingerprint?: string;
 }
@@ -52138,7 +53359,7 @@ export interface SeoPressNewsworthinessCheckOffer {
 }
 
 /**
- * Kind `seo.press_source_request.offer` (registry v22).
+ * Kind `seo.press_source_request.offer` (registry v23).
  */
 export interface SeoPressSourceRequestOffer {
   /**
@@ -52193,6 +53414,10 @@ export interface SeoPressSourceRequestOffer {
    * The score floor below which the system automatically passes on the request, so a responder that knows the floor stops proposing doomed drafts.
    */
   min_respond_score?: number;
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * The requesting journalist's recent dated bylines with links, from what we already hold about them. Empty when we do not know the journalist.
    */
@@ -52270,7 +53495,7 @@ export interface SeoPressStoryAnalysisOffer {
 }
 
 /**
- * Kind `seo.reputation_crisis_holding.offer` (registry v4).
+ * Kind `seo.reputation_crisis_holding.offer` (registry v5).
  */
 export interface SeoReputationCrisisHoldingOffer {
   /**
@@ -52353,6 +53578,10 @@ export interface SeoReputationCrisisHoldingOffer {
    * What is committed, with times; absent means no commitments.
    */
   actions_committed?: string;
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * 'true' only when the person pressed 'Draft for counsel anyway'.
    */
@@ -56470,6 +57699,136 @@ export interface StudyPlanDay {
 }
 
 /**
+ * Kind `study_record_class_fact` (registry v1).
+ */
+export interface StudyRecordClassFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_class_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordClass[] | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_content_fact` (registry v1).
+ */
+export interface StudyRecordContentFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_content_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: string | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_record_fact` (registry v1).
+ */
+export interface StudyRecordRecordFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_record_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordFacts | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_related_fact` (registry v1).
+ */
+export interface StudyRecordRelatedFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_related_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordRelated[] | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
+ * Kind `study_record_source_fact` (registry v1).
+ */
+export interface StudyRecordSourceFact {
+  type?: string | null;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "study_record_source_fact";
+  source?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  } | null;
+  content?: StudyRecordSource[] | null;
+  mutable?: boolean | null;
+  persist?: "auto" | "never" | "client" | null;
+  description?: string | null;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
+  default_max_inline_chars?: number | null;
+}
+
+/**
  * The durable file a study kit hangs off — its id IS the kit id.
  *  *
  *  * Kind `study_source_anchor` (registry v4).
@@ -56644,7 +58003,7 @@ export interface SwipeCollection {
 /**
  * A deck of items the person answers one at a time by swiping (or the edge buttons, or the keys).
  *  *
- *  * Kind `swipe_deck` (registry v2).
+ *  * Kind `swipe_deck` (registry v3).
  */
 export interface SwipeDeck {
   /**
@@ -56704,7 +58063,7 @@ export interface TableAskOffer {
 }
 
 /**
- * Kind `table.column_fill.offer` (registry v2).
+ * Kind `table.column_fill.offer` (registry v7).
  */
 export interface TableColumnFillOffer {
   /**
@@ -56712,9 +58071,57 @@ export interface TableColumnFillOffer {
    */
   __kind?: "table.column_fill.offer";
   /**
+   * A pick-one column's choice number 1, in the column's order; absent when it has fewer.
+   */
+  choice_1?: string;
+  /**
+   * A pick-one column's choice number 2, in the column's order; absent when it has fewer.
+   */
+  choice_2?: string;
+  /**
+   * A pick-one column's choice number 3, in the column's order; absent when it has fewer.
+   */
+  choice_3?: string;
+  /**
+   * A pick-one column's choice number 4, in the column's order; absent when it has fewer.
+   */
+  choice_4?: string;
+  /**
+   * A pick-one column's choice number 5, in the column's order; absent when it has fewer.
+   */
+  choice_5?: string;
+  /**
+   * A pick-one column's choice number 6, in the column's order; absent when it has fewer.
+   */
+  choice_6?: string;
+  /**
+   * A pick-one column's choice number 7, in the column's order; absent when it has fewer.
+   */
+  choice_7?: string;
+  /**
+   * A pick-one column's choice number 8, in the column's order; absent when it has fewer.
+   */
+  choice_8?: string;
+  /**
+   * A pick-one column's choice number 9, in the column's order; absent when it has fewer.
+   */
+  choice_9?: string;
+  /**
    * 'true' when the column may search the web; default 'false'.
    */
   allow_web: string;
+  /**
+   * A pick-one column's choice number 10, in the column's order; absent when it has fewer.
+   */
+  choice_10?: string;
+  /**
+   * A pick-one column's choice number 11, in the column's order; absent when it has fewer.
+   */
+  choice_11?: string;
+  /**
+   * A pick-one column's choice number 12, in the column's order; absent when it has fewer.
+   */
+  choice_12?: string;
   /**
    * What the column holds (text, number, date, choice and its choices).
    */
@@ -60235,6 +61642,43 @@ export interface WebContentFreshnessV1 {
 }
 
 /**
+ * Kind `web_content_needs_rendering_v1` (registry v1).
+ */
+export interface WebContentNeedsRenderingV1 {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind: "web_content_needs_rendering_v1";
+  /**
+   * Number of pages inspected
+   */
+  checked?: number;
+  /**
+   * One-paragraph human summary of the finding
+   */
+  summary: string;
+  /**
+   * Per-page evidence entries
+   */
+  evidence?: ({
+    url?: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    word_count?: number;
+  })[];
+  /**
+   * Number of app-shell pages
+   */
+  issues_found: number;
+  /**
+   * Concrete, ordered fix recommendations
+   */
+  recommendations?: string[];
+}
+
+/**
  * Kind `web_content_quality_eeat_v1` (registry v5).
  */
 export interface WebContentQualityEeatV1 {
@@ -60444,6 +61888,43 @@ export interface WebCwvLcpV1 {
 }
 
 /**
+ * Kind `web_dead_end_page_v1` (registry v1).
+ */
+export interface WebDeadEndPageV1 {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind: "web_dead_end_page_v1";
+  /**
+   * Number of pages inspected
+   */
+  checked?: number;
+  /**
+   * One-paragraph human summary of the finding
+   */
+  summary: string;
+  /**
+   * Per-page evidence entries
+   */
+  evidence?: ({
+    url?: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    internal_links?: number;
+  })[];
+  /**
+   * Number of dead-end pages
+   */
+  issues_found: number;
+  /**
+   * Concrete, ordered fix recommendations
+   */
+  recommendations?: string[];
+}
+
+/**
  * Kind `web_duplicate_content_exact_v1` (registry v5).
  */
 export interface WebDuplicateContentExactV1 {
@@ -60570,13 +62051,14 @@ export interface WebEvidenceCachingPolicyV1 {
 /**
  * Evidence payload for the Canonical Conflicts Evidence SEO check.
  *  *
- *  * Kind `web_evidence_canonical_conflicts_v1` (registry v4).
+ *  * Kind `web_evidence_canonical_conflicts_v1` (registry v5).
  */
 export interface WebEvidenceCanonicalConflictsV1 {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_canonical_conflicts_v1";
+  redirects_to?: string | null;
   canonical_url?: string | null;
 }
 
@@ -64927,22 +66409,6 @@ export interface WorkflowStepHolding {
   filled_by_holder?: string[];
 }
 
-/**
- * Kind `zz_lane_f_preview_check` (registry v1).
- */
-export interface ZzLaneFPreviewCheck {
-  items?: ({
-    label?: string;
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    status?: string;
-  })[];
-  title?: string;
-  __kind: "zz_lane_f_preview_check";
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // The registry as a type-level index.
 // ─────────────────────────────────────────────────────────────────────────
@@ -65234,9 +66700,34 @@ export type GeneratedKindSlug =
   | "communications.sms_assistant_turn.offer"
   | "company_endowment_portfolio"
   | "company_profile"
+  | "compare_field_list"
+  | "compared_item_list"
+  | "comparison_choice_needed_list"
   | "comparison_criterion"
+  | "comparison_discovery_record"
+  | "comparison_facet_list"
+  | "comparison_facets_by_item"
   | "comparison_facts_v1"
+  | "comparison_failed_item_list"
+  | "comparison_fetch_bookkeeping"
+  | "comparison_fetch_timings"
+  | "comparison_hidden_field_list"
+  | "comparison_item_input_list"
+  | "comparison_item_progress_list"
+  | "comparison_kind_info"
+  | "comparison_layer_status"
+  | "comparison_leaders_by_field"
+  | "comparison_notices_by_item"
+  | "comparison_object_list"
+  | "comparison_ranking"
+  | "comparison_raw_records_by_item"
+  | "comparison_request"
+  | "comparison_result"
+  | "comparison_run_error"
   | "comparison_set"
+  | "comparison_stored_item_facts"
+  | "comparison_text_by_item"
+  | "comparison_values_by_item"
   | "comparison_verdict_v1"
   | "competitor_live_intelligence_v1"
   | "competitor_lookup_result"
@@ -65289,6 +66780,7 @@ export type GeneratedKindSlug =
   | "conversation.analysis.offer"
   | "conversation.label_agent_run.offer"
   | "conversation.label_chat.offer"
+  | "conversation_condensed"
   | "cooking_recipe"
   | "counterparty_ledger"
   | "counterparty_move"
@@ -65329,6 +66821,7 @@ export type GeneratedKindSlug =
   | "decision_questions"
   | "decision_tree"
   | "deferred_work_result"
+  | "department_plan"
   | "described_links"
   | "design_system_build_result"
   | "desktop_tools_load_result"
@@ -65353,7 +66846,6 @@ export type GeneratedKindSlug =
   | "domain_authority"
   | "domain_fold_report"
   | "draft_critique"
-  | "e2e_throwaway_preview_d74998"
   | "education.analytics_narrate.offer"
   | "education.card_image.offer"
   | "education.card_image_generation.offer"
@@ -65809,6 +67301,9 @@ export type GeneratedKindSlug =
   | "orchestras.member_roster.offer"
   | "orchestration.tool_failure_standoff.offer"
   | "org_chart.seat_job_suggestion.offer"
+  | "org_chart_blurb"
+  | "org_chart_snapshot"
+  | "organization_brand_list"
   | "outlier_row"
   | "outline_section"
   | "outreach_reply_draft"
@@ -66301,6 +67796,11 @@ export type GeneratedKindSlug =
   | "study_plan"
   | "study_plan_block"
   | "study_plan_day"
+  | "study_record_class_fact"
+  | "study_record_content_fact"
+  | "study_record_record_fact"
+  | "study_record_related_fact"
+  | "study_record_source_fact"
   | "study_source_anchor"
   | "study_summary"
   | "study_tip"
@@ -66437,11 +67937,13 @@ export type GeneratedKindSlug =
   | "web_canonical_presence_v1"
   | "web_content_depth_v1"
   | "web_content_freshness_v1"
+  | "web_content_needs_rendering_v1"
   | "web_content_quality_eeat_v1"
   | "web_crawl_depth_v1"
   | "web_cwv_cls_v1"
   | "web_cwv_inp_tbt_v1"
   | "web_cwv_lcp_v1"
+  | "web_dead_end_page_v1"
   | "web_duplicate_content_exact_v1"
   | "web_evidence_anchor_text_descriptiveness_v1"
   | "web_evidence_asset_delivery_v1"
@@ -66601,8 +68103,7 @@ export type GeneratedKindSlug =
   | "workflow_plan_result"
   | "workflow_run_result"
   | "workflow_run_status"
-  | "workflow_step_holding"
-  | "zz_lane_f_preview_check";
+  | "workflow_step_holding";
 
 /** Slug → the complete-instance payload type for that kind. */
 export interface KindPayloadBySlug {
@@ -66891,9 +68392,34 @@ export interface KindPayloadBySlug {
   "communications.sms_assistant_turn.offer": CommunicationsSmsAssistantTurnOffer;
   "company_endowment_portfolio": CompanyEndowmentPortfolio;
   "company_profile": CompanyProfile;
+  "compare_field_list": CompareFieldList;
+  "compared_item_list": ComparedItemList;
+  "comparison_choice_needed_list": ComparisonChoiceNeededList;
   "comparison_criterion": ComparisonCriterion;
+  "comparison_discovery_record": ComparisonDiscoveryRecord;
+  "comparison_facet_list": ComparisonFacetList;
+  "comparison_facets_by_item": ComparisonFacetsByItem;
   "comparison_facts_v1": ComparisonFactsV1;
+  "comparison_failed_item_list": ComparisonFailedItemList;
+  "comparison_fetch_bookkeeping": ComparisonFetchBookkeeping;
+  "comparison_fetch_timings": ComparisonFetchTimings;
+  "comparison_hidden_field_list": ComparisonHiddenFieldList;
+  "comparison_item_input_list": ComparisonItemInputList;
+  "comparison_item_progress_list": ComparisonItemProgressList;
+  "comparison_kind_info": ComparisonKindInfo;
+  "comparison_layer_status": ComparisonLayerStatus;
+  "comparison_leaders_by_field": ComparisonLeadersByField;
+  "comparison_notices_by_item": ComparisonNoticesByItem;
+  "comparison_object_list": ComparisonObjectList;
+  "comparison_ranking": ComparisonRanking;
+  "comparison_raw_records_by_item": ComparisonRawRecordsByItem;
+  "comparison_request": ComparisonRequest;
+  "comparison_result": ComparisonResult;
+  "comparison_run_error": ComparisonRunError;
   "comparison_set": ComparisonSet;
+  "comparison_stored_item_facts": ComparisonStoredItemFacts;
+  "comparison_text_by_item": ComparisonTextByItem;
+  "comparison_values_by_item": ComparisonValuesByItem;
   "comparison_verdict_v1": ComparisonVerdictV1;
   "competitor_live_intelligence_v1": CompetitorLiveIntelligenceV1;
   "competitor_lookup_result": CompetitorLookupResult;
@@ -66946,6 +68472,7 @@ export interface KindPayloadBySlug {
   "conversation.analysis.offer": ConversationAnalysisOffer;
   "conversation.label_agent_run.offer": ConversationLabelAgentRunOffer;
   "conversation.label_chat.offer": ConversationLabelChatOffer;
+  "conversation_condensed": ConversationCondensed;
   "cooking_recipe": CookingRecipe;
   "counterparty_ledger": CounterpartyLedger;
   "counterparty_move": CounterpartyMove;
@@ -66986,6 +68513,7 @@ export interface KindPayloadBySlug {
   "decision_questions": DecisionQuestions;
   "decision_tree": DecisionTree;
   "deferred_work_result": DeferredWorkResult;
+  "department_plan": DepartmentPlan;
   "described_links": DescribedLinks;
   "design_system_build_result": DesignSystemBuildResult;
   "desktop_tools_load_result": DesktopToolsLoadResult;
@@ -67010,7 +68538,6 @@ export interface KindPayloadBySlug {
   "domain_authority": DomainAuthority;
   "domain_fold_report": DomainFoldReport;
   "draft_critique": DraftCritique;
-  "e2e_throwaway_preview_d74998": E2eThrowawayPreviewD74998;
   "education.analytics_narrate.offer": EducationAnalyticsNarrateOffer;
   "education.card_image.offer": EducationCardImageOffer;
   "education.card_image_generation.offer": EducationCardImageGenerationOffer;
@@ -67466,6 +68993,9 @@ export interface KindPayloadBySlug {
   "orchestras.member_roster.offer": OrchestrasMemberRosterOffer;
   "orchestration.tool_failure_standoff.offer": OrchestrationToolFailureStandoffOffer;
   "org_chart.seat_job_suggestion.offer": OrgChartSeatJobSuggestionOffer;
+  "org_chart_blurb": OrgChartBlurb;
+  "org_chart_snapshot": OrgChartSnapshot;
+  "organization_brand_list": OrganizationBrandList;
   "outlier_row": OutlierRow;
   "outline_section": OutlineSection;
   "outreach_reply_draft": OutreachReplyDraft;
@@ -67958,6 +69488,11 @@ export interface KindPayloadBySlug {
   "study_plan": StudyPlan;
   "study_plan_block": StudyPlanBlock;
   "study_plan_day": StudyPlanDay;
+  "study_record_class_fact": StudyRecordClassFact;
+  "study_record_content_fact": StudyRecordContentFact;
+  "study_record_record_fact": StudyRecordRecordFact;
+  "study_record_related_fact": StudyRecordRelatedFact;
+  "study_record_source_fact": StudyRecordSourceFact;
   "study_source_anchor": StudySourceAnchor;
   "study_summary": StudySummary;
   "study_tip": StudyTip;
@@ -68094,11 +69629,13 @@ export interface KindPayloadBySlug {
   "web_canonical_presence_v1": WebCanonicalPresenceV1;
   "web_content_depth_v1": WebContentDepthV1;
   "web_content_freshness_v1": WebContentFreshnessV1;
+  "web_content_needs_rendering_v1": WebContentNeedsRenderingV1;
   "web_content_quality_eeat_v1": WebContentQualityEeatV1;
   "web_crawl_depth_v1": WebCrawlDepthV1;
   "web_cwv_cls_v1": WebCwvClsV1;
   "web_cwv_inp_tbt_v1": WebCwvInpTbtV1;
   "web_cwv_lcp_v1": WebCwvLcpV1;
+  "web_dead_end_page_v1": WebDeadEndPageV1;
   "web_duplicate_content_exact_v1": WebDuplicateContentExactV1;
   "web_evidence_anchor_text_descriptiveness_v1": WebEvidenceAnchorTextDescriptivenessV1;
   "web_evidence_asset_delivery_v1": WebEvidenceAssetDeliveryV1;
@@ -68259,7 +69796,6 @@ export interface KindPayloadBySlug {
   "workflow_run_result": WorkflowRunResult;
   "workflow_run_status": WorkflowRunStatus;
   "workflow_step_holding": WorkflowStepHolding;
-  "zz_lane_f_preview_check": ZzLaneFPreviewCheck;
 }
 
 /** `KindPayload<"web_result">` → `WebResult`. */
@@ -68552,9 +70088,34 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "communications.sms_assistant_turn.offer",
   "company_endowment_portfolio",
   "company_profile",
+  "compare_field_list",
+  "compared_item_list",
+  "comparison_choice_needed_list",
   "comparison_criterion",
+  "comparison_discovery_record",
+  "comparison_facet_list",
+  "comparison_facets_by_item",
   "comparison_facts_v1",
+  "comparison_failed_item_list",
+  "comparison_fetch_bookkeeping",
+  "comparison_fetch_timings",
+  "comparison_hidden_field_list",
+  "comparison_item_input_list",
+  "comparison_item_progress_list",
+  "comparison_kind_info",
+  "comparison_layer_status",
+  "comparison_leaders_by_field",
+  "comparison_notices_by_item",
+  "comparison_object_list",
+  "comparison_ranking",
+  "comparison_raw_records_by_item",
+  "comparison_request",
+  "comparison_result",
+  "comparison_run_error",
   "comparison_set",
+  "comparison_stored_item_facts",
+  "comparison_text_by_item",
+  "comparison_values_by_item",
   "comparison_verdict_v1",
   "competitor_live_intelligence_v1",
   "competitor_lookup_result",
@@ -68607,6 +70168,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "conversation.analysis.offer",
   "conversation.label_agent_run.offer",
   "conversation.label_chat.offer",
+  "conversation_condensed",
   "cooking_recipe",
   "counterparty_ledger",
   "counterparty_move",
@@ -68647,6 +70209,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "decision_questions",
   "decision_tree",
   "deferred_work_result",
+  "department_plan",
   "described_links",
   "design_system_build_result",
   "desktop_tools_load_result",
@@ -68671,7 +70234,6 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "domain_authority",
   "domain_fold_report",
   "draft_critique",
-  "e2e_throwaway_preview_d74998",
   "education.analytics_narrate.offer",
   "education.card_image.offer",
   "education.card_image_generation.offer",
@@ -69127,6 +70689,9 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "orchestras.member_roster.offer",
   "orchestration.tool_failure_standoff.offer",
   "org_chart.seat_job_suggestion.offer",
+  "org_chart_blurb",
+  "org_chart_snapshot",
+  "organization_brand_list",
   "outlier_row",
   "outline_section",
   "outreach_reply_draft",
@@ -69619,6 +71184,11 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "study_plan",
   "study_plan_block",
   "study_plan_day",
+  "study_record_class_fact",
+  "study_record_content_fact",
+  "study_record_record_fact",
+  "study_record_related_fact",
+  "study_record_source_fact",
   "study_source_anchor",
   "study_summary",
   "study_tip",
@@ -69755,11 +71325,13 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "web_canonical_presence_v1",
   "web_content_depth_v1",
   "web_content_freshness_v1",
+  "web_content_needs_rendering_v1",
   "web_content_quality_eeat_v1",
   "web_crawl_depth_v1",
   "web_cwv_cls_v1",
   "web_cwv_inp_tbt_v1",
   "web_cwv_lcp_v1",
+  "web_dead_end_page_v1",
   "web_duplicate_content_exact_v1",
   "web_evidence_anchor_text_descriptiveness_v1",
   "web_evidence_asset_delivery_v1",
@@ -69920,7 +71492,6 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "workflow_run_result",
   "workflow_run_status",
   "workflow_step_holding",
-  "zz_lane_f_preview_check",
 ];
 
 const GENERATED_KIND_SLUG_SET: ReadonlySet<string> = new Set(GENERATED_KIND_SLUGS);

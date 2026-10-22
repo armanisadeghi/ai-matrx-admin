@@ -16,7 +16,7 @@ import {
   getSettingAccessRequestForDecision,
 } from "@/features/access-gate/service/accessRequests";
 import { getSettingRequestAction } from "@/features/messaging/actions/settingRequestActionRegistry";
-import type { AccessRequestStatus } from "@/features/access-gate/types";
+import type { AccessRequestStatus } from "@ai-matrx/data/access";
 
 export function SettingRequestActionButtons({
   requestId,

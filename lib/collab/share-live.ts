@@ -11,7 +11,7 @@
  * plain-words notice. Thumbnails and link unfurls deliberately stay on the last save (like Google).
  */
 import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 
 const KINDS = { udt_document: { room: "udt_document", children: "document_snapshot" }, workbook: { room: "workbook", children: "workbook_snapshot" } } as const;
 

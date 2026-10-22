@@ -19,7 +19,7 @@ export async function recordAcquisitionFirstTouch({
   userId = null,
 }: RecordFirstTouchInput): Promise<string> {
   const admin = createAdminClient();
-  const { data, error } = await admin.rpc("record_acquisition_first_touch", {
+  const { data, error } = await admin.schema("growth").rpc("record_acquisition_first_touch", {
     p_visitor_id: payload.fingerprint,
     p_acquisition: payload,
     p_ip_address: ipAddress ?? undefined,
@@ -39,7 +39,7 @@ export async function linkAcquisitionToUser(
 ): Promise<void> {
   if (!visitorId) return;
   const admin = createAdminClient();
-  const { error } = await admin.rpc("record_acquisition_first_touch", {
+  const { error } = await admin.schema("growth").rpc("record_acquisition_first_touch", {
     p_visitor_id: visitorId,
     p_user_id: userId,
   });

@@ -6,7 +6,7 @@ const createShareLink = jest.fn();
 
 jest.mock("@ai-matrx/records/core", () => ({ storeDoors: () => ({ rpc }) }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
-jest.mock("@/utils/permissions/shareLinks", () => ({ createShareLink: (...a: unknown[]) => createShareLink(...a) }));
+jest.mock("@ai-matrx/sharing/core", () => ({ createShareLink: (...a: unknown[]) => createShareLink(...a) }));
 
 import { listViewLinks, makeViewLink, turnOffViewLink, viewLinkUrl } from "../viewLinkService";
 

@@ -7,6 +7,9 @@
 
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { Database } from "@/types/database.types";
 
 import { toast } from "@/lib/toast";
 
@@ -27,12 +30,14 @@ export interface RecordBodySpaceImplProps {
   recordId: string;
   readOnly: boolean;
   fallback: ReactNode;
+  /** The session the page is read as (default: the app's) — the Applet host's guest client for a visitor. */
+  client?: SupabaseClient<Database>;
 }
 
 /** The found body Space, drawn with full editing and autosave. */
-export default function RecordBodySpaceImpl({ spaceId, recordId, readOnly, fallback }: RecordBodySpaceImplProps) {
+export default function RecordBodySpaceImpl({ spaceId, recordId, readOnly, fallback, client }: RecordBodySpaceImplProps) {
   return (
-    <SpacesProvider>
+    <SpacesProvider client={client}>
       {/* .spaces-root carries the Spaces palette and type the editor draws with. */}
       <div className="spaces-root spaces-row-body">
         <BodyEditor spaceId={spaceId} recordId={recordId} readOnly={readOnly} fallback={fallback} />

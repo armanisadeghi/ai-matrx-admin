@@ -49,7 +49,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useToastManager } from "@/hooks/useToastManager";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
 import { useNoteIngestStatus } from "../../hooks/useNoteIngestStatus";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { copyRichContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { CopyMenuButton } from "@ai-matrx/rich-content/copy/CopyMenuButton";
 import { copyNotify } from "@/lib/clipboard/copy-notify";

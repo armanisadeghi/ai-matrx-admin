@@ -1,11 +1,11 @@
 "use client";
 
 import { PenLine, SquareStack, User } from "lucide-react";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 import { settingDoorHref } from "@/features/settings/doors/settingDoorTarget";
 import { CHAT_DEFAULT_MODEL_KNOB } from "@/features/ai-models/preferredChatModel";
 import { useSetting } from "../hooks/useSetting";

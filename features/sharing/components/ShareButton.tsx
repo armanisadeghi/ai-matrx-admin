@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@ai-matrx/design-system";
 import {
   Tooltip,
@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/tooltip";
 import { Share2, Globe } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { useSharingStatus } from "@/utils/permissions/hooks";
-import type { ResourceType } from "@/utils/permissions/types";
-import { ShareModal } from "./ShareModal";
+import { useSharingStatus } from "@ai-matrx/sharing/react";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import { ShareModal } from "@ai-matrx/sharing/react";
 
 interface ShareButtonProps {
   resourceType: ResourceType;
@@ -58,6 +58,27 @@ export function ShareButton({
   organizationId,
 }: ShareButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Where the person was before pressing Share (a document's editor, a field). Closing the dialog puts them back
+  // there: the dialog unmounts on close and focus fell to <body>, so the next letters typed went nowhere, silently
+  // (adversarial walk 2 F10, reproduced live 2/2 with Close and with Escape).
+  const returnTo = useRef<HTMLElement | null>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (isModalOpen) {
+      wasOpen.current = true;
+      return undefined;
+    }
+    if (!wasOpen.current) return undefined;
+    wasOpen.current = false;
+    // after the dialog's own focus return (a 0 ms timer scheduled while it unmounted); never steal a focus the person moved
+    const t = setTimeout(() => {
+      const el = returnTo.current;
+      returnTo.current = null;
+      const now = document.activeElement;
+      if (el?.isConnected && (now === null || now === document.body)) el.focus({ preventScroll: true });
+    }, 0);
+    return () => clearTimeout(t);
+  }, [isModalOpen]);
   const { isPublic, loading, error, refresh } = useSharingStatus(
     resourceType,
     resourceId,
@@ -81,7 +102,17 @@ export function ShareButton({
     <Button
       variant={variant}
       size={size}
-      onClick={() => setIsModalOpen(true)}
+      onPointerDownCapture={() => {
+        const el = document.activeElement;
+        returnTo.current = el instanceof HTMLElement && el !== document.body ? el : null;
+      }}
+      onClick={() => {
+        if (!returnTo.current) {
+          const el = document.activeElement;
+          returnTo.current = el instanceof HTMLElement && el !== document.body ? el : null;
+        }
+        setIsModalOpen(true);
+      }}
       className={cn("gap-2", className)}
       title={state ? `${label} · ${state}` : label}
       // An icon-only share control had NO accessible name: a tooltip describes

@@ -50,7 +50,7 @@ import {
   ALL_GREEN_PAGE_ASSOCIATIONS,
 } from "./__fixtures__/pageAssociationsAllGreen.recorded";
 
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Same jsdom polyfills as the builder's harness: matchMedia (useIsMobile, the
 // tree's coarse-pointer check) and ResizeObserver (Radix) do not exist in jsdom.

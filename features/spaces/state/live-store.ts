@@ -7,7 +7,10 @@
 //     breadcrumb agree without polling: a save hands over the saved doc, anything else asks for a
 //     fresh list.
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import type { Database } from "@/types/database.types";
 
 import type { SpaceBlock, SpaceDoc, SpaceId, SpaceSummary, SpacesStore } from "../contract";
 import { createDatabaseSpacesStore } from "../store-db/create-store";
@@ -35,9 +38,9 @@ export interface LiveSpacesStore extends SpacesStore {
   notifyTree(): void;
 }
 
-export function createLiveSpacesStore(getOrganizationId: () => string | null): LiveSpacesStore {
+export function createLiveSpacesStore(getOrganizationId: () => string | null, client?: SupabaseClient<Database>): LiveSpacesStore {
   // Reads and in-place writes never depend on the organization; only a new top-level Space does.
-  const base = createDatabaseSpacesStore("");
+  const base = createDatabaseSpacesStore("", client);
   const listeners = new Set<(change: SpacesChange) => void>();
   const emit = (change: SpacesChange) => {
     for (const l of listeners) l(change);
@@ -61,7 +64,7 @@ export function createLiveSpacesStore(getOrganizationId: () => string | null): L
       let target = base;
       if (!input.parentId) {
         // The one write funnel: with no active organization it asks the person, then continues.
-        target = createDatabaseSpacesStore(await ensureOrgId(getOrganizationId()));
+        target = createDatabaseSpacesStore(await ensureOrgId(getOrganizationId()), client);
       }
       return tree(target.create(input));
     },
@@ -76,7 +79,7 @@ export function createLiveSpacesStore(getOrganizationId: () => string | null): L
       // A sub-page's copy stays beside it, in its organization; a top-level page's copy is a new
       // top-level page, filed in the active organization like any new top-level page.
       const source = await base.get(id);
-      const target = source?.parentId ? base : createDatabaseSpacesStore(await ensureOrgId(getOrganizationId()));
+      const target = source?.parentId ? base : createDatabaseSpacesStore(await ensureOrgId(getOrganizationId()), client);
       return tree(target.duplicate(id, options));
     },
     archive: (id) => tree(base.archive(id)),

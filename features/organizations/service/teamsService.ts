@@ -64,7 +64,7 @@ export async function listTeams(
   includeArchived = false,
 ): Promise<Team[]> {
   const { data, error } = await runWithSessionRetry(() =>
-    supabase.rpc("team_list", {
+    supabase.schema("iam").rpc("team_list", {
       p_organization_id: organizationId,
       p_include_archived: includeArchived,
     }),
@@ -86,7 +86,7 @@ export async function listTeams(
 
 export async function listTeamMembers(teamId: string): Promise<TeamMember[]> {
   const { data, error } = await runWithSessionRetry(() =>
-    supabase.rpc("team_members", { p_team_id: teamId }),
+    supabase.schema("iam").rpc("team_members", { p_team_id: teamId }),
   );
   if (error) throw pgErrorToError(error);
   return (data ?? []).map((row) => ({
@@ -105,7 +105,7 @@ export async function listHrDepartmentOptions(
   organizationId: string,
 ): Promise<HrDepartmentOption[]> {
   const { data, error } = await runWithSessionRetry(() =>
-    supabase.rpc("team_hr_department_options", {
+    supabase.schema("hr").rpc("team_hr_department_options", {
       p_organization_id: organizationId,
     }),
   );
@@ -123,7 +123,7 @@ export async function createTeam(input: {
   description?: string | null;
   hrDepartmentId?: string | null;
 }): Promise<string> {
-  const { data, error } = await supabase.rpc("team_create", {
+  const { data, error } = await supabase.schema("iam").rpc("team_create", {
     p_organization_id: input.organizationId,
     p_name: input.name,
     p_description: input.description ?? undefined,
@@ -139,7 +139,7 @@ export async function updateTeam(
   name: string,
   description: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("team_update", {
+  const { error } = await supabase.schema("iam").rpc("team_update", {
     p_team_id: teamId,
     p_name: name,
     p_description: description,
@@ -148,12 +148,12 @@ export async function updateTeam(
 }
 
 export async function archiveTeam(teamId: string): Promise<void> {
-  const { error } = await supabase.rpc("team_archive", { p_team_id: teamId });
+  const { error } = await supabase.schema("iam").rpc("team_archive", { p_team_id: teamId });
   if (error) throw pgErrorToError(error);
 }
 
 export async function restoreTeam(teamId: string): Promise<void> {
-  const { error } = await supabase.rpc("team_restore", { p_team_id: teamId });
+  const { error } = await supabase.schema("iam").rpc("team_restore", { p_team_id: teamId });
   if (error) throw pgErrorToError(error);
 }
 
@@ -162,7 +162,7 @@ export async function setTeamHrDepartment(
   teamId: string,
   hrDepartmentId: string | null,
 ): Promise<void> {
-  const { error } = await supabase.rpc("team_set_hr_department", {
+  const { error } = await supabase.schema("hr").rpc("team_set_hr_department", {
     p_team_id: teamId,
     // The generated Args type says string; the door takes NULL to unlink.
     p_hr_department_id: hrDepartmentId as string,
@@ -175,7 +175,7 @@ export async function addTeamMember(
   userId: string,
   role: TeamRole = "member",
 ): Promise<void> {
-  const { error } = await supabase.rpc("team_member_add", {
+  const { error } = await supabase.schema("iam").rpc("team_member_add", {
     p_team_id: teamId,
     p_user_id: userId,
     p_role: role,
@@ -188,7 +188,7 @@ export async function setTeamMemberRole(
   userId: string,
   role: TeamRole,
 ): Promise<void> {
-  const { error } = await supabase.rpc("team_member_set_role", {
+  const { error } = await supabase.schema("iam").rpc("team_member_set_role", {
     p_team_id: teamId,
     p_user_id: userId,
     p_role: role,
@@ -200,7 +200,7 @@ export async function removeTeamMember(
   teamId: string,
   userId: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("team_member_remove", {
+  const { error } = await supabase.schema("iam").rpc("team_member_remove", {
     p_team_id: teamId,
     p_user_id: userId,
   });
@@ -225,7 +225,7 @@ export async function listMyTeams(
   organizationId: string | null,
 ): Promise<MyTeam[]> {
   const { data, error } = await runWithSessionRetry(() =>
-    supabase.rpc("my_teams", { p_organization_id: organizationId ?? undefined }),
+    supabase.schema("iam").rpc("my_teams", { p_organization_id: organizationId ?? undefined }),
   );
   if (error) throw pgErrorToError(error);
   return (data ?? []).map((row) => ({

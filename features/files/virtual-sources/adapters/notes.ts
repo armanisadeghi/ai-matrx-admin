@@ -349,7 +349,7 @@ const notesAdapter: VirtualSourceAdapter = {
     // table is deprecated. The RPC returns rows ordered by version DESC and
     // exposes neither `created_by` nor a `change_summary` — use `label` as the
     // human-facing summary.
-    const { data } = await supabase.rpc("get_note_versions", {
+    const { data } = await supabase.schema("users").rpc("get_note_versions", {
       p_note_id: id,
     });
     type NoteVersionRow =

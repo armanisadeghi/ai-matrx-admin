@@ -164,7 +164,7 @@ async function main() {
 
     // ---- comments on a block (existing door public.cmt_add, part_anchor)
     const blockId = rootSnap.blocks[1].id;
-    const { data: commentId, error: cErr } = await admin.db.rpc("cmt_add", {
+    const { data: commentId, error: cErr } = await admin.db.schema("platform").rpc("cmt_add", {
       p_entity_type: "document",
       p_entity_id: first.space_id,
       p_body: "Can we move the Loom recap to Thursdays?",
@@ -173,7 +173,7 @@ async function main() {
     check("comment on a block via cmt_add + part_anchor", !cErr && typeof commentId === "string", cErr?.message ?? String(commentId));
     const { data: comment } = await admin.db.schema("platform").from("comments").select("entity_type, entity_id, anchor").eq("id", commentId as string).maybeSingle();
     check("the comment reads back with its block anchor", comment?.entity_id === first.space_id && (comment?.anchor as { part_key?: string })?.part_key === `block:${blockId}`);
-    const { error: rawErr } = await admin.db.rpc("cmt_add", { p_entity_type: "document", p_entity_id: first.space_id, p_body: "x", p_anchor: { block_id: blockId } });
+    const { error: rawErr } = await admin.db.schema("platform").rpc("cmt_add", { p_entity_type: "document", p_entity_id: first.space_id, p_body: "x", p_anchor: { block_id: blockId } });
     check("a bare {block_id} anchor is refused (use part_anchor)", rawErr?.code === "22023", rawErr?.message ?? "accepted");
     const { data: theirComments } = await second.db.schema("platform").from("comments").select("id").eq("id", commentId as string);
     check("an outsider cannot read the comment", (theirComments ?? []).length === 0);
@@ -193,7 +193,7 @@ async function main() {
     // The record store is doors-only: "can open the row" is the access kernel's answer.
     const openRow = async (db: SupabaseClient) => (await db.schema("iam").rpc("has_access", { p_type: "record", p_id: rowId, p_required: "viewer" })).data === true;
     check("outsider cannot open the row nor its body before sharing", !(await openRow(second.db)) && !(await openBody(second.db)));
-    const { error: shareError } = await admin.db.rpc("share_resource_with_user", {
+    const { error: shareError } = await admin.db.schema("iam").rpc("share_resource_with_user", {
       p_resource_type: "record",
       p_resource_id: rowId,
       p_target_user_id: second.userId,
@@ -207,7 +207,7 @@ async function main() {
     const { data: dupDoc } = await admin.db.schema("content").from("document").select("id").eq("source_uri", `notion:page/proof-${run}-row-body-2`).maybeSingle();
     if (dupDoc) made.add(dupDoc.id);
   } finally {
-    await admin.db.rpc("revoke_resource_access", { p_resource_type: "record", p_resource_id: rowId, p_target_user_id: second.userId });
+    await admin.db.schema("iam").rpc("revoke_resource_access", { p_resource_type: "record", p_resource_id: rowId, p_target_user_id: second.userId });
     for (const id of [...made].reverse()) {
       const { error } = await admin.db.schema("content").from("document").update({ deleted_at: new Date().toISOString() }).eq("id", id).is("deleted_at", null);
       if (error) console.log(`cleanup ${id}: ${error.message}`);

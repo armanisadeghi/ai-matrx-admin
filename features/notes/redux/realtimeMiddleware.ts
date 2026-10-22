@@ -70,6 +70,7 @@ import type { Note } from "../types";
 import { fetchNotesList, fetchSharedNotesList } from "./thunks";
 import { captureNoteDrafts } from "../utils/notesDrafts";
 import { whenEngagedLate } from "@/lib/boot/engagedLate";
+import { isEmbeddedNote } from "../service/embeddedNotes";
 
 /** Thunk-aware dispatch — this middleware refreshes lists via async thunks. */
 type NotesDispatch = ThunkDispatch<RootState, unknown, UnknownAction>;
@@ -192,6 +193,7 @@ export const notesRealtimeMiddleware: Middleware<
     if (!editorEmailCache.has(editorId) && !editorEmailInFlight.has(editorId)) {
       editorEmailInFlight.add(editorId);
       void supabase
+        .schema("users")
         .rpc("get_user_emails_by_ids", { user_ids: [editorId] })
         .then(({ data, error }) => {
           editorEmailInFlight.delete(editorId);
@@ -273,6 +275,8 @@ export const notesRealtimeMiddleware: Middleware<
 
     if (eventType === "INSERT" && newRecord) {
       if (newRecord.deleted_at) return;
+      // A row a feature keeps inside itself (board tile, sticky) never pops into the list.
+      if (isEmbeddedNote(newRecord)) return;
       const noteId = newRecord.id as string;
       console.log("[Notes RT] INSERT", noteId);
       const projected = projectNoteRow(newRecord, noteId);

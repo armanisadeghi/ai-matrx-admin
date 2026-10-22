@@ -318,6 +318,13 @@ export interface WorkflowRunState {
    */
   readFailure: string | null;
   /**
+   * Why the run was cancelled, when it says: the `run_cancelled` event's `reason`, or the row's
+   * `metadata._cancel.reason`. A SHUTDOWN cancel (`SHUTDOWN_CANCEL_REASONS`: a release draining
+   * the server) is not the run's end — the recovery sweep resumes it — so a re-read row that is
+   * running again is newer truth (lane UI1, live run 1b7b670d, 2026-10-22).
+   */
+  cancelReason: string | null;
+  /**
    * True while the adapter is refolding the run's durable event log (attach / rejoin after a
    * refresh). Every event in that window is HISTORY arriving in order, not the run moving: a
    * surface that animates progress waits for it to clear and paints the run where it really is.
@@ -474,6 +481,15 @@ function readStringField(value: unknown, key: string): string | null {
   return typeof raw === "string" ? raw : null;
 }
 
+/** The server's shutdown cancels (aidream `wf_cancel_reconciliation.SHUTDOWN_CANCEL_REASONS`): a release, not a stop. */
+export const SHUTDOWN_CANCEL_REASONS: ReadonlySet<string> = new Set(["immediate", "deploy_drain", "owner_died"]);
+/** The row's `_cancel.reason` once the recovery sweep resumed a shutdown-cancelled run. */
+export const RESUMED_AFTER_SHUTDOWN = "resumed_after_shutdown";
+
+export function isShutdownCancel(reason: string | null | undefined): boolean {
+  return reason != null && SHUTDOWN_CANCEL_REASONS.has(reason);
+}
+
 function makeRunState(
   runId: string,
   parentRunId: string | null,
@@ -501,6 +517,7 @@ function makeRunState(
     lastEventSeq: null,
     transportMode: "idle",
     readFailure: null,
+    cancelReason: null,
     replaying: false,
     startWait: null,
     attachedAt: null,
@@ -839,6 +856,7 @@ function applyEvent(
     }
     case "run_cancelled": {
       stampStatus(run, "cancelled", event.ts);
+      run.cancelReason = readStringField(event, "reason") ?? run.cancelReason;
       // A run that ended because a person REFUSED a held change carries the
       // refusal on the event (cause `refused`), so the page says so live instead
       // of "You stopped this run" (lane HELD-WRITE-RESUME).
@@ -1312,8 +1330,13 @@ const workflowRunsSlice = createSlice({
       // always newer truth — this is how a queued run's page leaves
       // "Getting ready" when no event reached it.
       const leftPending = run.status === "pending" && row.status !== "pending";
+      const rowCancel = readStringField(readField(row.metadata, "_cancel"), "reason");
+      // A release cancelled it and the sweep resumed it: the running row is newer than the cancel.
+      const resumed = run.status === "cancelled" && !rowTerminal &&
+        (isShutdownCancel(run.cancelReason) || rowCancel === RESUMED_AFTER_SHUTDOWN);
+      if (rowCancel) run.cancelReason = rowCancel;
       run.startWait = row.status === "pending" ? readStartWait(row) : null;
-      if (run.statusTs === null || adoptTerminalRow || leftPending) {
+      if (run.statusTs === null || adoptTerminalRow || leftPending || resumed) {
         run.status = row.status;
         run.statusKnown = true;
         // Give the elapsed clock an honest end. The sweeper writes no

@@ -259,7 +259,7 @@ async function main(): Promise<number> {
 
   let live: LiveRow[];
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", { query: QUERY });
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", { query: QUERY });
     if (error) throw new Error(error.message);
     live = (unwrapRows(data) as unknown as LiveRow[]).filter(
       (r) => !isIdentityImpliedIndex(r.key_columns ?? []),

@@ -96,7 +96,7 @@ export async function adminQuery<T = Record<string, unknown>>(
   const supabase = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data, error } = await supabase.rpc("execute_admin_query", { query: sql });
+  const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", { query: sql });
   if (error) return { rows: null, why: `execute_admin_query: ${error.message}` };
   const payload = data as { result?: T[]; error?: string | null } | null;
   if (!payload || payload.error) {

@@ -123,7 +123,7 @@ export async function getKgCostSummary(
   opts: { signal?: AbortSignal } = {},
 ): Promise<KgCostSummaryResponse> {
   const supabase = createClient();
-  let query = supabase.rpc("fn_kg_cost_summary");
+  let query = supabase.schema("rag").rpc("fn_kg_cost_summary");
   if (opts.signal) query = query.abortSignal(opts.signal);
   const { data, error } = await query;
   return assertData(data, error) as unknown as KgCostSummaryResponse;
@@ -194,7 +194,7 @@ export async function getOrgCostDetail(
   opts: { signal?: AbortSignal } = {},
 ): Promise<OrgCostDetailResponse> {
   const supabase = createClient();
-  let query = supabase.rpc("fn_kg_cost_org_detail", { p_org_id: orgId });
+  let query = supabase.schema("rag").rpc("fn_kg_cost_org_detail", { p_org_id: orgId });
   if (opts.signal) query = query.abortSignal(opts.signal);
   const { data, error } = await query;
   return assertData(data, error) as unknown as OrgCostDetailResponse;
@@ -205,7 +205,7 @@ export async function listPendingBatches(
   opts: { signal?: AbortSignal } = {},
 ): Promise<PendingBatchListResponse> {
   const supabase = createClient();
-  let query = supabase.rpc("fn_kg_cost_pending_batches", {
+  let query = supabase.schema("rag").rpc("fn_kg_cost_pending_batches", {
     p_limit: params.limit ?? 100,
     p_offset: params.offset ?? 0,
   });
@@ -219,7 +219,7 @@ export async function getBatchDetail(
   opts: { signal?: AbortSignal } = {},
 ): Promise<BatchDetailResponse> {
   const supabase = createClient();
-  let query = supabase.rpc("fn_kg_cost_batch_detail", {
+  let query = supabase.schema("rag").rpc("fn_kg_cost_batch_detail", {
     p_batch_id: batchRowId,
   });
   if (opts.signal) query = query.abortSignal(opts.signal);

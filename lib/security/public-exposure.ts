@@ -476,7 +476,7 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
     ],
     why:
 "The indexable public viewer /p/e/message_template reads a public template's display columns "
-      + "(utils/permissions/publicLane.ts#PUBLIC_LANE_COLUMNS) — and this list is EXACTLY that one. "
+      + "(@ai-matrx/sharing src/core/publicLane.ts#PUBLIC_LANE_COLUMNS) — and this list is EXACTLY that one. "
       + "DD-226 (2026-09-14) revoked the ninth, `deleted_at`: the page does not render or filter it "
       + "(`pub_read` already excludes deleted rows), and under DD-222's rule a column the signed-out "
       + "surface does not render is an over-grant however harmless its values look. "
@@ -893,7 +893,7 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
       "last_device_id", "project_id", "task_id", "visibility", "published_to_web", "deleted_at",
     ],
     why:
-"The indexable public viewer /p/e/note reads a public note's display columns (utils/permissions/publicLane.ts#PUBLIC_LANE_COLUMNS).",
+"The indexable public viewer /p/e/note reads a public note's display columns (@ai-matrx/sharing src/core/publicLane.ts#PUBLIC_LANE_COLUMNS).",
   },
 ];
 

@@ -23,7 +23,7 @@ import { NotesAPI } from "@/features/notes/service/notesApi";
 import HtmlPreviewFullScreenEditor from "@/features/html-pages/components/HtmlPreviewFullScreenEditor";
 import { useHtmlPreviewState } from "@/features/html-pages/hooks/useHtmlPreviewState";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
 interface ContentManagerMenuProps {
@@ -72,7 +72,7 @@ export function ContentManagerMenu({
     dispatch(
       openOverlay({
         overlayId: "saveToNotes",
-        instanceId: crypto.randomUUID(),
+        instanceId: mintInstanceId("saveToNotes"),
         data: {
           initialContent: content,
           initialEditorMode: undefined,

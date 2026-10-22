@@ -15,6 +15,7 @@
 import type { AppletLayout } from "@ai-matrx/applets";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import { resourceLabel } from "@ai-matrx/chat/agents/components/inputs/resources/attach-resource";
+import type { TableReference } from "./build-seed";
 
 export interface ResourceReference {
   id: string;
@@ -44,7 +45,7 @@ export interface LayoutReference {
   layout: AppletLayout;
 }
 
-export type BuildReference = ResourceReference | JobReference | LayoutReference;
+export type BuildReference = ResourceReference | JobReference | LayoutReference | TableReference;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -58,6 +59,7 @@ export function readBuildReferences(metadata: unknown): BuildReference[] {
     if (!isRecord(r) || typeof r.id !== "string" || typeof r.label !== "string") return false;
     if (r.kind === "resource") return isRecord(r.resource) && typeof r.resource.type === "string";
     if (r.kind === "layout") return isRecord(r.layout) && typeof r.layout.kind === "string" && typeof r.layout.job === "string";
+    if (r.kind === "table") return typeof r.table_id === "string" && !!r.table_id && typeof r.organization_id === "string" && !!r.organization_id;
     return r.kind === "job" && (r.holder === "agent" || r.holder === "workflow") && typeof r.holder_id === "string" && typeof r.mandate_key === "string";
   });
 }
@@ -82,6 +84,16 @@ export function resourceReference(resource: Resource): ResourceReference {
 
 export function jobReference(input: { holder: "agent" | "workflow"; holderId: string; label: string; jobKey: string }): JobReference {
   return { id: `${input.holder}:${input.holderId}`, kind: "job", holder: input.holder, holder_id: input.holderId, label: input.label, mandate_key: input.jobKey };
+}
+
+/** The tables she started from: the catalog lists them first (`attachedTables`). */
+export function attachedTableIds(list: readonly BuildReference[]): string[] {
+  return list.flatMap((r) => (r.kind === "table" ? [r.table_id] : []));
+}
+
+/** The organization a table she started from lives in: a new build runs there, so the catalog offers it. */
+export function attachedTableOrganization(list: readonly BuildReference[]): string | null {
+  return list.find((r): r is TableReference => r.kind === "table")?.organization_id ?? null;
 }
 
 /** Add (a reference already there is replaced in place, never doubled). */
@@ -113,7 +125,9 @@ export function attachmentsContext(list: readonly BuildReference[]): string | nu
     list.map((r) =>
       r.kind === "resource"
         ? { attached: r.label, what: r.resource.type, use: "reference material for this Applet (its content is attached to this request)" }
-        : r.kind === "layout"
+        : r.kind === "table"
+          ? { attached: r.label, what: "table", table_id: r.table_id, use: "she started this Applet from this table (listed in the catalog with attached: true): bind it, so the Applet reads and writes these records" }
+          : r.kind === "layout"
           ? {
               attached: r.label,
               what: "stock layout",
@@ -128,11 +142,6 @@ export function attachmentsContext(list: readonly BuildReference[]): string | nu
 /** The chosen stock layout as a reference (one per build: a second choice replaces the first). */
 export function layoutReference(label: string, layout: AppletLayout): LayoutReference {
   return { id: "layout", kind: "layout", label, layout };
-}
-
-/** The builder's address, seeded with what she chose (a job, a layout): `/applets/build?seed=…`. */
-export function buildSeedHref(references: readonly BuildReference[]): string {
-  return `/applets/build?seed=${encodeURIComponent(JSON.stringify(references))}`;
 }
 
 /** The references a `?seed=` carries; anything malformed is left out (the same reader the record uses). */

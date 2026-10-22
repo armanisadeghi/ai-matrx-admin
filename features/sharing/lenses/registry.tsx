@@ -19,7 +19,7 @@
  */
 
 import type { ReactNode } from "react";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import {
   AiVisibilityRenderer,
   CanvasRenderer,

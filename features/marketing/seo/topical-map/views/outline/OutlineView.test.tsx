@@ -40,7 +40,7 @@ import type { TopicalMapKnobs } from "../../knobs";
 import { OutlineView } from "../OutlineView";
 import { MAP_ID, TREE_WITH_COUNTS } from "./__fixtures__/mapTreeShape";
 
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // jsdom ships neither `matchMedia` (useIsMobile, the tree's coarse-pointer
 // check) nor `ResizeObserver` (Radix). A fine, non-mobile pointer is the

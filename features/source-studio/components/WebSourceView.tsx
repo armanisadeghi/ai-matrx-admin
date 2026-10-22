@@ -26,7 +26,7 @@ import {
   webSourceToScrape,
   type WebSection,
 } from "@/features/source-studio/webSourceAdapter";
-import { gunzipIfNeeded } from "./OriginalPane";
+import { gunzipIfNeeded } from "@/features/files/utils/gunzip";
 
 interface WebPayload {
   original: string | null;

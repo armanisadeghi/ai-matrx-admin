@@ -70,7 +70,7 @@ export async function confirmCoppaVerification(
 
   // The ONLY verified-write path. service_role RPC — a child cannot reach it.
   const admin = createAdminClient();
-  const { error } = await admin.rpc("guardian_confirm_verification", {
+  const { error } = await admin.schema("education").rpc("guardian_confirm_verification", {
     p_link_id: linkId,
     p_method: "card",
     p_ref: piId ?? session.id,

@@ -11,6 +11,7 @@
  * shared `RefusalView`. Earlier runs are listed below (`./PastRuns`) and reopen inline.
  */
 
+import { CostDoor } from "@/components/cost/CostDoor";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
@@ -39,7 +40,7 @@ import {
   libraryKey,
   useLibrary,
   useLibraryOrganizationId,
-  usePriceText,
+  sourceCostRow,
 } from "./hooks";
 import { PastRuns } from "./PastRuns";
 import { PAST_RUNS_PREFIX, isOpenStatus, useDataFetchJob, useOpenJob } from "./runHistory";
@@ -343,9 +344,7 @@ function SourceForm({
     choice === "custom" ? custom : Number(choice),
     limit?.value,
   );
-  const price = usePriceText();
-  const unit = price(source, 1, { pointsOnly: true });
-  const total = price(source, count);
+  const costRows = [sourceCostRow(source, 1, "Per record"), sourceCostRow(source, count, "Total")];
   const built = buildInput(source, values, modeOf(source, option).option);
   const settingHref = limit
     ? limitSettingHref(organizationId, limit.setting)
@@ -371,14 +370,6 @@ function SourceForm({
               <Badge tone="success">Confirmed</Badge>
             ) : (
               <Badge tone="neutral">Not confirmed yet</Badge>
-            )}
-            {unit && (
-              <span
-                className="text-xs text-muted-foreground"
-                data-unit-price=""
-              >
-                {unit} / record
-              </span>
             )}
           </div>
           <div className="mt-1 truncate text-xs text-muted-foreground">
@@ -467,12 +458,9 @@ function SourceForm({
       </Section>
 
       <div className="-mx-4 -mb-4 flex items-center justify-end gap-3 border-t border-border px-4 py-3">
-        <span
-          className="mr-auto text-xs text-muted-foreground"
-          data-estimate=""
-        >
-          {formatCount(count)} {count === 1 ? "record" : "records"} ·{" "}
-          {total ?? "No price yet"}
+        <span className="mr-auto flex items-center gap-2 text-xs text-muted-foreground" data-estimate="">
+          {formatCount(count)} {count === 1 ? "record" : "records"}
+          <CostDoor rows={costRows} />
         </span>
         <Button
           type="submit"

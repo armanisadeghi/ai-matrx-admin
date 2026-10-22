@@ -16,7 +16,7 @@
  */
 
 import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ResourceVisibility } from "@/utils/permissions/service";
+import type { ResourceVisibility } from "@ai-matrx/sharing/core";
 
 export interface SharingStatusEntry {
   visibility: ResourceVisibility | null;

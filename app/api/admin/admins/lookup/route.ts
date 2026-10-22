@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_find_user_by_email", {
+  const { data, error } = await supabase.schema("iam").rpc("admin_find_user_by_email", {
     p_email: email,
   });
 

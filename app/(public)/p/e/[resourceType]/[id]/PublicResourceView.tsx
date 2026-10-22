@@ -14,7 +14,7 @@ import { resolveShareSourceSurface } from "@/features/sharing/lenses/source-surf
 import { DuplicateToEditButton } from "@/features/sharing/components/DuplicateToEditButton";
 import { PublicHeaderActionsPortal } from "@/components/matrx/PublicHeaderActionsPortal";
 import { PublicFlashcardDeck } from "@/features/flashcards/components/public/PublicFlashcardDeck";
-import { isForkable } from "@/utils/permissions/shareLinks";
+import { isForkable } from "@ai-matrx/sharing/core";
 import { RecordFieldsView } from "@/features/sharing/lenses/record-fields-view";
 import type { PublicResource } from "../../loadPublicResource";
 import { publicResourceTitle } from "../../publicResourceText";

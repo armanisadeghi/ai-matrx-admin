@@ -27,7 +27,7 @@ import { createClickTarget, runAlchemyAction, type ClickTarget } from "@ai-matrx
 import { useAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/boot";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/boot";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
@@ -422,12 +422,12 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
       text: open.text.trim(),
       shapeText: selectionShapeText(),
       saveToNotes: (content: string) =>
-        dispatch(openOverlay({ overlayId: "saveToNotes", instanceId: `selection-notes:${crypto.randomUUID()}`, data: { initialContent: content } })),
+        dispatch(openOverlay({ overlayId: "saveToNotes", instanceId: mintInstanceId("saveToNotes"), data: { initialContent: content } })),
       saveToTable: (content: string) =>
         dispatch(
           openOverlay({
             overlayId: "saveToTable",
-            instanceId: `selection-table:${crypto.randomUUID()}`,
+            instanceId: mintInstanceId("saveToTable"),
             data: { text: content, value: null, hasValue: false, grid: null, title: null, shapeIndex: 0, organizationId: null, callbackGroupId: null },
           }),
         ),

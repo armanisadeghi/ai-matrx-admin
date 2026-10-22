@@ -52,7 +52,7 @@ async function main() {
   const member = await seat("test@test.com", "Password1234#");
   const service = createClient(URL_, SECRET, { auth: { persistSession: false } });
   const sql = async (query: string) => {
-    const r = await service.rpc("execute_admin_query", { query });
+    const r = await service.schema("platform").rpc("execute_admin_query", { query });
     if (r.error) throw new Error(r.error.message);
     return (r.data as unknown as { result: Array<Record<string, unknown>> }).result;
   };

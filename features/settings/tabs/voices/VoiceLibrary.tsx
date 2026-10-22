@@ -8,8 +8,8 @@
 // the server for its model (useVoiceSample → speak({ sample })).
 
 import { ChevronRight, Loader2, Play, Square } from "lucide-react";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { Button } from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
 import { useVoiceSample } from "@/features/audio/service/useVoiceSample";

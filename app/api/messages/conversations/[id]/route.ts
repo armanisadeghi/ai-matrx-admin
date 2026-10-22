@@ -117,7 +117,7 @@ export async function GET(
 
     const participantsWithUser = await Promise.all(
       (participants || []).map(async (p) => {
-        const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
+        const { data: userInfo } = await supabase.schema("chat").rpc("get_dm_user_info", {
           p_user_id: p.user_id,
         });
         return {

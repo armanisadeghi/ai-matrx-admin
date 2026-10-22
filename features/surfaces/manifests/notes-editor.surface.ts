@@ -4,7 +4,7 @@
  * (descriptions, write targets) into the shell's first-load JS.
  */
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 
 
 /** One open-tab entry as emitted in `open_notes_summary`. */

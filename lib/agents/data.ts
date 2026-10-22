@@ -42,7 +42,7 @@ export const getAgent = cache(
 export const getAgentSnapshot = cache(
   async (id: string, versionNumber: number): Promise<AgentDefinition> => {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("agx_get_version_snapshot", {
+    const { data, error } = await supabase.schema("agent").rpc("agx_get_version_snapshot", {
       p_agent_id: id,
       p_version_number: versionNumber,
     });

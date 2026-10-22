@@ -119,6 +119,8 @@ import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { chooseRoom } from "@/lib/collab/choose-room";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
+import { useAppStore } from "@/lib/redux/hooks";
+import { selectActiveUserAvatarUrl, selectDisplayName } from "@/lib/redux/selectors/userSelectors";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { useSheetComments } from "@/features/workbooks/components/useSheetComments";
 import { useSheetSeatLock } from "@/features/workbooks/components/useSheetSeatLock";
@@ -215,6 +217,7 @@ export default function WorkbookEditor({
   const baseCoveredRef = useRef<ReadonlySet<string>>(new Set());
   /** True while the content is being swapped: what Univer emits then is not an edit. */
   const replacingRef = useRef(false);
+  const appStore = useAppStore();
   // V2 collab session — null until `collab=true` AND Univer has booted.
   // See `../collab/FEATURE.md` for the full architecture; this ref is the
   // sole live connection between Univer's command service and Yjs.
@@ -617,6 +620,9 @@ export default function WorkbookEditor({
       workbookId,
       uid,
       clientId,
+      // the other seats' chips show this person's name and picture (Docs passes the same two)
+      displayName: selectDisplayName(appStore.getState()),
+      avatarUrl: selectActiveUserAvatarUrl(appStore.getState()) ?? null,
       unitId: () => apiRef.current?.getActiveWorkbook()?.getId() ?? null,
       load: swapInPlace,
       markDirty: scheduleSave,

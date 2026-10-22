@@ -522,7 +522,7 @@ const documentSnapshotRow = {
 export function seedDocument(): void {
   seed("workbench.udt_documents", [documentRow]);
   seed("workbench.udt_document_snapshots", [documentSnapshotRow]);
-  // utils/permissions/shareLinks.ts `getShareCapabilities`
+  // @ai-matrx/sharing src/core/shareLinks.ts `getShareCapabilities`
   seedRpc("get_share_capabilities", { publish_lane: "published_to_web", public_state_kind: null, public_state_column: null });
 }
 

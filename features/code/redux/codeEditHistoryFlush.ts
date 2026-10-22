@@ -179,7 +179,7 @@ export function flushHistoryThunk(
             kind: "crud",
             label: `Save edit history for ${snap.filePath}`,
             run: async () => {
-              const { data, error } = await supabase.rpc(
+              const { data, error } = await supabase.schema("code").rpc(
                 "cx_code_history_upsert",
                 { p_payload: payload },
               );

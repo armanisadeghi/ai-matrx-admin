@@ -19,7 +19,7 @@ import { useOpenAgentRunWindow } from "@/features/overlays/definitions/agentRunW
 import { openLiveRunWindowAction } from "@/features/overlays/definitions/liveRunWindow.action";
 import { callApi } from "@/lib/api/call-api";
 import { handToOwnBrowser } from "@/lib/extension-bridge/handToOwnBrowser";
-import { closeOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { Json } from "@/types/database.types";
 import { decideAssist, snoozeAssist, suppressAssistSource } from "../service";
 import { snoozeUntilIso, type SnoozeWindowKey } from "../constants";
@@ -90,7 +90,7 @@ export function useAssistRunner(): AssistRunnerApi {
         const { launchAgentExecution } = await import(
           "@ai-matrx/chat/agents/redux/execution-system/thunks/launch-agent-execution.thunk"
         );
-        const instanceId = `assist:${options.assistId || crypto.randomUUID()}`;
+        const instanceId = options.assistId ? `assist:${options.assistId}` : mintInstanceId("liveRunWindow");
         dispatch(
           openLiveRunWindowAction({
             instanceId,

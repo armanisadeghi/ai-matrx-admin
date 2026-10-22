@@ -15,12 +15,12 @@
 // that machinery.
 
 import { AppWindow, Camera, Mic, RefreshCw, Speaker } from "lucide-react";
-import { SettingsDeviceSelect } from "@/components/official/settings/primitives/SettingsDeviceSelect";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsDeviceSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { useAudioDevices } from "@/features/audio/useAudioDevices";
 import { useOpenAudioDevices } from "@/features/overlays/definitions/audioDevices";
 import { useSetting } from "../hooks/useSetting";

@@ -199,7 +199,7 @@ async function buildPreview(
     );
   const defaults = knob.value.filter((k): k is string => typeof k === "string");
 
-  const { data, error } = await admin.rpc(
+  const { data, error } = await admin.schema("context").rpc(
     "resolve_full_context",
     {
       p_user_id: userId,

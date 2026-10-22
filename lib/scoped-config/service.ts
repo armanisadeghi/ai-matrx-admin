@@ -453,14 +453,14 @@ async function callDeclaredDoor(doorName: string, options: KnobDoorWrite): Promi
     const supabase = createClient();
     const { data, error } =
       value === null
-        ? await supabase.rpc("hr_knob_clear", {
+        ? await supabase.schema("hr").rpc("hr_knob_clear", {
             p_organization_id: options.organizationId,
             p_feature: options.feature,
             p_key: options.key,
             p_scope_kind: options.scopeKind,
             p_scope_id: options.scopeId,
           })
-        : await supabase.rpc("hr_knob_set", {
+        : await supabase.schema("hr").rpc("hr_knob_set", {
             p_organization_id: options.organizationId,
             p_feature: options.feature,
             p_key: options.key,

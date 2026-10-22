@@ -130,7 +130,6 @@ import {
   type ToolTab,
 } from "@/features/search/tools/searchToolPlan";
 import { cn } from "@/lib/utils";
-import { freeAllowanceLine, useFreeAllowance } from "@/features/entitlements/free-allowance/FreeAllowanceNote";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { SiteIcon } from "@ai-matrx/design-system/site-icon";
@@ -441,15 +440,13 @@ export interface SearchExperienceProps {
 }
 
 /**
- * The visitor's gentle way to more — a plain link, new tab never needed (it is the account door) — beside
- * what the free allowance has left today ("8 left today"), read from the server, never invented.
+ * The visitor's gentle way to more — a plain link, new tab never needed (it is the account door).
+ * No allowance count is printed (owner ruling 2026-10-22: no points or allowance talk off cost surfaces).
  */
 function SignUpForMore() {
   const next = typeof window === "undefined" ? "/search" : `${window.location.pathname}${window.location.search}`;
-  const left = freeAllowanceLine(useFreeAllowance("search"));
   return (
     <span className="inline-flex flex-wrap items-center gap-x-3">
-      {left && !left.href && <span className="type-secondary text-muted-foreground">{left.text}</span>}
       <a
         href={`/sign-up?redirectTo=${encodeURIComponent(next)}`}
         className="inline-flex h-8 items-center rounded-md px-2 text-sm font-medium text-primary underline-offset-4 hover:underline"

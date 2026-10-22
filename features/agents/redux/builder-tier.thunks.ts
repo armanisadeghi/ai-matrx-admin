@@ -407,7 +407,7 @@ export const setAgentAutoContextDisabled = createAsyncThunk<
 export const resetAgentToSource = createAsyncThunk<void, string, ThunkApi>(
   "agentDefinition/resetToSource",
   async (agentId, { dispatch }) => {
-    const { error } = await supabase.rpc("agx_reset_agent_to_source", {
+    const { error } = await supabase.schema("agent").rpc("agx_reset_agent_to_source", {
       p_agent_id: agentId,
     });
     if (error) throw pgErrorToError(error);
@@ -450,7 +450,7 @@ export const updateAgentFromSource = createAsyncThunk<
   string,
   ThunkApi
 >("agentDefinition/updateFromSource", async (agentId, { dispatch }) => {
-  const { data, error } = await supabase.rpc("agx_update_from_source", {
+  const { data, error } = await supabase.schema("agent").rpc("agx_update_from_source", {
     p_agent_id: agentId,
   });
 
@@ -763,7 +763,7 @@ export const syncLinkedAgents = createAsyncThunk<
     expectedToUpdatedAt,
     targetIsSystem = false,
   }) => {
-    const request = supabase.rpc("agx_sync_linked_agents_reviewed", {
+    const request = supabase.schema("agent").rpc("agx_sync_linked_agents_reviewed", {
       p_from_id: fromId,
       p_to_id: toId,
       p_include_identity: includeIdentity,

@@ -310,7 +310,7 @@ export const INTEGRATIONS: Integration[] = [
     plain: "", owner: "matrx-frontend registries (at the flip)",
     claims: {
       "matrx-frontend": [
-        "features/item-presentation/**", "utils/permissions/registry.ts", "features/sharing/resourceIcons.ts",
+        "features/item-presentation/**", "features/sharing/resourceIcons.ts",
         "features/matrx-envelope/catalog-nouns.generated.ts", "features/canvas/services/canvasArtifactService.ts",
       ],
     },

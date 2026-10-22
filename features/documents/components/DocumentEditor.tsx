@@ -140,7 +140,7 @@ import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { chooseRoom } from "@/lib/collab/choose-room";
-import { seatRefusal } from "@/lib/collab/seat-notices";
+import { notSharedNotice, seatRefusal } from "@/lib/collab/seat-notices";
 import { useCommentAccess } from "@/features/rich-document/annotations/useCommentAccess";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
@@ -177,6 +177,7 @@ import { formatCount } from "@ai-matrx/kit/format";
 if (typeof window !== "undefined") performance.mark("load:heavy:Univer docs editor", { detail: { home: ["/documents"] } });
 
 const VIEWING_MODE_NOTICE = "Viewing mode — switch to Editing to change";
+const JOINING_NOTICE = "Still loading — type in a moment";
 
 type Props = {
   documentId: string;
@@ -261,6 +262,13 @@ export default function DocumentEditor({
    */
   const [unitId, setUnitId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  /**
+   * The co-editing room is joining: the page shows the stored document, the room's is about to replace it. Keys
+   * typed now landed on that stale copy and were wiped by the room's load or scattered into other people's words,
+   * with no notice (adversarial walk 2 F5/F10, live: "{EARLY-0123456789}" typed 1.9 s after a reload, all lost).
+   * Until the room is live the page refuses edits like a view-only page and says why; "Loading document…" stays.
+   */
+  const [roomJoining, setRoomJoining] = useState(false);
   // ONE status per document, whichever view wrote it.
   const saveStatus: WorkingCopyStatus =
     useAppSelector((state) =>
@@ -434,6 +442,13 @@ export default function DocumentEditor({
     // leaves with the instance.
     const container = containerRef.current;
     let booted: KeptUniver | null = null;
+    /** Join the room; edits stay refused (`roomJoining`) until it is live or could not start. */
+    const joinRoom = () => {
+      setRoomJoining(true);
+      void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline, () => cancelled).finally(() => {
+        if (!cancelled) setRoomJoining(false);
+      });
+    };
     const attachPort = (kept: KeptUniver) =>
       model.attachView({
         commandService: resolveCommandService(kept.univer),
@@ -463,7 +478,7 @@ export default function DocumentEditor({
         booted = kept;
         setUnitId(kept.unitId);
         setBootState("ready");
-        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline, () => cancelled);
+        if (collabRef.current) joinRoom();
       } catch (err) {
         kept.host.remove();
         disposeUniverInstance(kept.univer);
@@ -573,7 +588,7 @@ export default function DocumentEditor({
         booted = kept;
         setBootState("ready");
 
-        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline, () => cancelled);
+        if (collabRef.current) joinRoom();
       } catch (err) {
         if (cancelled) return;
         setLoadError(err instanceof Error ? err.message : String(err));
@@ -707,8 +722,8 @@ export default function DocumentEditor({
   // Viewing mode (and a seat without edit access) is Univer's own read-only permission on this document; a refused edit says so in our words.
   useEffect(() => {
     if (bootState !== "ready") return undefined;
-    const viewing = docMode === "viewing" || !editable;
-    const refusal = !editable ? seatRefusal(commentOnly) : VIEWING_MODE_NOTICE;
+    const viewing = docMode === "viewing" || !editable || roomJoining;
+    const refusal = !editable ? seatRefusal(commentOnly) : roomJoining ? JOINING_NOTICE : VIEWING_MODE_NOTICE;
     void editOps.setViewOnly(viewing);
     if (!viewing) return undefined;
     let stop: (() => void) | null = null;
@@ -720,7 +735,7 @@ export default function DocumentEditor({
       gone = true;
       stop?.();
     };
-  }, [bootState, docMode, editable, commentOnly, editOps, unitId]);
+  }, [bootState, docMode, editable, commentOnly, editOps, unitId, roomJoining]);
   useEffect(() => {
     if (bootState !== "ready") return;
     const style = (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle;
@@ -984,7 +999,7 @@ export default function DocumentEditor({
       {pageSetupDialog}
       <div className="flex items-center gap-2 border-b border-border px-2 py-1 text-xs min-w-0">
         <div className="text-muted-foreground flex-1 min-w-0 truncate">
-          {bootState === "booting" && (
+          {(bootState === "booting" || (bootState === "ready" && roomJoining)) && (
             <span className="flex items-center gap-2">
               <Loader2 className="size-3 animate-spin" />
               Loading document…
@@ -996,7 +1011,7 @@ export default function DocumentEditor({
               <ErrorAlchemyMenu error={loadError} />
             </span>
           )}
-          {bootState === "ready" && (
+          {bootState === "ready" && !roomJoining && (
             <span>{editable ? "Editing" : "Viewing"}</span>
           )}
         </div>
@@ -1156,7 +1171,7 @@ function showCollabNotice(n: DocsOtNotice): void {
       toast({ title: "This document stopped syncing", description: "Reload the page to keep editing.", variant: "destructive" });
       return;
     case "not_shared":
-      toast({ title: "That change was undone", description: "It can't be shared with other editors yet." });
+      toast(notSharedNotice());
       return;
     case "not_live":
       toast({ title: "Reconnecting", description: "Your last keystroke was made while reconnecting and was not kept." });

@@ -314,7 +314,7 @@ async function resolveDeck(where: string, ref: string): Promise<{ id: string; na
 
 /** A ready Knowledge document the person can see, by id or exact name. */
 async function resolveDocument(where: string, ref: string): Promise<{ id: string; name: string }> {
-  const { data, error } = await supabase.rpc("rag_library_list", {
+  const { data, error } = await supabase.schema("rag").rpc("rag_library_list", {
     p_limit: 50,
     p_offset: 0,
     p_search: isUuidShape(ref) ? undefined : ref,

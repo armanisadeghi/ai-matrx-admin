@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
-import { resolveShareToken } from "@/utils/permissions/shareLinks";
+import { resolveShareToken } from "@ai-matrx/sharing/core";
 import { withLiveShareContent } from "@/lib/collab/share-live";
 import { resolveShareLensMeta } from "@/features/sharing/lenses/metadata";
 import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";

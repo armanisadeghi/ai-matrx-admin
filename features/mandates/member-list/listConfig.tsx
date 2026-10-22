@@ -36,7 +36,7 @@ import { copyToClipboard } from "@/lib/clipboard/copy";
 // Heavy, conditional, and only ever needed after a user action (the workflows list does the same).
 const ShareModal = dynamic(
   () =>
-    import("@/features/sharing/components/ShareModal").then((m) => ({
+    import("@ai-matrx/sharing/react").then((m) => ({
       default: m.ShareModal,
     })),
   { ssr: false },

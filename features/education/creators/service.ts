@@ -61,7 +61,7 @@ function coerceMine(data: unknown): CreatorProfileMine | null {
 /** The caller's creator profile, or null if they haven't claimed a handle yet. */
 export async function getMyCreatorProfile(): Promise<CreatorProfileMine | null> {
   const sb = createClient();
-  const { data, error } = await sb.rpc("creator_get_mine");
+  const { data, error } = await sb.schema("growth").rpc("creator_get_mine");
   if (error) throw operationFailed("load your creator profile", error);
   return coerceMine(data);
 }
@@ -69,7 +69,7 @@ export async function getMyCreatorProfile(): Promise<CreatorProfileMine | null> 
 /** Is this handle available to the caller? Throws (with a friendly message) on invalid/reserved. */
 export async function isHandleAvailable(handle: string): Promise<boolean> {
   const sb = createClient();
-  const { data, error } = await sb.rpc("creator_handle_available", { p_handle: handle });
+  const { data, error } = await sb.schema("growth").rpc("creator_handle_available", { p_handle: handle });
   if (error) throw handleRuleError(error);
   return data === true;
 }
@@ -92,7 +92,7 @@ export async function claimHandle(
   organizationId?: string | null,
 ): Promise<CreatorProfileMine | null> {
   const sb = createClient();
-  const { data, error } = await sb.rpc("creator_claim_handle", {
+  const { data, error } = await sb.schema("growth").rpc("creator_claim_handle", {
     p_handle: handle,
     p_display_name: displayName ?? undefined,
     p_organization_id: organizationId ?? undefined,
@@ -115,7 +115,7 @@ export async function updateCreatorProfile(
   patch: CreatorProfilePatch,
 ): Promise<CreatorProfileMine | null> {
   const sb = createClient();
-  const { data, error } = await sb.rpc("creator_update_profile", {
+  const { data, error } = await sb.schema("growth").rpc("creator_update_profile", {
     p_display_name: patch.displayName ?? undefined,
     p_tagline: patch.tagline ?? undefined,
     p_bio: patch.bio ?? undefined,

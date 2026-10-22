@@ -1,38 +1,4 @@
-/**
- * features/files/blocks/actions.ts
- *
- * Shared "extra action" contract for the canonical media renderers
- * (`UnifiedImageBlockRenderer`, `UnifiedVideoBlockRenderer`).
- *
- * A renderer owns ONE menu surface (the hover toolbar "…" dropdown, the
- * right-click context menu, and the mobile long-press drawer). Domain
- * callers — e.g. the podcast studio's "Regenerate" / "Use as cover" —
- * must NOT bolt on a second "…" menu beside the canonical one. Instead
- * they pass their domain actions here and the renderer folds them into
- * the single canonical menu as a leading group.
- *
- * Keep this minimal and provider-agnostic: it's a description of a menu
- * row, nothing more. No coupling to any one feature.
- */
-
-import type { LucideIcon } from "lucide-react";
-
-export interface MediaExtraAction {
-  /** Stable key for React lists. */
-  id: string;
-  /** Menu-row label. */
-  label: string;
-  /**
-   * Optional leading icon — the Lucide COMPONENT (`Check`), not an element
-   * (`<Check />`). A component flows losslessly into both the renderer's own
-   * surfaces (toolbar dropdown / mobile drawer) and the v3 context menu's
-   * `ContextMenuExtraItem.icon`, which requires `LucideIcon`.
-   */
-  icon?: LucideIcon;
-  /** Invoked on click/tap. */
-  onClick: () => void;
-  /** Grays out + blocks the row when true. */
-  disabled?: boolean;
-  /** Destructive styling (red text) when true. */
-  danger?: boolean;
-}
+// MOVED to @ai-matrx/media/files/engine/blocks/actions (L4 — the files UI lives in @ai-matrx/media beside the engine).
+// This path stays so the app's importers keep working; grow it in the package. A jest.mock of
+// THIS path reaches only importers of this path — mock the package module to reach the engine/chat.
+export type * from "@ai-matrx/media/files/engine/blocks/actions";

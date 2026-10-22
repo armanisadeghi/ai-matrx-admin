@@ -50,7 +50,7 @@ export async function fetchTranscriptListPage(
   query: EntityListQuery,
   sort: EntityListSort,
 ): Promise<EntityListPage<TranscriptListRow>> {
-  const { data, error } = await supabase.rpc("trx_list_scoped", {
+  const { data, error } = await supabase.schema("context").rpc("trx_list_scoped", {
     p_scope: query.scope.kind,
     p_org_id: listOrgParam(query),
     p_search: query.search.trim() || undefined,

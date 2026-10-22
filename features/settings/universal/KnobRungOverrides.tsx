@@ -55,8 +55,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { KnobOverrideRow } from "@/lib/scoped-config/KnobOverrideRow";
 import { resolveKnobLadder, rungName, type KnobLadder } from "@/lib/scoped-config/ladder";
 import {

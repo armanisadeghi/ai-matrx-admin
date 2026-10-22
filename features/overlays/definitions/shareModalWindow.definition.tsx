@@ -3,7 +3,7 @@
 // The `shareModalWindow` overlay's registry declaration. Read only by overlay-definitions.gen.ts (the lazy
 // summon runtime); callers open it through ./shareModalWindow.overlay, which never loads this file.
 import { defineOverlay } from "@ai-matrx/summon/define";
-import { RESOURCE_TYPES } from "@/utils/permissions/registry";
+import { RESOURCE_TYPES } from "@ai-matrx/sharing/core";
 import type { ShareModalWindowDefinitionData } from "./shareModalWindow.overlay";
 
 export const shareModalWindowOverlay = defineOverlay<ShareModalWindowDefinitionData>()({

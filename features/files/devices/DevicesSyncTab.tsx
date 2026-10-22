@@ -18,8 +18,8 @@ import { HardDrive, Loader2, MonitorSmartphone, RefreshCw } from "lucide-react";
 import { TooltipProvider } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 
 import { HomeConnectionRow } from "@/features/residential-egress/components/HomeConnectionRow";
 import { useHomeConnections } from "@/features/residential-egress/hooks/useHomeConnections";

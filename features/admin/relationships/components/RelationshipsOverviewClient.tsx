@@ -64,7 +64,7 @@ export function RelationshipsOverviewClient({ status, problems }: Props) {
   ) {
     setBusy(true);
     try {
-      const { error } = await supabase.rpc("admin_upsert_relationship_rule", {
+      const { error } = await supabase.schema("platform").rpc("admin_upsert_relationship_rule", {
         p_source_type: source,
         p_target_type: target,
         p_label: ruleLabel ?? undefined,
@@ -88,7 +88,7 @@ export function RelationshipsOverviewClient({ status, problems }: Props) {
   async function rebuildCache() {
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("admin_rebuild_reachability");
+      const { data, error } = await supabase.schema("platform").rpc("admin_rebuild_reachability");
       if (error) throw error;
       toast.success(`Cache rebuilt — ${data ?? 0} closure rows`);
       refresh();
@@ -105,7 +105,7 @@ export function RelationshipsOverviewClient({ status, problems }: Props) {
   async function setEnforcement(enabled: boolean) {
     setBusy(true);
     try {
-      const { error } = await supabase.rpc(
+      const { error } = await supabase.schema("platform").rpc(
         "admin_set_association_enforcement",
         { p_enabled: enabled },
       );

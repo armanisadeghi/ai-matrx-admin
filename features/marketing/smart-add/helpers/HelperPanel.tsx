@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import { Play, Square } from "lucide-react";
 import { Badge, Button, Field, PropertyRow } from "@ai-matrx/design-system/controls";
 import { formatDurationMs } from "@ai-matrx/kit/format";
+import { AdminOnly, AdminOnlyTag } from "@/components/cost/AdminOnlyTag";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -54,6 +56,7 @@ function seconds(ms: number | null | undefined): string {
 }
 
 function usd(v: number | null | undefined): string {
+  // Only ever rendered inside <AdminOnly> (the admin block below).
   return formatSpendUsd(v, "unpriced");
 }
 
@@ -113,7 +116,7 @@ function AdminBlock({ info, session }: { info: HelperMethodInfo | null; session:
   return (
     <section data-testid="smart-add-helper-admin" className="flex flex-col gap-2 rounded-lg border border-dashed border-border p-3">
       <div className="flex items-center gap-2">
-        <Badge>Admin</Badge>
+        <AdminOnlyTag />
         <span className="text-xs text-muted-foreground">{info?.label ?? ""}</span>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -122,7 +125,7 @@ function AdminBlock({ info, session }: { info: HelperMethodInfo | null; session:
         <PropertyRow label="Typical time" value={info?.typical_time} />
         <PropertyRow
           label="Estimate per run"
-          value={info ? `${info.estimate_points ?? "?"} pts · ${usd(info.estimate_usd)} · ${info.estimate_units}` : null}
+          value={info ? <AdminOnly>{`${info.estimate_points ?? "?"} pts · ${usd(info.estimate_usd)} · ${info.estimate_units}`}</AdminOnly> : null}
         />
         <PropertyRow
           label="Measured time"
@@ -132,11 +135,13 @@ function AdminBlock({ info, session }: { info: HelperMethodInfo | null; session:
         <PropertyRow
           label="This run cost"
           value={
-            r?.costs.length
-              ? r.costs
+            r?.costs.length ? (
+              <AdminOnly>
+                {r.costs
                   .map((c) => `${c.points ?? "?"} pts · ${usd(c.usd)} · ${c.units} ${c.unit_label} (${c.provider}${c.replayed ? ", test cache" : ""})`)
-                  .join(" + ")
-              : null
+                  .join(" + ")}
+              </AdminOnly>
+            ) : null
           }
           missing={r?.costs.length ? undefined : "Not run"}
         />
@@ -183,7 +188,12 @@ export function HelperPanel({ method }: { method: HelperMethod }) {
     if (info?.confirm_required) {
       const ok = await confirm({
         title: `Run ${info.label}?`,
-        description: `This search is expensive: about ${info.estimate_points ?? "?"} points per run (${info.estimate_units}).`,
+        description: (
+          <>
+            {`This search is expensive (${info.estimate_units}). `}
+            <CostDoor points={info.estimate_points} prefix="about " />
+          </>
+        ),
         confirmLabel: "Run it",
       });
       if (!ok) return;

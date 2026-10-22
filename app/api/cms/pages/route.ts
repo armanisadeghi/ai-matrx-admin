@@ -1071,7 +1071,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const { data: newVersion, error } = await db.rpc("version_restore", {
+        const { data: newVersion, error } = await db.schema("platform").rpc("version_restore", {
           p_token: "client_page",
           p_id: pageId,
           p_version: versionNumber,

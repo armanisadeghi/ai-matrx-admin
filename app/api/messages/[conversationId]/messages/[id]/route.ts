@@ -93,7 +93,7 @@ export async function GET(
     }
 
     // Fetch sender info
-    const { data: senderInfo } = await supabase.rpc("get_dm_user_info", {
+    const { data: senderInfo } = await supabase.schema("chat").rpc("get_dm_user_info", {
       p_user_id: message.sender_id,
     });
 
@@ -214,7 +214,7 @@ export async function PATCH(
     }
 
     // Fetch sender info
-    const { data: senderInfo } = await supabase.rpc("get_dm_user_info", {
+    const { data: senderInfo } = await supabase.schema("chat").rpc("get_dm_user_info", {
       p_user_id: userId,
     });
 

@@ -9,8 +9,8 @@ import { requireUserId } from "@/utils/auth/getUserId";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { toast } from "@/lib/toast";
-import { getSharedWithMe } from "@/utils/permissions/service";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import { getSharedWithMe } from "@ai-matrx/sharing/core";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 import type { DbRpcRow } from "@/types/supabase-rpc";
 import type { Json, TablesUpdate } from "@/types/database.types";
 import type { DatabaseTask } from "../types";
@@ -314,7 +314,7 @@ export async function getTaskAttachments(
   try {
     // `get_task_associations` returns the task's attached files (the source
     // entities of `file → task` edges), joined to file metadata.
-    const { data, error } = await supabase.rpc("get_task_associations", {
+    const { data, error } = await supabase.schema("projects").rpc("get_task_associations", {
       p_task_id: taskId,
     });
     if (error) throw pgErrorToError(error);
@@ -844,7 +844,7 @@ export interface SystemTaskInput {
 export async function upsertSystemTask(
   input: SystemTaskInput,
 ): Promise<{ id: string; created: boolean; status: string } | null> {
-  const { data, error } = await supabase.rpc("wsp_upsert_system_task", {
+  const { data, error } = await supabase.schema("projects").rpc("wsp_upsert_system_task", {
     p_dedupe_key: input.dedupeKey,
     p_title: input.title,
     p_description: input.description ?? undefined,
@@ -874,7 +874,7 @@ export async function resolveSystemTask(
   /** REQUIRED — a dedupe key only identifies a task WITHIN an organization. */
   organizationId: string,
 ): Promise<boolean> {
-  const { data, error } = await supabase.rpc("wsp_resolve_system_task", {
+  const { data, error } = await supabase.schema("projects").rpc("wsp_resolve_system_task", {
     p_dedupe_key: dedupeKey,
     p_outcome: outcome,
     p_organization_id: organizationId,
@@ -944,7 +944,7 @@ export interface ResourcePermission {
   created_at: string;
 }
 type _CheckResourcePermission =
-  ResourcePermission extends DbRpcRow<"get_resource_permissions">
+  ResourcePermission extends DbRpcRow<"get_resource_permissions", "iam">
     ? true
     : false;
 declare const _resourcePermission: _CheckResourcePermission;
@@ -969,7 +969,7 @@ export async function shareTask(
   targetUserId: string,
   level: PermissionLevel = "viewer",
 ): Promise<TaskShareResult> {
-  const { data, error } = await supabase.rpc("share_resource_with_user", {
+  const { data, error } = await supabase.schema("iam").rpc("share_resource_with_user", {
     // Canonical resource_type is 'task' (singular) — matches DB shareable_resource_registry.
     p_resource_type: "task",
     p_resource_id: taskId,
@@ -1031,7 +1031,7 @@ export async function revokeTaskAccess(
   taskId: string,
   targetUserId: string,
 ): Promise<TaskShareResult> {
-  const { data, error } = await supabase.rpc("revoke_resource_access", {
+  const { data, error } = await supabase.schema("iam").rpc("revoke_resource_access", {
     p_resource_type: "task",
     p_resource_id: taskId,
     p_target_user_id: targetUserId,
@@ -1050,7 +1050,7 @@ export async function revokeTaskAccess(
  * Uses get_resource_permissions() SECURITY DEFINER RPC.
  */
 export async function getTaskPermissions(taskId: string) {
-  const { data, error } = await supabase.rpc("get_resource_permissions", {
+  const { data, error } = await supabase.schema("iam").rpc("get_resource_permissions", {
     p_resource_type: "task",
     p_resource_id: taskId,
   });

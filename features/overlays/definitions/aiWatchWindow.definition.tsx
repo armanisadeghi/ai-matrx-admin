@@ -23,17 +23,8 @@ export const aiWatchWindowOverlay = defineOverlay<AiWatchWindowDefinitionData>()
         },
     windowId: "ai-watch-window",
     mobile: "card",
-    preservation: {
-      dataKeys: [
-        "windowInstanceId",
-        "requestId",
-        "userRequestId",
-        "workflowRunId",
-        "conversationId",
-        "nodeId",
-        "label",
-      ],
-    },
+    // Never restored after a reload (Arman, 2026-10-22): a watch of one run is not a workspace.
+    ephemeral: true,
   },
   link: {
     key: "ai-watch",

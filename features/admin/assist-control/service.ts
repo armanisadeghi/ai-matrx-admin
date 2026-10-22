@@ -40,7 +40,7 @@ export async function updateAssistProducerPolicy(
 ): Promise<AssistProducerPolicy> {
   const supabase = createClient();
   const next = { ...row, ...patch };
-  const { data, error } = await supabase.rpc(
+  const { data, error } = await supabase.schema("platform").rpc(
     "admin_upsert_assist_producer_policy",
     {
       p_source_pattern: next.source_pattern,

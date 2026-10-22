@@ -122,6 +122,64 @@ export interface SignalSummaryView {
   sources: string[];
 }
 
+/**
+ * A withheld story's reason, as a person reads it. The server writes it in plain words — brand
+ * safety's `describe` ("Death or injury: “killed”", "Not checked for safety: we can't read Greek
+ * yet") is the ONE place a safety flag becomes words; nothing here maps codes. A run recorded
+ * before that wrote flag codes ("unreviewed_language:greek script"): those never render, the line
+ * says the run is older instead.
+ */
+const RAW_SAFETY_CODE = /\b(hard_safety_term|unreviewed_language|profile_exclusion):/;
+export const OLDER_RUN_SAFETY_DETAIL =
+  "Withheld for brand safety. This run is older than plain reasons; run it again to see why.";
+
+export function plainSafetyDetail(detail: string | null | undefined): string | null {
+  if (!detail) return null;
+  return RAW_SAFETY_CODE.test(detail) ? OLDER_RUN_SAFETY_DETAIL : detail;
+}
+
+/**
+ * A withheld or set-aside reason, as a person reads it. The server's `reason_words` (the engine's ONE mapping,
+ * shipped on `candidates.diagnostics.reason_words` and `digest.watch_groups[].reason_labels`) turns every reason
+ * code into words; nothing here maps codes itself. A run recorded before the words were shipped never prints the
+ * code: it reads {@link OLDER_RUN_REASON}.
+ */
+export const OLDER_RUN_REASON = "Reason not recorded in words (older run)";
+const REASON_CODE = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$|^(?:hygiene|safety|stale|fresh|duplicate|unknown|unspecified)$/;
+
+export function reasonWords(value: unknown): Record<string, string> {
+  if (!isRecord(value)) return {};
+  const out: Record<string, string> = {};
+  for (const [code, words] of Object.entries(value)) {
+    if (typeof words === "string" && words) out[code] = words;
+  }
+  return out;
+}
+
+/** One reason in words: the server's words for a code, the text itself when it is already words. */
+export function reasonLabel(reason: string | null | undefined, words: Record<string, string>): string | null {
+  if (!reason) return null;
+  if (words[reason]) return words[reason];
+  return REASON_CODE.test(reason) ? OLDER_RUN_REASON : reason;
+}
+
+function labelTally(byCode: Record<string, number>, words: Record<string, string>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [code, n] of Object.entries(byCode)) {
+    const label = reasonLabel(code, words) ?? OLDER_RUN_REASON;
+    out[label] = (out[label] ?? 0) + n;
+  }
+  return out;
+}
+
+function inWords(items: SignalSummaryView[], words: Record<string, string>): SignalSummaryView[] {
+  return items.map((i) => ({
+    ...i,
+    reason: reasonLabel(i.reason, words),
+    rationale: reasonLabel(i.rationale, words),
+  }));
+}
+
 export function readSignalSummaries(value: unknown): SignalSummaryView[] {
   return records(value).map((s) => ({
     id: str(s.signal_id),
@@ -131,12 +189,12 @@ export function readSignalSummaries(value: unknown): SignalSummaryView[] {
       str(s.pre_gate_reason) ||
       (isRecord(s.withheld) ? str(s.withheld.reason) : "") ||
       null,
-    rationale:
+    rationale: plainSafetyDetail(
       str(s.rationale) ||
-      str(s.pre_gate_rationale) ||
-      (isRecord(s.withheld) ? str(s.withheld.detail) : "") ||
-      str(s.detail) ||
-      null,
+        str(s.pre_gate_rationale) ||
+        (isRecord(s.withheld) ? str(s.withheld.detail) : "") ||
+        str(s.detail),
+    ),
     // Each address once: a URL list keys its links, and an engine list can repeat an address.
     urls: [...new Set(strings(s.evidence_urls).length ? strings(s.evidence_urls) : strings(s.urls))],
     sources: strings(s.sources),
@@ -218,7 +276,7 @@ export function readSetAsideItems(diagnostics: Record<string, unknown>, reasons:
       id: str(i.id),
       title: str(i.title),
       reason: str(i.reason) || null,
-      rationale: str(i.detail) || null,
+      rationale: plainSafetyDetail(str(i.detail)),
       // An item can name one address several times (one per source that saw it): each once.
       urls: [...new Set(strings(i.urls))],
       sources: [],
@@ -259,20 +317,22 @@ export interface RunParts {
 
 export function readSetAside(parts: RunParts): SetAsideList[] {
   const d = parts.diagnostics ?? {};
+  const words = reasonWords(d.reason_words);
   const summaryCounts = isRecord(parts.summary?.counts) ? parts.summary.counts : {};
-  const rejected = readSignalSummaries(parts.rejected);
-  const withheld = readSignalSummaries(parts.withheld);
-  const preGated = readSignalSummaries(parts.preGated);
-  const clusteredAway = readSignalSummaries(parts.clusteredAway);
+  const rejected = inWords(readSignalSummaries(parts.rejected), words);
+  const withheld = inWords(readSignalSummaries(parts.withheld), words);
+  const preGated = inWords(readSignalSummaries(parts.preGated), words);
+  const clusteredAway = inWords(readSignalSummaries(parts.clusteredAway), words);
   const belowFloorIds = strings(d.below_floor);
-  const belowFloorByLane = counts(d.below_floor_by_lane ?? summaryCounts.below_floor_by_lane);
-  const s2 = counts(d.s2_dropped ?? summaryCounts.s2_dropped);
+  const belowFloorByLane = labelTally(counts(d.below_floor_by_lane ?? summaryCounts.below_floor_by_lane), words);
+  const s2Counts = counts(d.s2_dropped ?? summaryCounts.s2_dropped);
+  const s2 = labelTally(s2Counts, words);
   const seenSkipped = strings(d.seen_skipped);
-  const belowFloorItems = readSetAsideItems(d, ["below_floor"]);
-  const overLimitItems = readSetAsideItems(d, ["over_limit"]);
-  const overlapItems = readSetAsideItems(d, ["url_overlap"]);
-  const s2Items = readSetAsideItems(d, ["older_than_max_age", "no_title_or_excerpt"]);
-  const seenItems = readSetAsideItems(d, ["seen_skipped"]);
+  const belowFloorItems = inWords(readSetAsideItems(d, ["below_floor"]), words);
+  const overLimitItems = inWords(readSetAsideItems(d, ["over_limit"]), words);
+  const overlapItems = inWords(readSetAsideItems(d, ["url_overlap"]), words);
+  const s2Items = inWords(readSetAsideItems(d, ["older_than_max_age", "no_title_or_excerpt"]), words);
+  const seenItems = inWords(readSetAsideItems(d, ["seen_skipped"]), words);
   const total = (m: Record<string, number>) =>
     Object.values(m).reduce((a, b) => a + b, 0);
   return [
@@ -292,7 +352,7 @@ export function readSetAside(parts: RunParts): SetAsideList[] {
       explain:
         "The relevance judge (after the code floors and recall guards) said these do not bear on this brand.",
       count: Math.max(rejected.length, num(summaryCounts.coarse_rejected)),
-      byReason: tally(rejected.map((r) => r.reason ?? "unspecified")),
+      byReason: tally(rejected.map((r) => r.reason ?? OLDER_RUN_REASON)),
       items: rejected,
       ids: [],
       listed: true,
@@ -306,7 +366,7 @@ export function readSetAside(parts: RunParts): SetAsideList[] {
         withheld.length,
         num(summaryCounts.hygiene_withheld) + num(summaryCounts.safety_withheld),
       ),
-      byReason: tally(withheld.map((w) => w.reason ?? "unspecified")),
+      byReason: tally(withheld.map((w) => w.reason ?? OLDER_RUN_REASON)),
       items: withheld,
       ids: [],
       listed: true,
@@ -317,7 +377,7 @@ export function readSetAside(parts: RunParts): SetAsideList[] {
       explain:
         "Small stories whose evidence was already older than the freshness window before origin was checked.",
       count: Math.max(preGated.length, num(summaryCounts.pre_gated_stale)),
-      byReason: tally(preGated.map((p) => p.reason ?? "stale")),
+      byReason: tally(preGated.map((p) => p.reason ?? reasonLabel("pre_gated_stale", words) ?? OLDER_RUN_REASON)),
       items: preGated,
       ids: [],
       listed: true,
@@ -357,7 +417,7 @@ export function readSetAside(parts: RunParts): SetAsideList[] {
       id: "s2_dropped",
       label: "Dropped before scoring",
       explain: "Articles removed at the age and completeness filter, each with its reason.",
-      count: Math.max(total(s2), s2Items.length),
+      count: Math.max(total(s2Counts), s2Items.length),
       byReason: s2,
       items: s2Items,
       ids: [],

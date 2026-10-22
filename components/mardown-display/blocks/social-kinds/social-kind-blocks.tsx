@@ -191,8 +191,8 @@ export function SocialPostBlock({ serverData, className }: SocialKindBlockProps)
             aria-expanded={showTranscript}
             className="inline-flex items-center gap-1 text-xs font-medium text-foreground"
           >
-            {showTranscript ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
             Transcript{hasTranscript ? "" : " (none yet)"}
+            {showTranscript ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
           </button>
           {showTranscript ? <PostTranscriptBlock serverData={transcript} className="my-1" /> : null}
         </div>

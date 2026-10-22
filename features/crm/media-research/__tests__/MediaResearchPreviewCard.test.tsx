@@ -114,9 +114,8 @@ test("shows the multiplier and why, the brief, the target and the maximum cost b
     "10x because this is a narrow search (ITAD only): far fewer of the journalists we find will truly fit.",
   );
   expect(q("media-research-target").textContent).toBe("50");
-  // A member sees points, never dollars (Arman, 2026-09-27).
-  expect(q("media-research-max-cost").textContent).toBe("16,800 points");
-  expect(container.textContent).toContain("Up to 16,800 points.");
+  // The cost sits behind the Cost door: nothing prints on the card (owner ruling 2026-10-22).
+  expect(container.textContent).not.toContain("16,800");
   expect(container.textContent).not.toContain("$");
   expect(q("media-research-brief").textContent).toBe(BRIEF);
   expect(container.textContent).toContain("Nothing is spent until you press Run it.");

@@ -6,6 +6,7 @@
  * the tile files it when it opens, under the board's organization (`NoteItemBody`), never a different one.
  */
 
+import { withEmbeddedMarker } from "@/features/notes/service/embeddedNotes";
 import type { BoardDocument, BoardNode } from "../board/document";
 import { noteLabelFromText, noteSeed, noteSource } from "../items/work-sources";
 
@@ -17,7 +18,13 @@ export interface StarterNoteServices {
 export const defaultStarterNoteServices: StarterNoteServices = {
   async createNote({ label, content, organizationId }) {
     const { NotesAPI } = await import("@/features/notes/service/notesApi");
-    const note = await NotesAPI.create({ label, content, tags: [], organization_id: organizationId });
+    const note = await NotesAPI.create({
+      label,
+      content,
+      tags: [],
+      organization_id: organizationId,
+      metadata: withEmbeddedMarker(null, "board") as never,
+    });
     return { id: note.id };
   },
 };

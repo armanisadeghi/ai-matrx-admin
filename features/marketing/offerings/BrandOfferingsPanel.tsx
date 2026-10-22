@@ -10,6 +10,10 @@
  * panel (one provision snapshot per call) beside the run.
  */
 
+import { useQuery } from "@tanstack/react-query";
+import { listBrandAssets } from "@/features/marketing/data/service";
+import { photosOf } from "@/features/marketing/photos/subject-photos";
+import { SubjectPhotosDialog } from "@/features/marketing/photos/SubjectPhotosDialog";
 import { useEffect, useState } from "react";
 import {
   DecisionControl,
@@ -37,6 +41,7 @@ import {
 import { openWorkflowRunWindowAction } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { getJson, postNdjson } from "@/lib/python-client";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import {
@@ -175,6 +180,8 @@ function verdictLabel(verdict: OfferingsVerdict | null): string | null {
 
 function offeringColumns(
   onAnswer: (item: OfferingItem, a: DecisionAnswer | null) => void,
+  photoCount: (item: OfferingItem) => number,
+  onPhotos: (item: OfferingItem) => void,
 ): MatrxColumnDef<OfferingItem>[] {
   return [
     {
@@ -224,6 +231,25 @@ function offeringColumns(
           <span className="tabular-nums">{item.priceText}</span>
         ) : (
           <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "photos",
+      accessorFn: photoCount,
+      header: "Photos",
+      label: "Photos",
+      width: 120,
+      cell: (item) =>
+        item.offeringId ? (
+          <Button
+            variant="quiet"
+            data-offering-photos={item.offeringId}
+            onClick={() => onPhotos(item)}
+          >
+            {photoCount(item) ? `${photoCount(item)} photo${photoCount(item) === 1 ? "" : "s"}` : "Add photos"}
+          </Button>
+        ) : (
+          <span className="text-muted-foreground" title="Say Yes first: photos belong to a kept product">—</span>
         ),
     },
     {
@@ -449,6 +475,19 @@ export function BrandOfferingsPanel({ brand }: Props) {
   const liveStatus = useAppSelector(selectRunStatus(runId ?? ""));
   const emissions = useAppSelector(selectRunEmissions(runId ?? ""));
   const builder = useBuilderFeed(SURFACE);
+  const [photosFor, setPhotosFor] = useState<OfferingItem | null>(null);
+  const brandAssets = useQuery({
+    queryKey: ["marketing", "subject-photos", brand.id, "all"],
+    queryFn: ({ signal }) => listBrandAssets(brand.id, signal),
+  });
+  const photoCounts = new Map<string, number>();
+  for (const i of items ?? []) {
+    if (!i.offeringId) continue;
+    photoCounts.set(
+      i.offeringId,
+      photosOf(brandAssets.data ?? [], { brandId: brand.id, organizationId: brand.organizationId, kind: "offering", id: i.offeringId }).length,
+    );
+  }
 
   const load = async () => {
     try {
@@ -559,8 +598,13 @@ export function BrandOfferingsPanel({ brand }: Props) {
       if (quote.points > 0) {
         const ok = await confirm({
           title: "Refresh products & services",
-          description: `Up to ${formatCount(quote.points)} points: ${quote.paid_sources.map((p) => p.source).join(", ")}.`,
-          confirmLabel: `Spend up to ${formatCount(quote.points)} points`,
+          description: (
+            <>
+              {quote.paid_sources.map((p) => p.source).join(", ")}.{" "}
+              <CostDoor points={quote.points} prefix="up to " />
+            </>
+          ),
+          confirmLabel: "Refresh",
         });
         if (!ok) return;
       }
@@ -595,7 +639,11 @@ export function BrandOfferingsPanel({ brand }: Props) {
 
   const running = !!run && !TERMINAL.has(liveStatus ?? run.status);
   const verdictText = verdictLabel(verdict);
-  const columns = offeringColumns((i, a) => void answer(i, a));
+  const columns = offeringColumns(
+    (i, a) => void answer(i, a),
+    (i) => (i.offeringId ? (photoCounts.get(i.offeringId) ?? 0) : 0),
+    (i) => setPhotosFor(i),
+  );
   const flagged = (items ?? []).filter((i) => i.review);
   const flaggedColumns = flaggedColumnsFor((i, a) => void answerFlagged(i, a));
 
@@ -684,6 +732,14 @@ export function BrandOfferingsPanel({ brand }: Props) {
             emptyState={{ title: "Nothing needs a look" }}
           />
         </section>
+      ) : null}
+      {photosFor?.offeringId ? (
+        <SubjectPhotosDialog
+          open
+          onOpenChange={(o) => !o && setPhotosFor(null)}
+          name={photosFor.name}
+          subject={{ brandId: brand.id, organizationId: brand.organizationId, kind: "offering", id: photosFor.offeringId }}
+        />
       ) : null}
       <MatrxDataTable<OfferingItem>
         data={(items ?? []).filter((i) => !i.review)}

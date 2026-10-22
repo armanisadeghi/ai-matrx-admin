@@ -286,7 +286,7 @@ export function reportKindComponentIncident(
     }
     try {
       const { supabase } = await import("@/utils/supabase/client");
-      const { error: refused } = await supabase.rpc("log_kind_component_incident", {
+      const { error: refused } = await supabase.schema("platform").rpc("log_kind_component_incident", {
         p_kind: input.kind,
         p_error_type: input.errorType,
         p_error_message: input.message,

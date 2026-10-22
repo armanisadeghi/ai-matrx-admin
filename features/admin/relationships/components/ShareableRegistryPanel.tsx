@@ -169,7 +169,7 @@ export function ShareableRegistryPanel({
     }
     setResolving(true);
     try {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.schema("iam").rpc(
         "admin_shareable_registry_defaults",
         { p_token: token },
       );
@@ -259,7 +259,7 @@ export function ShareableRegistryPanel({
     setSaving(true);
     try {
       const columns = editor.isLinkShareable ? editor.publicColumns : [];
-      const { error } = await supabase.rpc("admin_upsert_shareable_resource", {
+      const { error } = await supabase.schema("iam").rpc("admin_upsert_shareable_resource", {
         p_resource_type: editor.resourceType,
         p_schema_name: editor.schemaName,
         p_table_name: editor.tableName,
@@ -321,7 +321,7 @@ export function ShareableRegistryPanel({
   ): Promise<boolean> {
     setPolicyBusy(true);
     try {
-      const { error } = await supabase.rpc("admin_set_share_policy", {
+      const { error } = await supabase.schema("iam").rpc("admin_set_share_policy", {
         p_resource_type: row.resource_type,
         p_is_link_shareable: isLinkShareable,
         p_public_columns: columns,
@@ -655,7 +655,7 @@ export function ShareableRegistryPanel({
                 if (!row) continue;
                 const patch = editsMap[key] ?? {};
                 const next = { ...row, ...patch } as ShareableRegistryRow;
-                const { error } = await supabase.rpc(
+                const { error } = await supabase.schema("iam").rpc(
                   "admin_upsert_shareable_resource",
                   {
                     p_resource_type: next.resource_type,

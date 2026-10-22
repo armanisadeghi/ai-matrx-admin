@@ -265,7 +265,8 @@ describe("an off-page organization that is not hers, or could not be checked", (
  */
 const SHOWN_ON_MOUNT: Record<string, string> = {
   // Rendered only inside an OPEN share dialog / share panel (Radix unmounts closed content).
-  "features/sharing/components/tabs/ShareWithUserTab.tsx": "inside an open share surface",
+  // The web's share-sheet host: the People tab inside an OPEN share dialog asks through it.
+  "providers/SharingHost.tsx": "inside an open share surface",
   // The organization's invitations page: the list is the page.
   "features/organizations/components/InvitationManager.tsx": "the invitations page itself",
   // Inside an OPEN permissions dialog, or the file's Share tab mounted on first visit.

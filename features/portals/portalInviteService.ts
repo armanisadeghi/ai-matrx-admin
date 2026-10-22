@@ -21,7 +21,7 @@
 // WHY NOT `iam.invitations` DIRECTLY: the invitation IS the credential. Reading
 // or writing that table from a browser would put the decision in the client.
 //
-// THE SIBLING IS `features/sharing/outside/outsideShareService.ts` — a table
+// THE SIBLING IS `@ai-matrx/sharing src/core/outsideShareService.ts` — a table
 // share is the same primitive with a different target type, and these two files
 // are deliberately the same shape.
 
@@ -98,7 +98,7 @@ export interface PortalShareAccepted {
 export async function peekPortalShare(token: string): Promise<PortalSharePeek> {
   // `portal_share_peek` lives in schema `public` (its grant is anon + authenticated, off the token
   // alone); only the accept door is in `custom`. Asking `custom` for it answered "not found".
-  const { data, error } = await createClient().rpc("portal_share_peek", { p_token: token });
+  const { data, error } = await createClient().schema("iam").rpc("portal_share_peek", { p_token: token });
   if (error) throw new Error(error.message);
   return data as unknown as PortalSharePeek;
 }

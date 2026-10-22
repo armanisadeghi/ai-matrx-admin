@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { resolveShareToken } from "@/utils/permissions/shareLinks";
+import { resolveShareToken } from "@ai-matrx/sharing/core";
 import {
   resolveShareLensOg,
   type ShareLensOg,

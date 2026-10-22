@@ -25,14 +25,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/features/marketing/components/shared/MarketingUi";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { cn } from "@/lib/utils";
 
 import {
   aidedStatusName,
   bandName,
   engineName,
-  formatWaveCost,
   laneName,
   partitionName,
   qaDecisionName,
@@ -461,8 +460,6 @@ function Gate4Body({
   edits: Record<string, unknown>;
   setEdits: (next: Record<string, unknown>) => void;
 }) {
-  const { unit, rate: costRate } = useCostDisplay();
-  const cost = formatWaveCost(payload.wave_cost_usd, costRate, unit);
   const limitations = editing
     ? arr<string>(edits.limitations)
     : arr<string>(payload.limitations);
@@ -515,7 +512,11 @@ function Gate4Body({
           </dd>
           <dt className="text-muted-foreground">Cost of one wave</dt>
           <dd>
-            {cost ?? "Not priced yet"}
+            {typeof payload.wave_cost_usd === "number" ? (
+              <CostDoor usd={payload.wave_cost_usd} />
+            ) : (
+              "Not priced yet"
+            )}
             {payload.wave_cost_basis ? (
               <span className="text-muted-foreground"> — {payload.wave_cost_basis}</span>
             ) : null}

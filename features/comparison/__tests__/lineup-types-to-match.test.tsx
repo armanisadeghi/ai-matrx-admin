@@ -11,7 +11,6 @@ import { newRow, startRows, type CompareRow } from "../rows";
 const mockResolveRow = jest.fn();
 jest.mock("../discovery", () => ({ ...jest.requireActual("../discovery"), resolveRow: (...a: unknown[]) => mockResolveRow(...a) }));
 jest.mock("../server", () => ({ lookupItems: jest.fn(), quoteComparison: jest.fn(async () => ({})) }));
-jest.mock("@/features/entitlements/free-allowance/FreeAllowanceNote", () => ({ FreeAllowanceNote: () => null }));
 jest.mock("@/components/official/ProInput", () => ({
   ProInput: ({ wrapperClassName: _w, ...p }: Record<string, unknown>) => <input {...(p as object)} />,
 }));
@@ -29,7 +28,7 @@ function Harness({ initial }: { initial?: CompareRow[] } = {}) {
   return (
     <QueryClientProvider client={new QueryClient()}>
       <Lineup kind={kind} rows={rows} onRows={(f) => setRows(f)} near="" onNear={() => {}} organizationId="o"
-        seesDollars={false} onCompare={() => {}} />
+        onCompare={() => {}} />
     </QueryClientProvider>
   );
 }
@@ -113,7 +112,7 @@ describe("a card matches while the person is still typing", () => {
       return (
         <QueryClientProvider client={new QueryClient()}>
           <Lineup kind={kind} rows={rows} onRows={(f) => setRows(f)} near="" onNear={() => {}} organizationId="o"
-            seesDollars={false} onCompare={onCompare} />
+            onCompare={onCompare} />
         </QueryClientProvider>
       );
     }

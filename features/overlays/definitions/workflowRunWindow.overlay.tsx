@@ -18,10 +18,11 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { createOpener } from "@ai-matrx/summon/opener";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "workflowRunWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenWorkflowRunWindowOptions {
   /** The run to follow. Adopting it in the window is what keeps it alive. */
@@ -54,24 +55,20 @@ export function openWorkflowRunWindowAction(
   opts: OpenWorkflowRunWindowOptions,
 ) {
   const instanceId = workflowRunWindowInstanceId(opts.runId);
-  return openOverlay({
-    overlayId: OVERLAY_ID,
-    instanceId,
-    data: {
+  return opener.openAction(
+    {
       windowInstanceId: instanceId,
       runId: opts.runId,
       workflowName: opts.workflowName ?? null,
       stepLabels: opts.stepLabels ?? null,
     },
-  });
+    instanceId,
+  );
 }
 
 /** Close a run's float — the page it belongs to is back on screen. */
 export function closeWorkflowRunWindowAction(runId: string) {
-  return closeOverlay({
-    overlayId: OVERLAY_ID,
-    instanceId: workflowRunWindowInstanceId(runId),
-  });
+  return opener.close(workflowRunWindowInstanceId(runId));
 }
 
 export function useOpenWorkflowRunWindow() {

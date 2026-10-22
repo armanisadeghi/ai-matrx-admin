@@ -12,7 +12,7 @@ import { Button, Tabs } from "@ai-matrx/design-system/controls";
 import { Link2, UserPlus } from "lucide-react";
 import { useState } from "react";
 
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 
 import { pageOrganizationId } from "../data/install-host";
 import { PersonAvatar } from "./CommentsPanel";

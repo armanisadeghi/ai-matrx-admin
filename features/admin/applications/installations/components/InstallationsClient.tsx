@@ -129,7 +129,7 @@ export function InstallationsClient({
   const refresh = useCallback(async () => {
     setRefreshing(true);
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("admin_list_app_instances");
+    const { data, error } = await supabase.schema("ops").rpc("admin_list_app_instances");
     setRefreshing(false);
     if (error) {
       setRefreshError(error);

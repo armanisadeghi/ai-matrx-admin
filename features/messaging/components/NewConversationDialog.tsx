@@ -55,7 +55,7 @@ interface SearchResult extends UserBasicInfo {
   match_score?: number;
 }
 type _CheckSearchResult =
-  DbRpcRow<"search_users_intelligent"> extends SearchResult ? true : false;
+  DbRpcRow<"search_users_intelligent", "users"> extends SearchResult ? true : false;
 declare const _searchResult: _CheckSearchResult;
 true satisfies typeof _searchResult;
 
@@ -64,7 +64,7 @@ interface LookupUserByEmailRow {
   user_email: string;
 }
 type _CheckLookupUserByEmailRow =
-  LookupUserByEmailRow extends DbRpcRow<"lookup_user_by_email"> ? true : false;
+  LookupUserByEmailRow extends DbRpcRow<"lookup_user_by_email", "users"> ? true : false;
 declare const _lookupUserByEmailRow: _CheckLookupUserByEmailRow;
 true satisfies typeof _lookupUserByEmailRow;
 
@@ -184,7 +184,7 @@ export function NewConversationDialog({
 
       try {
         // Use the intelligent search function
-        const { data, error: searchError } = await supabase.rpc(
+        const { data, error: searchError } = await supabase.schema("users").rpc(
           "search_users_intelligent",
           {
             search_term: query,
@@ -196,7 +196,7 @@ export function NewConversationDialog({
         if (searchError) {
           console.error("Search error:", searchError);
           // Fallback to basic email lookup
-          const { data: fallbackData } = await supabase.rpc(
+          const { data: fallbackData } = await supabase.schema("users").rpc(
             "lookup_user_by_email",
             { lookup_email: query.toLowerCase() },
           );

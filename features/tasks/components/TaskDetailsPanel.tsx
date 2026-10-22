@@ -55,7 +55,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
 import TaskAttachmentsPanel from "./TaskAttachmentsPanel";
 import TaskLabels from "./TaskLabels";

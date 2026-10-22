@@ -14,7 +14,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { createOpener } from "@ai-matrx/summon/opener";
 import {
   registerCustomAgentSession,
   type CustomAgentSession,
@@ -22,14 +22,11 @@ import {
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "customAgentWindow" as const;
+const opener = createOpener<{ sessionId: string }>(OVERLAY_ID);
 
 export function customAgentWindowAction(session: CustomAgentSession) {
   const sessionId = registerCustomAgentSession(session);
-  return openOverlay({
-    overlayId: OVERLAY_ID,
-    instanceId: sessionId,
-    data: { sessionId },
-  });
+  return opener.openAction({ sessionId }, sessionId);
 }
 
 export function useOpenCustomAgentWindow() {

@@ -12,6 +12,11 @@ import type { RootState } from "@/lib/redux/store";
 import type { components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import {
+  adoptForeignStream,
+  type ForeignStreamConsumer,
+} from "@ai-matrx/chat/agents/redux/execution-system/thunks/adopt-foreign-stream";
+import { selectAllSurfaceFocus } from "@ai-matrx/chat/agents/redux/execution-system/conversation-focus/conversation-focus.selectors";
+import {
   callApi,
   type ApiCallError,
   type ApiCallResult,
@@ -60,6 +65,47 @@ export type ChatBody = components["schemas"]["ChatRequest"];
 /** LLM parameter overrides */
 export type LLMParamsBody = components["schemas"]["LLMParams"];
 
+// ─── Watchable runs ──────────────────────────────────────────────────────────
+//
+// A model turn started here must be visible to Watch AI (AI-WATCH.md): its stream is
+// ADOPTED into `activeRequests` (the row the execution system makes) and the caller's
+// `onStreamEvent` still sees every event, forwarded by the adopter. `check:ai-watch`
+// fails a file that names an agent-turn door without this path.
+//
+// These helpers are HEADLESS (reply composer, debrief, assignment demo). The run is
+// always adopted under the SERVER's request id (that is what Watch AI follows), but
+// it is keyed to the real conversation only when a chat in this tab has that
+// conversation open: the adopter's conversation-keyed effects (instance status,
+// working-document deltas, overlay opens) are right there and wrong anywhere else.
+// Otherwise the adopter mints its own conversation id, so nothing reaches a
+// conversation nobody is looking at.
+
+type RunThunk = ThunkAction<Promise<ApiCallResult>, RootState, unknown, Action>;
+
+function isOpenInThisTabsChat(state: RootState, conversationId: string | null): boolean {
+  if (!conversationId) return false;
+  return Object.values(selectAllSurfaceFocus(state) ?? {}).some(
+    (focus) => focus.input === conversationId || focus.display === conversationId,
+  );
+}
+
+function watchableRun(
+  onEvent: ((event: TypedStreamEvent) => void) | undefined,
+  start: (consumeStream: ForeignStreamConsumer) => RunThunk,
+): RunThunk {
+  return (dispatch, getState, extra) => {
+    const adopt = dispatch(adoptForeignStream({ onEvent }) as never) as unknown as ForeignStreamConsumer;
+    const consumeStream: ForeignStreamConsumer = (response, ids) =>
+      adopt(
+        response,
+        isOpenInThisTabsChat(getState(), ids.conversationId)
+          ? ids
+          : { requestId: ids.requestId, conversationId: null },
+      );
+    return start(consumeStream)(dispatch, getState, extra);
+  };
+}
+
 // ─── Agent: Start new conversation ───────────────────────────────────────────
 
 export interface CallAgentStartOptions {
@@ -77,19 +123,21 @@ export interface CallAgentStartOptions {
 }
 
 export function callAgentStart(options: CallAgentStartOptions) {
-  return callApi({
-    path: "/ai/agents/{agent_id}",
-    method: "POST",
-    pathParams: { agent_id: options.agentId },
-    body: options.body,
-    stream: true,
-    signal: options.signal,
-    scopeOverrides: options.scopeOverrides,
-    onStreamEvent: options.onStreamEvent,
-    onStreamComplete: options.onStreamComplete,
-    onStreamError: options.onStreamError,
-    _testOverrides: options._testOverrides,
-  });
+  return watchableRun(options.onStreamEvent, (consumeStream) =>
+    callApi({
+      path: "/ai/agents/{agent_id}",
+      method: "POST",
+      pathParams: { agent_id: options.agentId },
+      body: options.body,
+      stream: true,
+      signal: options.signal,
+      scopeOverrides: options.scopeOverrides,
+      consumeStream,
+      onStreamComplete: options.onStreamComplete,
+      onStreamError: options.onStreamError,
+      _testOverrides: options._testOverrides,
+    }) as RunThunk,
+  );
 }
 
 // ─── Agent assignments: durable coordinated execution ──────────────────────
@@ -188,19 +236,21 @@ export interface CallConversationContinueOptions {
 export function callConversationContinue(
   options: CallConversationContinueOptions,
 ) {
-  return callApi({
-    path: "/ai/conversations/{conversation_id}",
-    method: "POST",
-    pathParams: { conversation_id: options.conversationId },
-    body: options.body,
-    stream: true,
-    signal: options.signal,
-    scopeOverrides: options.scopeOverrides,
-    onStreamEvent: options.onStreamEvent,
-    onStreamComplete: options.onStreamComplete,
-    onStreamError: options.onStreamError,
-    _testOverrides: options._testOverrides,
-  });
+  return watchableRun(options.onStreamEvent, (consumeStream) =>
+    callApi({
+      path: "/ai/conversations/{conversation_id}",
+      method: "POST",
+      pathParams: { conversation_id: options.conversationId },
+      body: options.body,
+      stream: true,
+      signal: options.signal,
+      scopeOverrides: options.scopeOverrides,
+      consumeStream,
+      onStreamComplete: options.onStreamComplete,
+      onStreamError: options.onStreamError,
+      _testOverrides: options._testOverrides,
+    }) as RunThunk,
+  );
 }
 
 // ─── Cancel: Abort a running request ─────────────────────────────────────────
@@ -334,20 +384,22 @@ export interface CallConversationForkAndRunOptions {
 export function callConversationForkAndRun(
   options: CallConversationForkAndRunOptions,
 ) {
-  return callApi({
-    path: "/ai/conversations/{conversation_id}/fork-and-run",
-    method: "POST",
-    pathParams: { conversation_id: options.conversationId },
-    body: options.body,
-    stream: true,
-    signal: options.signal,
-    scopeOverrides: options.scopeOverrides,
-    onStreamStart: options.onStreamStart,
-    onStreamEvent: options.onStreamEvent,
-    onStreamComplete: options.onStreamComplete,
-    onStreamError: options.onStreamError,
-    _testOverrides: options._testOverrides,
-  });
+  return watchableRun(options.onStreamEvent, (consumeStream) =>
+    callApi({
+      path: "/ai/conversations/{conversation_id}/fork-and-run",
+      method: "POST",
+      pathParams: { conversation_id: options.conversationId },
+      body: options.body,
+      stream: true,
+      signal: options.signal,
+      scopeOverrides: options.scopeOverrides,
+      onStreamStart: options.onStreamStart,
+      consumeStream,
+      onStreamComplete: options.onStreamComplete,
+      onStreamError: options.onStreamError,
+      _testOverrides: options._testOverrides,
+    }) as RunThunk,
+  );
 }
 
 // ─── Conversation: settings, delete, sandbox binding (THE ADMIN SEAT's doors) ──

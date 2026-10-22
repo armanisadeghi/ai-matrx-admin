@@ -39,6 +39,7 @@ import type {
   CodeFileRecord,
   CodeFolder,
 } from "@/features/code-files/redux/code-files.types";
+import { mintInstanceId } from "@ai-matrx/summon/boot";
 
 // Synthetic id for the "unfiled" root group in the tree.
 export const ROOT_FOLDER_ID = "__root__";
@@ -360,7 +361,7 @@ export function useCodeFileManager(): UseCodeFileManagerResult {
       dispatch(
         openOverlay({
           overlayId: "codeEditorWindow",
-          instanceId: `code-editor-${Date.now()}`,
+          instanceId: mintInstanceId("codeEditorWindow"),
           data: {
             fileIds: ids,
             activeFileId: ids[0],

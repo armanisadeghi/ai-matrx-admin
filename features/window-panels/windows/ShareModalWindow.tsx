@@ -11,17 +11,17 @@ import {
   Loader2,
   CheckCircle,
 } from "lucide-react";
-import { useSharing, useIsOwner } from "@/utils/permissions/hooks";
+import { useSharing, useIsOwner } from "@ai-matrx/sharing/react";
 import {
   getResourceSharePath,
   getResourceTypeLabel,
-} from "@/utils/permissions/registry";
-import type { ResourceType } from "@/utils/permissions/types";
-import { PermissionsList } from "@/features/sharing/components/PermissionsList";
-import { ShareWithUserTab } from "@/features/sharing/components/tabs/ShareWithUserTab";
-import { OrgAvailabilityNote } from "@/features/sharing/components/OrgAvailabilityNote";
-import { WhoCanSeeThis } from "@/features/sharing/components/WhoCanSeeThis";
-import { PublicAccessTab } from "@/features/sharing/components/tabs/PublicAccessTab";
+} from "@ai-matrx/sharing/core";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import { PermissionsList } from "@ai-matrx/sharing/react";
+import { ShareWithUserTab } from "@ai-matrx/sharing/react";
+import { OrgAvailabilityNote } from "@ai-matrx/sharing/react";
+import { WhoCanSeeThis } from "@ai-matrx/sharing/react";
+import { PublicAccessTab } from "@ai-matrx/sharing/react";
 import { useToast } from "@/components/ui/use-toast";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

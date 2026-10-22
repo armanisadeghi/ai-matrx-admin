@@ -1,5 +1,5 @@
 import type { MatrxDataTableContextMenuConfig } from "@ai-matrx/design-system/data-table";
-import type { ResourceType } from "@/utils/permissions/types";
+import type { ResourceType } from "@ai-matrx/sharing/core";
 import type { ServiceResult } from "@/features/data-tables/types";
 import type { FileEntityType } from "./useFileFavorites";
 

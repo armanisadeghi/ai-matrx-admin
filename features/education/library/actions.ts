@@ -20,7 +20,7 @@ export async function certifyDeckAction(
 ): Promise<void> {
   await requireSuperAdmin();
   const sb = await createClient();
-  const { error } = await sb.rpc("edu_certify_content", {
+  const { error } = await sb.schema("education").rpc("edu_certify_content", {
     p_resource_type: "fc_set",
     p_resource_id: resourceId,
     p_note: note ?? undefined,
@@ -31,7 +31,7 @@ export async function certifyDeckAction(
 export async function uncertifyDeckAction(resourceId: string): Promise<void> {
   await requireSuperAdmin();
   const sb = await createClient();
-  const { error } = await sb.rpc("edu_uncertify_content", {
+  const { error } = await sb.schema("education").rpc("edu_uncertify_content", {
     p_resource_type: "fc_set",
     p_resource_id: resourceId,
   });

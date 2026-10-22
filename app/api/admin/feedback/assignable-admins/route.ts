@@ -27,7 +27,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data, error } = await supabase.rpc("admin_list_for_assignment");
+    const { data, error } = await supabase.schema("iam").rpc("admin_list_for_assignment");
 
     if (error) {
       const msg = error.message ?? "";

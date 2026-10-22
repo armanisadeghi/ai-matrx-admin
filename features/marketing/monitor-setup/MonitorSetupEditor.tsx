@@ -54,7 +54,7 @@ import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useOrganizationMembers } from "@/features/organizations/hooks";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { DeliveryControls } from "@/features/marketing/news-monitor/DeliveryControls";
 import { ArchiveRecordButton } from "@/features/trash/components/ArchiveRecordButton";
 import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
@@ -396,7 +396,6 @@ function MonitorSetupEditorBody({
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const { format: formatCostDisplay } = useCostDisplay();
   const invalidate = useInvalidateMonitorSetup();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useClippedContentGuard(scrollRef, { label: "monitor setup editor" });
@@ -1637,16 +1636,45 @@ function MonitorSetupEditorBody({
               className="text-xs text-muted-foreground"
               data-surface-value="setup_cost_estimate"
             >
-              {cost?.average_run_usd != null
-                ? `A run has cost about ${formatCostDisplay(cost.average_run_usd)} (${cost.runs_measured} runs in the last 30 days)${preset ? `, so this schedule is about ${formatCostDisplay(cost.average_run_usd * preset.runsPerMonth)} a month` : ""}.`
-                : estimatedRunUsd != null
-                  ? `No runs measured yet in this organization; its setting estimates about ${formatCostDisplay(estimatedRunUsd)} a run${preset ? `, so this schedule is about ${formatCostDisplay(estimatedRunUsd * preset.runsPerMonth)} a month` : ""}. The first run measures the real cost.`
-                  : cost
-                    ? "No runs yet in this organization, so there is no cost per run to estimate — the first run measures it."
-                    : null}{" "}
-              {cost
-                ? `Your organization has spent ${formatCostDisplay(cost.month_to_date_usd)} of its ${formatCostDisplay(cost.monthly_ceiling_usd)} monthly news ceiling.`
-                : null}
+              {cost?.average_run_usd != null ? (
+                <>
+                  {`Measured over ${cost.runs_measured} runs in the last 30 days. `}
+                  <CostDoor
+                    label="Run cost"
+                    rows={[
+                      { label: "Per run", usd: cost.average_run_usd },
+                      ...(preset
+                        ? [{ label: "Per month", usd: cost.average_run_usd * preset.runsPerMonth }]
+                        : []),
+                    ]}
+                  />
+                </>
+              ) : estimatedRunUsd != null ? (
+                <>
+                  {"No runs measured yet; the first run measures the real cost. "}
+                  <CostDoor
+                    label="Run cost"
+                    prefix="~"
+                    rows={[
+                      { label: "Per run", usd: estimatedRunUsd },
+                      ...(preset
+                        ? [{ label: "Per month", usd: estimatedRunUsd * preset.runsPerMonth }]
+                        : []),
+                    ]}
+                  />
+                </>
+              ) : cost ? (
+                "No runs yet, so there is nothing to estimate — the first run measures it."
+              ) : null}{" "}
+              {cost ? (
+                <CostDoor
+                  label="Monthly ceiling"
+                  rows={[
+                    { label: "Spent this month", usd: cost.month_to_date_usd },
+                    { label: "Monthly ceiling", usd: cost.monthly_ceiling_usd },
+                  ]}
+                />
+              ) : null}
             </p>
             {costAdvice && cost ? (
               <div
@@ -1656,10 +1684,21 @@ function MonitorSetupEditorBody({
               >
                 <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden />
                 <span className="min-w-0 flex-1 font-medium text-foreground">
-                  {`"${costAdvice.chosen.label}" projects about ${formatCostDisplay(costAdvice.chosen.monthlyUsd)} a month — over your organization's ${formatCostDisplay(cost.monthly_ceiling_usd)} monthly news ceiling. At the ceiling, scheduled runs pause until someone resumes them.`}{" "}
+                  {`"${costAdvice.chosen.label}" projects over your organization's monthly news ceiling. At the ceiling, scheduled runs pause until someone resumes them.`}{" "}
+                  <CostDoor
+                    label="Projection"
+                    prefix="~"
+                    rows={[
+                      { label: costAdvice.chosen.label, usd: costAdvice.chosen.monthlyUsd },
+                      ...(costAdvice.cheaper
+                        ? [{ label: costAdvice.cheaper.label, usd: costAdvice.cheaper.monthlyUsd }]
+                        : []),
+                      { label: "Monthly ceiling", usd: cost.monthly_ceiling_usd },
+                    ]}
+                  />{" "}
                   {costAdvice.cheaper
-                    ? `"${costAdvice.cheaper.label}" fits at about ${formatCostDisplay(costAdvice.cheaper.monthlyUsd)} a month.`
-                    : `No scheduled choice fits at about ${formatCostDisplay(estimatedRunUsd ?? 0)} a run; "No schedule" with Run now when you need it spends only what you run.`}{" "}
+                    ? `"${costAdvice.cheaper.label}" fits.`
+                    : `No scheduled choice fits; "No schedule" with Run now spends only what you run.`}{" "}
                   You can save anyway.
                 </span>
                 {costAdvice.cheaper ? (

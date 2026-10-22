@@ -16,7 +16,6 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
 
@@ -44,15 +43,12 @@ export interface ListenSummaryWindowHandle {
 export function openListenSummaryWindowAction(
   opts: OpenListenSummaryWindowOptions,
 ) {
-  return openOverlay({
-    overlayId: OVERLAY_ID,
-    data: {
-      initialAgentId: opts.agentId,
-      initialAgentName: opts.agentName ?? null,
-      initialSourceText: opts.sourceText,
-      initialStyle: opts.style ?? null,
-      initialAutoPlay: opts.autoPlay ?? false,
-    },
+  return opener.openAction({
+    initialAgentId: opts.agentId,
+    initialAgentName: opts.agentName ?? null,
+    initialSourceText: opts.sourceText,
+    initialStyle: opts.style ?? null,
+    initialAutoPlay: opts.autoPlay ?? false,
   });
 }
 

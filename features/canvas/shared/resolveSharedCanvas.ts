@@ -14,7 +14,7 @@
  * See migrations/canvas_share_convergence_onto_share_links.sql.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { resolveShareToken } from "@/utils/permissions/shareLinks";
+import { resolveShareToken } from "@ai-matrx/sharing/core";
 import type { SharedCanvasItem } from "@/types/canvas-social";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 

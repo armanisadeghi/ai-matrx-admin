@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { AgentActionModal } from "./AgentActionModal";
 import { AgentSneakPeekModal } from "./AgentSneakPeekModal";
 import { ComingSoonModal } from "./ComingSoonModal";

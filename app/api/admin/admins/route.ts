@@ -33,7 +33,7 @@ export async function GET() {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list");
+  const { data, error } = await supabase.schema("iam").rpc("admin_list");
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ admins: data ?? [] });
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_promote", {
+  const { data, error } = await supabase.schema("iam").rpc("admin_promote", {
     target_user_id: body.userId,
     target_level: body.level ?? "developer",
     target_permissions: body.permissions ?? {},

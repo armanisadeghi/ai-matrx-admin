@@ -160,7 +160,7 @@ export async function fetchCandidateCells(
   mandateIds: readonly string[],
 ): Promise<Record<string, MandateCandidateCell | null>> {
   if (mandateIds.length === 0) return {};
-  const { data, error } = await (supabase as unknown as UntypedRpc).rpc("mnd_candidate_cells", {
+  const { data, error } = await (supabase as unknown as UntypedRpc).schema("mandate").rpc("mnd_candidate_cells", {
     p_mandate_ids: mandateIds.slice(0, 200),
   });
   if (error) throw new Error(`Candidate counts: ${error.message}`);

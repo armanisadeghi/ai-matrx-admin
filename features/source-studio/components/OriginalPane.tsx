@@ -16,6 +16,7 @@ import { PdfCldFileViewer } from "@/features/pdf-extractor/studio/PdfStudioReade
 import { VideoPreview } from "@/features/files/components/core/FilePreview/previewers/VideoPreview";
 import { AudioPreview } from "@/features/files/components/core/FilePreview/previewers/AudioPreview";
 import { fetchFileBlob } from "@/features/files/hooks/useFileBlob";
+import { gunzipIfNeeded } from "@/features/files/utils/gunzip";
 import { rememberFileOrganization } from "@/features/files/api/fileOrganization";
 import {
   snapshotDocument,
@@ -160,15 +161,6 @@ function YouTubeOriginal({
       </OutboundLink>
     </div>
   );
-}
-
-export async function gunzipIfNeeded(blob: Blob): Promise<string> {
-  const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
-  if (head[0] === 0x1f && head[1] === 0x8b) {
-    const stream = blob.stream().pipeThrough(new DecompressionStream("gzip"));
-    return new Response(stream).text();
-  }
-  return blob.text();
 }
 
 function WebSnapshot({

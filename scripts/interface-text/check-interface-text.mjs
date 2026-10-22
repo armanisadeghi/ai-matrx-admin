@@ -311,7 +311,7 @@ export function scanSource(file, source) {
           // A native title= on a DOM element never opens on a phone (Arman, 2026-10-10: tooltips always,
           // through the shared primitive). A short one on an icon button is its accessible name and stays.
           if (name === "title" && /^[a-z]/.test(tag) && collapse(t).length > NATIVE_TITLE_MAX)
-            push("native-title", a, t, `native title= on <${tag}> (${collapse(t).length} chars) never opens on touch — use components/official/InfoHint`);
+            push("native-title", a, t, `native title= on <${tag}> (${collapse(t).length} chars) never opens on touch — use InfoHint from @ai-matrx/design-system/controls`);
           if (name === "description" && HEADER_COMPONENT.test(tag) && !TOOLTIP_HOSTS.has(`${tag}.${name}`) && collapse(t).length >= 12)
             push("page-description", a, t, `<${tag} description=…> renders a sentence under a title`);
         }

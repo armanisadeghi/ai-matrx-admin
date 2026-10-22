@@ -8,24 +8,18 @@
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { TableChooser } from "@/features/unified-data/hub/TableChooser";
-import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
 import { ConnectorMark } from "@/features/connectors/ConnectorMark";
 import { AttachedResourcesSection } from "@/features/connectors/AttachedResourcesSection";
 import { WebpageSnapshotView } from "@/features/resource-manager/webpage/WebpageSnapshotView";
 import { MessageFilesStrip } from "@/features/code/views/history/MessageFilesStrip";
 import { RulebookNudge } from "@/features/masterwork/oracle/RulebookNudge";
 import { NegativeVerdictFollowUp } from "@/features/review-walk/components/NegativeVerdictFollowUp";
-import { SpeakerButton } from "@/features/tts/components/SpeakerButton";
 import { GmailReviewCard } from "@/features/google-workspace/agent/GmailReviewCard";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { ReviewAnswersLink } from "@/features/agents/decision-review/components/ReviewAnswersLink";
 import { RecordChangeApprovalCard } from "@/features/record-change-approvals/RecordChangeApprovalCard";
 import { DockRunCard } from "@/features/records-tool-display/DockRunCard";
 import { SystemInstructionModal } from "@/features/agents/components/builder/message-builders/system-instructions/SystemInstructionModal";
-import { FileRagBadge } from "@/features/files/components/core/FileBadges/FileRagBadge";
-import { MediaAttachmentThumbnail } from "@/features/files/components/inline/MediaAttachmentThumbnail";
-import { UnifiedImageBlockRenderer } from "@/features/files/blocks/image/UnifiedImageBlockRenderer";
-import { TranscriptionLoader } from "@/features/audio/components/TranscriptionLoader";
 import { PdfNamedSurfaceSwitcher } from "@/features/pdf/components/PdfNamedSurfaceSwitcher";
 import { ChangeDiff } from "@/components/ui/change-diff";
 
@@ -33,24 +27,18 @@ export const baseSlotImpls = {
   ErrorAlchemyMenu,
   AdvancedMenu,
   TableChooser,
-  FileResourceChip,
   ConnectorMark,
   AttachedResourcesSection,
   WebpageSnapshotView,
   MessageFilesStrip,
   RulebookNudge,
   NegativeVerdictFollowUp,
-  SpeakerButton,
   GmailReviewCard,
   ShareButton,
   ReviewAnswersLink,
   RecordChangeApprovalCard,
   BackgroundRunCard: DockRunCard,
   SystemInstructionModal,
-  FileRagBadge,
-  MediaAttachmentThumbnail,
-  UnifiedImageBlockRenderer,
-  TranscriptionLoader,
   PdfNamedSurfaceSwitcher,
   ChangeDiff,
 };

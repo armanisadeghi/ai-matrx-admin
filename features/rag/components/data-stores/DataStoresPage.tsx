@@ -71,7 +71,7 @@ import { fileHandler } from "@/features/files/handler/handler";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature, selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
 import { LibraryPublishPanel } from "@/features/rag/components/library/LibraryPublishPanel";
-import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
+import { AccessSummaryPanel } from "@ai-matrx/sharing/react";
 import { useStoreProvenance } from "@/features/rag/hooks/useLibraryProvenance";
 import {
   SurfaceRuntimeProvider,

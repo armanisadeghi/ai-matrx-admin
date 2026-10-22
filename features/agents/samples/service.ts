@@ -246,7 +246,7 @@ export async function fetchAgentSamples(
  */
 export async function approveAgentSample(sampleId: string): Promise<void> {
   const supabase = createClient();
-  const { error } = await supabase.rpc("agx_exemplar_approve", {
+  const { error } = await supabase.schema("agent").rpc("agx_exemplar_approve", {
     p_exemplar_id: sampleId,
   });
   if (error) throw error;

@@ -296,7 +296,7 @@ export async function GET() {
   // super-admin session, so call it with the session client (auth.uid()), not
   // the service-role client (which has no uid).
   const session = await createClient();
-  const { data: admins } = await session.rpc("admin_list");
+  const { data: admins } = await session.schema("iam").rpc("admin_list");
   const levelByUser = new Map(
     (admins ?? []).map((a: { user_id: string; level: string }) => [
       a.user_id,

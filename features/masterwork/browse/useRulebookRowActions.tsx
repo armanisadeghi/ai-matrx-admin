@@ -9,7 +9,7 @@ import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { Eye, Link2, Pencil, Share2, Trash2, Workflow } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import type {

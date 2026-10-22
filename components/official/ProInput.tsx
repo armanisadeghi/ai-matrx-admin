@@ -81,6 +81,7 @@ import {
 } from "@/components/official/proFieldControlFit";
 import { Check, Copy, Loader2, Mic, SlidersHorizontal, X } from "lucide-react";
 import { motion } from "motion/react";
+import { listMediaDevices } from "@ai-matrx/browser-audio/core";
 import { useMicField } from "@/features/audio/hooks/useMicField";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
@@ -380,7 +381,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
             setIsAudioAvailable(false);
             return;
           }
-          await navigator.mediaDevices.enumerateDevices();
+          await listMediaDevices();
           setIsAudioAvailable(true);
         } catch (error) {
           console.warn("Audio not available:", error);

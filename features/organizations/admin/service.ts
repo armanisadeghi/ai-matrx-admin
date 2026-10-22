@@ -68,14 +68,14 @@ function mapResource(row: Record<string, unknown>): OrgMemberResource {
 
 /** Roster: every member + org-scoped metrics. */
 export async function listOrgMembers(orgId: string): Promise<OrgAdminMember[]> {
-  const { data, error } = await supabase.rpc("org_admin_list_members", { p_org_id: orgId });
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_list_members", { p_org_id: orgId });
   if (error) throw pgErrorToError(error);
   return (data ?? []).map((r) => mapMember(r as Record<string, unknown>));
 }
 
 /** Org-wide aggregate snapshot. */
 export async function getOrgOverview(orgId: string): Promise<OrgAdminOverview> {
-  const { data, error } = await supabase.rpc("org_admin_overview", { p_org_id: orgId });
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_overview", { p_org_id: orgId });
   if (error) throw pgErrorToError(error);
   const o = asRecord(data);
   return {
@@ -94,7 +94,7 @@ export async function getOrgOverview(orgId: string): Promise<OrgAdminOverview> {
 
 /** Single member detail (roster row + resource breakdown). */
 export async function getOrgMember(orgId: string, userId: string): Promise<OrgAdminMemberDetail> {
-  const { data, error } = await supabase.rpc("org_admin_get_member", {
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_get_member", {
     p_org_id: orgId,
     p_user_id: userId,
   });
@@ -119,7 +119,7 @@ export async function listMemberResources(
   orgId: string,
   userId: string,
 ): Promise<OrgMemberResource[]> {
-  const { data, error } = await supabase.rpc("org_admin_list_member_resources", {
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_list_member_resources", {
     p_org_id: orgId,
     p_user_id: userId,
   });
@@ -133,7 +133,7 @@ export async function setMemberControls(
   userId: string,
   controls: OrgMemberControlsInput,
 ): Promise<void> {
-  const { error } = await supabase.rpc("org_admin_set_member_controls", {
+  const { error } = await supabase.schema("iam").rpc("org_admin_set_member_controls", {
     p_org_id: orgId,
     p_user_id: userId,
     p_member_level: controls.memberLevel ?? undefined,
@@ -152,7 +152,7 @@ export async function setMemberStatus(
   status: OrgMemberStatus,
   reason?: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("org_admin_set_member_status", {
+  const { error } = await supabase.schema("iam").rpc("org_admin_set_member_status", {
     p_org_id: orgId,
     p_user_id: userId,
     p_status: status,
@@ -175,7 +175,7 @@ export async function removeMember(
   orgId: string,
   userId: string,
 ): Promise<{ removed: boolean }> {
-  const { data, error } = await supabase.rpc("org_admin_remove_member", {
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_remove_member", {
     p_org_id: orgId,
     p_user_id: userId,
   });
@@ -269,7 +269,7 @@ export interface TakeOverOptions {
 }
 
 export async function getTakeOverOptions(orgId: string, userId: string): Promise<TakeOverOptions> {
-  const { data, error } = await supabase.rpc("org_admin_take_over_options", {
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_take_over_options", {
     p_org_id: orgId,
     p_user_id: userId,
   });
@@ -343,7 +343,7 @@ export async function listOrgAdminAudit(
   orgId: string,
   limit = 100,
 ): Promise<OrgAdminAuditEntry[]> {
-  const { data, error } = await supabase.rpc("org_admin_list_audit", {
+  const { data, error } = await supabase.schema("iam").rpc("org_admin_list_audit", {
     p_org_id: orgId,
     p_limit: limit,
   });

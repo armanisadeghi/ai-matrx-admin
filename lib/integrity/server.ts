@@ -3,11 +3,10 @@
 // Server-side adapters that wire the integrity framework to live infrastructure:
 //   - a SqlRunner backed by the `execute_admin_query` SECURITY DEFINER RPC
 //     (same path the admin SQL editor uses), via the RLS-bypassing admin client.
-//   - a FileProbe backed by the Python `/files/{id}/download` endpoint.
+//   - a FileProbe backed by the files package's `GET /files/{id}/download` operation.
 //
 // Kept out of the route file so a CLI/cron caller could reuse the SQL runner too.
 
-import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { spawn } from "node:child_process";
 import { requireSuperAdminDatabaseClient } from "@/features/administration/database-hub/require-super-admin-database-client";
 import type {
@@ -17,14 +16,15 @@ import type {
   SqlRunner,
 } from "./types";
 import { unwrapRows } from "./unwrap";
-import { AIDREAM_PRODUCTION_URL } from "@/lib/api/endpoints";
-import { buildMatrxRequestUrl, sendMatrxRequest } from "@ai-matrx/api";
+import { MatrxApiError } from "@ai-matrx/api";
+import { downloadFile } from "@ai-matrx/api/files";
+import { createFiles } from "@ai-matrx/files";
 
 /** SQL runner using the admin client + execute_admin_query RPC. */
 export async function createAdminSqlRunner(): Promise<SqlRunner> {
   const admin = await requireSuperAdminDatabaseClient();
   return async (query: string): Promise<IntegrityFinding[]> => {
-    const { data, error } = await admin.rpc("execute_admin_query", { query });
+    const { data, error } = await admin.schema("platform").rpc("execute_admin_query", { query });
     if (error) throw new Error(error.message);
     return unwrapRows(data);
   };
@@ -78,10 +78,6 @@ export function createScriptRunner(): ScriptRunner | undefined {
     });
 }
 
-function resolveBackendUrl(): string {
-  return AIDREAM_PRODUCTION_URL.replace(/\/$/, "");
-}
-
 /**
  * Builds a FileProbe that range-probes the download endpoint with the given
  * bearer token. Returns undefined when no token is available (the caller then
@@ -98,31 +94,24 @@ export function createDownloadProbe(
   token: string | null,
   organizationId: string | null = null,
 ): FileProbe | undefined {
-  const backend = resolveBackendUrl();
   if (!token || !organizationId) return undefined;
+  // The files package's own client: the contract decides which deployment answers the download.
+  const files = createFiles({ credentials: { kind: "user", accessToken: token }, organizationId });
 
   return async (fileId: string) => {
     const start = Date.now();
-    const url = buildMatrxRequestUrl(
-      backend,
-      "/files/{file_id}/download",
-      { file_id: fileId },
-      { inline: true },
-    );
     try {
-      const res = await sendMatrxRequest(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          [MATRX_HEADERS.organization]: organizationId,
-          // Cheap liveness probe — just the first byte.
-          Range: "bytes=0-0",
-        },
-      });
+      const res = await downloadFile(
+        files.api,
+        { path: { file_id: fileId }, query: { inline: true } },
+        // Cheap liveness probe — just the first byte.
+        { headers: { Range: "bytes=0-0" } },
+      );
       // Drain the (tiny) body so the socket can be reused/closed.
       await res.arrayBuffer().catch(() => undefined);
       return { status: res.status, ms: Date.now() - start };
     } catch (err) {
+      if (err instanceof MatrxApiError) return { status: err.status, ms: Date.now() - start };
       return {
         status: null,
         ms: Date.now() - start,

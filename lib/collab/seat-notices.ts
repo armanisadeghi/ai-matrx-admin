@@ -17,3 +17,15 @@ export const VIEW_ONLY_NOTICE = viewOnlyNotice();
 export function seatRefusal(commentOnly: boolean, product: SeatProduct = "document"): string {
   return commentOnly ? commentOnlyNotice(product) : viewOnlyNotice(product);
 }
+
+/**
+ * What a seat is told when its own change cannot travel to the other editors yet and was put back (`not_shared`).
+ * A table is the common case, so it is named; anything else says what happened in the same plain words.
+ * `mutationId` is the Univer mutation that could not travel (Sheets); Docs has none.
+ */
+export function notSharedNotice(mutationId?: string): { title: string; description: string } {
+  if (mutationId && /table/i.test(mutationId)) {
+    return { title: "Tables can't be shared yet", description: "Tables can't be shared while others are editing yet — your table was removed." };
+  }
+  return { title: "That change was removed", description: "It can't be shared with other editors yet, so it was taken back." };
+}

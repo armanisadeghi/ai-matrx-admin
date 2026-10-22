@@ -29,7 +29,7 @@ import {
   parsePermissionLevel,
   permissionLevelRank,
   type PermissionLevel,
-} from "@/utils/permissions/levels";
+} from "@ai-matrx/sharing/core";
 import type { OrgRole } from "@/features/scopes/types";
 
 /**

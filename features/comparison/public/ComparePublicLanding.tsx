@@ -17,14 +17,14 @@ const PROOF = [
   { icon: ListOrdered, label: "Ranked, side by side" },
 ] as const;
 
-export function ComparePublicLanding({ runRequiresAccount, guestFreeRuns = null }: { runRequiresAccount: boolean; guestFreeRuns?: number | null }) {
+export function ComparePublicLanding({ runRequiresAccount }: { runRequiresAccount: boolean }) {
   return (
     <MarketingPageShell>
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-10 px-[var(--matrx-page-gutter,1rem)] pb-24 pt-28 text-center sm:pt-36">
         <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-6xl">
           Compare anything. See the real numbers.
         </h1>
-        <CompareHero runRequiresAccount={runRequiresAccount} guestFreeRuns={guestFreeRuns} />
+        <CompareHero runRequiresAccount={runRequiresAccount} />
         <ul className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
           {PROOF.map(({ icon: Icon, label }) => (
             <li key={label} className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground">

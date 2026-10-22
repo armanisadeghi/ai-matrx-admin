@@ -8,7 +8,7 @@
 // Zero React: the dialog is the summon overlay `shareWithPeopleDialog`.
 
 import { requestOverlay } from "@/features/overlays/requestOverlay";
-import type { PermissionLevel, ResourceType, ShareActionResult } from "@/utils/permissions/types";
+import type { PermissionLevel, ResourceType, ShareActionResult } from "@ai-matrx/sharing/core";
 
 export interface ShareWithPeopleRequest {
   /** "Share 3 agents" */

@@ -17,10 +17,10 @@
 
 import { Archive } from "lucide-react";
 
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsRadioGroup } from "@/components/official/settings/primitives/SettingsRadioGroup";
-import type { SettingsOption } from "@/components/official/settings/types";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsRadioGroup } from "@ai-matrx/design-system/settings";
+import type { SettingsOption } from "@ai-matrx/design-system/settings";
 
 import { useSetting } from "../hooks/useSetting";
 import { PreferencesLoadGate } from "@/components/read-state/PreferencesLoadGate";

@@ -47,6 +47,7 @@ export async function getSSRShellData(
   userId: string,
 ): Promise<SSRShellData> {
   const { data, error } = (await supabase
+    .schema("users")
     .rpc("get_ssr_shell_data", { p_user_id: userId })
     .single()) as { data: SSRShellData | null; error: unknown };
 

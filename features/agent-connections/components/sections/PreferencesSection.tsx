@@ -15,23 +15,23 @@ import {
 import { Github } from "@/components/icons/brand-icons";
 import { SectionToolbar } from "../SectionToolbar";
 import { SectionFooter } from "../SectionFooter";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsCheckbox } from "@/components/official/settings/primitives/SettingsCheckbox";
-import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
-import { SettingsRadioGroup } from "@/components/official/settings/primitives/SettingsRadioGroup";
-import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
-import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsCheckbox } from "@ai-matrx/design-system/settings";
+import { SettingsSegmented } from "@ai-matrx/design-system/settings";
+import { SettingsRadioGroup } from "@ai-matrx/design-system/settings";
+import { SettingsSlider } from "@ai-matrx/design-system/settings";
+import { SettingsNumberInput } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
 import { SettingsProTextarea } from "@/components/official/settings/primitives/SettingsProTextarea";
 import { SettingsTailwindColor } from "@/components/official/settings/primitives/SettingsTailwindColor";
-import { SettingsMultiSelect } from "@/components/official/settings/primitives/SettingsMultiSelect";
+import { SettingsMultiSelect } from "@ai-matrx/design-system/settings";
 import {
   SettingsKeybinding,
   type KeybindingValue,
-} from "@/components/official/settings/primitives/SettingsKeybinding";
+} from "@ai-matrx/design-system/settings";
 import { useSetting } from "@/features/settings/hooks/useSetting";
 import type { AgentConnectionsShortcut } from "@/lib/redux/preferences/userPreferencesSlice";
 

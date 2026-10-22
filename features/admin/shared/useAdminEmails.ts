@@ -19,7 +19,7 @@ function loadAdminEmails(): Promise<Record<string, string>> {
   if (!adminEmailsPromise) {
     adminEmailsPromise = (async () => {
       const supabase = createClient();
-      const { data, error } = await supabase.rpc("admin_list");
+      const { data, error } = await supabase.schema("iam").rpc("admin_list");
       if (error) {
         // Allow a retry on the next mount instead of caching the failure.
         adminEmailsPromise = null;

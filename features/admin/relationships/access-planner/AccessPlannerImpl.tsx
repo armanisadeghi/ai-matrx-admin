@@ -643,7 +643,7 @@ export function AccessPlannerImpl({ initialSnapshot }: AccessPlannerProps) {
     setSaving(true);
     setMessage(null);
     if (mode === "infrastructure") {
-      const { error } = await supabase.rpc(
+      const { error } = await supabase.schema("platform").rpc(
         "admin_set_access_planner_exclusion",
         {
           p_schema: selectedTable.schema_name,

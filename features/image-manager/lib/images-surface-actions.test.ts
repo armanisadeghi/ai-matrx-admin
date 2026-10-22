@@ -32,7 +32,8 @@ describe("Images surface action guards", () => {
       "components/image/cloud/CloudFilesBrowserTable.tsx",
       "features/capture-camera/host/CloudLibrarySheet.tsx",
       "features/files/components/multi-view/MultiFileGridViewer.tsx",
-      "features/files/components/preview/FileResourceChip.tsx",
+      // The chip moved into the package (L4): its published module is the source checked here.
+      "node_modules/@ai-matrx/media/dist/files/engine/components/preview/FileResourceChip.js",
       "features/files/components/preview/SelectableFileThumbnail.tsx",
       "features/files/components/surfaces/PickerShell.tsx",
       "features/files/components/surfaces/desktop/FileGridCell.tsx",

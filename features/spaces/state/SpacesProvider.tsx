@@ -8,12 +8,14 @@
 
 import { isSyncedSource, loadSyncedSources, useSyncedSourcesVersion } from "./synced-sources";
 import { useRouter } from "next/navigation";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { errorSentence, toast } from "@/lib/toast";
+import type { Database } from "@/types/database.types";
 
 import type { SpaceBlock, SpaceDoc, SpaceId, SpaceSummary } from "../contract";
 import { between, byPosition } from "../store/position";
@@ -180,13 +182,17 @@ export function useSpaces(): SpacesContextValue {
   return ctx;
 }
 
-export function SpacesProvider({ children }: { children: ReactNode }) {
+/**
+ * `client`: the session every read runs as (default: the app's). A host with its own visitor session — the
+ * Applet host's guest client — passes it, so a Space page inside the host reads as that visitor.
+ */
+export function SpacesProvider({ children, client }: { children: ReactNode; client?: SupabaseClient<Database> }) {
   const router = useRouter();
   // org-filter: write-target a new top-level page is filed in the organization the person works in
   const organizationId = useAppSelector(selectActiveOrganizationId);
   const orgRef = useRef(organizationId);
   orgRef.current = organizationId;
-  const [store] = useState(() => createLiveSpacesStore(() => orgRef.current));
+  const [store] = useState(() => createLiveSpacesStore(() => orgRef.current, client));
   const dispatch = useAppDispatch();
   const [all, setAll] = useState<SpaceSummary[]>([]);
   // Parents whose live children are all in `all` (round 35: the tree is read lazily, never whole).

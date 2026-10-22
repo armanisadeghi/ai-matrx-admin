@@ -40,7 +40,7 @@ export interface TileContextHost<T extends BoardTileBase & { title: string }> {
   board: {
     read: () => { tiles: T[]; parked: T[]; removed?: T[]; connections: readonly BoardConnection[] };
   };
-  describe: (tile: T) => { kind: string; surface?: string | null };
+  describe: (tile: T) => { kind: string; surface?: string | null; table?: { id: string; token?: string } };
   itemSurfaces?: ItemSurfaceIndex;
   storedBasics?: (tile: T) => StoredBasics | null;
 }
@@ -84,6 +84,7 @@ export async function buildTileContext<T extends BoardTileBase & { title: string
         surface: described.surface ?? null,
         live: false,
         stored_basics: host.storedBasics?.(t) ?? null,
+        ...(described.table ? { table: described.table } : {}),
         ...(connected.has(t.id) ? { connected: true } : {}),
         ...(parked.has(t.id) ? { parked: true } : {}),
         ...(removed.has(t.id) ? { removed: true } : {}),

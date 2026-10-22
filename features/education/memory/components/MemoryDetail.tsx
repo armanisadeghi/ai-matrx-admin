@@ -322,6 +322,8 @@ export function MemoryDetail({ mediaId, edit = false }: { mediaId: string; edit?
 
   if (edit) return <MemoryEditor media={media} isOwner={isOwner} />;
 
+  const itemCitations = itemCitationsOf((media as { config?: unknown }).config);
+
   return (
     <SurfaceRuntimeProvider surfaceName={SURFACE_NAME} getScope={buildScope} getWriteHandlers={getWriteHandlers}>
     <div className="matrx-touch-targets mx-auto w-full max-w-2xl space-y-4 p-4">

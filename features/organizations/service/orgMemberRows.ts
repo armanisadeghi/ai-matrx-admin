@@ -51,7 +51,7 @@ export function readOrganizationMemberRows(
   const db = client ?? createClient();
   const entry: CacheEntry = { at: now, settled: false, rows: Promise.resolve([]) };
   const rows = (async () => {
-    const { data, error } = await db.rpc("get_organization_members_with_users", {
+    const { data, error } = await db.schema("iam").rpc("get_organization_members_with_users", {
       p_org_id: orgId,
     });
     if (error) throw pgErrorToError(error);

@@ -9,7 +9,7 @@
 // (`applet-job.ts`). Nothing about the attach path is re-implemented.
 
 import { useState, useSyncExternalStore } from "react";
-import { FileText, LayoutTemplate, Paperclip, Plus, Workflow, X } from "lucide-react";
+import { FileText, LayoutTemplate, Paperclip, Plus, Workflow, X, Table2 } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -140,13 +140,15 @@ export function BuildAttachments({
         <span
           key={r.id}
           className="inline-flex h-6 min-w-0 max-w-[16rem] items-center gap-1 rounded-md border border-border bg-card pl-2 text-xs"
-          title={r.kind === "job" ? `${r.label} runs in this Applet` : r.label}
+          title={r.kind === "job" ? `${r.label} runs in this Applet` : r.kind === "table" ? `Built on ${r.label}: it reads and writes these records` : r.label}
           data-applet-reference={r.kind}
         >
           {r.kind === "layout" ? (
             <LayoutTemplate className="h-3.5 w-3.5 shrink-0" />
           ) : r.kind === "job" ? (
             r.holder === "agent" ? <AGENT_ICON className="h-3.5 w-3.5 shrink-0" /> : <Workflow className="h-3.5 w-3.5 shrink-0" />
+          ) : r.kind === "table" ? (
+            <Table2 className="h-3.5 w-3.5 shrink-0" />
           ) : r.resource.type === "file" || r.resource.type === "document" ? (
             <FileText className="h-3.5 w-3.5 shrink-0" />
           ) : (

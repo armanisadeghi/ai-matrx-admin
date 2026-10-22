@@ -193,6 +193,7 @@ export const Disclosure: React.FC<{
     <div className="overflow-hidden rounded-lg border border-border bg-card">
       <div className="flex items-center gap-1 pr-1.5">
         <DisclosureHeader
+          chevron="end"
           open={open}
           onClick={() => setOpen((o) => !o)}
           icon={<Icon />}

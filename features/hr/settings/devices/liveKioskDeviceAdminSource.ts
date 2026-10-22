@@ -164,7 +164,7 @@ function toRow(raw: unknown): KioskDeviceRow {
 export function liveKioskDeviceAdminSource(organizationId: string): KioskDeviceAdminSource {
   return {
     async list(): Promise<KioskDeviceRow[]> {
-      const { data, error } = await supabase.rpc("hr_kiosk_device_list" as never, {
+      const { data, error } = await supabase.schema("hr").rpc("hr_kiosk_device_list" as never, {
         p_organization_id: organizationId,
       } as never);
       const envelope = unwrap(data, error, "We could not load this organization's time clocks.");
@@ -181,7 +181,7 @@ export function liveKioskDeviceAdminSource(organizationId: string): KioskDeviceA
      * mistake the picker should not make possible.
      */
     async listLocations(): Promise<KioskLocation[]> {
-      const { data, error } = await supabase.rpc("hr_structure_list" as never, {
+      const { data, error } = await supabase.schema("hr").rpc("hr_structure_list" as never, {
         p_organization_id: organizationId,
       } as never);
       const envelope = unwrap(data, error, "We could not load this employer's work locations.");
@@ -200,7 +200,7 @@ export function liveKioskDeviceAdminSource(organizationId: string): KioskDeviceA
     },
 
     async createPairingCode(input): Promise<KioskPairingCode> {
-      const { data, error } = await supabase.rpc("hr_kiosk_pairing_code_create" as never, {
+      const { data, error } = await supabase.schema("hr").rpc("hr_kiosk_pairing_code_create" as never, {
         p_organization_id: organizationId,
         p_device_name: input.deviceName,
         p_location_id: input.locationId,
@@ -235,7 +235,7 @@ export function liveKioskDeviceAdminSource(organizationId: string): KioskDeviceA
      * both — which is exactly what makes it the recovery lane for an orphaned tablet.
      */
     async reissuePairingCode(input): Promise<KioskPairingCode> {
-      const { data, error } = await supabase.rpc("hr_kiosk_pairing_code_create" as never, {
+      const { data, error } = await supabase.schema("hr").rpc("hr_kiosk_pairing_code_create" as never, {
         p_organization_id: organizationId,
         p_device_name: null,
         p_location_id: null,
@@ -251,7 +251,7 @@ export function liveKioskDeviceAdminSource(organizationId: string): KioskDeviceA
     },
 
     async setTrust(input): Promise<KioskDeviceRow> {
-      const { data, error } = await supabase.rpc("hr_kiosk_device_set_trust" as never, {
+      const { data, error } = await supabase.schema("hr").rpc("hr_kiosk_device_set_trust" as never, {
         p_device_id: input.deviceId,
         p_trust_state: input.trustState,
         p_reason: input.reason,
@@ -266,7 +266,7 @@ export function liveKioskDeviceAdminSource(organizationId: string): KioskDeviceA
     },
 
     async setCapture(input): Promise<KioskDeviceRow> {
-      const { data, error } = await supabase.rpc("hr_kiosk_device_set_capture" as never, {
+      const { data, error } = await supabase.schema("hr").rpc("hr_kiosk_device_set_capture" as never, {
         p_device_id: input.deviceId,
         p_require_photo: input.requirePhoto,
         p_require_geo: input.requireGeo,

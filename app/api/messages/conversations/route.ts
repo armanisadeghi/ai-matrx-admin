@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 
     // Get conversations using the helper function — paginated at the RPC
     // level so the 500+-row unbounded read (D247) is never issued here.
-    const { data: conversations, error: fetchError } = await supabase.rpc(
+    const { data: conversations, error: fetchError } = await supabase.schema("chat").rpc(
       "get_dm_conversations_with_details",
       {
         p_user_id: userId,
@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const { data: convId, error: convError } = await supabase.rpc(
+      const { data: convId, error: convError } = await supabase.schema("chat").rpc(
         "dm_get_or_create_direct_conversation",
         {
           p_user1_id: userId,

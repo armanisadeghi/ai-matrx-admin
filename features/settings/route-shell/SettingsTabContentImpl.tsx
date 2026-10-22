@@ -7,7 +7,7 @@ import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { SettingsTabHost } from "@/features/settings/components/SettingsTabHost";
 import { useSettingsTree } from "@/features/settings/universal/useSettingsTree";
 import { FIRST_SCREEN_TAB } from "@/features/settings/tabs/FirstScreenTab";
-import { flattenLeaves } from "@/components/official/settings/tree/types";
+import { flattenLeaves } from "@ai-matrx/design-system/settings";
 import {
   SurfaceRuntimeProvider,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

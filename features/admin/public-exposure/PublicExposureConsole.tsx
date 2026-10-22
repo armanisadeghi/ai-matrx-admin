@@ -62,7 +62,7 @@ export function PublicExposureConsole() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: rpcError } = await createClient().rpc(
+    const { data, error: rpcError } = await createClient().schema("platform").rpc(
       "admin_public_exposure_report",
     );
     if (rpcError) {

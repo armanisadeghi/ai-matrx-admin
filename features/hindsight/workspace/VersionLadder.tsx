@@ -48,7 +48,7 @@ export function VersionLadder({
   const versions = useQuery({
     queryKey: ["hindsight", "agent-versions", agentId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("agx_get_version_history", {
+      const { data, error } = await supabase.schema("agent").rpc("agx_get_version_history", {
         p_agent_id: agentId,
         p_limit: SHOWN,
         p_offset: 0,

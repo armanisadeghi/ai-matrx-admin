@@ -712,7 +712,7 @@ function printReport(report: DeadEndReport, limit: number): void {
   console.log("");
   console.log(
     `${DIM}  Fix recipe: invoke the \`no-dead-ends\` skill. The door primitive is\n` +
-      `  <EntityRef token=… id=… name=… /> (components/official/entity-ref/EntityRef.tsx).\n` +
+      `  <EntityRef token=… id=… name=… /> (EntityRef from @ai-matrx/records-ui/entity-ref).\n` +
       `  A missing door is usually a missing hrefFor in features/scopes/registry/entityRegistry.ts.\n` +
       `  Deliberate exception? Add it WITH A REASON to scripts/dead-ends/allowlist.ts.\n` +
       `  Dashboard: /administration/reporting/dead-ends (refresh with --write, then commit).${NC}`,

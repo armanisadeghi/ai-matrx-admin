@@ -24,7 +24,7 @@ import { ShimmerText } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
-import { points } from "../../video/clone";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { zipEntryNames } from "../../video/variants";
 import { plainFailureText } from "../../video/render-errors";
 import { isSessionExpired, useExpiredSessionGuard } from "../../video/session";
@@ -120,11 +120,12 @@ function tookText(s: RunStep | undefined): string | undefined {
 
 // ── cost ────────────────────────────────────────────────────────────────────────────────────────────
 
+/** The estimate: its label, with the price behind the quiet Cost door. */
 export function CostLine({ pts, label }: { pts: number | null | undefined; label?: string }) {
   return (
     <span className="inline-flex items-baseline gap-1.5 tabular-nums">
       {label ? <span className="type-meta text-muted-foreground">{label}</span> : null}
-      <span className="type-label text-foreground">{points(pts)}</span>
+      <CostDoor points={pts} />
     </span>
   );
 }
@@ -271,6 +272,32 @@ export function pendingMediaCount(doc: Composition): number {
  * The composition, played by the engine's own player over the resolved timeline. A document the resolver refuses
  * (a voice not generated yet, a voice edit waiting for a new take) says why instead of showing a broken frame.
  */
+/**
+ * Mounts its children only once they come near the screen, and keeps them mounted after. A grid of 25 variant previews
+ * would otherwise start 25 players (fonts, files, decoders) at once; this starts the ones a person is looking at.
+ */
+export function MountWhenVisible({ children, ratio, className }: { children: React.ReactNode; ratio: string; className?: string }) {
+  const box = useRef<HTMLDivElement | null>(null);
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || seen) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const t = setTimeout(() => setSeen(true), 0);
+      return () => clearTimeout(t);
+    }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        setSeen(true);
+        io.disconnect();
+      }
+    }, { rootMargin: "240px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [seen]);
+  return seen ? <>{children}</> : <div ref={box} className={cn("rounded-lg bg-muted", className)} style={{ aspectRatio: ratio }} aria-hidden />;
+}
+
 export function CompositionPreview({ doc, className }: { doc: Composition; className?: string }) {
   const client = useMediaClient();
   const readMediaBytes = useCallback(async (mediaId: string): Promise<ArrayBuffer | null> => {

@@ -43,7 +43,7 @@ function load(type: FileEntityType): Promise<void> {
   if (s.loaded) return Promise.resolve();
   if (s.loading) return s.loading;
   s.loading = (async () => {
-    const { data, error } = await createClient().rpc("ues_list", {
+    const { data, error } = await createClient().schema("users").rpc("ues_list", {
       p_kind: "favorite",
     });
     s.loading = null;

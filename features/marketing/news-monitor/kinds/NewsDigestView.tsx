@@ -25,6 +25,10 @@ import {
   setAsideListOf,
   str,
   strings,
+  plainSafetyDetail,
+  OLDER_RUN_REASON,
+  reasonLabel,
+  reasonWords,
   watchListCount,
   type OpenTarget,
 } from "../run-document";
@@ -120,6 +124,8 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
   const surfaced = records(value.surfaced);
   const watch = records(value.watch);
   const groups = records(value.watch_groups);
+  // Every reason in the server's words (the digest's reason_words), never a code.
+  const watchWords = reasonWords(value.reason_words);
   const withheld = isRecord(value.withheld) ? value.withheld : {};
   const health = records(value.source_health);
   const windowInfo = isRecord(value.window) ? value.window : {};
@@ -160,7 +166,7 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
         </CountPill>
         {Object.entries(unverified).map(([k, n]) => (
           <CountPill key={k} target={{ kind: "watch", group: k }} onOpen={onOpen} runView={runView}>
-            {n} {humanizeIdentifier(k).toLowerCase()}
+            {n} {(reasonLabel(k, watchWords) ?? OLDER_RUN_REASON).toLowerCase()}
           </CountPill>
         ))}
         <CountPill
@@ -234,7 +240,7 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
                     onOpen={onOpen}
                     runView={runView}
                   >
-                    {humanizeIdentifier(reason).toLowerCase()} {n}
+                    {reasonLabel(reason, watchWords) ?? OLDER_RUN_REASON} {n}
                   </CountPill>
                 ))}
               </div>
@@ -251,7 +257,7 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
             {[...byReason.entries()].map(([reason, entries]) => (
               <div key={reason} data-watch-reason={reason} data-watch-group={watchGroupOf(reason)} className="scroll-mt-24 rounded-md">
                 <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                  {str(entries[0]?.label) || humanizeIdentifier(reason)} · {entries.length}
+                  {str(entries[0]?.label) || reasonLabel(reason, watchWords) || OLDER_RUN_REASON} · {entries.length}
                 </p>
                 <ul className="mt-0.5 flex flex-col gap-1">
                   {entries.map((w) => (
@@ -265,8 +271,8 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
                         </span>
                         {storyActions?.(str(w.story_key))}
                       </div>
-                      {str(w.detail) ? (
-                        <p className="text-xs text-muted-foreground">{str(w.detail)}</p>
+                      {plainSafetyDetail(str(w.detail)) ? (
+                        <p className="text-xs text-muted-foreground">{plainSafetyDetail(str(w.detail))}</p>
                       ) : null}
                     </li>
                   ))}

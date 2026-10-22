@@ -348,7 +348,7 @@ export function useProcessingRunner(): UseProcessingRunner {
                 // its source_id. No Python hop (and the old relative fetch hit
                 // the Next origin, not the backend, so it never worked).
                 try {
-                  const { data } = await supabase.rpc("rag_library_list", {
+                  const { data } = await supabase.schema("rag").rpc("rag_library_list", {
                     p_limit: 5,
                     p_offset: 0,
                     p_search: undefined,

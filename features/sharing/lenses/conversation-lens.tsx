@@ -40,7 +40,7 @@ import {
 import { formatFileSize } from "@/features/files/utils/format";
 import { downloadUrl } from "@ai-matrx/kit/download";
 import { Tile } from "@ai-matrx/design-system/controls";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import {
   readSharedConversation,
   type SharedChatBlock,

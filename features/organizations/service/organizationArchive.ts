@@ -184,7 +184,7 @@ export async function restoreArchivedOrganizationById(
   let name: string | null = null;
   const { data: auth } = await supabase.auth.getUser();
   if (auth.user) {
-    const { data } = await supabase.rpc("list_user_organizations", {
+    const { data } = await supabase.schema("iam").rpc("list_user_organizations", {
       p_user_id: auth.user.id,
       p_archived: "archived",
     });

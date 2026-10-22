@@ -11,12 +11,12 @@ import {
   ShieldCheck,
   XCircle,
 } from "lucide-react";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsCheckbox } from "@/components/official/settings/primitives/SettingsCheckbox";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsCheckbox } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import {
   SMS_CONSENT_DISCLOSURE,
   SMS_OPT_IN_PATH,

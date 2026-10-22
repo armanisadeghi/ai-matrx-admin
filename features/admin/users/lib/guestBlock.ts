@@ -47,7 +47,7 @@ async function setGuestBlock(
     blockedUntil?: string | null;
   },
 ): Promise<GuestAccess> {
-  const { data, error } = await client.rpc("admin_set_guest_block", {
+  const { data, error } = await client.schema("iam").rpc("admin_set_guest_block", {
     p_guest_id: args.guestId,
     p_blocked: args.blocked,
     p_reason: args.reason ?? undefined,

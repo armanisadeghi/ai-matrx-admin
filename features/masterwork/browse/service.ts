@@ -10,7 +10,7 @@ import {
   fetchShownToContext,
   shownToBlendedFilter,
   type ShownToContext,
-} from "@/lib/list-scope/shownTo";
+} from "@ai-matrx/sharing/core";
 import type {
   EntityFacets,
   EntityListPage,
@@ -18,7 +18,7 @@ import type {
   EntityListSort,
   EntityScopeCounts,
 } from "@/lib/entity-list/types";
-import { getSharedWithMe } from "@/utils/permissions/service";
+import { getSharedWithMe } from "@ai-matrx/sharing/core";
 import type {
   RulebookListRow,
   RulebookSource,

@@ -54,9 +54,9 @@ jest.mock("@/features/agent-context/hooks/useNavTree", () => ({
   useNavTree: () => ({ orgs: [{ id: ORG, name: "Oak & River" }], isLoading: false }),
 }));
 
-import { getResourceVisibility, setResourceShownTo, setStoreLane, type WhoCanSee } from "@/utils/permissions/service";
-import { WhoCanSeeThis } from "@/features/sharing/components/WhoCanSeeThis";
-import { OrgAvailabilityNote } from "@/features/sharing/components/OrgAvailabilityNote";
+import { getResourceVisibility, setResourceShownTo, setStoreLane, type WhoCanSee } from "@ai-matrx/sharing/core";
+import { WhoCanSeeThis } from "@ai-matrx/sharing/react";
+import { OrgAvailabilityNote } from "@ai-matrx/sharing/react";
 
 const door = (over: Record<string, unknown>) => ({
   found: true,

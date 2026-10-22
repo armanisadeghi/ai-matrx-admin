@@ -1330,7 +1330,7 @@ export async function ensurePrimaryContactPoints(args: {
 
 /** RULE 2: primaries flip ONLY through the RPC (direct updates 23505). */
 export async function setPrimaryContactPoint(id: string): Promise<void> {
-  const { error } = await supabase.rpc("crm_set_primary_contact_point", {
+  const { error } = await supabase.schema("crm").rpc("crm_set_primary_contact_point", {
     p_id: id,
   });
   if (error) throw pgError(error);
@@ -1687,7 +1687,7 @@ const CANDIDATE_COUNT_EMBED =
  * collisions, refreshes weak-signal suggestions, returns the receipt.
  */
 export async function runDedupScan(orgId: string): Promise<DedupScanResult> {
-  const { data, error } = await supabase.rpc("crm_detect_merge_candidates", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_detect_merge_candidates", {
     p_org: orgId,
   });
   if (error) throw pgError(error);
@@ -1770,7 +1770,7 @@ export async function fetchCandidatesForParty(
 
 /** "Not duplicates" — durable: no future scan resurrects the pair. */
 export async function dismissMergeCandidate(id: string): Promise<void> {
-  const { error } = await supabase.rpc("crm_dismiss_merge_candidate", {
+  const { error } = await supabase.schema("crm").rpc("crm_dismiss_merge_candidate", {
     p_id: id,
   });
   if (error) throw pgError(error);
@@ -1786,7 +1786,7 @@ export async function mergeParties(args: {
   loserId: string;
   reason?: string;
 }): Promise<string> {
-  const { data, error } = await supabase.rpc("crm_merge_parties", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_merge_parties", {
     p_winner: args.winnerId,
     p_loser: args.loserId,
     p_method: "manual",
@@ -1798,7 +1798,7 @@ export async function mergeParties(args: {
 
 /** Exact replay of one recorded merge — the loser gets its children back. */
 export async function unmergeParties(mergeId: string): Promise<void> {
-  const { error } = await supabase.rpc("crm_unmerge_parties", {
+  const { error } = await supabase.schema("crm").rpc("crm_unmerge_parties", {
     p_merge_id: mergeId,
   });
   if (error) throw pgError(error);

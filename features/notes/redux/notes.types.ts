@@ -3,7 +3,7 @@
 // Every component consumes Redux directly. Zero prop drilling.
 
 import type { Note } from "../types";
-import type { PermissionLevel } from "@/utils/permissions/levels";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 
 // ── Undoable fields ─────────────────────────────────────────────────────────
 
@@ -201,7 +201,7 @@ export const TAB_AUTO_MOVE_IDLE_MS = 1500;
 
 // One access vocabulary, everywhere (AI Matrx Data Doctrine R18, 2026-09-10, recorded in
 // common-docs/systems/platform/access/DECISIONS.md). This was a private copy of the level union;
-// it is now an alias of the ONE ladder in utils/permissions/levels.ts, so a new level lands here
+// it is now an alias of the ONE ladder in @ai-matrx/sharing src/core/levels.ts, so a new level lands here
 // without an edit. Register: /projects/data-doctrine-adoption/REGISTER.md#DD-050
 /** Effective grant level from `iam.permissions` (viewer < commenter < editor < admin). */
 export type SharedNotePermissionLevel = PermissionLevel;

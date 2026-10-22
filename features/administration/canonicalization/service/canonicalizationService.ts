@@ -44,7 +44,7 @@ import { isJsonObject } from "@/types/json";
 
 async function runQuery<T>(query: string): Promise<T[]> {
   const admin = await requireSuperAdminDatabaseClient();
-  const { data, error } = await admin.rpc("execute_admin_query", { query });
+  const { data, error } = await admin.schema("platform").rpc("execute_admin_query", { query });
   if (error) throw operationFailed("run that canonicalization query", error);
   return unwrapRows(data) as T[];
 }

@@ -309,7 +309,7 @@ export async function triageFeedbackItem(
 ): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("triage_feedback_item", {
+    const { data, error } = await admin.schema("users").rpc("triage_feedback_item", {
       p_id: feedbackId,
       p_ai_solution_proposal: triage.ai_solution_proposal ?? undefined,
       p_ai_suggested_priority: triage.ai_suggested_priority ?? undefined,
@@ -335,7 +335,7 @@ export async function getAgentWorkQueue(): Promise<{
 }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("get_agent_work_queue");
+    const { data, error } = await admin.schema("agent").rpc("get_agent_work_queue");
     if (error) return { success: false, error: error.message };
     return { success: true, data: mapUserFeedbackRows(data || []) };
   } catch (error: unknown) {
@@ -353,7 +353,7 @@ export async function getUntriagedFeedback(): Promise<{
 }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("get_untriaged_feedback");
+    const { data, error } = await admin.schema("users").rpc("get_untriaged_feedback");
     if (error) return { success: false, error: error.message };
     return { success: true, data: mapUserFeedbackRows(data || []) };
   } catch (error: unknown) {
@@ -371,7 +371,7 @@ export async function getTriageBatch(batchSize: number = 3): Promise<{
 }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("get_triage_batch", {
+    const { data, error } = await admin.schema("users").rpc("get_triage_batch", {
       p_batch_size: batchSize,
     });
     if (error) return { success: false, error: error.message };
@@ -399,7 +399,7 @@ export async function setAdminDecision(
 ): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("set_admin_decision", {
+    const { data, error } = await admin.schema("users").rpc("set_admin_decision", {
       p_id: feedbackId,
       p_decision: decision,
       p_direction: direction ?? undefined,
@@ -424,7 +424,7 @@ export async function splitFeedbackItem(
 ): Promise<{ success: boolean; error?: string; data?: UserFeedback[] }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("split_feedback_item", {
+    const { data, error } = await admin.schema("users").rpc("split_feedback_item", {
       p_parent_id: parentId,
       p_descriptions: descriptions,
     });
@@ -450,7 +450,7 @@ export async function addFeedbackComment(
       authorName ||
       user.email ||
       (authorType === "ai_agent" ? "AI Agent" : "Unknown");
-    const { data, error } = await admin.rpc("add_feedback_comment", {
+    const { data, error } = await admin.schema("users").rpc("add_feedback_comment", {
       p_feedback_id: feedbackId,
       p_author_type: authorType,
       p_author_name: name,
@@ -474,7 +474,7 @@ export async function getFeedbackComments(
 ): Promise<{ success: boolean; error?: string; data?: FeedbackComment[] }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("get_feedback_comments", {
+    const { data, error } = await admin.schema("users").rpc("get_feedback_comments", {
       p_feedback_id: feedbackId,
     });
     if (error) return { success: false, error: error.message };
@@ -495,7 +495,7 @@ export async function resolveWithTesting(
 ): Promise<{ success: boolean; error?: string; data?: UserFeedback }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("resolve_with_testing", {
+    const { data, error } = await admin.schema("users").rpc("resolve_with_testing", {
       p_id: feedbackId,
       p_resolution_notes: resolutionNotes,
       p_testing_instructions: testingInstructions ?? undefined,
@@ -526,7 +526,7 @@ export async function sendUserReviewMessage(
     const { supabase, user } = await requireAdminServiceAccess();
 
     const name = senderName || user.email || "Admin";
-    const { data, error } = await supabase.rpc("send_user_review_message", {
+    const { data, error } = await supabase.schema("users").rpc("send_user_review_message", {
       p_feedback_id: feedbackId,
       p_message: message,
       p_sender_name: name,
@@ -566,7 +566,7 @@ export async function adminReplyUserReview(
     const { supabase, user } = await requireAdminServiceAccess();
 
     const name = senderName || user.email || "Admin";
-    const { data, error } = await supabase.rpc("admin_reply_user_review", {
+    const { data, error } = await supabase.schema("users").rpc("admin_reply_user_review", {
       p_feedback_id: feedbackId,
       p_message: message,
       p_sender_name: name,
@@ -611,7 +611,7 @@ export async function replyToUserReview(
 
     const name =
       senderName || user.user_metadata?.username || user.email || "User";
-    const { data, error } = await supabase.rpc("reply_to_user_review", {
+    const { data, error } = await supabase.schema("users").rpc("reply_to_user_review", {
       p_feedback_id: feedbackId,
       p_message: message,
       p_sender_name: name,
@@ -643,7 +643,7 @@ export async function getUserMessages(
 ): Promise<{ success: boolean; error?: string; data?: FeedbackUserMessage[] }> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_user_messages", {
+    const { data, error } = await supabase.schema("users").rpc("get_user_messages", {
       p_feedback_id: feedbackId,
     });
     if (error) return { success: false, error: error.message };
@@ -664,7 +664,7 @@ export async function markUserMessageEmailed(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { error } = await admin.rpc("mark_user_message_emailed", {
+    const { error } = await admin.schema("users").rpc("mark_user_message_emailed", {
       p_message_id: messageId,
     });
     if (error) return { success: false, error: error.message };
@@ -918,7 +918,7 @@ export async function getFeedbackByStatus(
 ): Promise<{ success: boolean; error?: string; data?: UserFeedback[] }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("get_feedback_by_status", {
+    const { data, error } = await admin.schema("users").rpc("get_feedback_by_status", {
       p_status: status,
     });
 
@@ -946,7 +946,7 @@ export async function getFeedbackSummary(): Promise<{
 }> {
   try {
     const { admin } = await requireAdminServiceAccess();
-    const { data, error } = await admin.rpc("get_feedback_summary");
+    const { data, error } = await admin.schema("users").rpc("get_feedback_summary");
 
     if (error) {
       console.error("Error fetching feedback summary:", error);
@@ -1057,7 +1057,7 @@ export async function confirmFeedbackResolution(
       return { success: false, error: "User not authenticated" };
     }
 
-    const { data, error } = await supabase.rpc("close_feedback_item", {
+    const { data, error } = await supabase.schema("users").rpc("close_feedback_item", {
       p_id: feedbackId,
       p_status: "closed",
       p_admin_notes: "Confirmed by user",

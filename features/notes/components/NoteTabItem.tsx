@@ -59,7 +59,7 @@ import { NOTES_EDITOR_CONTEXT_MENU_PROPS } from "@/features/notes/agent-context/
 import { useNotesSurfaceScope } from "../hooks/useNotesSurfaceScope";
 import { useNoteEditorMode } from "../hooks/usePreferredDefaultEditorMode";
 import { saveNote, copyNote } from "../redux/thunks";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { useOpenNoteInfoWindow } from "@/features/overlays/definitions/noteInfoWindow.overlay";
 import { useOpenNoteKnowledgePanel } from "@/features/notes/canvas/noteKnowledgeKind";
 import { useNoteIngestStatus } from "../hooks/useNoteIngestStatus";

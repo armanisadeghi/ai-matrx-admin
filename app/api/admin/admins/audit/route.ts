@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const offset = Math.max(0, Number(url.searchParams.get("offset") ?? 0));
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_list_audit", {
+  const { data, error } = await supabase.schema("iam").rpc("admin_list_audit", {
     p_limit: limit,
     p_offset: offset,
   });

@@ -104,7 +104,7 @@ import CalendarLinksTab from "./tabs/CalendarLinksTab";
 import NotesTab from "./tabs/NotesTab";
 import SourceLibrarySettingsTab from "@/features/source-library/settings/SourceLibrarySettingsTab";
 import type { SettingsTabDef, ResolvedSettingsTab } from "./types";
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 
 /**
  * Single source of truth for every settings tab.

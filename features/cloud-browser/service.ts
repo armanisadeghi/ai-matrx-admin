@@ -585,7 +585,7 @@ async function userId(): Promise<string> {
 /** One name for another person, via the canonical directory RPC. Never a raw
  *  uuid in the banner — "Someone" is the honest fallback. */
 async function displayNameFor(userId: string): Promise<string> {
-  const { data, error } = await supabase.rpc("get_dm_user_info", {
+  const { data, error } = await supabase.schema("chat").rpc("get_dm_user_info", {
     p_user_id: userId,
   });
   if (error) return "Someone";

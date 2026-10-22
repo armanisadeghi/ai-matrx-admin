@@ -324,7 +324,7 @@ export function MediaListRankingBlock({ serverData, className }: MediaListBlockP
 
       {filter === "all" && cut.length > 0 && (
         <div className="border-t border-border pt-1">
-          <Button variant="quiet" icon={<ChevronDown className={cn("h-3 w-3 transition-transform", showCut && "rotate-180")} />} onClick={() => setShowCut((v) => !v)}>
+          <Button variant="quiet" iconEnd={<ChevronDown className={cn("h-3 w-3 transition-transform", showCut && "rotate-180")} />} onClick={() => setShowCut((v) => !v)}>
             {cut.length} cut
           </Button>
           {showCut && (

@@ -27,10 +27,10 @@ import {
   Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SettingsTree } from "@/components/official/settings/tree/SettingsTree";
-import { SettingsDrawerNav } from "@/components/official/settings/tree/SettingsDrawerNav";
-import { SettingsBreadcrumb } from "@/components/official/settings/tree/SettingsBreadcrumb";
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+import { SettingsTree } from "@ai-matrx/design-system/settings";
+import { SettingsDrawerNav } from "@ai-matrx/design-system/settings";
+import { SettingsBreadcrumb } from "@ai-matrx/design-system/settings";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 
 const nodes: SettingsTreeNode[] = [
   {

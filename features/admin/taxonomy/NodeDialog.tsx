@@ -93,7 +93,7 @@ export default function NodeDialog({ state, rows, onClose, onSaved }: NodeDialog
     }
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.rpc("admin_taxonomy_upsert", {
+    const { error } = await supabase.schema("platform").rpc("admin_taxonomy_upsert", {
       p_id: state?.mode === "edit" ? state.node?.id : undefined,
       p_slug: cleanSlug,
       p_name: name.trim(),

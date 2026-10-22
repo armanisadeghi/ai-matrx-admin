@@ -82,16 +82,13 @@ interface Loaded {
   tableName: string | null;
 }
 
-/** "$0.0123 · 246 points" for a dollar seat, "246 points" for a member. */
+/** "246 points" (a battle shows points; dollars never print outside a labelled Admin only element). */
 function useUsdText() {
   const { toPoints } = useCostDisplay();
-  const seesDollars = useSeesDollars();
   return (usd: number | null | undefined): string | null => {
     if (usd == null || !Number.isFinite(usd)) return null;
     const points = toPoints(usd);
-    const pts = points == null ? null : formatPoints(points);
-    if (seesDollars) return pts ? `${formatAdminUsd(usd)} · ${pts}` : formatAdminUsd(usd);
-    return pts;
+    return points == null ? null : formatPoints(points);
   };
 }
 

@@ -6,7 +6,8 @@ import { createClient } from "@/utils/supabase/client";
 
 import { parseHistory, type ChangeSet, type RefreshRun } from "./changes";
 import { isOpenJob, parseFetchedTables, parseSpec, type FetchedTable, type DataFetchSpec, type DataSource } from "./contract";
-import { usePriceText } from "./library/hooks";
+import type { CostDoorRow } from "@/components/cost/CostDoor";
+import { sourceCostRow } from "./library/hooks";
 import { getDataSources, getJobChanges } from "./server";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { tableRowCounts } from "@/features/unified-data/hub/doors";
@@ -24,16 +25,13 @@ export function useDataSources(organizationId: string | null) {
 }
 
 /**
- * "≈ 38 points" for `n` records of `source`: the source's OWN points price × the count (dollars
- * only for an admin who flipped the switch). Null when the server named no price.
+ * The door row for `n` records of `source`: the source's OWN points price × the count (the door adds dollars
+ * for an admin). Null when the server named no price or the count is zero.
  */
-export function useFetchEstimate() {
-  const price = usePriceText();
-  return (source: Pick<DataSource, "usd_per_record" | "points_per_record"> | null | undefined, n: number): string | null => {
-    if (!source || n <= 0) return null;
-    const text = price({ pointsPerRecord: source.points_per_record ?? null, usd_per_record: source.usd_per_record }, n);
-    return text == null ? null : `≈ ${text}`;
-  };
+export function fetchCostRow(source: Pick<DataSource, "usd_per_record" | "points_per_record"> | null | undefined, n: number): CostDoorRow | null {
+  if (!source || n <= 0) return null;
+  const row = sourceCostRow({ pointsPerRecord: source.points_per_record ?? null, usd_per_record: source.usd_per_record }, n, "Total");
+  return row.points == null && row.usd == null ? null : { ...row, prefix: "≈ " };
 }
 
 /** Where a limit's "change" link goes: the organization's own setting row. */

@@ -11,7 +11,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  * dates: nothing that tells two same-named People apart. The question a reader
  * actually asks is *which* person, and the answer is the job title, the employer
  * and the contact values, which is why this kind earns a bespoke peek (see the
- * rule in `components/official/entity-ref/doors.ts`).
+ * rule in `@ai-matrx/records-ui/entity-doors`).
  *
  * It is NOT a second Person renderer: the read is the canonical
  * `fetchPartyDetail` (the same bundle the record page loads, org-scoped through

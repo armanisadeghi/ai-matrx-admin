@@ -1,4 +1,4 @@
-import type { ShareLink } from "@/utils/permissions/shareLinks";
+import type { ShareLink } from "@ai-matrx/sharing/core";
 import {
   createSafeShareMessage,
   describeShareLinkAccess,
@@ -6,7 +6,7 @@ import {
   evaluateShareLinkHandoff,
   shareLinkSecurityStateMatches,
   shareLinkUnavailableReason,
-} from "../shareText";
+} from "@ai-matrx/sharing/core";
 
 function link(overrides: Partial<ShareLink> = {}): ShareLink {
   return {

@@ -1,9 +1,9 @@
 "use client";
 
 import { Mic } from "lucide-react";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
 import { settingDoorHref } from "../doors/settingDoorTarget";
 import { VOICE_SETTING_DOORS } from "./voices/voiceSettingDoors";
 

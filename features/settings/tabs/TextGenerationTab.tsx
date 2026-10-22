@@ -1,10 +1,10 @@
 "use client";
 
 import { Type } from "lucide-react";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 import { settingDoorHref } from "@/features/settings/doors/settingDoorTarget";
 import { CHAT_DEFAULT_MODEL_KNOB } from "@/features/ai-models/preferredChatModel";
 import { useSetting } from "../hooks/useSetting";

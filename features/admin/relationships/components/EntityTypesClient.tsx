@@ -505,7 +505,7 @@ export function EntityTypesClient({ entityTypes }: Props) {
       // so typing a fresh bucket name in the form Just Works.
       const refCat = editor.referenceCategory.trim();
       if (refCat) {
-        const { error: catError } = await supabase.rpc(
+        const { error: catError } = await supabase.schema("platform").rpc(
           "admin_upsert_reference_category",
           {
             p_slug: refCat,
@@ -564,7 +564,7 @@ export function EntityTypesClient({ entityTypes }: Props) {
     if (!target) return;
     setSaving(true);
     try {
-      const { error } = await supabase.rpc("admin_set_entity_type_active", {
+      const { error } = await supabase.schema("platform").rpc("admin_set_entity_type_active", {
         p_token: target.token,
         p_is_active: !target.is_active,
       });
@@ -604,7 +604,7 @@ export function EntityTypesClient({ entityTypes }: Props) {
 
   const typesLabel = (n: number) => `${n} entity type${n === 1 ? "" : "s"}`;
   const setActiveOne = async (token: string, active: boolean) => {
-    const { error } = await supabase.rpc("admin_set_entity_type_active", {
+    const { error } = await supabase.schema("platform").rpc("admin_set_entity_type_active", {
       p_token: token,
       p_is_active: active,
     });

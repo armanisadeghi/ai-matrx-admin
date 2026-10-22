@@ -173,7 +173,7 @@ async function emailsForUserIds(
 ): Promise<Map<string, string>> {
   if (userIds.length === 0) return new Map();
   try {
-    const { data } = await supabase.rpc("get_user_emails_by_ids", {
+    const { data } = await supabase.schema("users").rpc("get_user_emails_by_ids", {
       user_ids: userIds,
     });
     if (Array.isArray(data)) {

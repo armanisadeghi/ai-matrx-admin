@@ -9,7 +9,7 @@ import MediaChaptersBlock from '@/components/mardown-display/blocks/media-chapte
 import type { PodcastAudioPlayerHandle } from './PodcastAudioPlayer';
 import { PodcastAudioPlayer } from './PodcastAudioPlayer';
 import { EpisodeShowNotes } from './EpisodeShowNotes';
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { ComingSoonBadge } from '@/components/coming-soon/ComingSoonBadge';
 

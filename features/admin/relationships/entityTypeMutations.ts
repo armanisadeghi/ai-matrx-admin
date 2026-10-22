@@ -7,7 +7,7 @@ export async function setEntityTypeAgentWritable(
   token: string,
   enabled: boolean,
 ): Promise<void> {
-  const { error } = await supabase.rpc(
+  const { error } = await supabase.schema("platform").rpc(
     "admin_set_entity_type_agent_writable",
     {
       p_token: token,

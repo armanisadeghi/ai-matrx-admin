@@ -671,7 +671,7 @@ export async function unlinkRecord(source: AnnotationSource, token: string, id: 
  */
 export async function linkableKinds(targetToken: string): Promise<string[]> {
   if (!(await hasBrowserSession())) return [];
-  const { data, error } = await supabase.rpc("association_link_sources", { p_target_type: targetToken, p_label: ANCHORED_TO_ROLE });
+  const { data, error } = await supabase.schema("platform").rpc("association_link_sources", { p_target_type: targetToken, p_label: ANCHORED_TO_ROLE });
   if (error) throw sentence("finding what can be linked here", error);
   return (data ?? []).map((r: { source_type: string }) => r.source_type);
 }
@@ -694,8 +694,8 @@ export function annotationPairs(token: string): Promise<{ highlights: boolean; l
         return { highlights: false, links: false };
       }
       const [annotates, anchored] = await Promise.all([
-        supabase.rpc("association_link_sources", { p_target_type: token, p_label: ANNOTATES_ROLE }),
-        supabase.rpc("association_link_sources", { p_target_type: token, p_label: ANCHORED_TO_ROLE }),
+        supabase.schema("platform").rpc("association_link_sources", { p_target_type: token, p_label: ANNOTATES_ROLE }),
+        supabase.schema("platform").rpc("association_link_sources", { p_target_type: token, p_label: ANCHORED_TO_ROLE }),
       ]);
       if (annotates.error) throw sentence("finding what can be filed on this record", annotates.error);
       if (anchored.error) throw sentence("finding what can be linked here", anchored.error);

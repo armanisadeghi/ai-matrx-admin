@@ -12,7 +12,7 @@
 // "unavailable" label for screen readers, an in-flight read renders loading.
 //
 // `title` is the number's one-sentence definition. It renders through
-// `components/official/InfoHint.tsx` — an info icon right after the label that
+// `InfoHint` from `@ai-matrx/design-system/controls` — an info icon right after the label that
 // opens on hover, keyboard focus, and tap — never as a native `title=` on the
 // tile, which phones and keyboard users can't reach.
 //

@@ -9,7 +9,7 @@
 // one shimmering. The choice rides from the gallery to the opened board in this tab only (`sessionStorage`).
 
 import { Palette } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@ai-matrx/design-system";
 import { Button, RegionSkeleton, StageSteps } from "@ai-matrx/design-system/controls";
@@ -62,6 +62,25 @@ export function DesignBoardStartDialog({
   const [stylesError, setStylesError] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
   const [brandId, setBrandId] = useState<string | null>(null);
+  // ONE START PER PRESS (live 2026-10-22: a double-click on Create made two boards). The ref latches in the same
+  // tick as the first press, so a second click before any re-render starts nothing; the state disables the button.
+  // A fresh open, or a start that failed (progress went away without the board opening), frees it again.
+  const pressedRef = useRef(false);
+  const [pressed, setPressed] = useState(false);
+  const [hadProgress, setHadProgress] = useState(Boolean(progress));
+  if (Boolean(progress) !== hadProgress) {
+    setHadProgress(Boolean(progress));
+    if (!progress) setPressed(false);
+  }
+  useEffect(() => {
+    pressedRef.current = pressed;
+  }, [pressed]);
+  const start = (choice: BoardStartChoice) => {
+    if (pressedRef.current) return;
+    pressedRef.current = true;
+    setPressed(true);
+    onStart(choice);
+  };
 
   // A fresh open starts at the AI step with the template's name (adjusted during render, never an effect).
   const [wasOpen, setWasOpen] = useState(open);
@@ -72,6 +91,7 @@ export function DesignBoardStartDialog({
       setStep("start");
       setPicked(null);
       setBrandId(defaultBrandId);
+      setPressed(false);
     }
   }
 
@@ -154,7 +174,7 @@ export function DesignBoardStartDialog({
               <Button variant="outline" icon={<Palette size={16} />} onClick={() => setStep("style")} disabled={!named}>
                 Start from a style
               </Button>
-              <Button variant="primary" disabled={!named} onClick={() => onStart({ name: named, mode: "ai", brandId })}>
+              <Button variant="primary" disabled={!named || pressed} onClick={() => start({ name: named, mode: "ai", brandId })}>
                 Create
               </Button>
             </>
@@ -165,8 +185,8 @@ export function DesignBoardStartDialog({
               </Button>
               <Button
                 variant="primary"
-                disabled={!style || !named}
-                onClick={() => style && onStart({ name: named, mode: "style", styleTemplateId: style.templateId, styleName: style.name, brandId })}
+                disabled={!style || !named || pressed}
+                onClick={() => style && start({ name: named, mode: "style", styleTemplateId: style.templateId, styleName: style.name, brandId })}
               >
                 Use style
               </Button>

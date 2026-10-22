@@ -10,8 +10,7 @@
 // future config) were mouse-only dead ends.
 //
 // The door is resolved from the config's ENTITY TOKEN through
-// `resolveEntityDoors` — the ONE route resolver (components/official/entity-ref
-// /doors.ts) — so a config gets its door for free the moment it names its
+// `resolveEntityDoors` — the ONE route resolver (@ai-matrx/records-ui/entity-doors) — so a config gets its door for free the moment it names its
 // token, and a registry edit moves every list at once. A surface whose records
 // live in a second shell (a system agent under /administration/…) passes
 // `hrefFor` and wins over the registry.

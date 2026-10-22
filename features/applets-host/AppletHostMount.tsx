@@ -53,6 +53,7 @@ import { toast } from "@/lib/toast";
 import { provideStoredComponentScopeModules } from "@/lib/code-runtime/stored-scope";
 import { AppletKind } from "@/features/applets-host/AppletForeignKind";
 import { DataPage } from "@/features/applets/embed/DataPage";
+import { SpaceWidgetBody } from "@/features/spaces/embed/SpaceWidget";
 import {
   useDeclaredSurfaceMandates,
   type SurfaceMandateRef,
@@ -242,11 +243,13 @@ export function AppletHostMount({
     const listeners = navListeners.current;
     const transportOptions = { source: "applets" };
     let previewLocation: NavLocation = { path: [], params: {} };
+    // A signed-out visitor reads and saves through the GUEST client (its own cookie; never the main
+    // session, so the rest of the app still sees a signed-out visitor). G2 guest data. ONE client for
+    // everything the Applet shows — its records and a Space page placed in it alike.
+    const client = visitor && !isPreview ? guestSupabase() : supabase;
     const host: PlatformHost = createPlatformHost({
       appletId,
-      // A signed-out visitor reads and saves through the GUEST client (its own cookie; never the main
-      // session, so the rest of the app still sees a signed-out visitor). G2 guest data.
-      supabase: visitor && !isPreview ? guestSupabase() : supabase,
+      supabase: client,
       ...(visitor && !isPreview
         ? {
             ensureGuestSession: async () => {
@@ -375,6 +378,9 @@ export function AppletHostMount({
           {
             // A page built from tables placed inside the Applet (`<DataPage id>`).
             renderDataPage: (id: string) => <DataPage id={id} />,
+            // A Space page shown as one of the Applet's pages (`AppletPage.space`, `<SpacePage id>`): the Spaces
+            // editor through its own door (same look, same autosave), read-only for a visitor and in preview.
+            renderSpacePage: (spaceId: string) => <SpaceWidgetBody spaceId={spaceId} readOnly={visitor || isPreview} client={client} />,
             // The app's kind registry, or — for a kind the Applet's organization owns — the Applet's own read.
             renderKind: (kind: string, value: unknown) => (
               <AppletKind host={host} kind={kind} value={value} />

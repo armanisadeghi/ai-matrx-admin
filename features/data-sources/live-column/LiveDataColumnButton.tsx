@@ -13,7 +13,7 @@ import Link from "@/components/navigation/AppLink";
 import { Database } from "lucide-react";
 import { useFields, useRecordsClient } from "@ai-matrx/records/react";
 import { Button, OptionCombobox, Select } from "@ai-matrx/design-system/controls";
-import { formatPoints } from "@ai-matrx/kit/format";
+import { CostDoor, type CostDoorRow } from "@/components/cost/CostDoor";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProInput } from "@/components/official/ProInput";
@@ -21,7 +21,7 @@ import { useBackendApi } from "@/hooks/useBackendApi";
 import { runAiColumn } from "@/features/data-tables/records-ui-host/enrichPort";
 
 import { limitSettingHref } from "../hooks";
-import { useLibrary, usePriceText } from "../library/hooks";
+import { sourceCostRow, useLibrary } from "../library/hooks";
 import { resolveTasks } from "../library/tasks";
 import {
   KEEP_OPTIONS,
@@ -68,7 +68,6 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
   const client = useRecordsClient();
   const backend = useBackendApi();
   const catalog = useLibrary(organizationId);
-  const price = usePriceText();
   const fields = useFields(tableId);
   const sources = useMemo(
     () => (catalog.data?.sources ?? []).filter((s) => s.input.kind === "url" && (s.output_fields?.length ?? 0) > 0),
@@ -183,16 +182,17 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
   const total = made ? totalPoints(made.map((m) => m.quote)) : 0;
   const quote = made?.find((m) => m.quote)?.quote ?? null;
   // The cost always shows before anything is paid: the server's own quote when it sent one, else the
-  // source's catalog price over the same rows. Dollar seats get "$ · points" from the one price helper.
+  // source's catalog price over the same rows. The figure sits behind the Cost door.
   const priceSource = source ? { pointsPerRecord: source.points_per_record ?? null, usd_per_record: source.usd_per_record } : null;
   const columnsAsked = Math.max(1, made?.length ?? kept.length);
   const recordsAll = (quote?.rows ?? rowCount) * (isItems ? (quote?.recordsPerRow ?? recordsPerRow) : 1) * columnsAsked;
   const serverTotal = made?.some((m) => m.quote) ? total : null;
-  const costText = priceSource
-    ? price(serverTotal != null && recordsAll > 0 ? { pointsPerRecord: serverTotal / recordsAll, usd_per_record: priceSource.usd_per_record } : priceSource, recordsAll)
+  const costRow: CostDoorRow | null = priceSource
+    ? sourceCostRow(serverTotal != null && recordsAll > 0 ? { pointsPerRecord: serverTotal / recordsAll, usd_per_record: priceSource.usd_per_record } : priceSource, recordsAll, "Total")
     : serverTotal != null
-      ? formatPoints(serverTotal)
+      ? { label: "Total", points: serverTotal }
       : null;
+  const hasCost = costRow != null && (costRow.points != null || costRow.usd != null);
   const sourceGroups = useMemo(() => {
     if (!allSources && activeTask) {
       return [
@@ -356,7 +356,7 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
                   {rowCount} {rowCount === 1 ? "row" : "rows"}:{" "}
                 </>
               )}
-              <strong>{costText ?? "No price yet"}</strong> in all.{" "}
+              {hasCost && costRow ? <CostDoor rows={[costRow]} /> : null}{" "}
               {quote && settings && (
                 <Link className="underline" href={settings}>
                   Records per row (max{quote.maxRecordsPerRow > 0 ? ` ${quote.maxRecordsPerRow}` : ""})
@@ -371,7 +371,7 @@ function LiveDataColumnDialog({ tableId, organizationId, onClose }: { tableId: s
               </p>
             )}
             {made[0]?.says && !quote && <p className="text-sm">{made[0].says}</p>}
-            <Button variant="primary" disabled={busy || made.length === 0 || costText == null} onClick={() => void fill()} data-live-column-run="">
+            <Button variant="primary" disabled={busy || made.length === 0 || !hasCost} onClick={() => void fill()} data-live-column-run="">
               {quote && quote.rowsKept > 0 && total === 0
                 ? "Fill again"
                 : `Fill ${quote?.rows ?? rowCount} ${(quote?.rows ?? rowCount) === 1 ? "row" : "rows"}`}

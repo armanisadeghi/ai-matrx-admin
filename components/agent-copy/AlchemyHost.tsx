@@ -15,8 +15,7 @@ import {
 } from "react";
 import type { AlchemyHostPorts } from "@ai-matrx/alchemy/ports";
 import { createAlchemyHostPorts } from "./alchemy-host-ports";
-import { AlchemyWindowHost, createAlchemyWindowController } from "./AlchemyWindowHost";
-import { focusWindow } from "@ai-matrx/summon/boot";
+import { createAlchemyWindowPort } from "./alchemyWindowPort";
 import { createActionRegistry } from "@ai-matrx/alchemy/actions";
 import { AlchemyActionsProvider } from "@ai-matrx/alchemy/react/host";
 import { useRouter } from "next/navigation";
@@ -169,11 +168,9 @@ export function AlchemyHost({ children }: { children: ReactNode }) {
   const orgId = useAppSelector(selectOrganizationId);
   // Bound once per mount: the identity port reads the live store, so an
   // account or organization switch needs no new ports.
-  // PP-01a: a live preparation session opens in a real WindowPanel, several at once.
-  const [windows] = useState(() =>
-    createAlchemyWindowController({ focusPanel: (panelId) => store.dispatch(focusWindow(panelId)) }),
-  );
-  const [hostPorts] = useState(() => createAlchemyHostPorts({ store, window: windows.port }));
+  // PP-01a: a live preparation session opens in a real window (the summon overlay
+  // `alchemyPrepareWindow`), several at once.
+  const [hostPorts] = useState(() => createAlchemyHostPorts({ store, window: createAlchemyWindowPort(store) }));
   // THE one action registry (ALC-15). Each provider registers itself once
   // (rich-document: ensureRichDocumentProvider, from its layouts).
   const [actionRegistry] = useState(() => createActionRegistry({ ports: hostPorts }));
@@ -197,7 +194,6 @@ export function AlchemyHost({ children }: { children: ReactNode }) {
               {/* THE one selection toolbar: every selectable text's passage actions
                   come from this registry (components/selection-toolbar). */}
               <SelectionToolbarRoot />
-              <AlchemyWindowHost controller={windows} />
             </WritingInputProvider>
             </WritingBoxProvider>
           </ErrorCardMenusProvider>

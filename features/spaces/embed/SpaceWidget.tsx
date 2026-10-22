@@ -12,6 +12,9 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton, Select } from "@ai-matrx/design-system/controls";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { Database } from "@/types/database.types";
 
 import { createDatabaseSpacesStore } from "../store-db/create-store";
 
@@ -23,10 +26,12 @@ const SpaceEditorImpl = dynamic(() => import("./RecordBodySpaceImpl"), {
 /** The slot key the editor keeps a settled height under (one per page drawn as a widget). */
 export const spaceWidgetSlot = (spaceId: string): string => `space-widget:${spaceId}`;
 
-export function SpaceWidgetBody({ spaceId, readOnly }: { spaceId: string; readOnly: boolean }) {
+/** `client`: the session the page reads as (default: the app's); the Applet host passes its visitor's. */
+export function SpaceWidgetBody({ spaceId, readOnly, client }: { spaceId: string; readOnly: boolean; client?: SupabaseClient<Database> }) {
   return (
     <SpaceEditorImpl
       spaceId={spaceId}
+      client={client}
       recordId={spaceWidgetSlot(spaceId)}
       readOnly={readOnly}
       fallback={<ErrorNotice title="This page is gone or not shared with you" size="inline" />}

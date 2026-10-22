@@ -57,7 +57,7 @@ const door = async (schema, fn, args) => {
 const out = {};
 
 // ── 1. CALDER APPROVALS: the outside door, closed through the door that opened it. ────────────
-// `openOutsideLane` in features/sharing/outside/outsideShareService.ts writes this exact knob
+// `openOutsideLane` in @ai-matrx/sharing src/core/outsideShareService.ts writes this exact knob
 // through this exact door; turning it off is the same call with `false`.
 const calderBefore = await door("platform", "knob_resolve", {
   p_feature: "custom", p_key: "external_principal_enabled", p_organization_id: CALDER,

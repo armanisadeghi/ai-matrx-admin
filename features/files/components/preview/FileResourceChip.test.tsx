@@ -6,19 +6,20 @@ import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { FileResourceChip } from "./FileResourceChip";
 
-jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => null }));
-jest.mock("@/features/files/redux/selectors", () => ({ selectFileById: () => null }));
-jest.mock("@/features/files/hooks/useEnsureCloudFile", () => ({ useEnsureCloudFile: () => undefined }));
-jest.mock("@/features/files/redux/file-hydration", () => ({ FILE_RENDER_FIELDS: [] }));
+jest.mock("@ai-matrx/media/files/engine/redux/hooks", () => ({ useAppSelector: () => null }));
+jest.mock("@ai-matrx/media/files/engine/redux/selectors", () => ({ selectFileById: () => null }));
+jest.mock("@ai-matrx/media/files/engine/hooks/useEnsureCloudFile", () => ({ useEnsureCloudFile: () => undefined }));
+jest.mock("@ai-matrx/media/files/engine/redux/file-hydration", () => ({ FILE_RENDER_FIELDS: [] }));
 jest.mock("@ai-matrx/media/react", () => ({ MediaThumbnail: () => null }));
-jest.mock("@/features/files/components/core/FileContextMenu/FileRightClickMenu", () => ({
-  FileRightClickMenu: ({ children }: { children: ReactNode }) => <>{children}</>,
+jest.mock("@ai-matrx/media/files/engine/host/ui", () => ({
+  ...jest.requireActual("@ai-matrx/media/files/engine/host/ui"),
+  FileMenu: ({ children }: { children: ReactNode }) => <>{children}</>,
+  openFilePreview: jest.fn(),
 }));
 jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
   ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ children }: { children: ReactNode }) => <button type="button">{children}</button>,
 }));
-jest.mock("./openFilePreview", () => ({ openFilePreview: jest.fn() }));
 
 describe("FileResourceChip hover peek", () => {
   it("keeps the remove button outside the hover-card trigger", () => {

@@ -8,7 +8,7 @@
  * said, never silently cut.
  */
 
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import { snapshotToGridSheets } from "@ai-matrx/office/sheets";
 import { SharedSheetView } from "./SharedSheetView";
 import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";

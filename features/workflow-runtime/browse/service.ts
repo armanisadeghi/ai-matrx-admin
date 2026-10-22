@@ -244,7 +244,7 @@ export async function duplicateWorkflow(
   organizationId?: string | null,
 ): Promise<{ id: string; name: string }> {
   // org-filter: write-target writes into the organization the person is working in; no list reads it
-  const { data: newId, error } = await supabase.rpc("wfx_duplicate_definition", {
+  const { data: newId, error } = await supabase.schema("workflow").rpc("wfx_duplicate_definition", {
     p_definition_id: workflowId,
     // org-filter: write-target writes into the organization the person is working in; no list reads it
     p_organization_id: organizationId ?? (await ensureOrgId(null)),
@@ -273,7 +273,7 @@ export async function duplicateWorkflowVersion(
   organizationId?: string | null,
 ): Promise<{ id: string; name: string }> {
   // org-filter: write-target writes into the organization the person is working in; no list reads it
-  const { data: newId, error } = await supabase.rpc("wfx_duplicate_version", {
+  const { data: newId, error } = await supabase.schema("workflow").rpc("wfx_duplicate_version", {
     p_version_id: versionId,
     // org-filter: write-target writes into the organization the person is working in; no list reads it
     p_organization_id: organizationId ?? (await ensureOrgId(null)),

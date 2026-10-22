@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Plus } from "lucide-react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 
 interface QuickCaptureButtonProps {
   defaultContent?: string;
@@ -40,7 +40,7 @@ export function QuickCaptureButton({
     dispatch(
       openOverlay({
         overlayId: "saveToNotes",
-        instanceId: crypto.randomUUID(),
+        instanceId: mintInstanceId("saveToNotes"),
         data: {
           initialContent: defaultContent,
           bucketTag,

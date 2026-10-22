@@ -178,7 +178,7 @@ export async function userEmails(
 ): Promise<Map<string, string>> {
   const unique = [...new Set(userIds)];
   if (unique.length === 0) return new Map();
-  const { data, error } = await supabase.rpc("get_user_emails_by_ids", {
+  const { data, error } = await supabase.schema("users").rpc("get_user_emails_by_ids", {
     user_ids: unique,
   });
   if (error) {

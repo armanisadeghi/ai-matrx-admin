@@ -14,7 +14,6 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
 import { hookController } from "./hook-controller";
@@ -34,12 +33,9 @@ export interface SendToAgentWindowHandle {
 }
 
 export function sendToAgentWindowAction(opts: OpenSendToAgentWindowOptions) {
-  return openOverlay({
-    overlayId: OVERLAY_ID,
-    data: {
-      initialContent: opts.initialContent,
-      initialSourceTitle: opts.initialSourceTitle ?? null,
-    },
+  return opener.openAction({
+    initialContent: opts.initialContent,
+    initialSourceTitle: opts.initialSourceTitle ?? null,
   });
 }
 

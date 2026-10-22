@@ -200,7 +200,7 @@ export function AppConfigEditor({
   const commitSave = async (pending: PendingSave) => {
     setSaving(true);
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("admin_update_app_config", {
+    const { data, error } = await supabase.schema("ops").rpc("admin_update_app_config", {
       p_app: pending.app,
       p_schema_version: pending.schemaVersion,
       p_min_supported_app_version: pending.minVersion,
@@ -261,7 +261,7 @@ export function AppConfigEditor({
   ): Promise<boolean> => {
     setSaving(true);
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("admin_update_app_config", {
+    const { data, error } = await supabase.schema("ops").rpc("admin_update_app_config", {
       p_app: entry.app,
       p_schema_version: entry.schema_version,
       p_min_supported_app_version: entry.min_supported_app_version,
