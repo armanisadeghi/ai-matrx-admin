@@ -31,6 +31,7 @@ import { downloadFile } from "@ai-matrx/kit/download";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { jsonExportItem } from "@/components/agent-copy/export";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import {
   organizationPerformanceReviewsManifest,
   performanceReviewRatingSurfaceName,
@@ -215,6 +216,13 @@ export default function PerformanceReviewApp({
     }
     return items;
   };
+  // A submitted half (/hr/performance/respond/[trackId], `single.readOnly`) is never edited: the
+  // save path refuses it, so an agent write would change the screen and save nothing. Refuse it.
+  const refuseReadOnly = (): never =>
+    refuseSurfaceWrite("This review is submitted and read-only; nothing on it can be changed.");
+  const writable = readOnly
+    ? { updateField: refuseReadOnly, setOverall: refuseReadOnly, setRatingValue: refuseReadOnly }
+    : store;
   const ratingHandlers = Object.fromEntries(
     RATING_SCHEMA.flatMap((category) =>
       category.items.map((item) => [
@@ -225,52 +233,52 @@ export default function PerformanceReviewApp({
               `${performanceReviewRatingSurfaceName(category.key, item.key)} expects one whole number from 1 to 5.`,
             );
           }
-          store.setRatingValue(category.key, item.key, value);
+          writable.setRatingValue(category.key, item.key, value);
         },
       ]),
     ),
   );
   const getSurfaceWriteHandlers = () => ({
     employee_name: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "employeeName",
         requireText("employee_name", value, 200),
       ),
     job_title: (value: unknown) =>
-      store.updateField("title", requireText("job_title", value, 200)),
+      writable.updateField("title", requireText("job_title", value, 200)),
     department: (value: unknown) =>
-      store.updateField("department", requireText("department", value, 200)),
+      writable.updateField("department", requireText("department", value, 200)),
     date_of_hire: (value: unknown) =>
-      store.updateField("dateOfHire", requireDate("date_of_hire", value)),
+      writable.updateField("dateOfHire", requireDate("date_of_hire", value)),
     review_period: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "reviewPeriod",
         requireText("review_period", value, 200),
       ),
     date_of_evaluation: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "dateOfEvaluation",
         requireDate("date_of_evaluation", value),
       ),
     responsibilities: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "responsibilities",
         requireNarrativeList("responsibilities", value),
       ),
     accomplishments: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "accomplishments",
         requireNarrativeList("accomplishments", value),
       ),
     strengths: (value: unknown) =>
-      store.updateField("strengths", requireNarrativeList("strengths", value)),
+      writable.updateField("strengths", requireNarrativeList("strengths", value)),
     opportunities: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "opportunities",
         requireNarrativeList("opportunities", value),
       ),
     goals: (value: unknown) =>
-      store.updateField("goals", requireText("goals", value, 12000)),
+      writable.updateField("goals", requireText("goals", value, 12000)),
     overall_rating: (value: unknown) => {
       const next = requireText("overall_rating", value, 40);
       if (
@@ -281,10 +289,10 @@ export default function PerformanceReviewApp({
           `overall_rating expects one of: ${OVERALL_OPTIONS.map((option) => option.key).join(" | ")}; an empty string clears it.`,
         );
       }
-      store.setOverall(next);
+      writable.setOverall(next);
     },
     additional_comments: (value: unknown) =>
-      store.updateField(
+      writable.updateField(
         "additionalComments",
         requireText("additional_comments", value, 12000),
       ),

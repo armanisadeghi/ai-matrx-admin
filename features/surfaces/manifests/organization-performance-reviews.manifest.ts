@@ -607,24 +607,25 @@ export const organizationPerformanceReviewsManifest: SurfaceManifest = {
   surfaceName: PERFORMANCE_REVIEW_SURFACE_NAME,
   situation:
     "They are drafting a performance review for {employee_name|an employee not named yet}, in the {current_view} view: {completion_percent}% complete, {rated_count} of {total_rating_count} ratings given, overall rating {overall_rating_label|not chosen}. You can fill in any field of the form; they preview or export the finished report.",
-  // Explicit HR parent (surface declarations W1): this route is outside `/hr`, so `HrProvider` is not
-  // mounted and the module's four HR employer values stay honestly empty here (all are
-  // `alwaysAvailable: false`); the organization values still arrive from Redux.
+  // Its one live mount is the 360 respondent's own half, /hr/performance/respond/[trackId]
+  // (Review360RespondPage → PerformanceReviewApp `single`), inside `/hr`, so `HrProvider` supplies
+  // the module's HR values there. The old `/organizations/[orgId]/performance-reviews` route now
+  // redirects to /hr/performance (W2 hr-b re-point, 2026-10-22; surface name kept, DB row unchanged).
   inheritsFrom: "matrx-default/human-resources",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
-    "Organization-scoped interim employee performance-review editor",
+    "A 360 review respondent's own half: the review form they fill in and submit (/hr/performance/respond/[trackId]).",
   readiness: "partial",
   readinessNote:
-    "The exhaustive values, handlers, canonical copy controls, organization route, demo mount, and static checks are complete; real-agent writeback and independent browser certification are pending.",
-  label: "Organization Performance Reviews",
-  urlPattern: "/organizations/[orgId]/performance-reviews",
+    "Re-pointed 2026-10-22 (W2 hr-b) to its one live mount, /hr/performance/respond/[trackId]; writes refused on a submitted half. Values, handlers, copy controls and demo mount unchanged; real-agent writeback and browser certification pending.",
+  label: "360 review form",
+  urlPattern: "/hr/performance/respond/[trackId]",
   intro: `<surface_intro>
-You are on an interim organization-scoped Performance Reviews surface. The user is drafting one employee review, checking its completion, and previewing or exporting a finished two-page report; this is intentionally separate from the future HR module.
+You are on a 360 review respondent's own half (the employee's self review or the manager's review). The person fills in one review form, checks its completion, previews the two-page report and submits it with the page's Submit button.
 Read active_review and the individual values as the live form state. question_outline, list_section_rules, rating_questions, rating_scale, and overall_rating_options describe every available input without supplying answers. Narrative lists allow 2-5 items and the ideal number is three.
-This interim page autosaves to this browser under the organization rather than to the production HR database. Employee names are plain form text with no employee-record identity yet. Agent writes ask for confirmation and then use the same browser-local autosave path as human edits.
+Edits autosave to this half of the 360 review (the records store) as the person types; agent writes ask for confirmation and then use that same save. The list values (reviews_summary, review_count, search_query) describe just this one form. Once the half is submitted it is read-only: every write is refused. Submitting is the person's own press.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(
