@@ -1,17 +1,20 @@
 "use client";
 
-/** The body of a `workbook-history` canvas tab. */
+/** The body of a `workbook-history` canvas tab: one workbook's versions, only while that workbook is open. */
 
 import type { CanvasKindProps } from "@ai-matrx/canvas/react";
 import { WorkbookHistoryViewer } from "@/features/workbooks/components/WorkbookHistoryViewer";
-import { readHistoryTab } from "@ai-matrx/office/univer/history";
+import { WORKBOOK_HISTORY_KIND, readHistoryTab } from "@ai-matrx/office/univer/history";
+import { HistorySubjectGate } from "@/features/canvas/host/HistorySubjectGate";
 
-export default function WorkbookHistoryCanvasView({ data }: CanvasKindProps) {
-  const tab = readHistoryTab(data);
+export default function WorkbookHistoryCanvasView(props: CanvasKindProps) {
+  const tab = readHistoryTab(props.data);
   if (!tab) return null;
   return (
-    <div className="h-full min-h-0 overflow-y-auto bg-background p-3" data-matrx-page-scroll="">
-      <WorkbookHistoryViewer workbookId={tab.id} editable={tab.editable} />
-    </div>
+    <HistorySubjectGate kind={WORKBOOK_HISTORY_KIND} noun="workbook" subjectId={tab.id} props={props}>
+      {({ name, canRestore }) => (
+        <WorkbookHistoryViewer workbookId={tab.id} editable={tab.editable} subjectName={name} canRestore={canRestore} />
+      )}
+    </HistorySubjectGate>
   );
 }

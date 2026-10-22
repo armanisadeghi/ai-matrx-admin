@@ -27,6 +27,7 @@ import { CanvasColumn, useCanvas } from "@ai-matrx/canvas/react";
 import { createSlimRootReducer } from "@/lib/redux/rootReducer";
 import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
+import { useHistorySubject } from "@/features/canvas/host/historySubject";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   DOCUMENT_HISTORY_KIND,
@@ -68,6 +69,9 @@ function mount(store: Store, seen: { doc: Toggle | null; book: Toggle | null }) 
   function Buttons() {
     seen.doc = useToolToggle(documentHistoryToggleInput("d-1", false));
     seen.book = useToolToggle(workbookHistoryToggleInput("w-1", true));
+    // the editors register their subject; a history tab shows its versions only while that editor is open
+    useHistorySubject(DOCUMENT_HISTORY_KIND, "d-1");
+    useHistorySubject(WORKBOOK_HISTORY_KIND, "w-1");
     return null;
   }
   const container = document.createElement("div");

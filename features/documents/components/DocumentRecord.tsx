@@ -30,7 +30,8 @@ import { type EditorMenuEntry, type DocumentRow } from "@ai-matrx/office/core";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
 import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
 import { useToolToggle } from "@/features/canvas/host/toolCanvas";
-import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
+import { DOCUMENT_HISTORY_KIND, documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
+import { useHistorySubject } from "@/features/canvas/host/historySubject";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast } from "@/lib/toast";
 import { useFileRecordMenu } from "@/features/file-actions/useFileRecordMenu";
@@ -351,6 +352,7 @@ export function DocumentRecord({
     }
   });
   const history = useToolToggle(documentHistoryToggleInput(id, canEdit, doc?.document_name));
+  useHistorySubject(DOCUMENT_HISTORY_KIND, id);
   const printDocument = () =>
     void import("@ai-matrx/rich-content/copy/content-export").then((m) =>
       m.printContent(documentMarkdown(), docRef.current?.document_name),

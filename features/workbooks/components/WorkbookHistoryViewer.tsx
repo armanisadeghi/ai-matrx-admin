@@ -44,9 +44,13 @@ type Props = {
   workbookId: string | null | undefined;
   /** Hide the Restore button when viewer is read-only. */
   editable?: boolean;
+  /** The name shown in the tab header; Restore buttons name it. */
+  subjectName?: string | null;
+  /** Asked at the moment Restore is pressed: false when this is no longer the open workbook. */
+  canRestore?: () => boolean;
 };
 
-export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
+export function WorkbookHistoryViewer({ workbookId, editable = true, subjectName = null, canRestore }: Props) {
   const [snapshots, setSnapshots] = useState<WorkbookSnapshot[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +77,15 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
   const handleRestore = useCallback(
     async (snapshotId: string) => {
       if (!workbookId) return;
+      // Restore acts on the workbook in this tab's header and on no other: refuse when it is not the open one.
+      if (canRestore && !canRestore()) {
+        toast({
+          title: "Not restored",
+          description: `${subjectName ? `“${subjectName}”` : "This workbook"} is not the open workbook, so nothing was changed.`,
+          variant: "destructive",
+        });
+        return;
+      }
       setRestoringId(snapshotId);
 
       // listSnapshots intentionally omits the heavy `snapshot` jsonb. Re-fetch
@@ -140,7 +153,7 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
       toast({ title: "Restored snapshot", variant: "success" });
       void reload();
     },
-    [reload, workbookId],
+    [reload, workbookId, canRestore, subjectName],
   );
 
   if (!workbookId) {
@@ -195,6 +208,7 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
         editable={false}
         restoringId={restoringId}
         onRestore={handleRestore}
+        subjectName={subjectName}
       />
       {rest.length > 0 && (
         <div className="text-xs uppercase tracking-wider text-muted-foreground px-1 pt-2">
@@ -209,6 +223,7 @@ export function WorkbookHistoryViewer({ workbookId, editable = true }: Props) {
           editable={editable}
           restoringId={restoringId}
           onRestore={handleRestore}
+        subjectName={subjectName}
         />
       ))}
     </div>
@@ -221,12 +236,14 @@ function SnapshotRow({
   editable,
   restoringId,
   onRestore,
+  subjectName,
 }: {
   snapshot: WorkbookSnapshot;
   isCurrent: boolean;
   editable: boolean;
   restoringId: string | null;
   onRestore: (id: string) => void;
+  subjectName?: string | null;
 }) {
   return (
     <div
@@ -256,7 +273,7 @@ function SnapshotRow({
             variant="quiet"
             disabled={restoringId !== null}
             onClick={() => onRestore(snapshot.id)}
-            title="Restore this snapshot as the new current state"
+            title={subjectName ? `Restore this version of “${subjectName}”` : "Restore this snapshot as the new current state"}
           >
             Restore
           </Button>

@@ -36,9 +36,13 @@ type Props = {
   documentId: string | null | undefined;
   /** Hide the Restore button when viewer is read-only. */
   editable?: boolean;
+  /** The name shown in the tab header; Restore buttons name it. */
+  subjectName?: string | null;
+  /** Asked at the moment Restore is pressed: false when this is no longer the open document. */
+  canRestore?: () => boolean;
 };
 
-export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
+export function DocumentHistoryViewer({ documentId, editable = true, subjectName = null, canRestore }: Props) {
   const [snapshots, setSnapshots] = useState<DocumentSnapshot[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,6 +69,15 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
   const handleRestore = useCallback(
     async (snapshotId: string) => {
       if (!documentId) return;
+      // Restore acts on the document in this tab's header and on no other: refuse when it is not the open one.
+      if (canRestore && !canRestore()) {
+        toast({
+          title: "Not restored",
+          description: `${subjectName ? `“${subjectName}”` : "This document"} is not the open document, so nothing was changed.`,
+          variant: "destructive",
+        });
+        return;
+      }
       setRestoringId(snapshotId);
 
       // Re-fetch the heavy snapshot column on demand (list intentionally
@@ -117,7 +130,7 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
       toast({ title: "Restored snapshot", variant: "success" });
       void reload();
     },
-    [reload, documentId],
+    [reload, documentId, canRestore, subjectName],
   );
 
   if (!documentId) {
@@ -170,6 +183,7 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
         editable={false}
         restoringId={restoringId}
         onRestore={handleRestore}
+        subjectName={subjectName}
       />
       {rest.length > 0 && (
         <div className="text-xs uppercase tracking-wider text-muted-foreground px-1 pt-2">
@@ -184,6 +198,7 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
           editable={editable}
           restoringId={restoringId}
           onRestore={handleRestore}
+        subjectName={subjectName}
         />
       ))}
     </div>
@@ -196,12 +211,14 @@ function SnapshotRow({
   editable,
   restoringId,
   onRestore,
+  subjectName,
 }: {
   snapshot: DocumentSnapshot;
   isCurrent: boolean;
   editable: boolean;
   restoringId: string | null;
   onRestore: (id: string) => void;
+  subjectName?: string | null;
 }) {
   return (
     <div
@@ -231,7 +248,7 @@ function SnapshotRow({
             variant="quiet"
             disabled={restoringId !== null}
             onClick={() => onRestore(snapshot.id)}
-            title="Restore this snapshot as the new current state"
+            title={subjectName ? `Restore this version of “${subjectName}”` : "Restore this snapshot as the new current state"}
           >
             Restore
           </Button>
