@@ -91,6 +91,11 @@ jest.mock("@/features/marketing/data/service", () => ({
   deleteSite: jest.fn(async () => undefined),
   getBrand: jest.fn(),
 }));
+// A site an answer made is taken back through the retraction door (withdrawSite), never a bare delete.
+jest.mock("@/features/marketing/data/retraction", () => ({
+  ...jest.requireActual("@/features/marketing/data/retraction"),
+  withdrawSite: jest.fn(async () => ({ applied: true })),
+}));
 jest.mock("../siteOwnership", () => ({ claimSite: jest.fn(async () => ({ kind: "claimed", site: { id: "site-1" } })) }));
 jest.mock("../siteOwnershipLive", () => ({ liveSiteClaimDeps: {} }));
 jest.mock("@/lib/workflows/system-runs", () => ({ startSystemRun: jest.fn(async () => ({})) }));
@@ -117,6 +122,7 @@ import type { EvidenceItem } from "../evidence";
 import { persistAnswer } from "../validate/persist";
 import { undoPromotion } from "../promote";
 import { deleteSite } from "@/features/marketing/data/service";
+import { withdrawSite } from "@/features/marketing/data/retraction";
 import type { WebChoice } from "../webKinds";
 import {
   answerForWebChoice,
@@ -185,6 +191,7 @@ beforeEach(() => {
   nextCreated = {};
   (undoPromotion as jest.Mock).mockClear();
   (deleteSite as jest.Mock).mockClear();
+  (withdrawSite as jest.Mock).mockClear();
   promoted.length = 0;
   linked.length = 0;
 });
@@ -389,9 +396,11 @@ describe("changing an answer takes back what it created", () => {
     await saver.decide(mine, { kind: "ours", sentiment: null });
     await saver.decide(fresh, { kind: "ours", sentiment: null });
     await saver.decide(mine, { kind: "backlink", sentiment: null });
-    expect(deleteSite).not.toHaveBeenCalled();
+    expect(withdrawSite).not.toHaveBeenCalled();
     await saver.decide(fresh, { kind: "backlink", sentiment: null });
-    expect(deleteSite).toHaveBeenCalledTimes(1);
+    expect(withdrawSite).toHaveBeenCalledTimes(1);
+    expect(withdrawSite).toHaveBeenCalledWith("site-1");
+    expect(deleteSite).not.toHaveBeenCalled();
     expect(failures).toEqual([]);
   });
 });

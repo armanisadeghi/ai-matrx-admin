@@ -35,7 +35,6 @@ import {
   deleteBrandAsset,
   deleteBusinessFact,
   deleteProperty,
-  deleteSite,
   getBrand,
   mergeBrandProfile,
   moveSiteBrand,
@@ -43,6 +42,7 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { startSystemRun } from "@/lib/workflows/system-runs";
+import { withdrawSite } from "@/features/marketing/data/retraction";
 import { sourceAccountOf } from "@/features/marketing/components/brands/logo-rank";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { linkPersonToBrand } from "../relations";
@@ -391,7 +391,8 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string |
   // The crawl every confirmed site gets (as on Create), on the server; never blocks the answer.
   startIngest(ctx, site.id, { sites: [site.id] });
   if (existing.data?.id === site.id) return { id: null, undo: async () => {} };
-  return { id: site.id, undo: async () => deleteSite(site.id) };
+  // Undo goes through the retraction door (never a bare site delete): what the site's crawl found goes with it.
+  return { id: site.id, undo: async () => void (await withdrawSite(site.id)) };
 }
 
 /** A live web.business_fact on the brand of this finding's kind with the same text (case and spacing ignored). */

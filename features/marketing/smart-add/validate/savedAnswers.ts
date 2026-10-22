@@ -11,12 +11,12 @@ import {
   deleteBrandAsset,
   deleteBusinessFact,
   deleteProperty,
-  deleteSite,
   getBrand,
   updateBrand,
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { associationsService } from "@/features/scopes/service/associationsService";
+import { withdrawSite } from "@/features/marketing/data/retraction";
 import { isJsonRecord, type MarketingBrand } from "@/features/marketing/types";
 import type { EvidenceItem } from "../evidence";
 import type { SuggestContext } from "../webKinds";
@@ -63,7 +63,8 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
   for (const home of [...homes].reverse()) {
     const [table, id] = [home.slice(0, home.indexOf(":")), home.slice(home.indexOf(":") + 1)];
     if (table === "web.property") await deleteProperty(id);
-    else if (table === "web.site") await deleteSite(id);
+    // The site goes through the retraction door, so the pending findings its crawl produced go with it.
+    else if (table === "web.site") await withdrawSite(id);
     else if (table === "web.brand_asset") await deleteBrandAsset(id);
     else if (table === "web.brand_exclusion") {
       const { error } = await (await db()).from("brand_exclusion").update({ deleted_at: new Date().toISOString() }).eq("id", id);

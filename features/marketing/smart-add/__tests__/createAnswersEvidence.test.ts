@@ -54,7 +54,7 @@ jest.mock("../promote", () => ({
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { PersistContext } from "../validate/persist";
-import { createdAnswers, recordCreateAnswers } from "../createAnswers";
+import { createdAnswers, recordCreateAnswers, recordedWebKeys } from "../createAnswers";
 import type { EvidenceItem } from "../evidence";
 
 const ctx = { organizationId: "org-1", getBrand: () => ({ id: "brand-1" }), setBrand: jest.fn(), kinds: [] } as unknown as PersistContext;
@@ -126,7 +126,39 @@ it("records each Yes as the person's confirmed answer naming Create's home, and 
 it("Create records its Yes answers (SmartAddBrand wires createdAnswers into recordCreateAnswers)", () => {
   const src = readFileSync(join(__dirname, "..", "SmartAddBrand.tsx"), "utf8");
   const create = src.slice(src.indexOf("const create = async () =>"));
-  expect(create).toMatch(/recordCreateAnswers\(\s*\{[^]*?createdAnswers\(\{[^]*?accounts: madeAccounts,[^]*?sites: madeSites,/);
+  expect(create).toMatch(/const createPlan = createdAnswers\(\{[^]*?accounts: madeAccounts,[^]*?sites: madeSites,/);
+  expect(create).toMatch(/recordCreateAnswers\(\s*\{[^]*?\},\s*createPlan,/);
   expect(create).toMatch(/madeAccounts\.push\(\{ item, propertyId: row\.id \}\)/);
   expect(create).toMatch(/madeSites\.push\(\{ url, siteId: claim\.site\.id \}\)/);
+});
+
+// A web result answered "Ours" at Create that became a site (pxdocs.com on e641a6d5) kept only routeWebChoices' row:
+// category link, kind web_page, no site named — so its site was never person-validated. It now goes the same path.
+const pxdocs = ev({ key: "web:pxdocs.com", field: "web_page", value: "https://pxdocs.com", url: "https://pxdocs.com", label: "PX Docs" });
+const pxPage = ev({ key: "web:pxdocs.com/about", field: "web_page", value: "https://pxdocs.com/about", url: "https://pxdocs.com/about" });
+
+it("a web result answered Ours whose site Create claimed is recorded naming that site, and kept out of routeWebChoices", async () => {
+  const plan = createdAnswers({
+    accounts: [],
+    sites: [{ url: "https://pxdocs.com", siteId: "site-px" }],
+    websites: [],
+    webOurs: [pxdocs, pxPage],
+  });
+  // Only the site's own root page made the site; a deeper page is not the site (routeWebChoices keeps it).
+  expect(plan).toEqual([{ item: pxdocs, created: { siteId: "site-px" } }]);
+  expect([...recordedWebKeys(plan, [pxdocs, pxPage])]).toEqual(["web:pxdocs.com"]);
+  expect(await recordCreateAnswers(ctx, plan, [], suggest)).toEqual([]);
+  const [row] = inserted as unknown as Array<Record<string, unknown> & { context: { answer: Record<string, unknown> } }>;
+  // person_confirmed_site_hosts: a confirmed link finding by a person whose answer's homes name the site.
+  expect(row).toMatchObject({ category: "link", status: "confirmed", relation_key: "ours", reviewed_by: "person-1" });
+  expect(row.context.answer).toMatchObject({ from: "smart_add.create", homes: ["web.site:site-px"] });
+  expect(associationsAdd).toHaveBeenCalledWith(expect.objectContaining({ sourceType: "web_discovered_item", targetType: "web_site", targetId: "site-px", role: "caused" }));
+  expect(service.createSite).not.toHaveBeenCalled();
+});
+
+it("Create passes its web Ours results to the plan and keeps the recorded ones out of routeWebChoices", () => {
+  const src = readFileSync(join(__dirname, "..", "SmartAddBrand.tsx"), "utf8");
+  const create = src.slice(src.indexOf("const create = async () =>"));
+  expect(create).toMatch(/createdAnswers\(\{[^]*?webOurs,\s*\}\)/);
+  expect(create).toMatch(/routeWebChoices\(organizationId, brand\.id, webItems\.filter\(\(i\) => !webRecorded\.has\(i\.key\)\)/);
 });

@@ -86,6 +86,17 @@ export async function applyRetraction(rootType: RetractionRootType, rootId: stri
   return summary;
 }
 
+/**
+ * Take back a website an answer made (a plain Undo, never "Not us"): through the same door, so everything that grew
+ * from the site goes with it — its running crawl and ingest are cancelled, its pages and the findings read from them
+ * (`site_id`) follow the site, and every still-PENDING finding read from its pages (`context.found_on` /
+ * `evidence_urls` on its host) is withdrawn. A finding a person already answered is never touched. A bare
+ * `deleteSite` left those findings asked on the validation page after the site was gone.
+ */
+export async function withdrawSite(siteId: string): Promise<RetractionSummary> {
+  return call("site", siteId, true, false);
+}
+
 /** Keep an applied summary on its web.brand_exclusion row (context.retraction). */
 async function stashRetraction(exclusionId: string, summary: RetractionSummary): Promise<void> {
   const db = await authenticatedWebDb(supabase);

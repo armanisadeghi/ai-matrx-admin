@@ -14,6 +14,7 @@ import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { extractErrorMessage } from "@/utils/errors";
 import { persistAnswer, type PersistContext } from "./validate/persist";
 import { focusFromEvidence } from "./validate/queue";
+import { webSiteRoot } from "./relations";
 
 export interface CreatedAnswer {
   item: EvidenceItem;
@@ -22,13 +23,15 @@ export interface CreatedAnswer {
 
 /**
  * Pure: which Yes answers Create made a home for. An account → the property made for it; a website the person said
- * Yes to → the site claimed for its host. A site from a web result answered "Ours" has no website finding here (its
- * answer is kept by `routeWebChoices`), so it is not listed.
+ * Yes to → the site claimed for its host; a web result answered "Ours" that is a site's own root page → the site
+ * claimed for it (the caller keeps these out of `routeWebChoices`, so the answer is one row naming the site).
  */
 export function createdAnswers(input: {
   accounts: { item: EvidenceItem; propertyId: string }[];
   sites: { url: string; siteId: string }[];
   websites: EvidenceItem[];
+  /** Web results the person answered "Ours" (relation kind routing to brand_property). */
+  webOurs?: EvidenceItem[];
 }): CreatedAnswer[] {
   const out: CreatedAnswer[] = input.accounts.map((a) => ({ item: a.item, created: { propertyId: a.propertyId } }));
   const siteOf = new Map(input.sites.map((s) => [websiteHost(s.url), s.siteId]));
@@ -40,7 +43,20 @@ export function createdAnswers(input: {
     seen.add(w.key);
     out.push({ item: w, created: { siteId } });
   }
+  for (const w of input.webOurs ?? []) {
+    const root = webSiteRoot(w);
+    const siteId = root ? siteOf.get(websiteHost(root)) : undefined;
+    if (!siteId || seen.has(w.key)) continue;
+    seen.add(w.key);
+    out.push({ item: w, created: { siteId } });
+  }
   return out;
+}
+
+/** The web results this plan records (each kept out of `routeWebChoices`, which would write a second row with no site). */
+export function recordedWebKeys(plan: CreatedAnswer[], webOurs: EvidenceItem[]): Set<string> {
+  const web = new Set(webOurs.map((w) => w.key));
+  return new Set(plan.filter((a) => web.has(a.item.key)).map((a) => a.item.key));
 }
 
 /** Record every Create Yes as the person's answer; a failure is returned as a note (said on the page), never silent. */
