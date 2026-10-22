@@ -222,7 +222,7 @@ export function DrillRecords({
         if (cancelled) return;
         setLoading(false);
         if (!got.ok) {
-          setError(drillFailureWords(got.error.message, `The ${rowNoun}s could not be read.`));
+          setError(drillFailureWords(got.error.message, `The ${pluralNoun(rowNoun, 2)} could not be read.`));
           return;
         }
         const page = got.data!;
