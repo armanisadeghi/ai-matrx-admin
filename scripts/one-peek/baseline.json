@@ -3,7 +3,6 @@
   "counts": {
     "hand-built-hover-card|aidream:apps/shared/chat/src/tool-call-visualization/renderers/_shared-entity/PartPeekPopover.tsx": 1,
     "hand-built-hover-card|aidream:apps/shared/records-ui/src/Enrich.tsx": 1,
-    "hand-built-hover-card|aidream:apps/shared/rich-content/src/display/chat-markdown/matrx-variables/MatrxVariableInline.tsx": 1,
     "hand-built-hover-card|features/marketing/components/sites/SiteKpiPeeks.tsx": 2,
     "hand-built-hover-card|features/marketing/seo/value-system/workbench/WhyScore.tsx": 1,
     "hand-built-hover-card|features/workflow-runtime/listings/core/WorkflowDetailCard.tsx": 1,

@@ -477,8 +477,12 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
 
   const add = (input: unknown) => {
     const a = record(input);
-    const kind = str(a.kind) as BoardTileKindInput | undefined;
-    if (!kind || !(kind in DEFAULT_SIZE)) return fail(`kind must be one of ${Object.keys(DEFAULT_SIZE).join(", ")}.`);
+    const asked = str(a.kind) as BoardTileKindInput | undefined;
+    if (!asked || !(asked in DEFAULT_SIZE)) return fail(`kind must be one of ${Object.keys(DEFAULT_SIZE).join(", ")}.`);
+    // A canvas text object has no title field. A text request that NAMES a title (and has words under it) is a
+    // titled tile holding those words — never the words alone with the name silently dropped (Q-22, 2026-10-22).
+    const titledText = asked === "text" && !!str(a.title) && typeof a.text === "string" && a.text.trim() !== "" && !!board.addTile;
+    const kind: BoardTileKindInput = titledText ? "markdown" : asked;
     // Plain text sits on the canvas itself (no tile): a text object, like the Text tool makes.
     if (kind === "text" && board.addShapes) {
       const addShapes = board.addShapes;
@@ -493,7 +497,8 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
       asAgent(() => addShapes([shape]));
       return { ok: true, id: shape.id, kind: "text", rect: shapeBounds(shape) };
     }
-    const size = { w: num(a.width) ?? DEFAULT_SIZE[kind].w, h: num(a.height) ?? DEFAULT_SIZE[kind].h };
+    const sizeKind: BoardTileKindInput = titledText ? "text" : kind;
+    const size = { w: num(a.width) ?? DEFAULT_SIZE[sizeKind].w, h: num(a.height) ?? (titledText ? 200 : DEFAULT_SIZE[kind].h) };
     const id = `${kind}:${crypto.randomUUID().slice(0, 8)}`;
     const made = host.createTile(
       id,

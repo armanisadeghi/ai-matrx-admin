@@ -22,7 +22,7 @@ import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { isDesktopProtocolError, type AppAccount, type AppInstance } from "@ai-matrx/desktop-protocol";
 import type { DesktopClient } from "@ai-matrx/desktop-protocol/client";
 import { useDesktopAction, useDesktopRequest, type DesktopActionState } from "@ai-matrx/desktop-protocol/react";
-import { ErrorNotice, Progress, StatusDot } from "@ai-matrx/design-system";
+import { displayId, ErrorNotice, Progress, StatusDot } from "@ai-matrx/design-system";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button, Select, Tabs } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxTableIconAction } from "@ai-matrx/design-system/data-table";
@@ -287,7 +287,7 @@ export interface AppsTablesProps {
 }
 
 /** Rows sharing one email are told apart by where they are signed in (else their id). */
-const sharedName = (a: AppAccount) => `${accountName(a)} (${a.instances.length ? a.instances.join(", ") : a.account_id.slice(0, 8)})`;
+const sharedName = (a: AppAccount) => `${accountName(a)} (${a.instances.length ? a.instances.join(", ") : displayId(a.account_id)})`;
 
 /** A connected cloud account this computer has not seen, as an Accounts row (no reading of its own). */
 function cloudOnlyAccount(row: CloudAccountRow): AppAccount {

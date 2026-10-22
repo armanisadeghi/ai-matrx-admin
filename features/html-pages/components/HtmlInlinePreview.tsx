@@ -58,6 +58,7 @@ import {
   WIDE_FIGURE_CLASS,
 } from "@ai-matrx/chat/agents/components/shared/assistant-message-layout";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 
 const copyPageLink = (link: string) => copyText(link, { successMessage: "Copied page link", notify: copyNotify });
 
@@ -162,8 +163,10 @@ const HtmlInlinePreview: React.FC<HtmlInlinePreviewProps> = ({
   conversationId,
   onCodeChange,
   fill = false,
-  artifactId,
+  artifactId: givenArtifactId,
 }) => {
+  // The splitter's local `artifact-<n>` name is not a canvas row: only a real uuid is read or linked.
+  const artifactId = isMaterializedArtifactId(givenArtifactId) ? givenArtifactId!.trim() : undefined;
   const user = useAppSelector(selectUser);
   const { open: openCanvas } = useCanvas();
 

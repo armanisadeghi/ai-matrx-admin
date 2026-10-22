@@ -40,89 +40,20 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  Loader2,
-  Maximize,
-  Maximize2,
-  Minus,
-  MoreHorizontal,
-  MoreVertical,
-  Plus,
-  RotateCw,
-  Scaling,
 } from "lucide-react";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import { cn } from "@/lib/utils";
-import { TooltipIcon } from "@/features/files/components/core/Tooltip/TooltipIcon";
 import { PdfLoadingState } from "@/features/pdf/components/viewer/PdfLoadingState";
 import { resolvePageSwipe } from "./page-swipe";
 import { shouldRearmWheel } from "./wheel-rearm";
-import { planPdfToolbar, TOOLBAR_METRICS } from "./toolbar/toolbar-plan";
-import { useMediaQueryState } from "@ai-matrx/kit/media-query";
-import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { PdfToolbarRow } from "./toolbar/PdfToolbarRow";
+import { PdfStackToolbar } from "./toolbar/PdfStackToolbar";
+import { useStackZoom } from "./toolbar/stack-hooks";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
 if (typeof window !== "undefined") performance.mark("load:heavy:PDF viewer");
-
-/** One toolbar icon button — every control in the row shares it. */
-/**
- * Every size in the toolbar row comes from TOOLBAR_METRICS / the plan — the
- * same numbers the fold plan measures with — never a Tailwind size class
- * (guard: toolbar/toolbar-plan.test.ts reads this file).
- */
-const ITEM_GROUP_STYLE = { columnGap: TOOLBAR_METRICS.itemGap } as const;
-const SEPARATOR_STYLE = {
-  width: 1,
-  height: 16,
-  marginInline: (TOOLBAR_METRICS.separator - 1) / 2,
-} as const;
-
-/**
- * The host's docked chrome folded behind ONE trigger (`plan.host`): the same
- * nodes the host handed in, in a small popover, so nothing is ever clipped
- * off the row. Sizes come from the plan (the trigger is one target).
- */
-function HostFold({
-  nodes,
-  label,
-  className,
-  style,
-}: {
-  nodes: React.ReactNode;
-  label: string;
-  className: string;
-  style: React.CSSProperties;
-}) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button type="button" aria-label={label} className={className} style={style}>
-          <MoreVertical className="h-3.5 w-3.5" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        style={{ width: "auto", maxWidth: "calc(100vw - 16px)", padding: 4 }}
-      >
-        <div className="flex items-center" style={{ ...ITEM_GROUP_STYLE, flexWrap: "wrap" }}>
-          {nodes}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-
-/** Every toolbar icon button shares this; its square size comes from the plan. */
-const TOOL_BUTTON_BASE =
-  "flex shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-40";
 
 // Worker source — pinned to the installed pdfjs version and served from
 // our own origin (`/public/pdfjs/pdf.worker.min.mjs`, mirrored by a post-
@@ -266,16 +197,22 @@ export interface PdfDocumentRendererProps {
    * scrolling viewport, with the zoom / rotate / page toolbar.
    *
    * `"continuous"`: EVERY page stacked top to bottom at the width of the
-   * renderer's container (times `continuousZoom`), with NO toolbar and NO
-   * scroll container of its own — the caller's page scrolls, so several
-   * documents can sit in one continuous scroll (e-sign signing, A-F15).
+   * renderer's container (times the zoom), with NO scroll container of its
+   * own — the caller's page scrolls, so several documents can sit in one
+   * continuous scroll (e-sign signing, A-F15). It draws THE shared toolbar
+   * (a sticky strip: zoom, fit width, page n / N from scroll position, the
+   * pager scrolls to a page) unless `toolbar="none"`; a host that stacks
+   * several documents under ONE toolbar passes `"none"` to each and docks
+   * `PdfStackToolbar` above its scroller.
    * `renderOverlay` is called once per page, sized to that page. Each
    * page's wrapper carries `data-pdf-page="<n>"` so a caller can scroll a
    * page into view.
    */
   layout?: "paged" | "continuous";
-  /** Continuous only: 1 = fit the container's width; 0.5–3. */
+  /** Continuous only: 1 = fit the container's width; 0.5–3. The toolbar changes it. */
   continuousZoom?: number;
+  /** Continuous only: the toolbar changed the zoom — pass it to own the number. */
+  onContinuousZoomChange?: (zoom: number) => void;
   /** Continuous only: never draw a page wider than this (CSS px). */
   maxPageWidth?: number;
   /** Continuous only: the document parsed, with this many pages. */
@@ -358,26 +295,6 @@ const WHEEL_EDGE_EPSILON_PX = 2;
 // Component
 // ---------------------------------------------------------------------------
 
-/** Live border-box width of a small element (docked toolbar chrome). */
-function useBoxWidth(): [number, (node: HTMLDivElement | null) => void] {
-  const [width, setWidth] = useState(0);
-  const roRef = useRef<ResizeObserver | null>(null);
-  const ref = useCallback((node: HTMLDivElement | null) => {
-    roRef.current?.disconnect();
-    roRef.current = null;
-    if (!node) return;
-    // offsetWidth is the LAYOUT width — getBoundingClientRect() is scaled by
-    // any ancestor transform (a Board tile animating into focus measured the
-    // host's controls at 70% and the plan kept that number for good).
-    const measure = () => setWidth(node.offsetWidth);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(node);
-    roRef.current = ro;
-  }, []);
-  return [width, ref];
-}
-
 export default function PdfDocumentRenderer({
   blobUrl,
   remoteUrl,
@@ -397,6 +314,7 @@ export default function PdfDocumentRenderer({
   className,
   layout = "paged",
   continuousZoom = 1,
+  onContinuousZoomChange,
   maxPageWidth,
   onDocumentLoad,
   onPageRendered,
@@ -457,12 +375,6 @@ export default function PdfDocumentRenderer({
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
-
-  // Toolbar fold inputs: touch vs mouse sets the target size (never the
-  // window width), and docked host chrome is measured so the plan sees it.
-  const coarsePointer = useMediaQueryState("(pointer: coarse)") ?? false;
-  const [startWidth, startRef] = useBoxWidth();
-  const [endWidth, endRef] = useBoxWidth();
 
   // The viewport node can appear AFTER the first mount (the loading state
   // returns a different tree), so the observer attaches to the node itself —
@@ -969,6 +881,12 @@ export default function PdfDocumentRenderer({
       <ContinuousPages
         file={documentFile}
         zoom={continuousZoom}
+        onZoomChange={onContinuousZoomChange}
+        toolbar={toolbar}
+        pageNav={pageNav}
+        pageLabel={pageLabel}
+        toolbarStart={toolbarStart}
+        toolbarEnd={toolbarEnd}
         maxPageWidth={maxPageWidth}
         renderOverlay={renderOverlay}
         onDocumentLoad={onDocumentLoad}
@@ -979,18 +897,6 @@ export default function PdfDocumentRenderer({
       />
     );
   }
-
-  const toolbarPlan = planPdfToolbar({
-    width: containerSize.width,
-    coarse: coarsePointer,
-    pages: numPages,
-    pageNav,
-    startWidth: toolbarStart ? startWidth : 0,
-    endWidth: toolbarEnd ? endWidth : 0,
-  });
-  const plan = toolbarPlan;
-  const toolButton = TOOL_BUTTON_BASE;
-  const buttonStyle = { width: plan.target, height: plan.target };
 
   const pageLabelTitle =
     pageLabel.length > 0
@@ -1004,274 +910,29 @@ export default function PdfDocumentRenderer({
         className,
       )}
     >
-      {/* Toolbar — rendered FROM the fold plan (toolbar/toolbar-plan.ts):
-       * the plan measures this exact row (fixed-size parts) against the
-       * viewer's width, so the row fits at any width — 200px columns to full
-       * screen — and every control is in exactly one place, row or `···`.
+      {/* Toolbar — THE shared row (toolbar/PdfToolbarRow.tsx), drawn from the
+       * fold plan (toolbar/toolbar-plan.ts) at the viewer's measured width.
        * Guard: toolbar/toolbar-plan.test.ts. */}
       {toolbar === "full" ? (
-        <div
-          className="flex min-w-0 shrink-0 items-center justify-between overflow-hidden border-b border-border/60 bg-background/80 text-xs"
-          style={{
-            minHeight: Math.max(40, plan.target + 1),
-            columnGap: TOOLBAR_METRICS.groupGap,
-            paddingInline: TOOLBAR_METRICS.padding / 2,
+        <PdfToolbarRow
+          width={containerSize.width}
+          pages={numPages}
+          pageNav={pageNav}
+          page={pageNumber}
+          onPage={setPageNumber}
+          pageLabel={pageLabel}
+          zoom={{
+            label: zoomLabel,
+            mode: zoom.kind,
+            canIn: currentScale < MAX_SCALE,
+            canOut: currentScale > MIN_SCALE,
+            step: (direction) => stepZoom(direction * STEP),
+            setMode: (mode) => setZoom({ kind: mode }),
           }}
-        >
-          <div className="flex shrink-0 items-center" style={ITEM_GROUP_STYLE}>
-            {plan.host === "all-folded" && (toolbarStart || toolbarEnd) ? (
-              <>
-                <HostFold
-                  label="File controls"
-                  nodes={
-                    <>
-                      {toolbarStart}
-                      {toolbarEnd}
-                    </>
-                  }
-                  className={toolButton}
-                  style={buttonStyle}
-                />
-                <span aria-hidden className="shrink-0 bg-border" style={SEPARATOR_STYLE} />
-              </>
-            ) : toolbarStart ? (
-              <>
-                <div ref={startRef} className="flex shrink-0 items-center" style={ITEM_GROUP_STYLE}>
-                  {toolbarStart}
-                </div>
-                <span aria-hidden className="shrink-0 bg-border" style={SEPARATOR_STYLE} />
-              </>
-            ) : null}
-            {plan.row.includes("zoom") ? (
-              <>
-                <TooltipIcon label="Zoom out">
-                  <button
-                    type="button"
-                    aria-label="Zoom out"
-                    onClick={() => stepZoom(-STEP)}
-                    disabled={currentScale <= MIN_SCALE}
-                    className={toolButton}
-                    style={buttonStyle}
-                  >
-                    <Minus className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipIcon>
-                <span
-                  className="shrink-0 text-center text-xs font-medium tabular-nums"
-                  style={{ width: TOOLBAR_METRICS.zoomLabel }}
-                >
-                  {zoomLabel}
-                </span>
-                <TooltipIcon label="Zoom in">
-                  <button
-                    type="button"
-                    aria-label="Zoom in"
-                    onClick={() => stepZoom(+STEP)}
-                    disabled={currentScale >= MAX_SCALE}
-                    className={toolButton}
-                    style={buttonStyle}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
-                </TooltipIcon>
-                {plan.row.length > 1 || plan.showMore ? (
-                  <span aria-hidden className="shrink-0 bg-border" style={SEPARATOR_STYLE} />
-                ) : null}
-              </>
-            ) : null}
-            {plan.row.includes("fitPage") ? (
-              <TooltipIcon label="Fit page (default)">
-                <button
-                  type="button"
-                  aria-label="Fit page"
-                  aria-pressed={zoom.kind === "fit"}
-                  onClick={() => setZoom({ kind: "fit" })}
-                  style={buttonStyle}
-                  className={cn(toolButton, zoom.kind === "fit" && "bg-accent text-accent-foreground")}
-                >
-                  <Maximize2 className="h-3.5 w-3.5" />
-                </button>
-              </TooltipIcon>
-            ) : null}
-            {plan.row.includes("fitWidth") ? (
-              <TooltipIcon label="Fit width">
-                <button
-                  type="button"
-                  aria-label="Fit width"
-                  aria-pressed={zoom.kind === "fit-width"}
-                  onClick={() => setZoom({ kind: "fit-width" })}
-                  style={buttonStyle}
-                  className={cn(toolButton, zoom.kind === "fit-width" && "bg-accent text-accent-foreground")}
-                >
-                  <Maximize className="h-3.5 w-3.5" />
-                </button>
-              </TooltipIcon>
-            ) : null}
-            {plan.row.includes("actual") ? (
-              <TooltipIcon label="Actual size (100%)">
-                <button
-                  type="button"
-                  aria-label="Actual size"
-                  aria-pressed={zoom.kind === "actual"}
-                  onClick={() => setZoom({ kind: "actual" })}
-                  style={buttonStyle}
-                  className={cn(toolButton, zoom.kind === "actual" && "bg-accent text-accent-foreground")}
-                >
-                  <Scaling className="h-3.5 w-3.5" />
-                </button>
-              </TooltipIcon>
-            ) : null}
-            {plan.row.includes("rotate") ? (
-              <TooltipIcon label="Rotate 90°">
-                <button
-                  type="button"
-                  aria-label="Rotate 90°"
-                  onClick={() => setRotation((r) => (r + 90) % 360)}
-                  className={toolButton}
-                    style={buttonStyle}
-                >
-                  <RotateCw className="h-3.5 w-3.5" />
-                </button>
-              </TooltipIcon>
-            ) : null}
-            {plan.showMore ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button type="button" aria-label="More view options" className={toolButton}
-                    style={buttonStyle}>
-                    <MoreHorizontal className="h-3.5 w-3.5" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="min-w-44">
-                  {plan.menu.includes("zoom") ? (
-                    <>
-                      <DropdownMenuItem
-                        disabled={currentScale >= MAX_SCALE}
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          stepZoom(+STEP);
-                        }}
-                      >
-                        <Plus className="h-3.5 w-3.5" /> Zoom in
-                        <span className="ml-auto tabular-nums text-muted-foreground">{zoomLabel}</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={currentScale <= MIN_SCALE}
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          stepZoom(-STEP);
-                        }}
-                      >
-                        <Minus className="h-3.5 w-3.5" /> Zoom out
-                      </DropdownMenuItem>
-                    </>
-                  ) : null}
-                  {plan.menu.includes("fitPage") ? (
-                    <DropdownMenuItem onSelect={() => setZoom({ kind: "fit" })}>
-                      <Maximize2 className="h-3.5 w-3.5" /> Fit page
-                    </DropdownMenuItem>
-                  ) : null}
-                  {plan.menu.includes("fitWidth") ? (
-                    <DropdownMenuItem onSelect={() => setZoom({ kind: "fit-width" })}>
-                      <Maximize className="h-3.5 w-3.5" /> Fit width
-                    </DropdownMenuItem>
-                  ) : null}
-                  {plan.menu.includes("actual") ? (
-                    <DropdownMenuItem onSelect={() => setZoom({ kind: "actual" })}>
-                      <Scaling className="h-3.5 w-3.5" /> Actual size
-                    </DropdownMenuItem>
-                  ) : null}
-                  {plan.menu.includes("rotate") ? (
-                    <DropdownMenuItem onSelect={() => setRotation((r) => (r + 90) % 360)}>
-                      <RotateCw className="h-3.5 w-3.5" /> Rotate 90°
-                    </DropdownMenuItem>
-                  ) : null}
-                  {plan.menu.includes("pager") ? (
-                    <>
-                      <DropdownMenuItem
-                        disabled={pageNumber <= 1}
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          setPageNumber((p) => Math.max(1, p - 1));
-                        }}
-                      >
-                        <ChevronLeft className="h-3.5 w-3.5" /> Previous {pageLabel}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={pageNumber >= numPages}
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          setPageNumber((p) => Math.min(numPages, p + 1));
-                        }}
-                      >
-                        <ChevronRight className="h-3.5 w-3.5" /> Next {pageLabel}
-                      </DropdownMenuItem>
-                    </>
-                  ) : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : null}
-          </div>
-
-          <div className="flex shrink-0 items-center" style={ITEM_GROUP_STYLE}>
-            {plan.pager !== "none" ? (
-              <div
-                className="flex shrink-0 items-center" style={ITEM_GROUP_STYLE}
-                aria-label={`${pageLabelTitle} pagination`}
-              >
-                {plan.pager === "full" ? (
-                  <button
-                    type="button"
-                    onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
-                    disabled={pageNumber <= 1}
-                    aria-label={`Previous ${pageLabel}`}
-                    className={toolButton}
-                    style={buttonStyle}
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                ) : null}
-                <span
-                  className="shrink-0 text-center font-medium tabular-nums"
-                  style={{ width: plan.counterWidth }}
-                >
-                  {pageNumber} / {numPages}
-                </span>
-                {plan.pager === "full" ? (
-                  <button
-                    type="button"
-                    onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
-                    disabled={pageNumber >= numPages}
-                    aria-label={`Next ${pageLabel}`}
-                    className={toolButton}
-                    style={buttonStyle}
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-            {toolbarEnd && plan.host !== "all-folded" ? (
-              <>
-                {plan.pager !== "none" ? (
-                  <span aria-hidden className="shrink-0 bg-border" style={SEPARATOR_STYLE} />
-                ) : null}
-                {plan.host === "end-folded" ? (
-                  <HostFold
-                    label="File actions"
-                    nodes={toolbarEnd}
-                    className={toolButton}
-                    style={buttonStyle}
-                  />
-                ) : (
-                  <div ref={endRef} className="flex shrink-0 items-center" style={ITEM_GROUP_STYLE}>
-                    {toolbarEnd}
-                  </div>
-                )}
-              </>
-            ) : null}
-          </div>
-        </div>
+          onRotate={() => setRotation((r) => (r + 90) % 360)}
+          toolbarStart={toolbarStart}
+          toolbarEnd={toolbarEnd}
+        />
       ) : null}
 
       {/* Viewport frame keeps floating deck controls anchored while the inner
@@ -1396,7 +1057,13 @@ const CONTINUOUS_GAP_PX = 16;
 
 function ContinuousPages({
   file,
-  zoom,
+  zoom: zoomProp,
+  onZoomChange,
+  toolbar,
+  pageNav,
+  pageLabel,
+  toolbarStart,
+  toolbarEnd,
   maxPageWidth,
   renderOverlay,
   onDocumentLoad,
@@ -1407,6 +1074,12 @@ function ContinuousPages({
 }: {
   file: NonNullable<React.ComponentProps<typeof Document>["file"]>;
   zoom: number;
+  onZoomChange?: (zoom: number) => void;
+  toolbar: "full" | "none";
+  pageNav: boolean;
+  pageLabel: string;
+  toolbarStart?: React.ReactNode;
+  toolbarEnd?: React.ReactNode;
   maxPageWidth?: number;
   renderOverlay?: PdfDocumentRendererProps["renderOverlay"];
   onDocumentLoad?: (numPages: number) => void;
@@ -1416,6 +1089,8 @@ function ContinuousPages({
   fileName: string | null;
 }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const stack = useStackZoom(zoomProp, onZoomChange);
+  const zoom = stack.value;
   const [width, setWidth] = useState(0);
   const [numPages, setNumPages] = useState(0);
   // Natural size of each page (PDF points), so an overlay knows its page's
@@ -1440,6 +1115,17 @@ function ContinuousPages({
 
   return (
     <div ref={wrapRef} className={cn("w-full", className)}>
+      {toolbar === "full" && numPages > 0 ? (
+        <PdfStackToolbar
+          contentRef={wrapRef}
+          zoom={stack}
+          pageNav={pageNav}
+          pageLabel={pageLabel}
+          toolbarStart={toolbarStart}
+          toolbarEnd={toolbarEnd}
+          sticky
+        />
+      ) : null}
       {numPages === 0 ? (
         <div className="h-64">
           <PdfLoadingState

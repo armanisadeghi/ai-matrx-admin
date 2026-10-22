@@ -34,6 +34,7 @@ import type { PdfDocument } from "../hooks/usePdfExtractor";
 import { PdfManipulationViewer, type PdfPaneEditMode } from "./PdfStudioReader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+import { displayId } from "@ai-matrx/design-system";
 function provisionalDocFromFile(params: {
   fileId: string;
   fileName: string;
@@ -116,7 +117,7 @@ export function PdfManipulationWorkbench({
             .eq("id", fileId)
             .maybeSingle();
           if (error) throw error;
-          fileName = data?.file_name ?? `PDF ${fileId.slice(0, 8)}`;
+          fileName = data?.file_name ?? `PDF ${displayId(fileId)}`;
         }
 
         if (cancelled) return;

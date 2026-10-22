@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorNotice } from "@ai-matrx/design-system";
+import { ErrorNotice, displayId } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import * as React from "react";
 import {
@@ -375,7 +375,7 @@ export function SkillConfigPicker({
                     memberLabels={
                       isSkillSet(skill)
                         ? resolveSetMembers(skill, skillById).map(
-                            (m) => m.skill?.label ?? `Skill ${m.id.slice(0, 8)}`,
+                            (m) => m.skill?.label ?? `Skill ${displayId(m.id)}`,
                           )
                         : undefined
                     }
@@ -661,7 +661,7 @@ function SelectedTier({
                 <EntityRef
                   token="skill"
                   id={id}
-                  name={skill?.label ?? `Unknown skill ${id.slice(0, 8)}`}
+                  name={skill?.label ?? `Unknown skill ${displayId(id)}`}
                   showIcon={false}
                   onOpen={skill ? () => onSelect(id) : undefined}
                   fill
@@ -681,7 +681,7 @@ function SelectedTier({
                   <ul className="ml-3 mt-1 space-y-0.5 border-l border-border pl-2">
                     {resolveSetMembers(skill, skillById).map((m) => (
                       <li key={m.id} className="truncate text-[11px] text-muted-foreground">
-                        {m.skill?.label ?? `Skill ${m.id.slice(0, 8)}`}
+                        {m.skill?.label ?? `Skill ${displayId(m.id)}`}
                       </li>
                     ))}
                   </ul>

@@ -18,7 +18,7 @@
  * without saying how much. Filters and the open run live in the URL.
  */
 
-import { RecordId } from "@ai-matrx/design-system";
+import { RecordId, displayId } from "@ai-matrx/design-system";
 import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -514,7 +514,7 @@ function FilterBar({
           {sourceValue(filters) !== ALL_SOURCES &&
           !facets.some((f) => facetKey(f) === sourceValue(filters)) ? (
             <SelectItem value={sourceValue(filters)} className="text-xs">
-              {filters.operation ?? `Task ${filters.taskId?.slice(0, 8)}`} · no
+              {filters.operation ?? `Task ${displayId(filters.taskId ?? "")}`} · no
               runs in this range
             </SelectItem>
           ) : null}
@@ -810,7 +810,7 @@ export function RunHistoryPanel() {
       <div className="space-y-2 p-2">
         <p className="text-xs text-destructive">
           {linkedRun.isError
-            ? `Could not read run ${selectedRef.id.slice(0, 8)}: ${extractErrorMessage(linkedRun.error)}`
+            ? `Could not read run ${displayId(selectedRef.id)}: ${extractErrorMessage(linkedRun.error)}`
             : `No ${RUN_KIND_LABEL[selectedRef.kind].toLowerCase()} run has the id ${selectedRef.id}.`}
           <ErrorAlchemyMenu />
         </p>

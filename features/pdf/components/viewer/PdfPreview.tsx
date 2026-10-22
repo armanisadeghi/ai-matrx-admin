@@ -73,6 +73,7 @@ export interface PdfPreviewProps {
   /** Pass-through to `PdfDocumentRenderer.layout` ("continuous": every page, the caller scrolls). */
   layout?: "paged" | "continuous";
   continuousZoom?: number;
+  onContinuousZoomChange?: (zoom: number) => void;
   maxPageWidth?: number;
   onDocumentLoad?: (numPages: number) => void;
   onPageRendered?: (pageNumber: number) => void;
@@ -98,6 +99,7 @@ export default function PdfPreview({
   renderOverlay,
   layout = "paged",
   continuousZoom,
+  onContinuousZoomChange,
   maxPageWidth,
   onDocumentLoad,
   onPageRendered,
@@ -161,6 +163,7 @@ export default function PdfPreview({
         renderOverlay={renderOverlay}
         layout={layout}
         continuousZoom={continuousZoom}
+        onContinuousZoomChange={onContinuousZoomChange}
         maxPageWidth={maxPageWidth}
         onDocumentLoad={onDocumentLoad}
         onPageRendered={onPageRendered}

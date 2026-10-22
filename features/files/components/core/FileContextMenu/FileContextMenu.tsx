@@ -91,6 +91,7 @@ import { setClipboard } from "@/features/files/utils/clipboard";
 import { downloadUrl, downloadFile } from "@ai-matrx/kit/download";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
+import { displayId } from "@ai-matrx/design-system";
 export interface FileContextMenuProps {
   fileId: string;
   children: React.ReactNode; // trigger
@@ -417,7 +418,7 @@ export function FileContextMenu({
         // A truncated id the user could do nothing with — and this is the ONE
         // file out of the batch that failed, so it is exactly the record they
         // need to open.
-        toast.error(`Failed to dispatch reprocess for ${id.slice(0, 8)}…`, {
+        toast.error(`Failed to dispatch reprocess for ${displayId(id)}…`, {
           description: err instanceof Error ? err.message : String(err),
           action: toastDoor("file", id),
         });
