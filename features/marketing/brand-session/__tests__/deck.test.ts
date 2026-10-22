@@ -130,7 +130,7 @@ describe("brand session deck", () => {
     expect(item.media).toEqual({ src: "https://site.com/logo.png", alt: "Logo", shape: "wide" });
     expect(item.text).toBe("");
     const own = { ...logo, imageUrl: "https://cdn.site.com/m.svg", value: "Logo" } as unknown as FocusItem;
-    expect(findingItem(own).media?.src).toBe("https://cdn.site.com/m.svg");
+    expect(findingItem(own).media).toMatchObject({ src: "https://cdn.site.com/m.svg" });
   });
 
   it("orders choices by the element's place, then oldest first", () => {
