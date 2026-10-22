@@ -249,6 +249,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminEmailManifest: SurfaceManifest = {
   surfaceName: ADMIN_EMAIL_SURFACE_NAME,
+  situation:
+    "As a platform admin they are writing a one-off email to platform users, with {recipient_mode} recipients (typed addresses or chosen users); the subject so far is {subject|not written yet}. You can fill in the email draft; they send it.",
   inheritsFrom: "matrx-default/communications",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

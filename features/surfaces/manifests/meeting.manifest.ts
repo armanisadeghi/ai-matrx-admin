@@ -403,6 +403,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const meetingManifest: SurfaceManifest = {
   surfaceName: "matrx-user/meeting",
+  situation:
+    "They have a meeting open: {meeting_title}, {meeting_status}, set for {scheduled_for|no set time}, with {participant_count} people invited; they are its {viewer_role}. The agenda, and once it has happened its summary, decisions, action items and notes, are in your context. They can change its title and agenda and turn the AI note taker on or off.",
   inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

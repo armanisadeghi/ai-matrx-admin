@@ -229,6 +229,8 @@ const agentRoles: ManifestAgentRole[] = MESSAGING_MANDATE_ROLES.map(
 
 export const messagesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/messages",
+  situation:
+    "They are in their message inbox with {total_unread_count|no} unread messages, looking at the conversation {current_conversation_title|none open yet}; the latest message there came from {current_sender_name|nobody yet}. Their conversations are in your context.",
   inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

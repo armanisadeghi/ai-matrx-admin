@@ -230,6 +230,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const messageTemplateManifest: SurfaceManifest = {
   surfaceName: MESSAGE_TEMPLATE_SURFACE_NAME,
+  situation:
+    "They have a saved message template open: {template_label}, in {template_mode} mode. Its whole text and merge fields are in your context. You can fill its edit form with changes for them to save, or archive it.",
   inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
