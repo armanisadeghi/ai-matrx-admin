@@ -34,8 +34,8 @@ import type { EntitlementCheckResult } from "@/features/entitlements/types";
 import type {
   GenerationOutcome,
   GenerationRequest,
-  GenerationSource,
 } from "../../data/useAssessmentGeneration";
+import type { GenerationSource } from "../../data/generationSource";
 import {
   parseAssessmentListView,
   parseCreateAssessmentsValue,

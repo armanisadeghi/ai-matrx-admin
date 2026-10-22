@@ -45,7 +45,7 @@ import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
 import {
   FLASHCARD_SOURCE_DELIVERIES,
   backfillFileIds,
-  lineageSourceOf,
+  lineageSourcesOf,
 } from "@/features/flashcards/data/generateDeckFromSources";
 import { useTabBoundRun, type TabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
 import { associationsService } from "@/features/scopes/service/associationsService";
@@ -312,7 +312,8 @@ function MakePracticeTestDialog({
             title: assessment.title,
             detail: questionCount(made.questions.length),
           };
-          const linkSources = made.sources.map(lineageSourceOf);
+          // Record-store Sources (tables, pick lists) have no lineage edge (lineageSourcesOf).
+          const linkSources = lineageSourcesOf({ ...resolved, sources: made.sources });
           announceLineage(
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),
