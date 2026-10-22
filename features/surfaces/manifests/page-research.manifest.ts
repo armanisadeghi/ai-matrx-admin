@@ -144,18 +144,6 @@ const surfaceSpecific: SurfaceValue[] = [
     sortOrder: 140,
   },
   {
-    name: "active_organization_id",
-    label: "Active organization ID",
-    description:
-      "Viewer's currently active organization UUID, loaded only as the fallback tenancy. Empty when no active organization is selected.",
-    valueType: "string",
-    alwaysAvailable: true,
-    typicalCharCount: 36,
-    autoContext: false,
-    group: "page_context",
-    sortOrder: 150,
-  },
-  {
     name: "organization_id",
     label: "Research organization ID",
     description:
