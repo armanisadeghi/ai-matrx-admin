@@ -28,6 +28,7 @@ import { MarkdownTileBody } from "../tiles/MarkdownTileBody";
 import { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 import { CoverStructure } from "./structures";
 import { useBoardTokenTables } from "./board-token-tables";
+import { startDesignBuild, useDesignBuildRunning } from "../templates/board-start";
 
 export { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 
@@ -203,13 +204,28 @@ export const COVER_ITEMS: BoardItemType[] = [
   },
 ];
 
-/** An empty cover: on a design-system board the AI is building it (it starts on its own, `useBoardStartRun`). */
+/**
+ * An empty cover on a design-system board says what is really happening: "building" only while the design job runs
+ * in the side chat (it starts on its own, `useBoardStartRun`); once no run is active and the cover is still empty,
+ * it says so and offers the job again (a way out after a stopped or failed run, never a first-start step).
+ */
 function EmptyCover() {
   const designBoard = useBoardTokenTables().length > 0;
+  const building = useDesignBuildRunning();
   if (!designBoard) return <p className="py-6 text-center text-sm text-muted-foreground">Empty cover</p>;
+  if (building) {
+    return (
+      <div data-board-cover-empty="" data-board-cover-building="" className="flex flex-col items-center gap-3 py-6">
+        <ShimmerText text="The design agent is building this system…" className="text-sm" />
+      </div>
+    );
+  }
   return (
-    <div data-board-cover-empty="" className="flex flex-col items-center gap-3 py-6">
-      <ShimmerText text="The design agent is building this system…" className="text-sm" />
+    <div data-board-cover-empty="" data-board-cover-not-built="" className="flex flex-col items-center gap-3 py-6">
+      <p className="text-sm text-muted-foreground">Not built yet</p>
+      <Button variant="primary" onClick={() => startDesignBuild()}>
+        Build it
+      </Button>
     </div>
   );
 }
