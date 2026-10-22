@@ -12,10 +12,13 @@ import type {
 import type { OrgRole } from "@/features/organizations/types";
 import { readEffectiveKnobOnServer } from "@/lib/scoped-config/effectiveKnobs.server";
 import { readAllRows } from "@ai-matrx/data/db";
+// The leaf entry, not the root barrel: the root is a client module, so on the server its
+// DEFAULT_ARCHIVE_FILTER is a reference object, never "active" — the list silently returned
+// every archived organization (4,062 rows; 382 are open).
 import {
   DEFAULT_ARCHIVE_FILTER,
   type ArchiveFilterValue,
-} from "@ai-matrx/design-system";
+} from "@ai-matrx/design-system/archive-filter";
 
 /**
  * Load every organization and active organization membership for super-admin views.
