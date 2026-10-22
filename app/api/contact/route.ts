@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
       .from("contact_submissions")
       .insert({
         organization_id: organizationId,
-        user_id: user?.id || null,
+        // The service role is not stamped by _stamp_actor: name the author here.
+        created_by: user?.id || null,
         name,
         email,
         subject,
