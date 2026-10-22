@@ -29,6 +29,7 @@ import {
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import type { Crumb, CrumbOption } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
+import { useDeclareFrameActions, useInFrame } from "@/features/shell/frame-host/framePageHeader";
 import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
 import { DesktopAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { RecordActionsMenu, type RecordMenuAction } from "@/components/official/RecordActionsMenu";
@@ -165,6 +166,21 @@ function PageRecordHeader({
   const derived = useDerivedTrail({ recordName: record.name });
   const trail = parents ?? derived.slice(0, -1);
   const recordName = record.name ?? derived[derived.length - 1]?.label ?? "";
+  // THE NEW APP FRAME: the Actions menu's items are the frame's "…" items (desktop and phone), so
+  // the line carries no second menu. Classic: no frame, nothing declared.
+  const inFrame = useInFrame();
+  useDeclareFrameActions(
+    inFrame && menuItems.length
+      ? menuItems.map((item) => ({
+          id: `record-menu:${item.id}`,
+          label: item.label,
+          icon: item.icon,
+          onSelect: item.onPress,
+          destructive: item.destructive,
+          disabled: item.disabled,
+        }))
+      : null,
+  );
   // Phone: the menu's items are rows of the ⋮ sheet (the desktop menu button is hidden below sm).
   const phoneMenuActions: EntityHeaderAction[] = menuItems.map((item) => ({
     label: item.label,
@@ -188,8 +204,8 @@ function PageRecordHeader({
       activeModeHref={activeModeHref}
       onModeSelect={onModeSelect}
       steps={steps}
-      actions={menuItems.length ? [...(actions ?? []), ...phoneMenuActions] : actions}
-      rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} triggerLabel={menu?.label ?? "Actions"} actions={menuItems.map(menuAction)} /> : undefined}
+      actions={menuItems.length && !inFrame ? [...(actions ?? []), ...phoneMenuActions] : actions}
+      rightEnd={menuItems.length && !inFrame ? <RecordActionsMenu label={menu?.label ?? "Actions"} triggerLabel={menu?.label ?? "Actions"} actions={menuItems.map(menuAction)} /> : undefined}
     />
   );
 }

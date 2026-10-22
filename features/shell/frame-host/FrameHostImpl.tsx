@@ -117,6 +117,19 @@ export function liveProducts(params: Record<string, string>): FrameProduct[] {
   });
 }
 
+/**
+ * The phone header's left control: Back only when the page is deeper than its product's top level;
+ * on the product's home (or one of its own sidebar rows) it is the menu button. Derived crumbs
+ * always carry the product plus the page, so their count alone says nothing about depth.
+ */
+export function phoneCanGoBack(pathname: string, product: Pick<FrameProduct, "homeHref">, item: Pick<FrameMenuItem, "href"> | undefined): boolean {
+  const trim = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p);
+  const here = trim(pathname);
+  if (here === trim(product.homeHref)) return false;
+  if (item?.href && trim(item.href) === here) return false;
+  return true;
+}
+
 export default function FrameHostImpl({
   userData,
   isAuthenticated,
@@ -177,7 +190,7 @@ export default function FrameHostImpl({
       ? items.find((i) => i.id === itemId(home.itemIndex))
       : undefined;
   // ONE crumb derivation: the trail the page declared, else the one derived from the address.
-  const { host: pageHeaderHost, pageCrumbs } = useFramePageHeaderHost();
+  const { host: pageHeaderHost, pageCrumbs, pageActions } = useFramePageHeaderHost();
   const crumbs = frameHostCrumbs(product, pageCrumbs, useDerivedTrail({ pathname }), go);
   const { pins, favorite } = useFramePins(pathname, crumbs[crumbs.length - 1].label);
 
@@ -186,7 +199,9 @@ export default function FrameHostImpl({
   const ProductIcon = product.icon;
   const { slotHost, sidebarContent } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
 
+  // The page's own "…" items (declared through the page-header channel) first, then the frame's.
   const actions: FrameAction[] = [
+    ...pageActions,
     {
       id: "copy-link",
       label: "Copy link",
@@ -221,7 +236,7 @@ export default function FrameHostImpl({
           onSelectMenuItem={(selected) => selected.href && go(selected.href)}
           crumbs={crumbs}
           actions={actions}
-          onBack={crumbs.length > 1 ? () => router.back() : undefined}
+          onBack={crumbs.length > 1 && phoneCanGoBack(pathname, product, item) ? () => router.back() : undefined}
           variant="workspace"
           initialGeometry={initialGeometry}
           hostHeaderSlots

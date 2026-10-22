@@ -56,7 +56,8 @@ import { cn } from "@/lib/utils";
 import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { frameCrumbOf, useDeclareFrameActions, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import type { FrameAction } from "@/features/shell/frame/types";
 
 const EXTERNAL_HREF_RE = /^(https?:|mailto:|tel:)/;
 
@@ -343,6 +344,38 @@ export function EntityModeHeader({
   const hasSheet = Boolean(
     (modes && modes.length) || (actions && actions.length),
   );
+  // THE NEW APP FRAME ON A PHONE: the frame's "…" is the page's one menu, so the other modes and the
+  // actions go there (with the frame's Copy link / Open in new tab) and this header draws no "…" of
+  // its own — never two "…" in one row. Desktop keeps them on the line as before.
+  const runAction = (a: EntityHeaderAction) => {
+    if (!a.href) return a.onPress?.();
+    if (a.newTab || EXTERNAL_HREF_RE.test(a.href)) openOutbound(a.href, "_blank", "noopener");
+    else router.push(a.href);
+  };
+  const frameTakesMenu = inFrame && isPhone && hasSheet;
+  const frameMenu: FrameAction[] | null = frameTakesMenu
+    ? [
+        ...(modes ?? [])
+          .filter((m) => m.href !== activeMode?.href)
+          .map((m) => ({
+            id: `mode:${m.href}`,
+            label: m.name,
+            icon: m.icon,
+            onSelect: () => (onModeSelect ? onModeSelect(m.href) : router.push(m.href)),
+          })),
+        ...(actions ?? [])
+          .filter((a) => !a.pinnedOnPhone)
+          .map((a) => ({
+            id: `action:${a.label}`,
+            label: a.label,
+            icon: a.icon,
+            destructive: a.destructive,
+            disabled: a.disabled,
+            onSelect: () => runAction(a),
+          })),
+      ]
+    : null;
+  useDeclareFrameActions(frameMenu);
 
   const label = (
     <span className="flex min-w-0 items-center gap-1.5">
@@ -524,8 +557,8 @@ export function EntityModeHeader({
                 </span>
               ) : null}
             </div>
-            {/* Mobile: one trigger, everything in the drawer */}
-            {hasSheet && (
+            {/* Mobile: one trigger, everything in the drawer (in the frame: the frame's "…") */}
+            {hasSheet && !frameTakesMenu && (
               <div className="sm:hidden">
                 <TapTargetButtonTransparent
                   icon={<MoreHorizontal className="h-4 w-4" />}
@@ -538,7 +571,7 @@ export function EntityModeHeader({
           )
         }
       />
-      {hasSheet && !inShellSheet && (
+      {hasSheet && !inShellSheet && !frameTakesMenu && (
         <BottomSheet
           open={sheetOpen}
           onOpenChange={setSheetOpen}

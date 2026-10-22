@@ -12,12 +12,13 @@ import React, { act } from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createRoot, type Root } from "react-dom/client";
-import { Pencil, Tag } from "lucide-react";
+import { Archive, Pencil, Tag, Trash2 } from "lucide-react";
 import type { FrameProduct } from "@/features/shell/frame/types";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => false }));
+let mockMobile = false;
+jest.mock("@ai-matrx/kit/media-query", () => ({ ...jest.requireActual("@ai-matrx/kit/media-query"), useIsMobile: () => mockMobile }));
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
   usePathname: () => "/marketing/brands/b1",
@@ -165,5 +166,74 @@ describe("page-top templates in the new app frame", () => {
     expect(slot.querySelector("[data-entity-trail]")?.textContent).toContain("Brands");
     expect(occurrences("Acme Coffee")).toBe(1);
     expect(slot.querySelector('[aria-label="Rename"]')).not.toBeNull();
+  });
+});
+
+/** The frame's "…" as the host merges it: the page's declared items, then the frame's defaults. */
+function ActionsHarness({ children }: { children: React.ReactNode }) {
+  const { host, pageActions } = page.useFramePageHeaderHost();
+  return (
+    <page.FramePageHeaderContext value={host}>
+      <ul data-testid="frame-menu">
+        {pageActions.map((a) => (
+          <li key={a.id} data-destructive={a.destructive ? "" : undefined}>
+            <button type="button" onClick={a.onSelect}>{a.label}</button>
+          </li>
+        ))}
+      </ul>
+      {children}
+    </page.FramePageHeaderContext>
+  );
+}
+
+describe("pages add their own \"…\" items in the frame (adversarial review, 2026-10-22)", () => {
+  afterEach(() => {
+    mockMobile = false;
+  });
+  const archive = jest.fn();
+  function WithMenu() {
+    return (
+      <RecordPageHeader
+        backHref="/marketing/brands"
+        record={{ name: "Acme Coffee" }}
+        modes={[
+          { name: "Overview", href: "/marketing/brands/b1" },
+          { name: "Settings", href: "/marketing/brands/b1/settings" },
+        ]}
+        actions={[{ label: "Rename", icon: Pencil, onPress: () => {} }]}
+        menu={{
+          items: [
+            { id: "archive", label: "Archive", icon: Archive, onPress: archive },
+            { id: "delete", label: "Delete", icon: Trash2, onPress: () => {}, destructive: true },
+          ],
+        }}
+      />
+    );
+  }
+  const menuLabels = () => [...el.querySelectorAll('[data-testid="frame-menu"] button')].map((b) => b.textContent);
+
+  it("desktop: the record's Actions menu becomes the frame's \"…\" items; no second menu on the line", () => {
+    mount(<ActionsHarness><WithMenu /></ActionsHarness>);
+    expect(menuLabels()).toEqual(["Archive", "Delete"]);
+    expect(el.querySelector('[data-testid="frame-menu"] [data-destructive]')?.textContent).toBe("Delete");
+    const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+    expect(slot.textContent).not.toContain("Actions");
+    // A press runs the page's own handler.
+    act(() => (el.querySelector('[data-testid="frame-menu"] button') as HTMLButtonElement).click());
+    expect(archive).toHaveBeenCalledTimes(1);
+  });
+
+  it("phone: the other modes and the actions join the frame's \"…\"; the header draws no \"…\" of its own", () => {
+    mockMobile = true;
+    mount(<ActionsHarness><WithMenu /></ActionsHarness>);
+    expect(menuLabels()).toEqual(expect.arrayContaining(["Settings", "Rename", "Archive", "Delete"]));
+    expect(menuLabels()).not.toContain("Overview");
+    expect(el.querySelector('[data-testid="page-header"] [aria-label="More"]')).toBeNull();
+  });
+
+  it("classic: nothing is declared and the Actions menu stays on the line", () => {
+    mount(<WithMenu />);
+    const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+    expect(slot.textContent).toContain("Actions");
   });
 });
