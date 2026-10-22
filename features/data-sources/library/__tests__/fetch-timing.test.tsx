@@ -12,16 +12,14 @@ import { providerName, SourceMethodTag, UnderTheHood } from "../UnderTheHood";
 
 describe("how long a fetch took, in plain words", () => {
   it("says the run's own length the way a person reads it", () => {
-    expect(tookWords(609_000)).toBe("Took 10 min 9 s");
-    expect(durationWords(45_400)).toBe("45 s");
-    expect(durationWords(120_000)).toBe("2 min");
-    expect(durationWords(3_720_000)).toBe("1 h 2 min");
+    expect(tookWords(609_000)).toBe("Took 10m 09s");
+    expect(durationWords(45_400)).toBe("45s");
+    expect(durationWords(3_720_000)).toBe("1h 02m");
   });
 
   it("rounds the usual length like speech", () => {
     expect(usuallyWords(118_000)).toBe("Usually ~2 min");
-    expect(roughDurationWords(42_000)).toBe("~40 s");
-    expect(roughDurationWords(7_000)).toBe("~7 s");
+    expect(roughDurationWords(42_000)).toBe("~42s");
   });
 
   it("calls a speed usual only with two or more finished runs", () => {

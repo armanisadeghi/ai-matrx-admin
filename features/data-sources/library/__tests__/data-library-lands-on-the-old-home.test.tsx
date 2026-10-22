@@ -20,8 +20,9 @@ jest.mock("@ai-matrx/chat/agents/identity/tool-search", () => ({
   useOwnToolSearch: () => ({ status: "ready", known: {}, hits: [] }),
 }));
 jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () => ({
-  RecordPageHeader: ({ record }: { record: { name: string } }) => <h1 data-testid="title">{record.name}</h1>,
+  RecordPageHeader: ({ record, level }: { record?: { name: string }; level?: { name: string } }) => <h1 data-testid="title">{(record ?? level)?.name}</h1>,
 }));
+jest.mock("@/components/official/ProInput", () => ({ ProInput: (p: { "aria-label"?: string }) => <input aria-label={p["aria-label"]} /> }));
 jest.mock("@/components/cost/useCostDisplay", () => ({ useCostDisplay: () => ({}) }));
 jest.mock("../hooks", () => ({
   useLibraryOrganizationId: () => "org",

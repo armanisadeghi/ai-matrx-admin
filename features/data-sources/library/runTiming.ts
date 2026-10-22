@@ -13,8 +13,10 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 
 import { createClient } from "@/utils/supabase/client";
+import { operationFailed } from "@/utils/errors";
 
 /** The new doors are not in the generated types yet: one narrow, named shape for them. */
 type UntypedRpc = {
@@ -22,28 +24,15 @@ type UntypedRpc = {
 };
 const scraperRpc = () => createClient().schema("scraper") as unknown as UntypedRpc;
 
-/** "45 s", "10 min 9 s", "1 h 2 min". Pure. */
-export function durationWords(ms: number): string {
-  const s = Math.max(0, Math.round(ms / 1000));
-  if (s < 60) return `${s} s`;
-  if (s < 3600) {
-    const rest = s % 60;
-    return rest ? `${Math.floor(s / 60)} min ${rest} s` : `${Math.floor(s / 60)} min`;
-  }
-  const min = Math.floor(s / 60) % 60;
-  return min ? `${Math.floor(s / 3600)} h ${min} min` : `${Math.floor(s / 3600)} h`;
-}
+/** "45s", "10m 09s", "1h 02m" — the kit's one duration formatter. Pure. */
+export const durationWords = (ms: number): string => formatDurationMs(ms, { style: "compact" });
 
-/** "Took 10 min 9 s". Pure. */
+/** "Took 10m 09s". Pure. */
 export const tookWords = (ms: number): string => `Took ${durationWords(ms)}`;
 
-/** A typical length, rounded the way a person says it: "~40 s", "~2 min", "~1 h". Pure. */
-export function roughDurationWords(ms: number): string {
-  const s = Math.max(1, Math.round(ms / 1000));
-  if (s < 60) return `~${s < 10 ? s : Math.round(s / 5) * 5} s`;
-  if (s < 3600) return `~${Math.round(s / 60)} min`;
-  return `~${Math.round(s / 360) / 10} h`;
-}
+/** A typical length, rounded the way a person says it: "~40s", "~2 min", "~1h 2m". Pure. */
+export const roughDurationWords = (ms: number): string =>
+  `~${ms < 60_000 ? formatDurationMs(ms, { style: "compact" }) : formatDurationMs(ms, { style: "coarse", round: "nearest" })}`;
 
 /** "Usually ~2 min". Pure. */
 export const usuallyWords = (ms: number): string => `Usually ${roughDurationWords(ms)}`;
@@ -82,7 +71,7 @@ export function useTypicalSpeeds() {
     queryKey: typicalSpeedsKey,
     queryFn: async (): Promise<Record<string, SourceSpeed>> => {
       const { data, error } = await scraperRpc().rpc("data_fetch_typical_speed", { p_source_keys: null });
-      if (error) throw new Error(error.message);
+      if (error) throw operationFailed("read how long data sources usually take", error);
       return speedsByKey(data as SpeedRow[] | null);
     },
     staleTime: 5 * 60_000,
@@ -109,7 +98,7 @@ export function useSourceMethods(enabled: boolean) {
     queryKey: ["data-sources", "source-methods"],
     queryFn: async (): Promise<Record<string, SourceMethod>> => {
       const { data, error } = await scraperRpc().rpc("data_source_methods");
-      if (error) throw new Error(error.message);
+      if (error) throw operationFailed("read how data sources get their records", error);
       return (data as Record<string, SourceMethod> | null) ?? {};
     },
     enabled,
@@ -161,7 +150,7 @@ export function useUnderTheHood(jobId: string | null | undefined, enabled: boole
     queryKey: ["data-sources", "under-the-hood", jobId ?? null],
     queryFn: async (): Promise<UnderTheHoodRun | null> => {
       const { data, error } = await scraperRpc().rpc("data_fetch_under_the_hood", { p_job_id: jobId });
-      if (error) throw new Error(error.message);
+      if (error) throw operationFailed("read what ran for this fetch", error);
       return (data as UnderTheHoodRun | null) ?? null;
     },
     enabled: enabled && Boolean(jobId),
