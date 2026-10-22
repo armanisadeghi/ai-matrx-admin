@@ -46,9 +46,8 @@ jest.mock("@/lib/services/fingerprint-service", () => ({
 }));
 const ensureGuestIdentity = jest.fn(async (_o?: { fresh?: boolean }) => true);
 jest.mock("@/lib/guest/turnstile", () => ({
+  ...jest.requireActual("@/lib/guest/turnstile"),
   ensureGuestIdentity: (o?: { fresh?: boolean }) => ensureGuestIdentity(o),
-  isGuestChallengeRefusalBody: (body: unknown) =>
-    !!body && typeof body === "object" && (body as { error?: string }).error === "guest_challenge_failed",
 }));
 jest.mock("@/lib/diagnostics/capturePythonClientError", () => ({
   capturePythonClientError: jest.fn(),

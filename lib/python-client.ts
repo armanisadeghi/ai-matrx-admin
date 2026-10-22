@@ -87,7 +87,7 @@ import { waitForOrganizationAdmission } from "@/lib/api/organization-admission";
 import type { RootState } from "@/lib/redux/store";
 import { extractErrorMessage } from "@/utils/errors";
 import { getCachedFingerprint, getFingerprint } from "@/lib/services/fingerprint-service";
-import { ensureGuestIdentity, isGuestChallengeRefusalBody } from "@/lib/guest/turnstile";
+import { beforeGuestWrite, isReadMethod, retriesAfterGuestRefusal } from "@/lib/guest/guest-rule";
 import { logApiTarget } from "@/lib/api/log-api-target";
 import {
   configuredFilesServiceUrl,
@@ -487,12 +487,6 @@ async function resolveRequestOrganizationIdAfterAdmission(
   return resolveRequestOrganizationId(opts);
 }
 
-/** GET and HEAD are reads by HTTP contract; every other method is a write. */
-function isReadMethod(method: string): boolean {
-  const upper = method.toUpperCase();
-  return upper === "GET" || upper === "HEAD";
-}
-
 function selectedOrganizationIdOrNull(): string | null {
   const adminLane = adminLaneOrganizationId();
   if (adminLane) return adminLane;
@@ -559,7 +553,7 @@ export async function buildHeaders(
 
   // A signed-out write may mint the visitor: mint it ONCE first (single flight, human check only when the
   // server asks — lib/guest/turnstile.ts). Reads never mint, so they never wait.
-  if (!token && fingerprint && !isReadMethod(method)) await ensureGuestIdentity();
+  if (fingerprint) await beforeGuestWrite(!!token, method);
 
   const requestId = opts.requestId ?? newRequestId();
   let headers: Record<string, string> = {
@@ -679,10 +673,9 @@ export async function requestRaw(
     // A NEW visitor refused for want of a passing human check (403 guest_challenge_failed, before any
     // handler ran, so nothing started): mint the visitor once more, then retry ONCE.
     if (
-      response.status === 403 &&
-      !built.headers.Authorization &&
-      isGuestChallengeRefusalBody(await response.clone().json().catch(() => null)) &&
-      (await ensureGuestIdentity({ fresh: true }))
+      await retriesAfterGuestRefusal(!!built.headers.Authorization, response.status, () =>
+        response.clone().json().catch(() => null),
+      )
     ) {
       response = await send();
     }

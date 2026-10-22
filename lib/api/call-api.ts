@@ -137,7 +137,7 @@ export {
 import type { paths, components } from "@ai-matrx/api/types";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { ensureGuestIdentity, isGuestChallengeRefusalBody } from "@/lib/guest/turnstile";
+import { beforeGuestWrite, isReadMethod, retriesAfterGuestRefusal } from "@/lib/guest/guest-rule";
 
 // ============================================================================
 // SECTION 1 — UTILITY TYPE HELPERS
@@ -609,11 +609,7 @@ export function resolveBaseUrl(
  * behavior is exactly what it always was: fail closed. This call exists only
  * so a request whose organization one of those seams JUST resolved uses it.
  */
-/** GET and HEAD are reads by HTTP contract; every other method is a write. */
-export function isReadMethod(method: string): boolean {
-  const upper = method.toUpperCase();
-  return upper === "GET" || upper === "HEAD";
-}
+export { isReadMethod } from "@/lib/guest/guest-rule";
 
 /**
  * True when, after the platform's bounded wait for a restore in flight, no
@@ -810,7 +806,7 @@ export function callApi<
     await waitForAuthReady(getState);
     // A signed-out write may mint the visitor: mint it ONCE first, with the human check only when the
     // server asks for one (lib/guest/turnstile.ts). Reads never mint, so they never wait.
-    if (!selectAccessToken(getState()) && !isReadMethod(config.method)) await ensureGuestIdentity();
+    await beforeGuestWrite(!!selectAccessToken(getState()), config.method);
 
     const state = getState();
 
@@ -1005,12 +1001,8 @@ export function callApi<
       let result = await execute(headers);
       // A NEW visitor refused for want of a passing human check (403 guest_challenge_failed, before
       // any handler ran, so nothing was started): the visitor is minted once more, then retried ONCE.
-      if (
-        isGuestLane &&
-        result.error?.status === 403 &&
-        isGuestChallengeRefusalBody(result.error.serverDetail)
-      ) {
-        if (await ensureGuestIdentity({ fresh: true })) result = await execute(headers);
+      if (await retriesAfterGuestRefusal(!isGuestLane, result.error?.status, () => result.error?.serverDetail)) {
+        result = await execute(headers);
       }
       if (isPaidAi) {
         // The server's usage refusal → a person gets `over` + the limit

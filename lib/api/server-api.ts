@@ -56,7 +56,7 @@ import { resolveBaseUrl, resolveFilesBaseUrl, type RequestOptions } from "@/lib/
 import { getStore } from "@/lib/redux/store-singleton";
 import { selectAccessToken, selectFingerprintId } from "@/lib/redux/slices/userSlice";
 import { getCachedFingerprint } from "@/lib/services/fingerprint-service";
-import { ensureGuestIdentity, isGuestChallengeRefusalBody } from "@/lib/guest/turnstile";
+import { beforeGuestWrite, retriesAfterGuestRefusal } from "@/lib/guest/guest-rule";
 import { supabase } from "@/utils/supabase/client";
 import { startSessionTokenSync } from "@/lib/api/session-token-sync";
 import type { RootState } from "@/lib/redux/store";
@@ -258,16 +258,11 @@ export function serverCallHeaders(
   return headers;
 }
 
-function isWrite(op: OperationDescriptor): boolean {
-  const method = op.m.toUpperCase();
-  return method !== "GET" && method !== "HEAD";
-}
-
 async function prepare(op: OperationDescriptor, options?: CallOptions): Promise<CallOptions> {
   // Fetch-on-mount traffic races the active-organization bootstrap: wait for the answer, never guess.
   if (!options?.organizationId && hasSessionToken()) await waitForOrganizationAdmission();
   // A signed-out write may mint a visitor: make sure the visitor exists first (one human check per tab).
-  if (!hasSessionToken() && isWrite(op)) await ensureGuestIdentity();
+  await beforeGuestWrite(hasSessionToken(), op.m);
   const callerHeaders = Object.fromEntries(
     Object.entries(options?.headers ?? {}).filter(([h]) => h.toLowerCase() !== NO_ERROR_CAPTURE_HEADER),
   );
@@ -303,11 +298,8 @@ async function withGuestRetry<R>(op: OperationDescriptor, options: CallOptions |
   } catch (err) {
     if (
       err instanceof MatrxApiError &&
-      err.status === 403 &&
-      !hasSessionToken() &&
-      isGuestChallengeRefusalBody(err.serverDetail) &&
       !cancelledByCaller(options?.signal) &&
-      (await ensureGuestIdentity({ fresh: true }))
+      (await retriesAfterGuestRefusal(hasSessionToken(), err.status, () => err.serverDetail))
     ) {
       return run();
     }
