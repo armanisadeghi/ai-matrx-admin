@@ -953,6 +953,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const crmRecordManifest: SurfaceManifest = {
   surfaceName: CRM_RECORD_SURFACE_NAME,
+  situation:
+    "They have the CRM record of the {party_kind|person or company} \"{display_name|(not loaded yet)}\" open. Do not contact: {do_not_contact|not known}; last touch: {last_touch_at|none recorded}. Its contacts, addresses, work history, activity, notes and deals are in your context. They can edit it, add to any of those, create tasks or move it to trash.",
   inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

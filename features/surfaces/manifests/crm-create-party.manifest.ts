@@ -229,6 +229,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const crmCreatePartyManifest: SurfaceManifest = {
   surfaceName: CRM_CREATE_PARTY_SURFACE_NAME,
+  situation:
+    "They have the Create CRM Record window open, drafting a new {party_kind} named \"{display_name|(no name yet)}\"; ready to save: {form_valid}. You can fill in the draft for them; they save it.",
   inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

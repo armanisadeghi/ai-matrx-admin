@@ -396,6 +396,8 @@ export const crmGroups = groups;
 
 export const crmManifest: SurfaceManifest = {
   surfaceName: CRM_SURFACE_NAME,
+  situation:
+    "They are looking at their CRM list of people and companies: scope {scope_kind}, showing {party_kind_filter}, search: {search_query|none}; {visible_record_count} records on page {page_number}, {total_record_count} matching in all. You can change the search, the people/companies filter, column filters and sort; nothing else.",
   inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -124,6 +124,8 @@ const values: SurfaceValue[] = [
 
 export const crmInboxManifest: SurfaceManifest = {
   surfaceName: CRM_INBOX_SURFACE_NAME,
+  situation:
+    "They are in the outreach inbox: every reply their campaigns got back, each with the AI's verdict (interested, not interested, unsubscribe, bounced, out of office) and the sentence it was based on. Scope: {scope}; {total_replies} replies match the current search and filters.",
   inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

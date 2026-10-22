@@ -129,6 +129,8 @@ const values: SurfaceValue[] = [
 
 export const crmOutreachListsManifest: SurfaceManifest = {
   surfaceName: CRM_OUTREACH_LISTS_SURFACE_NAME,
+  situation:
+    "They are in the outreach lists console, the home of their outreach campaigns: {list_count} lists (email, calling or mixed) with their stage and member counts, in your context. You can explain, plan and draft; anything you draft waits for a person to approve before it is sent.",
   inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

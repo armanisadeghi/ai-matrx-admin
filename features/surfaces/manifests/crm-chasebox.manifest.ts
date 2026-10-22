@@ -172,6 +172,8 @@ const values: SurfaceValue[] = [
 
 export const crmChaseboxManifest: SurfaceManifest = {
   surfaceName: CRM_CHASEBOX_SURFACE_NAME,
+  situation:
+    "They are in the Chasebox, the outreach to-do list: unanswered replies, held drafts, stalled sequences, blocked members and people never reached. Open queue: {active_queue}, with {total_items} items; draft in review: {draft_subject|none}. They approve, reword or reject drafts; you can explain items and suggest better wording.",
   inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

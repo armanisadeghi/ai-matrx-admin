@@ -28,6 +28,8 @@ export const CRM_MANAGER_SURFACE_NAME = "matrx-user/crm-manager";
 
 export const crmManagerManifest: SurfaceManifest = {
   surfaceName: CRM_MANAGER_SURFACE_NAME,
+  situation:
+    "This list is in the floating CRM window, open over whatever they were working on.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
