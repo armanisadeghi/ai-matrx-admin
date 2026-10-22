@@ -31,7 +31,7 @@
     "check:kind-sandbox-parity": "tsx features/content-ir/sandbox/parity-sweep.ts --check",
     "migrate:kind-sandbox-breakpoints": "tsx features/content-ir/sandbox/apply-breakpoint-migration.ts",
     "build:pdfjs-worker": "tsx scripts/copy-pdfjs-worker.ts",
-    "postinstall": "node scripts/install-typecheck-entrypoints.mjs && tsx scripts/copy-pdfjs-worker.ts && node scripts/check-matrx-packages.mjs --duplicates",
+    "postinstall": "node scripts/install-typecheck-entrypoints.mjs && tsx scripts/copy-pdfjs-worker.ts && (node scripts/check-matrx-packages.mjs --duplicates || node -e \"if (process.env.VERCEL || process.env.CI || process.env.MATRX_RELEASE_PATH) { console.error('RELEASE WARNING: @ai-matrx twins in pnpm-lock.yaml (above). Reported, never a failed build (Arman 2026-10-02); fix with pnpm sync:matrx-packages.'); } else { process.exit(1); }\")",
     "build:local": "powershell -ExecutionPolicy Bypass -File ./scripts/build-local.ps1",
     "build:types": "pnpm check:private-diagnostics && ts-node scripts/generate-manifest.ts && bash scripts/fix-encoding.sh && bash scripts/machine-guard/job.sh next-build -- next build",
     "type-check": "bash scripts/tsc-capped.sh tsc --noEmit -p tsconfig.typecheck.json",
