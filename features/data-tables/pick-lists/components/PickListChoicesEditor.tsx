@@ -94,7 +94,10 @@ export function PickListChoicesEditor({
             disabled={busy}
             onChange={(e) => setDrafts((d) => ({ ...d, [choice.id]: e.target.value }))}
             onFocus={() => onFocusChoice?.(choice.id)}
-            onBlur={() => rename(choice)}
+            onBlur={() => {
+              onFocusChoice?.(null);
+              rename(choice);
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") (e.target as HTMLInputElement).blur();
             }}

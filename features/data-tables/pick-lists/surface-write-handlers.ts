@@ -43,10 +43,16 @@ export interface ListSurfaceWriteOptions {
    */
   resolveListId: (targetName: string) => string;
   /**
-   * The choice ids the list holds right now (from the page's last read), so an archive of an id
-   * that is not there is refused before anything is written. Omit to skip that check.
+   * The choice ids the list holds right now (from the mount's last read), so an archive of an id
+   * that is not there is refused before anything is written. `null` = not known (loading, failed,
+   * no list open): an archive is then REFUSED, never let through unchecked.
    */
-  knownItemIds?: () => readonly string[] | null;
+  knownItemIds: () => readonly string[] | null;
+  /**
+   * Whether the signed-in person may edit this list (the scope's `list_is_owner`). `false` or
+   * `null` (not known yet) refuses an archive in validate, before the approval card.
+   */
+  canEditList: () => boolean | null;
   /**
    * Refresh the read twins after a successful write, so the values the agent
    * sees on its next turn already reflect what it just wrote.
@@ -84,7 +90,7 @@ function requirePlainString(
 export function buildListSurfaceWriteHandlers(
   options: ListSurfaceWriteOptions,
 ): SurfaceWriteHandlers {
-  const { resolveListId, afterWrite, knownItemIds } = options;
+  const { resolveListId, afterWrite, knownItemIds, canEditList } = options;
 
   /** The archive list, checked whole: every problem at once, nothing archived on any. */
   const parseArchiveIds = (value: unknown): string[] => {
@@ -96,6 +102,14 @@ export function buildListSurfaceWriteHandlers(
       );
     }
     const problems: string[] = [];
+    const canEdit = canEditList();
+    if (canEdit !== true) {
+      problems.push(
+        canEdit === false
+          ? "you can read this list but not edit it — only its owner can archive its choices."
+          : "whether you may edit this list is not known yet (it has not finished loading).",
+      );
+    }
     const ids = (value as unknown[]).map((entry, index) => {
       const raw =
         typeof entry === "object" && entry !== null && !Array.isArray(entry)
@@ -113,8 +127,11 @@ export function buildListSurfaceWriteHandlers(
       if (seen.has(id)) problems.push(`item ${index + 1} repeats id ${id}.`);
       seen.add(id);
     });
-    const known = knownItemIds?.();
-    if (known) {
+    // Membership is ALWAYS checked: an id that is not one of this list's choices could be any record.
+    const known = knownItemIds();
+    if (!known) {
+      problems.push("this list's choices are not loaded, so no id can be checked against them — wait for all_items and try again.");
+    } else {
       const have = new Set(known);
       ids.forEach((id, index) => {
         if (id && !have.has(id)) problems.push(`item ${index + 1} (${id}) is not a choice of this list — read all_items.`);
