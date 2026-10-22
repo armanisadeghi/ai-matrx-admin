@@ -107,10 +107,11 @@ function brandTabs(brand: BrandBrowseRow): (SectionTab & { href: string; line: s
   return MARKETING_BRAND_SECTIONS.filter((s) => !("status" in s && s.status === "coming-soon")).map((s) => {
     const sub = "subPath" in s && s.subPath ? `/${s.subPath}` : "";
     const href = s.slug ? marketingRoutes.brandSection(brand.id, `${s.slug}${sub}`) : marketingRoutes.brand(brand.id);
+    const key = `${s.slug}${sub}`;
     const count =
-      s.slug === "inbox" ? brand.pending_discovered : s.slug === "websites" ? brand.sites.length : s.slug === "socials" ? brand.social_count : null;
+      key === "inbox" ? brand.pending_discovered : key === "websites" ? brand.sites.length : key === "socials/accounts" ? brand.social_count : null;
     return {
-      value: s.slug || "overview",
+      value: key || "overview",
       label: s.name,
       icon: shellIconComponents[s.iconName],
       count,
@@ -122,10 +123,10 @@ function brandTabs(brand: BrandBrowseRow): (SectionTab & { href: string; line: s
 
 function workspaceTabs(): (SectionTab & { href: string; line: string })[] {
   return MARKETING_WORKSPACE_ROUTES.map((r) => ({
-    value: r.href === marketingRoutes.brands() ? "brands" : r.href,
+    value: r.name === "Brands" ? "brands" : r.name,
     label: r.name,
     icon: r.icon,
-    href: r.href === marketingRoutes.brands() ? LIST_PATH : r.href,
+    href: r.name === "Brands" ? LIST_PATH : r.href,
     line: "",
   }));
 }

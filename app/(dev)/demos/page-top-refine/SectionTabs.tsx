@@ -68,21 +68,18 @@ export function SectionTabs({ items, value, onValueChange, sticky, "aria-label":
     const measure = measureRef.current;
     if (!row || !measure) return;
     const compute = () => {
-      const widths = [...measure.querySelectorAll<HTMLElement>("[role=tab]")].map((el) => el.getBoundingClientRect().width);
+      // Right edges from the first tab's left: includes the row's own gaps between tabs.
+      const tabs = [...measure.querySelectorAll<HTMLElement>("[role=tab]")];
+      const left = tabs[0]?.getBoundingClientRect().left ?? 0;
+      const rights = tabs.map((el) => el.getBoundingClientRect().right - left);
       const cs = getComputedStyle(row);
       const room = row.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      const total = widths.reduce((a, b) => a + b, 0);
-      if (total <= room) {
-        setFit(widths.length);
+      if ((rights[rights.length - 1] ?? 0) <= room) {
+        setFit(rights.length);
         return;
       }
-      let used = MORE_PX;
       let n = 0;
-      for (const w of widths) {
-        if (used + w > room) break;
-        used += w;
-        n++;
-      }
+      while (n < rights.length && rights[n] + MORE_PX <= room) n++;
       setFit(Math.max(1, n));
     };
     compute();
@@ -154,7 +151,7 @@ export function SectionTabs({ items, value, onValueChange, sticky, "aria-label":
                 const Icon = t.icon;
                 return (
                   <DropdownMenuItem key={t.value} size="sm" onSelect={() => onValueChange(t.value)}>
-                    {Icon ? <Icon aria-hidden /> : <Check aria-hidden className="invisible" />}
+                    {Icon ? <Icon aria-hidden className="size-4" /> : <Check aria-hidden className="invisible size-4" />}
                     {t.label}
                     {t.count != null ? <DropdownMenuShortcut>{t.count}</DropdownMenuShortcut> : null}
                   </DropdownMenuItem>

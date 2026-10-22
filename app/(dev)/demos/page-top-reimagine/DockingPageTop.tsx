@@ -87,6 +87,11 @@ export function DockingPageTop({ crumbs, favorite, actions, intro, numbers, dige
   const current = crumbs[crumbs.length - 1];
   const ancestors = crumbs.slice(0, -1);
   const currentDoor = current ? crumbDoorOf(current) : undefined;
+  // A different page (another record from a door) starts at its top, title large again.
+  const pageName = current?.label;
+  useEffect(() => {
+    scrollerRef.current?.scrollTo({ top: 0 });
+  }, [pageName]);
   // The bar floats (glass) only while content scrolls behind it.
   const barFloats = docked && !tabs ? true : docked && !tabsStuck;
 
@@ -160,7 +165,7 @@ export function DockingPageTop({ crumbs, favorite, actions, intro, numbers, dige
                     </li>
                   </Fragment>
                 ))}
-                <li aria-hidden className="flex shrink-0 items-center text-muted-foreground">
+                <li aria-hidden className={cn("flex shrink-0 items-center text-muted-foreground transition-opacity", docked ? "opacity-100" : "opacity-0")}>
                   <ChevronRight className="size-3.5" />
                 </li>
                 <li className="flex min-w-0 items-center">{dockedTitle}</li>
@@ -290,31 +295,36 @@ function AncestorLevel({ crumb }: { crumb: FrameCrumb }) {
  * scrolls sideways when the tabs outgrow the width. Edge fades say there is more; the selected tab
  * is always scrolled into view (a deep link to the 7th tab on a phone shows the 7th tab).
  */
+/** The design system's tablist is the element that scrolls sideways; the row reads and steers it. */
+function tablistIn(rail: HTMLElement | null): HTMLElement | null {
+  return rail?.querySelector<HTMLElement>('[role="tablist"]') ?? null;
+}
+
 function StickyTabs({ tabs, stuck, top }: { tabs: PageTopTabs; stuck: boolean; top: number }) {
   const railRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
 
   useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const measure = () =>
-      setEdges({ start: rail.scrollLeft > 2, end: rail.scrollLeft + rail.clientWidth < rail.scrollWidth - 2 });
+    const el = tablistIn(railRef.current);
+    if (!el) return;
+    const measure = () => setEdges({ start: el.scrollLeft > 2, end: el.scrollLeft + el.clientWidth < el.scrollWidth - 2 });
     measure();
-    rail.addEventListener("scroll", measure, { passive: true });
+    el.addEventListener("scroll", measure, { passive: true });
     const ro = new ResizeObserver(measure);
-    ro.observe(rail);
+    ro.observe(el);
     return () => {
-      rail.removeEventListener("scroll", measure);
+      el.removeEventListener("scroll", measure);
       ro.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    const rail = railRef.current;
-    const active = rail?.querySelector<HTMLElement>('[aria-selected="true"], [data-state="on"], [aria-checked="true"], [data-state="active"]');
-    if (!rail || !active) return;
-    const left = active.offsetLeft - rail.clientWidth / 2 + active.offsetWidth / 2;
-    rail.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    const el = tablistIn(railRef.current);
+    const active = el?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!el || !active) return;
+    const a = active.getBoundingClientRect();
+    const left = el.scrollLeft + (a.left - el.getBoundingClientRect().left) - el.clientWidth / 2 + a.width / 2;
+    el.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
   }, [tabs.value]);
 
   const mask =
@@ -337,20 +347,14 @@ function StickyTabs({ tabs, stuck, top }: { tabs: PageTopTabs; stuck: boolean; t
           : "border-border bg-transparent",
       )}
     >
-      <div
-        ref={railRef}
-        className="scrollbar-hide overflow-x-auto overscroll-x-contain px-4 md:px-6"
-        style={mask ? { maskImage: mask, WebkitMaskImage: mask } : undefined}
-      >
-        <div className="w-max min-w-full">
-          <Tabs
-            aria-label={tabs.label}
-            value={tabs.value}
-            onValueChange={tabs.onValueChange}
-            rule={false}
-            data={tabs.items.map((t) => ({ value: t.value, label: t.label, count: t.count ?? undefined }))}
-          />
-        </div>
+      <div ref={railRef} className="px-4 md:px-6" style={mask ? { maskImage: mask, WebkitMaskImage: mask } : undefined}>
+        <Tabs
+          aria-label={tabs.label}
+          value={tabs.value}
+          onValueChange={tabs.onValueChange}
+          rule={false}
+          data={tabs.items.map((t) => ({ value: t.value, label: t.label, count: t.count ?? undefined }))}
+        />
       </div>
     </div>
   );

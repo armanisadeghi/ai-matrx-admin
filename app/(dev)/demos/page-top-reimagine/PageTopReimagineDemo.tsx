@@ -18,10 +18,11 @@ import {
   RefreshCw,
   TriangleAlert,
 } from "lucide-react";
-import { Button, EmptyState, RegionSkeleton, SegmentedControl, KpiTile } from "@ai-matrx/design-system/controls";
+import { Button, EmptyState, RegionSkeleton, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { usePinned } from "@/components/favorites/usePinned";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
@@ -228,7 +229,7 @@ export function PageTopReimagineDemo() {
   const brandBase = brand ? realAddress : null;
   const numbers =
     shape !== "full" ? null : (
-      <div className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 scrollbar-hide md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
+      <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 scrollbar-hide md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
         {!brand ? (
           <KpiTile className="min-w-36 snap-start" label="Brands" value={value(laneRows.length)} loading={loading} href={demoHref({ tab: null })} title="Brands you made, your organizations' and ones shared with you." />
         ) : (

@@ -310,7 +310,7 @@ function ActionItem({ action }: { action: FrameAction }) {
   const Icon = action.icon;
   return (
     <DropdownMenuItem onSelect={action.onSelect} disabled={action.disabled} tone={action.destructive ? "danger" : undefined} size="sm">
-      {Icon ? <Icon aria-hidden /> : null}
+      {Icon ? <Icon aria-hidden className="size-4" /> : null}
       {action.label}
     </DropdownMenuItem>
   );
