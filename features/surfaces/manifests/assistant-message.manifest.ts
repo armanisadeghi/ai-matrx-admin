@@ -182,6 +182,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const assistantMessageManifest: SurfaceManifest = {
+  situation:
+    "They are reading a conversation's messages; the part they last right-clicked to act on is a {block_type|plain message}, and its content is in your context.",
   surfaceName: "matrx-user/assistant-message",
   inheritsFrom: "matrx-default/chat",
   client: "matrx-user",

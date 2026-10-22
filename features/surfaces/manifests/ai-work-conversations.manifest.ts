@@ -139,6 +139,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const aiWorkConversationsManifest: SurfaceManifest = {
+  situation:
+    "They are browsing their conversations, {visible_conversation_count|no} shown of {conversation_total|all}; the one open is \"{conversation_title|none}\" with {conversation_message_count|no} messages. They can search and filter, rename or favorite conversations, and move them to the trash.",
   surfaceName: AI_WORK_CONVERSATIONS_SURFACE_NAME,
   inheritsFrom: "matrx-default/chat",
   client: "matrx-user",

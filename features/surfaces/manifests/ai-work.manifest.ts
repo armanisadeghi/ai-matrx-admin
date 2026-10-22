@@ -119,6 +119,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const aiWorkManifest: SurfaceManifest = {
+  situation:
+    "They are on the AI Work hub, on its {work_route} page, showing {visible_conversation_count|no} of {conversation_total|their} conversations and {saved_request_count|no} saved requests. They can search and filter conversations, rename or favorite them, and move them to the trash.",
   surfaceName: AI_WORK_SURFACE_NAME,
   inheritsFrom: "matrx-default/chat",
   client: "matrx-user",

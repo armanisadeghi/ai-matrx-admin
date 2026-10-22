@@ -5,6 +5,8 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 export const VOICE_CHAT_SURFACE = "matrx-user/voice-chat";
 
 export const voiceChatManifest: SurfaceManifest = {
+  situation:
+    "They are in hands-free voice chat (state: {phase}), {turn_count} turns so far. They last said: \"{last_user_utterance|nothing yet}\"; the full transcript is in your context.",
   surfaceName: VOICE_CHAT_SURFACE,
   inheritsFrom: "matrx-default/chat",
   client: "matrx-user",

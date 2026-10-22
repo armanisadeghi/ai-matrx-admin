@@ -229,6 +229,8 @@ const surfaceSpecific: SurfaceValue[] = [
 export const AI_WORK_COMPOSER_SURFACE_NAME = "matrx-user/ai-work-composer";
 
 export const aiWorkComposerManifest: SurfaceManifest = {
+  situation:
+    "They are composing a new AI Work run with the agent {agent_name|not chosen yet}, set to run on {destination_id}; their request text is in your context. Run status: {run_status|not started}.",
   surfaceName: AI_WORK_COMPOSER_SURFACE_NAME,
   inheritsFrom: "matrx-default/chat",
   client: "matrx-user",

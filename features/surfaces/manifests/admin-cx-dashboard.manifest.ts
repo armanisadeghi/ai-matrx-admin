@@ -406,6 +406,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminCxDashboardManifest: SurfaceManifest = {
+  situation:
+    "They are on the admin conversation experience dashboard, on its {dashboard_section} tab: {overview_total_conversations|an unknown number of} conversations and {overview_error_count|an unknown number of} errors. What the open tab shows is in your context.",
   surfaceName: ADMIN_CX_DASHBOARD_SURFACE_NAME,
   inheritsFrom: "matrx-default/chat",
   client: "matrx-admin",
