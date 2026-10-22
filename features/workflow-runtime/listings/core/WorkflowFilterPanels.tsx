@@ -3,7 +3,7 @@
 import {
   CheckRow,
   OptionRow,
-  SearchInput,
+  CatalogSearchField,
   SidePanelHeader,
 } from "@ai-matrx/agents/catalog/react";
 import { WORKFLOW_SORT_OPTIONS } from "../types";
@@ -60,7 +60,7 @@ export function WorkflowCategoriesPanel({
     <div className="flex flex-col h-full">
       <SidePanelHeader title="Categories" onClose={onClose} />
       <div className="px-2 pt-2 pb-1 shrink-0">
-        <SearchInput
+        <CatalogSearchField
           value={search}
           onChange={setSearch}
           placeholder="Filter categories..."
@@ -114,7 +114,7 @@ export function WorkflowTagsPanel({
     <div className="flex flex-col h-full">
       <SidePanelHeader title="Tags" onClose={onClose} />
       <div className="px-2 pt-2 pb-1 shrink-0">
-        <SearchInput
+        <CatalogSearchField
           value={search}
           onChange={setSearch}
           placeholder="Filter tags..."

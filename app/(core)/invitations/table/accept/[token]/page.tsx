@@ -52,8 +52,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import PageHeader from "@/features/shell/components/header/PageHeader";
-import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { invitationSignUpHref } from "@/utils/auth/invitation-links";
 import {
   acceptOutsideShare,
@@ -124,9 +123,7 @@ export default function AcceptTableSharePage() {
   }, [router, token]);
 
   const header = (
-    <PageHeader>
-      <HeaderStructured title="Shared with you" />
-    </PageHeader>
+    <RecordPageHeader level={{ name: "Shared with you" }} />
   );
 
   const shell = (children: React.ReactNode) => (

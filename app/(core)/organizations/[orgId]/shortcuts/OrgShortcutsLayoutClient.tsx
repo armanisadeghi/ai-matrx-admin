@@ -17,6 +17,8 @@ import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons
 import { useResolvedOrganization } from "@/features/organizations/hooks";
 import { OrganizationAccessGate } from "@/features/organizations/components/OrganizationAccessGate";
 import type { OrgRole } from "@/features/organizations/types";
+import { HeaderActionGroup } from "@/features/scopes/components/pages/HeaderActionGroup";
+import { useOrgPageHeaderActions } from "@/features/scopes/components/pages/orgHeaderActions";
 import {
   OrgShortcutsProvider,
   type OrgShortcutsContextValue,
@@ -61,6 +63,8 @@ export function OrgShortcutsLayoutClient({
     useResolvedOrganization(urlOrgId);
 
   const isEditPage = pathname.includes("/shortcuts/edit/");
+  // A page's own actions (Refresh) — declared with `useOrgHeaderActions`, drawn here in one list.
+  const pageActions = useOrgPageHeaderActions();
 
   if (loading) {
     // The header (back + section nav) needs nothing from the organization
@@ -137,6 +141,8 @@ export function OrgShortcutsLayoutClient({
         }
         center={<RouteModeNav items={navItems} />}
         right={
+          <>
+          <HeaderActionGroup actions={[...pageActions]} />
           <Badge
             variant="outline"
             className="text-[11px] capitalize hidden sm:inline-flex items-center gap-1"
@@ -148,6 +154,7 @@ export function OrgShortcutsLayoutClient({
             )}
             {role}
           </Badge>
+          </>
         }
       />
       <div className="h-full overflow-y-auto overflow-x-hidden bg-textured">

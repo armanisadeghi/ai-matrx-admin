@@ -106,12 +106,27 @@ export function measure(events) {
   const all = lines.map((l) => l.text).join("\n");
   let errorClass = null;
   let errorLine = null;
-  const errLine = (re) => lines.find((l) => re.test(l.text))?.text.trim().slice(0, 200) ?? null;
-  if (/Merge conflict marker encountered/.test(all)) { errorClass = "conflict-marker"; errorLine = errLine(/Merge conflict marker|\.(tsx?|jsx?|mjs|css):\d+/); }
-  else if (/Expression expected|Parsing ecmascript source code failed|Unexpected token|Unterminated (string|regexp|template)|Expected '[^']+', got|Syntax error:/.test(all)) { errorClass = "parse"; errorLine = errLine(/Expression expected|Parsing ecmascript|Unexpected token|Unterminated|Expected '|Syntax error/); }
-  else if (/JavaScript heap out of memory|SIGKILL|exited with 137|out of memory|OOMKilled/i.test(all)) { errorClass = "oom"; errorLine = errLine(/heap out of memory|SIGKILL|137|out of memory|OOM/i); }
-  else if (/\[compile-watchdog\] STALLED/.test(all)) { errorClass = "stall"; errorLine = errLine(/compile-watchdog/); }
-  else if (/Type error:/.test(all)) { errorClass = "type"; errorLine = errLine(/Type error:/); }
+  // The first failing file + its message, from Turbopack's "build failed with N errors:" block.
+  const failedAt = lines.findIndex((l) => /Turbopack build failed|Failed to compile|Build error occurred/.test(l.text));
+  const firstErr = failedAt >= 0
+    ? lines.slice(failedAt, failedAt + 12).map((l) => l.text.replace(/\x1b\[[0-9;]*m/g, "").trim())
+      .filter((t) => /^\.\/\S+:\d+|^Error:|Expression expected|Merge conflict|Module not found|doesn't exist/.test(t) && !/Turbopack build failed/.test(t)).slice(0, 2).join(" — ").slice(0, 220) || null
+    : null;
+  const CLASSES = [
+    ["conflict-marker", /Merge conflict marker encountered/],
+    ["parse", /Expression expected|Parsing ecmascript source code failed|Unexpected token|Unterminated (string|regexp|template)|Expected '[^']+', got|Syntax error:/],
+    ["missing-export", /Export \S+ doesn't exist in target module|was not found in module|is defined multiple times/],
+    ["module-not-found", /Module not found|Can't resolve/],
+    ["oom", /JavaScript heap out of memory|SIGKILL|exited with 137|out of memory|OOMKilled/i],
+    ["stall", /\[compile-watchdog\] STALLED/],
+    ["type", /Type error:/],
+  ];
+  for (const [cls, re] of CLASSES) {
+    if (!re.test(all)) continue;
+    errorClass = cls;
+    errorLine = firstErr ?? lines.find((l) => re.test(l.text))?.text.trim().slice(0, 220) ?? null;
+    break;
+  }
   return {
     compileMin: compiled ? +(toSec(compiled[1], compiled[2]) / 60).toFixed(2) : null,
     staticSec: stat ? +toSec(stat[2], stat[3]).toFixed(1) : null,
@@ -123,7 +138,7 @@ export function measure(events) {
 }
 
 async function buildRecord(d, project, token, team) {
-  const file = join(CACHE, "builds", `${d.uid}.json`);
+  const file = join(CACHE, "builds", `${d.uid}.v2.json`);
   if (existsSync(file)) { try { return JSON.parse(readFileSync(file, "utf8")); } catch { /* refetch */ } }
   const events = await api(`/v3/deployments/${d.uid}/events?teamId=${team}&builds=1&limit=-1`, token);
   const m = measure(Array.isArray(events) ? events : []);
@@ -133,7 +148,9 @@ async function buildRecord(d, project, token, team) {
     createdAt: d.created, totalMin: d.ready && d.buildingAt ? +((d.ready - d.buildingAt) / 60000).toFixed(2) : null,
     compileMin: m.compileMin, staticSec: m.staticSec, deployMin: m.deployMin, cache: m.cache,
     parseGuardSec: m.parseGuardSec,
-    errorClass: d.state === "ERROR" ? (m.errorClass ?? "other") : null,
+    // No error text and ~45 min: Vercel's build cap killed a compile that never finished (the
+    // 2026-10-22 Turbopack deadlock, v0.4.3447).
+    errorClass: d.state === "ERROR" ? (m.errorClass ?? (d.ready - d.buildingAt > 44 * 60000 ? "timeout" : "other")) : null,
     errorLine: d.state === "ERROR" ? (m.errorLine ?? m.all.split("\n").filter((l) => /error|failed/i.test(l)).slice(-1)[0]?.slice(0, 200) ?? null) : null,
   };
   mkdirSync(dirname(file), { recursive: true });
@@ -231,7 +248,7 @@ function enrich(b, { bill }) {
 function findingRow(b) {
   const range = `${(b.prevSha ?? "?").slice(0, 10)}..${(b.sha ?? "?").slice(0, 10)}`;
   const pk = b.packages == null ? "packages unknown" : b.packages.length
-    ? b.packages.map((p) => `${p.isNew ? "NEW " : ""}${p.name}${p.from ? ` ${p.from}→` : " "}${p.to}`).join(", ")
+    ? [...b.packages].sort((x, y) => Number(y.isNew) - Number(x.isNew)).map((p) => `${p.isNew ? "NEW " : ""}${p.name}${p.from ? ` ${p.from}→` : " "}${p.to}`).join(", ")
     : "no @ai-matrx package changed";
   const bill = b.bill ? `; app compile bill ${b.bill.before.toLocaleString()} → ${b.bill.after.toLocaleString()} (${b.bill.pct > 0 ? "+" : ""}${b.bill.pct}%)` : "";
   const vercelNoise = b.reasons[0]?.startsWith("compile") && b.packages?.length === 0 && b.bill && b.bill.pct <= 0

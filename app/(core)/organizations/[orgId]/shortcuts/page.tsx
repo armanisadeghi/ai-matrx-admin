@@ -8,7 +8,6 @@ import {
   Eye,
   Folder,
   Loader2,
-  RefreshCw,
   Shield,
   Zap,
 } from "lucide-react";
@@ -16,8 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { useOrgShortcutsContext } from "./OrgShortcutsContext";
-import PageHeaderRightPortal from "@/features/shell/components/header/PageHeaderRightPortal";
-import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
+import { useOrgHeaderActions } from "@/features/scopes/components/pages/orgHeaderActions";
 
 const SCOPE = "organization" as const;
 
@@ -64,6 +62,10 @@ export default function OrgShortcutsDashboardPage() {
 
   const { shortcuts, categories, contentBlocks, isLoading, refetch } =
     useAgentShortcuts({ scope: SCOPE, scopeId: organizationId });
+  // Refresh is one of the organization header's actions (declared, never a portalled button).
+  useOrgHeaderActions([
+    { key: "refresh", icon: "refresh", label: "Refresh", onClick: () => void refetch(), busy: isLoading },
+  ]);
 
   const counts = {
     shortcuts: shortcuts.length,
@@ -85,19 +87,6 @@ export default function OrgShortcutsDashboardPage() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <PageHeaderRightPortal>
-        <TapTargetButton
-          icon={
-            <RefreshCw
-              className={isLoading ? "animate-spin" : undefined}
-            />
-          }
-          onClick={() => refetch()}
-          disabled={isLoading}
-          ariaLabel="Refresh"
-          tooltip="Refresh"
-        />
-      </PageHeaderRightPortal>
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(var(--shell-header-h)+1rem)] pb-4 space-y-4">

@@ -23,8 +23,7 @@ import type { Invitation } from "@/features/organizations/service/invitationsSer
 import { supabase } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 
-import PageHeader from "@/features/shell/components/header/PageHeader";
-import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { invitationSignUpHref } from "@/utils/auth/invitation-links";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -132,18 +131,7 @@ export default function AcceptClassInvitationPage() {
   }
 
   const header = (
-    <PageHeader>
-      <div className="flex items-center w-full min-w-0 gap-0 p-0">
-        <ChevronLeftTapButton
-          onClick={() => router.push("/education/classes")}
-          variant="transparent"
-          ariaLabel="Back"
-        />
-        <h1 className="ml-2 text-sm font-medium text-foreground truncate">
-          Class Invitation
-        </h1>
-      </div>
-    </PageHeader>
+    <RecordPageHeader level={{ name: "Class Invitation" }} backHref="/education/classes" />
   );
 
   if (loading) {

@@ -2998,6 +2998,49 @@ def handle_orphan_merge(gd):
     return True
 
 
+# THE FAST CATCH-UP (2026-10-22). One full attempt -- sweep, merge, guards -- takes 3-6 minutes in
+# this checkout (the sweep check alone 36-128 s, the lockfile adoption check minutes more), and
+# GitHub gets a push every minute or two. So the push was rejected attempt after attempt (sync of
+# 13:54 PT, 148 commits ahead: "GitHub moved while syncing" on attempts 2 and 3, 35+ min, nothing
+# pushed) and MAX_ATTEMPTS ends in "git push failed". After a rejected push, origin's new commits
+# are merged and pushed in SECONDS, without re-running the sweep, the package update or the guards,
+# when that merge is conflict-free (git merge-tree) and origin's new commits touch no package
+# manifest or lockfile (the only things the guards judge). Anything else falls back to a full attempt.
+FAST_CATCHUP_TRIES = 6
+FAST_CATCHUP_MANIFESTS = ("package.json", "pnpm-lock.yaml", "package-lock.json")
+
+
+def fast_catch_up_push():
+    """After a rejected push. Returns (True, None) when pushed, else (False, why) for a full attempt."""
+    target = "%s/%s" % (REMOTE, BRANCH)
+    for _ in range(FAST_CATCHUP_TRIES):
+        rc, _, err = git("fetch", "-q", REMOTE, BRANCH, check=False)
+        if rc != 0:
+            return False, "fetch failed: " + err.strip()[:200]
+        rc, mb, _ = git("merge-base", "HEAD", target, check=False)
+        if rc != 0:
+            return False, "no merge base"
+        _, theirs, _ = git("diff", "--name-only", mb.strip(), target, check=False)
+        touched = [f for f in theirs.split() if os.path.basename(f) in FAST_CATCHUP_MANIFESTS]
+        if touched:
+            return False, "GitHub's new commits change " + ", ".join(touched[:3])
+        rc, _, _ = git("merge-tree", "--write-tree", "--no-messages", "HEAD", target, check=False)
+        if rc != 0:
+            return False, "merging GitHub's new commits would conflict"
+        rc, out, err = merge_without_markers("--no-edit", "--no-verify", "-q", target)
+        if rc != 0:
+            _, gd, _ = git("rev-parse", "--git-dir")
+            if os.path.exists(os.path.join(gd.strip(), "MERGE_HEAD")):
+                die("fast catch-up: a merge git called clean stopped half-way; it is left open:\n" + out + err)
+            return False, "merge refused: " + (out + err).strip()[:200]
+        rc, _, err = git("push", "-q", REMOTE, "HEAD:%s" % BRANCH, check=False)
+        if rc == 0:
+            return True, None
+        if not re.search(r"non-fast-forward|fetch first|rejected", err):
+            return False, "push failed: " + err.strip()[:200]
+    return False, "GitHub moved %d times in a row" % FAST_CATCHUP_TRIES
+
+
 def main():
     if sys.argv[1:2] == ["--replay"]:
         _, top, _ = git("rev-parse", "--show-toplevel")
@@ -3162,7 +3205,12 @@ def main():
             break
         if attempt == MAX_ATTEMPTS or not re.search(r"non-fast-forward|fetch first|rejected", err):
             die("git push failed:\n" + err)
-        say("GitHub moved while syncing; going again (attempt %d)." % (attempt + 1))
+        pushed, why = fast_catch_up_push()
+        if pushed:
+            say("GitHub moved while syncing; merged its new commits and pushed (fast catch-up).")
+            break
+        say("GitHub moved while syncing; fast catch-up not possible (%s); going again (attempt %d)."
+            % (why, attempt + 1))
     else:
         # Every attempt hit `continue`: nothing was merged or pushed. Never print "synced".
         die("%d attempts and the merge never ran (a working-tree file kept blocking it); see the "

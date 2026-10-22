@@ -22,7 +22,6 @@ import { SuspenseLoader } from "@ai-matrx/design-system";
 import { pushAppHref } from "@/lib/deployment/navigate";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
-import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { useMandateSystemSeat } from "@/features/mandates/admin/useMandateSystemSeat";
 import { usePromoteToSystemMandate } from "@/features/mandates/admin/mandate-actions";

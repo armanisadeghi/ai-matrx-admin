@@ -96,10 +96,13 @@ describe("the delete is DISCOVERABLE, not only in a row menu", () => {
     control.indexOf("return (", control.indexOf("const archive = async")),
   );
 
-  it("puts the status control, with Archive, in the mandate page's header", () => {
-    expect(page).toContain("<MandateStatusControl");
+  it("puts the status, with Archive, in the mandate page's header action list", () => {
+    // Crumb doors (2026-10-22): the status is the badge beside the name and its changes are
+    // declared actions (`useMandateStatusActions`) — never a control in `right=`.
+    expect(page).toContain("useMandateStatusActions(");
+    expect(page).toContain("entityStatus={<MandateStatusBadge");
     // ab0997204b: a system mandate's status menu also opens for the system seat.
-    expect(page).toContain("canManage={canRemove || systemSeat}");
+    expect(page).toContain("canManage: canRemove || systemSeat,");
     expect(control).toContain("onSelect={() => void archive()}");
     expect(archive).toContain("softDeleteMandate(mandateId, { systemSeat })");
     expect(archive).toContain('variant: "destructive"');

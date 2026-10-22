@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import {
   CheckRow,
   OptionRow,
-  SearchInput,
+  CatalogSearchField,
 } from "@ai-matrx/agents/catalog/react";
 import { WORKFLOW_SORT_OPTIONS } from "../types";
 import type { WorkflowListControls } from "../useWorkflowListCore";
@@ -71,7 +71,7 @@ export function WorkflowMobileSubView({
       {view === "categories" && (
         <>
           <div className="px-2 pb-1 pt-2">
-            <SearchInput
+            <CatalogSearchField
               value={catSearch}
               onChange={setCatSearch}
               placeholder="Filter categories..."
@@ -108,7 +108,7 @@ export function WorkflowMobileSubView({
       {view === "tags" && (
         <>
           <div className="px-2 pb-1 pt-2">
-            <SearchInput
+            <CatalogSearchField
               value={tagSearch}
               onChange={setTagSearch}
               placeholder="Filter tags..."

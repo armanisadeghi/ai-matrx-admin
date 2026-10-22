@@ -22,6 +22,7 @@ import {
   HeaderActionGroup,
   type HeaderAction,
 } from "@/features/scopes/components/pages/HeaderActionGroup";
+import { useOrgPageHeaderActions } from "@/features/scopes/components/pages/orgHeaderActions";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import type { TrailRecord } from "@/features/shell/breadcrumbs/derive-trail";
 import { useBreadcrumbOrgOptions } from "@/features/scopes/components/pages/hooks/useBreadcrumbOrgOptions";
@@ -236,6 +237,7 @@ export function ScopesRouteHeader() {
     }
   }, [active, dispatch, orgId, resolvedTypeId]);
 
+  const pageActions = useOrgPageHeaderActions();
   if (!active || !org) return null;
 
   const isEdit = pathname.endsWith("/edit");
@@ -415,6 +417,9 @@ export function ScopesRouteHeader() {
     // Scopes hub (no type) — or type still resolving.
     backHref = orgHref(orgSlugOrId);
   }
+
+  // A page's own actions (Refresh on the shortcuts pages) join the level's — one list.
+  actions.push(...pageActions);
 
   const routeReference = resolveScopeRouteReference({
     pathname,

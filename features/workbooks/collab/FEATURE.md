@@ -218,6 +218,13 @@ workbook routes pay zero bundle cost.
 
 ## Change log
 
+- `2026-10-22` — claude (samecell-2): **the ordered room's port gets the open cell editor and the
+  package's filter reader.** `workbookOrderedRoom.ts` lends `cellEditor` (`editorBridgeCell` over
+  `IEditorBridgeService`: a peer's write to the cell being typed in waits until the editor closes)
+  and `filterRange: filterServiceRange(...)` (keeps `rangeType`); a `resynced` notice shows
+  `resyncedNotice()` from `lib/collab/seat-notices.ts`. Proof:
+  `features/workbooks/__tests__/the-workbook-seat-lends-its-cell-editor-and-filter-to-the-room.test.ts`.
+
 - `2026-10-06` — claude (yjs-anti-entropy): **frames lost while connected are
   recovered.** `SupabaseYjsProvider` gained the `y-sv` anti-entropy probe
   (pending-triggered, post-burst, knob-backed tick). Proof:

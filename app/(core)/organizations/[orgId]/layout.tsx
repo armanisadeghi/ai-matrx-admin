@@ -3,6 +3,7 @@ import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { ScopesRouteHeader } from "@/features/scopes/components/pages/ScopesRouteHeader";
 import { ScopeAddressCanonicalizer } from "@/features/scopes/components/pages/ScopeAddressCanonicalizer";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { OrgHeaderActionsProvider } from "@/features/scopes/components/pages/orgHeaderActions";
 
 export async function generateMetadata({
   params,
@@ -45,12 +46,12 @@ export default function OrganizationLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <OrgHeaderActionsProvider>
       {/* The segments below are ADDRESSES (slug or UUID), never identifiers —
           this rewrites a UUID address to the canonical slug one in place. */}
       <ScopeAddressCanonicalizer />
       <ScopesRouteHeader />
       {children}
-    </>
+    </OrgHeaderActionsProvider>
   );
 }

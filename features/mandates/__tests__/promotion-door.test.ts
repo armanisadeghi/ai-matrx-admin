@@ -75,7 +75,7 @@ describe("the promotion door", () => {
 
   it("prints the refusal instead of inventing a sentence for it", () => {
     const source = read(BUTTON);
-    expect(source).toContain("PromoteToSystemMandateButton");
+    expect(source).toContain("usePromoteToSystemMandate");
     expect(source).toContain("refusal.message");
     expect(source).toContain("refusal.hint");
     // The admin gate on the button is CHROME. It must never be the only gate,

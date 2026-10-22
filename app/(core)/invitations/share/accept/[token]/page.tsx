@@ -20,8 +20,7 @@ import { AlertCircle, ArrowRight, Check, Loader2, LogIn, Users } from "lucide-re
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import PageHeader from "@/features/shell/components/header/PageHeader";
-import HeaderStructured from "@/features/shell/components/header/variants/variants/HeaderStructured";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { invitationSignUpHref } from "@/utils/auth/invitation-links";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import {
@@ -72,9 +71,7 @@ export default function AcceptRecordSharePage() {
 
   const shell = (children: React.ReactNode) => (
     <>
-      <PageHeader>
-        <HeaderStructured title="Shared with you" />
-      </PageHeader>
+      <RecordPageHeader level={{ name: "Shared with you" }} />
       <div className="flex h-full items-center justify-center overflow-y-auto bg-textured p-4 pt-[calc(var(--shell-header-h)+1rem)]">
         <Card className="w-full max-w-lg p-6 text-center">{children}</Card>
       </div>

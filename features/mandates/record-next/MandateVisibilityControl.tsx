@@ -2,7 +2,7 @@
 
 // features/mandates/record-next/MandateVisibilityControl.tsx
 //
-// WHO CAN SEE A MANDATE I CREATED — the record page's share control, and it is the
+// WHO CAN SEE A MANDATE I CREATED — the record page's Share action, and it is the
 // PLATFORM share dialog (`features/sharing/components/ShareModal`), not a mandate-only
 // picker. The same dialog shares a note, an agent or a workflow.
 //
@@ -15,9 +15,9 @@
 // and mandate.definition's RLS honors the grants through iam.has_access('mandate', …).
 // Proof from each viewer's seat: `pnpm check:mandate-sharing-lanes`.
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Globe, Lock, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { EntityHeaderAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { ShareModal } from "@ai-matrx/sharing/react";
 import { invalidateMandateCache } from "@ai-matrx/chat/mandates/service";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
@@ -32,40 +32,38 @@ export function mandateShareButtonLabel(publishedToWeb: boolean | null | undefin
   return publishedToWeb ? PUBLISHED_TO_WEB_LABEL : "Share";
 }
 
-export function MandateVisibilityControl({
-  mandate,
-  onChanged,
-}: {
-  mandate: Mandate;
-  onChanged: () => void;
-}) {
+/**
+ * The record header's Share action (one entry in its declared action list — the line draws it,
+ * "…" carries it) and the platform share dialog it opens. The host renders `dialog`.
+ */
+export function useMandateShareAction(
+  mandate: Mandate,
+  onChanged: () => void,
+): { action: EntityHeaderAction; dialog: ReactNode } {
   const [open, setOpen] = useState(false);
   const Icon = mandate.published_to_web ? Globe : mandate.shown_to === "only_me" ? Lock : Share2;
 
-  return (
-    <>
-      <Button
-        icon={<Icon />}
-        variant="outline"
-        onClick={() => setOpen(true)}
-      >
-        {mandateShareButtonLabel(mandate.published_to_web)}
-      </Button>
-      {open ? (
-        <ShareModal
-          isOpen={open}
-          onClose={() => {
-            setOpen(false);
-            // Sharing or publishing may have changed inside the dialog; the row and its cache re-read.
-            invalidateMandateCache(storedMandateKey(mandate.mandate_key));
-            onChanged();
-          }}
-          resourceType="mandate"
-          resourceId={mandate.id}
-          resourceName={mandateDisplayName(storedMandateKey(mandate.mandate_key), mandate.label)}
-          resourceNoun="mandate"
-        />
-      ) : null}
-    </>
-  );
+  return {
+    action: {
+      label: mandateShareButtonLabel(mandate.published_to_web),
+      icon: Icon,
+      showLabel: true,
+      onPress: () => setOpen(true),
+    },
+    dialog: open ? (
+      <ShareModal
+        isOpen={open}
+        onClose={() => {
+          setOpen(false);
+          // Sharing or publishing may have changed inside the dialog; the row and its cache re-read.
+          invalidateMandateCache(storedMandateKey(mandate.mandate_key));
+          onChanged();
+        }}
+        resourceType="mandate"
+        resourceId={mandate.id}
+        resourceName={mandateDisplayName(storedMandateKey(mandate.mandate_key), mandate.label)}
+        resourceNoun="mandate"
+      />
+    ) : null,
+  };
 }

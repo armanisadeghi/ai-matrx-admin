@@ -36,8 +36,7 @@ import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { invitationSignUpHref } from "@/utils/auth/invitation-links";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";
-import PageHeader from "@/features/shell/components/header/PageHeader";
-import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**
@@ -232,18 +231,7 @@ export default function AcceptInvitationPage() {
   };
 
   const header = (
-    <PageHeader>
-      <div className="flex items-center w-full min-w-0 gap-0 p-0">
-        <ChevronLeftTapButton
-          onClick={() => router.back()}
-          variant="transparent"
-          ariaLabel="Back"
-        />
-        <h1 className="ml-2 text-sm font-medium text-foreground truncate">
-          Organization Invite
-        </h1>
-      </div>
-    </PageHeader>
+    <RecordPageHeader level={{ name: "Organization Invite" }} backHref="/organizations" />
   );
 
   // Loading state

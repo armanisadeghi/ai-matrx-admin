@@ -1,4 +1,5 @@
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 
 export const metadata = createRouteMetadata("/invitations", {
   titlePrefix: "Accept",
@@ -12,5 +13,10 @@ export default function EmployeeInvitationLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <RecordPageHeader level={{ name: "Employee Invite" }} />
+      {children}
+    </>
+  );
 }

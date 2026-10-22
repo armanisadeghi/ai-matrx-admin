@@ -6,6 +6,7 @@ import {
   PencilTapButton,
   TrashTapButton,
   LoadingTapButton,
+  RefreshCwTapButton,
   type TapButtonProps,
 } from "@ai-matrx/design-system/tap-target/buttons";
 import { TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
@@ -13,9 +14,10 @@ import { TapTargetButtonGroup } from "@ai-matrx/design-system/tap-target";
 /**
  * The canonical action vocabulary shared across every scope/context page.
  * Keep this list small and universal — Hub (the level's main/list page),
- * Add (new sibling), Edit (the edit route), Delete (remove current).
+ * Add (new sibling), Edit (the edit route), Delete (remove current), Refresh
+ * (re-read the page's data — a page declares it through `useOrgHeaderActions`).
  */
-export type HeaderActionIcon = "hub" | "add" | "edit" | "delete";
+export type HeaderActionIcon = "hub" | "add" | "edit" | "delete" | "refresh";
 
 export interface HeaderAction {
   key: string;
@@ -41,6 +43,7 @@ const ICON_MAP: Record<
   add: PlusTapButton,
   edit: PencilTapButton,
   delete: TrashTapButton,
+  refresh: RefreshCwTapButton,
 };
 
 /**

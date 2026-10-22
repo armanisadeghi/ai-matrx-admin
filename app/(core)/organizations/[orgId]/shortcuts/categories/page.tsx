@@ -2,10 +2,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Eye, RefreshCw } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import PageHeaderRightPortal from "@/features/shell/components/header/PageHeaderRightPortal";
-import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
+import { useOrgHeaderActions } from "@/features/scopes/components/pages/orgHeaderActions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +36,10 @@ export default function OrgCategoriesPage() {
     scope: SCOPE,
     scopeId: organizationId,
   });
+  // Refresh is one of the organization header's actions (declared, never a portalled button).
+  useOrgHeaderActions([
+    { key: "refresh", icon: "refresh", label: "Refresh", onClick: () => void refetch(), busy: isLoading },
+  ]);
   const crud = useAgentShortcutCrud({ scope: SCOPE, scopeId: organizationId });
 
   const [formOpen, setFormOpen] = useState(false);
@@ -119,19 +122,6 @@ export default function OrgCategoriesPage() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-textured">
-      <PageHeaderRightPortal>
-        <TapTargetButton
-          icon={
-            <RefreshCw
-              className={isLoading ? "animate-spin" : undefined}
-            />
-          }
-          onClick={() => refetch()}
-          disabled={isLoading}
-          ariaLabel="Refresh"
-          tooltip="Refresh"
-        />
-      </PageHeaderRightPortal>
 
       <div className="flex-1 overflow-y-auto p-4 pt-[calc(var(--shell-header-h)+1rem)]">
         <div className="flex items-center gap-2 mb-4">

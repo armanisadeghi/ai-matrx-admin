@@ -18,7 +18,7 @@ import {
   AgentMobileSubView,
   AgentSortPanel,
   AgentTagsPanel,
-  SearchInput,
+  CatalogSearchField,
   useAgentCatalogState,
   useAgentListCore,
   type RightPanel,
@@ -425,7 +425,7 @@ function CardGridDemo() {
 
   const searchBar = (
     <div className="px-2 pt-2 pb-1">
-      <SearchInput
+      <CatalogSearchField
         value={consumer.searchTerm}
         onChange={consumer.setSearchTerm}
         placeholder="Search agents..."

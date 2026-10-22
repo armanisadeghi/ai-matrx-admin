@@ -9,7 +9,7 @@
  */
 
 import { adminMandateRecordHref } from "@/features/mandates/admin-routes";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   Copy,
@@ -20,6 +20,8 @@ import {
   Building2,
 } from "lucide-react";
 import { toast, recordToast } from "@/lib/toast";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
+import type { EntityHeaderAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -297,7 +299,8 @@ export function CreateSystemTwinButton({
 }
 
 /**
- * PROMOTE THE MANDATE — the sibling of `CreateSystemTwinButton` above.
+ * PROMOTE THE MANDATE — the sibling of `CreateSystemTwinButton` above. A header action
+ * (the record page's one action list, placement "menu"), never a separate button.
  *
  * That button promotes the AGENT (`agx_duplicate_agent(p_as_system)`); this one
  * promotes the MANDATE (`mandate.duplicate_mandate(p_as_system)`, aidream
@@ -317,14 +320,16 @@ export function CreateSystemTwinButton({
  * personal agent behind the job) its own sentence is printed verbatim, hint
  * included, because that hint names the door that fixes it.
  */
-export function PromoteToSystemMandateButton({
-  mandate,
-  onPromoted,
-}: {
-  mandate: MandateDefinitionRow;
+export function usePromoteToSystemMandate(
+  mandate: MandateDefinitionRow,
   /** Called after a successful promotion, before the copy is opened. */
-  onPromoted?: () => void;
-}) {
+  onPromoted?: () => void,
+): {
+  /** The header action — absent for a seat without "mandate.system-seat" or a job already in Matrx System. */
+  action: EntityHeaderAction | null;
+  /** The door's refusal, printed whole with its doors — the host places it under its header. */
+  refusal: ReactNode;
+} {
   const router = useRouter();
   const isSuperAdmin = useAppSelector((s) =>
     selectAdminFeature(s, "mandate.system-seat"),
@@ -335,72 +340,64 @@ export function PromoteToSystemMandateButton({
     hint: string | null;
   } | null>(null);
 
-  if (!isSuperAdmin) return null;
-
   const alreadySystem = mandate.organization_id === SYSTEM_ORGANIZATION_ID;
 
-  return (
-    <div className="mt-4 space-y-2 border-t border-border/40 pt-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          icon={busy ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <Building2 />
-          )}
-          type="button"
-          variant="outline"
-          disabled={busy || alreadySystem}
-          onClick={async () => {
-            setBusy(true);
-            setRefusal(null);
-            try {
-              const copy = await promoteMandateToSystem(mandate.id);
-              recordToast.success(
-                { type: "mandate", id: copy.id, title: copy.mandateKey },
-                `Promoted to the system mandate "${copy.mandateKey}". It carries no bindings yet.`,
-              );
-              onPromoted?.();
-              router.push(adminMandateRecordHref(copy.mandateKey));
-            } catch (error: unknown) {
-              // THE DOOR'S OWN WORDS, verbatim — including the hint, which
-              // names the agent promotion door when the holder law fires.
-              const message =
-                error instanceof Error
-                  ? error.message
-                  : "That mandate was not promoted.";
-              const hint =
-                error instanceof Error && "hint" in error
-                  ? ((error as { hint?: string | null }).hint ?? null)
-                  : null;
-              setRefusal({ message, hint });
-              toast.error(message);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {busy ? "Promoting…" : "Promote to system mandate"}
-        </Button>
-        <span className="type-meta leading-snug text-muted-foreground">
-          {alreadySystem
-            ? "Already in Matrx System; it decides for every user."
-            : "Copies it to Matrx System, with no bindings, for all users."}
-        </span>
-      </div>
-      {refusal ? (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-[11.5px] text-destructive-ink">
-          <p>
-            <TextWithDoors text={refusal.message} />
+  const promote = async () => {
+    const ok = await confirm({
+      title: "Promote to system mandate?",
+      description: "Copies it to Matrx System, with no bindings, for all users.",
+      confirmLabel: "Promote",
+    });
+    if (!ok) return;
+    setBusy(true);
+    setRefusal(null);
+    try {
+      const copy = await promoteMandateToSystem(mandate.id);
+      recordToast.success(
+        { type: "mandate", id: copy.id, title: copy.mandateKey },
+        `Promoted to the system mandate "${copy.mandateKey}". It carries no bindings yet.`,
+      );
+      onPromoted?.();
+      router.push(adminMandateRecordHref(copy.mandateKey));
+    } catch (error: unknown) {
+      // THE DOOR'S OWN WORDS, verbatim — including the hint, which
+      // names the agent promotion door when the holder law fires.
+      const message =
+        error instanceof Error ? error.message : "That mandate was not promoted.";
+      const hint =
+        error instanceof Error && "hint" in error
+          ? ((error as { hint?: string | null }).hint ?? null)
+          : null;
+      setRefusal({ message, hint });
+      toast.error(message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return {
+    action:
+      isSuperAdmin && !alreadySystem
+        ? {
+            label: busy ? "Promoting…" : "Promote to system mandate",
+            icon: busy ? Loader2 : Building2,
+            disabled: busy,
+            placement: "menu",
+            onPress: () => void promote(),
+          }
+        : null,
+    refusal: refusal ? (
+      <div className="mb-3 rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-[11.5px] text-destructive-ink">
+        <p>
+          <TextWithDoors text={refusal.message} />
+        </p>
+        {refusal.hint ? (
+          <p className="mt-1 text-destructive/80">
+            <TextWithDoors text={refusal.hint} />
           </p>
-          {refusal.hint ? (
-            <p className="mt-1 text-destructive/80">
-              <TextWithDoors text={refusal.hint} />
-            </p>
-          ) : null}
-          <ErrorAlchemyMenu error={refusal.message} />
-        </div>
-      ) : null}
-    </div>
-  );
+        ) : null}
+        <ErrorAlchemyMenu error={refusal.message} />
+      </div>
+    ) : null,
+  };
 }
