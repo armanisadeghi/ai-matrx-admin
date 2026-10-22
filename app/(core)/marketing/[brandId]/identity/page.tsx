@@ -14,6 +14,7 @@ import {
   PenLine,
   Telescope,
   Swords,
+  Mic,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -103,6 +104,12 @@ export default async function BrandIdentityPage({
       room: "audience",
       href: `${identity}/audience`,
       icon: Users,
+    },
+    {
+      // The owner's story questions (brand discovery wave 2): answered by voice or typing.
+      room: "story",
+      href: `${identity}/story`,
+      icon: Mic,
     },
   ];
   const rooms = roomDefs.map((def) => ({ ...def, ...roomCopy[def.room] }));

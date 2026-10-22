@@ -106,7 +106,7 @@ import { useOutputFeedback } from "@/lib/output-feedback/useOutputFeedback";
 import { saveOutputFeedback } from "@/lib/output-feedback/service";
 import { precedingQuestion } from "@/features/masterwork/oracle/precedingQuestion";
 import type { reconcileMessagesArtifacts } from "@/features/canvas/materialization/reconcileArtifacts";
-import { looksLikeContact } from "@/features/crm/agent-context/parseContactSelection";
+import { looksLikeContact } from "@ai-matrx/chat/window-panels/windows/crm/contact-selection";
 import { invalidateCanvasItemCache } from "@/features/canvas/hooks/useCanvasItem";
 import { studioDocumentContentChanged } from "@/features/transcript-studio/redux/slice";
 import { selectEditorState } from "@/features/code-editor/redux/editor-state.slice";

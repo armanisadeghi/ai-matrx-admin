@@ -8,6 +8,7 @@
 // production build strips `console.log`/`info` (next.config.js `removeConsole`). Read them with
 // `vercel logs --environment production --query "ssr-timing"`.
 
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import "server-only";
 
 /** When this module was first evaluated: the instance's start, near enough to call a cold start. */
@@ -52,7 +53,7 @@ export function startSsrTiming(scope: string, path: string): SsrTiming {
         .join(" ");
       console.warn(
         `[ssr-timing] ${scope} ${path} awaited=${totalMs}ms ${steps.join(" ")} ` +
-          `render#${render} instanceAge=${Math.round(instanceAgeMs / 1000)}s${tail ? ` ${tail}` : ""}`,
+          `render#${render} instanceAge=${formatDurationMs(instanceAgeMs, { style: "compact" })}${tail ? ` ${tail}` : ""}`,
       );
     },
   };

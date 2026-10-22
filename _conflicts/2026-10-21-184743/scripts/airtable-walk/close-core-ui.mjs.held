@@ -1,0 +1,288 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      scripts/airtable-walk/close-core-ui.mjs
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at scripts/airtable-walk/close-core-ui.mjs
+  Both grew from the same COMMON version: commit 29e0d2832b, 2026-10-21 16:56.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-21 18:34  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-21 18:51  3374a6eff2  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-21 17:47  6b1eb9091e  "fix(records): a field a retype makes apply is required (CD-CORE-15, acceptance test 8) + CLOSE-CORE round 2 live proofs"
+  LOCAL's latest change is 46m AFTER GITHUB's latest change.
+
+SIZE: common version 0 lines, LOCAL 239 lines, GITHUB 238 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 213 lines and removed 0 lines.
+  GITHUB added 212 lines and removed 0 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 211 of the 212 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | await page.waitForTimeout(4000);
+    (some of those lines also appear in other changed files, which may be a coincidence: scripts/agent-walk/close-agent-walk.mjs, scripts/airtable-walk/ba-paste.mjs)
+  GITHUB has 211 of the 213 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | // Long enough for the new column to arrive and its place to be written onto the view on a loaded machine.
+      | await page.waitForTimeout(15000);
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 369a95bbf0ed:'scripts/airtable-walk/close-core-ui.mjs') <(git show 3374a6eff22f:'scripts/airtable-walk/close-core-ui.mjs')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 3374a6eff22f:'scripts/airtable-walk/close-core-ui.mjs'
+  GITHUB: git show 369a95bbf0ed:'scripts/airtable-walk/close-core-ui.mjs'
+
+---------------- LOCAL VERSION BELOW ----------------
+// CLOSE-CORE grid walk on this lane's preview host, reusing the cookies close-core-signin.mjs kept.
+//   CD-CORE-03 admin sees '+' after the last header and the field settings; a View sharee sees neither.
+//   CD-CORE-04 header right-click Insert column left / right; row right-click Insert row above / below; all survive reload.
+//   CD-CORE-09 a Choice cell: colored options, type to search, arrows + Enter pick, fully visible at 375 px.
+//   CD-CORE-20 a member at Edit on admin's table has no add-field control.
+//   CD-CORE-08 (re-check) a column edge drags wider and the width survives reload.
+// One disposable table in admin's Workspace, archived at the end.
+// Run: ORIGIN=http://close-core.localhost:3001 node scripts/airtable-walk/close-core-ui.mjs [admin] [member]
+import { chromium } from "playwright";
+import { declareTable } from "@ai-matrx/records/core";
+import { mkdirSync, existsSync } from "node:fs";
+import { admin as adminStore, say } from "./at-fix-j-lib.mjs";
+import { ORIGIN } from "./lib.mjs";
+const STATE = process.env.HOME + "/lane-resume/close-core-state/";
+const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r2-";
+mkdirSync(process.env.HOME + "/lane-resume/close-core-shots", { recursive: true });
+const parts = process.argv.slice(2).length ? process.argv.slice(2) : ["admin", "member"];
+const MEMBER = "4060701e-706a-4c76-b3ca-0bbc69fa5a14"; // test@test.com
+const ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
+const { sb, client } = await adminStore();
+const tries = async (fn) => { let r; for (let i = 0; i < 5; i++) { r = await fn(); if (r.ok || !["timed_out", "unreachable"].includes(r.error?.code)) return r; await new Promise((res) => setTimeout(res, 4000)); } return r; };
+const tag = Math.random().toString(36).slice(2, 6);
+const made = await tries(() => declareTable(client, { name: `CC grid ${tag}`, fields: [
+  { key: "name", label: "Name", type: "text", sort: 10 },
+  { key: "qty", label: "Qty", type: "number", sort: 20 },
+  { key: "status", label: "Status", type: "select", sort: 30, options: ["Waiting", "Done", "Lost", "Booked", "Declined"] },
+] }));
+if (!made.ok) throw new Error(made.error.message);
+const table = made.data;
+const rowIds = {};
+for (const [name, qty, status] of [["Alpha", 3, "waiting"], ["Bravo", 9, "done"], ["Charlie", 5, "lost"]]) {
+  const w = await tries(() => client.recordWrite({ table_id: table, data: { name, qty, status } }));
+  rowIds[name] = w.data;
+}
+say("table", table, ORIGIN + "/data/" + table);
+const R = {};
+let fails = 0;
+const check = (ok, what, detail) => { if (!ok) fails++; R[what] = detail ?? ok; say(ok ? "PASS" : "FAIL", what, detail ?? ""); };
+const headers = (page) => page.locator("th").evaluateAll((ths) => ths.map((t) => (t.innerText || "").trim().split("\n")[0]).filter(Boolean));
+const menuItems = (page) => page.locator("[role=menuitem]:visible").evaluateAll((ms) => ms.map((m) => `${(m.innerText || "").trim().split("\n")[0]}${m.getAttribute("aria-disabled") === "true" || m.hasAttribute("data-disabled") ? " [disabled]" : ""}`));
+const fieldKeys = async () => ((await tries(() => client.fields({ table_id: table }))).data ?? []).map((f) => f.label);
+async function openTable(page) {
+  await page.goto(`${ORIGIN}/data/${table}`, { waitUntil: "domcontentloaded", timeout: 900000 });
+  const resume = page.getByRole("button", { name: "Resume this preview" });
+  if (await resume.count()) await resume.click();
+  try {
+    await page.waitForSelector("[data-table-toolbar]", { timeout: 420000 });
+    await page.getByText("Alpha", { exact: true }).first().waitFor({ timeout: 180000 });
+  } catch (e) {
+    await page.screenshot({ path: SHOTS + "open-timeout-" + Date.now() + ".png" }).catch(() => {});
+    say("open failed at", page.url(), (await page.locator("body").innerText().catch(() => "")).slice(0, 400));
+    throw e;
+  }
+  await page.waitForTimeout(2500);
+}
+/** Find a menu item by name in the open context menu, opening a submenu ("More", "Organize", …) when it is not on top. */
+async function menuPick(page, name) {
+  const direct = page.getByRole("menuitem", { name }).first();
+  if (await direct.isVisible().catch(() => false)) return direct;
+  const subs = await page.locator("[role=menuitem][aria-haspopup]:visible, [role=menuitem][data-state]:visible").all();
+  for (const s of subs) {
+    await s.hover().catch(() => {}); await page.waitForTimeout(700);
+    if (await direct.isVisible().catch(() => false)) return direct;
+    await s.press("ArrowRight").catch(() => {}); await page.waitForTimeout(500);
+    if (await direct.isVisible().catch(() => false)) return direct;
+  }
+  return null;
+}
+async function contextOn(page, locator) {
+  await page.keyboard.press("Escape").catch(() => {});
+  await locator.click({ button: "right" }); await page.waitForTimeout(1200);
+}
+async function fillNewColumnDialog(page, label) {
+  await page.waitForTimeout(1500);
+  const dlg = page.locator("[role=dialog]:visible").last();
+  const input = dlg.locator("input:visible").first();
+  await input.fill(label);
+  await page.screenshot({ path: `${SHOTS}04-dialog-${label.replace(/\W+/g, "-")}.png` });
+  const save = dlg.getByRole("button", { name: /^(Create column|Add|Add field|Add column|Save|Create|Done)$/ }).first();
+  if (await save.count()) await save.click(); else await input.press("Enter");
+  // Long enough for the new column to arrive and its place to be written onto the view on a loaded machine.
+  await page.waitForTimeout(15000);
+}
+async function newBrowser(who, viewport = { width: 1600, height: 1000 }, extra = {}) {
+  if (!existsSync(STATE + who + ".json")) throw new Error(`no kept sign-in for ${who}; run close-core-signin.mjs ${who}`);
+  const browser = await chromium.launch({ headless: true });
+  const ctx = await browser.newContext({ viewport, storageState: STATE + who + ".json", ...extra });
+  ctx.setDefaultNavigationTimeout(900000);
+  const page = await ctx.newPage(); page.setDefaultTimeout(30000);
+  const errs = []; page.on("console", (m) => m.type() === "error" && errs.push(m.text().slice(0, 200)));
+  return { browser, ctx, page, errs };
+}
+
+try {
+  if (parts.includes("admin")) {
+    const a = await newBrowser("admin");
+    const page = a.page;
+    try {
+      await openTable(page);
+      const who = await page.evaluate(async () => (await (await fetch("/api/whoami")).json())?.email ?? null);
+      say("admin page signed in as", who);
+      // CD-CORE-03 admin half
+      check((await page.locator("[data-records-add-column]").count()) > 0, "CD-CORE-03 admin sees + after the last header");
+      R.headersBefore = await headers(page);
+      await page.screenshot({ path: SHOTS + "03-admin-grid.png" });
+      await contextOn(page, page.locator("th", { hasText: "Qty" }).first());
+      R.adminHeaderMenu = await menuItems(page);
+      await page.screenshot({ path: SHOTS + "04-admin-header-menu.png" });
+      check(R.adminHeaderMenu.some((m) => /^Rename column/.test(m)) && R.adminHeaderMenu.some((m) => /^Column settings/.test(m)), "CD-CORE-03 admin header menu has Rename column and Column settings", R.adminHeaderMenu.filter((m) => /Rename|settings/i.test(m)));
+      // CD-CORE-04 insert left / right
+      for (const side of ["left", "right"]) {
+        await contextOn(page, page.locator("th", { hasText: "Qty" }).first());
+        const item = await menuPick(page, new RegExp(`^Insert column ${side}`));
+        await page.screenshot({ path: `${SHOTS}04-admin-insert-${side}-menu.png` });
+        if (!item) { check(false, `CD-CORE-04 Insert column ${side} is on the header menu`, await menuItems(page)); continue; }
+        await item.click();
+        await fillNewColumnDialog(page, `Ins ${side}`);
+      }
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForSelector("[data-table-toolbar]", { timeout: 900000 }); await page.getByText("Alpha", { exact: true }).first().waitFor({ timeout: 300000 }); await page.waitForTimeout(2500);
+      const hAfter = await headers(page);
+      R.headersAfterInsert = hAfter;
+      await page.screenshot({ path: SHOTS + "04-admin-after-insert-reload.png" });
+      const qi = hAfter.indexOf("Qty");
+      check(qi > 0 && hAfter[qi - 1] === "Ins left" && hAfter[qi + 1] === "Ins right", "CD-CORE-04 columns land left and right of Qty after reload", hAfter);
+      // CD-CORE-04 rows above / below Bravo
+      for (const side of ["above", "below"]) {
+        const cell = page.locator(`td[data-matrx-cell-row="${rowIds.Bravo}"][data-matrx-cell-col="qty"]`).first();
+        await contextOn(page, cell);
+        const item = await menuPick(page, new RegExp(`^Insert row ${side}`));
+        if (!item) { check(false, `CD-CORE-04 Insert row ${side} is on the row menu`, await menuItems(page)); continue; }
+        if (side === "above") await page.screenshot({ path: SHOTS + "04-admin-row-menu.png" });
+        if ((await item.getAttribute("aria-disabled")) === "true" || (await item.getAttribute("data-disabled")) !== null) {
+          await item.hover(); await page.waitForTimeout(1200);
+          const why = await page.locator("[role=tooltip]:visible").allInnerTexts().catch(() => []);
+          check(false, `CD-CORE-04 Insert row ${side} is available on a new table's grid`, { disabled: true, why });
+          await page.keyboard.press("Escape"); await page.keyboard.press("Escape");
+          continue;
+        }
+        await item.click(); await page.waitForTimeout(4000);
+      }
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForSelector("[data-table-toolbar]", { timeout: 900000 }); await page.getByText("Alpha", { exact: true }).first().waitFor({ timeout: 300000 }); await page.waitForTimeout(2500);
+      const order = await page.locator("tr[data-matrx-row-id], tr[data-row-id]").evaluateAll((trs) => trs.map((t) => t.getAttribute("data-matrx-row-id") ?? t.getAttribute("data-row-id")));
+      const nameOf = Object.fromEntries(Object.entries(rowIds).map(([k, v]) => [v, k]));
+      R.rowOrderAfterReload = order.map((id) => nameOf[id] ?? "new");
+      await page.screenshot({ path: SHOTS + "04-admin-rows-after-reload.png" });
+      const bi = R.rowOrderAfterReload.indexOf("Bravo");
+      check(order.length === 5 && R.rowOrderAfterReload[bi - 1] === "new" && R.rowOrderAfterReload[bi + 1] === "new", "CD-CORE-04 new rows land above and below Bravo after reload", R.rowOrderAfterReload);
+      // CD-CORE-09 choice cell: search, Enter
+      const cell = page.locator(`td[data-matrx-cell-row="${rowIds.Alpha}"][data-matrx-cell-col="status"]`).first();
+      await page.keyboard.press("Escape");
+      await cell.click(); await page.keyboard.press("Enter"); await page.waitForTimeout(1500);
+      R.choiceOptions = await page.locator("[role=option]:visible").evaluateAll((os) => os.map((o) => ({ t: (o.innerText || "").trim(), color: getComputedStyle(o.querySelector("[data-choice-chip], span") ?? o).backgroundColor })));
+      await page.screenshot({ path: SHOTS + "09-admin-choice-open.png" });
+      check(R.choiceOptions.filter((o) => /Waiting|Done|Lost|Booked|Declined/.test(o.t)).length >= 5, "CD-CORE-09 the choice list opens with every option", R.choiceOptions.map((o) => o.t));
+      check(new Set(R.choiceOptions.map((o) => o.color)).size > 1, "CD-CORE-09 options are colored", R.choiceOptions.map((o) => o.color));
+      await page.keyboard.type("Boo"); await page.waitForTimeout(900);
+      R.afterSearch = await page.locator("[role=option]:visible").evaluateAll((os) => os.map((o) => (o.innerText || "").trim()));
+      await page.screenshot({ path: SHOTS + "09-admin-choice-search.png" });
+      check(R.afterSearch.some((t) => /^Booked/.test(t)) && !R.afterSearch.some((t) => /^(Waiting|Done|Lost|Declined)/.test(t)), "CD-CORE-09 typing narrows the list", R.afterSearch);
+      await page.keyboard.press("Enter"); await page.waitForTimeout(3500);
+      const s1 = await tries(() => client.listByIds({ table_id: table, ids: [rowIds.Alpha] }));
+      check(s1.ok && s1.data[0].document.status === "Booked", "CD-CORE-09 Enter picks the searched option (saved)", s1.ok ? s1.data[0].document.status : s1.error.message);
+      // arrows
+      await cell.click(); await page.keyboard.press("Enter"); await page.waitForTimeout(1500);
+      R.arrowList = await page.locator("[role=option]:visible").evaluateAll((os) => os.map((o) => (o.innerText || "").trim()));
+      await page.keyboard.press("ArrowDown"); await page.keyboard.press("ArrowDown"); await page.waitForTimeout(400);
+      R.highlighted = await page.locator("[role=option][aria-selected=true]:visible, [role=option][data-highlighted]:visible, [role=option][data-active=true]:visible").evaluateAll((os) => os.map((o) => (o.innerText || "").trim()));
+      await page.screenshot({ path: SHOTS + "09-admin-choice-arrows.png" });
+      await page.keyboard.press("Enter"); await page.waitForTimeout(3500);
+      const s2 = await tries(() => client.listByIds({ table_id: table, ids: [rowIds.Alpha] }));
+      R.afterArrows = s2.ok ? s2.data[0].document.status : s2.error.message;
+      check(s2.ok && R.afterArrows !== "Booked" && !!R.afterArrows, "CD-CORE-09 arrows + Enter pick another option (saved)", { list: R.arrowList, highlighted: R.highlighted, saved: R.afterArrows });
+      // CD-CORE-08 re-check: drag the Qty edge wider; it survives reload.
+      await page.keyboard.press("Escape");
+      const th = page.locator("th", { hasText: "Qty" }).first();
+      const box = await th.boundingBox();
+      const handle = th.locator("[data-column-resizer], [role=separator], .resizer").first();
+      if (await handle.count()) await handle.hover(); else await page.mouse.move(box.x + box.width - 2, box.y + box.height / 2);
+      await page.mouse.down(); await page.mouse.move(box.x + box.width + 120, box.y + box.height / 2, { steps: 8 }); await page.mouse.up();
+      await page.waitForTimeout(3000);
+      const w1 = (await th.boundingBox()).width;
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForSelector("[data-table-toolbar]", { timeout: 900000 }); await page.getByText("Alpha", { exact: true }).first().waitFor({ timeout: 300000 }); await page.waitForTimeout(2500);
+      const w2 = (await page.locator("th", { hasText: "Qty" }).first().boundingBox()).width;
+      check(w1 > box.width + 60 && Math.abs(w2 - w1) < 8, "CD-CORE-08 a dragged width persists after reload", { before: Math.round(box.width), dragged: Math.round(w1), afterReload: Math.round(w2) });
+      await page.screenshot({ path: SHOTS + "08-admin-width-after-reload.png" });
+      R.adminConsoleErrors = a.errs.slice(0, 8);
+    } catch (e) { fails++; say("ADMIN ERROR", e.message.split("\n")[0]); await page.screenshot({ path: SHOTS + "admin-error.png" }).catch(() => {}); }
+    finally { await a.browser.close(); }
+    // CD-CORE-09 at 375 px
+    const p = await newBrowser("admin", { width: 375, height: 812 }, { isMobile: true, hasTouch: true });
+    try {
+      await openTable(p.page);
+      // At 375 px the grid folds each row into a card; the Status value is the chip in Charlie's card.
+      const byAttr = p.page.locator(`[data-matrx-cell-row="${rowIds.Charlie}"][data-matrx-cell-col="status"]`).first();
+      const cell = (await byAttr.count()) ? byAttr : p.page.getByText("Lost", { exact: true }).first();
+      await cell.scrollIntoViewIfNeeded().catch(() => {});
+      await p.page.screenshot({ path: SHOTS + "09-375-grid.png" });
+      await cell.tap().catch(() => cell.click()); await p.page.waitForTimeout(2000);
+      if (!(await p.page.locator("[role=option]:visible").count())) { await p.page.keyboard.press("Enter"); await p.page.waitForTimeout(2000); }
+      if (!(await p.page.locator("[role=option]:visible").count())) { await cell.click().catch(() => {}); await p.page.waitForTimeout(2000); }
+      R.choice375 = await p.page.evaluate(() => [...document.querySelectorAll("[role=option]")].filter((o) => o.offsetParent !== null).map((o) => { const r = o.getBoundingClientRect(); return { t: (o.innerText || "").trim(), inView: r.left >= 0 && r.right <= innerWidth + 0.5 && r.top >= 0 && r.bottom <= innerHeight + 0.5 }; }));
+      R.page375Overflow = await p.page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+      await p.page.screenshot({ path: SHOTS + "09-375-choice.png" });
+      check(R.choice375.length >= 5 && R.choice375.every((o) => o.inView), "CD-CORE-09 every option fully visible at 375 px", R.choice375);
+      check(!R.page375Overflow, "CD-CORE-09 no sideways page scroll at 375 px");
+    } catch (e) { fails++; say("375 ERROR", e.message.split("\n")[0]); await p.page.screenshot({ path: SHOTS + "375-error.png" }).catch(() => {}); }
+    finally { await p.browser.close(); }
+  }
+  if (parts.includes("member")) {
+    for (const level of ["viewer", "editor"]) {
+      const g = await sb.schema("custom").rpc("share_grant", { p_organization_id: ORG, p_subject_id: table, p_principal_kind: "user", p_principal_id: MEMBER, p_level: level });
+      say(`granted the member ${level}`, g.error ? "ERR " + g.error.message : "ok");
+      const m = await newBrowser("member");
+      try {
+        await openTable(m.page);
+        const who = await m.page.evaluate(async () => (await (await fetch("/api/whoami")).json())?.email ?? null);
+        say("member page signed in as", who);
+        const plus = await m.page.locator("[data-records-add-column]").count();
+        await m.page.screenshot({ path: `${SHOTS}03-member-${level}-grid.png` });
+        await contextOn(m.page, m.page.locator("th", { hasText: "Qty" }).first());
+        const menu = await menuItems(m.page);
+        await m.page.screenshot({ path: `${SHOTS}03-member-${level}-header-menu.png` });
+        const fieldControls = menu.filter((x) => /^(Rename column|Column settings|Change type|Insert column|Delete column)/.test(x) && !/\[disabled\]/.test(x));
+        const id = level === "viewer" ? "CD-CORE-03" : "CD-CORE-20";
+        check(plus === 0, `${id} member at ${level === "viewer" ? "View" : "Edit"} sees no + to add a field`, plus);
+        check(fieldControls.length === 0, `${id} member at ${level === "viewer" ? "View" : "Edit"} has no working field settings on the header menu`, menu);
+      } catch (e) { fails++; say("MEMBER ERROR", e.message.split("\n")[0]); await m.page.screenshot({ path: `${SHOTS}member-${level}-error.png` }).catch(() => {}); }
+      finally { await m.browser.close(); }
+    }
+  }
+} finally {
+  say("fields at the end:", await fieldKeys());
+  for (let i = 0; i < 20; i++) { const r = await client.tableArchive({ table_id: table, chunk: 5, includeTable: true }); if (r.ok && r.data?.done !== false) { say("archived", table); break; } if (!r.ok && !["timed_out", "unreachable"].includes(r.error.code)) { say("archive refused", r.error.message); break; } await new Promise((res) => setTimeout(res, 5000)); }
+  say("RESULT", R);
+  say(fails ? `${fails} FAILED` : "ALL PASS");
+}

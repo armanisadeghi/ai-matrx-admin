@@ -26,24 +26,15 @@ import { readOf } from "@ai-matrx/design-system";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@ai-matrx/design-system/controls";
-import { readOf } from "@ai-matrx/design-system";
+import { IconResolver } from "@ai-matrx/icons";
 import type { MatrxDataTableQueryState } from "@ai-matrx/design-system/data-table/types";
 import { useBrands } from "@/features/marketing/data/hooks";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { listMarketingBrandModeGroups } from "@/features/marketing/lib/brand-sections";
-import {
-  arrangeBrandNav,
-  brandKindOf,
-  brandNavLabel,
-} from "@/features/marketing/lib/brand-kind";
 import type { MarketingNavPillar } from "@/features/marketing/lib/marketing-nav";
 import { SiteIdentityMark } from "@/features/marketing/components/shared/SiteConnectionChips";
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";
 import type { BrandListRow } from "@/features/marketing/types";
-import {
-  MarketingDestinationMap,
-  pillarDestinationGroups,
-} from "@/features/marketing/home/MarketingDestinationMap";
 import {
   useMarketingHomeBrandCount,
   useMarketingHomePendingReview,
@@ -62,13 +53,7 @@ const GLIMPSE_STATE: MatrxDataTableQueryState = {
   sort: { id: "updated_at", direction: "desc" },
 };
 
-function SectionTitle({
-  children,
-  action,
-}: {
-  children: string;
-  action?: React.ReactNode;
-}) {
+function SectionTitle({ children, action }: { children: string; action?: React.ReactNode }) {
   return (
     <div className="flex min-h-7 items-center justify-between gap-2">
       <h2 className="type-title text-foreground">{children}</h2>
@@ -99,12 +84,8 @@ function Totals() {
       />
       <KpiTile
         label="Social accounts"
-        value={social.data?.accounts.toLocaleString() ?? null}
-        hint={
-          social.data
-            ? `${social.data.tracked.toLocaleString()} tracked`
-            : undefined
-        }
+        value={social.data ? formatCount(social.data.accounts) : null}
+        hint={social.data ? `${formatCount(social.data.tracked)} tracked` : undefined}
         read={readOf(social)}
         title="Social accounts on your brands; tracked ones are refreshed on a schedule."
       />
@@ -149,8 +130,7 @@ function BrandGlimpseCard({ row }: { row: BrandListRow }) {
           className="inline-flex items-center gap-1 hover:text-foreground"
         >
           <Globe2 className="h-3 w-3" />
-          {formatCount(row.sites.length)}{" "}
-          {row.sites.length === 1 ? "website" : "websites"}
+          {formatCount(row.sites.length)} {row.sites.length === 1 ? "website" : "websites"}
         </Link>
         <Link
           href={`${marketingRoutes.brand(row.id)}/socials/accounts`}
@@ -164,6 +144,41 @@ function BrandGlimpseCard({ row }: { row: BrandListRow }) {
   );
 }
 
+function MapGroup({
+  label,
+  links,
+}: {
+  label: string;
+  links: readonly { href: string; label: string; iconName: string; soon?: boolean }[];
+}) {
+  if (links.length === 0) return null;
+  return (
+    <div className="min-w-0">
+      <div className="type-label pb-1">{label}</div>
+      <ul className="flex flex-col">
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link
+              href={link.href}
+              className="flex min-h-7 items-center gap-2 rounded-md px-1.5 type-body text-foreground hover:bg-accent"
+            >
+              <IconResolver
+                iconName={link.iconName}
+                size={14}
+                className="shrink-0 text-muted-foreground"
+              />
+              <span className="truncate">{link.label}</span>
+              {link.soon ? (
+                <span className="type-meta text-muted-foreground">Soon</span>
+              ) : null}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function MarketingHome({
   pillars,
 }: {
@@ -173,20 +188,12 @@ export function MarketingHome({
   const rows = glimpse.data?.rows ?? [];
   const [pickedBrandId, setPickedBrandId] = useState<string | null>(null);
   const brandId = pickedBrandId ?? rows[0]?.id ?? null;
-  // The same arrangement the brand's sidebar shows (a person brand has no Locations, says Peers).
-  const pickedRow = rows.find((row) => row.id === brandId);
-  const kind = brandKindOf(pickedRow);
   const brandGroups = brandId
-    ? arrangeBrandNav(
-        listMarketingBrandModeGroups(marketingRoutes.brand(brandId)),
-        kind,
-        (pickedRow?.sites.length ?? 0) > 0,
-      )
+    ? listMarketingBrandModeGroups(marketingRoutes.brand(brandId))
     : [];
   // The roster pillar is the Brands band above; the map lists everything else.
   const agencyPillars = pillars.filter(
-    (pillar) =>
-      !pillar.entries.some((entry) => entry.href === marketingRoutes.brands()),
+    (pillar) => !pillar.entries.some((entry) => entry.href === marketingRoutes.brands()),
   );
 
   return (
@@ -206,13 +213,6 @@ export function MarketingHome({
                   Add brand
                 </Link>
                 <Link
-                  href={marketingRoutes.smartAddBrand({ mode: "person" })}
-                  className="inline-flex items-center gap-1 type-secondary text-muted-foreground hover:text-foreground"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Add a person
-                </Link>
-                <Link
                   href={marketingRoutes.brands()}
                   className="inline-flex items-center gap-1 type-secondary text-muted-foreground hover:text-foreground"
                 >
@@ -225,26 +225,17 @@ export function MarketingHome({
             Recently updated brands
           </SectionTitle>
           {glimpse.isError ? (
-            <QueryError
-              error={glimpse.error}
-              onRetry={() => void glimpse.refetch()}
-            />
+            <QueryError error={glimpse.error} onRetry={() => void glimpse.refetch()} />
           ) : glimpse.isLoading ? (
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: GLIMPSE_SIZE }, (_, i) => (
-                <div
-                  key={i}
-                  className="h-[72px] animate-pulse rounded-lg bg-muted"
-                />
+                <div key={i} className="h-[72px] animate-pulse rounded-lg bg-muted" />
               ))}
             </div>
           ) : rows.length === 0 ? (
             <Card className="p-4 type-secondary text-muted-foreground">
               No brands yet.{" "}
-              <Link
-                href={marketingRoutes.smartAddBrand()}
-                className="text-foreground underline"
-              >
+              <Link href={marketingRoutes.smartAddBrand()} className="text-foreground underline">
                 Add your first brand
               </Link>
             </Card>
@@ -264,36 +255,47 @@ export function MarketingHome({
                 <Select
                   aria-label="Brand to open"
                   value={brandId}
-                  options={rows.map((row) => ({
-                    value: row.id,
-                    label: row.name,
-                  }))}
+                  options={rows.map((row) => ({ value: row.id, label: row.name }))}
                   onValueChange={(value) => setPickedBrandId(value)}
                 />
               }
             >
               Inside a brand
             </SectionTitle>
-            <MarketingDestinationMap
-              groups={brandGroups.map((group) => ({
-                key: group.label,
-                label: group.label === "Start" ? "Brand" : group.label,
-                links: group.modes.map((mode) => ({
-                  href: mode.href,
-                  label: mode.slug === "" ? "Overview" : brandNavLabel(kind, mode),
-                  iconName: mode.iconName,
-                  soon: "status" in mode && mode.status === "coming-soon",
-                })),
-              }))}
-            />
+            <Card className="grid grid-cols-2 gap-x-4 gap-y-3 p-3 md:grid-cols-3 xl:grid-cols-4">
+              {brandGroups.map((group) => (
+                <MapGroup
+                  key={group.label}
+                  label={group.label === "Start" ? "Brand" : group.label}
+                  links={group.modes.map((mode) => ({
+                    href: mode.href,
+                    label: mode.slug === "" ? "Overview" : mode.name,
+                    iconName: mode.iconName,
+                    soon: "status" in mode && mode.status === "coming-soon",
+                  }))}
+                />
+              ))}
+            </Card>
           </section>
         ) : null}
 
         <section className="flex flex-col gap-2">
           <SectionTitle>Across all brands</SectionTitle>
-          <MarketingDestinationMap
-            groups={pillarDestinationGroups(agencyPillars)}
-          />
+          <Card className="grid grid-cols-2 gap-x-4 gap-y-3 p-3 md:grid-cols-3 xl:grid-cols-4">
+            {agencyPillars.map((pillar) => (
+              <MapGroup
+                key={pillar.key}
+                label={pillar.label}
+                links={pillar.entries
+                  .filter((entry) => entry.status !== "coming-soon")
+                  .map((entry) => ({
+                    href: entry.href,
+                    label: entry.label,
+                    iconName: entry.iconName,
+                  }))}
+              />
+            ))}
+          </Card>
         </section>
       </div>
     </div>

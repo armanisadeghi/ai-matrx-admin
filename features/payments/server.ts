@@ -1,3 +1,4 @@
+import { formatMoney } from "@ai-matrx/kit/format";
 import "server-only";
 
 // features/payments/server.ts — THE SERVER HALF OF BUSINESS PAYMENTS.
@@ -319,7 +320,7 @@ async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ accou
   if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
   const max = await maxChargeCents(ask.organization_id);
   if (amount.cents > max) {
-    throw new PaymentRefusal(`The amount to pay is above the ${(max / 100).toFixed(2)} limit for one payment.`, 400);
+    throw new PaymentRefusal(`The amount to pay is above the ${formatMoney(max, { currency: "USD", unit: "minor" })} limit for one payment.`, 400);
   }
   return { account, amount };
 }

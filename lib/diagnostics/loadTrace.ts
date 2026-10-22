@@ -43,6 +43,7 @@
  * `window.__matrxLoadTrace()` returns the same report as data (the `pnpm check:smoke` guard reads it).
  */
 
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { registerIdleTask } from "@ai-matrx/kit/idle-scheduler";
 import { loadTraceEnabled } from "./loadTraceFlag";
 
@@ -271,7 +272,7 @@ function line(e: LoadTraceEvent): { text: string; style: string } {
     case "net": {
       const size = e.sizeKB ? `  ${e.sizeKB} KB` : "";
       const dup = (e.times ?? 1) > 1 ? `  ×${e.times} DUPLICATE` : "";
-      const poll = e.pollEveryMs ? `  poll every ${Math.round(e.pollEveryMs / 1000)}s` : "";
+      const poll = e.pollEveryMs ? `  poll every ${formatDurationMs(e.pollEveryMs, { style: "compact" })}` : "";
       return { text: `${(e.method ?? "GET").padEnd(6)} ${e.name}${ms}${size}${dup}${poll}`, style: dup ? STYLE.yellow : STYLE.net };
     }
     case "stall":

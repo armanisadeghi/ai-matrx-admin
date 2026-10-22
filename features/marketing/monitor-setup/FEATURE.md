@@ -12,7 +12,7 @@ front door ("News monitor" door) and from a site's Coverage tab ("Set up monitor
 |---|---|---|
 | Pure model: draft, proposal merge, count warnings, FNV-1a, brief markdown, declare body | `model.ts` (+ `model.test.ts`) | — |
 | Server calls | `api.ts` | `GET /news/setup/facts`, `POST /news/setup/propose` (stream), `POST /coverage/trackers`, `GET/POST /coverage/trackers/{id}/schedule`, `POST /coverage/trackers/{id}/run` (stream) |
-| Direct reads/writes (RLS) | `data.ts` | `seo.coverage_tracker`, `web.business_fact` (`kind` spokesperson / proof), `workbench.notes` (the brief → `brief_source_id`), `seo.coverage_mention` |
+| Direct reads/writes (RLS) | `data.ts` | `seo.coverage_tracker`, `web.business_fact` (`kind` spokesperson / proof; the person typed it, so `confirmed_at` + `confirmed_by` = them), `workbench.notes` (the brief → `brief_source_id`), `seo.coverage_mention` |
 | Screen | `MonitorSetupEditor.tsx` | — |
 | Every monitor + what its AI checks read | `inputs/` (`data.ts`, `NewsTrackersList.tsx`, `NewsTrackerInputsView.tsx`) | `/marketing/monitoring`, `/marketing/monitoring/[trackerId]`; doors `seo.news_tracker_inputs` (read, mirrors aidream `news/client_context.py`) and `seo.news_tracker_set_state` (pause / resume / archive, moves the `workflow.trigger` too) |
 

@@ -73,7 +73,7 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
       if (kept.kept) {
         const { error } = await (await db())
           .from("business_fact")
-          .update({ value: kept.value ?? null, confirmed_at: (kept.confirmed_at as string | null) ?? null, metadata: kept.metadata ?? null, deleted_at: null } as never)
+          .update({ value: kept.value ?? null, confirmed_at: (kept.confirmed_at as string | null) ?? null, confirmed_by: (kept.confirmed_by as string | null) ?? null, metadata: kept.metadata ?? null, deleted_at: null } as never)
           .eq("id", id);
         if (error) throw new Error(error.message);
       } else await deleteBusinessFact(id);
@@ -94,7 +94,7 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
   }
   const { error } = await (await db())
     .from("discovered_item")
-    .update({ status: "pending", relation_key: null, reviewed_at: null, resolved_property_id: null, resolved_fact_id: null })
+    .update({ status: "pending", relation_key: null, reviewed_at: null, reviewed_by: null, resolved_property_id: null, resolved_fact_id: null })
     .in("id", rowIds);
   if (error) throw new Error(error.message);
   void leadId;

@@ -53,6 +53,11 @@ export interface AnswerBarProps {
   interviewId: string;
   questionId: string;
   questionTitle: string;
+  /**
+   * `story` (a member seat's open questions): only words, typed or spoken —
+   * skip, hand back and the table toggle are absent, not disabled.
+   */
+  answering?: "decision" | "story";
   /** The recommendation's presence decides whether key 1 exists at all. */
   hasRecommendation: boolean;
   skipShipsRecommendation: boolean;
@@ -139,7 +144,9 @@ export function AnswerBar(props: AnswerBarProps) {
     undoAvailable,
     onUndo,
     busy,
+    answering = "decision",
   } = props;
+  const story = answering === "story";
 
   return (
     // The bar floats over the question as it scrolls, so what is behind it must
@@ -162,12 +169,16 @@ export function AnswerBar(props: AnswerBarProps) {
               Go with your recommendation
             </Act>
           ) : null}
-          <Act keyCap="2" onClick={onSkip} busy={busy}>
-            {skipShipsRecommendation ? "Skip — ship it anyway" : "Skip — defer"}
-          </Act>
-          <Act keyCap="3" onClick={onHandBack} busy={busy}>
-            Not mine — you decide
-          </Act>
+          {story ? null : (
+            <>
+              <Act keyCap="2" onClick={onSkip} busy={busy}>
+                {skipShipsRecommendation ? "Skip — ship it anyway" : "Skip — defer"}
+              </Act>
+              <Act keyCap="3" onClick={onHandBack} busy={busy}>
+                Not mine — you decide
+              </Act>
+            </>
+          )}
           <Act keyCap="W" onClick={onOpenWrite} busy={busy}>
             Write an answer
           </Act>
@@ -193,9 +204,11 @@ export function AnswerBar(props: AnswerBarProps) {
             )
           ) : null}
 
-          <Act keyCap="T" onClick={onToggleView} busy={false}>
-            Table view
-          </Act>
+          {story ? null : (
+            <Act keyCap="T" onClick={onToggleView} busy={false}>
+              Table view
+            </Act>
+          )}
         </div>
 
         {writing ? (

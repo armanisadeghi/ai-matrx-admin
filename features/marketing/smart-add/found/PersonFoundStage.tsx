@@ -8,13 +8,14 @@
  * same session to the full review. What counts as certain: personCards.ts (foundCards.ts underneath).
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { Globe, Layers, Loader2, MapPin, Wrench } from "lucide-react";
 import { browserImageUrl } from "@/lib/media/external-image";
 import { platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { SocialImage } from "@/features/marketing/social/components/SocialImage";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { avatarInitial } from "../avatarInitial";
-import { AccountPicture, CardBody, compact, handleOf, href, Slot } from "./FoundStage";
+import { AccountPicture, CardBody, handleOf, href, Slot } from "./FoundStage";
 import { shownHost } from "./foundCards";
 import type { PersonFoundCards } from "./personCards";
 import { FitText } from "./FitText";
@@ -92,7 +93,7 @@ export function PersonFoundStage({
                 art={<AccountPicture account={lead} size="size-14" />}
                 label={platformLabel(lead.platform)}
                 value={<span className="text-[1.45rem] sm:text-[1.6rem]"><FitText text={handleOf(lead)} /></span>}
-                sub={lead.followers != null ? `${compact.format(lead.followers)} followers` : undefined}
+                sub={lead.followers != null ? `${formatCount(lead.followers, { style: "compact" })} followers` : undefined}
               />
             </OutboundLink>
           ) : null}
@@ -126,7 +127,7 @@ export function PersonFoundStage({
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate text-lg font-semibold leading-tight text-foreground">{handleOf(a)}</span>
                       <span className="text-sm text-muted-foreground">
-                        {a.followers != null ? `${compact.format(a.followers)} followers` : platformLabel(a.platform)}
+                        {a.followers != null ? `${formatCount(a.followers, { style: "compact" })} followers` : platformLabel(a.platform)}
                       </span>
                     </span>
                   </OutboundLink>

@@ -1,0 +1,44 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/marketing/components/brands/BrandsPortfolio.tsx
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/marketing/components/brands/BrandsPortfolio.tsx
+  Both grew from the same COMMON version: commit 29e0d2832b, 2026-10-21 16:56.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-21 15:41  100cc4bf61  "feat(marketing): Brands follows the feature-pages contract (front door, /all list, /new create, Add brand window)"
+    2026-10-21 15:30  dd3e488acb  "Marketing: restore BrandsPortfolio (the live /marketing/brands page still renders it)"
+    2026-10-21 15:19  baec7756c5  "Marketing: brand-first structure (Arman 2026-10-21)"
+  GITHUB:
+    2026-10-21 18:30  838bef2d11  "Shape lanes: collapse hand-rolled byte, duration, money, count, relative-time and UUID bodies onto kit formatters; allow/census the rest (one register, so one commit)"
+    2026-10-21 18:19  2e675f3768  "refactor(count): brands portfolio counts format through kit formatCount"
+  GITHUB's latest change is 2h 49m AFTER LOCAL's latest change.
+
+SIZE: common version 999 lines, LOCAL 0 lines, GITHUB 1000 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL deleted the whole file.
+  GITHUB added 11 lines and removed 10 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 369a95bbf0ed:'features/marketing/components/brands/BrandsPortfolio.tsx') <(git show 3374a6eff22f:'features/marketing/components/brands/BrandsPortfolio.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 3374a6eff22f:'features/marketing/components/brands/BrandsPortfolio.tsx'
+  GITHUB: git show 369a95bbf0ed:'features/marketing/components/brands/BrandsPortfolio.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+(the local side deleted this file)

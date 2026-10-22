@@ -21,12 +21,15 @@ export function BrandPicker({
   value,
   onChange,
   allowAll = false,
+  allLabel = "All brands",
   label = "Brand",
 }: {
   organizationId: string | null;
   value: string | null;
   onChange: (id: string | null) => void;
   allowAll?: boolean;
+  /** The text of the "no brand chosen" row when allowAll is on. */
+  allLabel?: string;
   label?: string;
 }) {
   // access-errors: ok — picker options; a failed read leaves the select empty and the host surface owns its own record errors
@@ -50,7 +53,7 @@ export function BrandPicker({
           />
         </SelectTrigger>
         <SelectContent>
-          {allowAll && <SelectItem value="__all__">All brands</SelectItem>}
+          {allowAll && <SelectItem value="__all__">{allLabel}</SelectItem>}
           {(options.data ?? []).map((brand) => (
             <SelectItem key={brand.id} value={brand.id}>
               {brand.name}

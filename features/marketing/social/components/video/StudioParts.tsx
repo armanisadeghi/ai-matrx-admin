@@ -6,6 +6,7 @@
  * CAPTION_PRESETS, the composition preview (the engine's resolver + VideoPlayer) and an output download row.
  */
 
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, CircleAlert, Download, Film } from "lucide-react";
 
@@ -39,10 +40,9 @@ export interface RunStep {
   startedAt?: number;
 }
 
-/** "42 s" / "2 min 5 s": how long a step has taken. */
+/** "42s" / "2m 05s": how long a step has taken. */
 export function secondsText(ms: number): string {
-  const s = Math.max(0, Math.round(ms / 1000));
-  return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`;
+  return formatDurationMs(ms, { style: "compact" });
 }
 
 function useNow(active: boolean): number {

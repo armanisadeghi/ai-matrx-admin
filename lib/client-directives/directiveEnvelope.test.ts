@@ -61,3 +61,20 @@ describe("parseDirective — the server's real envelope", () => {
     expect(result).toMatchObject({ ok: false, reason: "bad_payload" });
   });
 });
+
+describe("catalog_changed — the model catalog edit announcement", () => {
+  it("parses the exact envelope aidream's catalog_notice.py publishes", () => {
+    const parsed = parseDirective({
+      kind: "directive",
+      direction: "server->any",
+      action: "catalog_changed",
+      requestId: "directive-abc",
+      payload: { catalog: "models", model_id: "m1", change: "listing" },
+      timestamp: 1,
+      fromInstance: { component: "server", instanceId: "aidream-1" },
+      toInstance: null,
+    });
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) expect(parsed.directive.action).toBe("catalog_changed");
+  });
+});

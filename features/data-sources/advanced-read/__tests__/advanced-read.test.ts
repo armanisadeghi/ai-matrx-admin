@@ -34,7 +34,7 @@ describe("advanced-read contract", () => {
     const both = parseQuote({ items: [{ url: "u", coverage: [covered("fast", 7), covered("batch", 180, "structured")], would_try: ["unlocker"], points_up_to: 12 }] });
     expect(slowCoverage(both.items)?.service).toBe("structured");
     expect(aboutTime(180)).toBe("about 3 min");
-    expect(aboutTime(20)).toBe("about 20 s");
+    expect(aboutTime(20)).toBe("about 20 sec");
     expect(parseCoverageList([{ nope: 1 }])).toEqual([]);
   });
 });

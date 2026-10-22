@@ -44,6 +44,8 @@ The `(admin)` group admits any admin level. That is deliberate and it is not a h
 
 **API endpoints** — none. Every read and write is direct Supabase; transcription rides `POST /api/audio/transcribe` through `useVoiceCapture`.
 
+**Seats (2026-10-22).** The interview screen is ONE shared answer bar with more than one seat — `InterviewClient`'s `seat` prop (`InterviewSeat`; default `QUESTION_DESK_SEAT`, the admin desk). A seat names where "back" goes and how the questions are answered: `decision` (the full bar) or `story` (open questions answered in the person's own words, typed or spoken, one per screen; recommendation, skip, hand back and the table are absent, not disabled, and their keys are not taken). `onAllAnswered` fires once when the queue's last question has an answer. Who may answer is the database's decision, never the seat's: the respondent's grant, or the person who opened the interview — so any signed-in member answers an interview addressed to them on a member route. First member seat: the brand owner's story sitting, `app/(core)/marketing/[brandId]/identity/story` (`features/marketing/owner-sitting/`). The editorial stylesheet is imported by `InterviewClient` itself, so every seat has it.
+
 ---
 
 ## Data model
@@ -145,6 +147,7 @@ Built 2026-09-12 as lane L2 of the Question Desk campaign, then re-worked the sa
 
 ## Change log
 
+- `2026-10-22` — The answer bar has seats (`InterviewSeat`): the admin desk keeps `decision`; the brand owner's story sitting (`/marketing/<brand>/identity/story`) uses `story` — words only, typed or spoken, `onAllAnswered` closes the sitting. Forcing test `__tests__/story-seat.test.tsx` (red recipe in its header). Two over-long empty-state lines shortened.
 - `2026-10-21` — Archive and Unarchive are one `defineRowVerbs` declaration: the row icons and a bulk bar (rows the verb does not fit are skipped and named).
 - `2026-09-14` — lane G (Claude Opus 5), the V2 hostile re-verify's client findings: ONE `hasWords` predicate behind every save path (three spaces can no longer be an answer, and `qd_005` makes the database agree); the denied-microphone refusal reaches the alert slot and not only a toast; `V` works with the box already open; "k batches done" derived from the rows; the rail says how many answers are waiting for an agent to record them; the key legend clears the measured band the shell's error chip occupies. Not closed this round: the pre-hydration keystroke that navigated the app away (V2 finding 8) — an exhaustive search of this repo found NO handler that maps a bare letter to a route and nothing that could navigate to `/settings/organizations` from a keypress, so there is nothing here to fix and the repro needs re-capturing with a breakpoint on `history.pushState`.
 

@@ -67,6 +67,7 @@ export function BoardSurface<T extends BoardTileBase & { title: string }>({
         return {
           board_title: host.boardTitle,
           board_id: host.boardId ?? null,
+          brand_id: host.brandId ?? null,
           board_items: await boardItemsOverview(rows, host.itemSurfaces ?? null),
           selected_tile: selected
             ? { id: selected.id, title: selected.title, kind: selected.kind }

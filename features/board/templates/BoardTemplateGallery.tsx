@@ -19,6 +19,7 @@ import { isPackKey } from "./board-packs";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
+import { writeDesignBoardBrand } from "../design-brand/design-board-brand";
 import { DesignBoardStartDialog, type DesignBoardProgress } from "./design-start";
 import { stashBoardStart, type BoardStartChoice } from "./board-start";
 
@@ -90,6 +91,10 @@ export function BoardTemplateGallery({
         if (start) setBuilding((b) => (b && b.step === "board" ? { ...b, detail: line } : b));
       };
       const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage, styleTemplateId });
+      if (start?.brandId) {
+        const linked = await writeDesignBoardBrand({ boardId: board.id, brandId: start.brandId, previousBrandId: null, organizationId });
+        if (!linked.ok) toast.error("The board is made, but its brand was not linked. Choose it on the board.");
+      }
       const href = boardHref(board);
       if (start) {
         stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });

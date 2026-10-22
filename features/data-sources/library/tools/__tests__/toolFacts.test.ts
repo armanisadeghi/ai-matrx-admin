@@ -15,8 +15,8 @@ describe("reliabilityFacts", () => {
 
 describe("speedText", () => {
   it("reads like a person", () => {
-    expect(speedText(800)).toBe("~0.8 s");
-    expect(speedText(12_400)).toBe("~12 s");
+    expect(speedText(800)).toBe("~800ms");
+    expect(speedText(12_400)).toBe("~12s");
     expect(speedText(180_000)).toBe("~3 min");
     expect(speedText(null)).toBeNull();
   });

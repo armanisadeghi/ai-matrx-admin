@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Brain, CheckCircle2, ExternalLink, LoaderCircle, MoreVertical, PanelTop, SquareCheck } from "lucide-react";
 import { Button, SearchField, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
-import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatRelativeTime, formatDurationSeconds } from "@ai-matrx/kit/format";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -85,8 +85,7 @@ function sortVideos(videos: RankedTopicVideo[], sort: Sort): RankedTopicVideo[] 
 }
 
 function hoursOf(totalSeconds: number): string {
-  const hours = totalSeconds / 3600;
-  return hours >= 10 ? `${Math.round(hours)}h` : `${hours.toFixed(1)}h`;
+  return formatDurationSeconds(totalSeconds, { style: "coarse" });
 }
 
 interface TileActions {

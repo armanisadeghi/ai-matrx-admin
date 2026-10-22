@@ -30,7 +30,7 @@ export function TopicHeadline() {
     // read as unfinished on a topic whose report is ready.
     {
       label: "Analyzed",
-      value: progress.total_analyses.toLocaleString(),
+      value: formatCount(progress.total_analyses),
       href: hrefFor("analysis", topicId),
     },
     {
@@ -45,7 +45,7 @@ export function TopicHeadline() {
     },
     {
       label: "Keywords",
-      value: progress.total_keywords.toLocaleString(),
+      value: formatCount(progress.total_keywords),
       href: hrefFor("keywords", topicId),
     },
   ];

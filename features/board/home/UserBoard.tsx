@@ -55,6 +55,8 @@ import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
 import { BOARD_SURFACE_NAME } from "@/features/surfaces/manifests/board.manifest";
 import { useBoardStartRun } from "../templates/board-start";
+import { DesignBoardBrandChip } from "../design-brand/DesignBoardBrandChip";
+import { useDesignBoardBrand } from "../design-brand/design-board-brand";
 import { BoardViewport } from "../components/BoardViewport";
 import { BoardTile, TileLayersContext } from "../components/BoardTile";
 import { BoardFrameView } from "../components/BoardFrameView";
@@ -247,6 +249,8 @@ export function UserBoard({
   // Sticky notes' words are Notes in the person's "Sticky notes" folder, filed in this board's
   // organization (board/sticky-notes.ts). A meeting guest or an unsaved board keeps them on the board.
   const boardOrganizationId = useBoardOrganizationId();
+  // The brand of a design board: one association edge, published to the agents as brand_id.
+  const designBrand = useDesignBoardBrand(tokenTables.length > 0 && !guest ? boardId : null, boardOrganizationId);
   useEffect(() => {
     if (!boardId || guest) return;
     return startStickyNoteSync(board, stickyNoteStore(boardOrganizationId), {
@@ -856,6 +860,7 @@ export function UserBoard({
     store,
     boardTitle: title,
     boardId: boardId ?? null,
+    brandId: designBrand.brandId,
     itemSurfaces,
     storedBasics: (tile) => tile.basics ?? null,
     createTile: (id, input, size) => agentTile(id, input, size),
@@ -1083,6 +1088,7 @@ export function UserBoard({
                     </span>
                   </div>
                 )}
+                {tokenTables.length > 0 && boardId && !guest && <DesignBoardBrandChip brandId={designBrand.brandId} onChange={(id) => void designBrand.set(id)} />}
                 <PenStyleBar />
                 {layoutMode !== "page" && <ZoomHud />}
                 {layoutMode !== "page" && <Minimap />}

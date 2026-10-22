@@ -47,12 +47,22 @@ const values: SurfaceValue[] = [
   {
     name: "board_id",
     label: "Board id",
-    description: "The saved board's id; null on an unsaved board. A design system run reads the board's whole state by it.",
+    description: "The saved board's id; null on an unsaved board.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,
     group: "board",
     sortOrder: 105,
+  },
+  {
+    name: "brand_id",
+    label: "Brand",
+    description: "The brand this design board is linked to (a web_brand id); null when none.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 36,
+    group: "board",
+    sortOrder: 106,
   },
   {
     name: "board_items",

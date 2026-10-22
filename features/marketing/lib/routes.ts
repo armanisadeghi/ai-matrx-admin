@@ -218,6 +218,8 @@ export const marketingRoutes = {
     `/marketing/${brandId}/${section}`,
   /** The brand home. `view` = media | media/research | … */
   brandIdentity: (brandId: string) => `/marketing/${brandId}/identity`,
+  /** The brand session: the full-screen deck where the person places each brand candidate. */
+  brandSession: (brandId: string) => `/marketing/${brandId}/identity/session`,
   /**
    * The brand's asset desk — Library, Research, Sources, Generate — now the
    * Identity section's media room (views are routes; library is the index).

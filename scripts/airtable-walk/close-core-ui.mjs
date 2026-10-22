@@ -78,8 +78,7 @@ async function fillNewColumnDialog(page, label) {
   await page.screenshot({ path: `${SHOTS}04-dialog-${label.replace(/\W+/g, "-")}.png` });
   const save = dlg.getByRole("button", { name: /^(Create column|Add|Add field|Add column|Save|Create|Done)$/ }).first();
   if (await save.count()) await save.click(); else await input.press("Enter");
-  // Long enough for the new column to arrive and its place to be written onto the view on a loaded machine.
-  await page.waitForTimeout(15000);
+  await page.waitForTimeout(4000);
 }
 async function newBrowser(who, viewport = { width: 1600, height: 1000 }, extra = {}) {
   if (!existsSync(STATE + who + ".json")) throw new Error(`no kept sign-in for ${who}; run close-core-signin.mjs ${who}`);
