@@ -105,13 +105,18 @@ begin
       'amount', (100 * v_i)::text));
   end loop;
 
-  -- The records keep the store's default (organization-level, listed for everyone): under T-17 a member
-  -- opens and is listed every one of them, so the member's dashboard is the admin's. Stepping out of the
-  -- seat only stamps who made them; NOTHING is asserted while out.
+  -- A step no client door covers: every record is "Only me" (its owner's setting) and TEN are SHARED to Dana,
+  -- as the Share dialog writes them. Under access ladder T-17 (retired knob) a member opens every Organization
+  -- record, but "Only me" lists a row for its owner alone; an explicit share lists it for the person it names
+  -- (DASH-SHARE-COUNT, chair ruling 2026-10-22). Stepping out is stated; NOTHING is asserted while out.
   perform set_config('role', v_boss, true);
-  update custom.record set created_by = c_admin
+  update custom.record set created_by = c_admin, visibility = 'personal'::platform.visibility
    where organization_id = v_org and table_id = v_tbl;
   update custom.record set created_by = c_admin where organization_id = v_org and id = v_tbl;
+  insert into iam.permissions (resource_type, resource_id, granted_to_user_id, permission_level, status)
+  select 'record', r.id, c_dana, 'viewer', 'active'
+    from custom.record r
+   where r.organization_id = v_org and r.table_id = v_tbl and r.data ->> 'owner' = 'Dana';
   perform set_config('role', 'authenticated', true);
 
   v_this := jsonb_build_object(
@@ -316,15 +321,33 @@ begin
   v_out := custom.dashboard_run(v_org, v_dash, '{}'::jsonb);
   select (e -> 'rows' -> 0 -> 'measures' ->> 'count')::integer into v_n
     from jsonb_array_elements(v_out -> 'blocks') e where e ->> 'title' = 'Opened this month';
-  if v_n <> 20 then
-    raise exception '6: every member opens and is listed all twenty Organization records and the dashboard tells her % — this is the whole product', v_n;
+  if v_n <> 10 then
+    raise exception '6: she was shared ten records and the dashboard tells her % — this is the whole product', v_n;
   end if;
-  -- And it is what her own list door says, never a different number from a different door.
   select count(*) into v_i from custom.query_visible_ids(v_org, v_tbl, 'viewer');
   if v_i <> v_n then
     raise exception '6: the dashboard counts % for her and her list door lists %', v_n, v_i;
   end if;
-  raise notice 'PART 6 PASSED — the admin is told 20 and the member, on the SAME dashboard in ONE call, is told 20 — the rows her list door shows';
+  -- And as an OUTSIDER holding the same ten shares (and the dashboard itself) she reaches the doors and is told her ten.
+  perform set_config('role', v_boss, true);
+  delete from iam.memberships where organization_id = v_org and user_id = c_dana;
+  insert into iam.permissions (resource_type, resource_id, granted_to_user_id, permission_level, status)
+  values ('record', v_dash, c_dana, 'viewer', 'active');
+  perform set_config('role', 'authenticated', true);
+  v_out := custom.dashboard_run(v_org, v_dash, '{}'::jsonb);
+  select (e -> 'rows' -> 0 -> 'measures' ->> 'count')::integer into v_n
+    from jsonb_array_elements(v_out -> 'blocks') e where e ->> 'title' = 'Opened this month';
+  if v_n is distinct from 10 then
+    raise exception '6: a shared outsider is told % on the dashboard shared to her, not her ten', v_n;
+  end if;
+  -- Back to the member's seat for what follows.
+  perform set_config('role', v_boss, true);
+  delete from iam.permissions where resource_id = v_dash and granted_to_user_id = c_dana;
+  insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
+  values (v_org, 'organization', v_org, c_dana, 'member', 'active');
+  perform set_config('role', 'authenticated', true);
+  perform set_config('request.jwt.claims', c_dana_j, true);
+  raise notice 'PART 6 PASSED — the admin is told 20; the member, on the SAME dashboard in ONE call, is told her 10, and so is a shared outsider';
 
   -- ══ PART 7 — A MEMBER MAY LOOK AND MAY NOT REWRITE ════════════════════════════════════
   begin
