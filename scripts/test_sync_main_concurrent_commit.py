@@ -75,5 +75,50 @@ class ConcurrentCommitIsNotAFailure(unittest.TestCase):
         self.assertEqual(sh(self.repo, "git", "log", "-1", "--format=%s").strip(), sm.LOCAL_MSG)
 
 
+class LostHeadRaceIsRetriedOnEveryCommit(unittest.TestCase):
+    """ship-all 2026-10-22_06-06-43: the deps commit (not the sweep) lost the HEAD race --
+    "cannot lock ref 'HEAD': is at X but expected Y" -- and the sync stopped, pushing nothing.
+    git() itself now retries a commit that lost the race, for every call site."""
+
+    def setUp(self):
+        self.repo = os.path.realpath(tempfile.mkdtemp(prefix="head-race-"))
+        sh(self.repo, "git", "init", "-q", "-b", "main")
+        sh(self.repo, "git", "config", "user.email", "t@example.com")
+        sh(self.repo, "git", "config", "user.name", "t")
+        with open(os.path.join(self.repo, "a.txt"), "w") as f:
+            f.write("v1\n")
+        sh(self.repo, "git", "add", "-A")
+        self.cwd = os.getcwd()
+        os.chdir(self.repo)
+        self.real_run = sm.subprocess.run
+        self.lost = 0
+
+        def racing_run(cmd, *a, **kw):
+            if cmd[:2] == ["git", "commit"] and self.lost == 0:
+                self.lost += 1
+                return subprocess.CompletedProcess(cmd, 128, b"", b"fatal: cannot lock ref 'HEAD': "
+                                                   b"is at 831b4719 but expected a81a4057\n")
+            return self.real_run(cmd, *a, **kw)
+        sm.subprocess.run = racing_run
+
+    def tearDown(self):
+        sm.subprocess.run = self.real_run
+        os.chdir(self.cwd)
+
+    def test_lost_race_is_retried(self):
+        sm.git("commit", "--no-verify", "-q", "-m", "deps", "--", "a.txt")
+        self.assertEqual(self.lost, 1)
+        self.assertEqual(sh(self.repo, "git", "log", "-1", "--format=%s").strip(), "deps")
+
+    def test_without_retry_it_stops(self):
+        saved = sm.COMMIT_RACE_RETRIES
+        sm.COMMIT_RACE_RETRIES = 0
+        try:
+            with self.assertRaises(SystemExit):
+                sm.git("commit", "--no-verify", "-q", "-m", "deps", "--", "a.txt")
+        finally:
+            sm.COMMIT_RACE_RETRIES = saved
+
+
 if __name__ == "__main__":
     unittest.main()

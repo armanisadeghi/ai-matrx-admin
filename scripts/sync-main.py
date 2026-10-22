@@ -151,10 +151,14 @@ def _index_lock_is_stale(err):
     return True
 
 
+COMMIT_RACE_RETRIES = 8
+
+
 def git(*args, check=True, raw=False, stdin=None):
     """Run git. Waits (up to INDEX_LOCK_WAIT_S) while another git process holds index.lock."""
     start = time.time()
     announced = False
+    lost_races = 0
     while True:
         r = subprocess.run(["git", *args], capture_output=True, input=stdin)
         err = r.stderr.decode("utf-8", "replace")
@@ -170,6 +174,16 @@ def git(*args, check=True, raw=False, stdin=None):
                       "minutes); waiting up to %ds (git %s)" % (INDEX_LOCK_WAIT_S, args[0] if args else ""),
                       file=sys.stderr, flush=True)
             time.sleep(0.25 if waited < 10 else 2.0)
+            continue
+        # A commit that read HEAD and then lost the race to another session's commit ends
+        # "cannot lock ref 'HEAD': is at X but expected Y" having written nothing; re-running
+        # re-reads HEAD. Every commit call site gets this, not just the sweep: the deps commit
+        # lacked it and one lost race stopped the whole sync with 39 commits unpushed
+        # (ship-all 2026-10-22_06-06-43).
+        if (r.returncode != 0 and args and args[0] == "commit" and "cannot lock ref" in err
+                and lost_races < COMMIT_RACE_RETRIES):
+            lost_races += 1
+            time.sleep(0.5 * lost_races)
             continue
         break
     out = r.stdout if raw else r.stdout.decode("utf-8", "replace")
