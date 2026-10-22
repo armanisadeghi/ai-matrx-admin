@@ -242,6 +242,19 @@ describe("server-api signed-out visitors (parity with python-client)", () => {
   });
 });
 
+describe("server-api guest retry never resends a consumed stream", () => {
+  it("a stream-body write refused by the guest check is not sent twice", async () => {
+    accessToken = null;
+    fingerprintId = "fp-9";
+    cachedFingerprint = "fp-9";
+    selectedOrganizationId = null;
+    fetchMock.mockResolvedValue(jsonResponse({ error: "guest_challenge_failed" }, 403));
+    const body = new ReadableStream({ start: (c) => c.close() });
+    await serverApi.call({ ...WRITE, o: "optional", n: "test.stream-write" }, { path: { id: "1" }, body } as never).catch(() => undefined);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("server-api errors (the object callers catch)", () => {
   it("a structured refusal becomes BackendApiError with the server's message, status and root details", async () => {
     fetchMock.mockResolvedValueOnce(

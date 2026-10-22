@@ -292,11 +292,19 @@ export function callOptionsFrom(opts: RequestOptions = {}): CallOptions {
  * A NEW visitor refused for want of a passing human check (403 guest_challenge_failed): run the
  * check fresh and send the request once more. Signed-in calls never see this refusal.
  */
-async function withGuestRetry<R>(op: OperationDescriptor, options: CallOptions | undefined, run: () => Promise<R>): Promise<R> {
+async function withGuestRetry<R>(
+  args: OperationArgs | undefined,
+  options: CallOptions | undefined,
+  run: () => Promise<R>,
+): Promise<R> {
   try {
     return await run();
   } catch (err) {
+    // A stream body was consumed by the first send and cannot be sent again.
+    const body = (args as { body?: unknown } | undefined)?.body;
+    const replayable = !(typeof ReadableStream !== "undefined" && body instanceof ReadableStream);
     if (
+      replayable &&
       err instanceof MatrxApiError &&
       !cancelledByCaller(options?.signal) &&
       (await retriesAfterGuestRefusal(hasSessionToken(), err.status, () => err.serverDetail))
@@ -312,14 +320,14 @@ export const serverApi: Api = {
   url: (op, args) => inner.url(op, args),
   async call<T>(op: OperationDescriptor, args?: OperationArgs, options?: CallOptions): Promise<T> {
     try {
-      return await withGuestRetry(op, options, async () => inner.call<T>(op, args, await prepare(op, options)));
+      return await withGuestRetry(args, options, async () => inner.call<T>(op, args, await prepare(op, options)));
     } catch (err) {
       return surfaceError(err, op, args, options);
     }
   },
   async send(op, args, options) {
     try {
-      return await withGuestRetry(op, options, async () => inner.send(op, args, await prepare(op, options)));
+      return await withGuestRetry(args, options, async () => inner.send(op, args, await prepare(op, options)));
     } catch (err) {
       return surfaceError(err, op, args, options);
     }
