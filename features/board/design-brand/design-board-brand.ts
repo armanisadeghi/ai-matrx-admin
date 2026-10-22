@@ -25,9 +25,15 @@ export async function readDesignBoardBrand(boardId: string): Promise<{ ok: true;
   return { ok: true, brandId: designBrandFromEdges(r.data.edges) };
 }
 
-/** Points the board at `brandId` (null unlinks). Removes the previous edge first: one brand per design board. */
+/** The refusal when the board's organization is not known yet: a write never goes out without one (no guessing). */
+export const BOARD_ORG_UNKNOWN = "This board's organization isn't loaded yet. Try again in a moment.";
+
+/** Points the board at `brandId` (null unlinks). Removes the previous edge first: one brand per design board.
+ *  Refuses, touching nothing, when the board's organization is unknown. */
 export async function writeDesignBoardBrand(args: { boardId: string; brandId: string | null; previousBrandId: string | null; organizationId: string | null }): Promise<{ ok: true } | { ok: false; error: string }> {
   const { boardId, brandId, previousBrandId, organizationId } = args;
+  if (brandId === previousBrandId) return { ok: true };
+  if (!organizationId) return { ok: false, error: BOARD_ORG_UNKNOWN };
   if (previousBrandId && previousBrandId !== brandId) {
     const r = await associationsService.remove({ sourceType: BOARD, sourceId: boardId, targetType: BRAND, targetId: previousBrandId, role: DESIGN_BRAND_ROLE });
     if (!r.ok) return { ok: false, error: r.error.message };
@@ -39,7 +45,7 @@ export async function writeDesignBoardBrand(args: { boardId: string; brandId: st
       targetType: BRAND,
       targetId: brandId,
       role: DESIGN_BRAND_ROLE,
-      ...(organizationId ? { orgId: organizationId } : {}),
+      orgId: organizationId,
     });
     if (!r.ok) return { ok: false, error: r.error.message };
   }
@@ -74,7 +80,7 @@ export function useDesignBoardBrand(boardId: string | null | undefined, organiza
     if (!r.ok) {
       setState({ boardId, brandId: previous });
       console.error("[design-board-brand] changing the board's brand failed", r.error);
-      toast.error("Couldn't change this board's brand");
+      toast.error(r.error === BOARD_ORG_UNKNOWN ? BOARD_ORG_UNKNOWN : "Couldn't change this board's brand");
     }
   };
   return { brandId, set };
