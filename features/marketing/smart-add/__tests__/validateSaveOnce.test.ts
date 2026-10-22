@@ -41,6 +41,7 @@ function builder(op: "select" | "insert" | "update", payload?: Record<string, un
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/utils/supabase/webDb", () => ({
+  signedInPersonId: async () => "person-1",
   authenticatedWebDb: async () => ({
     from: () => ({
       select: () => builder("select"),

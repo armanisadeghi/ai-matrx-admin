@@ -17,6 +17,7 @@
  */
 
 import { promoteSmartAddFindings } from "./promote";
+import { createdAnswers, recordCreateAnswers } from "./createAnswers";
 import { websiteLinkIn } from "./personPrefill";
 import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
@@ -1365,6 +1366,9 @@ export function SmartAddBrand({
       });
       const problems: string[] = [...ruleProblems];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
+      // Each Yes Create made a home for, recorded as the person's answer below (createAnswers.ts).
+      const madeAccounts: { item: (typeof basics.accounts)[number]; propertyId: string }[] = [];
+      const madeSites: { url: string; siteId: string }[] = [];
       for (const item of basics.accounts) {
         try {
           const row = await createProperty({
@@ -1377,6 +1381,7 @@ export function SmartAddBrand({
             displayName: item.label,
             status: "active",
           });
+          madeAccounts.push({ item, propertyId: row.id });
           // Only a platform the server can look up is tracked; a profile site stays a property.
           if (item.platform && TRACKABLE_PLATFORMS.has(item.platform)) accounts.push({ handle_or_url: item.url ?? item.value, platform: item.platform, property_id: row.id });
         } catch (error) {
@@ -1400,7 +1405,10 @@ export function SmartAddBrand({
             host: parsedUrl.hostname.toLowerCase(),
           });
           if (claim.kind === "tracked-elsewhere") problems.push(claim.note);
-          else siteIds.push(claim.site.id);
+          else {
+            siteIds.push(claim.site.id);
+            madeSites.push({ url, siteId: claim.site.id });
+          }
         } catch (error) {
           problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
         }
@@ -1410,6 +1418,21 @@ export function SmartAddBrand({
       // Nothing is lost: every finding the person did not answer is kept as a candidate in the
       // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
       // Related items keep their relationship (and land in their home: people, competitors).
+      // The person's Yes on each account and website is their word, recorded through the validation page's ONE
+      // confirm path (never a second writer): what research reads as "a person said this is theirs".
+      let createdBrand = brand;
+      problems.push(
+        ...(await recordCreateAnswers(
+          { organizationId, getBrand: () => createdBrand, setBrand: (b) => (createdBrand = b), kinds: relationKinds },
+          createdAnswers({
+            accounts: madeAccounts,
+            sites: madeSites,
+            websites: [...items.values()].filter((i) => i.field === "website" && (decisions[i.key] === "yes" || decisions[i.key] === "preferred")),
+          }),
+          relationKinds,
+          webCtx,
+        )),
+      );
       const relatedSaved = await routeRelated(organizationId, brand.id, related, decisions);
       problems.push(...relatedSaved.problems);
       // Every answered web result keeps its answer, sentiment and where it was found; "Not us" (here and

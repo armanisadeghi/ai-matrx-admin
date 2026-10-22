@@ -81,6 +81,17 @@ export function SmartAddValidate({
   const answeredNow = useRef<Set<string>>(new Set());
   // An "Ours" that pulled data in (tracking, posts, a crawl) is undone through the retraction: preview first.
   const [retracting, setRetracting] = useState<Saved | null>(null);
+  // Cards an Undo put back: they return to focus even when the brand (read on load) still knows what the answer wrote.
+  const [reopened, setReopened] = useState<ReadonlySet<string>>(new Set());
+  const reopen = (item: FocusItem, on: boolean) =>
+    setReopened((cur) => {
+      const next = new Set(cur);
+      for (const k of answeredKeysOf(item)) {
+        if (on) next.add(k);
+        else next.delete(k);
+      }
+      return next;
+    });
 
   // Everything Create saved on the brand (and what the brand already knows): the page opens from it, and the
   // live rounds' findings join on top (same key = the live copy).
@@ -134,7 +145,7 @@ export function SmartAddValidate({
     names: [...(saved?.known.names ?? []), brand.name],
     images: [...(saved?.known.images ?? []), ...(brand.logo_url ? [brand.logo_url] : []), ...answeredLogoImages],
   };
-  const folded = foldQueue({ queue: raw, known, later });
+  const folded = foldQueue({ queue: raw, known, later, reopened });
   // The card in focus stays in focus: a finding arriving live never jumps in front of it.
   const pinned = useRef<string | null>(null);
   const pinnedAt = folded.findIndex((q) => q.key === pinned.current);
@@ -154,6 +165,7 @@ export function SmartAddValidate({
     const cardKeys = answeredKeysOf(item);
     if (cardKeys.some((k) => answeredNow.current.has(k))) return;
     for (const k of cardKeys) answeredNow.current.add(k);
+    reopen(item, false);
     const id = crypto.randomUUID();
     const relationLabel = opts.relationKey ? (kinds.find((k) => k.key === opts.relationKey)?.label ?? opts.relationKey) : null;
     const entry: Saved = {
@@ -224,6 +236,7 @@ export function SmartAddValidate({
 
   const forget = (entry: AnsweredEntry, label: string) => {
     release(entry.item);
+    reopen(entry.item, true);
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `${label}: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });
@@ -238,6 +251,7 @@ export function SmartAddValidate({
       return;
     }
     release(entry.item);
+    reopen(entry.item, true);
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `Undone: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });

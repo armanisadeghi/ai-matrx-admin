@@ -80,6 +80,13 @@ export interface PersistOptions {
    * show it. Off by default: the validation queue's Ask me later keeps writing nothing.
    */
   recordMark?: boolean;
+  /**
+   * Create's Yes (SmartAddBrand): Create already made this answer's home (the account's property, the website's site),
+   * so this records the person's answer on the finding and writes none. Create promotes once for the whole brand, so no
+   * per-answer promotion. The finding row is the person evidence research reads (aidream research/verified_identity.py
+   * person_validated_properties): without it a brand made through Smart Add was never "known as theirs".
+   */
+  created?: { propertyId?: string; siteId?: string };
 }
 
 export interface PersistContext {
@@ -137,6 +144,7 @@ async function recordDiscovered(
   resolved: { resolved_property_id?: string; resolved_fact_id?: string },
   trail: { homes: string[]; before: Record<string, Json> } = { homes: [], before: {} },
   sentiment: PersistOptions["sentiment"] = null,
+  from: "smart_add.validate" | "smart_add.create" = "smart_add.validate",
 ): Promise<{ id: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const w = await db();
@@ -148,7 +156,7 @@ async function recordDiscovered(
     answer,
     by: "person",
     at,
-    from: "smart_add.validate",
+    from,
     // What the answer wrote and what it replaced: a reload's Undo (savedAnswers.ts) takes it back from this alone.
     homes: trail.homes,
     before: trail.before,
@@ -601,7 +609,7 @@ export async function persistAnswer(
   const turn = (saving.get(slot) ?? Promise.resolve())
     .catch(() => undefined)
     .then(() => persistAnswerOnce(ctx, item, answer, opts))
-    .then((persisted) => (CONFIRMED.has(answer) ? withPromotion(ctx, persisted) : persisted));
+    .then((persisted) => (CONFIRMED.has(answer) && !opts.created ? withPromotion(ctx, persisted) : persisted));
   saving.set(slot, turn);
   try {
     return await turn;
@@ -735,7 +743,12 @@ async function persistAnswerOnce(
   if (answer === "later" && !opts.recordMark) return { discoveredId: null, homes, undo: async () => undefined };
   if (item.key.startsWith(GAP_PREFIX)) return persistGap(ctx, item, answer, value);
 
-  if (answer === "ours" && item.kind === "account" && ev) {
+  if (answer === "ours" && item.kind === "account" && ev && opts.created?.propertyId) {
+    // Create made the property (and starts its tracking in the setup run): the answer names it, and a failed record
+    // never takes Create's row back (no undo here; a later undo goes through the retraction, which reads the link).
+    resolved.resolved_property_id = opts.created.propertyId;
+    homes.push(`web.property:${opts.created.propertyId}`);
+  } else if (answer === "ours" && item.kind === "account" && ev) {
     const row = await createProperty({
       organizationId: ctx.organizationId,
       brandId: ctx.getBrand().id,
@@ -754,7 +767,11 @@ async function persistAnswerOnce(
     }
     undos.push(() => deleteProperty(row.id));
   }
-  if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev) {
+  if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev && opts.created?.siteId) {
+    // Create claimed the site (and crawls it in the setup run): the answer names it (same rule as the account above).
+    siteId = opts.created.siteId;
+    homes.push(`web.site:${siteId}`);
+  } else if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev) {
     const root = item.kind === "website" ? (ev.url ?? ev.value) : webSiteRoot(ev);
     if (root) {
       const site = await addSite(ctx, root);
@@ -932,7 +949,17 @@ async function persistAnswerOnce(
   }
 
   try {
-    const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved, { homes: [...homes], before }, opts.sentiment ?? null);
+    const discovered = await recordDiscovered(
+      ctx,
+      item,
+      answer,
+      opts.relationKey ?? null,
+      value,
+      resolved,
+      { homes: [...homes], before },
+      opts.sentiment ?? null,
+      opts.created ? "smart_add.create" : "smart_add.validate",
+    );
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
     // Provenance: the site exists because of this decision (the account's is resolved_property_id).

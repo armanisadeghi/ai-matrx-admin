@@ -375,13 +375,20 @@ export interface FoldInput {
   known: KnownOnBrand;
   /** Keys sent to "Ask me later": their cards stay at the back. */
   later: readonly string[];
+  /**
+   * Keys of answers taken back on this page: Undo puts the card back in focus even when `known` still names what the
+   * answer itself wrote (`known` is read once on load, so an earlier answer's site / account is in it). Without this,
+   * an undone earlier "Ours" never came back (2026-10-22, pxdocs.com on brand e641a6d5).
+   */
+  reopened?: ReadonlySet<string>;
 }
 
 /** The stage's queue: known findings dropped, one card per real thing, sets gathered, stage order. */
-export function foldQueue({ queue, known, later }: FoldInput): FocusItem[] {
+export function foldQueue({ queue, known, later, reopened }: FoldInput): FocusItem[] {
   const knownSet = knownKeys(known);
   const ownHosts = new Set(known.hosts.map((h) => domainHost(/^https?:\/\//i.test(h) ? h : `https://${h}`)).filter(Boolean));
   const items = queue.map(reclassify).filter((item) => {
+    if (reopened && [item.key, ...item.twins].some((k) => reopened.has(k))) return true;
     const ids = identities(item);
     if (ids.some((k) => knownSet.has(k))) return false;
     // A page on the brand's own website (its blog, its booking page) is the website, already known.

@@ -71,12 +71,13 @@ describe("Smart Add promotion: every census type lands through the ONE server pa
   it("Create promotes through the server and records every round, so late findings land with no screen open", () => {
     const create = here("SmartAddBrand.tsx");
     expect(create).toMatch(/await promoteSmartAddFindings\(brand\.id\)/);
-    expect(create).toMatch(/runs: runIds,/);
+    expect(create).toMatch(/runs: \[\.\.\.new Set\(\[\.\.\.runIds,/);
   });
 
   it("every confirmed validation answer promotes through the server, and Undo removes what it created", () => {
     const persist = here("validate/persist.ts");
-    expect(persist).toMatch(/CONFIRMED\.has\(answer\) \? withPromotion\(ctx, persisted\) : persisted/);
+    // Create's own Yes (createAnswers.ts, `created`) is promoted once by Create itself, never per answer.
+    expect(persist).toMatch(/CONFIRMED\.has\(answer\) && !opts\.created \? withPromotion\(ctx, persisted\) : persisted/);
     expect(persist).toMatch(/await undoPromotion\(promoted\.createdIds\)/);
   });
 

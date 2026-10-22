@@ -7,6 +7,7 @@ const link = jest.fn(async () => ({ partyId: "party-1", home: "platform.associat
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/utils/supabase/webDb", () => ({
+  signedInPersonId: async () => "person-1",
   authenticatedWebDb: async () => {
     const b: Record<string, unknown> = {};
     for (const m of ["eq", "in", "is", "not", "order", "limit", "select"]) b[m] = () => b;

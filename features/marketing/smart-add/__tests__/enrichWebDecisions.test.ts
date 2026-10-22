@@ -58,6 +58,7 @@ function query(table: string, op: "select" | "insert" | "update", payload?: Reco
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 jest.mock("@/utils/supabase/webDb", () => ({
+  signedInPersonId: async () => "person-1",
   authenticatedWebDb: async () => ({
     from: (table: string) => ({
       select: () => query(table, "select"),
