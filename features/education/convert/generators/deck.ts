@@ -91,7 +91,7 @@ async function run(
         plan.segments.length > 1
           ? sectionRunTitle(baseTitle, segment)
           : baseTitle,
-      count: String(segment.items),
+      count: segment.items,
       difficulty: options?.difficulty ?? "Mixed",
       focus,
     }),

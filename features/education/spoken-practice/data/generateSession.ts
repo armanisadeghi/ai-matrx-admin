@@ -116,7 +116,7 @@ export function generateSession(args: GenerateSessionArgs) {
           focus: args.focus,
           study_material: args.studyMaterial,
           difficulty: args.difficulty,
-          count: String(args.count),
+          count: args.count,
         },
         timeoutMs: 120_000,
         pollIntervalMs: 200,

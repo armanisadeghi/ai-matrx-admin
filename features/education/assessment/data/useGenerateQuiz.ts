@@ -213,7 +213,7 @@ export function useGenerateQuiz(): UseGenerateQuizResult {
         ? {
             source_content: vars.source_content,
             source_label: vars.source_label,
-            count: String(vars.count),
+            count: vars.count,
             difficulty: vars.difficulty,
             depth: vars.depth,
             question_types: vars.question_types ?? "",
@@ -222,7 +222,7 @@ export function useGenerateQuiz(): UseGenerateQuizResult {
           }
         : {
             topic: vars.topic,
-            count: String(vars.count),
+            count: vars.count,
             difficulty: vars.difficulty,
             depth: vars.depth,
             question_types: vars.question_types ?? "",
