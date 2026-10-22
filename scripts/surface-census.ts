@@ -29,8 +29,10 @@
  *   pnpm surface:census --sql           # print a read-only SQL query that
  *                                       # returns every surface whose DB mirror
  *                                       # (ui.ui_surface / ui_surface_value)
- *                                       # disagrees with code — run it through
- *                                       # the Supabase MCP.
+ *                                       # disagrees with code — save it to a
+ *                                       # file and run it against the live DB
+ *                                       # (https://db.matrxserver.com) with
+ *                                       # `pnpm admin-query --file <file>`.
  *   pnpm surface:census --only not-emitting   # filter rows
  */
 
@@ -39,6 +41,17 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { getAllManifests } from "@/features/surfaces/manifests/registry";
+import { builderCallSites, builderSitesInFiles } from "./lib/surface-emitters";
+
+// Bounded and visible: on 2026-10-22 this script ran 300 s and 590 s with no output (one
+// full-tree git grep per scope builder, ~28 min). It now takes ONE git grep for all builders,
+// every git call carries its own timeout and fails loudly (scripts/lib/surface-emitters.ts),
+// and each stage prints to stderr so a slow run shows where it is. A whole-run timer would
+// not help: tsx runs this as CommonJS, so every stage is synchronous and a timer cannot fire.
+const started = Date.now();
+function enter(next: string) {
+  console.error(`[surface-census] ${next} (${Math.round((Date.now() - started) / 1000)} s)`);
+}
 
 // Inspect the same published modules the host registry consumes. Requiring a
 // sibling package's TS source bypasses its exports and breaks after extraction.
@@ -65,22 +78,6 @@ type Row = {
   emitting: boolean;
   readinessNote: string;
 };
-
-function callSites(fnName: string, manifestFile: string): string[] {
-  try {
-    const out = execFileSync(
-      "git",
-      ["grep", "-lw", fnName, "--", "*.ts", "*.tsx", ":!features/surfaces/manifests/*.manifest.ts", ":!packages/chat/src/surfaces/manifests/*.manifest.ts"],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
-    );
-    return out
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l && l !== manifestFile && !l.includes(".test."));
-  } catch {
-    return []; // git grep exits 1 when nothing matches
-  }
-}
 
 const PACKAGE_DIST = "node_modules/@ai-matrx/chat/dist";
 const MOUNT_MARKER =
@@ -116,13 +113,15 @@ function repoMountFiles(): { file: string; text: string }[] {
     list = execFileSync(
       "git",
       ["grep", "-lE", MOUNT_MARKER.source, "--", "*.ts", "*.tsx", ":!features/surfaces/manifests/*"],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 },
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024, timeout: 60_000 },
     )
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l && !l.includes(".test.") && !l.includes("__tests__"));
-  } catch {
-    list = [];
+  } catch (error) {
+    const e = error as { status?: number | null; signal?: string | null; message?: string };
+    if (e.status !== 1 || e.signal) throw new Error(`surface-census: git grep for mount files failed: ${e.message}`);
+    list = []; // git grep exits 1 when nothing matches
   }
   return list.map((file) => ({ file, text: readFileSync(file, "utf8") }));
 }
@@ -131,6 +130,7 @@ async function main() {
   const args = process.argv.slice(2);
   const jsonOut = args.includes("--json") ? args[args.indexOf("--json") + 1] : undefined;
   const only = args.includes("--only") ? args[args.indexOf("--only") + 1] : undefined;
+  enter("reading manifest modules");
 
   // Map each manifest module to its surface name(s), its scope builders and
   // the string constants it exports for the surface's name.
@@ -159,18 +159,27 @@ async function main() {
     }
   }
 
+  enter("reading the installed @ai-matrx/chat package");
   const pkg = packageFiles();
+  enter("finding surface mount files");
   const mounts = [...repoMountFiles(), ...pkg.filter((f) => MOUNT_MARKER.test(f.text))];
   const word = (w: string) => new RegExp(`\\b${w.replace(/[$]/g, "\\$")}\\b`);
+
+  // ONE git grep and ONE package pass for every builder (scripts/lib/surface-emitters.ts).
+  const allBuilders = [...new Set([...buildersBySurface.values()].flatMap((e) => e.builders))];
+  enter(`finding call sites of ${allBuilders.length} scope builders`);
+  const repoSites = builderCallSites(allBuilders, {
+    pathspecs: [":!features/surfaces/manifests/*.manifest.ts", ":!packages/chat/src/surfaces/manifests/*.manifest.ts"],
+  });
+  const pkgSites = builderSitesInFiles(allBuilders, pkg);
+  enter("building rows");
 
   const rows: Row[] = getAllManifests().map((m) => {
     const entry = buildersBySurface.get(m.surfaceName);
     const builderSites = entry
       ? [
-          ...entry.builders.flatMap((b) => callSites(b, entry.file)),
-          ...entry.builders.flatMap((b) =>
-            pkg.filter((f) => word(b).test(f.text)).map((f) => f.file),
-          ),
+          ...entry.builders.flatMap((b) => (repoSites.get(b) ?? []).filter((f) => f !== entry.file)),
+          ...entry.builders.flatMap((b) => pkgSites.get(b) ?? []),
         ]
       : [];
     const quoted = [`"${m.surfaceName}"`, `'${m.surfaceName}'`, `\`${m.surfaceName}\``];
@@ -212,6 +221,7 @@ async function main() {
       .map((r) => `('${r.surface.replace(/'/g, "''")}','${r.readiness}',${r.values})`)
       .join(",\n  ");
     console.log(`-- Surfaces whose DB mirror disagrees with code (read-only).
+-- Run against https://db.matrxserver.com: save to a file, then pnpm admin-query --file <file>.
 with code(name, readiness, n_values) as (values
   ${values}
 )

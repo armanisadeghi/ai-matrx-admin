@@ -6,9 +6,9 @@
  * Rows live in `users.user_feedback` with metadata.source =
  * 'surface_agent_feedback'. Read them before updating a surface.
  *
- * Cloud sessions have no direct DB credentials, so this PRINTS a read-only SQL
- * query to run through the Supabase MCP (project brsgrqvjdzwihsvnfqkf), the
- * same way `pnpm surface:census --sql` does.
+ * This PRINTS a read-only SQL query for the live database at
+ * https://db.matrxserver.com — save it to a file and run
+ * `pnpm admin-query --file <file>`, the same way `pnpm surface:census --sql` does.
  *
  *   pnpm surface:feedback --surface matrx-user/education-classes
  *   pnpm surface:feedback --surface matrx-user/education-classes --status all
@@ -38,7 +38,7 @@ function usage(message?: string): never {
 const openFilter = `f.status not in (${OPEN_STATUSES_EXCLUDED.map(lit).join(", ")})`;
 
 if (process.argv.includes("--all")) {
-  console.log(`-- Agent feedback per surface (read-only). Run through the Supabase MCP.
+  console.log(`-- Agent feedback per surface (read-only). Run against https://db.matrxserver.com: pnpm admin-query --file <file>.
 select f.metadata->>'surface_name' as surface,
        count(*) filter (where ${openFilter}) as open,
        count(*) as total,
@@ -53,7 +53,7 @@ order by open desc, latest desc;`);
   if (!surface || surface.startsWith("--")) usage("--surface <name> is required (or pass --all).");
   const status = arg("--status") ?? "open";
   if (status !== "open" && status !== "all") usage(`--status must be open or all, not "${status}".`);
-  console.log(`-- Agent feedback for ${surface} (${status}), newest first (read-only). Run through the Supabase MCP.
+  console.log(`-- Agent feedback for ${surface} (${status}), newest first (read-only). Run against https://db.matrxserver.com: pnpm admin-query --file <file>.
 select f.id,
        f.created_at,
        f.metadata->>'kind' as kind,
