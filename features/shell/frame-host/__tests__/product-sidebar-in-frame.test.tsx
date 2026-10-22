@@ -19,6 +19,7 @@ import type { FrameProduct } from "@/features/shell/frame/types";
 import { routeMenuRegistry } from "@/features/shell/constants/route-menu-registry";
 import {
   FRAME_PAGE_SIDEBAR_ROUTES,
+  FrameSidebarColumn,
   FrameSidebarContent,
   FrameSidebarSlotContext,
   routeSuppliesPageSidebar,
@@ -53,6 +54,13 @@ jest.mock("@/features/shell/constants/route-menu-loaders", () => {
     loadImagesSidebarMenu: menu("images"),
   };
 });
+
+// The phone switch FrameSidebarColumn reads (a phone keeps its in-body list/detail switch).
+let mockIsMobile = false;
+jest.mock("@ai-matrx/kit/media-query", () => ({
+  ...jest.requireActual("@ai-matrx/kit/media-query"),
+  useIsMobile: () => mockIsMobile,
+}));
 
 class NoopResizeObserver {
   observe() {}
@@ -155,74 +163,11 @@ describe("kind A: a registered route menu is the frame's sidebar", () => {
   });
 });
 
-/** A live-shaped product: the module's own row plus its sibling pages (Chat on /chat/new). */
-function chatLike(count: number): FrameProduct {
-  const base = productFor("chat");
-  const labels = ["Chats", "Voice / Talk", "Agent Messenger", "Imported AI chats", "AI Work", "Shared", "Archive"];
-  return {
-    ...base,
-    menu: [
-      {
-        id: "main",
-        items: labels.slice(0, count).map((label, i) => ({ id: `item-${i}`, label, icon: MessageCircle, href: `/x/${i}` })),
-      },
-    ],
-  };
-}
-const strip = () => sidebar().querySelector<HTMLElement>('[data-mf-region="product-rows"]');
 /** The row titles drawn inside a node (the Tile renders its title as text). */
 const titles = (node: Element) => Array.from(node.querySelectorAll(".matrx-tile-title")).map((n) => n.textContent);
 
-describe("the product's other pages stay above its module menu (owner-session, 2026-10-22)", () => {
-  it("kind A: Chat's sibling pages are one-line rows above the chat menu, the current one selected", async () => {
-    await mount(
-      <FrameHost pathname="/chat/new" productId="chat" product={chatLike(4)} activeItemId="item-0" page={<p>Page</p>} />,
-    );
-    const rows = strip();
-    expect(rows).not.toBeNull();
-    expect(titles(rows!)).toEqual(["Chats", "Voice / Talk", "Agent Messenger", "Imported AI chats"]);
-    expect(rows!.querySelector('[aria-current="page"]')?.textContent).toBe("Chats");
-    // Above the module's menu, never inside it.
-    const nav = sidebar().querySelector('[data-mf-region="product-nav"]')!;
-    expect(rows!.compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(nav.querySelector('[data-mf-region="product-rows"]')).toBeNull();
-  });
-
-  it("kind B: the same strip sits above a page's own sidebar", async () => {
-    await mount(
-      <FrameHost pathname="/notes" productId="docs" product={chatLike(2)} activeItemId="item-0" page={<PageWithOwnSidebar />} />,
-    );
-    expect(strip()).not.toBeNull();
-    expect(titles(strip()!)).toContain("Voice / Talk");
-    expect(sidebar().querySelector('[data-testid="page-sidebar"]')).not.toBeNull();
-  });
-
-  it("no strip when the product has no page beyond the current module", async () => {
-    await mount(
-      <FrameHost pathname="/chat/new" productId="chat" product={chatLike(1)} activeItemId="item-0" page={<p>Page</p>} />,
-    );
-    expect(strip()).toBeNull();
-  });
-
-  it("more than four rows fold: the current row stays, the rest open with one click", async () => {
-    await mount(
-      <FrameHost pathname="/chat/new" productId="chat" product={chatLike(7)} activeItemId="item-5" page={<p>Page</p>} />,
-    );
-    const shown = () => titles(strip()!.querySelector("ul")!);
-    expect(shown()).toContain("Shared");
-    expect(shown().length).toBeLessThan(7);
-    const more = strip()!.querySelector<HTMLButtonElement>('[data-mf-product-rows-toggle]')!;
-    expect(more.getAttribute("aria-expanded")).toBe("false");
-    await act(async () => more.click());
-    expect(shown()).toHaveLength(7);
-    expect(more.getAttribute("aria-expanded")).toBe("true");
-  });
-
-  it("the route table's own body (no module menu, no page sidebar) has no strip", async () => {
-    await mount(<FrameHost pathname="/tasks" productId="chat" product={chatLike(4)} page={<p>Page</p>} />);
-    expect(strip()).toBeNull();
-  });
-});
+// The product's other pages over a module menu or a page sidebar moved from a strip into the top's
+// More (owner, 2026-10-22): product-sidebar-top-in-frame.test.tsx.
 
 function PageWithOwnSidebar() {
   const inFrame = useFrameSidebarSlot();
@@ -319,7 +264,8 @@ describe("a declared page sidebar never flashes the route rows first", () => {
     const path = jest.requireActual<typeof import("path")>("path");
     for (const { owner } of FRAME_PAGE_SIDEBAR_ROUTES) {
       const src = fs.readFileSync(path.join(process.cwd(), owner), "utf8");
-      expect(`${owner}: ${src.includes("<FrameSidebarContent")}`).toBe(`${owner}: true`);
+      const door = src.includes("<FrameSidebarContent") || src.includes("<FrameSidebarColumn");
+      expect(`${owner}: ${door}`).toBe(`${owner}: true`);
     }
   });
 
@@ -359,6 +305,71 @@ describe("a declared page sidebar never flashes the route rows first", () => {
       expect(sidebar().querySelector('[data-mf-region="product-nav"]')).toBeNull();
     } finally {
       jest.useRealTimers();
+    }
+  });
+});
+
+/**
+ * THE ONE-ELEMENT DOOR for list-beside-detail pages (data stores, term lists, library catalog, live
+ * sessions): the page writes its column once as <FrameSidebarColumn className=…>. Proven failing
+ * before it existed: those pages drew a second left column beside the frame's sidebar in frame mode.
+ */
+function ListDetailPage() {
+  return (
+    <div data-testid="list-detail">
+      <FrameSidebarColumn aria-label="Stores" className="w-80 border-r" data-testid="rail">
+        <div data-testid="store-list">Stores</div>
+      </FrameSidebarColumn>
+      <section>Detail</section>
+    </div>
+  );
+}
+
+describe("FrameSidebarColumn: a page's list column in one element", () => {
+  afterEach(() => {
+    mockIsMobile = false;
+  });
+
+  it("classic: the same <aside> with its own width and border, in the page", async () => {
+    await mount(<ListDetailPage />);
+    const rail = host.querySelector('[data-testid="list-detail"] > aside[aria-label="Stores"]');
+    expect(rail?.className).toBe("w-80 border-r");
+    expect(host.querySelectorAll('[data-testid="store-list"]')).toHaveLength(1);
+  });
+
+  it("frame (desktop): the list renders once, in the frame's sidebar column, without the column chrome", async () => {
+    await mount(<FrameHost pathname="/knowledge/data-stores" productId="docs" page={<ListDetailPage />} />);
+    expect(host.querySelectorAll('[data-testid="store-list"]')).toHaveLength(1);
+    const rail = sidebar().querySelector('aside[aria-label="Stores"]');
+    expect(rail).not.toBeNull();
+    expect(rail?.className).not.toContain("w-80");
+    expect(body().querySelector('[data-testid="store-list"]')).toBeNull();
+  });
+
+  it("frame on a phone: the page keeps its own column (its list/detail switch)", async () => {
+    mockIsMobile = true;
+    await mount(<FrameHost pathname="/knowledge/data-stores" productId="docs" page={<ListDetailPage />} />);
+    expect(body().querySelector('aside[aria-label="Stores"] [data-testid="store-list"]')).not.toBeNull();
+  });
+
+  it("every newly declared list page resolves as kind B", () => {
+    for (const path of [
+      "/knowledge/hub",
+      "/knowledge/data-stores",
+      "/rag/data-stores",
+      "/compare/old/data-stores",
+      "/knowledge/library-catalog",
+      "/rag/library-catalog",
+      "/knowledge/library-curate",
+      "/notifications",
+      "/education/study-guides/abc",
+      "/resources/term-lists",
+      "/work/live",
+    ]) {
+      expect(`${path}: ${routeSuppliesPageSidebar(path)}`).toBe(`${path}: true`);
+    }
+    for (const path of ["/knowledge/search", "/education/flashcards", "/work/new"]) {
+      expect(`${path}: ${routeSuppliesPageSidebar(path)}`).toBe(`${path}: false`);
     }
   });
 });
