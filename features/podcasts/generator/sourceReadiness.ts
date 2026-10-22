@@ -17,6 +17,13 @@ export interface PodcastSourceReadiness {
 interface PodcastSourceRequest {
   input_data_type?: unknown;
   input_data?: unknown;
+  source_set?: unknown;
+}
+
+/** True when a saved request names Sources the server reads again on a re-run. */
+export function requestHasSources(request: { source_set?: unknown } | null | undefined): boolean {
+  const set = request?.source_set as { sources?: unknown } | null | undefined;
+  return Array.isArray(set?.sources) && set.sources.length > 0;
 }
 
 /** True when the source is already a finished script — its own speaker labels
@@ -77,6 +84,8 @@ export function canRerunPodcastSource(
   request: PodcastSourceRequest | null | undefined,
 ): boolean {
   if (!request) return false;
+  // Sources are read on the server again (its own length gate applies there).
+  if (requestHasSources(request)) return true;
   return getPodcastSourceReadiness(
     typeof request.input_data_type === "string"
       ? request.input_data_type

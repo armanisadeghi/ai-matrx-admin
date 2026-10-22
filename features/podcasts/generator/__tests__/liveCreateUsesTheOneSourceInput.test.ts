@@ -22,7 +22,11 @@ describe("the live podcast create page uses the one Source input", () => {
 
   it("lets typed words and picked Sources combine, with the editable text of the Sources", () => {
     expect(FORM).toContain("useResolvedSourceText(sourceSet");
-    expect(FORM).toContain("source_text_supplied = true");
+    // An edit becomes its own Source (landed through /sources/land) and the request
+    // points at it: Source text never rides in input_data.
+    expect(FORM).toContain("landEditedSourceText(");
+    expect(FORM).toContain("edited_from: saved.editedFrom");
+    expect(FORM).not.toMatch(/source_text_supplied|input_data\s*=\s*[^;\n]*(?:sourcePreview|edited)/);
     expect(FORM).toContain("Text from your sources");
   });
 
