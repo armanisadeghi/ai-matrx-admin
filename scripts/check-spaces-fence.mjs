@@ -54,7 +54,15 @@ const ENTRY_POINTS = [/features\/spaces\/embed\/RecordBodySpace["'/]/, /features
 //   files (features/make/describe, scripts/airtable-walk) into this pack commit; the Spaces change itself was packs only.
 //   51a1004104: "spaces: Design system board pack v5" — the Board session's own board-pack work under a spaces:
 //   subject (features/board tests); its later commits use a board: prefix.
+//   aa17cd6b04: "spaces: a database over a built-in source ... draws Calendar and Timeline" (2026-10-22) — wired the
+//   two records-ui calendar/timeline views through the shared front door (features/data-tables/records-ui-host/
+//   RecordsUiFrontDoor.tsx, recordsUiLazy.tsx, 3 lines each); the rest of the commit is inside the fence.
+//   e0518efea8: "spaces: embed a published page on another website (J3, CD-PAGE-14)" (2026-10-21) — the public site
+//   page (app/(link)/site/[slug]/page.tsx) had to allow the embed, and the walk script
+//   scripts/airtable-walk/cd-page-03-gallery-timeline.mjs rode along; the rest is inside the fence.
 const KNOWN_CROSS_FENCE_COMMITS = new Set([
+  "aa17cd6b0457704578930f0053717a2350f5e85b",
+  "e0518efea889eff6913bdd8cb439882f931fed38",
   "da849360e99c097e83b22e7b125de0e9a49301d0",
   "79ea2b4f9df333fd60e9a1f69e6453c9e631c8b9",
   "51a10041046618fd008bd2508e1c619e38424e2d",
