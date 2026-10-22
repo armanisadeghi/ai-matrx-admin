@@ -24,13 +24,32 @@ const CANONICAL = /(^|\/)features\/resource-manager\/(source-input|resource-pick
 const SKIP = /(^|\/)(node_modules|__tests__|\(dev\)|generated|\.next)(\/|$)|\.(test|spec|stories|d)\.tsx?$|(^|\/)features\/overlays\/|(^|\/)features\/window-panels\//;
 
 const NAME = /Source(Input|Picker|Capture)/;
-const OPTIONS_CONST = /^\s*(?:export\s+)?const\s+[A-Z_]*(?:ADD_)?SOURCE_(?:OPTIONS|TILES|CHOICES|DOORS)\b/m;
+const OPTIONS_CONST = /^\s*(?:export\s+)?const\s+[A-Z_]*(?:ADD_)?SOURCE_(?:OPTIONS|TILES|CHOICES|DOORS)\b[^\n]*=\s*\[/m;
+// A DOOR is a way to put material in. A door LABEL stands alone as a tile / tab / button: a `label:` or
+// `text:` value, or JSX text between tags. A bare map entry (`youtube: "YouTube"`), a sentence that happens to
+// start with "Upload" (marketing copy, helper text) and a type union are NOT doors. One family list drives
+// the row rule, the name rule and the options-list rule.
+const LABEL = (words) => new RegExp(`(?:\\b(?:label|text)\\s*:\\s*["'\`]|>\\s*)(?:${words})\\b[^<"'\`\\n]{0,24}(?:["'\`]|<|\\s*$)`, "im");
 const DOOR_FAMILIES = [
-  ["upload", /["'`>]\s*Upload\b/],
-  ["paste", /["'`>]\s*Paste\b/],
-  ["web", /["'`>]\s*(?:Web\s?page|Website|Web link)\b/i],
-  ["youtube", /["'`>]\s*YouTube\b/],
+  ["upload", LABEL("Upload|Audio file|Upload a file")],
+  ["paste", LABEL("Paste")],
+  ["web", LABEL("Web\\s?page|Website|Web link|URL")],
+  ["youtube", LABEL("YouTube")],
 ];
+// A source-options LIST (not any list named *_SOURCE_OPTIONS: a crawl's "discovered via" filter is not one)
+// must offer at least two ways in.
+const LOOSE_FAMILIES = [/upload|file|audio/i, /paste|text|notes/i, /web ?page|website|\burl\b/i, /youtube|video/i, /\btopic\b/i];
+function optionsListIsDoors(src) {
+  const m = OPTIONS_CONST.exec(src);
+  if (!m) return false;
+  const rest = src.slice(m.index);
+  const end = rest.search(/\n\]/);
+  const body = end < 0 ? rest : rest.slice(0, end);
+  return LOOSE_FAMILIES.filter((re) => re.test(body)).length >= 2;
+}
+// A file named like a source input is a copy only when it gives a person a way to put material in: a file input
+// or drop zone, the file picker, a text area, the URL resolver, or one of the source-kind lists.
+const FILE_AFFORDANCE = /type=["']file["']|\buseFileUpload\b|\bFilePickerWindow\b|\bonDrop\b|\bDropzone\b|\bSourceResolverPanel\b|<(?:Pro)?[Tt]extarea\b|\b[A-Z_]*SOURCE_(?:OPTIONS|TILES|CHOICES|DOORS)\b/;
 const ASSOC_IMPORT = /import\s*\{[^}]*\bUniversalAssociationPicker\b[^}]*\}\s*from/;
 // Known local copies the patterns above cannot see (a tile row built from icons, or a data file). They stay
 // flagged for as long as the file exists, so the baseline entry is what lets them live, and deleting the file
@@ -59,9 +78,11 @@ function* walk(dir) {
 export function findings(rel, src) {
   if (CANONICAL.test(rel) || SKIP.test(rel)) return [];
   const out = [];
-  if (NAME.test(rel.split("/").pop())) out.push("named-source-input-file");
-  if (OPTIONS_CONST.test(src)) out.push("local-source-options-list");
   const fams = DOOR_FAMILIES.filter(([, re]) => re.test(src)).map(([n]) => n);
+  // A file NAMED like a source input is a copy only when it renders a way in (a door label or a file input).
+  // Data-source field forms and database-record pickers carry the name and offer no way to add material.
+  if (NAME.test(rel.split("/").pop()) && (fams.length >= 1 || FILE_AFFORDANCE.test(src))) out.push("named-source-input-file");
+  if (optionsListIsDoors(src)) out.push("local-source-options-list");
   if (fams.length >= 3) out.push("hand-rolled-door-row");
   if (KNOWN_LOCAL.has(rel)) out.push("known-local-copy");
   if (EDU_CLASS.test(rel) && ASSOC_IMPORT.test(src)) out.push("local-association-picker-for-sources");
@@ -100,19 +121,36 @@ function selfTest() {
   const dir = mkdtempSync(join(tmpdir(), "one-source-input-"));
   const put = (rel, body) => { const p = join(dir, rel); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, body); };
   try {
+    // COPIES: each must be detected
     put("features/foo/Tiles.tsx", `export const A = () => (<div><b>Upload</b><b>Paste</b><b>Website</b><b>YouTube</b></div>);`);
-    put("features/foo/MySourceInput.tsx", `export const B = 1;`);
-    put("features/foo/constants.ts", `export const SOURCE_OPTIONS = [];`);
+    put("features/foo/MySourceInput.tsx", `export const B = () => <input type="file" />;`);
+    put("features/foo/SourceCapture.tsx", `export const B = () => <b>Upload</b>;`);
+    put("features/foo/TextSourcePicker.tsx", `export const B = () => <ProTextarea value="" />;`);
+    put("features/foo/constants.ts", `export const SOURCE_OPTIONS = [\n  { kind: "text", label: "Rough notes" },\n  { kind: "web", label: "Website" },\n];\n`);
+    put("features/foo/tiles.ts", `export const A = [{ label: "Upload" }, { label: "Paste" }, { label: "Website" }];`);
+    // NOT COPIES: each must be ignored
     put("features/resource-manager/source-input/Ok.tsx", `<b>Upload</b><b>Paste</b><b>Website</b><b>YouTube</b>`);
     put("features/foo/Fine.tsx", `export const C = () => <b>Upload</b>;`);
+    // a field form that carries the name but offers no way to add material (data-source link/search fields)
+    put("features/foo/SourceInputFields.tsx", `export const F = () => <ProInput value="" />;`);
+    // a record picker that carries the name (database tables / built-in sources)
+    put("features/foo/SourcePicker.tsx", `export const P = () => <SearchField value="" />;`);
+    // a filter list that is named *_SOURCE_OPTIONS but is not a list of ways in
+    put("features/foo/CrawlTable.tsx", `const DISCOVERY_SOURCE_OPTIONS = [\n  { value: "seed", label: "Seed" },\n  { value: "link", label: "Link" },\n  { value: "sitemap", label: "Sitemap" },\n];\n`);
+    // kind -> display label maps and marketing prose are not tile rows
+    put("features/foo/labels.ts", `export const L = { upload: "Upload", web_page: "Web page", youtube: "YouTube", paste: "Paste" };`);
+    put("features/foo/copy.ts", `export const T = ["Upload a PDF, paste notes, or pick a reading.", "Paste a link or a YouTube URL", "Website, Upload, YouTube"];`);
     const hits = scan(dir);
     const keys = Object.keys(hits).sort();
-    const expect = ["features/foo/MySourceInput.tsx", "features/foo/Tiles.tsx", "features/foo/constants.ts"];
+    const expect = [
+      "features/foo/MySourceInput.tsx", "features/foo/SourceCapture.tsx", "features/foo/TextSourcePicker.tsx",
+      "features/foo/Tiles.tsx", "features/foo/constants.ts", "features/foo/tiles.ts",
+    ];
     if (JSON.stringify(keys) !== JSON.stringify(expect)) { console.error("self-test FAILED: detection", keys); process.exit(1); }
     const { grown } = compare(hits, { "features/foo/Tiles.tsx": ["hand-rolled-door-row"] });
-    if (grown.length !== 2) { console.error("self-test FAILED: baseline compare", grown); process.exit(1); }
+    if (grown.length !== 5) { console.error("self-test FAILED: baseline compare", grown); process.exit(1); }
     if (compare(hits, Object.fromEntries(Object.entries(hits))).grown.length) { console.error("self-test FAILED: full baseline should pass"); process.exit(1); }
-    console.log("check-one-source-input self-test: ok (detects 3 copy shapes, ignores canonical folder, baseline gates growth)");
+    console.log("check-one-source-input self-test: ok (detects 6 copy shapes; ignores the canonical folder, field forms, record pickers, filter lists, label maps and prose; baseline gates growth)");
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
