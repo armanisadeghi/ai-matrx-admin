@@ -1,0 +1,12 @@
+diff --git a/dist/es/index.mjs b/dist/es/index.mjs
+index 94ee439ecb45e3cc6cfe83021185bd16a57b6d4f..72dce61d9d2710f4e12b41005595465ae6c52e7c 100644
+--- a/dist/es/index.mjs
++++ b/dist/es/index.mjs
+@@ -11,7 +11,6 @@ export { addPointerInfo } from './events/event-info.mjs';
+ export { animations } from './motion/features/animations.mjs';
+ export { makeUseVisualState } from './motion/utils/use-visual-state.mjs';
+ export * from 'motion-dom';
+-export { VisualElement, addScaleCorrector, animateVisualElement, arc, buildTransform, calcLength, createBox, delay, optimizedAppearDataAttribute, resolveMotionValue, visualElementStore } from 'motion-dom';
+ export { filterProps } from './render/dom/utils/filter-props.mjs';
+ export { isBrowser } from './utils/is-browser.mjs';
+ export { useComposedRefs } from './utils/use-composed-ref.mjs';

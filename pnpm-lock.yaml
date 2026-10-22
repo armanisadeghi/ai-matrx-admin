@@ -36,6 +36,9 @@ patchedDependencies:
   '@univerjs/sheets-formula@1.0.4':
     hash: a104ef9a9faeccbc025155e5cc181a9e6e1a56a9368cbb446ecf58ff2b642e50
     path: patches/@univerjs__sheets-formula@1.0.4.patch
+  framer-motion@13.4.4:
+    hash: 7297c8090d82c94c8dac40b8096717e02c757d46531b367b67e13b4b412f294e
+    path: patches/framer-motion@13.4.4.patch
   lossless-json@4.3.1:
     hash: ba30e301793a5b0d08ed4ca0cc34822eaaa724b41800c05f90003e60281af8de
     path: patches/lossless-json@4.3.1.patch
@@ -24228,7 +24231,7 @@ snapshots:
 
   fraction.js@5.3.4: {}
 
-  framer-motion@13.4.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  framer-motion@13.4.4(patch_hash=7297c8090d82c94c8dac40b8096717e02c757d46531b367b67e13b4b412f294e)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       motion-dom: 13.4.4
       motion-utils: 13.3.0
@@ -26539,7 +26542,7 @@ snapshots:
 
   motion@13.4.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
-      framer-motion: 13.4.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      framer-motion: 13.4.4(patch_hash=7297c8090d82c94c8dac40b8096717e02c757d46531b367b67e13b4b412f294e)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       tslib: 2.8.1
     optionalDependencies:
       react: 19.3.1
