@@ -58,7 +58,7 @@ const SERVER = "https://server.app.matrxserver.com";
 // apply_surface_write is the only write path it gets). Test Data Agent (5f533f4f…, system) is the
 // first choice but a person can neither pick it in the Side Chat picker nor bind it (assoc_add needs
 // editor on the agent), so the matrix runs on this one.
-const TEST_DATA_AGENT = { id: "c552587a-433b-4df0-98a6-074841ffe7bc", name: "Tool libraries test agent (cheap)" };
+const ADMIN_WRITE_AGENT = { id: "c552587a-433b-4df0-98a6-074841ffe7bc", name: "Tool libraries test agent (cheap)" };
 const TEST_REPLY_AGENT = { id: "8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f", name: "Test Reply" };
 const NOTES_SURFACE = "matrx-user/notes";
 const SHORTCUT_LABEL = "W6B fix spelling";
@@ -84,6 +84,9 @@ for (let i = 0; i < argv.length; i += 1) {
   else if (a === "--no-store") opt.store = false;
   else { console.error(`unknown argument ${a}`); process.exit(2); }
 }
+// The member seat cannot see the admin-owned agent (the Side Chat picker offers it no such row), so its
+// write runs use Test Reply (builtin, every account can pick it; plumbing model).
+const TEST_DATA_AGENT = opt.as === "member" ? TEST_REPLY_AGENT : ADMIN_WRITE_AGENT;
 opt.triggers ??= opt.scenario === "hr" ? ["chat"] : ["chat", "binding", "shortcut", "mandate"];
 opt.out ??= fs.mkdtempSync(path.join(os.tmpdir(), "w6b-"));
 fs.mkdirSync(opt.out, { recursive: true });
@@ -229,15 +232,19 @@ const TRIGGERS = {
     const agentBtn = page.locator('[aria-label^="Agent:"]').first();
     const current = (await agentBtn.getAttribute("aria-label").catch(() => "")) || "";
     if (!current.includes(ctx.agent.name)) {
-      await agentBtn.click({ timeout: 10000 });
-      await page.waitForTimeout(1500);
-      // "Choose your chat agent" lists a few; "Choose any agent" is a submenu with the full searchable picker.
-      const any = page.getByText("Choose any agent", { exact: true }).first();
-      await any.hover().catch(() => {});
-      await page.waitForTimeout(1200);
-      await any.click().catch(() => {});
-      await page.waitForTimeout(2500);
+      // "Choose your chat agent" lists a few; "Choose any agent" is a submenu with the full searchable
+      // picker. The submenu sometimes does not open on the first hover: try twice.
       const search = page.locator('input[placeholder*="agent" i]:visible, [role=menu] input:visible, [role=dialog] input:visible').last();
+      for (let attempt = 0; attempt < 2 && !(await search.count()); attempt += 1) {
+        if (attempt) { await page.keyboard.press("Escape"); await page.waitForTimeout(800); }
+        await agentBtn.click({ timeout: 10000 });
+        await page.waitForTimeout(1500);
+        const any = page.getByText("Choose any agent", { exact: true }).first();
+        await any.hover().catch(() => {});
+        await page.waitForTimeout(1500);
+        await any.click().catch(() => {});
+        await page.waitForTimeout(3000);
+      }
       if (await search.count()) await search.fill(ctx.agent.name);
       else await shot(page, "chat-picker");
       // The picker opens on "Mine"; a system test agent is under "All". Every click stays inside the
@@ -272,12 +279,23 @@ const TRIGGERS = {
   async shortcut(page, ctx) {
     await page.locator(".ProseMirror").first().click({ button: "right" });
     await page.waitForTimeout(1500);
+    // The menu's own "Search this menu…" box finds an item at any depth.
+    const find = page.locator('[role=menu] input[placeholder^="Search this menu"]').first();
+    if (await find.count()) {
+      await find.fill(SHORTCUT_LABEL);
+      await page.waitForTimeout(2000);
+      if (await pointerClick(page, "[role=menu] [role=menuitem], [role=menu] [role=option], [role=menu] button", SHORTCUT_LABEL)) { await page.waitForTimeout(3000); return null; }
+      await shot(page, `${ctx.trigger}-menu-search`);
+      await find.fill("");
+      await page.waitForTimeout(800);
+    }
     // Walk the menu: open every submenu trigger until the shortcut's label shows, then click it.
-    for (let depth = 0; depth < 4; depth += 1) {
+    for (let depth = 0; depth < 6; depth += 1) {
       if (await pointerClick(page, "[role=menu] [role=menuitem]", SHORTCUT_LABEL)) { await page.waitForTimeout(3000); return null; }
       const opened = await page.evaluate((tried) => {
         const triggers = Array.from(document.querySelectorAll("[role=menu] [aria-haspopup=menu]")).filter((e) => e.getClientRects().length);
-        const want = ["My Intelligence", "Intelligence", "My Items", "My Personal", "Notes"];
+        // A person shortcut in an ai-action category sits under Intelligence › AI Actions › <category>.
+        const want = ["Intelligence", "AI Actions", "My Personal", "My Intelligence", "My Items", "Notes"];
         for (const w of want) {
           const el = triggers.find((e) => (e.textContent || "").trim().startsWith(w) && !tried.includes(w));
           if (el) { el.dispatchEvent(new PointerEvent("pointermove", { bubbles: true })); el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })); el.focus(); return w; }
@@ -350,10 +368,36 @@ async function receivedOracle(conversationId, want, situationWants = []) {
     const m = text.match(/<situation>([\s\S]*?)<\/situation>/);
     situation = m ? m[1] : null;
   }
-  const missing = want.filter((w) => !text.includes(w));
+  // A mapped launch (shortcut/binding value_mappings) delivers each mapped value as a named context
+  // object the agent opens with its context tool; those are not receipt blocks, so read the stored
+  // request's context_objects too and name the key that carried each wanted value.
+  const carriedBy = {};
+  if (want.some((w) => !text.includes(w))) {
+    const { data } = await refDb.schema("chat").from("request_snapshot").select("unified_payload,request_payload")
+      .eq("conversation_id", conversationId).eq("iteration", 1);
+    for (const d of data || []) {
+      for (const payload of [d.unified_payload, d.request_payload]) {
+        const objs = payload?.context_objects ?? payload?.metadata?.context_objects ?? [];
+        for (const o of Array.isArray(objs) ? objs : []) {
+          for (const w of want) if (!carriedBy[w] && typeof o?.content === "string" && o.content.includes(w)) carriedBy[w] = `context_objects.${o.key}`;
+        }
+      }
+      if (want.some((w) => !carriedBy[w] && !text.includes(w))) {
+        // Fallback: the raw payload text, keyed by the nearest context_objects key.
+        const raw = `${JSON.stringify(d.unified_payload ?? "")}${JSON.stringify(d.request_payload ?? "")}`;
+        for (const w of want) {
+          const at = raw.indexOf(w);
+          if (carriedBy[w] || text.includes(w) || at < 0) continue;
+          const keys = [...raw.slice(Math.max(0, at - 1500), at).matchAll(/\\?"key\\?":\s*\\?"([a-z0-9_:.-]+)/gi)];
+          carriedBy[w] = keys.length ? `context_objects.${keys[keys.length - 1][1]}` : "request (unlabelled)";
+        }
+      }
+    }
+  }
+  const missing = want.filter((w) => !text.includes(w) && !carriedBy[w]);
   const situationMissing = situationWants.filter((w) => !(situation || "").includes(w));
   const situationOk = Boolean(situation && situation.trim()) && situationMissing.length === 0;
-  return { pass: missing.length === 0 && situationOk, source, missing, situation_missing: situationMissing, situation: situation?.slice(0, 600) ?? null, checks, chars: text.length };
+  return { pass: missing.length === 0 && situationOk, source, missing, carried_by: carriedBy, situation_missing: situationMissing, situation: situation?.slice(0, 600) ?? null, checks, chars: text.length };
 }
 async function patchOracle(conversationId) {
   const { data } = await refDb.schema("chat").from("tool_call").select("id,status,arguments,error_message,created_at")
@@ -423,7 +467,13 @@ async function runNotes(trigger, orgId, browser) {
     if (!run) { res.blocked = "no run (chat.user_request) whose stored request carries this run's canary"; await ctx.close(); return res; }
     res.conversation_id = run.conversation_id;
     // The page situation: the module paragraph (AI Matrx › …) and the Notes page paragraph naming this note.
-    res.oracles.received = await receivedOracle(run.conversation_id, [note.canary], ["AI Matrx ›", '"Notes" screen', `W6-B ${runTag}`]);
+    // A launch that declares value mappings receives ONLY its mapped values (the mapper law,
+    // mapScopeToInstanceWithSurface), so its page paragraph names no note: the canary must arrive
+    // through the mapping instead. Unmapped launches (chat, an unmapped binding) carry the note title.
+    const mapped = Boolean(shortcut) || Object.keys(res.setup.binding?.payload?.value_mappings ?? {}).length > 0;
+    res.oracles.received = await receivedOracle(run.conversation_id, [note.canary],
+      mapped ? ["AI Matrx ›", '"Notes" screen'] : ["AI Matrx ›", '"Notes" screen', `W6-B ${runTag}`]);
+    if (mapped) res.oracles.received.mapped_value = res.oracles.received.carried_by?.[note.canary] ?? (res.oracles.received.missing.length ? null : "receipt block");
     res.oracles.patch = await patchOracle(run.conversation_id);
     res.oracles.db = await dbOracle(note);
     res.oracles.page = await pageOracle(ctx, note);
