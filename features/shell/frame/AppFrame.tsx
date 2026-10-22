@@ -222,6 +222,12 @@ export interface AppFrameProps {
   canvasOpen?: boolean;
   onCanvasOpenChange?: (open: boolean) => void;
   /**
+   * The canvas in full screen. Controlled by a host whose canvas store decides (the live host: the
+   * store's fullscreen, so the pane's own expand control and the shortcut drive the frame too).
+   */
+  canvasFull?: boolean;
+  onCanvasFullChange?: (full: boolean) => void;
+  /**
    * The host cannot offer the side chat / canvas yet: its toggle is disabled with this sentence as
    * its tooltip (and leaves the phone "…" menu) — an honest stand-in, never a dead button.
    */
@@ -368,7 +374,7 @@ export function AppFrame(props: AppFrameProps) {
   const [companionOpen, setCompanionOpen] = useControllable(props.companionOpen, props.onCompanionOpenChange, false);
   const headerEdge = props.headerEdge ?? "fade";
   const [canvasOpen, setCanvasOpen] = useControllable(props.canvasOpen, props.onCanvasOpenChange, false);
-  const [canvasFull, setCanvasFull] = useState(false);
+  const [canvasFull, setCanvasFull] = useControllable(props.canvasFull, props.onCanvasFullChange, false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [seed, setSeed] = useState<CompanionSeed | undefined>(undefined);

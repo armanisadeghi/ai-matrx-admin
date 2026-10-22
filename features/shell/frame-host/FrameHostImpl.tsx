@@ -21,7 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Copy, ExternalLink, LayoutList } from "lucide-react";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { selectCanvasIsOpen } from "@ai-matrx/canvas";
+import { selectCanvasIsFullscreen, selectCanvasIsOpen } from "@ai-matrx/canvas";
 import {
   useOptionalCanvas,
   useOptionalCanvasState,
@@ -167,6 +167,8 @@ export default function FrameHostImpl({
   };
   const canvas = useOptionalCanvas();
   const canvasOpen = useOptionalCanvasState(selectCanvasIsOpen, false);
+  // ONE full-screen state: the canvas store's (the pane's expand control and the shortcut drive it).
+  const canvasFull = useOptionalCanvasState(selectCanvasIsFullscreen, false);
   // The frame presents the canvas window while it is mounted: `openCanvasItem(...)` from any page
   // reaches the store and opens the frame's canvas, even before its body has loaded.
   useEffect(() => canvas?.registerPresentation(), [canvas]);
@@ -232,6 +234,8 @@ export default function FrameHostImpl({
           }
           loadCanvas={canvas ? loadCanvas : undefined}
           canvasOpen={canvasOpen}
+          canvasFull={canvasFull}
+          onCanvasFullChange={(full) => canvas?.setFullscreen(full)}
           onCanvasOpenChange={(open) =>
             open ? canvas?.show() : canvas?.hide()
           }
