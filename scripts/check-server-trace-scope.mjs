@@ -9,6 +9,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { failOrScream } from "./lib/release-verdict.mjs";
 
 export const FORBIDDEN = [
   { label: "migrations/", test: (p) => p.startsWith("migrations/") },
@@ -57,7 +58,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     console.error(`[server-trace-scope] ${problems.length} server bundle(s) trace repo tooling into the deployment:`);
     for (const p of problems.slice(0, 20)) console.error(`  ${p}`);
     console.error("  Cause: app code imports a script/CLI module (or a dynamic fs root). Import the DATA instead (see scripts/findings/accept-info.mjs).");
-    process.exitCode = 1;
+    process.exitCode = failOrScream("server-trace-scope", `${problems.length} server bundle(s) trace repo tooling (bundle size, not a runtime crash): ${problems.slice(0, 3).join("; ")}`);
   } else {
     console.log(`[server-trace-scope] ${traces.length} server bundles trace no repo tooling.`);
   }

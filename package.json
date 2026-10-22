@@ -752,6 +752,7 @@
     "check:summon-first-load": "node scripts/check-summon-first-load.mjs",
     "check:server-trace-scope": "node scripts/check-server-trace-scope.mjs",
     "check:server-trace-scope:self-test": "node --test scripts/check-server-trace-scope.test.mjs",
+    "check:release-verdict:self-test": "node --test scripts/lib/__tests__/release-verdict.test.mjs",
     "check:import-fanout": "node scripts/check-import-fanout.mjs",
     "check:import-fanout:self-test": "node scripts/check-import-fanout.mjs --self-test",
     "check:login-hydrates:self-test": "node --test scripts/build-lab/next-assets.test.mjs",

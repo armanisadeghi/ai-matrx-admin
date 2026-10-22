@@ -1,6 +1,7 @@
 import { readdirSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { failOrScream } from "./lib/release-verdict.mjs";
 
 // Next.js #97945 retains all 64 bits of the base38 identity. Earlier builds
 // used seven characters, allowing distinct SSR chunks to collide at scale.
@@ -45,6 +46,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     checkBuild(process.env.NEXT_DISTDIR || ".next");
   } catch (error) {
     console.error(`[turbopack-identities] ${error.message}`);
-    process.exitCode = 1;
+    process.exitCode = failOrScream("turbopack-identities", error.message);
   }
 }
