@@ -473,6 +473,7 @@ export function proposeIntentsResult(
     rendition_retargeted: 0,
     dropped_unknown_slug: 0,
     dropped_locked: 0,
+    stance_corrected: 0,
     kept_existing: 12,
     by_disposition: { keep: 300, redirect: 41, merge: 21 },
     queue_pending: 0,
