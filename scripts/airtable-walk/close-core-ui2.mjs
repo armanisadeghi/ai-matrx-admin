@@ -48,7 +48,7 @@ async function browser(opts = {}) {
   const b = await chromium.launch({ headless: true, ...opts });
   const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 }, storageState: STATE });
   ctx.setDefaultNavigationTimeout(900000);
-  const page = await ctx.newPage(); page.setDefaultTimeout(30000);
+  const page = await ctx.newPage(); page.setDefaultTimeout(30000); page.setDefaultNavigationTimeout(900000);
   return { b, page };
 }
 async function openGrid(page, id, first) {
