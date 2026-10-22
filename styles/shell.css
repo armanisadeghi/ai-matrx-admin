@@ -1815,6 +1815,15 @@ body[style*="pointer-events: none"] {
   > [data-page-header-ghost-portal="fallback"] {
   display: none;
 }
+/* A STREAMED PAGE REPLACES ITS loading.tsx (CD-PERF-01, 2026-10-21). The route's loading skeleton
+   and the page streamed after it both draw the route header in the server's HTML, so a slot's
+   ghost layer briefly holds two clones of the same kind side by side: the visible one slid 107px
+   left when the second arrived (CLS 0.0033 on /data/<table> at 768px). Only the newest clone of
+   a kind is drawn; the older one is gone when its segment is swept. */
+.page-header-ghost > [data-page-header-ghost-portal="fallback"]:has(~ [data-page-header-ghost-portal="fallback"]),
+.page-header-ghost > [data-page-header-ghost-portal="page"]:has(~ [data-page-header-ghost-portal="page"]) {
+  display: none;
+}
 
 /* Injection wrapper — spans the full center zone width so variant roots
    can use flex left/center/right layout inside it. Height matches the
@@ -1872,6 +1881,14 @@ body[style*="pointer-events: none"] {
 @media (max-width: 767px) {
   #shell-header-right > [data-page-header-settling] {
     display: none;
+  }
+}
+/* The server cannot know it is a phone, so it reserves a wide screen's action cluster
+   (RouteHeader FIRST_VISIT_CLUSTER_PX); on a phone that room goes with the actions it was for. */
+@media (max-width: 767px) {
+  .page-header-ghost [data-route-header-right],
+  [data-page-header-settling] [data-route-header-right] {
+    min-width: 0 !important;
   }
 }
 @media (max-width: 767px) {

@@ -1292,7 +1292,7 @@ function ResultLine({
   const busy = phase === "searching" || phase === "working" || phase === "uploading";
   const u = unit ?? "results";
   const count = total !== null && hits !== null && total > hits ? total : hits;
-  const seconds = elapsedMs !== null ? ` (${(elapsedMs / 1000).toFixed(2)} seconds)` : "";
+  const seconds = elapsedMs !== null ? ` (${formatDurationMs(elapsedMs, { style: "compact", precision: "fine" })})` : "";
   return (
     <div className="flex h-8 min-w-0 items-center gap-2 text-sm">
       {label && <span className="truncate font-medium text-foreground">{label}</span>}
