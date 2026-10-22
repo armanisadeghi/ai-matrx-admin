@@ -2439,36 +2439,60 @@ def guard_twins():
 # `pnpm install --frozen-lockfile --lockfile-only --ignore-scripts`, ~1 s). A disagreement this
 # push would ADD is not pushed; one origin/main already has is announced, never a stop (refusing
 # would not remove it, and release.sh's own frozen guard keeps it out of a release).
-# THE LOCKFILE ADOPTION GUARD (2026-10-21). Commit 689c27aa4d adopted @ai-matrx/chat 0.8.307 by editing
+# THE LOCKFILE ADOPTION REPORT (2026-10-21). Commit 689c27aa4d adopted @ai-matrx/chat 0.8.307 by editing
 # pnpm-lock.yaml alone. Nothing was installed, so every installed-package check passed, and chat 0.8.307
 # had dropped `setDebrief`: v0.4.3429 and its rebuild failed on Vercel. Right before the push, when this
 # push changes pnpm-lock.yaml, the code at HEAD is judged against the versions HEAD's lockfile names
-# (check-matrx-imports.mjs --lock). A push that would ship a build that cannot compile stops, naming the
-# missing export. A check that cannot run (npm unreachable) is announced, never a silent pass.
-def guard_lock_imports():
+# (check-matrx-imports.mjs --lock). NOTHING BLOCKS A RELEASE (Arman, 2026-10-21): a finding never stops the
+# push or the adoption. It is printed loudly with the missing export named, and mailed urgently to the
+# lockfile commit's author session (its Agent-Session trailer) and to the ship-all lanes.
+LOCK_REPORT_FROM = "sync-main"
+LOCK_REPORT_TO = ("6bda811a-6b18-5ef3-a1c1-67f81ae6b2c4", "50b803bb-a5df-5ae9-a769-16f0a253bda6")
+
+
+def _lock_report_mail(message, author):
+    cmd = os.environ.get("MATRX_SYNC_ALERT_CMD") or os.path.join(os.path.dirname(os.getcwd()), "scripts", "board.py")
+    if not os.path.exists(cmd):
+        say("lockfile adoption report: no agent-mail tool at %s; the report above is the only announcement." % cmd)
+        return []
+    sent = []
+    for to in ([author] if author else []) + list(LOCK_REPORT_TO):
+        r = subprocess.run([sys.executable, cmd, "post", to, message, "--urgent", "--from", LOCK_REPORT_FROM],
+                           capture_output=True, text=True)
+        if r.returncode == 0:
+            sent.append(to)
+        else:
+            say("lockfile adoption report: mail to %s failed: %s" % (to[:8], (r.stderr or r.stdout).strip()[:200]))
+    return sent
+
+
+def guard_lock_imports(mail=None):
+    """Report-only. Returns the report text when the adoption breaks the build, else None."""
     checker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "check-matrx-imports.mjs")
     if not os.path.isfile(checker) or not os.path.isfile("pnpm-lock.yaml"):
-        return
+        return None
     rc, _, _ = git("diff", "--quiet", "%s/%s" % (REMOTE, BRANCH), "HEAD", "--", "pnpm-lock.yaml", check=False)
     if rc == 0:
-        return   # the lockfile this push carries is the one origin already has
+        return None   # the lockfile this push carries is the one origin already has
     try:
         r = subprocess.run(["node", checker, "--lock", "--ref", "HEAD"], capture_output=True, text=True, timeout=900)
+        code, out = r.returncode, (r.stdout + r.stderr).strip()
     except (OSError, subprocess.TimeoutExpired) as e:
-        die("NOT PUSHED — the lockfile adoption check could not run (%s). A lockfile-only adoption can break the "
-            "build and nothing else would notice; run `node scripts/check-matrx-imports.mjs --lock --ref HEAD`." % e)
-    out = (r.stdout + r.stderr).strip()
-    if r.returncode == 0:
+        code, out = 2, str(e)
+    _, head, _ = git("rev-parse", "HEAD")
+    if code == 0:
         say("lockfile adoption check: every @ai-matrx import resolves against the versions pnpm-lock.yaml names.")
-        _, head, _ = git("rev-parse", "HEAD")
-        os.environ["MATRX_LOCK_IMPORTS_CHECKED"] = head.strip()   # the pre-push hook need not judge this commit again
-        return
+        os.environ["MATRX_LOCK_IMPORTS_CHECKED"] = head.strip()
+        return None
     tail = "\n".join("  " + l for l in out.splitlines()[-25:])
-    if r.returncode == 1:
-        die("NOT PUSHED — pnpm-lock.yaml adopts @ai-matrx versions that no longer ship something this repo "
-            "imports, so the release build would fail:\n%s\nFix the importer (or restore the export in the package), "
-            "or put the lockfile back; everything is committed locally and nothing is lost." % tail)
-    die("NOT PUSHED — the lockfile adoption check could not run (exit %d):\n%s" % (r.returncode, tail))
+    what = ("adopts @ai-matrx versions that no longer ship something this repo imports, so the release build WILL fail"
+            if code == 1 else "could not be checked (exit %d)" % code)
+    text = "LOCKFILE ADOPTION REPORT — pnpm-lock.yaml %s:\n%s" % (what, tail)
+    say("!" * 20 + " " + text + "\n  (reported only: the push goes ahead. Fix the importer, or restore the export in the package.)")
+    _, body, _ = git("log", "-1", "--format=%B", "--", "pnpm-lock.yaml", check=False)
+    m = re.search(r"Agent-Session: \w+ ([0-9a-f-]{36})", body or "")
+    (mail or _lock_report_mail)("sync-main: " + text[:1800], m.group(1) if m else None)
+    return text
 
 
 def guard_frozen_lockfile():

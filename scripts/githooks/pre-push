@@ -6,7 +6,8 @@
 # the lockfile alone; nothing was installed, so every installed-package check passed, and 0.8.307 had dropped
 # `setDebrief`: two Vercel releases failed. The commit hook cannot see a commit made with --no-verify or by a
 # sweep; this one runs on what is about to LEAVE the machine. It reads the pushed commit, never the working tree.
-# Remedy: fix the importer (or restore the export in the package), or put the lockfile back. Never pin.
+# REPORT-ONLY (Arman, 2026-10-21: nothing blocks a release): it prints the missing export loudly and never refuses.
+# Remedy: fix the importer (or restore the export in the package). Never pin.
 set -u
 HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$HOOK_DIR/../.." && pwd)
@@ -60,6 +61,8 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --ref "$local_sha")
     RC=$?
     if [ "$RC" -ne 0 ]; then
-        refuse "lockfile adoption" "pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC). Fix the importer (or restore the export in the package), or put the lockfile back. Never pin." "$local_sha"
+        echo "LOCKFILE ADOPTION WARNING (push goes ahead): pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC)." >&2
+        echo "  Fix the importer, or restore the export in the package. Never pin." >&2
     fi
 done <"$REFS"
+exit 0
