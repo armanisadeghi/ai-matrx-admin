@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Building2, User } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";

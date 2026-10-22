@@ -21,7 +21,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import type { ReactNode } from "react";
 import { Shapes } from "lucide-react";
 import { tryDecodeDirective } from "@ai-matrx/content-ir/directives";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { detailPageHref } from "@/features/window-panels/detail/DetailHost";
 import MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";

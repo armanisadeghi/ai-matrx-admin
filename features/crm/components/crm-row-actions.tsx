@@ -37,7 +37,7 @@ import {
 import type { ApplicationScope } from "@ai-matrx/chat/agents/types/scope.types";
 import { toast } from "@/lib/toast";
 import { itemMenuConfigToExtraSections } from "@ai-matrx/context-menu/engine";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import {
   resolveItemMenuConfig,
   type ItemMenuConfigInput,

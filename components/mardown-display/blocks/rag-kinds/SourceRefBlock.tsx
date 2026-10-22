@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 import { useOpenCitation } from "@/features/rag/components/source-inspector/useOpenCitation";
 import { readSearchKindValue, text } from "../search-kinds/search-kind-data";
 import { SearchFavicon } from "../search-kinds/search-kind-shared";
-import { CitationChip } from "@/components/official/citation-chip/CitationChip";
+import { CitationChip, Button } from "@ai-matrx/design-system/controls";
 import {
   AuthorityBadge,
   InForceLine,
@@ -50,7 +50,6 @@ import {
   sourceRefHref,
   sourceRefLabel,
 } from "./rag-kind-shared";
-import { Button } from "@ai-matrx/design-system/controls";
 
 export type SourceRefVariant = "card" | "inline";
 

@@ -25,7 +25,7 @@ import {
   type SpendFlagHit,
 } from "@/components/cost/SpendFlagStrip";
 import { AGENT_ICON, INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMore";
 import {
   agentHref,

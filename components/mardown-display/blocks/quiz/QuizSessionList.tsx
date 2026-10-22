@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Trash2, Play, Clock, Trophy, CheckCircle, AlertCircle } from 'lucide-react';
 import { getUserQuizSessions, deleteQuizSession, type QuizSession } from '@/actions/quiz.actions';
 import { confirm as confirmDialog } from '@/components/dialogs/confirm/ConfirmDialogHost';
-import { EntityRef } from '@/components/official/entity-ref/EntityRef';
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { toast } from '@/lib/toast';
 import { formatTime } from './quiz-utils';
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

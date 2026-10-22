@@ -19,8 +19,8 @@
 // /organizations/[orgId]); nothing is hand-written here.
 
 import { useMemo, useState } from "react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";

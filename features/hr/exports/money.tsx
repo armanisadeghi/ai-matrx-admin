@@ -35,7 +35,7 @@
  * this module collapses into `MoneyAmount` and this comment is deleted rather than reconciled.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 

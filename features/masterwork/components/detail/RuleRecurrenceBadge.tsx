@@ -20,7 +20,7 @@
 // THE NO-DEAD-ENDS RULE: the count is the true number of DISTINCT pieces, and
 // below the threshold this renders nothing rather than a badge that says "1".
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { Repeat } from "lucide-react";
 import { knobInt } from "@/lib/knobs/featureKnobs";

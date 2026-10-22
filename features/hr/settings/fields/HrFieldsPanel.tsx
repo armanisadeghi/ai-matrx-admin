@@ -28,7 +28,7 @@ import { RecordsProvider, useEntityFieldMutation, useRecordsClient } from "@ai-m
 import type { Field, RecordsError } from "@ai-matrx/records";
 import { FieldEditor, RefusalLine } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { FIELD_SENSITIVITY_LABEL, fieldTypeLabel } from "@ai-matrx/records-ui/helpers";
-import { ConfirmDelete } from "@ai-matrx/design-system/controls";
+import { ConfirmDelete, InfoHint } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
@@ -43,7 +43,6 @@ import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/reco
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { useHrContext } from "../../shared/useHrContext";
 import { fetchHrCustomFieldRegistry } from "../service";
-import { InfoHint } from "@/components/official/InfoHint";
 import { HrSettingsShell } from "../HrSettingsShell";
 import type { HrCustomFieldTarget } from "../types";
 

@@ -27,7 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ai-matrx/design-system";
-import { SearchInput } from "@/components/official/SearchInput";
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { CopyTapButton, FilterTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { SuspenseLoader } from "@ai-matrx/design-system";

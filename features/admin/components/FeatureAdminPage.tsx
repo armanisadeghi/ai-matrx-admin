@@ -16,7 +16,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import AppLink from "@/components/navigation/AppLink";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";

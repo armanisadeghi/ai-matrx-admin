@@ -1,8 +1,7 @@
 "use client";
 
 import { Pencil } from "lucide-react";
-import { FieldHelp } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
+import { FieldHelp, InfoHint } from "@ai-matrx/design-system/controls";
 
 // features/mandates/workspace/Section.tsx
 //

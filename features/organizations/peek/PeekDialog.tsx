@@ -31,7 +31,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { usePeekHrefOverride } from "./peekHrefOverride";
 import { PEEK_CONTENT_PROPS, useTransientPeek } from "./useTransientPeek";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";

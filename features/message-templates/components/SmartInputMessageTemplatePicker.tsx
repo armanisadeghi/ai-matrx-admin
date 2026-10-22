@@ -13,7 +13,7 @@ import {
   PickerEmpty,
   PickerSearchField,
 } from "@/features/resource-manager/resource-picker/ResourcePickerSubViewHeader";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { fetchMessageTemplates } from "@/features/message-templates/services/message-templates-service";
 import type { MessageTemplateDB } from "@/features/message-templates/types/message-templates-db";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";

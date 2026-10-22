@@ -96,6 +96,7 @@ export function designSystemMock() {
  */
 export function entityRefMock() {
   return {
+    ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
     EntityRef: ({ token, id }: { token: string; id: string }) =>
       React.createElement("span", { "data-entity-ref": token }, id),
   };

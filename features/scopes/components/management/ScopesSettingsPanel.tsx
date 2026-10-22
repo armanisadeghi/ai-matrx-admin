@@ -13,7 +13,7 @@ import { ExternalLink, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useScopeTree } from "@/features/scopes/hooks/useScopeTree";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";

@@ -48,7 +48,7 @@ import type {
   DetailSeed,
 } from "@ai-matrx/detail";
 import { formatWhen } from "@ai-matrx/detail";
-import { hasAnyDoor } from "@/components/official/entity-ref/doors";
+import { hasAnyDoor } from "@ai-matrx/records-ui/entity-doors";
 import { supabase } from "@/utils/supabase/client";
 import {
   PUBLISHED_TO_WEB_LABEL,

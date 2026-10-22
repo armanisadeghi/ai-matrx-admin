@@ -21,6 +21,7 @@ jest.mock("@ai-matrx/design-system/controls", () => {
   const actual = jest.requireActual("@ai-matrx/design-system/controls");
   return {
     ...actual,
+    InfoHint: ({ text }: { text: string }) => <span data-testid="hint">{text}</span>,
     // A native select stands in for the menu so a test can choose an option.
     Select: ({ value, options, onValueChange, "aria-label": label, disabled }: {
       value: string;
@@ -49,9 +50,6 @@ jest.mock("@ai-matrx/design-system", () => {
     DialogDescription: Pass,
   };
 });
-jest.mock("@/components/official/InfoHint", () => ({
-  InfoHint: ({ text }: { text: string }) => <span data-testid="hint">{text}</span>,
-}));
 jest.mock("@/features/marketing/data/hooks", () => ({
   useUpdatePageDesiredValues: () => ({ mutateAsync, isPending: false }),
 }));

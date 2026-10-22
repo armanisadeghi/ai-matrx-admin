@@ -32,6 +32,8 @@ database here.
 | `editor/ShellLayoutEditor.tsx` | THE editor (Sidebar / Header / Dock tabs, checklist + arrange tree, live preview, Save, Reset, History "Set active", the organization's "Members may customize" switch). |
 | `editor/ArrangeTree.tsx`, `CatalogChecklist.tsx`, `HeaderPane.tsx`, `AddOwnRow.tsx`, `IconPicker.tsx`, `rowDisplay.ts` | Its parts (dnd-kit + DragCursorMonitor; row ⋯ menu = keyboard/touch twin of every drag). |
 | `editor/ShellLayoutMount.tsx` | Records provider for the editors (active organization, or the organization being edited). |
+| `offers.ts` | THE What's new offers (pure): `layoutOffers(held, viewer)` → `news` + `orgUpdate` (with `additions`, what the organization's Sidebar has that hers lacks); verbs `markOrgReviewed`, `addOrgRow`, `takeOrganizationSidebar`. Read through `selectShellLayoutOffers` / `useShellLayoutOffers`. |
+| `editor/WhatsNewOffers.tsx` | The ONE offers component, `placement="sidebar"` (WhatsNewSlot) or `"band"` (top of `/launchpad` and every `/launchpad/<key>`), plus the organization-menu Review dialog. |
 | `editor/AddToMyMenu.tsx` | Add to my menu: `AddToMyMenuTile` (the chat `AddToMyMenu` host slot in the Intelligence dropdown) and `AddToMyMenuButton` (beside every `PinButton`). |
 | `editor/OrgLayoutSection.tsx` | Organization settings › Layout (owner/admin). |
 | `useShellLayoutStore.ts` | THE door for the editors (lane C): `person`, `organization`, `canEditOrganization`, `save(target, body, note)`, `clear(target)`, `versions(target)`, `preview(target, v)`, `restore(target, v, seenVersion)`. Under a records provider. |
@@ -53,10 +55,11 @@ One flat entry per menu node (primary, Settings, admin rows only for admins) plu
 Tools-grid tile (`tile.*`, a window launcher, hidden by default; its icon is named back from the
 tile's Lucide component, else the window icon). `defaultVisible` is true exactly for the built-in
 Sidebar. New destinations a customized layout should hear about: bump `SHELL_CATALOG_VERSION` and
-list their ids in `CATALOG_ADDED_IN` at the new number (now version 2: `account.authenticator`, `data.library`,
-`web.search-tools`). Enforced: `features/shell/__tests__/nav-ids.test.ts` fails on any menu or tile id that is in
-neither the frozen version-1 list (`nav-ids.catalog-v1.json`, never edited) nor `CATALOG_ADDED_IN`, and on a
-version left unbumped. What's new never offers what a region the body does not carry already shows by default.
+list their ids in `CATALOG_ADDED_IN` at the new number (now version 3: version 2 added `account.authenticator`,
+`data.library`, `web.search-tools`; version 3 the Memory menu and five marketing rows). Enforced:
+`features/shell/__tests__/nav-ids.test.ts` fails on any menu or tile id that is in neither the frozen version-1
+list (`nav-ids.catalog-v1.json`, never edited) nor `CATALOG_ADDED_IN`, and on a version left unbumped; its
+failure prints the exact rows to paste. It runs in CI (`hr-guards` job) and in `scripts/run-release-gates.sh`. What's new never offers what a region the body does not carry already shows by default.
 
 ## Reading a stored body
 
@@ -143,8 +146,9 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
   an accent the shell's selection tokens (`--shell-pill-*`, `--shell-nav-selected-text`, styles/shell.css) and the
   glass tint (design-system `accent.css`) derive from `--primary`; with none they keep the literal built-in blue.
 - **Reset:** the section (region back to default), "Use organization's layout" (clear person), "Reset to standard"
-  (person with an org layout saves an EMPTY body — `standardPersonBody()`, every region the growing default — so it
-  wins without freezing her out of later additions; else clear). Org reset and the members switch confirm with a toast.
+  (saves an EMPTY body as a new version — `standardPersonBody()` via `resetToStandardPlan`, every region the growing
+  default — so History keeps every earlier version; a person with nothing stored just closes). Org reset and the
+  members switch confirm with a toast.
 - **Add to my menu** saves the person's layout at once. The page's record comes from the current-record primitive
   (`features/shell/current-record/currentRecord.ts`: `EntityModeHeader` / `RecordPageHeader` declare the name, and
   `token`/`id` when the caller passes `record.token`/`record.id`; `<DeclareCurrentRecord token id />` for routes like
@@ -152,15 +156,32 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 - **Lock:** `shell.members_may_customize` off → `personAllowed: false` (amendment in REGISTER.md); the server pick
   reads the knob only when a person layout AND the predicted organization's layout both exist; `ShellLayoutSync`
   follows it on the client. A locked member (her organization HAS a layout) sees one line saying the organization's
-  layout is in use; Save is off with the reason, no live preview, no "Reset to standard".
-- **What's new** (`WhatsNewSlot`, top of the Sidebar, only for a person with her own custom sidebar): "New: X" — Add
-  (into the sidebar; the body moves to today's catalog version once nothing newer is left) / Dismiss
-  (`dismissedNew`); "Your organization updated its menu" — Review / Dismiss, keyed in localStorage by the
-  organization layout's version (first sight records it silently).
+  layout is in use; no Save button, no live preview, no "Reset to standard".
+- **What's new** — ONE list (`offers.ts` → `useShellLayoutOffers`), ONE component (`WhatsNewOffers`), two places: the
+  top of the Sidebar (`WhatsNewSlot`) and a quiet band at the top of every launchpad. Only for a person with her own
+  layout (never the lock, Standard view, a live preview or guests). Server-seeded, so the first frame already has it;
+  nothing renders (no reserved space) when nothing is new. "New: X" (her own Sidebar only) — Add (into the sidebar;
+  the body moves to today's catalog version once nothing newer is left) / Dismiss (`dismissedNew`). "Your organization
+  updated its menu" — offered while the active organization's layout version is above `reviewedOrgLayouts[org]` in
+  HER body (no entry: when the organization saved after her). Dismiss records the version; Review opens a dialog of
+  what the organization's Sidebar has that hers lacks (Add per row, bottom of her Sidebar), "Use the organization's
+  menu" (her Sidebar becomes its; the rest stays hers) and Done; closing records the version. Every write goes
+  through the save lane as a change of the layout as it then stands. Guards: `WhatsNewSlot.test.tsx`,
+  `__tests__/whats-new-band.test.ts`.
 - **Landing:** every sign-in path ends in `signInDestination` (utils/auth/FEATURE.md); `/dashboard` counts as none.
 
 ## Change log
 
+- `2026-10-22` — claude (lane AA): What's new is one list and one component in two places (Sidebar slot + launchpad
+  band); "Your organization updated its menu" is kept in her body (`reviewedOrgLayouts`, contract amendment), offered
+  from the server seed (no localStorage, no first-sight silence), and Review shows the organization's rows hers
+  lacks with Add / "Use the organization's menu". Guards `WhatsNewSlot.test.tsx`, `whats-new-band.test.ts`.
+
+- `2026-10-22` — claude (lane Y, audit round 2): catalog version 3 (Memory menu + marketing rows); the nav-id guard
+  prints the rows to add and runs in CI (`hr-guards`) and the release gates; What's new offers a new menu as its
+  top rows (entries under an offered entry ride in with it); the editor opens one window per layout edited
+  (`person` / `organization-<id>`, `shellLayoutEditorInstanceId`) so the organization's editor never reuses the
+  person's. Guards `editor-window-per-target`, `catalog-additions`.
 - `2026-10-22` — claude (lane S, audit fixes): History reads in the row's organization (+ empty/error states, launchpad
   history too); a customized Dock is shown on phones; catalog version 2 + the CATALOG_ADDED_IN guard; Reset to
   standard stores an empty body; locked members get no Save; empty groups never navigate; archived orgs get no editor;

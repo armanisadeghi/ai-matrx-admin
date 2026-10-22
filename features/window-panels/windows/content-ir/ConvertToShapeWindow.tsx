@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import {
   Braces,

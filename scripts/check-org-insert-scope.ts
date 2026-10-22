@@ -369,10 +369,27 @@ interface FileCtx {
   /** Repo-relative path of the file being scanned — the anchor every relative import resolves against. */
   file: string;
   vars: Map<string, ts.VariableDeclaration>;
+  /**
+   * EVERY declaration of a name in the file, in source order. `vars` keeps only
+   * the first, and one file routinely reuses `db` for two schemas
+   * (`authenticatedWebDb` then `seoDb` in marketing/seo/run-console/data.ts),
+   * so answering from the first declaration hands a `seo` write the `web`
+   * schema — a wrong table, which can read as out-of-scope and hide a real
+   * violation. A name whose declarations disagree stays UNRESOLVED.
+   */
+  varsAll: Map<string, ts.VariableDeclaration[]>;
   fns: Map<string, ts.Node>;
   imported: Set<string>;
   /** local name -> { module specifier, name inside that module } */
   importSources: Map<string, { module: string; exported: string }>;
+  /**
+   * A wrapper's parameter name -> the string literal the CALL SITE passed, set
+   * only while following that wrapper's body. `const from = (t) =>
+   * client.schema("custom").from(t)` takes its table from a parameter, so
+   * without the binding the body reads as `.from(<unresolved-arg>)` and a site
+   * that names its table perfectly well is reported unmeasured.
+   */
+  params?: Map<string, string>;
 }
 
 /**
@@ -420,6 +437,7 @@ function unwrap(node: ts.Expression): ts.Expression {
 
 function buildFileCtx(sf: ts.SourceFile, file: string): FileCtx {
   const vars = new Map<string, ts.VariableDeclaration>();
+  const varsAll = new Map<string, ts.VariableDeclaration[]>();
   const fns = new Map<string, ts.Node>();
   const imported = new Set<string>();
   const importSources = new Map<string, { module: string; exported: string }>();
@@ -434,6 +452,9 @@ function buildFileCtx(sf: ts.SourceFile, file: string): FileCtx {
         fns.set(node.name.text, init);
       }
       if (!vars.has(node.name.text)) vars.set(node.name.text, node);
+      const all = varsAll.get(node.name.text);
+      if (all) all.push(node);
+      else varsAll.set(node.name.text, [node]);
     }
     if (ts.isFunctionDeclaration(node) && node.name) {
       fns.set(node.name.text, node);
@@ -464,7 +485,7 @@ function buildFileCtx(sf: ts.SourceFile, file: string): FileCtx {
     ts.forEachChild(node, visit);
   };
   visit(sf);
-  return { sf, file, vars, fns, imported, importSources };
+  return { sf, file, vars, varsAll, fns, imported, importSources };
 }
 
 /* ------------------------------------------------------------------ *
@@ -705,7 +726,14 @@ function resolveTable(
     if (resolved.includes(".")) return resolved;
     // A BARE table name: its schema is whatever the chain's ROOT applied.
     if (rootIdentifier) {
-      const schema = schemaOfRoot(rootIdentifier, ctx);
+      let schema = schemaOfRoot(rootIdentifier, ctx);
+      // A root that is a LOCAL variable (`const db = await seoDb()`) is not a
+      // top-level declaration and not an import, so `schemaOfName` cannot see
+      // it. Left there the site falls through to `public.<table>` — the exact
+      // re-homing this guard's header says let `interview.session` pass.
+      if (schema === undefined && !rootCall) {
+        schema = schemaOfLocalVar(rootIdentifier, ctx);
+      }
       if (schema) return `${schema}.${resolved}`;
       if (schema === undefined && rootCall) {
         // A wrapper that could not be followed. Re-homing it into `public.`
@@ -724,7 +752,65 @@ function resolveTable(
     ? ctx.fns.get(rootIdentifier)
     : ctx.vars.get(rootIdentifier)?.initializer;
   if (!source) return "";
-  return findFirstFromChain(source, ctx, depth + 1);
+  return findFirstFromChain(source, withParamBindings(ctx, source, rootCall), depth + 1);
+}
+
+/**
+ * The ctx to read a wrapper's body with: its parameters bound to the literals
+ * the call site passed. Only string literals bind — anything else is left
+ * unbound so the body still reports UNRESOLVED rather than guessing a table.
+ */
+function withParamBindings(
+  ctx: FileCtx,
+  source: ts.Node,
+  call: ts.CallExpression | undefined,
+): FileCtx {
+  if (!call || !call.arguments.length) return ctx;
+  const params = (source as ts.SignatureDeclarationBase).parameters;
+  if (!params?.length) return ctx;
+  const bound = new Map(ctx.params ?? []);
+  params.forEach((param, i) => {
+    const arg = call.arguments[i];
+    if (!arg || !ts.isIdentifier(param.name)) return;
+    const literal = literalString(arg, ctx);
+    if (literal) bound.set(param.name.text, literal);
+  });
+  return bound.size ? { ...ctx, params: bound } : ctx;
+}
+
+/**
+ * The schema a local variable's initializer applies, following one call out
+ * (`const db = await seoDb()` -> `seoDb()` -> `supabase.schema("seo")`).
+ * `undefined` when it cannot be settled — never a guess.
+ */
+function schemaOfLocalVar(name: string, ctx: FileCtx): string | "" | undefined {
+  const decls = ctx.varsAll.get(name) ?? [];
+  if (!decls.length) return undefined;
+  const answers = new Set<string | "">();
+  for (const decl of decls) {
+    const answer = schemaOfInitializer(decl.initializer, ctx);
+    if (answer === undefined) return undefined; // one unsettled declaration settles nothing
+    answers.add(answer);
+  }
+  // Declarations that disagree cannot answer for a given call site: resolving
+  // from either one names a table the write may not touch.
+  return answers.size === 1 ? [...answers][0] : undefined;
+}
+
+/** The schema one initializer applies, following one call out. */
+function schemaOfInitializer(
+  init: ts.Expression | undefined,
+  ctx: FileCtx,
+): string | "" | undefined {
+  if (!init) return undefined;
+  const schemas = schemasInNode(init);
+  if (schemas.size === 1) return [...schemas][0];
+  if (schemas.size > 1) return undefined; // several schemas in one initializer
+  const call = unwrap(init);
+  if (ts.isCallExpression(call) && ts.isIdentifier(call.expression)) {
+    return schemaOfName(call.expression.text, ctx.sf, ctx.file, 1);
+  }
+  return undefined;
 }
 
 /** First `.from(...)` chain inside a helper body / initializer. */
@@ -755,6 +841,8 @@ function literalString(arg: ts.Expression, ctx: FileCtx): string {
     return node.text;
   }
   if (ts.isIdentifier(node)) {
+    const bound = ctx.params?.get(node.text);
+    if (bound) return bound;
     const decl = ctx.vars.get(node.text);
     const init = decl?.initializer ? unwrap(decl.initializer) : undefined;
     if (init && (ts.isStringLiteral(init) || ts.isNoSubstitutionTemplateLiteral(init))) {

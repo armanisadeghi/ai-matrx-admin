@@ -32,7 +32,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
 export function SelfServiceToggle({

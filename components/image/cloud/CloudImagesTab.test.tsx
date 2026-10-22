@@ -28,7 +28,8 @@ const mockFiles = {
 };
 const mockDispatch = jest.fn();
 
-jest.mock("@/components/official/SearchInput", () => ({
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"),
   SearchInput: ({
     value,
     placeholder,

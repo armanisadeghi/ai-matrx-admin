@@ -25,7 +25,7 @@ import type { HeaderButton, HeaderControlId, ShellNode } from "./contract";
  * Enforced: features/shell/__tests__/nav-ids.test.ts fails on a menu or tile id that is neither in the
  * version-1 list (`nav-ids.catalog-v1.json`) nor in `CATALOG_ADDED_IN`, and on a version left unbumped.
  */
-export const SHELL_CATALOG_VERSION = 2;
+export const SHELL_CATALOG_VERSION = 3;
 
 /**
  * The catalog version each destination arrived in, for ids added after version 1. Absent = 1
@@ -37,6 +37,37 @@ export const CATALOG_ADDED_IN: Readonly<Record<string, number>> = {
   "account.authenticator": 2,
   "data.library": 2,
   "web.search-tools": 2,
+  // 2026-10-22: the Memory menu (079139c32) and the marketing additions shipped without rows (audit round 2 #4).
+  "memory.ask-search": 3,
+  "memory.topics": 3,
+  "memory.topics-home": 3,
+  "memory.research-topics": 3,
+  "memory.topics-data-stores": 3,
+  "memory.everything": 3,
+  "memory.everything-home": 3,
+  "memory.my-memory": 3,
+  "memory.agent-memory": 3,
+  "memory.concepts": 3,
+  "memory.concepts-home": 3,
+  "memory.concepts-graph": 3,
+  "memory.research": 3,
+  "memory.capture": 3,
+  "memory.forget": 3,
+  "memory.advanced": 3,
+  "memory.advanced-search-lab": 3,
+  "memory.observational": 3,
+  "memory.lab": 3,
+  "memory.embeddings": 3,
+  "memory.knowledge-overview": 3,
+  "memory.knowledge-admin": 3,
+  "memory.dictionary-admin": 3,
+  "memory.old-pages": 3,
+  "marketing.brands.brands": 3,
+  "marketing.reports.videos": 3,
+  "marketing.reports.monitoring": 3,
+  "marketing.reports.calendar": 3,
+  "marketing.tools.zip-code-heatmap": 3,
+  "marketing.publish.podcast": 3,
 };
 
 /** `destination` opens a page; `group` holds a menu (its href is its landing); `action` creates or opens a window. */

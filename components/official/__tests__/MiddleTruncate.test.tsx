@@ -7,7 +7,7 @@
  */
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MiddleTruncate, splitForMiddleTruncate } from "../MiddleTruncate";
+import { MiddleTruncate, splitForMiddleTruncate } from "@ai-matrx/design-system/controls";
 
 describe("MiddleTruncate", () => {
   it("tail: siblings keep their distinguishing end", () => {

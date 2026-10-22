@@ -20,7 +20,7 @@
  * server-only and has no reachable item; this page offers no control for it (FEATURE.md).
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -56,7 +56,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";

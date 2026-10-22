@@ -22,7 +22,7 @@ jest.mock("@ai-matrx/design-system", () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("./runs-mocks").designSystemMock(),
 );
-jest.mock("@/components/official/entity-ref/EntityRef", () =>
+jest.mock("@ai-matrx/records-ui/entity-ref", () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("./runs-mocks").entityRefMock(),
 );

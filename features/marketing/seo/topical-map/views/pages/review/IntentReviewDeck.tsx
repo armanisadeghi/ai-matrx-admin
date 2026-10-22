@@ -29,7 +29,7 @@ import {
   type ReviewItem,
   type ReviewMode,
 } from "@/components/official/review-deck/ReviewDeck";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 

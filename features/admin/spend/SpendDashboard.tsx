@@ -24,7 +24,7 @@
 
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronRight, Gauge, Package } from "lucide-react";
 import { RefreshCwTapButton } from "@ai-matrx/design-system/tap-target/buttons";

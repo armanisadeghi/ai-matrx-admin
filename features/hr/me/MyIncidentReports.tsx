@@ -44,7 +44,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MessageSquareWarning, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { fetchHrMyIncidentReports } from "@/features/hr/service";
 import { useHrContext } from "@/features/hr/shared/useHrContext";

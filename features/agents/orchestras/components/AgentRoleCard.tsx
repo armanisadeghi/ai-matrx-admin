@@ -18,7 +18,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { accentClasses } from "./accents";
 import { Button } from "@ai-matrx/design-system/controls";
 import { AgentPeekButton } from "./AgentPeekButton";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import type { OrchestraAccent } from "../constants";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
 

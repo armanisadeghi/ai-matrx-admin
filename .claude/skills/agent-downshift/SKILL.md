@@ -42,7 +42,9 @@ Everything here runs through the AI Dream MCP or the server API. Nothing needs t
 | List / read an agent's test cases | `agent_tests action=list_cases agent_id=…` · `action=get_case case_id=…` |
 | Make a case from a real conversation | `agent_tests action=save_case conversation_id=… label=…` (its agent, variables, input, final answer) |
 | Set a case's approved answer and judge facts | `agent_tests action=update_case case_id=… reference_output=… judge_facts=[{id, statement}]` |
-| Run cases on several models side by side | `agent_tests action=launch case_ids=[…] setups=[{label, agent_id, model_id, settings?}] repeats=…` |
+| Make a case from a provision capture (large inputs never pass through your call) | `POST /provision-window/<point>/capture` → `agent_tests action=save_case snapshot_id=… agent_id=… label=…` |
+| Run cases on several models side by side | `agent_tests action=launch case_ids=[…] setups=[{label, agent_id, model_id, settings?}] repeats=… judge_model=…` |
+| Judge stored answers again against changed facts (no agent call) | `agent_tests action=recheck run_id=… judge_model=…` |
 | Progress, then every answer, cost and verdict | `agent_tests action=status run_id=…` · `action=results run_id=… include_answers=true` |
 | Copy an agent to tune | `agent_author action=create` (or `create_structured`) from the original's `get` |
 | Tune one sentence | `agent_author action=update updates.message_edits=[{old_str, new_str}]` (one-line reply) |
@@ -77,6 +79,12 @@ this approved answer" fact: the judge compares whole answers and comes back unde
 big model alone). A fact the big model fails too is a bad fact: it tests one answer's wording, not what
 matters. Rewrite it before any small-model run counts against it. Facts about the input ("names nothing the
 person did not write") need the judge to see the input; it does (both judges get the case's variables).
+**One judge for everything you compare.** Name the same `judge_model` on every launch and recheck in the
+comparison, from a model family that is not under test. Left to itself the judge is picked per answer from a
+family other than the answering model's, so a Claude-vs-Gemini comparison is graded by two different judges
+and measures the judges (condenser run, 2026-10-22: Opus was graded by Gemini Flash and passed 14/16; Flash
+was graded by Claude Haiku, which fails a fact for one missing sub-detail). Calibrate with `recheck` on the big
+model's stored answers: only the judges are paid.
 *Done when:* `update_case` returned `ok` for every case with 2–5 facts, and the big model passes them.
 
 ### 4. Side by side on the hard cases
@@ -164,4 +172,6 @@ Never switch the live agent's model yourself (`test-model-selection` rule 3); th
 | Reading your own printout wrong | A size column was read as a count (3 characters for "226") and a working count was reported broken. Print the value, not its metadata. |
 | Raising the thinking effort to paper over vague instructions | Test it as a separate setup, after the instructions are fixed. |
 | Pasting the failing case's words into the rule | That only teaches the test. Use a neutral example (step 5). |
+| Two runs compared, each graded by its own judge | Name one `judge_model` from a third family on every run (step 3). Check `platform.judge_verdict.model` per run before you trust a gap. |
+| The provider limits a busy agent ("many paid calls in the last hour") | A per-agent volume gate, working as designed; the tuned copy is a different agent. Rerun the refused cases after the hour; never raise the limit to finish a test. |
 | A model returns structurally empty answers on every case | A platform defect, not an instruction problem. In the reference run Sonnet 5.5 wrote `evidence: []` and gave up because the stored schema listed `evidence` before the edit it supports (key order is generation order); the platform now keeps the authored order. File it, exclude the model until fixed. |

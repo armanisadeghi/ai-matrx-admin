@@ -21,7 +21,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 

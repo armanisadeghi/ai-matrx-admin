@@ -20,7 +20,7 @@ import {
 } from "@ai-matrx/design-system/data-table";
 import type { MatrxDataTableSelectionConfig } from "@ai-matrx/design-system/data-table/types";
 import { Badge } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { formatAbsoluteDate, toEpochMs } from "@/utils/datetime";
 import { cn } from "@/lib/utils";
 import type { FileMenuPayload } from "../types";

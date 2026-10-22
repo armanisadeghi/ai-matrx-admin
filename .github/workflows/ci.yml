@@ -841,6 +841,14 @@ jobs:
         # jobs are scoped to features/content-ir and features/workflow-runtime.
         run: pnpm exec jest features/hr/__tests__/nav-destinations-exist.test.ts --no-coverage
 
+      - name: Shell nav ids are permanent and new destinations reach What's new
+        if: always() && steps.hr_nav.outcome != 'cancelled'
+        # features/shell/__tests__/nav-ids.test.ts. Stored custom layouts point at menu
+        # nodes by id; a node added without a CATALOG_ADDED_IN row (shell-layout/catalog.ts)
+        # never reaches anyone whose sidebar is customized. It ran nowhere and went red on
+        # main within hours of shipping (2026-10-22). Piggybacks this nav job: no new runner.
+        run: pnpm exec jest features/shell/__tests__/nav-ids.test.ts --no-coverage
+
       - name: No HR URL is hand-assembled in navigation position
         if: always() && steps.hr_nav.outcome != 'cancelled'
         # features/hr/__tests__/no-hand-built-hr-urls.test.ts. The canonical HR

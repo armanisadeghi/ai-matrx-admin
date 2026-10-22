@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectBuilderAdvancedSettings } from "@ai-matrx/chat/agents/redux/execution-system/instance-ui-state/instance-ui-state.selectors";
 import { DEFAULT_BUILDER_ADVANCED_SETTINGS } from "@ai-matrx/chat/agents/types/instance.types";
 import { WindowPanel } from "@ai-matrx/summon/window";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 // THE package Separator (the local `<div className="my-2 border-t" />` twin

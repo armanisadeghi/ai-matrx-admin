@@ -21,7 +21,7 @@
 // Server half: aidream POST /masterworks/audition (durable streaming run via
 // useMasterworkRun; verdict event `masterwork_audition_verdict`). Owner-only.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, firstBlockingReason, GatedActionButton, Input } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@/utils/datetime";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -29,10 +29,6 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import { Scale } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
-import {
-  firstBlockingReason,
-  GatedActionButton,
-} from "@/components/official/GatedActionButton";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -42,7 +38,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { MasterworkDictationOrigin } from "@/features/masterwork/MasterworkDictationOrigin";

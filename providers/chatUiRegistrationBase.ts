@@ -22,6 +22,8 @@
 
 import dynamic from "next/dynamic";
 import { registerChatUi } from "@ai-matrx/chat/host/ui-slots";
+// Binds @ai-matrx/records-ui/entity-ref (EntityRef, doors, toastDoor, RecordStamps) to this app, once.
+import "@/features/data-tables/records-ui-host/entityRefHost";
 import { surfaceManifestHost } from "./surfaceManifestHost";
 import {
   lazySlotsFrom,
@@ -36,7 +38,7 @@ import {
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { AnswerValueSlot } from "@/components/official/structured-value/AnswerValueSlot";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { DockedSidePanel } from "@/components/official/side-panel/DockedSidePanel";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

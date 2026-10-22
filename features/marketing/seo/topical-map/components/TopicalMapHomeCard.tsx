@@ -24,7 +24,7 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Archive, Link2, Network } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {

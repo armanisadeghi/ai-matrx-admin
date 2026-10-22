@@ -11,7 +11,7 @@ import { ArrowRight, CircleHelp, AppWindow } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { GRADE_META } from "./impact";
 import {

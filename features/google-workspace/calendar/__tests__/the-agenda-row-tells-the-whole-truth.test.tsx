@@ -140,7 +140,8 @@ jest.mock("@ai-matrx/detail/react", () => ({
     return "window";
   },
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({
     token,
     id,

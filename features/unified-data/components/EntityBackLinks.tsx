@@ -26,7 +26,7 @@ import { Link2 } from "lucide-react";
 import { RecordsProvider } from "@ai-matrx/records/react";
 import type { EntityBackLinkItem } from "@ai-matrx/records";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAppRecordsConfig } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { useKeptEntityBackLinks } from "@/features/unified-data/components/useKeptEntityBackLinks";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";

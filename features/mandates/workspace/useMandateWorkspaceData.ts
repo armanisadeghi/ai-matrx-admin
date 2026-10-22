@@ -22,7 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { operationFailed } from "@/utils/errors";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import {
   loadFailedFailure,
   noSuchMandateFailure,

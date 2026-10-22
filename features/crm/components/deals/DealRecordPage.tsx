@@ -22,7 +22,7 @@ import { Skeleton } from "@ai-matrx/design-system";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { AssociationCardGrid } from "@ai-matrx/associations/react";
 import { PrimaryEntityProvider } from "@ai-matrx/associations/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   UserAvatarDisplay,
   resolveUserName,

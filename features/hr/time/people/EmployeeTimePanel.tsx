@@ -25,7 +25,7 @@
 import { CalendarClock } from "lucide-react";
 
 import { SetKioskPinCard } from "@/features/hr/time/clock/SetKioskPinCard";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 export interface EmployeeTimePanelProps {
   /** Resolved as of today by the server. `null` where this person has no spell today. */

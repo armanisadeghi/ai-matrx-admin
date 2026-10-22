@@ -1,7 +1,7 @@
 "use client";
 
 import { SURFACES_DRILL } from "./surfacesDrill";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

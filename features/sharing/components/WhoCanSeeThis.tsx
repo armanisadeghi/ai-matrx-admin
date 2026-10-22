@@ -30,7 +30,7 @@
 import React, { useState } from "react";
 import { Building2, Check, EyeOff, Globe, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { SHOWN_TO_WORDS } from "@/lib/list-scope/shownToWords";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import type {

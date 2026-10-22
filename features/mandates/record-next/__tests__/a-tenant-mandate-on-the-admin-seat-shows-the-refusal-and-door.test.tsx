@@ -22,7 +22,8 @@ jest.mock("@/utils/supabase/client", () => ({
 }));
 jest.mock("@/features/organizations/hooks/useOrganizationLabel", () => ({ useOrganizationLabel: () => null }));
 // The owner's name fails to draw (a missing provider, a throwing chip): the refusal still stands.
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => {
     throw new Error("owner chip cannot draw");
   },

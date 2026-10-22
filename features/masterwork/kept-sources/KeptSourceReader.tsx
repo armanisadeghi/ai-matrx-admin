@@ -33,7 +33,7 @@ import Link from "next/link";
 import { AlertTriangle, ExternalLink, FileText, Quote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { HighlightedText } from "@/components/text/HighlightedText";
 import { computeMatches, type FindMatch } from "@/features/notes/utils/findMatches";
 import { formatTimecode } from "@/features/transcript-studio/utils/timecode";

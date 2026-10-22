@@ -33,8 +33,8 @@ import {
   type AppletAdminView,
 } from "@/lib/services/applets-admin-service";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import type { AgentPayloadInput } from "@/components/agent-copy/buildAgentPayload";
 import { humanApplet } from "@/features/applets/format";
 import {

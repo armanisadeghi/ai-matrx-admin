@@ -43,7 +43,7 @@ import {
 import { useFolderContents } from "@/features/files/hooks/useFolderContents";
 import { FileIcon } from "@ai-matrx/media/react";
 import { MediaThumbnail } from "@ai-matrx/media/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { FileMeta } from "@/features/files/components/core/FileMeta/FileMeta";
 import { FileBreadcrumbs } from "@/features/files/components/core/FileBreadcrumbs/FileBreadcrumbs";
 import type { CloudFile } from "@/features/files/types";

@@ -52,7 +52,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { SearchInput } from "@/components/official/SearchInput";
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import {
   BottomSheet,
   BottomSheetBody,

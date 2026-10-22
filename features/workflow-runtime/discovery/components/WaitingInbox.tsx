@@ -17,7 +17,7 @@
 import Link from "@/components/navigation/AppLink";
 import { AlertTriangle, Inbox, MessageCircleQuestion, PenLine } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { cn } from "@/lib/utils";
 

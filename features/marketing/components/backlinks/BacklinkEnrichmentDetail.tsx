@@ -12,7 +12,7 @@ import {
   Save,
 } from "lucide-react";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { BacklinkEnrichmentRunPanel } from "@/features/marketing/components/backlinks/BacklinkEnrichmentRunPanel";
 import {

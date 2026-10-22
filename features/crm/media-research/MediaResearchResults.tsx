@@ -7,7 +7,7 @@
 // cuts with their reasons. Partial is labeled partial. An address is shown only
 // when it is verified, or quarantined together with the reason it failed.
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 import {

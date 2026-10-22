@@ -17,7 +17,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   ArrowUpRight,
   GraduationCap,

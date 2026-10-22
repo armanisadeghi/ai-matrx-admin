@@ -24,7 +24,7 @@
 import { Archive, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Chip, type ChipHue } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { RichContentPreview } from "@ai-matrx/rich-content/levels/RichContentPreview";
 import {
   Muted,

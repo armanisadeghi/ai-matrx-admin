@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import { LoadingSpinner } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

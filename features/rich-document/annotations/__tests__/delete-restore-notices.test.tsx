@@ -62,7 +62,10 @@ jest.mock("@ai-matrx/chat/host/org", () => ({
   ...(() => ({ organizationRefusalMessage: () => "" }))(),
 }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() } }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({ EntityRef: () => null }));
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
+  EntityRef: () => null,
+}));
 jest.mock("@ai-matrx/rich-content/levels/RichContent", () => ({ RichContent: ({ source }: { source: string }) => <span>{source}</span> }));
 jest.mock("../LinkRecordSheet", () => ({ LinkRecordSheet: () => null }));
 

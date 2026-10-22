@@ -26,7 +26,7 @@ import {
   type AdminRunRow,
 } from "@/lib/services/scheduling-admin-service";
 import { adminScheduleHref } from "@/features/scheduling/constants/routes";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAdminSchedulingScopeSlice } from "@/features/scheduling/lib/admin-scheduling-scope";
 import { useScheduledRunMenuSection } from "@/features/scheduling/components/shared/scheduling-menu-sections";
 import { readOf } from "@ai-matrx/design-system";

@@ -21,7 +21,7 @@ import { Plus, X } from "lucide-react";
 import { UniversalAssociationPicker } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@ai-matrx/design-system";
 

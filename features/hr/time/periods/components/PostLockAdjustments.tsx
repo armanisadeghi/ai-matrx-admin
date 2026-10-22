@@ -20,7 +20,7 @@
  * NO CLIENT COMPUTES ANYTHING: `hoursDelta` and `amountDelta` arrive computed.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { FileWarning, Plus } from "lucide-react";
 

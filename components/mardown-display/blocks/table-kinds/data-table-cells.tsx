@@ -52,8 +52,7 @@
  */
 
 import { EmailValue } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
-import { Button, Badge } from "@ai-matrx/design-system/controls";
+import { InfoHint, Button, Badge } from "@ai-matrx/design-system/controls";
 import React from "react";
 import {
   ChevronDown,

@@ -5,6 +5,7 @@
 // `listKindInstances`). No second list service.
 import { useEffect, useState } from "react";
 import { Select } from "@ai-matrx/design-system/controls";
+import { requestRichContentHost } from "@ai-matrx/rich-content/host";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { listAllKinds, type KindCatalogEntry } from "@/features/content-ir/registry/kind-catalog";
 import { listKindInstances, type KindInstanceListEntry } from "@/features/content-ir/studio/instance-service";
@@ -32,7 +33,9 @@ export function KindInstancePicker({ kindDefinitionId, value, onChange }: { kind
   const [instances, setInstances] = useState<{ shapeId: string; list: KindInstanceListEntry[] | null; error: string | null } | null>(null);
   useEffect(() => {
     let live = true;
-    listAllKinds().then(
+    // The kind reader needs this app's rich-content host (it registers the database client), which loads
+    // lazily on first demand. On a launchpad nothing has demanded it yet: ask first, then list.
+    Promise.resolve(requestRichContentHost()).then(() => listAllKinds()).then(
       (all) => live && setShapes({ list: shapeChoices(all), error: null }),
       (e: unknown) => live && setShapes({ list: [], error: errorText(e) }),
     );

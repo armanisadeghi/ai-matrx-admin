@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, Ban, Lock, Scale } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { hrRelationsHref } from "@/features/hr/routes";
 import { HrNoAccess, HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";

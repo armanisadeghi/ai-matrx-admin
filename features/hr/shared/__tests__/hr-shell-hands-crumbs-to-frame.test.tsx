@@ -15,7 +15,8 @@ jest.mock("next/link", () => ({ __esModule: true, default: ({ href, children }: 
 jest.mock("@/features/shell/components/header/RouteHeader", () => ({ __esModule: true, default: () => null }));
 jest.mock("@/features/shell/components/header/RouteModeNav", () => ({ RouteModeNav: () => null }));
 jest.mock("@/lib/layout/useClippedContentGuard", () => ({ useClippedContentGuard: () => {} }));
-jest.mock("@/components/official/InfoHint", () => ({ InfoHint: () => null }));
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"), InfoHint: () => null }));
 jest.mock("../HrStates", () => ({
   HrDisclosureClaimed: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   HrEmployerChoices: () => null,

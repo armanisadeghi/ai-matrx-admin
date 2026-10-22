@@ -43,7 +43,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/utils/cn";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { formatSessionTimestamp } from "@/features/agent-connections/coding-sessions/verdict";

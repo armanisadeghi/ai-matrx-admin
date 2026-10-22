@@ -21,7 +21,7 @@ import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { podcastService } from "../../service";
 import type { PcShow } from "../../types";
 import { InlineMediaRef } from "@ai-matrx/media/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { PublicPageLink } from "./PublicPageLink";
 import { podcastShowAdminHref } from "../../utils";
 import {

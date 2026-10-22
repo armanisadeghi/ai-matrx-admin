@@ -30,7 +30,7 @@ import { AlertTriangle, CircleCheck, CircleDot, Loader2, RefreshCw } from "lucid
 import { MatrxDataTable, MatrxDetailGrid, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";

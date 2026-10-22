@@ -31,7 +31,7 @@ import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { useAdminCost } from "@/components/cost/useAdminCost";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";

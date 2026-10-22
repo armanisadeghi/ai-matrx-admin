@@ -32,8 +32,8 @@ import {
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
-import CitationChip from "@/components/official/citation-chip/CitationChip";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
+import { CitationChip } from "@ai-matrx/design-system/controls";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { NotesAPI } from "@/features/notes/service/notesApi";
 
@@ -407,12 +407,12 @@ registerChatUi({
 
 
 
-import { isUuidValue as Host_isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue as Host_isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 registerChatUi({
   isUuidValue: Host_isUuidValue,
 });
 
-import { toastDoor as Host_toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor as Host_toastDoor } from "@ai-matrx/records-ui/entity-ref";
 registerChatUi({
   toastDoor: Host_toastDoor,
 });

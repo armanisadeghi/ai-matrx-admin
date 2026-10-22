@@ -30,9 +30,8 @@ import type {
   MatrxDataTableQueryState,
 } from "@ai-matrx/design-system/data-table/types";
 import { Checkbox, Peek, PeekHoverCard, Skeleton, type PeekRecord } from "@ai-matrx/design-system";
-import { Button, Input, Select } from "@ai-matrx/design-system/controls";
+import { Button, Input, Select, InfoHint } from "@ai-matrx/design-system/controls";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast";
 import { confirm as confirmDialog } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";

@@ -42,7 +42,7 @@ import { MatrxUuidCell } from "@ai-matrx/design-system/data-table";
 import { useAssociations } from "@ai-matrx/associations/react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   UserAvatarDisplay,
   resolveUserName,

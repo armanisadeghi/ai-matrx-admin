@@ -26,7 +26,7 @@
 // line. And no dead control — the Bench has no button in the app yet, so the
 // screen SAYS where it runs instead of showing one that does nothing.
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { BadgeCheck, FlaskConical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

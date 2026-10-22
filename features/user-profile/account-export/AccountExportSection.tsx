@@ -5,7 +5,7 @@ import { Download } from "lucide-react";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { downloadBlob } from "@/utils/file-operations/utils";
 import { exportPersonalAccount } from "./service";

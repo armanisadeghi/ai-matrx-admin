@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import { formatHours } from "../../shared/format";
 import type { OvertimeEvaluation } from "../api/overtimeReads";
 import { graceSentence, thresholdAxisLabel } from "../overtimeVocabulary";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 
 export interface ApproachingWatchlistProps {
   /** One evaluation per watched employment, with the person's name beside it. */

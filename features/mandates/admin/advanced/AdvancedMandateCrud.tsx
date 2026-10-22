@@ -20,7 +20,7 @@ import type {
   CellEditsMap,
   MatrxColumnDef,
 } from "@ai-matrx/design-system/data-table/types";
-import { tokenFromColumnName } from "@/components/official/entity-ref/doors";
+import { doorTokenFromColumnName as tokenFromColumnName } from "@ai-matrx/records-ui/entity-doors";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

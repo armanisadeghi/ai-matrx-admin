@@ -12,7 +12,7 @@ import type {
 } from "@ai-matrx/design-system/data-table/types";
 import { ExternalLinkTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { StatusBadge } from "../shared/StatusBadge";
 import { SourceTypeIcon } from "../shared/SourceTypeIcon";
 import { RedundancyGroupBadge } from "./RedundancyGroupBadge";

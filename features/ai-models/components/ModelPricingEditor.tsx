@@ -1,9 +1,8 @@
 "use client";
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, Input } from "@ai-matrx/design-system/controls";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {

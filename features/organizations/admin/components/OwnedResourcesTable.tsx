@@ -11,7 +11,7 @@ import { formatCount } from "@ai-matrx/kit/format";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import type { MatrxDataTableRead } from "@ai-matrx/design-system/data-table/types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 import { displayId } from "@ai-matrx/design-system";
 

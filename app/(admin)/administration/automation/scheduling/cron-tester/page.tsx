@@ -2,12 +2,11 @@
 
 "use client";
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, Input } from "@ai-matrx/design-system/controls";
 import { useEffect, useRef, useState } from "react";
 import cronstrue from "cronstrue";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,

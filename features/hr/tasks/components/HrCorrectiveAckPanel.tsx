@@ -35,7 +35,7 @@
 import { useState } from "react";
 import { FileSignature } from "lucide-react";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";

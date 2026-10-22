@@ -44,7 +44,8 @@ let superAdmin = false;
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => superAdmin }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectIsSuperAdminPerson: () => superAdmin }));
 jest.mock("@/features/data-tables/records-ui-host/recordsUiHost", () => ({ useAppRecordsConfig: () => ({}) }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name, href }: { name?: string | null; href?: string }) => <a href={href}>{name}</a>,
 }));
 

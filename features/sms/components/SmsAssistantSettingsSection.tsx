@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";

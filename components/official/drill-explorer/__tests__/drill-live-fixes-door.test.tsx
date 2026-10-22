@@ -13,7 +13,8 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-jest.mock("@/components/official/InfoHint", () => ({ InfoHint: ({ text }: { text: string }) => <i data-hint={text} /> }));
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"), InfoHint: ({ text }: { text: string }) => <i data-hint={text} /> }));
 jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 
 type Asked = { source: unknown; question: Record<string, unknown> };

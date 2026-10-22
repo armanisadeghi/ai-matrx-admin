@@ -111,7 +111,8 @@ jest.mock(
 jest.mock("@/features/agents/components/samples/AgentSamplesManager", () => ({
   AgentSamplesManager: () => <div />,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ id }: { id?: string }) => <span>{id ?? ""}</span>,
 }));
 // The free-text boxes drag the whole agent-action / context-menu tree in; they

@@ -27,7 +27,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ElapsedTime } from "@/components/official-candidate/elapsed-time/ElapsedTime";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 import { RunStatusChip } from "../../run-status";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";

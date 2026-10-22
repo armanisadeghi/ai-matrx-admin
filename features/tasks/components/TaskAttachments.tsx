@@ -10,7 +10,7 @@ import {
   File,
   Loader2,
 } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import * as taskService from "@/features/tasks/services/taskService";
 import type { TaskAttachment } from "@/features/tasks/services/taskService";

@@ -19,9 +19,8 @@
 import { X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Button } from "@ai-matrx/design-system/controls";
 
-import { Button } from "@ai-matrx/design-system/controls";
 export interface DrillNoteChip {
   key: string;
   label: string;

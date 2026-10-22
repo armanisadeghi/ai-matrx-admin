@@ -19,7 +19,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, Database, ExternalLink, HardDrive, Trash2 } from "lucide-react";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, InfoHint } from "@ai-matrx/design-system/controls";
 import { Badge, ToggleGroup, ToggleGroupItem } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +29,6 @@ import {
 import { listAppRows, upsertAppRow } from "@ai-matrx/records/typed-table";
 import { personActor, recordsDataSource } from "@ai-matrx/records-ui/helpers";
 
-import { InfoHint } from "@/components/official/InfoHint";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

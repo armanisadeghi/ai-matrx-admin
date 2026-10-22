@@ -30,13 +30,8 @@
  *    home only, and no live row carries it.
  */
 
-import {
-  FieldHelp,
-  PropertyRow,
-} from "@ai-matrx/design-system/controls";
+import { FieldHelp, PropertyRow, SegmentedControl, InfoHint } from "@ai-matrx/design-system/controls";
 import { Lock, PenLine } from "lucide-react";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
-import { InfoHint } from "@/components/official/InfoHint";
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import type {
   SurfaceWritePolicy,

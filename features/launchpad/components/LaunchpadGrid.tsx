@@ -12,7 +12,7 @@ import { useIsMobile } from "@ai-matrx/kit/media-query";
 import type { LaunchpadDoc, LaunchpadWidget } from "@/features/shell/shell-layout/contract";
 import { getLaunchpadWidgetType } from "../widgets/registry";
 import { describeLaunchpadWidget } from "../widgets/catalog";
-import { WidgetFrame, WidgetList, WidgetNotice, widgetCapacity } from "../widgets/frame";
+import { WidgetBoundary, WidgetFrame, WidgetList, WidgetNotice, widgetCapacity } from "../widgets/frame";
 import { WidgetBusScope } from "../bus/react";
 
 const noSubscription = () => () => {};
@@ -158,7 +158,9 @@ function LaunchpadSlot({
       phoneBodyPx={type.phoneBodyPx?.(widget.config)}
     >
       {hydrated ? (
-        <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />
+        <WidgetBoundary type={widget.type} resetKey={widget.config}>
+          <Body config={widget.config} editing={Boolean(editing)} capacity={capacity} />
+        </WidgetBoundary>
       ) : (
         <WidgetList capacity={capacity} loading rows={[]} empty={null} />
       )}

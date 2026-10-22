@@ -42,7 +42,7 @@ import {
   hrPeopleHref,
   type HrOrgRef,
 } from "../../routes";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 export type HrEmployeeMenuSubject = {
   employeeId: string;

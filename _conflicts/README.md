@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-22-064429/pnpm-lock.yaml.held — LOCAL latest 2026-10-22 06:07; GITHUB latest 2026-10-22 05:39; LOCAL lacks 6 of GITHUB's 6 new lines; GITHUB lacks 58 of LOCAL's 58 new lines; recover: git show 852a064d04:'pnpm-lock.yaml' / 495e3233b2:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-22 05:2x PDT — Claude ship-all conflict lane (19f6d211) cleared the rest of `_conflicts/2026-10-22-033544/` and `-043759/`. AssessmentCreate.tsx: kept live — HEAD (4d1b83b210 + 6b33f978aa) already holds every LOCAL (4fee152a0a) line (QUIZ_EXTRA_KINDS/extraKinds fc_set, useTabBoundRun + RunStoppedNotice, cardRunRequest) and every GITHUB (57e79d7082) change (own deck picker + fcService/ReadFailure removed, max-w-3xl); GITHUB's only missing lines are the bare `generation.run({` call that LOCAL wraps in `tabRun.track`. No editing owner found. pnpm-lock.yaml ×2: kept main's — every difference is an @ai-matrx/transitive version bump (LOCAL 77a22136fc was newer on agents/api/capture/coding-sessions/design-system/detail/records-ui/vault and body-parser 2.4.0), and the pending sync lockfile already supersedes every side (agents 0.59.234, coding-sessions 0.3.490, records-ui 0.116.80, body-parser 2.4.0); `check-matrx-packages --duplicates` 33 once each. Data-library owner 95d8a188 notified urgently 05:19 (resolved by lane 8c47ad6a, entry below).

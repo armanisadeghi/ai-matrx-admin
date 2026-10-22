@@ -20,7 +20,7 @@
  * (common-docs/systems/architecture/database/data-lifecycle/projects/data-lifecycle-platform/PLAN.md), never an impulse click.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Archive, Clock, Trash2, Undo2 } from "lucide-react";
 

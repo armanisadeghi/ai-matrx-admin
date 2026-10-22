@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, Compass, RefreshCw, SearchX } from "lucide-react";
 import { PinButton } from "@/components/favorites/PinButton";
 import { usePinned } from "@/components/favorites/usePinned";
-import SearchInput from "@/components/official/SearchInput";
+import { SearchInput } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { QuickActions } from "@/features/dashboard/components/QuickActions";
 import { PinnedSection } from "@/features/dashboard/components/PinnedSection";
@@ -24,6 +24,7 @@ import {
 } from "../catalog";
 import { useVisibilityAwarePageRefresh } from "../hooks/useVisibilityAwarePageRefresh";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { WhatsNewOffers } from "@/features/shell/shell-layout/editor/WhatsNewOffers";
 import { YourLaunchpads, type ServerLaunchpadList } from "./YourLaunchpads";
 
 const PREVIEW_DESTINATION_COUNT = 3;
@@ -125,6 +126,7 @@ export default function UserLaunchpad({ serverLaunchpads }: { serverLaunchpads?:
   return (
     <div className="bg-textured text-foreground">
       <div className="mx-auto w-full max-w-[1680px] px-3 pt-[calc(var(--shell-header-h)+1rem)] sm:px-5 lg:px-7">
+        <WhatsNewOffers placement="band" />
         <YourLaunchpads serverLaunchpads={serverLaunchpads ?? null} />
         <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-border bg-card-textured p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="min-w-0">
@@ -319,7 +321,8 @@ function LaunchpadAppTile({ group }: { group: LaunchpadGroup }) {
         >
           <ShellIcon name={group.iconName} size={16} strokeWidth={2} />
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+        {/* Two lines fit the 56px tile: a long area name ("Human Resources") wraps instead of being cut. */}
+        <span title={group.label} className="line-clamp-2 min-w-0 flex-1 break-words text-sm leading-tight font-semibold text-foreground">
           {group.label}
         </span>
       </LaunchpadAnchor>

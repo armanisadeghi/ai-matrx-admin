@@ -19,7 +19,7 @@
  * told the write succeeded.
  */
 
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 /**
  * `entity_draft.source_type_id` — a category UUID the editor's Source type

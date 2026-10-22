@@ -1,7 +1,7 @@
 "use client";
 
 import { GmailLogo, GoogleG } from "@/components/icons/google-brand";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -36,7 +36,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {

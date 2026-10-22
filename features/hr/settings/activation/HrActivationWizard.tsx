@@ -67,9 +67,8 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input, DateField } from "@ai-matrx/design-system/controls";
+import { Input, DateField, InfoHint } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
-import { InfoHint } from "@/components/official/InfoHint";
 import {
   Select,
   SelectContent,

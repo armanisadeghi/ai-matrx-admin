@@ -13,13 +13,12 @@
  * the run instead of losing it.
  */
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, Input } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useState } from "react";
 import { ListChecks, Loader2, Tags } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useSeoCommandRun } from "@/features/marketing/seo/durable-run/useSeoCommandRun";

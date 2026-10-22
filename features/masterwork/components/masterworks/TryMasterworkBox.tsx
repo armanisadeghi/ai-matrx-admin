@@ -52,7 +52,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";

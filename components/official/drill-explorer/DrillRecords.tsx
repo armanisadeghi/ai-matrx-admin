@@ -30,7 +30,7 @@ import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import type { MatrxDataTableQueryState, MatrxDrillDimension, MatrxDrillMeasure, MatrxDrillQuestion } from "@ai-matrx/design-system/data-table";
 
 import AppLink from "@/components/navigation/AppLink";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Badge, Button } from "@ai-matrx/design-system/controls";
 import { readOf } from "@ai-matrx/design-system";
 
 import { doorWindow, drillWindowKey } from "./useDrillExplorer";
@@ -43,7 +43,6 @@ import { plainWords } from "./dimensionWords";
 import { grainNoun, isMoment, measureFactWords, momentWords, pluralNoun, drillFailureWords } from "./explorerWords";
 import { formatCount } from "@ai-matrx/kit/format";
 
-import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { RecordId, isRecordUuid } from "@ai-matrx/design-system";
 const PAGE = 100;
 /** Sums the header row names at most (the first Measures the question shows). */

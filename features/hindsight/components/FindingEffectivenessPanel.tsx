@@ -14,7 +14,7 @@
  * measure is to tell them apart — so every number here goes through `hasSignal`
  * and renders "—" rather than a fabricated 0.
  */
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingDown, TrendingUp } from "lucide-react";
 

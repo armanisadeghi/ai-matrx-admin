@@ -27,13 +27,9 @@ import {
 } from "lucide-react";
 import { InboundLabelBadge } from "../outreach-lists/badges";
 import type { LucideIcon } from "lucide-react";
-import { Input, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Input, SegmentedControl, CollapsibleText, CollapsibleTextGroupControls } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import {
-  CollapsibleText,
-  CollapsibleTextGroupControls,
-} from "@/components/official/CollapsibleText";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/utils/datetime";

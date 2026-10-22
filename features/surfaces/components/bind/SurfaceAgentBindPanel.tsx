@@ -22,7 +22,7 @@ import {
   isSurfaceRegistrationError,
 } from "@ai-matrx/chat/surfaces/services/surface-registration-error";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@ai-matrx/design-system/controls";

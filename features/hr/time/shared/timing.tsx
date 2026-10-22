@@ -10,7 +10,7 @@
  * *"the renderer reads them; it never re-derives them from arithmetic."*
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { CalendarClock, MoveRight, Scissors, SunMoon } from "lucide-react";
 
 import { cn } from "@/lib/utils";

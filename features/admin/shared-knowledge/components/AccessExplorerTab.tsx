@@ -27,7 +27,7 @@ import { readOf } from "@ai-matrx/design-system";
 import { useEffect, useMemo, useState } from "react";
 import { ReadFailure } from "@ai-matrx/design-system";
 import AppLink from "@/components/navigation/AppLink";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {

@@ -17,7 +17,7 @@ import { supabase } from "@/utils/supabase/client";
 import { organizationPickListsInTheNewSystem } from "@/features/data-tables/pick-lists/where-lists-live";
 import { getResourceSharePath } from "@/utils/permissions/registry";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { OrgResourceEntry } from "../resource-catalogue";
 import type { ContainerColumn } from "../hooks/useContainerInventory";
 import { ReadFailure } from "@ai-matrx/design-system";

@@ -20,7 +20,7 @@
  * feel polished enough for any normal user.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -50,7 +50,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
-import { Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -145,7 +144,6 @@ import { pushAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
 import { StaleDataNotice } from "@ai-matrx/design-system";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 // ===========================================================================

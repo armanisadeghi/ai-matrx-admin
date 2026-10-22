@@ -28,7 +28,8 @@ jest.mock("next/navigation", () => ({
   usePathname: () => "/tasks/t-1",
   useRouter: () => ({ push: () => undefined }),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name }: { name: string }) => <span data-resource-row="">{name}</span>,
 }));
 jest.mock("@/utils/supabase/client", () => {

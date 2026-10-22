@@ -11,7 +11,7 @@ import {
   AiModelRef,
   AiToolRef,
 } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Select } from "@ai-matrx/design-system/controls";
 import {
   AgentDefSlotsGrid,

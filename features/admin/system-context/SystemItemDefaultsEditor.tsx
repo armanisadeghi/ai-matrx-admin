@@ -17,9 +17,8 @@
 import { useEffect, useState } from "react";
 import { Plus, RotateCcw, X } from "lucide-react";
 
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
 import { toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { setFeatureKnob } from "@/features/admin/limits/service";

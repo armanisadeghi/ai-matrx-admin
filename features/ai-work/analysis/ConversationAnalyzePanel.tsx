@@ -23,7 +23,7 @@
 import { useState } from "react";
 import { CircleAlert, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { launchAgentExecution } from "@ai-matrx/chat/agents/redux/execution-system/thunks/launch-agent-execution.thunk";
 import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";

@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   CollapsibleText,
   CollapsibleTextGroupControls,
-} from "@/components/official/CollapsibleText";
+} from "@ai-matrx/design-system/controls";
 import { ComponentDisplayWrapper } from "../component-usage";
 import type { ComponentEntry } from "../parts/component-list";
 

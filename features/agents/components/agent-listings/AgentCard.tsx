@@ -44,7 +44,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast-service";
 import { openOverlay } from "@ai-matrx/summon/open";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   buildSystemAgentRosterEntries,
   systemAgentRosterEntrySummary,

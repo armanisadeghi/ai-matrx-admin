@@ -449,7 +449,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
     (globalThis as unknown as { __registerChatUiOnLoad: typeof import("@ai-matrx/chat/host/ui-slots").registerChatUi }).__registerChatUiOnLoad({
       ErrorAlchemyMenu: slot("@/components/errors/ErrorAlchemyMenu", "ErrorAlchemyMenu"),
       // Package cards (RunFailureCard, ...) print the server's sentence through these two slots.
-      TextWithDoors: slot("@/components/official/entity-ref/TextWithDoors", "TextWithDoors"),
+      TextWithDoors: slot("@ai-matrx/records-ui/entity-ref", "TextWithDoors"),
       ServerNotes: slot("@/components/official/ServerNotes", "ServerNotes"),
       // Function slots the package calls through (read lazily, so a test's own mock of the catalog wins).
       /* eslint-disable @typescript-eslint/no-require-imports */

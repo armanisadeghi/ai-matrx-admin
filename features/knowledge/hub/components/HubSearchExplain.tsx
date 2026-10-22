@@ -6,7 +6,7 @@
  * the lab use the same words and the same math.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import type { KnowledgeHit } from "@/features/knowledge/api/knowledgeSearch";
 import type { SectionState } from "@/features/knowledge/hub/hooks/useKnowledgeResults";

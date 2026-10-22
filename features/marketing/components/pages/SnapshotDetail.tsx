@@ -21,8 +21,8 @@ import {
 import { SnapshotArtifacts } from "@/features/marketing/components/pages/SnapshotArtifacts";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { RecordStamps } from "@/components/official/record-stamps/RecordStamps";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { RecordStamps } from "@ai-matrx/records-ui/entity-ref";
 import { useRecordActors } from "@/components/official/record-stamps/useRecordActors";
 import {
   CrawlSessionRef,

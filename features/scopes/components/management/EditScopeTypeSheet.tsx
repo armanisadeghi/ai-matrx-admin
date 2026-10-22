@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { MatrxDynamicPanelHost } from "@/components/matrx/resizable/MatrxDynamicPanelHost";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Label } from "@/components/ui/label";
 import IconInputWithValidation from "@/components/official/icons/IconInputWithValidation";
@@ -49,7 +49,6 @@ import {
 import { isValidSlug, toFieldKey, toSlug } from "@ai-matrx/records/scopes";
 import { isRecordsErr } from "@ai-matrx/records";
 import { EditContextItemSheet } from "@/features/scopes/components/pages/EditContextItemSheet";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 
 interface EditScopeTypeSheetProps {
   open: boolean;

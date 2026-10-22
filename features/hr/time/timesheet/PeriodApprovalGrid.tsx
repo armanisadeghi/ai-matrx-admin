@@ -25,7 +25,7 @@
  * manager whether the person was short or long.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCheck, PanelRightOpen } from "lucide-react";

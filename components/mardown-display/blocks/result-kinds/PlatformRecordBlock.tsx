@@ -56,7 +56,7 @@ import { cardTitleField } from "@ai-matrx/records-ui/helpers";
 import { withRecordsUi, type RecordsUiModule } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { PanelRightTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import InfoHint from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import {
   useTableKind,
@@ -65,7 +65,7 @@ import {
 } from "./use-table-record";
 
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ResultValue } from "@ai-matrx/chat/tool-call-visualization/result-fields/ResultValue";
 import {
   ChipRow,

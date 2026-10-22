@@ -6,7 +6,8 @@ import { createPersonalWhatsAppClient, type PersonalAttachment } from "../person
 
 jest.mock("@ai-matrx/media/react", () => ({ InlineMediaRef: ({ ref, as }: { ref: { url: string }; as: string }) => <div data-testid="shared-media" data-source={ref.url}>{as}</div> }));
 jest.mock("@ai-matrx/kit/download", () => ({ downloadFile: jest.fn() }));
-jest.mock("@/components/official/InfoHint", () => ({ InfoHint: ({ text }: { text: string }) => <span>{text}</span> }));
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"), InfoHint: ({ text }: { text: string }) => <span>{text}</span> }));
 jest.mock("@/lib/local-engine/discovery", () => ({ discoverLocalEngine: jest.fn() }));
 jest.mock("@/lib/python-client", () => ({ requestRaw: jest.fn() }));
 const { downloadFile } = jest.requireMock("@ai-matrx/kit/download");

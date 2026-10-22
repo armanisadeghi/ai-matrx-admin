@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { openOverlay } from "@ai-matrx/summon/open";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAgentView } from "@ai-matrx/chat/agents/identity/agent-identity";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 

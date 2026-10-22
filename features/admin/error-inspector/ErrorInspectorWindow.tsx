@@ -23,7 +23,7 @@ import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import { useCapturedErrors } from "@/lib/diagnostics/useCapturedErrors";
 import {
   clearCapturedErrors,

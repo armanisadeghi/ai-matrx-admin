@@ -17,7 +17,7 @@
 
 import { Contact } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { crmCreatePartyHref } from "@/features/crm/routes";
 import { cn } from "@/lib/utils";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";

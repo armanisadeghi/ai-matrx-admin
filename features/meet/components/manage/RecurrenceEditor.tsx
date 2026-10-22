@@ -8,9 +8,8 @@
 // day-of-month or Nth-weekday, and ends never / on a date / after N times. The
 // sentence under it is the one invitees will read in their email.
 
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput, DateField } from "@ai-matrx/design-system/controls";
 import { Repeat } from "lucide-react";
-import { DateField } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,

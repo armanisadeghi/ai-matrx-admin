@@ -26,7 +26,7 @@ import { useAppDispatch, useAppSelector } from "@ai-matrx/chat/store/hooks";
 import { cn, RecordId, displayId } from "@ai-matrx/design-system";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { formatJson } from "@ai-matrx/kit/json-format";
 import {
   fetchFullAgent,

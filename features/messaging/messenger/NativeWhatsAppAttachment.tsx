@@ -5,7 +5,7 @@ import { InlineMediaRef } from "@ai-matrx/media/react";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import type { PersonalAttachment, PersonalWhatsAppClient } from "@/features/social-connections/personal-whatsapp-service";
 
 /** Only native identity/byte custody: the shared media component owns playback. */

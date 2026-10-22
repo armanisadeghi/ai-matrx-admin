@@ -13,10 +13,9 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, OctagonAlert, OctagonPause, Save } from "lucide-react";
-import { Field } from "@ai-matrx/design-system/controls";
+import { Field, InfoHint } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { InfoHint } from "@/components/official/InfoHint";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { toast } from "@/lib/toast";

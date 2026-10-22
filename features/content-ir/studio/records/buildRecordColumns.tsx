@@ -13,7 +13,7 @@
 import type { ReactNode } from "react";
 import { MessageSquareText, User2 } from "lucide-react";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { timeCell, Muted } from "@/lib/entity-list/columns";
 import { shapeInstancePermalink } from "@/features/content-ir/studio/constants";
 import { ConfirmationBadge } from "@/features/content-ir/records/ConfirmationBadge";

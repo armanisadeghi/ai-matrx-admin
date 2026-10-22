@@ -34,7 +34,7 @@ import type {
 } from "@/lib/entity-list/config";
 import { buildRecordReferenceFence } from "@/features/matrx-envelope/recordReference";
 import { useOpenItemPresentation } from "@/features/item-presentation/useOpenItemPresentation";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { toast } from "@/lib/toast";
 import { setInboxHandled } from "./service";
 import { InboxReplyDialog } from "./components/InboxReplyDialog";

@@ -19,8 +19,7 @@ import {
   TooltipTrigger,
 } from "@ai-matrx/design-system";
 import { ResetTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { SearchInput } from "@/components/official/SearchInput";
-import { InfoHint } from "@/components/official/InfoHint";
+import { SearchInput, InfoHint } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";

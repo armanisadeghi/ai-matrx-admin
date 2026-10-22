@@ -10,7 +10,7 @@
 import { useMemo, useState } from "react";
 import { Megaphone } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {

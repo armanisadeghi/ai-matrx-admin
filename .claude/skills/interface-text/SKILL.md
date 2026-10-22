@@ -46,7 +46,7 @@ the code comment and `FEATURE.md` are for.
    never renders.
 2. **Label first, tooltip always.** Make the label carry the meaning (`Batch savings (7d)`).
    Then give every label, icon button, abbreviation or number a newcomer might not understand a
-   **one-sentence tooltip**: `title=` on `KpiTile`, `components/official/InfoHint` everywhere
+   **one-sentence tooltip**: `title=` on `KpiTile`, `InfoHint` from `@ai-matrx/design-system/controls` everywhere
    else (hover, keyboard and touch — a native `title=` attribute is unreachable on phones). A
    complex thing gets a help popover (`FieldHelp` from `@ai-matrx/design-system/controls`; a `Field`'s string `help` and a settings row's `helpText` already render one).
    When you delete prose, ask what a newcomer loses and move that into a tooltip — never just

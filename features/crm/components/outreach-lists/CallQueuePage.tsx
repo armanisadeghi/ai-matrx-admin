@@ -12,7 +12,7 @@
 import { parsePhone, telHref } from "@ai-matrx/design-system";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   ArrowRight,
   Building2,

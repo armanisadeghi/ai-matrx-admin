@@ -6,7 +6,7 @@ import { ExternalLink, MailSearch, RefreshCw } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

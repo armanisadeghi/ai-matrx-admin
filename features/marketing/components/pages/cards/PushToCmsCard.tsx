@@ -20,7 +20,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,

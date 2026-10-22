@@ -28,7 +28,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   getAnalysisProvider,
   getCrawlSessionRef,

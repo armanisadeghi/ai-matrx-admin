@@ -12,9 +12,9 @@ import { MatrxDataTableProvider, type MatrxDataTableHost as TableHost, type Tabl
 import { readMenuTarget } from "@ai-matrx/design-system/data-table/menu-targets";
 import type { MatrxDataTableDensity } from "@ai-matrx/design-system/data-table/types";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AppPeekParts } from "@/components/official/peek/AppPeekParts";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { hostEntityMenu } from "@/features/admin/users/components/admin-user-table-menu";
 import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";

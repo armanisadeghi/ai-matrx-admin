@@ -32,7 +32,7 @@
  */
 
 import { RecordId } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { AlertTriangle, CheckCircle2, CircleDashed, Clock, ShieldAlert, UserX } from "lucide-react";
 
 import { cn } from "@/lib/utils";

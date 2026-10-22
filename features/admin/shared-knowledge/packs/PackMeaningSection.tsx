@@ -16,13 +16,12 @@
 // One RPC per save (seo.starter_pack_item_save) — the same door every other
 // pack item uses. Do NOT fork a second editor for this machinery (P22).
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint, Input } from "@ai-matrx/design-system/controls";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@ai-matrx/design-system/controls";
 import {
   Select,
   SelectContent,

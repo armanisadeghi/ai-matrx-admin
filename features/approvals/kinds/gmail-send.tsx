@@ -30,7 +30,7 @@
 
 import { useEffect } from "react";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { checkSendEligibility } from "@/features/crm/compliance/service";
 import type { ReviewedGmailSendPlan } from "@/features/crm/gmail/reviewed-send-contract";
 import {

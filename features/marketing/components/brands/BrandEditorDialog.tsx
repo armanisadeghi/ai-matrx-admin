@@ -5,7 +5,7 @@ import { ArrowRight, ChevronDown, LayoutGrid, Link2, Loader2 } from "lucide-reac
 import Link from "@/components/navigation/AppLink";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,

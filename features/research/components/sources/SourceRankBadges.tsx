@@ -1,6 +1,6 @@
 "use client";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SourceImportance } from "../../ranking";

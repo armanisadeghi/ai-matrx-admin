@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import {
   firstBlockingReason,
   GatedActionButton,
-} from "@/components/official/GatedActionButton";
+} from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";

@@ -298,14 +298,19 @@ export function useDataStoreDetail(storeId: string | null) {
       let organizationId: string | null = null;
       try {
         const supabase = createClient();
-        organizationId = await dataStoreOrganizationId(supabase, storeId);
+        // The parent store's organization, or a throw — never a null that the
+        // BEFORE INSERT trigger would turn into the writer's personal
+        // workspace. The payload reads THIS binding, not the nullable one the
+        // catch below reports with.
+        const parentOrganizationId = await dataStoreOrganizationId(supabase, storeId);
+        organizationId = parentOrganizationId;
         // Idempotent membership write — revives a soft-deleted binding, mirrors
         // the previous server-side upsert (on_conflict data_store_id/source_kind/source_id).
         const { error: upsertError } = await ragDb(supabase)
           .from("data_store_members")
           .upsert(
             {
-              organization_id: organizationId,
+              organization_id: parentOrganizationId,
               data_store_id: storeId,
               source_kind: input.sourceKind,
               source_id: input.sourceId,

@@ -13,7 +13,7 @@
 
 import { useRouter } from "next/navigation";
 import type { PeekRecord } from "@ai-matrx/design-system";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { usePeekHrefOverride } from "./peekHrefOverride";
 import { expectNavigation } from "@ai-matrx/summon/url";
 

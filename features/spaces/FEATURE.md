@@ -47,6 +47,9 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- `2026-10-22` — A stored code language the picker does not list (`py`, `ts`, `elixir`) draws as its alias's key or
+  Plain text instead of throwing BlockNote's "Language py is not supported." (`resolveCodeLanguage` in
+  `editor/code-block.ts`; guard `__tests__/code-block-language.test.ts`). Lane Y, audit round 2 #1.
 - `2026-10-22` — **A Space page as a launchpad widget.** New fence door `embed/SpaceWidget.tsx` (`SpaceWidgetBody`: the
   same `RecordBodySpaceImpl` editor + autosave behind one dynamic edge; `SpacePagePicker`: the store's own `search("")`),
   added to `check-spaces-fence` ENTRY_POINTS (custom-experience lane W).

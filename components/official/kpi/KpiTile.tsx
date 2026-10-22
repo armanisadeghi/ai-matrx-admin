@@ -25,7 +25,7 @@
 import Link from "@/components/navigation/AppLink";
 import type { ReactNode } from "react";
 
-import { InfoHint } from "@/components/official/InfoHint";
+import { InfoHint } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import {
   countReadState,

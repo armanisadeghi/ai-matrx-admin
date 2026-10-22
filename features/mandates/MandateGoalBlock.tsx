@@ -18,7 +18,7 @@
 
 import React from "react";
 
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 
 import { useMandateGoal } from "./useMandateGoal";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";

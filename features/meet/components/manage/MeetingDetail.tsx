@@ -20,7 +20,7 @@
 
 import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useState, useTransition } from "react";

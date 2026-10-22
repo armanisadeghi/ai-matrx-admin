@@ -39,7 +39,7 @@ import { Cost } from "@/components/cost/Cost";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { jsonExportItem, csvExportItem } from "@/components/agent-copy/export";
 import {

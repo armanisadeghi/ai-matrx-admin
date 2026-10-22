@@ -30,7 +30,7 @@ import Link from "next/link";
 import { AlertTriangle, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
+import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -40,7 +40,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { InfoHint } from "@/components/official/InfoHint";
 
 import {
   EffectiveDatedForm,

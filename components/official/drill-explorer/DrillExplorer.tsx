@@ -42,7 +42,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MatrxDrillChart } from "@ai-matrx/design-system/data-table/drill-chart";
-import { Badge } from "@ai-matrx/design-system/controls";
+import { Badge, InfoHint } from "@ai-matrx/design-system/controls";
 import { RefreshCw } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
 import {
@@ -64,7 +64,6 @@ import {
 } from "@ai-matrx/design-system/data-table";
 
 import AppLink from "@/components/navigation/AppLink";
-import { InfoHint } from "@/components/official/InfoHint";
 import { Button } from "@/components/ui/button";
 import { selectCanToggleCostUnit, selectCostUnit } from "@/components/cost/costUnit";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
