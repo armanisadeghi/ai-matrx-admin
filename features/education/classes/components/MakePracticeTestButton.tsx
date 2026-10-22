@@ -63,6 +63,8 @@ import type { ClassTest } from "../classTests";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const config = PRACTICE_TEST_CONFIG;
 const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
+const TOPUP_EXTRA_KINDS = ["fc_set"] as const;
 const FOCUS_MAX = 2000;
 
 const questionCount = (n: number) => `${n} ${n === 1 ? "question" : "questions"}`;
@@ -358,6 +360,7 @@ function MakePracticeTestDialog({
             title="Sources"
             purpose="the questions"
             kinds={TOPUP_KINDS}
+            extraKinds={TOPUP_EXTRA_KINDS}
             required
             deliveries={FLASHCARD_SOURCE_DELIVERIES}
           />
