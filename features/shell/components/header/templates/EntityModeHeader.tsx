@@ -153,7 +153,8 @@ export interface EntityModeHeaderProps {
   rightEnd?: React.ReactNode;
 }
 
-function DesktopAction({ action }: { action: EntityHeaderAction }) {
+/** One declarative action as the header draws it on desktop (also the host-chrome bar's action). */
+export function DesktopAction({ action }: { action: EntityHeaderAction }) {
   const Icon = action.icon;
   const shared = {
     icon: <Icon className="h-4 w-4" />,

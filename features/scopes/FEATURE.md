@@ -400,6 +400,7 @@ The frontend primitive uses only five RPCs: `cat_list(p_dimension?)`, `cat_creat
 ## Change Log
 
 - 2026-10-22 (platform review, scope in a Board tile): `ScopeDetailEditor` takes `density="page"|"tile"` (host-driven; default page). In `tile` the h1 hero (the tile header already names the scope) and the context-items "Open full page" link are dropped, rename stays one quiet pencil on the type/count line, the graph card reads "Knowledge graph" (no name repeat). The route page is unchanged. Guard: `features/board/__tests__/scope-deck-tile-density.test.ts`.
+- 2026-10-22 (host chrome): the `density` prop is gone — "in a tile" is now read from the shared host chrome (`useHostNamesRecord({ token: "scope", id })`, `features/shell/host-chrome/RecordHostChrome.tsx`): any host that names the scope (a Board tile today, a window tomorrow) gets the compact form with no prop. Same behavior on the board.
 
 - 2026-10-16 (persist.held on `/agents/<id>/build`): the tree loaders (`ensureScopeTree`, `ensureScopeSkeleton`) wait for the saved tree to be read (`awaitSavedTree` → `whenSyncHydrated`) before asking the server. Boot is deferred to load + idle while `scopeTreeDemand` starts the load on the first read, so every warm reload fetched the ~1.2 s tree again and the engine held its device write. A refresh never waits; a cold device waits for boot's empty read (≤5 s deferral), and the wait is hard-capped (`WHEN_SYNC_HYDRATED_CAP_MS`). Test: `redux/thunks/__tests__/tree-loaders-read-the-saved-tree-first.test.ts`.
 

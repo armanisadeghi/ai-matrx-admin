@@ -78,6 +78,7 @@ import { LabelFace, LevelLayers, StructureFace } from "./lod/TileLevels";
 import type { CardLine } from "../items/card-lines";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
 import { tileContentReady } from "../engine/content-ready";
+import { RecordHostChrome, type HostedRecordRef } from "@/features/shell/host-chrome/RecordHostChrome";
 import { FIT_MIN_SCROLLER_H, FLOATING_TILE_MENU_PLACE, FULL_CHROME, type ScrollerBox, type TileChrome, atAutoHeightCeiling, autoContentHeight, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
 
 /**
@@ -143,6 +144,9 @@ export interface BoardTileProps {
    * e.g. click to rename the note). Sized to its text, so the rest of the
    * header still moves the tile. */
   titleSlot?: ReactNode;
+  /** The record this tile holds (its type's `comments(source)`): the body's header for THAT record drops
+   * the name and Open the tile header already shows (`RecordHostChrome`). Null: nothing is dropped. */
+  hostRecord?: HostedRecordRef | null;
   /** Header actions (screen-sized buttons live in world space too). */
   actions?: ReactNode;
   /** The tile's ONE "…" menu (what it is, Comment, Open, the type's own entries); Full screen is always in it. */
@@ -222,6 +226,7 @@ export function BoardTile({
   renderStatus,
   statusFrom = IDLE_STATUS,
   titleSlot,
+  hostRecord = null,
   actions,
   menu,
   chrome = FULL_CHROME,
@@ -261,6 +266,10 @@ export function BoardTile({
   // agent) and then stays: a board opened far out mounts no feature body until you get close.
   const bodyWanted = useBodyWanted(id);
   const headerRef = useRef<HTMLDivElement>(null);
+  // THE HOST CHROME (features/shell/host-chrome): the header names the record, so a body's rename field
+  // moves into this slot (`HostTitle`) and its in-body name / Open row drops out (`HostedRecordBar`).
+  const [titleTarget, setTitleTarget] = useState<HTMLDivElement | null>(null);
+  const [titleClaims, setTitleClaims] = useState(0);
   const tileRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [hint, setHint] = useState<ThrowAction>("none");
@@ -724,7 +733,9 @@ export function BoardTile({
         <StatusDot from={statusFrom} animate={tier === "read"} />
         {Icon && <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />}
         <div className="flex min-w-0 flex-1">
-          {titleSlot ?? <p className="truncate text-sm font-medium text-foreground">{title}</p>}
+          {titleClaims > 0 ? null : (titleSlot ?? <p className="truncate text-sm font-medium text-foreground">{title}</p>)}
+          {/* A body's own rename field lands here (HostTitle); clipped, so it never paints over the chips beside it. */}
+          <div ref={setTitleTarget} data-board-title-slot className={titleClaims > 0 ? "flex min-w-0 flex-1 overflow-hidden" : "hidden"} />
         </div>
         {!overview && <TileStatus id={id} variant="header" animate={tier === "read"} renderStatus={renderStatus} />}
         {interacting && !focused && (
@@ -789,7 +800,16 @@ export function BoardTile({
                       every tile reflowing at once. */}
                   <Suspense fallback={<TileSkeleton typeLabel={typeLabel ?? ""} />}>
                     <TileAutoHeightContext.Provider value={autoHeight}>
-                      <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
+                      <RecordHostChrome
+                        host="board-tile"
+                        record={hostRecord}
+                        names={!headerless}
+                        opens={Boolean(menu?.href)}
+                        titleTarget={headerless ? null : titleTarget}
+                        onTitleClaim={(claimed) => setTitleClaims((n) => Math.max(0, n + (claimed ? 1 : -1)))}
+                      >
+                        <AfterFirstPaint placeholder={<TileSkeleton typeLabel={typeLabel ?? ""} />}>{children(tier)}</AfterFirstPaint>
+                      </RecordHostChrome>
                     </TileAutoHeightContext.Provider>
                   </Suspense>
                 </ErrorBoundaryWithCapture>

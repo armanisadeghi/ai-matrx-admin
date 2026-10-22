@@ -10,12 +10,13 @@ const read = (rel: string) => readFileSync(join(__dirname, "..", "..", rel), "ut
 
 describe("scope tile density", () => {
   const editor = read("scopes/components/pages/ScopeDetailEditor.tsx");
-  it("the board tile asks for the tile density; the route page does not", () => {
-    expect(read("board/items/scope-items.tsx")).toMatch(/<ScopeDetailEditor[\s\S]*?density="tile"/);
+  it("the tile density comes from the host chrome (the tile names the scope), never a prop", () => {
+    expect(editor).toMatch(/const inTile = useHostNamesRecord\(\{ token: "scope", id: scopeParam \}\)/);
+    expect(read("board/items/scope-items.tsx")).toMatch(/entityComments\("scope"\)/);
+    expect(read("board/items/scope-items.tsx")).not.toMatch(/density=/);
     expect(read("../app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/page.tsx")).not.toMatch(/density=/);
   });
   it("the editor drops the h1 and Open full page only in the tile density", () => {
-    expect(editor).toMatch(/density = "page"/);
     expect(editor).toMatch(/inTile \? \(\s*countLine\([^)]*\)\s*\) : \(\s*<h1/);
     expect(editor).toMatch(/\{inTile \? null : \(\s*<Button\s+asChild[\s\S]*?Open full page/);
   });
