@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0582",
-  "version": 1,
+  "version": 2,
   "title": "Pool Service Company",
   "description": "Weekly routes, water readings at every stop, equipment repairs and truck chemicals.",
   "forWho": "Pool cleaning and pool repair companies",
@@ -9,7 +9,7 @@
     "emoji": "🏊"
   },
   "cover": {
-    "url": "gallery:trades-swimming-pool-clear-blue-water",
+    "url": "gallery:trades-backyard-pool-screened-enclosure",
     "offsetY": 50
   },
   "category": "trades",
@@ -272,7 +272,7 @@
         "Saguaro Wash Drive"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "pool",
@@ -1503,7 +1503,8 @@
               "pool": "pool-2",
               "tech": "tm-3",
               "visit_on": "@today-2d",
-              "filter_cleaned": false
+              "filter_cleaned": false,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1514,7 +1515,8 @@
               "pool": "pool-5",
               "tech": "tm-4",
               "visit_on": "@today-1d",
-              "filter_cleaned": false
+              "filter_cleaned": false,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1525,7 +1527,8 @@
               "pool": "pool-1",
               "tech": "tm-3",
               "visit_on": "@today",
-              "filter_cleaned": false
+              "filter_cleaned": false,
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2084,7 +2087,8 @@
               "parts_cost": 140,
               "labor_cost": 160,
               "warranty": false,
-              "scheduled_on": "@today+3d"
+              "scheduled_on": "@today+3d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2099,7 +2103,8 @@
               "parts_cost": 410,
               "labor_cost": 160,
               "warranty": false,
-              "scheduled_on": "@today+5d"
+              "scheduled_on": "@today+5d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2114,7 +2119,8 @@
               "parts_cost": 190,
               "labor_cost": 180,
               "warranty": false,
-              "scheduled_on": "@today+4d"
+              "scheduled_on": "@today+4d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2676,7 +2682,7 @@
         "emoji": "🏊"
       },
       "cover": {
-        "url": "gallery:trades-swimming-pool-clear-blue-water",
+        "url": "gallery:trades-backyard-pool-screened-enclosure",
         "offsetY": 50
       },
       "settings": {
@@ -2728,6 +2734,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:water-chemistry"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:route-sheet"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:new-pool"
                   }
                 }
               ]
@@ -2793,7 +2832,8 @@
                   "annual_value",
                   "add_repair_btn",
                   "call_btn",
-                  "added_at"
+                  "added_at",
+                  "monthly_rate"
                 ]
               },
               {
@@ -2995,7 +3035,8 @@
                   "assigned_to",
                   "done_btn",
                   "take_btn",
-                  "added_at"
+                  "added_at",
+                  "quote"
                 ]
               },
               {
@@ -3089,7 +3130,8 @@
                   "supplier",
                   "stock_value",
                   "reorder",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3541,7 +3583,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My stops"
+              "text": "Stops on my route"
             }
           ],
           "props": {
@@ -4216,6 +4258,416 @@
               "text": "Create each cleanup visit as its own row titled for the work, for example Okonjo algae recheck, so the readings tell the story day by day. When the water passes the Water check two visits in a row, put the pool back on its weekly route and tell the customer what caused it so it does not happen again."
             }
           ]
+        }
+      ]
+    },
+    {
+      "key": "route-sheet",
+      "parent": "pool-service-company",
+      "title": "Route sheet",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Each tech's day in stop order. A stop marked Could not service gets a reason and a new visit before the tech leaves the street."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "visit"
+            },
+            "inline": true,
+            "title": "Today's stops",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Today",
+                "layout": "grid",
+                "within": {
+                  "visit_on": {
+                    "relative": "today"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "visit_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "visit-today",
+                "icon": "Table"
+              },
+              {
+                "name": "Today by status",
+                "layout": "kanban",
+                "groupField": "status",
+                "within": {
+                  "visit_on": {
+                    "relative": "today"
+                  }
+                },
+                "id": "visit-today-by-status",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "visit_on",
+                  "completed_on",
+                  "fc",
+                  "ph",
+                  "alk",
+                  "cya",
+                  "ch",
+                  "salt",
+                  "chem_cost",
+                  "filter_cleaned",
+                  "fc_ratio",
+                  "water_check",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Tomorrow",
+                "layout": "list",
+                "within": {
+                  "visit_on": {
+                    "relative": "tomorrow"
+                  }
+                },
+                "id": "visit-tomorrow",
+                "icon": "List"
+              },
+              {
+                "name": "Could not service",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Could not service"
+                  ]
+                },
+                "id": "visit-could-not-service",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "visit-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repairs found on the route"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "repair"
+            },
+            "inline": true,
+            "title": "Repairs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Found, not quoted",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Found on route"
+                  ]
+                },
+                "id": "repair-found-not-quoted",
+                "icon": "Table"
+              },
+              {
+                "name": "Scheduled",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Parts ordered",
+                    "Scheduled"
+                  ]
+                },
+                "id": "repair-scheduled",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "repair-found-not-quoted"
+          }
+        }
+      ]
+    },
+    {
+      "key": "new-pool",
+      "parent": "pool-service-company",
+      "title": "Taking on a new pool",
+      "icon": {
+        "emoji": "🏊"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first visit sets the price and the relationship. Measure, test, look at every piece of equipment, and write it all down before you quote a monthly rate."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "ClipboardCheck"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the first visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for the gate code, dogs, and where the equipment pad is. Write it in Gate and access on the pool."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask what went wrong with the last company. It tells you what this customer will judge you on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the pool"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Measure length, width and average depth; gallons is length times width times depth times 7.5."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Full water test: free chlorine, pH, alkalinity, stabilizer, calcium and salt if saltwater."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at the pump, filter, heater, salt cell and timer. Photograph the labels."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note the surface and any staining, cracks or loose tile."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Find anything wrong and add it as a Repair found on route, priced separately."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting the monthly rate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pool"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Starting monthly rate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 15,000 gallons, cartridge filter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "165 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "15,000 to 25,000 gallons"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "185 USD"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Over 25,000 gallons or heavy trees"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "210 USD and up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Commercial"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quoted per visit, three visits a week"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Chemicals are included up to a normal use; a green pool or a stabilizer drain is billed separately. Say so in the first message."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting it up here"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pool added with route, gallons, surface, sanitizer and filter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Monthly rate and contact details filled in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "First weekly visit booked on the route day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any repairs found are quoted within two days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

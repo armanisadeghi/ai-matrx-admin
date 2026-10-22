@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0587",
-  "version": 1,
+  "version": 2,
   "title": "Coworking Space",
   "description": "Members and tours, desks and offices, meeting-room credits and front-desk tickets.",
   "forWho": "Coworking operators and shared office managers",
@@ -173,6 +173,20 @@
             "value": "@me"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "member_new_cycle",
+        "table": "member",
+        "name": "Start new cycle",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "cycle_start",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
       }
     ],
     "agent": {
@@ -262,7 +276,7 @@
         "Tannery Row"
       ]
     },
-    "version": 1,
+    "version": 2,
     "tables": [
       {
         "token": "member",
@@ -520,16 +534,23 @@
             ]
           },
           {
+            "key": "cycle_start",
+            "label": "Cycle started",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "hours_used",
             "label": "Room hours this cycle",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "bookings",
-            "pick": "hours",
+            "pick": "cycle_hours",
             "agg": "sum",
             "filter": {
-              "cycle": "This cycle",
               "status": {
                 "not": [
                   "Cancelled",
@@ -601,6 +622,17 @@
             "contextPolicy": "include"
           },
           {
+            "key": "cycle_btn",
+            "label": "Start new cycle",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "member_new_cycle"
+            }
+          },
+          {
             "key": "take_btn",
             "label": "Assign to me",
             "parityType": "button",
@@ -659,7 +691,9 @@
               "start_on": "@today-13m",
               "phone": "(423) 555-0101",
               "email": "studio.lumen@inbox-mail.net",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "cycle_start": "@today-10d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -675,7 +709,9 @@
               "start_on": "@today-8m",
               "phone": "(423) 555-0102",
               "email": "dahlia.restrepo@inbox-mail.net",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "cycle_start": "@today-12d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -691,7 +727,9 @@
               "start_on": "@today-2y",
               "phone": "(423) 555-0103",
               "email": "hello.kettlequill@inbox-mail.net",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "cycle_start": "@today-20d",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -707,7 +745,8 @@
               "start_on": "@today-5m",
               "phone": "(423) 555-0104",
               "email": "marcus.oyelaran@inbox-mail.net",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "cycle_start": "@today-15d"
             }
           },
           {
@@ -722,7 +761,8 @@
               "start_on": "@today-1y",
               "phone": "(423) 555-0105",
               "email": "office.brightwell@inbox-mail.net",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "cycle_start": "@today-25d"
             }
           },
           {
@@ -738,7 +778,8 @@
               "start_on": "@today-10m",
               "phone": "(423) 555-0106",
               "email": "ops.signalharbor@inbox-mail.net",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "cycle_start": "@today-9d"
             }
           },
           {
@@ -754,7 +795,8 @@
               "start_on": "@today-3m",
               "phone": "(423) 555-0107",
               "email": "ines.achterberg@inbox-mail.net",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "cycle_start": "@today-4d"
             }
           },
           {
@@ -769,7 +811,8 @@
               "start_on": "@today-40d",
               "phone": "(423) 555-0108",
               "email": "tamsin.okafor@inbox-mail.net",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "cycle_start": "@today-10d"
             }
           },
           {
@@ -1239,8 +1282,7 @@
             "name": "Room booking",
             "values": {
               "status": "Confirmed",
-              "booking_name": "New booking",
-              "cycle": "This cycle"
+              "booking_name": "New booking"
             },
             "default": true,
             "body": {
@@ -1410,20 +1452,21 @@
             ]
           },
           {
-            "key": "cycle",
-            "label": "Billing cycle",
-            "parityType": "select",
+            "key": "cycle_from",
+            "label": "Member's cycle started",
+            "parityType": "lookup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "choices": [
-              "This cycle",
-              "Billed"
-            ],
-            "choiceColors": {
-              "This cycle": "blue",
-              "Billed": "green"
-            },
-            "default": "This cycle"
+            "via": "member",
+            "pick": "cycle_start"
+          },
+          {
+            "key": "cycle_hours",
+            "label": "Hours this cycle",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF(OR({Status} = \"Cancelled\", {Status} = \"No-show\"), 0, IF(DATEDIFF({Member's cycle started}, {Starts}, 'days') >= 0, {Hours}, 0))"
           },
           {
             "key": "outside_fee",
@@ -1481,7 +1524,6 @@
               "member": "memb-1",
               "start_at": "@today-35d 09:00",
               "hours": 2,
-              "cycle": "Billed",
               "checked_in_at": "@today-35d 08:55"
             }
           },
@@ -1494,7 +1536,6 @@
               "member": "memb-1",
               "start_at": "@today-8d 10:00",
               "hours": 3,
-              "cycle": "This cycle",
               "checked_in_at": "@today-8d 09:58"
             }
           },
@@ -1507,7 +1548,6 @@
               "member": "memb-3",
               "start_at": "@today-6d 13:00",
               "hours": 2,
-              "cycle": "This cycle",
               "checked_in_at": "@today-6d 13:05"
             }
           },
@@ -1520,7 +1560,6 @@
               "member": "memb-2",
               "start_at": "@today-5d 15:00",
               "hours": 2,
-              "cycle": "This cycle",
               "checked_in_at": "@today-5d 14:57"
             }
           },
@@ -1533,7 +1572,6 @@
               "member": "memb-1",
               "start_at": "@today-4d 09:00",
               "hours": 4,
-              "cycle": "This cycle",
               "checked_in_at": "@today-4d 09:02"
             }
           },
@@ -1545,8 +1583,7 @@
               "room": "spac-11",
               "member": "memb-4",
               "start_at": "@today-3d 16:00",
-              "hours": 1,
-              "cycle": "This cycle"
+              "hours": 1
             }
           },
           {
@@ -1558,7 +1595,6 @@
               "member": "memb-2",
               "start_at": "@today-2d 10:00",
               "hours": 3,
-              "cycle": "This cycle",
               "checked_in_at": "@today-2d 09:50"
             }
           },
@@ -1570,8 +1606,7 @@
               "room": "spac-10",
               "member": "memb-1",
               "start_at": "@today 13:00",
-              "hours": 5,
-              "cycle": "This cycle"
+              "hours": 5
             }
           },
           {
@@ -1582,8 +1617,7 @@
               "room": "spac-11",
               "member": "memb-3",
               "start_at": "@today+1d 11:00",
-              "hours": 2,
-              "cycle": "This cycle"
+              "hours": 2
             }
           },
           {
@@ -1594,8 +1628,7 @@
               "room": "spac-11",
               "member": "memb-7",
               "start_at": "@today+2d 09:00",
-              "hours": 1,
-              "cycle": "This cycle"
+              "hours": 1
             }
           },
           {
@@ -1606,7 +1639,6 @@
               "room": "spac-13",
               "start_at": "@today+5d 08:00",
               "hours": 3,
-              "cycle": "This cycle",
               "outside_fee": 450
             }
           },
@@ -1618,8 +1650,7 @@
               "room": "spac-13",
               "member": "memb-6",
               "start_at": "@today+9d 12:00",
-              "hours": 2,
-              "cycle": "This cycle"
+              "hours": 2
             }
           }
         ],
@@ -1804,7 +1835,8 @@
               "kind": "Wi-Fi",
               "priority": "High",
               "member": "memb-1",
-              "reported_at": "@today-2d 14:20"
+              "reported_at": "@today-2d 14:20",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1826,7 +1858,8 @@
               "status": "Waiting on vendor",
               "kind": "Printer",
               "priority": "Normal",
-              "reported_at": "@today-5d 11:45"
+              "reported_at": "@today-5d 11:45",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -1837,7 +1870,8 @@
               "kind": "Heating and cooling",
               "priority": "Normal",
               "member": "memb-1",
-              "reported_at": "@today-1d 15:30"
+              "reported_at": "@today-1d 15:30",
+              "assigned_to": "@installer"
             }
           },
           {
@@ -2226,6 +2260,39 @@
           ]
         },
         {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:front-desk-today"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:onboarding-offboarding"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "page",
           "props": {
             "spaceId": "page:room-credits"
@@ -2283,7 +2350,8 @@
                   "take_btn",
                   "mail_btn",
                   "add_booking_btn",
-                  "added_at"
+                  "added_at",
+                  "monthly_fee"
                 ]
               },
               {
@@ -2384,7 +2452,8 @@
                   "occupant",
                   "per_seat",
                   "hours_booked",
-                  "added_at"
+                  "added_at",
+                  "price"
                 ]
               },
               {
@@ -2446,7 +2515,8 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "hours",
-                  "cycle",
+                  "cycle_from",
+                  "cycle_hours",
                   "outside_fee",
                   "checked_in_at",
                   "in_btn",
@@ -2462,7 +2532,8 @@
                 "hiddenFields": [
                   "status",
                   "hours",
-                  "cycle",
+                  "cycle_from",
+                  "cycle_hours",
                   "outside_fee",
                   "checked_in_at",
                   "in_btn",
@@ -3064,7 +3135,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "My follow-ups"
+              "text": "Tours I am following up"
             }
           ],
           "props": {
@@ -3707,6 +3778,391 @@
           "text": [
             {
               "text": "A day pass pack includes no room hours. If a day pass holder needs a room, charge the hourly price. When a day-pass member comes in more than eight days a month, offer a hot desk plan: it is cheaper for them and steadier for us."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "front-desk-today",
+      "parent": "coworking-space",
+      "title": "Front desk today",
+      "icon": {
+        "emoji": "🛎️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Open at 8 am. Who has a room booked, who is touring, what is broken, and what space is free to show."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking"
+            },
+            "inline": true,
+            "title": "Room bookings",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Today",
+                "layout": "grid",
+                "within": {
+                  "start_at": {
+                    "relative": "today"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "start_at",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "bookin-today",
+                "icon": "Table"
+              },
+              {
+                "name": "Today by status",
+                "layout": "kanban",
+                "groupField": "status",
+                "within": {
+                  "start_at": {
+                    "relative": "today"
+                  }
+                },
+                "id": "bookin-today-by-status",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "start_at",
+                  "hours",
+                  "cycle_from",
+                  "cycle_hours",
+                  "outside_fee",
+                  "checked_in_at",
+                  "in_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Tomorrow",
+                "layout": "list",
+                "within": {
+                  "start_at": {
+                    "relative": "tomorrow"
+                  }
+                },
+                "id": "bookin-tomorrow",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "bookin-today"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Free to show on a tour"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "space"
+            },
+            "inline": true,
+            "title": "Spaces",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Available",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Available"
+                  ]
+                },
+                "id": "space-available",
+                "icon": "Table"
+              },
+              {
+                "name": "Held for a tour",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Held for a tour"
+                  ]
+                },
+                "id": "space-held-for-a-tour",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "space-available"
+          }
+        }
+      ]
+    },
+    {
+      "key": "onboarding-offboarding",
+      "parent": "coworking-space",
+      "title": "Member onboarding and move-out",
+      "icon": {
+        "emoji": "🔑"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A member's first day and last day are the two the community talks about. Both run on a checklist, so nothing depends on who is at the desk."
+            }
+          ],
+          "background": "green",
+          "props": {
+            "icon": "KeyRound"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before day one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agreement signed and first month paid; Member since and Cycle started set to the start date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Key card made and tested on the front door and their floor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wi-Fi login and printer code sent the day before"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Desk or office cleaned, chair checked, name on the door for an office"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Day one"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tour the building again with them as a member: kitchen, phone booths, mail shelf, quiet rules."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Show how to book a meeting room and how many hours their plan includes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Introduce them to two members who do related work."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Post a short welcome in the members' channel, with their permission."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Week four"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A ten-minute check-in at their desk: what is working, what is not. Most move-outs start with a small irritation nobody asked about."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Move-out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "On notice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status to Notice given; confirm the last day and the deposit terms in writing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two weeks before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a smaller plan or a virtual office if they are leaving for cost"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Last day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Collect key cards, check the space, read the meter if they had an office"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Return the deposit within the agreed days, set status to Moved out, free the space"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ask why"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the reason on the member's page: price, space, moved away, team grew. Reasons collected for a year tell you what to change."
             }
           ]
         }

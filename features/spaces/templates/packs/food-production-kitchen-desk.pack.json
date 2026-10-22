@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0577",
-  "version": 1,
+  "version": 2,
   "title": "Food Production Kitchen Desk",
   "description": "Plan batches, trace lots, track allergens, cost each jar, and ship wholesale orders.",
   "forWho": "Small packaged-food makers and commercial kitchens",
@@ -2486,7 +2486,7 @@
         "Millrace Commons"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2576,6 +2576,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:costing-a-jar"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:production-schedule"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:allergen-changeover"
                   }
                 }
               ]
@@ -2789,7 +2822,9 @@
                   "avg_cost",
                   "gross_pct",
                   "plan_btn",
-                  "added_at"
+                  "added_at",
+                  "wholesale",
+                  "retail"
                 ]
               },
               {
@@ -3039,7 +3074,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "From recipe to pallet"
             }
           ],
           "props": {
@@ -3098,7 +3133,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal week"
+              "text": "A production week"
             }
           ],
           "props": {
@@ -3149,7 +3184,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Kitchen lead, QA, sales"
             }
           ],
           "props": {
@@ -3618,7 +3653,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading cost per unit and margin"
             }
           ],
           "props": {
@@ -4311,6 +4346,437 @@
           "props": {
             "checked": false
           }
+        }
+      ]
+    },
+    {
+      "key": "production-schedule",
+      "parent": "food-production-kitchen-desk",
+      "title": "Production schedule",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plan the week's batches against what is in stock and what is ordered. A batch is not scheduled until its ingredients are on hand."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "batch"
+            },
+            "inline": true,
+            "title": "Batches",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Calendar",
+                "layout": "calendar",
+                "dateField": "batch_on",
+                "id": "batch-calendar",
+                "icon": "Calendar",
+                "hiddenFields": [
+                  "status",
+                  "lot",
+                  "batch_on",
+                  "released_on",
+                  "units",
+                  "ing_cost",
+                  "pack_cost",
+                  "labor_cost",
+                  "wholesale",
+                  "unit_cost",
+                  "batch_margin",
+                  "ph",
+                  "label_check",
+                  "metal",
+                  "assigned_to",
+                  "release_btn",
+                  "hold_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "This week",
+                "layout": "grid",
+                "within": {
+                  "batch_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "sorts": [
+                  {
+                    "field": "batch_on",
+                    "direction": "asc"
+                  }
+                ],
+                "id": "batch-this-week",
+                "icon": "Table"
+              },
+              {
+                "name": "On QA hold",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "QA hold"
+                  ]
+                },
+                "id": "batch-on-qa-hold",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "batch-calendar"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "ingredient"
+            },
+            "inline": true,
+            "title": "Ingredients and packaging",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Low or out",
+                "layout": "grid",
+                "anyOf": {
+                  "status": [
+                    "Low",
+                    "Out"
+                  ]
+                },
+                "id": "ingred-low-or-out",
+                "icon": "Table"
+              },
+              {
+                "name": "On order",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "On order"
+                  ]
+                },
+                "id": "ingred-on-order",
+                "icon": "List"
+              },
+              {
+                "name": "Allergens in the building",
+                "layout": "kanban",
+                "groupField": "allergen",
+                "id": "ingred-allergens-in-the-building",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "status",
+                  "approved",
+                  "cert_expires",
+                  "ordered_on",
+                  "on_hand",
+                  "reorder_at",
+                  "unit",
+                  "unit_cost",
+                  "value",
+                  "reorder",
+                  "order_btn",
+                  "added_at"
+                ]
+              }
+            ],
+            "activeViewId": "ingred-low-or-out"
+          }
+        }
+      ]
+    },
+    {
+      "key": "allergen-changeover",
+      "parent": "food-production-kitchen-desk",
+      "title": "Allergen changeover",
+      "icon": {
+        "emoji": "🧽"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A sesame batch followed by a nut-free jar is how recalls start. Run allergen products last in the day, and when you cannot, run this changeover and write it down."
+            }
+          ],
+          "background": "red",
+          "props": {
+            "icon": "ShieldAlert"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Order the week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Plan the day from no allergens to most: plain salsas first, wheat and soy next, tree nuts and sesame last."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never run two different allergens back to back without a full changeover between them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The Allergens in the building board on Production schedule shows what is on the shelves this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The changeover"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clear the line: every jar, lid, label roll and open bag of the last product leaves the room."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Strip the parts that touch food: kettle, ladles, funnels, filler heads and the conveyor guide."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wash, rinse and sanitize; the scrub is what removes the protein, the sanitizer only kills germs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Inspect with a torch inside the filler and under the guides; any residue means wash again."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Swab where your plan says (filler nozzle and kettle lip) and read the swab before you start."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The QA lead signs the batch page: time, who cleaned, swab result."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Labels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the first label off the roll against the product: name, allergen statement, lot code and date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Label check on the batch is ticked only after that first jar is checked by a second person."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Previous product"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next product"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What is needed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No allergen"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Any"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal clean"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wheat"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No allergen"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Full changeover"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tree nuts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sesame"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Full changeover and swab"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sesame"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sesame"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal clean"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If a swab fails"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Do not start. Clean again and swab again. Two failures stop the line for the day, and the QA lead writes it on the batch page with what was found."
+            }
+          ]
         }
       ]
     }

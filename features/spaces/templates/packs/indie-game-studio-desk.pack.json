@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0578",
-  "version": 1,
+  "version": 2,
   "title": "Indie Game Studio Desk",
   "description": "Milestones, tasks by discipline, bugs, playtests and wishlists for a small game studio.",
   "forWho": "Indie game studios and small game teams",
@@ -2022,7 +2022,7 @@
         "Harborlight Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2112,6 +2112,39 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:playtests-and-wishlists"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sprint-board"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:sprint-planning"
                   }
                 }
               ]
@@ -2308,7 +2341,8 @@
                   "open_bugs",
                   "hit_btn",
                   "task_btn",
-                  "added_at"
+                  "added_at",
+                  "payment"
                 ]
               },
               {
@@ -2329,7 +2363,8 @@
                   "open_bugs",
                   "hit_btn",
                   "task_btn",
-                  "added_at"
+                  "added_at",
+                  "payment"
                 ]
               },
               {
@@ -2515,7 +2550,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The four tables"
+              "text": "From task to milestone build"
             }
           ],
           "props": {
@@ -2574,7 +2609,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A normal week"
+              "text": "A sprint week"
             }
           ],
           "props": {
@@ -2625,7 +2660,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Who owns what"
+              "text": "Leads, QA, producer"
             }
           ],
           "props": {
@@ -3093,7 +3128,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "How to read the numbers"
+              "text": "Reading progress and bug counts"
             }
           ],
           "props": {
@@ -3795,6 +3830,416 @@
           "text": [
             {
               "text": "Survey link shown on the demo's end screen"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sprint-board",
+      "parent": "indie-game-studio-desk",
+      "title": "Sprint board",
+      "icon": {
+        "emoji": "🎮"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The board for Monday planning and the daily stand-up. Everything in Next sprint is promised; everything in Backlog is not."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "task"
+            },
+            "inline": true,
+            "title": "Tasks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "Sprint",
+                "layout": "kanban",
+                "groupField": "status",
+                "id": "task-sprint",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "estimate",
+                  "due_on",
+                  "done_on",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "By discipline",
+                "layout": "kanban",
+                "groupField": "discipline",
+                "id": "task-by-discipline",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "owner",
+                  "estimate",
+                  "due_on",
+                  "done_on",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "Due this week",
+                "layout": "grid",
+                "within": {
+                  "due_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Next sprint",
+                    "In progress",
+                    "In review"
+                  ]
+                },
+                "id": "task-due-this-week",
+                "icon": "Table"
+              },
+              {
+                "name": "Cut",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Cut"
+                  ]
+                },
+                "id": "task-cut",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "task-sprint"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bugs by severity"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "bug"
+            },
+            "inline": true,
+            "title": "Open bugs",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "name": "By severity",
+                "layout": "kanban",
+                "groupField": "severity",
+                "id": "bug-by-severity",
+                "icon": "SquareKanban",
+                "hiddenFields": [
+                  "build",
+                  "target",
+                  "found_in",
+                  "repro",
+                  "reported_on",
+                  "fixed_on",
+                  "assignee",
+                  "fixed_btn",
+                  "bug_take",
+                  "added_at"
+                ]
+              },
+              {
+                "name": "To verify",
+                "layout": "list",
+                "anyOf": {
+                  "status": [
+                    "Fixed"
+                  ]
+                },
+                "id": "bug-to-verify",
+                "icon": "List"
+              }
+            ],
+            "activeViewId": "bug-by-severity"
+          }
+        }
+      ]
+    },
+    {
+      "key": "sprint-planning",
+      "parent": "indie-game-studio-desk",
+      "title": "Sprint planning and cutting scope",
+      "icon": {
+        "emoji": "✂️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A small studio ships by cutting early. Two-week sprints, a hard look at the milestone every Monday, and a rule that a feature is cut before a date slips."
+            }
+          ],
+          "background": "purple",
+          "props": {
+            "icon": "Scissors"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monday planning (one hour)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the milestone's exit criteria aloud. Everything planned has to serve one of them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move finished work out of review. Anything In review for more than three days gets a reviewer named now."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each person pulls tasks to about 80% of their time; the rest is bugs, meetings and surprises."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Crash and Blocker bugs go in first, before any new feature."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily stand-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ten minutes, standing or on a call: what moved, what is next, what is stuck."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stuck means someone else has to act. Name them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cutting scope"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the milestone's Progress falls behind the calendar (half the time gone, under 40% done), cut. Cutting is a decision, not a failure: move the task to Cut, write one line on why, and tell the publisher in the milestone update."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Keep"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Cut first"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Anything in the exit criteria"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Second variants of an enemy or level"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Crash and save bugs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Polish bugs on menus"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "The first ten minutes of play"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Optional side content"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Controller and accessibility basics"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Achievements and extra cosmetics"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Crunch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "We do not plan overtime. If the only way to hit a milestone is weekends, cut, or ask the publisher to move the date with the playtest numbers in hand."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "End of sprint"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Build made from the sprint branch and played start to finish"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bugs found in that build entered with build number"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Milestone progress and open bugs read out to the team"
             }
           ],
           "props": {
