@@ -28,5 +28,5 @@ export { hrReviewWorkspaceManifest as s324 } from "../../hr-review-workspace.man
 export { hrTaskInboxManifest as s327 } from "../../hr-task-inbox.manifest";
 export { workflowTriggersManifest as s339 } from "../../workflow-triggers.manifest";
 export { printQrManifest as s358 } from "../../print-qr.manifest";
-export { adminJurisdictionRuleManifest as s387 } from "../../admin-jurisdiction-rules.manifest";
-export { adminJurisdictionVerificationManifest as s388 } from "../../admin-jurisdiction-rules.manifest";
+export { adminJurisdictionRuleManifest as s388 } from "../../admin-jurisdiction-rules.manifest";
+export { adminJurisdictionVerificationManifest as s389 } from "../../admin-jurisdiction-rules.manifest";

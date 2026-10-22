@@ -54,4 +54,5 @@ export { hrDeskClockManifest as s329 } from "../../hr-desk-clock.manifest";
 export { commercePrinterCertifyManifest as s345 } from "../../commerce-printer-certify.manifest";
 export { compareManifest as s360 } from "../../compare.manifest";
 export { esignTemplateManifest as s364 } from "../../esign-template.manifest";
-export { sourceLibraryManifest as s374 } from "../../source-library.manifest";
+export { agentMemoryManifest as s373 } from "../../agent-memory.manifest";
+export { sourceLibraryManifest as s375 } from "../../source-library.manifest";

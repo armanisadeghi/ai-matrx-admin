@@ -257,7 +257,7 @@ export function EntityListPage<TRow>({
   config,
   notice,
   headerActions,
-  actions,
+  actions: pageActions,
   emptyAction,
   surface,
   scopes,
@@ -613,8 +613,8 @@ export function EntityListPage<TRow>({
     </Button>
   );
 
-  useDeclareListPageActions(actions);
-  const primaryAction = actions?.find((a) => a.primary);
+  useDeclareListPageActions(pageActions);
+  const primaryAction = pageActions?.find((a) => a.primary);
   const configuredEmptyAction =
     emptyAction === undefined
       ? primaryAction
@@ -1355,7 +1355,7 @@ export function EntityListPage<TRow>({
               />
             </div>
           )}
-          {(headerActions || (actions && actions.length > 0)) && (
+          {(headerActions || (pageActions && pageActions.length > 0)) && (
             // A page's actions are the 28px controls (`@ai-matrx/design-system/controls`
             // Button); the scope makes a tap button among them match. The shell never forces a
             // height onto what the page passes (THE CANONICAL-OVERRIDE LAW).
@@ -1363,7 +1363,7 @@ export function EntityListPage<TRow>({
               data-entity-list-actions=""
               className="flex shrink-0 items-center gap-1.5 @3xl/list:gap-2"
             >
-              {actions?.map((a) => <ListPageActionButton key={a.id} action={a} />)}
+              {pageActions?.map((a) => <ListPageActionButton key={a.id} action={a} />)}
               {typeof headerActions === "function"
                 ? headerActions(list)
                 : headerActions}

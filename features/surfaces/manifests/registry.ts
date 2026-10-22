@@ -413,6 +413,7 @@ import { renderedDocumentManifest } from "./rendered-document.manifest";
 import { captureNeedsYouManifest } from "./capture-needs-you.manifest";
 import { decisionReviewManifest } from "./decision-review.manifest";
 import { deviceConsoleManifest } from "./device-console.manifest";
+import { agentMemoryManifest } from "./agent-memory.manifest";
 import { exportLibraryManifest } from "./export-library.manifest";
 import { sourceLibraryManifest } from "./source-library.manifest";
 import { termListsManifest } from "./term-lists.manifest";
@@ -833,6 +834,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   captureNeedsYouManifest,
   decisionReviewManifest,
   deviceConsoleManifest,
+  agentMemoryManifest,
   exportLibraryManifest,
   sourceLibraryManifest,
   termListsManifest,

@@ -49,6 +49,10 @@ This is AI Matrx's focused, reviewer-visible Google Workspace product surface. I
 
 ## Authorization contract
 
+- The overview's YouTube Analytics enable action opens the canonical connector
+  chooser with only the `youtube` product and the exact selected connection.
+  That chooser owns isolated YouTube consent and its transport choices; never
+  append YouTube through the overview's cumulative capability popup/redirect.
 - Docs, Sheets, and Files import use `drive.file`, never an account-wide Drive scope. The user explicitly selects each item through Google Picker before AI Matrx can register, operate on, or import it.
 - The browser Picker token is short-lived and memory-only. `drivePickerToken.ts` requests the
   `google_drive_picker` broker audience with one `connection:<uuid>` and exactly `drive.file`;

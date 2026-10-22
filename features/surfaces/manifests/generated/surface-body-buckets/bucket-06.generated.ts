@@ -17,4 +17,4 @@ export { commerceLabelBatchManifest as s268 } from "../../commerce-label-batch.m
 export { hrTimeExceptionsManifest as s330 } from "../../hr-time-exceptions.manifest";
 export { esignEnvelopeManifest as s363 } from "../../esign-envelope.manifest";
 export { decisionReviewManifest as s371 } from "../../decision-review.manifest";
-export { adminAgentFactoryBuildManifest as s386 } from "../../admin-agent-factory-build.manifest";
+export { adminAgentFactoryBuildManifest as s387 } from "../../admin-agent-factory-build.manifest";
