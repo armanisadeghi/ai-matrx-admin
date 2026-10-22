@@ -122,3 +122,34 @@ describe("helpers", () => {
     expect(slugify("")).toBe("org-chart");
   });
 });
+
+describe("buildPublishSnapshot — what is left out of the page", () => {
+  const blank = () => ({ name: null, detail: null, avatarUrl: null });
+
+  it("drops an excluded box and moves the boxes under it up to its place", () => {
+    const s = buildPublishSnapshot(forest, (d) => faces[d.entityId] ?? blank(), {
+      include: (d) => d.boxType !== "membership",
+    });
+    expect(s.roots.map((r) => r.label)).toEqual(["Booking Assistant", "Patient Intake"]);
+    expect(JSON.stringify(s)).not.toContain("dana");
+    expect(countBoxes(s)).toBe(2);
+  });
+
+  it("names each kept box's chart source to the caller, never into the snapshot", () => {
+    const seen: Record<string, string> = {};
+    const s = buildPublishSnapshot(forest, (d) => faces[d.entityId] ?? blank(), {
+      onBox: (key, d) => {
+        seen[key] = d.boxId;
+      },
+    });
+    expect(Object.keys(seen)).toHaveLength(countBoxes(s));
+    expect(seen[s.roots[0].key]).toBe(`membership:${USER_ID}`);
+    expect(JSON.stringify(s)).not.toContain(USER_ID);
+  });
+
+  it("an unnamed open position does not repeat its title as its subtitle", () => {
+    const s = buildPublishSnapshot([node("position", "empty")], () => ({ name: null, detail: "Open position", avatarUrl: null }));
+    expect(s.roots[0].label).toBe("Open position");
+    expect(s.roots[0].sublabel).toBeUndefined();
+  });
+});

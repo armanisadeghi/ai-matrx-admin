@@ -74,15 +74,24 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   department…" on any box's menu (or "Add to chart" → "Plan a department…" for the top of the chart):
   the person describes it in plain words → `org_chart.department_planner` (kind `department_plan`,
   headless JSON) proposes seats → they rename, remove, add, re-parent and edit each seat's goal /
-  inputs / output → Create makes the positions in the box's organization (a position box's own, else
-  the active one), placed under the box (and under each other per `reports_to`, managers first —
-  `department/departmentPlan.ts`, pure + tested), each with its job through `seatJob.ts`
-  `createSeatJob` (the same door as "Define the job"). Optional next steps: "Build their agents"
+  inputs / output → Create makes the positions in the BOX's own organization (every box type: a
+  position's, an agent's `organizationId`, a person's or team's from the org directory; the active one
+  only at the top of the chart or for a box with none), placed under the box (and under each other per
+  `reports_to`, managers first — `department/departmentPlan.ts`, pure + tested), each with its job
+  through `seatJob.ts` `createSeatJob` (the same door as "Define the job"). A seat whose manager seat
+  has no position yet WAITS ("Waiting on <manager>") — never placed under the box in its stead — and
+  Retry places it once the manager exists. A job made but not linked throws `SeatJobNotLinkedError`
+  carrying the job; Retry only re-links (`linkSeatJob`). The batch lives in Redux
+  (`orchestras.departmentRuns`, keyed by the box; steps are thunks in
+  `department/departmentRunThunks.ts`), so its record of what it made outlives the dialog, which
+  cannot close while a step runs. Optional next steps: "Build their agents"
   (`seatAgent.ts`: `mandates.holder_draft` → `createAgentFromBuilder` owned by the organization →
   the job's default Holder; per-seat progress, each failure named with Retry, a made-but-unbound
   agent is re-bound, never rebuilt) and "Put them in an Orchestra" (leader in the same organization
-  under the box, the built agents as members, prompt synced). "Undo" archives the batch's positions
-  (toast Restore).
+  under the box, the built agents as members, prompt synced). "Undo" takes back everything the batch
+  recorded — the leader's place, the leader and every built agent (archived), every job (turned off),
+  every position (Trash; links stay) — and the toast names it ("3 positions, 3 jobs, 3 agents and the
+  leader"); Restore reverses each.
 - The drawing is the shared `components/official/org-chart/OrgChart.tsx` — THE org chart primitive for
   any hierarchy (layout adapted from Paperclip, MIT, credited in `layout.ts`). Never a second one.
   Its consumers: this chart and HR's `/hr/people/org-chart`. What it offers both: `forest.ts`
@@ -99,7 +108,11 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   Take down, Copy link (kit clipboard door).
 - Storage: `agent.org_chart_publication` (certified entity, org = the active organization). What is
   stored is a SNAPSHOT (`publish/snapshot.ts`, pure + tested, kind `org_chart_snapshot`): names, title
-  lines, box types, link kinds, public avatars only — never emails or record ids (opaque keys `b1…`).
+  lines, box types, link kinds, public avatars only — never emails or record ids (opaque keys `b1…`),
+  never agent descriptions. What goes on the page starts safe: only the active organization's boxes,
+  people left off (a seat's "Filled by" rides only with that person shown); the preview gives every
+  box a show/hide toggle, and a hidden box's boxes move up to its place. A failed read of the chart's
+  existing page keeps Publish off with the error and Retry (it would otherwise make a second page).
   Publishing is the row's `published_to_web` (the anonymous lane; columns pinned in
   `lib/security/public-exposure.ts`). Republish replaces in place; take down turns the lane off.
 - The page: `app/(link)/chart/[slug]` — `(link)` because it is a link somebody sent (no marketing
@@ -158,6 +171,13 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   the same seat line above the items.
 
 ## Change Log
+
+- **2026-10-22** — Review fixes (lane ORG-CHART-REVIEW-FIXES): department batch writes in the box's
+  own organization for every box type; a seat waits on a missing manager; the batch lives in Redux and
+  the dialog cannot close mid-step; no duplicate job on Retry; Undo takes back everything; publishing
+  starts with the active organization's boxes, people hidden, per-box toggles, no agent descriptions,
+  and Publish is off when the existing-page read failed; the legend title is `DisclosureHeader`;
+  linking across names an existing link the other way.
 
 - **2026-10-22** — Department from a description: "Plan a department…" (planner mandate
   `org_chart.department_planner`, kind `department_plan`), batch seats + jobs + agents + Orchestra,

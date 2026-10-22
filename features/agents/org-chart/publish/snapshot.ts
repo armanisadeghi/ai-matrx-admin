@@ -86,14 +86,25 @@ export function publicAvatar(url: string | null | undefined): string | null {
   return parsed.toString();
 }
 
+export interface SnapshotOptions {
+  /** A box left out of the page; the boxes under it move up to its place. Omitted = every box. */
+  include?: (data: AgentOrgNodeData) => boolean;
+  /** Told each snapshot key with the chart box it stands for (the preview's hide toggles). Never stored. */
+  onBox?: (key: string, data: AgentOrgNodeData) => void;
+}
+
 /** Turns the chart as drawn into the snapshot strangers read. */
 export function buildPublishSnapshot(
   roots: readonly OrgChartTreeNode<AgentOrgNodeData>[],
   faceOf: (data: AgentOrgNodeData) => BoxFace,
+  opts: SnapshotOptions = {},
 ): OrgChartSnapshot {
   let n = 0;
-  const walk = (node: OrgChartTreeNode<AgentOrgNodeData>): PublicOrgBox => {
+  const walk = (node: OrgChartTreeNode<AgentOrgNodeData>): PublicOrgBox[] => {
     const d = node.data;
+    // A loop is cut where it closes on the chart; the snapshot stops there too.
+    const below = () => (d.loop ? [] : node.children.flatMap(walk));
+    if (opts.include && !opts.include(d)) return below();
     const type = TYPE_OF[d.boxType];
     const face = faceOf(d);
     const label = clip(withoutEmails(face.name) ?? FALLBACK_LABEL[type], LABEL_MAX);
@@ -105,14 +116,15 @@ export function buildPublishSnapshot(
       box_type: type,
       children: [],
     };
-    if (sub) box.sublabel = clip(sub, SUBLABEL_MAX);
+    // A subtitle that only repeats the title (an unnamed open position) says nothing.
+    if (sub && sub.toLowerCase() !== label.toLowerCase()) box.sublabel = clip(sub, SUBLABEL_MAX);
     if (avatar) box.avatar_url = avatar;
     if (node.edgeKind === "directs" || node.edgeKind === "reports_to") box.link_kind = node.edgeKind;
-    // A loop is cut where it closes on the chart; the snapshot stops there too.
-    box.children = d.loop ? [] : node.children.map(walk);
-    return box;
+    opts.onBox?.(box.key, d);
+    box.children = below();
+    return [box];
   };
-  return { __kind: SNAPSHOT_KIND, roots: roots.map(walk) };
+  return { __kind: SNAPSHOT_KIND, roots: roots.flatMap(walk) };
 }
 
 export function countBoxes(snapshot: OrgChartSnapshot): number {

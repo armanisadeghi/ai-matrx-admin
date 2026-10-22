@@ -5,6 +5,10 @@
 // idea, never a decision), a preview of what strangers will see, then Publish / Update / Take down
 // and Copy link. What is published is a SNAPSHOT (publish/snapshot.ts): names and titles only, never
 // emails or record ids. Republishing replaces it in place, so the address stays the same.
+//
+// What goes on the page starts SAFE: only the active organization's boxes (a publication is filed
+// there), people left off (each one can be shown), agent descriptions never carried. Every box in
+// the preview has its own show/hide toggle; a hidden box's boxes move up to its place.
 
 import { useEffect, useState } from "react";
 import { Copy, ExternalLink, Globe, Lightbulb } from "lucide-react";
@@ -24,7 +28,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserFullName, selectUserName } from "@/lib/redux/selectors/userSelectors";
-import { selectOrganizationName } from "@/lib/redux/slices/appContextSlice";
+import { selectOrganizationId, selectOrganizationName } from "@/lib/redux/slices/appContextSlice";
 import { toast } from "@/lib/toast";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -74,7 +78,9 @@ export function PublishChartDialog({
   const agents = useAgentsById();
   const fullName = useAppSelector(selectUserFullName);
   const shortName = useAppSelector(selectUserName);
-  // A publication is filed in the active organization (publishService), so its name is the one the blurb may use.
+  // A publication is filed in the active organization (publishService): its boxes are the ones the
+  // page carries by default, and its name is the one the blurb may use. A write, not a list filter.
+  const organizationId = useAppSelector(selectOrganizationId);
   const organizationName = useAppSelector(selectOrganizationName);
   const blurbJob = useHeadlessAgentJson();
   useDeclaredSurfaceMandates(BLURB_DISCLOSURE);
@@ -89,6 +95,11 @@ export function PublishChartDialog({
   const [blurb, setBlurb] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** The read of this chart's existing page failed: Publish stays off, or it would make a second page. */
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookupTry, setLookupTry] = useState(0);
+  /** The publisher's own show/hide choices, by chart box id; anything unset uses the safe default. */
+  const [shown, setShown] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!open) return;
@@ -106,18 +117,19 @@ export function PublishChartDialog({
           setBlurb(mine.blurb ?? "");
         }
       })
-      .catch((e: unknown) => live && setError(e instanceof Error ? e.message : "Could not read your published pages."))
+      .catch((e: unknown) => live && setLookupError(e instanceof Error ? e.message : "Could not read your published pages."))
       .finally(() => live && setLoaded(true));
     return () => {
       live = false;
     };
-  }, [open, rootBoxId]);
+  }, [open, rootBoxId, lookupTry]);
 
   const positionById = new Map(positions.map((p) => [p.id, p]));
   const faceOf = (d: AgentOrgNodeData): BoxFace => {
     switch (d.boxType) {
       case "agent":
-        return { name: agents[d.entityId]?.name ?? null, detail: agents[d.entityId]?.description ?? null, avatarUrl: null };
+        // An agent's description is its working notes, not a public title: never carried.
+        return { name: agents[d.entityId]?.name ?? null, detail: null, avatarUrl: null };
       case "membership": {
         const m = dir?.members.get(d.entityId);
         return { name: m?.name ?? null, detail: null, avatarUrl: m?.avatarUrl ?? null };
@@ -128,13 +140,51 @@ export function PublishChartDialog({
       }
       case "position": {
         const p = positionById.get(d.entityId);
+        // Who fills a seat is a person's name: it rides only with that person's own box shown.
         const filler = p?.filledByUserId && dir ? memberForUser(dir, p.filledByUserId, p.organizationId) : null;
-        return { name: p?.name ?? null, detail: filler ? `Filled by ${filler.name}` : "Open position", avatarUrl: null };
+        const fillerShown = filler ? visible(`membership:${filler.membershipId}`, "membership", filler.organizationId) : false;
+        return {
+          name: p?.name ?? null,
+          detail: filler ? (fillerShown ? `Filled by ${filler.name}` : null) : "Open position",
+          avatarUrl: null,
+        };
       }
     }
   };
-  const snapshot: OrgChartSnapshot = buildPublishSnapshot(forest, faceOf);
+  /** The box's own organization, or null while it cannot be read (left off until it can). */
+  function orgOf(d: AgentOrgNodeData): string | null {
+    switch (d.boxType) {
+      case "agent":
+        return agents[d.entityId]?.organizationId ?? null;
+      case "membership":
+        return dir?.members.get(d.entityId)?.organizationId ?? null;
+      case "team":
+        return dir?.teams.get(d.entityId)?.organizationId ?? null;
+      case "position":
+        return positionById.get(d.entityId)?.organizationId ?? null;
+    }
+  }
+  /** The safe default: the active organization's boxes, people left off. */
+  function visible(boxIdOf: string, type: AgentOrgNodeData["boxType"], org: string | null): boolean {
+    return shown[boxIdOf] ?? (type !== "membership" && org !== null && org === organizationId);
+  }
+  const isShown = (d: AgentOrgNodeData) => visible(d.boxId, d.boxType, orgOf(d));
+  // The preview draws every box (hidden ones marked); the page carries only the shown ones.
+  const boxOfKey = new Map<string, AgentOrgNodeData>();
+  const preview: OrgChartSnapshot = buildPublishSnapshot(forest, faceOf, { onBox: (k, d) => boxOfKey.set(k, d) });
+  const snapshot: OrgChartSnapshot = buildPublishSnapshot(forest, faceOf, { include: isShown });
   const boxes = countBoxes(snapshot);
+  const allBoxes = countBoxes(preview);
+  const previewEditing = {
+    isHidden: (key: string) => {
+      const d = boxOfKey.get(key);
+      return d ? !isShown(d) : false;
+    },
+    toggle: (key: string) => {
+      const d = boxOfKey.get(key);
+      if (d) setShown((cur) => ({ ...cur, [d.boxId]: !isShown(d) }));
+    },
+  };
   const creatorName = fullName?.trim() || shortName?.trim() || null;
   const address = `${typeof window === "undefined" ? "" : window.location.origin}${publicationPath(slug || slugify(title))}`;
 
@@ -169,7 +219,7 @@ export function PublishChartDialog({
   };
 
   const publish = async () => {
-    if (!title.trim() || saving) return;
+    if (!title.trim() || saving || lookupError) return;
     setSaving(true);
     setError(null);
     try {
@@ -266,13 +316,28 @@ export function PublishChartDialog({
 
         <div className="flex flex-col gap-1">
           <span className="type-meta font-medium text-muted-foreground">
-            Preview · {boxes} {boxes === 1 ? "box" : "boxes"}
+            {`Preview · ${boxes} of ${allBoxes} ${allBoxes === 1 ? "box" : "boxes"} on the page`}
           </span>
+          <span className="type-meta text-muted-foreground">People and other organizations start hidden</span>
           <div className="h-72 overflow-hidden rounded-lg border border-border bg-textured">
-            {loaded ? <PublishedOrgChart snapshot={snapshot} title={title || defaultTitle} /> : null}
+            {loaded ? <PublishedOrgChart snapshot={preview} title={title || defaultTitle} editing={previewEditing} /> : null}
           </div>
         </div>
 
+        {lookupError && (
+          <div className="flex items-center gap-2">
+            <p className="min-w-0 flex-1 type-secondary text-destructive">
+              {`Couldn't check for this chart's page, so Publish is off. ${lookupError}`}
+              <ErrorAlchemyMenu error={lookupError} />
+            </p>
+            <Button variant="outline" onClick={() => {
+                setLookupError(null);
+                setLookupTry((n) => n + 1);
+              }}>
+              Retry
+            </Button>
+          </div>
+        )}
         {error && (
           <p className="type-secondary text-destructive">
             {error}
@@ -313,7 +378,7 @@ export function PublishChartDialog({
                 Take down
               </Button>
             )}
-            <Button variant="primary" icon={<Globe />} onClick={() => void publish()} disabled={saving || !loaded || !title.trim() || boxes === 0}>
+            <Button variant="primary" icon={<Globe />} onClick={() => void publish()} disabled={saving || !loaded || Boolean(lookupError) || !title.trim() || boxes === 0}>
               {saving ? "Saving…" : live ? "Update" : "Publish"}
             </Button>
           </div>

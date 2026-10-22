@@ -31,6 +31,7 @@ import {
   FileDown,
   ImageDown,
 } from "lucide-react";
+import { DisclosureHeader } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
@@ -1009,17 +1010,13 @@ export function OrgChart<T>({
             className="absolute bottom-3 left-3 z-20 max-w-[calc(100%-1.5rem)] rounded-lg border border-border bg-card/95 px-3 py-2 shadow-sm backdrop-blur sm:max-w-xs"
             data-no-pan
           >
-            <button
-              type="button"
-              aria-expanded={legendOpen}
+            <DisclosureHeader
+              variant="label"
+              open={legendOpen}
+              title="Links"
               onClick={() => setLegendChoice(!legendOpen)}
-              className={cn(
-                "type-meta font-semibold uppercase tracking-wide text-muted-foreground",
-                legendOpen && "mb-1",
-              )}
-            >
-              Links
-            </button>
+              className={cn(legendOpen && "mb-1")}
+            />
             {legendOpen && (
             <ul className="space-y-1.5">
               {kindsInUse.map(([k, kind]) => (
