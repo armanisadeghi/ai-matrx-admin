@@ -55,6 +55,20 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx|mts|ct
     (cd "$ROOT" && node scripts/check-parse.mjs --staged) || exit 1
 fi
 
+# PARTIAL COMMIT (2026-10-22, about half of 17 failed builds): a staged file may not import a LOCAL file
+# or export this commit does not carry — judged against the INDEX, never the disk where the sibling sits
+# (./framePageHeader, lineageSourcesOf). ~1 s. MATRX_RELEASE_PATH=1 reports only (inside the script).
+# Self-test: node scripts/check-staged-imports.mjs --self-test. Temp-index commits: --index <file>.
+if [ -f "$ROOT/scripts/check-staged-imports.mjs" ] && git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'; then
+    (cd "$ROOT" && node scripts/check-staged-imports.mjs --staged)
+    SI_RC=$?
+    if [ "$SI_RC" -eq 1 ]; then
+        echo "COMMIT REFUSED: stage the file named above too, or remove the import — the build fails without it." >&2
+        exit 1
+    fi
+    # exit 2 = the checker could not run: it said so above; never a refusal.
+fi
+
 # --message-file: git has not written the message yet at pre-commit, so the runner's
 # receipt is what carries the exemption here (prepare-commit-msg turns it into the
 # trailer that ends up in the commit). Both are the runner's, never a lane's sentence.

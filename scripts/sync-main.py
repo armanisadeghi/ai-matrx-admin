@@ -1097,6 +1097,85 @@ def staged_parse_failures():
     return out
 
 
+STAGED_IMPORTS_CHECK = os.path.join("scripts", "check-staged-imports.mjs")
+
+
+def staged_import_findings():
+    """Findings of `scripts/check-staged-imports.mjs --json` over the staged set: a staged file that
+    imports a LOCAL file or export the index does not carry. None when the checker cannot run (it
+    says so; never stops the sync)."""
+    if not os.path.isfile(STAGED_IMPORTS_CHECK):
+        return None
+    try:
+        r = subprocess.run(["node", STAGED_IMPORTS_CHECK, "--json"], capture_output=True, text=True,
+                           timeout=300, env={**os.environ, "MATRX_RELEASE_PATH": "0"})
+        if r.returncode not in (0, 1):
+            raise RuntimeError((r.stderr or r.stdout).strip()[-400:] or "exit %d" % r.returncode)
+        findings = json.loads(r.stdout.strip().splitlines()[-1])["findings"]
+        if not isinstance(findings, list):
+            raise ValueError("malformed result")
+        return findings
+    except (OSError, ValueError, IndexError, KeyError, TypeError, RuntimeError, subprocess.TimeoutExpired) as e:
+        say("sweep partial-commit check could not run (%s); nothing held for local imports." % e)
+        return None
+
+
+def _finding_line(f):
+    if f.get("kind") == "missing-file":
+        return 'line %s imports "%s", a file this sweep does not carry' % (f.get("line"), f.get("specifier"))
+    return 'line %s imports { %s } from "%s"; %s as swept does not export it' % (
+        f.get("line"), f.get("name"), f.get("specifier"), f.get("target"))
+
+
+def hold_partial_imports(skipped):
+    """PARTIAL COMMIT (2026-10-22, about half of 17 failed builds): the sweep may not commit a file
+    whose local import (a file or an export) stays behind on disk. For each finding: when the sibling
+    that satisfies it is on disk, uncommitted, and not held for another reason (`skipped`), it is
+    staged too and the pair is committed together; otherwise the importer is unstaged and stays on
+    disk ("SWEEP SKIPPED"). Repeats until the staged set closes (an unstaged file can strand the
+    next importer). Returns [(path, why)] of what it skipped."""
+    skipped = set(skipped)
+    out = []
+    for _round in range(8):
+        findings = staged_import_findings()
+        if not findings:
+            return out
+        pulled = []
+        for f in findings:
+            sib = f.get("sibling")
+            if not isinstance(sib, str) or not sib or sib in skipped or sib in pulled:
+                continue
+            if not git("status", "--porcelain", "--", ":(literal)" + sib, check=False)[1].strip():
+                continue   # committed as it is: staging it changes nothing
+            git("add", "--", ":(literal)" + sib, check=False)
+            if git("diff", "--cached", "--quiet", "--", ":(literal)" + sib, check=False)[0] == 0:
+                continue   # nothing staged (gitignored, vanished)
+            bad = staged_marker_files([sib]) or [p for p, _ in staged_parse_failures() if p == sib]
+            if bad:
+                git("restore", "--staged", "--", ":(literal)" + sib, check=False)
+                skipped.add(sib)
+                continue
+            pulled.append(sib)
+            say("SWEEP PULLED IN %s: %s imports it and it was still uncommitted; they go in one commit."
+                % (sib, f.get("file")))
+        if pulled:
+            continue
+        by_file = {}
+        for f in findings:
+            by_file.setdefault(f.get("file"), []).append(f)
+        for path, fs in by_file.items():
+            if not isinstance(path, str) or path in skipped:
+                continue
+            git("restore", "--staged", "--", ":(literal)" + path, check=False)
+            skipped.add(path)
+            why = "; ".join(_finding_line(f) for f in fs[:3])
+            out.append((path, why))
+            say("SWEEP SKIPPED %s: %s. Committing it alone breaks the build; it stays on disk and the "
+                "next sync commits it with what it imports." % (path, why))
+    say("sweep partial-commit check did not settle in 8 rounds; committing what is staged.")
+    return out
+
+
 IMPORTS_CHECK = os.path.join("scripts", "check-matrx-imports.mjs")
 
 
@@ -1202,15 +1281,19 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: a forcing-function plant (pid %d) is live in it; the next sync "
             "commits it." % (p, pid))
+    skipped_here = set()
     for p in staged_marker_files():
+        skipped_here.add(p)
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: it holds git conflict markers (<<<<<<< / ======= / >>>>>>>); a marker breaks "
             "the build. Resolve the file; the next sync commits it." % p)
     for p, why in staged_parse_failures():
+        skipped_here.add(p)
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: it does not parse (%s); Turbopack refuses it and every release build "
             "fails. Fix the file; the next sync commits it." % (p, why))
     for p, why in staged_lock_import_failures():
+        skipped_here.add(p)
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: %s; the Vercel build installs the LOCKED version and fails. It stays on disk; "
             "the next sync commits it once pnpm-lock.yaml locks a version that has it (pnpm sync:matrx-packages)."
@@ -1219,6 +1302,9 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
             "next sync retries it:\n        %s" % (p, "\n        ".join(reasons[:4])))
+    # Last: what is staged now must carry every local file and export it imports (check-staged-imports).
+    # A sibling held above for its own reason is never pulled back in.
+    hold_partial_imports(set(excluded) | skipped_here)
     rc, _, _ = git("diff", "--cached", "--quiet", check=False)
     if rc == 0:
         return 0
