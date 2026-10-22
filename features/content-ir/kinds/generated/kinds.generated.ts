@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1714 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1715 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "d5ba16a4a3b3";
+export const KIND_REGISTRY_FINGERPRINT = "33bc1eb9c875";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -30109,6 +30109,21 @@ export interface EducationTopicStat {
   answered?: number | null;
   masteryPct: number;
   struggling: number;
+}
+
+/**
+ * One of the learner's own tutor conversations (``OwnedTutorConversation``).
+ *  *
+ *  * Kind `education_tutor_conversation` (registry v1).
+ */
+export interface EducationTutorConversation {
+  id: string;
+  title: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "education_tutor_conversation";
+  status: string;
 }
 
 /**
@@ -67482,6 +67497,7 @@ export type GeneratedKindSlug =
   | "education_spoken_grade"
   | "education_study_goal"
   | "education_topic_stat"
+  | "education_tutor_conversation"
   | "electronics_intake_analysis"
   | "email_candidates"
   | "email_verdict"
@@ -69199,6 +69215,7 @@ export interface KindPayloadBySlug {
   "education_spoken_grade": EducationSpokenGrade;
   "education_study_goal": EducationStudyGoal;
   "education_topic_stat": EducationTopicStat;
+  "education_tutor_conversation": EducationTutorConversation;
   "electronics_intake_analysis": ElectronicsIntakeAnalysis;
   "email_candidates": EmailCandidates;
   "email_verdict": EmailVerdict;
@@ -70920,6 +70937,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "education_spoken_grade",
   "education_study_goal",
   "education_topic_stat",
+  "education_tutor_conversation",
   "electronics_intake_analysis",
   "email_candidates",
   "email_verdict",
