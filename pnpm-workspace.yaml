@@ -16,3 +16,9 @@ packageExtensions:
 
 patchedDependencies:
   lossless-json@4.3.1: patches/lossless-json@4.3.1.patch
+  # Turbopack's production minifier deletes `(/* @__PURE__ */ new Set(...)).forEach(cb)` statements whole;
+  # these patches drop that annotation (sheets-formula: formulas shift on row insert/move). Guard:
+  # __tests__/turbopack-pure-chained-statements.test.ts. A package bump fails install until re-patched.
+  "@univerjs/sheets-formula@1.0.4": patches/@univerjs__sheets-formula@1.0.4.patch
+  "@univerjs/docs-ui@1.0.4": patches/@univerjs__docs-ui@1.0.4.patch
+  "@tiptap/react@3.31.3": patches/@tiptap__react@3.31.3.patch
