@@ -282,8 +282,17 @@ medium never showing properties and the side chat together, the lazy rule for th
 the canvas and the ask bar, the per-page memory and the link, the forms and canvas widths,
 ownership attributes, and no `className`/`style` on any exported props type.
 
+Counting frame nodes in a browser: count under `[data-matrx-frame-host]`. A tab that never paints
+(the agent Browser pane while hidden) leaves React's streamed HTML in `div[hidden][id^="S:"]`
+— a static, never-hydrated copy of the frame whose star reads "Favorites loading" for ever. React
+removes it on the first `requestAnimationFrame`; it is not a second mount.
+
 ## Change log
 
+- 2026-10-22: Investigated "a second hidden frame header": React 19.2's queued streaming reveal
+  (`$RB`/`$RV`) waits for `requestAnimationFrame`, which a hidden Browser pane never fires, so the
+  server segment stays in the DOM. A painting browser shows one frame, header, crumb trail, sidebar
+  and footer at 1440 and 390, and the star enables. No code change; counting rule added under Tests.
 - 2026-10-22: Header fixes. Tap boxes beside each other carry no gap (star/"…", tools and
   sidebar-restore wrappers). The star shows neutral and disabled ("Favorites loading") until the
   saved preferences load (`FrameFavorite.known`). The classic derived trail drops a level that
