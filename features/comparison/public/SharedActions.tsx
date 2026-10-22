@@ -10,7 +10,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Link2, RefreshCw } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
+import { copyText } from "@ai-matrx/kit/clipboard";
 
+import { Spinner } from "@/components/ui/loaders/Spinner";
 import { toast } from "@/lib/toast";
 import { useComparisonOrganizationId } from "../hooks";
 import { runComparison } from "../server";
@@ -19,12 +21,10 @@ import { ComparisonRefusal, type ComparisonItemInput } from "../contract";
 export function CopyLinkButton({ path }: { path: string }) {
   const [copied, setCopied] = useState(false);
   async function copy() {
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}${path}`);
+    // the kit door owns the write and the failure message
+    if (await copyText(`${window.location.origin}${path}`, { failureMessage: "Could not copy the link" })) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      toast.error("Could not copy the link");
     }
   }
   return (
@@ -68,7 +68,7 @@ export function RefreshButton({ kind, items }: { kind: string; items: Comparison
   }
 
   return (
-    <Button variant="primary" disabled={busy || !organizationId} icon={<RefreshCw className={busy ? "h-4 w-4 animate-spin" : "h-4 w-4"} />} onClick={() => void refresh()}>
+    <Button variant="primary" disabled={busy || !organizationId} icon={busy ? <Spinner size="xs" variant="ghost" label="Refreshing" /> : <RefreshCw className="h-4 w-4" />} onClick={() => void refresh()}>
       Refresh
     </Button>
   );

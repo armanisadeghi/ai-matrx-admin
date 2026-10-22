@@ -23,7 +23,7 @@ right/top or goes fullscreen now claims nothing.
 |---|---|
 | `MatrxDynamicPanel.tsx` | Panel primitive |
 | `MatrxDynamicPanelHost.tsx` | Portal host + dialog labeling + focus |
-| `focusOnOpen.ts` | Focus-on-open rule shared with `MatrxFloatingFrame.tsx` |
+| (`mayTakeFocusOnOpen`) | Focus-on-open rule, imported from `@ai-matrx/summon/lite` |
 
 ## Change log
 

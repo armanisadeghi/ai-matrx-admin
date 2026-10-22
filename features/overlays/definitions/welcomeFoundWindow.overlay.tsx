@@ -8,13 +8,11 @@
  * - `useOpenWelcomeFoundWindow()` — imperative hook; returns a handle with `close()`.
  * - `<WelcomeFoundWindowController />` — declarative: mount to open, unmount to close.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "welcomeFoundWindow" as const;
 
@@ -22,22 +20,11 @@ export interface WelcomeFoundWindowHandle {
   close: () => void;
 }
 
-export function useOpenWelcomeFoundWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback((): WelcomeFoundWindowHandle => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-    return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-  }, [dispatch]);
-}
+const opener = appOpener(OVERLAY_ID);
 
-export function WelcomeFoundWindowController(): null {
-  const open = useOpenWelcomeFoundWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenWelcomeFoundWindow = opener.useOpen;
+
+export const WelcomeFoundWindowController = opener.Controller;
 
 export type WelcomeFoundWindowDefinitionData = Record<string, unknown>;
 

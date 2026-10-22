@@ -179,9 +179,9 @@ export function ContentEditorTabs({
             title={isCollapsed ? "Expand" : "Collapse"}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             )}
           </button>
         )}
@@ -198,8 +198,8 @@ export function ContentEditorTabs({
                 className={cn(
                   "group flex items-center gap-1.5 px-3 py-1.5 type-secondary cursor-pointer border-r border-border select-none transition-colors max-w-[200px]",
                   isActive
-                    ? "bg-white dark:bg-zinc-850 text-zinc-900 dark:text-zinc-100 font-medium"
-                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60",
+                    ? "bg-white dark:bg-zinc-850 text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60",
                 )}
                 title={tab.title}
               >
@@ -255,7 +255,7 @@ export function ContentEditorTabs({
                       <config.icon className="h-3.5 w-3.5" />
                       <div className="flex flex-col">
                         <span className="font-medium">{config.label}</span>
-                        <span className="type-meta text-zinc-500">
+                        <span className="type-meta text-muted-foreground">
                           {config.description}
                         </span>
                       </div>

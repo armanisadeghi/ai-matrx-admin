@@ -8,13 +8,13 @@
  * workspace) based on the options' `kind` field; each variant gets its own
  * file in this directory for discoverability.
  */
-import { useEffect } from "react";
 import {
   useOpenContentEditorWindow,
   type OpenContentEditorWindowOptions,
   type ContentEditorWindowHandle,
 } from "@/features/window-panels/windows/content-editors/useOpenContentEditorWindow";
 import type { OverlayWire } from "./overlay-types";
+import { hookController } from "./app-opener";
 
 export {
   useOpenContentEditorWindow,
@@ -22,17 +22,7 @@ export {
   type ContentEditorWindowHandle,
 };
 
-export function ContentEditorWindowController(
-  props: OpenContentEditorWindowOptions,
-): null {
-  const open = useOpenContentEditorWindow();
-  useEffect(() => {
-    const handle = open({ variant: "editor", ...props });
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-  return null;
-}
+export const ContentEditorWindowController = hookController(useOpenContentEditorWindow, (props: OpenContentEditorWindowOptions) => ({ variant: "editor" as const, ...props }));
 
 export type ContentEditorWindowDefinitionData = OpenContentEditorWindowOptions;
 

@@ -19,7 +19,6 @@ export const googleContactsImportWindowOverlay = defineOverlay<GoogleContactsImp
         },
     windowId: "google-contacts-import-window",
     mobile: "drawer",
-    ephemeral: true,
   },
   link: {
     key: "google_contacts_import",

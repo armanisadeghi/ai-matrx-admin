@@ -13,7 +13,9 @@ import { requestHostOrigin } from "@/utils/auth/request-origin";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
-  const form = await request.formData();
+  // A POST that is not a form (no body, JSON, a bot) is refused back to the page like any bad ask,
+  // never a 500 — formData() throws on any other content type.
+  const form = await request.formData().catch(() => new FormData());
   const subject = String(form.get("subject") ?? "");
   const record = String(form.get("record") ?? "");
   const origin = requestHostOrigin(request.headers) ?? request.nextUrl.origin;

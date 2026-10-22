@@ -20,6 +20,11 @@ interface Props {
   size?: number;
   /** Photos (a place) fill the square; logos and favicons keep their own shape. */
   fill?: boolean;
+  /**
+   * Fill the parent (a header block, a card top) instead of a fixed square. A real photo covers the
+   * whole box; a logo, favicon or wordmark is never cropped: it sits whole, centered, at `size`.
+   */
+  cover?: boolean;
   className?: string;
 }
 
@@ -43,7 +48,7 @@ function faviconFor(website: string, size: number): string {
   return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(website)}&sz=${Math.max(64, size * 2)}`;
 }
 
-export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = false, className }: Props) {
+export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = false, cover = false, className }: Props) {
   const logoUrl = realPicture(given);
   const sources = [logoUrl, website ? faviconFor(website, size) : null].filter((s): s is string => Boolean(s));
   const [failed, setFailed] = useState(0);
@@ -73,10 +78,41 @@ export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = fals
     if (img?.complete && img.naturalWidth > 0) settle(img);
   }, [settle]);
 
+  if (cover) {
+    return (
+      <span className={cn("relative block h-full w-full overflow-hidden bg-muted", className)} aria-hidden>
+        {src ? (
+          <>
+            {!loaded ? <span className="absolute inset-0 animate-pulse bg-muted" /> : null}
+            <Image
+              key={src}
+              src={src}
+              alt=""
+              width={photo ? 640 : size}
+              height={photo ? 480 : size}
+              unoptimized
+              ref={settleIfAlreadyLoaded}
+              onLoad={(e) => settle(e.currentTarget)}
+              onError={() => { setLoaded(false); setFailed((n) => n + 1); }}
+              className={photo
+                ? "h-full w-full object-cover"
+                : "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain dark:rounded-lg dark:bg-logo-backing dark:p-[var(--logo-pad)]"}
+              style={photo ? undefined : { width: size, height: size, ["--logo-pad" as string]: `${Math.max(2, Math.round(size * 0.1))}px` }}
+            />
+          </>
+        ) : (
+          <span className="flex h-full w-full items-center justify-center font-semibold text-muted-foreground" style={{ fontSize: Math.round(size * 0.6) }}>
+            {letter}
+          </span>
+        )}
+      </span>
+    );
+  }
+
   return (
     <span
       className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden", fill ? "rounded-lg" : "rounded-md",
-        src && !photo && "dark:rounded-lg dark:bg-neutral-100 dark:p-[var(--logo-pad)]", className)}
+        src && !photo && "dark:rounded-lg dark:bg-logo-backing dark:p-[var(--logo-pad)]", className)}
       // Fixed pixels, never a percentage: percent padding resolves against the PARENT's width and
       // crushed small chips' logos to 0-3px.
       style={{ width: size, height: size, ["--logo-pad" as string]: `${Math.max(2, Math.round(size * 0.1))}px` }}

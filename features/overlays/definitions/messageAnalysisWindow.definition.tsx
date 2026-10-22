@@ -20,6 +20,5 @@ export const messageAnalysisWindowOverlay = defineOverlay<MessageAnalysisWindowD
         },
     windowId: "message-analysis-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

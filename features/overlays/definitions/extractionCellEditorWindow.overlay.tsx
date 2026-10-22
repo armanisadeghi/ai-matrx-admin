@@ -7,7 +7,6 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createExtractionCellEditorCallbackGroup,
   extractionCellEditorInstanceId,
@@ -15,8 +14,10 @@ import {
   type ExtractionCellEditorTargetInput,
 } from "@/features/page-extraction/data-review/extractionCellEditorCallbacks";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "extractionCellEditorWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export type OpenExtractionCellEditorOptions = ExtractionCellEditorTargetInput & {
   callbackGroupId?: string;
@@ -34,20 +35,19 @@ export function useOpenExtractionCellEditor(
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
 
-  const groupRef = useRef<ReturnType<
-    typeof createExtractionCellEditorCallbackGroup
-  > | null>(null);
-
-  useEffect(() => {
-    groupRef.current = createExtractionCellEditorCallbackGroup({
+  // The opened window owns its callback group: one per open, released when the window closes
+  // itself — never dropped when this hook's component unmounts (a menu or sheet that opened the
+  // editor unmounts first; an-opened-window-owns-its-callback-group.test.ts).
+  const groupFor = () => {
+    const group = createExtractionCellEditorCallbackGroup({
       onSaved: (e) => handlersRef.current?.onSaved?.(e),
-      onWindowClose: (e) => handlersRef.current?.onWindowClose?.(e),
+      onWindowClose: (e) => {
+        handlersRef.current?.onWindowClose?.(e);
+        group.dispose();
+      },
     });
-    return () => {
-      groupRef.current?.dispose();
-      groupRef.current = null;
-    };
-  }, []);
+    return group;
+  };
 
   return useCallback(
     (opts: OpenExtractionCellEditorOptions): ExtractionCellEditorHandle => {
@@ -55,11 +55,7 @@ export function useOpenExtractionCellEditor(
         opts.rowId,
         opts.columnKey,
       );
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: opts.readOnly ? {
+      opener.open(dispatch, { instanceId, data: opts.readOnly ? {
             rowId: opts.rowId,
             columnKey: opts.columnKey,
             columnLabel: opts.columnLabel,
@@ -67,7 +63,7 @@ export function useOpenExtractionCellEditor(
             value: opts.value,
             readOnly: true,
             callbackGroupId:
-              opts.callbackGroupId ?? groupRef.current?.callbackGroupId ?? null,
+              opts.callbackGroupId ?? groupFor().callbackGroupId,
           } : {
             rowId: opts.rowId,
             columnKey: opts.columnKey,
@@ -78,14 +74,12 @@ export function useOpenExtractionCellEditor(
             writeKey: opts.writeKey,
             currentPayload: opts.currentPayload,
             callbackGroupId:
-              opts.callbackGroupId ?? groupRef.current?.callbackGroupId ?? null,
-          },
-        }),
-      );
+              opts.callbackGroupId ?? groupFor().callbackGroupId,
+          } });
       return {
         instanceId,
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],

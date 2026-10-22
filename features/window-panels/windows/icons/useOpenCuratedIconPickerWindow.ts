@@ -18,7 +18,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
     createCuratedIconPickerCallbackGroup,
     type CuratedIconPickerHandlers,
@@ -65,7 +65,7 @@ export function useOpenCuratedIconPickerWindow() {
         (options: OpenCuratedIconPickerOptions = {}): CuratedIconPickerHandle => {
             const instanceId =
                 options.instanceId ??
-                `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                mintInstanceId(OVERLAY_ID);
 
             const { callbackGroupId, dispose } =
                 createCuratedIconPickerCallbackGroup({

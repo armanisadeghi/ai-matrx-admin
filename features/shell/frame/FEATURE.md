@@ -113,9 +113,35 @@ them would pull the app's client graph into the fast lab build; parity is proven
 - **Layer 2:** the header carries `#frame-header-center` / `#frame-header-right`, first in
   `HEADER_SLOT_TARGETS`; the derived crumbs are the center's `fallback` and hide when a page's
   own header content lands (legacy-contracts.css).
+- **Layer 1 (page crumbs):** a page-top template (`EntityModeHeader` / `RecordPageHeader`,
+  `CrumbTrailHeader`, `DerivedBreadcrumb`) declares its real trail through
+  `frame-host/framePageHeader.ts` (`useDeclareFrameCrumbs`; FrameHostImpl provides the host) and
+  draws only its status, modes and actions in the slot; the frame's crumbs become the page's
+  (product icon first, repeated levels dropped), else the route table's. No host = classic,
+  unchanged. Test `frame-host/__tests__/page-crumbs-in-frame.test.tsx`.
 - **Page contract:** the body is a `.shell-main` scroller (runway rules apply as written);
   `--shell-header-h: 0`, `--header-height` = the frame's chrome. Side chat and canvas show as
   disabled toggles ("comes … in the next step") until P3.
+
+## Product sidebars (owner, 2026-10-22: one sidebar column, the product's own navigation)
+
+`AppFrameProps.sidebarContent` fills the sidebar body in place of the route table's rows (top row,
+Pinned, big items and footer stay; the frame's width and resize govern it). The live host picks it
+in `frame-host/frameProductSidebar.tsx`, most specific first:
+
+1. **A page's own sidebar** (kind B): the page wraps its column's content in `<FrameSidebarContent>`
+   and drops its own column chrome when `useFrameSidebarSlot()` is true (`frame-host/frameSidebarSlot.tsx`,
+   tiny and eager; FrameHostImpl provides the slot around the page body only, so windows never
+   claim it). In the frame the content is portalled into the column; in classic it renders in place.
+   Users: Notes (route instance, `config.frameSidebar`), Files `PageShell`, Messages, Agent connections.
+2. **A Large Route's registered menu** (kind A, `constants/route-menu-registry.ts`, `defaultView`
+   `"route"` only): the same component the classic sidebar flips into, through the registry's own
+   loader and `ModuleSlot` (row skeleton, honest failure), always `expanded`. legacy-contracts.css
+   shows its `.shell-nav-label`s.
+3. Otherwise the route table's rows.
+
+Inventory and open list: `common-docs/projects/app-frame/SIDEBARS.md`. Test:
+`frame-host/__tests__/product-sidebar-in-frame.test.tsx`.
 
 ## Ours and the page's (owner, 2026-10-20)
 
@@ -276,7 +302,37 @@ medium never showing properties and the side chat together, the lazy rule for th
 the canvas and the ask bar, the per-page memory and the link, the forms and canvas widths,
 ownership attributes, and no `className`/`style` on any exported props type.
 
+Counting frame nodes in a browser: count under `[data-matrx-frame-host]`. A tab that never paints
+(the agent Browser pane while hidden) leaves React's streamed HTML in `div[hidden][id^="S:"]`
+— a static, never-hydrated copy of the frame whose star reads "Favorites loading" for ever. React
+removes it on the first `requestAnimationFrame`; it is not a second mount.
+
 ## Change log
+
+- 2026-10-22: Product sidebars. The frame's one sidebar column shows the product's own navigation:
+  `sidebarContent` slot, kind-A registered menus (Chat, Marketing, Code, Images, Your staff,
+  research topic, agent runs, user settings) and the kind-B door `<FrameSidebarContent>` (Notes,
+  Files, Messages, Agent connections). Classic unchanged.
+- 2026-10-22: Investigated "a second hidden frame header": React 19.2's queued streaming reveal
+  (`$RB`/`$RV`) waits for `requestAnimationFrame`, which a hidden Browser pane never fires, so the
+  server segment stays in the DOM. A painting browser shows one frame, header, crumb trail, sidebar
+  and footer at 1440 and 390, and the star enables. No code change; counting rule added under Tests.
+- 2026-10-22: Header fixes. Tap boxes beside each other carry no gap (star/"…", tools and
+  sidebar-restore wrappers). The star shows neutral and disabled ("Favorites loading") until the
+  saved preferences load (`FrameFavorite.known`). The classic derived trail drops a level that
+  repeats the next ("Brands > Brands"), as the frame does. `HrShell` hands its trail to the frame
+  (`useDeclareFrameCrumbs`) and draws no body strip there.
+- 2026-10-22 (Layer 1): page-top templates hand their trail to the frame (title once, real
+  crumbs); classic untouched. The star is the pin (`useFramePins`, on `usePinned`).
+
+- 2026-10-22: Sidebar. (1) A resize drag always ends: window listeners plus pointer capture, and
+  pointerup, pointercancel, lostpointercapture, window blur, Escape, the handle unmounting and a new
+  pointerdown all call one idempotent stop that releases the drag cursor (the old handle left the cursor
+  held when a release was missed). (2) Big items (`bigItems`: off | top | bottom, default bottom;
+  `BIG_ITEM_IDS` in products.ts): the big products as one-line rows, each opening a new tab, the current
+  one highlighted. (3) Pinned (`pins`, `onSelectPin`): the person's pins; empty shows a hint. The host
+  maps the platform's one favourites store (`usePinned`) in `frame-host/useFramePins.ts`; the header
+  star IS the pin.
 
 - 2026-10-21 (P1 live switch): admins opt in with `?frame=new`; FrameShell, FrameHostGate,
   FrameHostImpl, the generated route table, header slots, legacy page contract.

@@ -7,17 +7,19 @@
  * can't travel through Redux.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createBuildCallbackGroup,
   type BuildWindowData,
   type BuildWindowHandlers,
 } from "@/features/masterwork/build/callbacks";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "masterworkBuildWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenBuildWindowOptions extends BuildWindowHandlers {
   /** The Rulebook being built from. The window is meaningless without it. */
@@ -30,15 +32,10 @@ export interface BuildWindowHandle {
 
 export function useOpenBuildWindow() {
   const dispatch = useAppDispatch();
-  const disposersRef = useRef<Set<() => void>>(new Set());
 
-  useEffect(() => {
-    const disposers = disposersRef.current;
-    return () => {
-      for (const dispose of disposers) dispose();
-      disposers.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return useCallback(
     (opts: OpenBuildWindowOptions): BuildWindowHandle => {
@@ -46,17 +43,15 @@ export function useOpenBuildWindow() {
         onBuilt: opts.onBuilt,
         onWindowClose: opts.onWindowClose,
       });
-      disposersRef.current.add(dispose);
       const data: BuildWindowData = {
         callbackGroupId,
         rulebookId: opts.rulebookId,
       };
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
+      opener.open(dispatch, { data });
       return {
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+          dispatch(opener.close());
           dispose();
-          disposersRef.current.delete(dispose);
         },
       };
     },
@@ -64,14 +59,7 @@ export function useOpenBuildWindow() {
   );
 }
 
-export function BuildWindowController(props: OpenBuildWindowOptions): null {
-  const open = useOpenBuildWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.rulebookId]);
-  return null;
-}
+export const BuildWindowController = hookController<OpenBuildWindowOptions>(useOpenBuildWindow);
 
 export type MasterworkBuildWindowDefinitionData = OpenBuildWindowOptions;
 

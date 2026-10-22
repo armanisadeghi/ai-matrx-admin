@@ -6,13 +6,11 @@
  * - `useOpenApprovalsWindow()` — imperative hook; returns a handle with `close()`.
  * - `<ApprovalsWindowController />` — declarative: mount to open, unmount to close.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "approvalsWindow" as const;
 
@@ -20,24 +18,11 @@ export interface ApprovalsWindowHandle {
   close: () => void;
 }
 
-export function useOpenApprovalsWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback((): ApprovalsWindowHandle => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  }, [dispatch]);
-}
+const opener = appOpener(OVERLAY_ID);
 
-export function ApprovalsWindowController(): null {
-  const open = useOpenApprovalsWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenApprovalsWindow = opener.useOpen;
+
+export const ApprovalsWindowController = opener.Controller;
 
 export type ApprovalsWindowDefinitionData = Record<string, unknown>;
 

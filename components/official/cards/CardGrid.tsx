@@ -39,7 +39,7 @@ const SimpleCard: React.FC<SimpleCardProps> = ({
         </span>
       )}
       {description && (
-        <p className={cn("type-secondary text-center text-gray-600 dark:text-gray-400 mt-1", descriptionClassName)}>
+        <p className={cn("type-secondary text-center text-muted-foreground mt-1", descriptionClassName)}>
           {description}
         </p>
       )}
@@ -115,12 +115,12 @@ const CardGrid: React.FC<CardGridProps> = ({
       {(title || description) && (
         <CardHeader className={cn("text-center pb-8", headerClassName)}>
           {title && (
-            <CardTitle className={cn("text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200", titleClassName)}>
+            <CardTitle className={cn("text-2xl md:text-3xl font-bold text-foreground", titleClassName)}>
               {title}
             </CardTitle>
           )}
           {description && (
-            <p className={cn("text-gray-600 dark:text-gray-400 mt-2", descriptionClassName)}>
+            <p className={cn("text-muted-foreground mt-2", descriptionClassName)}>
               {description}
             </p>
           )}

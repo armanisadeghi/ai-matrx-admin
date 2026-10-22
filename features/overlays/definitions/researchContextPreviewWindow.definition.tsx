@@ -15,6 +15,5 @@ export const researchContextPreviewWindowOverlay = defineOverlay<ResearchContext
     restoreDefaults: { topicId: null, bundle: null, title: undefined },
     windowId: "research-context-preview-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

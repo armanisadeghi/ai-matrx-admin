@@ -14,12 +14,14 @@
  * are declared on the opener and the window imports them.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "impactBatchWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export type ImpactBatchWindowMode = "dry_run" | "post_batch";
 
@@ -64,10 +66,7 @@ export function useOpenImpactBatchWindow() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenImpactBatchWindowOptions): ImpactBatchWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+      opener.open(dispatch, { data: {
             agentIds: opts.agentIds,
             mode: opts.mode,
             delta: opts.delta ?? null,
@@ -77,11 +76,9 @@ export function useOpenImpactBatchWindow() {
             surfaceName: opts.surfaceName,
             posture: opts.posture ?? "admin",
             focusAgentId: opts.focusAgentId ?? null,
-          },
-        }),
-      );
+          } });
       return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
       };
     },
     [dispatch],
@@ -89,28 +86,7 @@ export function useOpenImpactBatchWindow() {
 }
 
 /** Declarative form — opens on mount, closes on unmount. */
-export function ImpactBatchWindowController(
-  props: OpenImpactBatchWindowOptions,
-): null {
-  const open = useOpenImpactBatchWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // Key on the identity fields that change the panel, not on props identity.
-  }, [
-    open,
-    props.mode,
-    props.batchLabel,
-    props.sourceSentence,
-    props.surfaceName,
-    props.posture,
-    props.focusAgentId,
-    props.agentIds.join("|"),
-    (props.preselectedRungIds ?? []).join("|"),
-    JSON.stringify(props.delta ?? null),
-  ]);
-  return null;
-}
+export const ImpactBatchWindowController = hookController<OpenImpactBatchWindowOptions>(useOpenImpactBatchWindow);
 
 export type ImpactBatchWindowDefinitionData = OpenImpactBatchWindowOptions;
 

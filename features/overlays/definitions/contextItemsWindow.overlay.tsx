@@ -8,11 +8,9 @@
  * - `<ContextItemsWindowController />` — declarative wrapper (mount = open).
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { ContextItemsWindowData } from "@/features/window-panels/windows/context-scopes/ContextItemsWindow";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "contextItemsWindow" as const;
 
@@ -22,39 +20,18 @@ export interface ContextItemsWindowHandle {
   close: () => void;
 }
 
-export function useOpenContextItemsWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenContextItemsWindowOptions): ContextItemsWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenContextItemsWindowOptions>(OVERLAY_ID, {
+  instanceId: () => undefined,
+  data: (opts: OpenContextItemsWindowOptions) => ({
             scopeTypeId: opts.scopeTypeId,
             initialItemId: opts.initialItemId ?? null,
             openNewOnMount: opts.openNewOnMount ?? false,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function ContextItemsWindowController(
-  props: OpenContextItemsWindowOptions,
-): null {
-  const open = useOpenContextItemsWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.scopeTypeId, props.initialItemId, props.openNewOnMount]);
-  return null;
-}
+export const useOpenContextItemsWindow = opener.useOpen;
+
+export const ContextItemsWindowController = opener.Controller;
 
 export type ContextItemsWindowDefinitionData = OpenContextItemsWindowOptions;
 

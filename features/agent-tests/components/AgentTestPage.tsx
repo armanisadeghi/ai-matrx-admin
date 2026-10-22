@@ -313,6 +313,8 @@ export function TestRunPanel({
   const openResult = results.find((r) => r.id === openResultId) ?? null;
 
   const paused = run.status.startsWith("paused_");
+  // A canceled run continues too: the server reopens it for the results still pending.
+  const canResume = paused || run.status === "cancelled";
   return (
     <div className="flex flex-col gap-3">
       <RecordId value={runId} label="Run" token="agent_test_run" />
@@ -335,7 +337,7 @@ export function TestRunPanel({
               Cancel
             </Button>
           ) : null}
-          {paused ? (
+          {canResume ? (
             <Button
               variant="outline"
               icon={<StepForward />}
@@ -497,7 +499,7 @@ export function AgentTestPage({
           ) : null}
           <CaseList read={casesRead} selectedCaseIds={new Set<string>()} />
         </aside>
-        <main className="flex min-w-0 flex-1 flex-col gap-4">
+        <main className="flex min-w-0 flex-1 shrink-0 flex-col gap-4 lg:self-start">
           {seat === "user" ? (
             <RunOptionsCard
               options={options}

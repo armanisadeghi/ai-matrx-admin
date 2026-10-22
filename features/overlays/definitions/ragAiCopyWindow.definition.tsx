@@ -15,6 +15,5 @@ export const ragAiCopyWindowOverlay = defineOverlay<RagAiCopyWindowDefinitionDat
     restoreDefaults: { bundle: null, initialSections: null },
     windowId: "rag-ai-copy-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

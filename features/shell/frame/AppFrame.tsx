@@ -45,16 +45,19 @@ import {
 } from "./geometry";
 import type { FrameInitialGeometry } from "./geometry";
 import { useModalPanel } from "./useModalPanel";
+import { BIG_ITEM_IDS } from "./products";
 import type {
   CanvasProps,
   CompanionProps,
   CompanionSeed,
   FrameAction,
+  FrameBigItems,
   FrameCrumb,
   FrameForm,
   FrameHeaderTool,
   FrameMenuItem,
   FrameModuleLoader,
+  FramePin,
   FrameProduct,
   FrameTab,
   FrameVariant,
@@ -159,6 +162,17 @@ export interface AppFrameProps {
   onFavoritesChange: (ids: string[]) => void;
   activeMenuItemId?: string;
   onSelectMenuItem?: (item: FrameMenuItem) => void;
+  /** Pinned: the person's own pages. Omit to hide the section; `[]` shows the empty hint. */
+  pins?: readonly FramePin[];
+  onSelectPin?: (pin: FramePin) => void;
+  /** The big products always in the sidebar: `off`, `top` or `bottom`. Default `bottom`. */
+  bigItems?: FrameBigItems;
+  /**
+   * THE PRODUCT'S OWN NAVIGATION, given by the host (a module's menu, or the page's sidebar
+   * through the host's slot). Rendered in the sidebar body in place of the menu rows; the top
+   * row, Pinned, the big items and the footer stay. The frame's width governs it.
+   */
+  sidebarContent?: ReactNode;
   // ── the header ──
   crumbs: readonly FrameCrumb[];
   /** Only when the item can be favorited. */
@@ -221,6 +235,12 @@ export interface AppFrameProps {
    */
   canvasOpen?: boolean;
   onCanvasOpenChange?: (open: boolean) => void;
+  /**
+   * The canvas in full screen. Controlled by a host whose canvas store decides (the live host: the
+   * store's fullscreen, so the pane's own expand control and the shortcut drive the frame too).
+   */
+  canvasFull?: boolean;
+  onCanvasFullChange?: (full: boolean) => void;
   /**
    * The host cannot offer the side chat / canvas yet: its toggle is disabled with this sentence as
    * its tooltip (and leaves the phone "…" menu) — an honest stand-in, never a dead button.
@@ -368,7 +388,7 @@ export function AppFrame(props: AppFrameProps) {
   const [companionOpen, setCompanionOpen] = useControllable(props.companionOpen, props.onCompanionOpenChange, false);
   const headerEdge = props.headerEdge ?? "fade";
   const [canvasOpen, setCanvasOpen] = useControllable(props.canvasOpen, props.onCanvasOpenChange, false);
-  const [canvasFull, setCanvasFull] = useState(false);
+  const [canvasFull, setCanvasFull] = useControllable(props.canvasFull, props.onCanvasFullChange, false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [seed, setSeed] = useState<CompanionSeed | undefined>(undefined);
@@ -427,6 +447,13 @@ export function AppFrame(props: AppFrameProps) {
   const canvasMounted = useLatched(canvasOpen);
 
   const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
+  const sidebarExtras = {
+    pins: props.pins,
+    onSelectPin: props.onSelectPin,
+    bigItems: props.bigItems ?? "bottom",
+    content: props.sidebarContent,
+    bigProducts: BIG_ITEM_IDS.flatMap((id) => products.filter((p) => p.id === id)),
+  };
   const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };
 
   const drawer = useModalPanel({
@@ -608,6 +635,7 @@ export function AppFrame(props: AppFrameProps) {
                   onHide={() => setSidebarOpen(false)}
                   hideLabel="Hide sidebar"
                   footer={sidebarFooter}
+                  {...sidebarExtras}
                 />
               </div>
             </div>
@@ -833,6 +861,7 @@ export function AppFrame(props: AppFrameProps) {
                 onHide={closeDrawer}
                 hideLabel="Close menu"
                 footer={sidebarFooter}
+                {...sidebarExtras}
               />
             </div>
           </div>

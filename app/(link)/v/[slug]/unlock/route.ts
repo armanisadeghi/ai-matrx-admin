@@ -15,7 +15,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params;
   const back = (query: string) => new NextResponse(null, { status: 303, headers: { Location: `/v/${slug}${query}` } });
   if (!SHARE_TOKEN_SHAPE.test(slug)) return back("");
-  const form = await request.formData();
+  const form = await request.formData().catch(() => new FormData()); // not a form post → treated as an empty one, never a 500
   const password = form.get("password");
   if (typeof password !== "string" || password === "") return back("?wrong=1");
   const view = await publishedView(slug, password);

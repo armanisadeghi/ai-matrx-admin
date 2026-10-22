@@ -361,6 +361,9 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
     getSurfaceSection: (surfaceName) =>
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       (require("@/features/surfaces/manifests/surface-section") as typeof import("@/features/surfaces/manifests/surface-section")).getSurfaceSection(surfaceName),
+    getRoutePageName: (pathname) =>
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      (require("@/features/surfaces/manifests/surface-section") as typeof import("@/features/surfaces/manifests/surface-section")).getRoutePageName(pathname),
   });
   // The loaded-value check reads declared names from the index, as the app
   // registers it (providers/chat-surface-manifests.ts).

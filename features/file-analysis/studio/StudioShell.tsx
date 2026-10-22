@@ -304,7 +304,7 @@ export function StudioShell({ fileId, organizationId }: StudioShellProps) {
         {/* Top bar — a tool row, not a page header (that's the "Back to file"
          * link + shell chrome above). Cleared below the glass shell header by
          * the wrapper's top padding, so no manual edge padding is needed. */}
-        <div className="flex shrink-0 items-center gap-2 matrx-glass-thin-border px-3 py-2 max-sm:flex-wrap">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 max-sm:flex-wrap">
           {/* A real anchor, not a router.push. The file has its own record
               page, and leaving the studio to reach it costs the user this
               surface's state — exactly the case where "open in a new tab" has

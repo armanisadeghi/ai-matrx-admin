@@ -6,6 +6,7 @@ import HeaderIconTitle from "@/features/shell/components/header/variants/variant
 import { isNewUser } from "@/utils/onboarding";
 import { firstNameOf } from "@/features/marketing/smart-add/welcome/firstName";
 import { meetMatrxSeen } from "@/features/onboarding/welcome-steps/welcomeSteps";
+import { ageNotNowActive } from "@/features/education/compliance/ageNotNow";
 import { WelcomeClient } from "./WelcomeClient";
 
 export const metadata: Metadata = {
@@ -35,7 +36,7 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
       <PageHeader>
         <HeaderIconTitle icon="Sparkles" title="Welcome" />
       </PageHeader>
-      <WelcomeClient firstName={firstName} newUser={isNewUser(user)} foundAsked={askedForFound} meetSeen={meetMatrxSeen(user)} />
+      <WelcomeClient firstName={firstName} newUser={isNewUser(user)} foundAsked={askedForFound} meetSeen={meetMatrxSeen(user)} ageNotNow={ageNotNowActive(user)} />
     </>
   );
 }

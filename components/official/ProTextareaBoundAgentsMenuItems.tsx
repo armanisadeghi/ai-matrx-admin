@@ -44,7 +44,7 @@ export function ProTextareaBoundAgentsMenuItems({
           {sectionIdx > 0 && (
             <div className="mx-2 my-1 border-t border-border/60" />
           )}
-          <div className="px-2 py-0.5 type-meta uppercase tracking-wide text-muted-foreground/80">
+          <div className="px-2 py-0.5 type-meta uppercase tracking-wide text-muted-foreground">
             {section.label}
           </div>
           {section.agents.map((agent) => (

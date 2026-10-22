@@ -64,7 +64,7 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
               variant={isSelected ? "default" : "outline"}
               data-json-key={key}
               onClick={() => onKeySelect(rowIndex, key)}
-              className={`text-xs ${isHidden ? 'bg-yellow-200 dark:bg-yellow-800 hover:bg-yellow-300 dark:hover:bg-yellow-900 text-gray-800 dark:text-gray-300' : ''}`}
+              className={`text-xs ${isHidden ? 'bg-yellow-200 dark:bg-yellow-800 hover:bg-yellow-300 dark:hover:bg-yellow-900 text-foreground dark:text-muted-foreground' : ''}`}
             >
               {key}
             </Button>

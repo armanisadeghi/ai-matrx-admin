@@ -6,16 +6,11 @@
  * `features/scopes/utils/scopeMismatch.ts`). Zero React, zero dialog markup;
  * statically importable from thunks, hooks and async handlers.
  *
- * THE MACHINERY IS NOT OURS. The host registry, the request queue, the
- * pre-hydration queueing and the never-a-silent-default promise come from
- * `@ai-matrx/kit/opener` — the same engine behind `confirm()`. This file used
- * to hand-roll them in module-level state, which silently splits host
- * registration from its callers across loader graphs. Never re-implement it
- * here.
+ * THE MACHINERY IS NOT OURS. The dialog is the summon overlay `scopeMismatchDialog`
+ * (features/overlays/definitions); the ask/answer bridge is `requestOverlay`.
  */
 
-import { createOpener } from "@ai-matrx/kit/opener";
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 
 import type {
   ScopeMismatchChoice,
@@ -29,13 +24,6 @@ export interface ScopeMismatchRequest {
   chat: ScopeMismatchDisplayItem[];
 }
 
-export const scopeMismatchOpener = createOpener<
-  ScopeMismatchRequest,
-  ScopeMismatchChoice
->("matrx-frontend.scope-mismatch-opener-state", {
-  hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)",
-});
-
 /**
  * Imperative 3-way mismatch prompt. Resolves with the user's choice:
  * `"update"` (use current selection), `"combine"` (union both),
@@ -45,6 +33,7 @@ export const scopeMismatchOpener = createOpener<
 export function promptScopeMismatch(
   req: ScopeMismatchRequest,
 ): Promise<ScopeMismatchChoice> {
-  requestDialogHosts();
-  return scopeMismatchOpener.open(req);
+  return requestOverlay<ScopeMismatchRequest, ScopeMismatchChoice>("scopeMismatchDialog", req, {
+    cancel: "cancel",
+  });
 }

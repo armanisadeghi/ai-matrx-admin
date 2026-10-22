@@ -12,7 +12,7 @@
  * A refusal is an `error` event `{ code, user_message, limit? }` (or a 400 before the stream opens).
  */
 
-export type FieldType = "rating" | "number" | "int" | "percent" | "money" | "text" | "hours" | "url" | "date";
+export type FieldType = "rating" | "number" | "int" | "percent" | "money" | "text" | "hours" | "url" | "date" | "distribution" | "contact" | "status" | "tags" | "reviews";
 export type Direction = "higher_better" | "lower_better" | "none";
 export type KindStatus = "live" | "coming";
 
@@ -64,6 +64,11 @@ export interface ItemFacet {
   seconds: number | null;
   source_url: string | null;
   table_id: string | null;
+  /** A page that only resembles the company: shown as "Is this them?", never read or scored until confirmed. */
+  possible_url?: string | null;
+  possible_name?: string | null;
+  /** The person said "not them": it stays empty and is not offered again. */
+  rejected?: boolean;
 }
 
 export interface HiddenField {
@@ -141,6 +146,8 @@ export interface PlaceCandidate {
 
 export interface ComparedItem {
   item_id: string;
+  /** Where the item sat in the request (the result is ranked): the number an "Is this them?" answer names. */
+  item_index?: number;
   name: string;
   rank: number;
   source_key: string;
@@ -346,6 +353,7 @@ function parseItemFacet(v: unknown): ItemFacet {
     status: status === "failed" || status === "off" ? status : "done",
     error: strOrNull(o.error), points: num(o.points), seconds: numOrNull(o.seconds),
     source_url: strOrNull(o.source_url), table_id: strOrNull(o.table_id),
+    possible_url: strOrNull(o.possible_url), possible_name: strOrNull(o.possible_name), rejected: bool(o.rejected),
   };
 }
 
@@ -432,6 +440,7 @@ function parseItem(v: unknown): ComparedItem {
   for (const [k, val] of Object.entries(obj(o.values))) values[k] = parseValue(val);
   return {
     item_id: str(o.item_id),
+    item_index: num(o.item_index),
     name: str(o.name) || "Unnamed",
     rank: num(o.rank),
     source_key: str(o.source_key),

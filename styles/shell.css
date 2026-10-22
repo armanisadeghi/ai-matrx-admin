@@ -2636,6 +2636,39 @@ html[data-board-embed] .flex-col > [data-matrx-page-dock] {
 }
 
 /* ---------------------------------------------------------------------------
+   13e. Search is Google's page — `/search` for everyone
+
+   Owner's ruling (2026-10-21): the search page duplicates Google, which has no
+   app chrome. On /search the sidebar, header, account rail, phone trigger, dock
+   and shell chat step aside and the page fills the window; the page draws its
+   own Google-style corner (apps + account, or Sign in). `data-pathname` is set
+   on first paint by AppShell and kept current by NavActiveSync.
+   --------------------------------------------------------------------------- */
+.shell-root[data-pathname="/search"],
+.shell-root[data-pathname="/search"]:has(> #shell-sidebar-toggle:checked) {
+  --shell-header-h: 0px;
+  --shell-header-clearance: 0px;
+  grid-template-columns: 1fr;
+  grid-template-rows: 0 1fr;
+  grid-template-areas:
+    "header"
+    "main";
+}
+.shell-root[data-pathname="/search"] .shell-header,
+.shell-root[data-pathname="/search"] .shell-sidebar,
+.shell-root[data-pathname="/search"] .shell-user-block,
+.shell-root[data-pathname="/search"] .shell-mobile-trigger,
+html:has(.shell-root[data-pathname="/search"]) .shell-dock,
+html:has(.shell-root[data-pathname="/search"]) .shell-chat-dock,
+html:has(.shell-root[data-pathname="/search"]) .shell-chat-toggle {
+  display: none !important;
+}
+.shell-root[data-pathname="/search"] .shell-main {
+  margin-top: 0;
+  height: 100dvh;
+}
+
+/* ---------------------------------------------------------------------------
    14. Mobile Dock — iOS-style Bottom Navigation
    --------------------------------------------------------------------------- */
 

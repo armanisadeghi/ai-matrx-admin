@@ -6,10 +6,8 @@
  * on screen. The window wraps the canonical `BrandChannelPanel`.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "brandChannelWindow" as const;
 
@@ -19,24 +17,14 @@ export interface OpenBrandChannelWindowOptions {
   brandLabel?: string | null;
 }
 
-export function useOpenBrandChannelWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenBrandChannelWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenBrandChannelWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenBrandChannelWindowOptions) => ({
             brandId: options.brandId,
             brandLabel: options.brandLabel ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenBrandChannelWindow = opener.useOpen;
 
 export type BrandChannelWindowDefinitionData = OpenBrandChannelWindowOptions;
 

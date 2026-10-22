@@ -11,14 +11,17 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "socialPostWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenSocialPostOptions {
   postId: string;
@@ -43,7 +46,7 @@ export function useOpenSocialPost() {
     (opts: OpenSocialPostOptions): SocialPostHandle => {
       const instanceId = opts.postId;
       const handle = {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+        close: () => dispatch(opener.close(instanceId)),
       };
       const open = selectOpenInstances(store.getState(), OVERLAY_ID);
       if (open.some((inst) => inst.instanceId === instanceId)) {
@@ -52,20 +55,14 @@ export function useOpenSocialPost() {
         dispatch(focusWindow(instanceId));
         return handle;
       }
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             stackIndex: open.length,
             postId: opts.postId,
             organizationId: opts.organizationId,
             brandSeg: opts.brandSeg ?? "",
             tab: opts.tab ?? "overview",
             landscape: opts.landscape ?? false,
-          },
-        }),
-      );
+          } });
       return handle;
     },
     [dispatch, store],
@@ -73,14 +70,7 @@ export function useOpenSocialPost() {
 }
 
 /** Declarative form: opens the panel on mount, closes it on unmount. */
-export function SocialPostWindowController(props: OpenSocialPostOptions): null {
-  const open = useOpenSocialPost();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.postId, props.organizationId, props.brandSeg, props.tab]);
-  return null;
-}
+export const SocialPostWindowController = hookController<OpenSocialPostOptions>(useOpenSocialPost);
 
 export type SocialPostWindowDefinitionData = OpenSocialPostOptions;
 

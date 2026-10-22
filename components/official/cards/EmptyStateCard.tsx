@@ -57,11 +57,11 @@ const EmptyStateCard: React.FC<EmptyStateCardProps> = ({
         />
       </div>
       
-      <h3 className={`text-xl font-semibold ${alternateState ? "text-emerald-600 dark:text-emerald-400" : "text-gray-900 dark:text-gray-100"} mb-3`}>
+      <h3 className={`text-xl font-semibold ${alternateState ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"} mb-3`}>
         {activeTitle}
       </h3>
       
-      <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
+      <p className="text-muted-foreground mb-8 max-w-md">
         {activeDescription}
       </p>
       

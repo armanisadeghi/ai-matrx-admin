@@ -686,7 +686,7 @@ function FloatingUploadAction({ parentFolderId }: FloatingUploadActionProps) {
   const handleFiles = useCallback(
     async (files: File[]) => {
       const { requestUpload } =
-        await import("@/features/files/upload/UploadGuardHost");
+        await import("@/features/files/upload/uploadGuardOpeners");
       await requestUpload({
         files,
         parentFolderId,

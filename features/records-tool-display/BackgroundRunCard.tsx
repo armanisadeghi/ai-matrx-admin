@@ -21,7 +21,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, ArrowRightLeft, ArrowUpRight, ChevronRight, CircleCheck, Download, Eye, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, ArrowUpRight, ChevronRight, CircleCheck, Download, Eye, ScanSearch, Workflow } from "lucide-react";
 import { Card, CardContent, Progress, Skeleton, type ProgressTone } from "@ai-matrx/design-system";
 import { Badge, Button, DisclosureHeader, StageSteps, type BadgeTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
@@ -54,6 +54,7 @@ import {
   type CopyReport,
   type ImportLoss,
   type ImportReport,
+  type LookReport,
   type WorkflowReport,
 } from "./backgroundRun";
 
@@ -149,6 +150,7 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
   const view = readBackgroundRun(run, hint);
   const isImport = view.kind === "import";
   const isWorkflow = view.kind === "workflow";
+  const isLook = view.kind === "look";
   const over = view.phase === "finished" || view.phase === "stopped" || view.phase === "cancelled";
   const parked = view.phase === "needs_you" || view.phase === "paused" || view.phase === "sleeping";
   // Generic stages for a workflow with no named stage list: one per step it has started.
@@ -172,12 +174,14 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
   const elapsedMs = over ? (startedMs != null && endedMs != null ? endedMs - startedMs : null) : startedMs != null ? liveMs : null;
   const quietMs = useElapsedSince(view.phase === "working" ? isoMs(view.lastMovedAt) : null);
 
-  const title = isWorkflow
+  const title = isLook
+    ? view.report?.kind === "look" ? view.report.title : view.name ?? "Looking at your Notion"
+    : isWorkflow
     ? name ? `Workflow · ${name}` : "Workflow run"
     : isImport
       ? view.name ? `Notion import · ${view.name}` : "Notion import"
       : view.name ? `Copy · ${view.name}` : "Copy into tables";
-  const Icon = isWorkflow ? Workflow : isImport ? Download : ArrowRightLeft;
+  const Icon = isLook ? ScanSearch : isWorkflow ? Workflow : isImport ? Download : ArrowRightLeft;
   const counted = view.sample?.current != null && view.sample.total != null && view.sample.total > 0;
   const barValue = view.phase === "finished"
     ? 100
@@ -281,6 +285,7 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
       </div>
 
       {view.phase === "stopped" ? <StoppedNote kind={view.kind} sentence={view.stoppedBecause} /> : null}
+      {view.report?.kind === "look" && view.phase === "finished" ? <LookReportView report={view.report} /> : null}
       {view.report?.kind === "import" && view.phase === "finished" ? <ImportReportView report={view.report} /> : null}
       {view.report?.kind === "copy" && over ? <CopyReportView report={view.report} /> : null}
       {view.report?.kind === "workflow" && view.phase === "finished" ? <WorkflowReportView report={view.report} /> : null}
@@ -298,6 +303,22 @@ function StoppedNote({ kind, sentence }: { kind: BackgroundRunKind; sentence: st
         <p className="type-secondary text-muted-foreground">{whatToDoWhenStopped(kind)}</p>
       </div>
       <ErrorAlchemyMenu error={sentence ?? (kind === "workflow" ? "The workflow run stopped." : "The background copy stopped.")} />
+    </div>
+  );
+}
+
+// ── look report ─────────────────────────────────────────────────────────────────
+
+/** A look that moved nothing says what it found; it never counts tables made or moved. */
+function LookReportView({ report }: { report: LookReport }) {
+  const facts = report.facts.map((fact) => `${formatCount(fact.count)} ${fact.label.toLowerCase()}`).join(" · ");
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <CircleCheck className="size-3.5 shrink-0 text-success" aria-hidden />
+        <p className="type-secondary min-w-0 flex-1 truncate text-foreground">{facts || report.said || "Done"}</p>
+      </div>
+      {report.note ? <p className="type-secondary text-muted-foreground">May be missing: {report.note}</p> : null}
     </div>
   );
 }

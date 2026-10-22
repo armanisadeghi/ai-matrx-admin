@@ -12,10 +12,8 @@
  * WindowPanel — the one table page (`LocatedTableViewer` → `UnifiedTableBody`).
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "userTableWindow" as const;
 
@@ -28,41 +26,15 @@ export interface UserTableWindowHandle {
   close: () => void;
 }
 
-export function useOpenUserTableWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenUserTableWindowOptions = {}): UserTableWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            tableId: opts.tableId,
-            title: opts.title,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenUserTableWindowOptions>(OVERLAY_ID);
+
+export const useOpenUserTableWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function UserTableWindowController(
-  props: OpenUserTableWindowOptions,
-): null {
-  const open = useOpenUserTableWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.tableId, props.title]);
-  return null;
-}
+export const UserTableWindowController = opener.Controller;
 
 export type UserTableWindowDefinitionData = OpenUserTableWindowOptions;
 

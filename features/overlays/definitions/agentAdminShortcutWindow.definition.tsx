@@ -15,6 +15,5 @@ export const agentAdminShortcutWindowOverlay = defineOverlay<AgentAdminShortcutW
     restoreDefaults: { agentId: null, activeTab: "essentials" },
     windowId: "agent-admin-shortcut-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

@@ -9,7 +9,6 @@
   "ai-matrx": {
     "features/ai-models/format.ts": "export const AI_MODELS_LOCATION =",
     "features/capture-camera/host/CloudLibrarySheet.tsx": "export interface CloudLibrarySheetProps { open: boolean; onClose: () => void; onUpload?: () => void; }",
-    "features/files/upload/uploadGuardOpeners.ts": "export async function requestUpload( arg: Parameters<typeof requestUploadFromEngine>[0], ): ReturnType<typeof requestUploadFromEngine> { await ensureDialogHosts(); return requestUploadFromEngine(arg); }",
     "features/files/utils/format.ts": "export function truncateFilename(name: string, maxLength = 24): string { if (name.length <= maxLength) return name; const dotIdx = name.lastIndexOf(\".\"); if (dotIdx <= 0) return `${name.slice(0, maxLength - 1)}…`; const ext = name.slice(dotIdx); const stem = name.slice(0, dotIdx); const keep = Math.max(1, maxLength - ext.length - 1); return `${stem.slice(0, keep)}…${ext}`; }",
     "features/rich-document/actions/handlers/answer-tools.ts": "function codeFacts(ctx: RichDocumentActionContext): CodeBlockFacts | null { return readCodeBlockFacts(ctx.metadata); }",
     "lib/cartesia/config.ts": "export function buildGenerationConfig(opts?: { speed?: number | null; volume?: number | null; emotion?: string | null; }): Cartesia.GenerationConfig { const cfg: Cartesia.GenerationConfig = { speed: resolveSpeed(opts?.speed), volume: opts?.volume ?? TTS_DEFAULT_VOLUME, }; if (opts?.emotion) cfg.emotion = opts.emotion.toLowerCase() as Cartesia.Emotion; return cfg; }",

@@ -21,7 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Copy, ExternalLink, LayoutList } from "lucide-react";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { selectCanvasIsOpen } from "@ai-matrx/canvas";
+import { selectCanvasIsFullscreen, selectCanvasIsOpen } from "@ai-matrx/canvas";
 import {
   useOptionalCanvas,
   useOptionalCanvasState,
@@ -32,7 +32,19 @@ import {
 } from "@ai-matrx/chat/canvas/workspace/side-chat-state";
 import { FrameChrome } from "./FrameChrome";
 import { FrameSideChatHostContext } from "./frameSideChatHost";
+import { useEarlySideChatDoors } from "./frameSideChatQueue";
 import { useGridFavorites } from "./useGridFavorites";
+import {
+  FramePageHeaderContext,
+  pageTrailCrumbs,
+  useFramePageHeaderHost,
+} from "./framePageHeader";
+import { useFramePins } from "./useFramePins";
+import { FrameSidebarSlotContext } from "./frameSidebarSlot";
+import { useFrameProductSidebar } from "./frameProductSidebar";
+import { menuGoToEntries } from "./goToMenuEntries";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import type { FrameHostProps } from "./FrameHostGate";
 import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
 import { FRAME_ROUTE_HOMES } from "@/features/shell/frame/route-homes.generated";
@@ -157,6 +169,11 @@ export default function FrameHostImpl({
     canToggle: !sideChatState.standsAside,
     onToggle: toggleSideChat,
   });
+  // History rows and comments reach the side chat before it has loaded: open it, queue the act.
+  useEarlySideChatDoors({
+    enabled: isAuthenticated && !sideChatState.standsAside,
+    open: () => sideChatState.setOpen(true),
+  });
   const [initialPathname] = useState(pathname);
   const sideChatHost = {
     signedIn: isAuthenticated,
@@ -167,9 +184,13 @@ export default function FrameHostImpl({
   };
   const canvas = useOptionalCanvas();
   const canvasOpen = useOptionalCanvasState(selectCanvasIsOpen, false);
+  // ONE full-screen state: the canvas store's (the pane's expand control and the shortcut drive it).
+  const canvasFull = useOptionalCanvasState(selectCanvasIsFullscreen, false);
   // The frame presents the canvas window while it is mounted: `openCanvasItem(...)` from any page
   // reaches the store and opens the frame's canvas, even before its body has loaded.
   useEffect(() => canvas?.registerPresentation(), [canvas]);
+  const isAdmin = useAppSelector(selectIsAdminPerson);
+  const goToEntries = menuGoToEntries({ isAuthenticated, isAdmin });
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [favorites, setFavorites] = useGridFavorites();
@@ -186,7 +207,18 @@ export default function FrameHostImpl({
     home.itemIndex >= 0
       ? items.find((i) => i.id === itemId(home.itemIndex))
       : undefined;
-  const crumbs = derivedCrumbs(product, item, home.title, pathname, go);
+  // A page whose template declared its trail names its own crumbs; otherwise the route table's.
+  const { host: pageHeaderHost, pageCrumbs } = useFramePageHeaderHost();
+  const crumbs =
+    pageCrumbs && pageCrumbs.length > 0
+      ? pageTrailCrumbs(product, pageCrumbs, go)
+      : derivedCrumbs(product, item, home.title, pathname, go);
+  const { pins, favorite } = useFramePins(pathname, crumbs[crumbs.length - 1].label);
+
+  // THE PRODUCT'S OWN SIDEBAR (owner, 2026-10-22): the page's own sidebar, else the route
+  // family's registered menu, else the route table's rows (frameProductSidebar.tsx).
+  const ProductIcon = product.icon;
+  const { slotHost, sidebarContent } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
 
   const actions: FrameAction[] = [
     {
@@ -205,6 +237,7 @@ export default function FrameHostImpl({
 
   return (
     <div className="h-dvh w-full">
+      <FramePageHeaderContext value={pageHeaderHost}>
       <FrameSideChatHostContext value={sideChatHost}>
         <FrameChrome
           userData={userData}
@@ -214,6 +247,10 @@ export default function FrameHostImpl({
           product={product}
           favorites={favorites}
           onFavoritesChange={setFavorites}
+          pins={isAuthenticated ? pins : undefined}
+          onSelectPin={(pin) => go(pin.href)}
+          favorite={isAuthenticated ? favorite : undefined}
+          sidebarContent={sidebarContent}
           activeMenuItemId={item?.id}
           onSelectMenuItem={(selected) => selected.href && go(selected.href)}
           crumbs={crumbs}
@@ -222,6 +259,8 @@ export default function FrameHostImpl({
           variant="workspace"
           initialGeometry={initialGeometry}
           hostHeaderSlots
+          goToEntries={goToEntries}
+          onGoTo={go}
           loadCompanion={isAuthenticated ? loadSideChat : undefined}
           companionOpen={sideChatState.open}
           onCompanionOpenChange={sideChatState.setOpen}
@@ -232,6 +271,8 @@ export default function FrameHostImpl({
           }
           loadCanvas={canvas ? loadCanvas : undefined}
           canvasOpen={canvasOpen}
+          canvasFull={canvasFull}
+          onCanvasFullChange={(full) => canvas?.setFullscreen(full)}
           onCanvasOpenChange={(open) =>
             open ? canvas?.show() : canvas?.hide()
           }
@@ -241,10 +282,11 @@ export default function FrameHostImpl({
             data-matrx-frame-main=""
             data-matrx-page-scroll=""
           >
-            {children}
+            <FrameSidebarSlotContext value={slotHost}>{children}</FrameSidebarSlotContext>
           </main>
         </FrameChrome>
       </FrameSideChatHostContext>
+      </FramePageHeaderContext>
     </div>
   );
 }

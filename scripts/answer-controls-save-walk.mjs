@@ -55,6 +55,13 @@ page.on("response", (res) => {
   if (row) row.status = res.status();
 });
 const consoleLines = [];
+// EVERY failed request, not only the writes: a console "Failed to load resource" names no URL, so the
+// walk records method + path + status for each >= 400 response (query strings dropped) and prints them.
+const failedRequests = [];
+page.on("response", (res) => {
+  if (res.status() < 400) return;
+  failedRequests.push({ at: Date.now() - t0, status: res.status(), method: res.request().method(), url: res.url().replace(/\?.*$/, "").slice(0, 160) });
+});
 page.on("console", (m) => {
   if (m.type() === "error" || m.type() === "warning" || process.env.ALL_CONSOLE) consoleLines.push(`${Date.now() - t0} ${m.type()}: ${m.text().slice(0, 200)}`);
 });
@@ -152,6 +159,7 @@ if (results.reload1.controlsButtons > 0) {
   await page.screenshot({ path: `${OUT}/${TAG}-reload2.png` });
 }
 results.writes = writes;
+results.failedRequests = failedRequests;
 results.console = consoleLines.filter((l) => !/echo-unguarded|legacy rendering|accounts list/.test(l)).slice(-40);
 console.log(JSON.stringify(results, null, 1));
 writeFileSync(`${OUT}/${TAG}-results.json`, JSON.stringify(results, null, 1));

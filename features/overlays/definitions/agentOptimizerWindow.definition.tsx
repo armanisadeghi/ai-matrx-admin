@@ -15,7 +15,6 @@ export const agentOptimizerWindowOverlay = defineOverlay<AgentOptimizerWindowDef
     restoreDefaults: { agentId: null },
     windowId: "agent-optimizer-window",
     mobile: "fullscreen",
-    ephemeral: true,
     deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
   },
 });

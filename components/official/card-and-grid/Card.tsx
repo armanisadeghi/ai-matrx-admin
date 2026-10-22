@@ -111,7 +111,7 @@ const colorClasses: Record<CardColor, {
     bg: "bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700",
     hover: "hover:bg-gray-50 dark:hover:bg-zinc-700",
     iconBg: "bg-gray-100 dark:bg-zinc-700",
-    iconColor: "text-gray-500 dark:text-gray-400",
+    iconColor: "text-muted-foreground",
   },
   red: {
     bg: "bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900/30",
@@ -177,7 +177,7 @@ const colorClasses: Record<CardColor, {
     bg: "bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-slate-700/30",
     hover: "hover:bg-slate-50 dark:hover:bg-slate-700/30",
     iconBg: "bg-slate-100 dark:bg-slate-700",
-    iconColor: "text-slate-500 dark:text-slate-400",
+    iconColor: "text-muted-foreground",
   },
 };
 
@@ -260,7 +260,7 @@ export const Card = ({
         </div>
         <h3 className="font-semibold text-lg">{title}</h3>
         {description && (
-          <p className="type-body text-gray-500 dark:text-gray-400">
+          <p className="type-body text-muted-foreground">
             {description}
           </p>
         )}

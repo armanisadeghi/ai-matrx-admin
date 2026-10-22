@@ -348,11 +348,11 @@ function readStoredDefaults(): DefaultsEntry | null {
 
 function storeDefaults(entry: DefaultsEntry): void {
   // Storage full or blocked: the in-memory copy still serves this tab.
-  storedDefaultsKey.setJSON<StoredDefaults>(
+  const stored: StoredDefaults =
     entry.buckets && entry.vector
       ? { version: entry.version, vector: entry.vector, buckets: entry.buckets }
-      : { version: entry.version, values: entry.values },
-  );
+      : { version: entry.version, values: entry.values };
+  storedDefaultsKey.setJSON(stored);
 }
 
 function keepDefaults(entry: DefaultsEntry): DefaultsEntry {

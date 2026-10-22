@@ -15,7 +15,6 @@ export const agentInterfaceVariationsWindowOverlay = defineOverlay<AgentInterfac
     restoreDefaults: { agentId: null },
     windowId: "agent-interface-variations-window",
     mobile: "fullscreen",
-    ephemeral: true,
     deprecated: { reason: "Stub — not yet implemented. Will be removed if no implementation lands." },
   },
 });

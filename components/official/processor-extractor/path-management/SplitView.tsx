@@ -85,7 +85,7 @@ const SplitView: React.FC<SplitViewProps> = ({
   
   // When no results are found, show a message
   if (!Array.isArray(results) || results.length === 0) {
-    return <div className="text-gray-500">No matching items found</div>;
+    return <div className="text-muted-foreground">No matching items found</div>;
   }
   
   // Use processed results if available, otherwise use original results
@@ -107,7 +107,7 @@ const SplitView: React.FC<SplitViewProps> = ({
         </div>
       ))}
       {hasMore && (
-        <div className="text-center text-gray-500 my-2">
+        <div className="text-center text-muted-foreground my-2">
           Showing {showItemCount} of {totalItemCount} items. 
           <Button variant="quiet" onClick={handleShowMore} className="ml-2">Show more</Button>
         </div>

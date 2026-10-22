@@ -6,13 +6,15 @@
 // bottom sheet on phones). It only answers which home; the caller moves.
 
 import React from "react";
-import { useOpenerHost } from "@ai-matrx/kit/opener-react";
+import type { OverlayRenderProps } from "@ai-matrx/summon/react";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { HomePickerList } from "./HomePickerList";
-import { homePickerOpener } from "./homePickerOpener";
+import type { PickHomeRequest, PickHomeResponse } from "./homePickerOpener";
 
-export function HomePickerHostDialog() {
-  const { open, shown, settle } = useOpenerHost(homePickerOpener);
+export function HomePickerHostDialog({ data, close: closeOverlay }: Pick<OverlayRenderProps, "data" | "close">) {
+  const { request: shown, settle } = useOverlayRequest<PickHomeRequest, PickHomeResponse>(data, closeOverlay);
+  const open = shown !== null;
   return (
     <Dialog open={open} onOpenChange={(next) => !next && settle(null)}>
       <DialogContent className="flex max-h-[85dvh] flex-col gap-2 p-3 sm:max-w-[420px]">

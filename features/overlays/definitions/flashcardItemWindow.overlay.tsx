@@ -4,15 +4,11 @@
  * Opener for the `flashcardItemWindow` overlay.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
-
 const OVERLAY_ID = "flashcardItemWindow" as const;
-
 import type { ReviewResult } from "@/features/flashcards/types";
 import type { FaceImageRef } from "@/components/mardown-display/blocks/flashcards/FlashcardFaceImage";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 export interface OpenFlashcardItemWindowOptions {
   front?: string;
@@ -30,14 +26,8 @@ export interface FlashcardItemWindowHandle {
   close: () => void;
 }
 
-export function useOpenFlashcardItemWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenFlashcardItemWindowOptions = {}): FlashcardItemWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenFlashcardItemWindowOptions>(OVERLAY_ID, {
+  data: (opts: OpenFlashcardItemWindowOptions = {}) => ({
             front: opts.front ?? "",
             back: opts.back ?? null,
             index: opts.index ?? 0,
@@ -47,34 +37,12 @@ export function useOpenFlashcardItemWindow() {
             lastResult: opts.lastResult ?? null,
             frontImage: opts.frontImage ?? null,
             backImage: opts.backImage ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function FlashcardItemWindowController(
-  props: OpenFlashcardItemWindowOptions,
-): null {
-  const open = useOpenFlashcardItemWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.front,
-    props.back,
-    props.index,
-    props.layoutMode,
-    props.title,
-  ]);
-  return null;
-}
+export const useOpenFlashcardItemWindow = opener.useOpen;
+
+export const FlashcardItemWindowController = opener.Controller;
 
 export type FlashcardItemWindowDefinitionData = OpenFlashcardItemWindowOptions;
 

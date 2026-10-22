@@ -14,13 +14,16 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "imageViewer" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenImageViewerWindowOptions {
   /** Optional stable instance id. Omit to spawn a fresh instance. */
@@ -64,40 +67,28 @@ export function openImageViewer(
   dispatch: AppDispatch,
   payload: OpenImageViewerPayload,
 ) {
-  dispatch(
-    openOverlay({
-      overlayId: OVERLAY_ID,
-      instanceId: payload.instanceId ?? "default",
-      data: {
+  opener.open(dispatch, { instanceId: payload.instanceId ?? "default", data: {
         images: payload.images,
         initialIndex: payload.initialIndex ?? 0,
         alts: payload.alts,
         title: payload.title,
-      },
-    }),
-  );
+      } });
 }
 
 export function useOpenImageViewerWindow() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenImageViewerWindowOptions): ImageViewerWindowHandle => {
-      const instanceId = opts.instanceId ?? `imageViewer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      const instanceId = opts.instanceId ?? mintInstanceId(OVERLAY_ID);
+      opener.open(dispatch, { instanceId, data: {
             images: opts.images,
             initialIndex: opts.initialIndex,
             alts: opts.alts,
             title: opts.title,
-          },
-        }),
-      );
+          } });
       return {
         instanceId,
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+        close: () => dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],
@@ -109,14 +100,7 @@ export function useOpenImageViewerWindow() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function ImageViewerWindowController(props: OpenImageViewerWindowOptions): null {
-  const open = useOpenImageViewerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.images, props.initialIndex, props.alts, props.title]);
-  return null;
-}
+export const ImageViewerWindowController = hookController<OpenImageViewerWindowOptions>(useOpenImageViewerWindow);
 
 export type ImageViewerDefinitionData = OpenImageViewerWindowOptions;
 

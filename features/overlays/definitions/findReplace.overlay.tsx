@@ -22,15 +22,18 @@
  * overlay closes (its body's close disposes it) or the same slot is opened again.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/open";
 import { createFindReplaceCallbackGroup, findReplaceGroupBySlot as groupBySlot } from "./callbacks/findReplace";
 
 const slotKey = (instanceId?: string) => instanceId ?? "";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "findReplace" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenFindReplaceOptions {
   /** Accessor for the live textarea/input to search. Re-read at use time. */
@@ -64,13 +67,7 @@ export function useOpenFindReplace() {
       groupBySlot.get(key)?.dispose();
       groupBySlot.set(key, { callbackGroupId, dispose });
 
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId: opts.instanceId,
-          data: { callbackGroupId },
-        }),
-      );
+      opener.open(dispatch, { instanceId: opts.instanceId, data: { callbackGroupId } });
 
       const detach = () => {
         if (groupBySlot.get(key)?.callbackGroupId === callbackGroupId) groupBySlot.delete(key);
@@ -81,7 +78,7 @@ export function useOpenFindReplace() {
         overlayId: OVERLAY_ID,
         callbackGroupId,
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId: opts.instanceId }));
+          dispatch(opener.close(opts.instanceId));
           detach();
         },
         dispose: detach,
@@ -97,16 +94,7 @@ export function useOpenFindReplace() {
  * the underlying group; pass stable functions (or memoize) for predictable
  * behavior.
  */
-export function FindReplaceController(props: OpenFindReplaceOptions): null {
-  const open = useOpenFindReplace();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // Identity is the instance id only; handler identity must NOT re-open
-    // (the handlers feed the underlying callback group).
-  }, [open, props.instanceId]);
-  return null;
-}
+export const FindReplaceController = hookController<OpenFindReplaceOptions>(useOpenFindReplace);
 
 export type FindReplaceDefinitionData = OpenFindReplaceOptions;
 

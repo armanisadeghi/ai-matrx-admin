@@ -20,6 +20,5 @@ export const scopeEditWindowOverlay = defineOverlay<ScopeEditWindowDefinitionDat
         },
     windowId: "scope-edit-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

@@ -15,6 +15,5 @@ export const structuredValueWindowOverlay = defineOverlay<StructuredValueWindowD
     restoreDefaults: { value: null, title: null, subtitle: null },
     windowId: "structured-value-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

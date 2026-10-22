@@ -15,7 +15,6 @@ export const googleAgendaWindowOverlay = defineOverlay<GoogleAgendaWindowDefinit
     restoreDefaults: {},
     windowId: "google-agenda-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
   link: {
     key: "agenda",

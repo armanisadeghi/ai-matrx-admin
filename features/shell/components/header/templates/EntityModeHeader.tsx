@@ -29,7 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { CrumbNode, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { CrumbNode, frameCrumbOf, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import {
   RouteModeNav,
   type RouteNavItem,
@@ -56,6 +56,7 @@ import { cn } from "@/lib/utils";
 import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 
 const EXTERNAL_HREF_RE = /^(https?:|mailto:|tel:)/;
 
@@ -312,6 +313,12 @@ export function EntityModeHeader({
 }: EntityModeHeaderProps) {
   // THE CURRENT RECORD: every record page declares what it shows, once, here (custom-experience §5.4).
   useDeclareCurrentRecord({ label: entityLabel, token: entityRecord?.token ?? null, id: entityRecord?.id ?? null });
+  // THE NEW APP FRAME: the trail and the name go to the frame's crumb row (one title, the page's
+  // real levels); this header keeps only the status, the modes and the actions. Classic: no frame.
+  const inFrame = useDeclareFrameCrumbs([
+    ...(trail ?? []).map(frameCrumbOf),
+    { label: entityLabel, options: entityOptions },
+  ]);
   const [sheetOpen, setSheetOpen] = useState(false);
   // On a phone the shell's ⋮ hosts this header's options directly.
   const isPhone = useIsMobile();
@@ -349,6 +356,10 @@ export function EntityModeHeader({
             {/* THE HEADER IS NOT GLASS (owner, 2026-10-03): the shell paints
                 the band solid, so every control in it is transparent. The name
                 beside the back button carries its own inset (rule 3). */}
+            {inFrame ? (
+              entityStatus ? <span className="flex min-w-0 items-center ps-[3px]">{entityStatus}</span> : null
+            ) : (
+            <>
             {backHref ? (
               <ChevronLeftTapButton variant="transparent" href={resolvedBackHref} ariaLabel="Back" />
             ) : null}
@@ -362,7 +373,7 @@ export function EntityModeHeader({
                   // The root crumb keeps its whole word; the middle crumbs (a long name) give way first.
                   <span key={`${crumb.label}-${i}`} className={cn("flex items-center gap-1", i === 0 ? "shrink-0" : "min-w-0")}>
                     <CrumbNode crumb={crumb} isLast={false} />
-                    <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                    <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   </span>
                 ))}
               </nav>
@@ -408,6 +419,8 @@ export function EntityModeHeader({
               </DropdownMenu>
             ) : (
               <span className="flex min-w-0 items-center ps-[3px]">{label}</span>
+            )}
+            </>
             )}
             {isPhone &&
               modeSwitchOnPhone &&

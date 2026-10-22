@@ -15,7 +15,6 @@ export const agentAssistantMarkdownDebugWindowOverlay = defineOverlay<AgentAssis
     restoreDefaults: {},
     windowId: "agent-md-debug-window",
     mobile: "card",
-    ephemeral: true,
   },
   link: {
     key: "agent-md-debug",

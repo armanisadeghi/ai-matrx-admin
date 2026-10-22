@@ -15,6 +15,5 @@ export const characterCounterWindowOverlay = defineOverlay<CharacterCounterWindo
     restoreDefaults: { initialText: "" },
     windowId: "character-counter-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

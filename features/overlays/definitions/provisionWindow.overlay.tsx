@@ -7,17 +7,18 @@
  */
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "provisionWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export function useOpenProvisionWindow() {
   const dispatch = useAppDispatch();
   return useCallback(
     (snapshotId: string, title?: string) => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { snapshotId, title } }));
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
+      opener.open(dispatch, { data: { snapshotId, title } });
+      return { close: () => dispatch(opener.close()) };
     },
     [dispatch],
   );

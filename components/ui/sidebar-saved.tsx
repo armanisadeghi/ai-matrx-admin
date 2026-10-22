@@ -147,7 +147,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = (
             >
                 <div className="flex justify-end z-20 w-full">
                     <IconMenu2
-                        className="text-neutral-800 dark:text-neutral-200"
+                        className="text-foreground"
                         onClick={() => setOpen(!open)}
                     />
                 </div>
@@ -167,7 +167,7 @@ export const MobileSidebar: React.FC<MobileSidebarProps> = (
                             )}
                         >
                             <div
-                                className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
+                                className="absolute right-10 top-10 z-50 text-foreground"
                                 onClick={() => setOpen(!open)}
                             >
                                 <IconX/>
@@ -208,7 +208,7 @@ export const SidebarLink: React.FC<SidebarLinkProps> = (
                     display: animate ? (open ? "inline-block" : "none") : "inline-block",
                     opacity: animate ? (open ? 1 : 0) : 1,
                 }}
-                className="text-neutral-700 dark:text-neutral-200 type-body group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+                className="text-foreground type-body group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
             >
                 {link.label}
             </motion.span>

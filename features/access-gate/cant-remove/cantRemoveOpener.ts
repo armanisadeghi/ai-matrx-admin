@@ -2,13 +2,11 @@
  * cantRemoveOpener — THE imperative door to "you can't remove this: ask the
  * owner, or hide it for me" (2026-10-14). Any code that tried to archive or
  * delete a record the person may not remove calls `offerOwnerChoices(...)`;
- * one host (`<CantRemoveDialogHost />`, mounted in app/Providers.tsx) shows
- * `GovernedActionDialog`. The queue and host registry are `@ai-matrx/kit/opener`
- * — never re-implemented here.
+ * the summon overlay `cantRemoveDialog` shows `GovernedActionDialog`, asked
+ * through `requestOverlay` — never re-implemented here.
  */
 
-import { createOpener } from "@ai-matrx/kit/opener";
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
 import { fetchRemovalRights } from "@/features/access-gate/service/hiddenByMe";
 
@@ -26,11 +24,6 @@ export interface CantRemoveRequest {
 
 /** "hidden" when the person hid it for themselves; "closed" otherwise. */
 export type CantRemoveOutcome = "hidden" | "closed";
-
-export const cantRemoveOpener = createOpener<CantRemoveRequest, CantRemoveOutcome>(
-  "matrx-frontend.cant-remove-opener-state",
-  { hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)" },
-);
 
 /** Thrown by a removal path that checked first and found the record isn't the person's to remove. */
 export class RemovalNotYoursError extends Error {
@@ -55,9 +48,7 @@ function openOnce(request: CantRemoveRequest) {
   const key = `${request.token}:${request.id}`;
   if (showing.has(key)) return;
   showing.add(key);
-  requestDialogHosts();
-  void cantRemoveOpener
-    .open(request)
+  void requestOverlay<CantRemoveRequest, CantRemoveOutcome>("cantRemoveDialog", request, { cancel: "closed" })
     .catch(() => undefined)
     .finally(() => showing.delete(key));
 }

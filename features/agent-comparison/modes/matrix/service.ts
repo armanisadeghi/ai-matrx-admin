@@ -20,11 +20,13 @@ const db = () => createClient().schema("agent");
 
 /**
  * 🚨 LOCAL PATH LITERALS — become `satisfies keyof paths` once `pnpm sync-types`
- * picks the routes up from a deployed server (the aidream half ships in
- * parallel; `MANDATE_DEFAULT_HOLDER_PATH` precedent).
+ * picks the routes up from a deployed server (`MANDATE_DEFAULT_HOLDER_PATH` precedent).
+ * These are the work-queue doors: each cell is one queued work item, a crash re-runs it, and a
+ * reload rejoins through `/runtime/operations/by-link/cmp_comparison_set/{set_id}`. The in-process
+ * `/run` and `/cancel` doors are gone (guard: `matrix/__tests__/retired-battle-doors.test.ts`).
  */
-export const MATRIX_RUN_PATH = "/agent-battles/{set_id}/run" as keyof paths;
-export const MATRIX_CANCEL_PATH = "/agent-battles/{set_id}/cancel" as keyof paths;
+export const MATRIX_RUN_PATH = "/agent-battles/{set_id}/queue-run" as keyof paths;
+export const MATRIX_CANCEL_PATH = "/agent-battles/{set_id}/queue-cancel" as keyof paths;
 
 export async function listMatrixEntries(setId: string): Promise<ComparisonEntryRow[]> {
   const { data, error } = await db()

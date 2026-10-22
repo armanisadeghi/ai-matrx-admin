@@ -21,6 +21,10 @@ import React from "react";
 import { ConversationListPane } from "@/features/messaging/components/ConversationListPane";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
 import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
+import {
   MessagesConversationOpener,
   useOpenConversation,
 } from "@/features/messaging/lib/openConversation";
@@ -42,6 +46,26 @@ export default function MessagesLayoutClient({
 function MessagesLayoutBody({ children }: { children: React.ReactNode }) {
   const openConversation = useOpenConversation();
   const getScope = useMessagesSurfaceScope();
+  const inFrame = useFrameSidebarSlot();
+  const list = (
+    <ConversationListPane
+      className="min-h-0 flex-1"
+      onSelect={openConversation}
+      getApplicationScope={getScope}
+    />
+  );
+
+  // The new app frame: the conversation list is the frame's ONE sidebar column.
+  if (inFrame) {
+    return (
+      <div className="@container/messages flex h-full min-h-0 overflow-y-auto overflow-x-hidden bg-background">
+        <FrameSidebarContent>
+          <div className="flex min-h-0 flex-1 flex-col">{list}</div>
+        </FrameSidebarContent>
+        <div className="min-h-0 min-w-0 flex-1">{children}</div>
+      </div>
+    );
+  }
 
   return (
     // A size container: the list sits beside the thread when the MAIN COLUMN
@@ -50,11 +74,7 @@ function MessagesLayoutBody({ children }: { children: React.ReactNode }) {
     <div className="@container/messages flex h-full min-h-0 overflow-y-auto overflow-x-hidden bg-background">
       {/* Persistent conversation list beside the thread */}
       <div className="hidden min-h-0 w-80 shrink-0 flex-col border-r border-border pt-[var(--shell-header-h)] @2xl/messages:flex">
-        <ConversationListPane
-          className="min-h-0 flex-1"
-          onSelect={openConversation}
-          getApplicationScope={getScope}
-        />
+        {list}
       </div>
 
       {/* Main Content Area - Route Outlet */}

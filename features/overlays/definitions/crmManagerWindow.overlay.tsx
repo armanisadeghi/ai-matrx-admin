@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "crmManagerWindow" as const;
 
@@ -11,24 +9,11 @@ export interface CrmManagerWindowHandle {
   close: () => void;
 }
 
-export function useOpenCrmManagerWindow() {
-  const dispatch = useAppDispatch();
-  return (): CrmManagerWindowHandle => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+const opener = appOpener(OVERLAY_ID);
 
-export function CrmManagerWindowController(): null {
-  const open = useOpenCrmManagerWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenCrmManagerWindow = opener.useOpen;
+
+export const CrmManagerWindowController = opener.Controller;
 
 export type CrmManagerWindowDefinitionData = Record<string, unknown>;
 

@@ -4,14 +4,16 @@
 
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createMarketingMediaAssetCallbackGroup,
   type MarketingMediaAssetWindowHandlers,
 } from "./callbacks/marketingMediaAssetWindow";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "marketingMediaAssetWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenMarketingMediaAssetWindowOptions extends MarketingMediaAssetWindowHandlers {
   siteId: string;
@@ -26,64 +28,45 @@ export interface MarketingMediaAssetWindowHandle {
   dispose: () => void;
 }
 
-interface LiveHandle {
-  instanceId: string;
-  dispose: () => void;
-}
-
 export function useOpenMarketingMediaAssetWindow() {
   const dispatch = useAppDispatch();
-  const handlesRef = useRef<Set<LiveHandle>>(new Set());
 
-  useEffect(() => {
-    const handles = handlesRef.current;
-    return () => {
-      for (const handle of handles) handle.dispose();
-      handles.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return (
     options: OpenMarketingMediaAssetWindowOptions,
   ): MarketingMediaAssetWindowHandle => {
-    let releaseClosedHandle = () => {};
+    let releaseGroup = () => {};
     const instanceId =
       options.windowInstanceId ??
-      `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      mintInstanceId(OVERLAY_ID);
     const { callbackGroupId, dispose } = createMarketingMediaAssetCallbackGroup(
       {
         ...options,
         onWindowClose: (event) => {
           options.onWindowClose?.(event);
-          releaseClosedHandle();
+          // The window closed itself: its group goes with it.
+          releaseGroup();
         },
       },
     );
 
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: {
+    opener.open(dispatch, { instanceId, data: {
           callbackGroupId,
           siteId: options.siteId,
           assetSrc: options.assetSrc,
-        },
-      }),
-    );
+        } });
 
-    const liveHandle: LiveHandle = { instanceId, dispose };
-    handlesRef.current.add(liveHandle);
-    releaseClosedHandle = () => handlesRef.current.delete(liveHandle);
+    releaseGroup = dispose;
 
     const close = () => {
-      dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+      dispatch(opener.close(instanceId));
       dispose();
-      handlesRef.current.delete(liveHandle);
     };
     const detach = () => {
       dispose();
-      handlesRef.current.delete(liveHandle);
     };
 
     return { instanceId, close, dispose: detach };

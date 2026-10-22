@@ -62,7 +62,9 @@
 -- SUITES-TIDY-2 2026-09-22 — the size probe for the fixture loop and RED 1 only (see the header).
 -- It drives the top-level SKIPPED line and the `\if` around RED 1's timed block; the DO blocks
 -- ask pg_settings themselves, because psql does not interpolate inside a dollar-quoted block.
+-- ASOF-REVOKE 2026-10-21: and 'true' on the MAIN database, where the fixture is never built.
 select case when (select setting::numeric from pg_settings where name = 'shared_buffers') >= 524288
+             and :'matrx_db' <> 'MAIN'
             then 'false' else 'true' end as asof_small_server
 \gset
 
@@ -70,6 +72,10 @@ begin;
 set local statement_timeout = '60s';
 set local lock_timeout = '10s';
 select set_config('app.actor_system', 'asof_red_suite', true);
+-- RED 1's ten-thousand-record fixture is built only off the main database (see the fixture loop).
+select set_config('zz.asof_db', :'matrx_db', true) as db,
+       set_config('zz.asof_big', case when :'matrx_db' = 'MAIN' then 'off' else 'on' end, true) as big,
+       set_config('statement_timeout', case when :'matrx_db' = 'MAIN' then '60s' else '300s' end, true) as ceiling;
 
 -- ══════════════════ THE FIXTURE, THE SEAT, AND THE ACCESS CLAUSES THIS SUITE COULD NOT ASK
 do $t$
@@ -172,7 +178,15 @@ begin
   -- `custom.record_write` costs 21.06 ms a record, so this loop alone wants ~211 s against the
   -- 60-second ceiling at the top of this file. Only the loop is gated: the ONE shared record
   -- below, which every access clause in this file is about, is written either way.
-  if (select setting::numeric from pg_settings where name = 'shared_buffers') < 524288 then
+  -- NEVER ON THE MAIN DATABASE (lane ASOF-REVOKE, 2026-10-21). Even set-based, ten thousand rows
+  -- through custom.record's row triggers cost 113 s (measured on main 2026-10-21), so this file
+  -- timed out at its 60 s ceiling on every main run, and the live-database load rule (2026-10-20)
+  -- sends bulk proofs to the nightly clone. On main RED 1 says NOT MEASURED, as it already did on
+  -- a small server; off main the transaction's ceiling is raised for it (see the top).
+  if current_setting('zz.asof_big', true) is distinct from 'on' then
+    v_built := 0;
+    raise notice 'FIXTURE: NOT BUILT on % — the %-record fixture RED 1 is sized on is a bulk proof and runs on the nightly clone only. RED 1 below is gated with it.', current_setting('zz.asof_db', true), c_n;
+  elsif (select setting::numeric from pg_settings where name = 'shared_buffers') < 524288 then
     v_built := 0;
     raise notice 'FIXTURE: NOT BUILT — the %-record fixture RED 1 is sized on needs compute:shared_buffers:524288 and this server is smaller. RED 1 below is gated with it; every other clause runs against the two records this suite still writes.', c_n;
   else
@@ -182,16 +196,10 @@ begin
     -- of load on live for a fixture that asserts nothing. RED 1 times a READ over N live records;
     -- how those records were written is not what it measures, and the shared record below still
     -- goes through the door.
-    -- Row triggers are skipped for this one statement (session_replication_role = replica, put
-    -- back on the next line): through them the insert still cost ~11 ms a row, 113 s measured
-    -- 2026-10-21. Column defaults still apply; the transaction is rolled back at the end of the
-    -- file, and RED 1 reads these rows, never what a trigger would have derived from them.
     perform set_config('role', v_boss, true);
-    perform set_config('session_replication_role', 'replica', true);
     insert into custom.record (organization_id, table_id, data_class, data, created_by)
     select v_org, v_tbl, 'record', jsonb_build_object('name', 'Deal ' || g), c_admin
       from generate_series(1, c_n) g;
-    perform set_config('session_replication_role', 'origin', true);
     select r.id into v_rec from custom.record r
      where r.organization_id = v_org and r.table_id = v_tbl and r.data ->> 'name' = 'Deal ' || c_n;
     perform set_config('role', 'authenticated', true);
@@ -447,8 +455,12 @@ begin
   -- And the switch the old capture asked is still false platform-wide, which is why it could
   -- never open for an organization that had turned its own store on. `custom.store_is_open` IS
   -- a client door, and this is the one question about it a person may ask.
+  -- ASOF-REVOKE 2026-10-21: the platform-wide switch has since been turned ON, so today the old
+  -- capture's question happens to answer yes. That is a change of data, not a repair: the old
+  -- body still asked the platform instead of the row's organization, and the n shares above
+  -- are the ones it already filed under no organization. Reported, never asserted.
   if custom.store_is_open(null) then
-    raise exception 'RED 3 NOT RED — the platform-wide store switch is on, so asking it was not the defect.';
+    raise notice 'RED 3 note — the platform-wide store switch is on today; the old capture would file new shares, and the % already filed under no organization stay so.', n;
   end if;
   -- AND THE GREEN SIDE OF 3b, through the audit door, as this organization's owner: how long
   -- somebody has held a record is askable today.
@@ -457,7 +469,7 @@ begin
   if v_held < 1 then
     raise exception 'RED 3 cannot run — the audit door answers no interval for a record that was just shared.';
   end if;
-  raise notice 'RED 3 is RED — % record share(s) already on this database are filed under no organization, the switch the old capture asked is false platform-wide, and the audit door today answers % held-from interval(s) for the record this suite shared.', n, v_held;
+  raise notice 'RED 3 is RED — % record share(s) already on this database are filed under no organization, the old capture asked the platform switch rather than the organization, and the audit door today answers % held-from interval(s) for the record this suite shared.', n, v_held;
   perform set_config('role', v_boss, true);
 end $t$;
 
@@ -594,7 +606,8 @@ begin
 end $t$;
 
 do $t$ begin
-  if (select setting::numeric from pg_settings where name = 'shared_buffers') < 524288 then
+  if (select setting::numeric from pg_settings where name = 'shared_buffers') < 524288
+     or current_setting('zz.asof_big', true) is distinct from 'on' then
     raise notice '4 of 4 blocks that could run are RED (RED 2, 2b, 3, 3b, 4 and 4b), every clause asked from the seat `authenticated`. RED 1 did not run on this server.';
   else
     raise notice '5 of 5 blocks are RED, every clause asked from the seat `authenticated`.';

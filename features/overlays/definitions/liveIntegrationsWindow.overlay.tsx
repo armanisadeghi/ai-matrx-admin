@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "liveIntegrationsWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface LiveIntegrationsWindowHandle {
   close: () => void;
@@ -25,9 +27,7 @@ export interface OpenLiveIntegrationsWindowOptions {
 export function createLiveIntegrationsWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (options?: OpenLiveIntegrationsWindowOptions): LiveIntegrationsWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
+    opener.open(dispatch, {
         data: {
           conversationId: options?.conversationId ?? null,
           provider: options?.provider ?? null,
@@ -36,10 +36,9 @@ export function createLiveIntegrationsWindowOpener(store: AppStore) {
           // when it was already open (or minimized) on some connector's detail from an earlier visit.
           openedAt: Date.now(),
         },
-      }),
-    );
+      });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -50,16 +49,7 @@ export function useOpenLiveIntegrationsWindow() {
 }
 
 /** Declarative form for callers that own the window's mount lifecycle. */
-export function LiveIntegrationsWindowController(): null {
-  const dispatch = useAppDispatch();
-  useEffect(() => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-    return () => {
-      dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
-    };
-  }, [dispatch]);
-  return null;
-}
+export const LiveIntegrationsWindowController = hookController(useOpenLiveIntegrationsWindow);
 
 export type LiveIntegrationsWindowDefinitionData = OpenLiveIntegrationsWindowOptions;
 

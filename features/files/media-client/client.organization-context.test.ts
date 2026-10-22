@@ -82,7 +82,7 @@ jest.mock("@/features/files/hooks/blob-cache", () => ({
   hydrateFromIdb: jest.fn(async () => null),
   setCached: jest.fn(),
 }));
-jest.mock("@/features/files/upload/UploadGuardHost", () => ({
+jest.mock("@/features/files/upload/uploadGuardOpeners", () => ({
   requestUpload: jest.fn(),
 }));
 

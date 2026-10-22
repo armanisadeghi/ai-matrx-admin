@@ -45,7 +45,7 @@ export function NotesRouteBody({
 
   return (
     <>
-      <NotesView className="h-full" sidebarLayouts={sidebarLayouts} />
+      <NotesView className="h-full" sidebarLayouts={sidebarLayouts} config={{ frameSidebar: true }} />
       <div style={{ display: "none" }}>{children}</div>
     </>
   );

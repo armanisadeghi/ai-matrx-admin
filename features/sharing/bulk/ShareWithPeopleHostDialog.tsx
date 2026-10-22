@@ -8,19 +8,18 @@
 // dialog answers how many people were granted.
 
 import React, { useRef } from "react";
-import { useOpenerHost } from "@ai-matrx/kit/opener-react";
+import type { OverlayRenderProps } from "@ai-matrx/summon/react";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ShareWithUserTab } from "@/features/sharing/components/tabs/ShareWithUserTab";
 import type { PermissionLevel } from "@/utils/permissions/types";
-import { shareWithPeopleOpener } from "./shareWithPeopleOpener";
+import type { ShareWithPeopleRequest, ShareWithPeopleResponse } from "./shareWithPeopleOpener";
 
-export function ShareWithPeopleHostDialog() {
+export function ShareWithPeopleHostDialog({ data, close: closeOverlay }: Pick<OverlayRenderProps, "data" | "close">) {
   const shared = useRef(0);
-  const { open, shown, settle } = useOpenerHost(shareWithPeopleOpener, {
-    onActivate: () => {
-      shared.current = 0;
-    },
-  });
+  // One mount per request (each ask opens the overlay afresh), so the count starts at 0.
+  const { request: shown, settle } = useOverlayRequest<ShareWithPeopleRequest, ShareWithPeopleResponse>(data, closeOverlay);
+  const open = shown !== null;
   const close = () => settle({ shared: shared.current });
 
   return (

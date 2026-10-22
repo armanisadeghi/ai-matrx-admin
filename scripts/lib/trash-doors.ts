@@ -154,12 +154,14 @@ export function judgeTrashDoorBody({ door, body }: TrashDoorBody): TrashDoorFind
 
 export const KIND_LISTING_CEILING_MS = 300;
 export const COUNTS_CEILING_MS = 2000;
+/** The personal "Recent" overview (every kind's newest few, one call): /trash's first page, under 1 s (FT2, 2026-10-22). */
+export const OVERVIEW_CEILING_MS = 1000;
 
 export interface TrashTiming {
   /** e.g. "trash_list file (admin@admin.com)" */
   label: string;
-  /** "kind" rows are held to 300 ms; "counts" rows to 2 s. */
-  class: "kind" | "counts";
+  /** "kind" rows are held to 300 ms; "overview" rows to 1 s; "counts" rows to 2 s. */
+  class: "kind" | "overview" | "counts";
   /** Server-side Execution Time; null when the statement was canceled or failed. */
   ms: number | null;
   error?: string;
@@ -168,7 +170,8 @@ export interface TrashTiming {
 export function judgeTrashTimings(rows: TrashTiming[]): TrashDoorFinding[] {
   const out: TrashDoorFinding[] = [];
   for (const r of rows) {
-    const ceiling = r.class === "kind" ? KIND_LISTING_CEILING_MS : COUNTS_CEILING_MS;
+    const ceiling =
+      r.class === "kind" ? KIND_LISTING_CEILING_MS : r.class === "overview" ? OVERVIEW_CEILING_MS : COUNTS_CEILING_MS;
     if (r.ms === null) {
       out.push({ door: r.label, problem: `did not answer (${r.error ?? "no timing"}); ceiling ${ceiling} ms` });
     } else if (r.ms > ceiling) {

@@ -78,6 +78,18 @@
 // (`git log -1 --format=%cI`), read from npm's per-version publish times. Local and
 // ship-time runs keep judging against latest-NOW: that is when the author can still
 // update. Pins, AHEAD, duplicates and servability are unchanged in every mode.
+//
+// 🚨 A RELEASE JUDGES CURRENCY AGAINST NPM LATEST AT RELEASE START (2026-10-21).
+// aidream publishes @ai-matrx packages ~10 times an hour, so a release that updates
+// and then re-reads latest-NOW is measuring a moving target: matrx-frontend shipped
+// nothing from 14:52 to 20:41 PT while sync:matrx-packages kept failing STALE on
+// versions (meet 0.11.118) published after the update had already resolved. So
+// `--as-of <ISO time>` (or MATRX_PACKAGES_AS_OF=<ISO time>, a VALUE: the release's
+// snapshot instant) judges exactly like the CI commit-time rule above, with that
+// instant in place of the commit time: a version published after the snapshot is
+// picked up by the next release, a version stale against the snapshot still fails.
+// The release (`sync:matrx-packages`) takes the snapshot once, before it updates.
+// An unparseable value is announced and the run judges against latest-NOW.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -805,6 +817,25 @@ export function newerReleaseBefore({ installedVersion, latest, versionTimes, jud
     return { known: true, newer };
 }
 
+/**
+ * Pure. The instant currency is judged at, and why. A release snapshot
+ * (`--as-of <ISO>` or MATRX_PACKAGES_AS_OF) wins; else a CI run judges at HEAD's
+ * commit time; else latest-NOW (judgeAt null). An unparseable snapshot value is
+ * returned as `invalid` so the caller can announce it — never silently ignored.
+ */
+export function judgeAtFor({ argv = [], env = {}, headTime = () => null } = {}) {
+    const flag = argv.indexOf('--as-of');
+    const raw = flag !== -1 ? argv[flag + 1] : env.MATRX_PACKAGES_AS_OF;
+    if (raw !== undefined && String(raw).trim() !== '') {
+        const value = String(raw).trim();
+        const at = new Date(value);
+        if (!Number.isFinite(at.getTime())) return { judgeAt: null, source: 'invalid', raw: value };
+        return { judgeAt: at.toISOString(), source: 'snapshot' };
+    }
+    if (isCiRun(env)) return { judgeAt: headTime(), source: 'commit' };
+    return { judgeAt: null, source: 'now' };
+}
+
 /** True when the standard `CI` env var says this is a CI run. */
 export function isCiRun(env = process.env) {
     const value = String(env.CI ?? '').trim().toLowerCase();
@@ -884,6 +915,7 @@ export async function runCheck({
     getTarballReachable,
     now = new Date(),
     judgeAt = null,
+    judgeSource = 'commit',
     log = console.log,
     error = console.error,
 } = {}) {
@@ -904,8 +936,11 @@ export async function runCheck({
 
     if (judgeAt) {
         log(
-            `CI run: currency is judged at HEAD's commit time ${judgeAt} ` +
-                `(grace ${COMMIT_TIME_GRACE_SECONDS}s), not at CI time.`,
+            judgeSource === 'snapshot'
+                ? `Release snapshot: currency is judged against npm latest as of ${judgeAt} ` +
+                      `(grace ${COMMIT_TIME_GRACE_SECONDS}s); later publishes go out with the next release.`
+                : `CI run: currency is judged at HEAD's commit time ${judgeAt} ` +
+                      `(grace ${COMMIT_TIME_GRACE_SECONDS}s), not at CI time.`,
         );
     }
     for (const note of notes) log(note);
@@ -1400,6 +1435,27 @@ async function selfTest() {
         1,
     );
     expect('CI: a pin is still red at commit time', await ciRun(parsePnpmLock(PNPM_FIXTURE_PIN), fixtureRegistry, commitAt), 1);
+
+    // ── A RELEASE judges against npm latest at RELEASE START (2026-10-21 outage) ──
+    // The release snapshot is taken before `pnpm update`; meet 0.11.118 landed after.
+    const snapshotAt = commitAt;
+    expect(
+        'snapshot: a version published AFTER release start does not fail the release',
+        await ciRun(behind, trainRegistry(240), snapshotAt),
+        0,
+    );
+    expect(
+        'snapshot: a version stale against release start still fails',
+        await ciRun(behind, trainRegistry(-600), snapshotAt),
+        1,
+    );
+    const judge = (argv, env) => judgeAtFor({ argv, env, headTime: () => '2026-09-10T07:00:00Z' });
+    expect('judgeAtFor: --as-of', judge(['node', 'x', '--as-of', snapshotAt], {}).judgeAt, '2026-09-10T07:50:00.000Z');
+    expect('judgeAtFor: env snapshot', judge([], { MATRX_PACKAGES_AS_OF: snapshotAt }).source, 'snapshot');
+    expect('judgeAtFor: snapshot beats CI', judge([], { CI: 'true', MATRX_PACKAGES_AS_OF: snapshotAt }).source, 'snapshot');
+    expect('judgeAtFor: CI alone judges at the commit', judge([], { CI: 'true' }).judgeAt, '2026-09-10T07:00:00Z');
+    expect('judgeAtFor: local judges NOW', judge([], {}).judgeAt, null);
+    expect('judgeAtFor: garbage is announced, judged NOW', judge([], { MATRX_PACKAGES_AS_OF: 'soon' }).source, 'invalid');
     expect('isCiRun: CI=true', isCiRun({ CI: 'true' }), true);
     expect('isCiRun: unset', isCiRun({}), false);
     expect('isCiRun: CI=false', isCiRun({ CI: 'false' }), false);
@@ -1436,14 +1492,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         process.exit(runDuplicatesCheck({ graph: collectGraph(projectRoot), updateCommand: updateCommandFor({ pnpm }) }));
     } else {
         const pnpm = existsSync(resolve(projectRoot, 'pnpm-lock.yaml'));
-        let judgeAt = null;
-        if (isCiRun()) {
-            judgeAt = headCommitTime(projectRoot);
-            if (!judgeAt) {
-                console.error(
-                    'CI run, but HEAD has no readable committer date: judging currency against npm latest NOW.',
-                );
-            }
+        const judged = judgeAtFor({
+            argv: process.argv,
+            env: process.env,
+            headTime: () => headCommitTime(projectRoot),
+        });
+        const judgeAt = judged.judgeAt;
+        if (judged.source === 'invalid') {
+            console.error(
+                `Release snapshot time "${judged.raw}" is not a date: judging currency against npm latest NOW.`,
+            );
+        } else if (judged.source === 'commit' && !judgeAt) {
+            console.error('CI run, but HEAD has no readable committer date: judging currency against npm latest NOW.');
         }
         const exitCode = await runCheck({
             graph: collectGraph(projectRoot),
@@ -1452,6 +1512,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
             getRegistry: (name) => readRegistry(name, projectRoot),
             getTarballReachable: (url) => probeTarball(url),
             judgeAt,
+            judgeSource: judged.source,
         });
         process.exit(exitCode);
     }

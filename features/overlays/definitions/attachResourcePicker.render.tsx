@@ -7,14 +7,13 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
         const data = overlayData as
           Record<string, unknown> | null | undefined;
         const conversationId =
           typeof data?.conversationId === "string" ? data.conversationId : null;
         const provider =
           typeof data?.provider === "string" ? data.provider : null;
-        if (!isOpen || !conversationId || !provider) return <OverlayNeedsData overlayId="attachResourcePicker" onClose={close} />;
+        if (!conversationId || !provider) return <OverlayNeedsData overlayId="attachResourcePicker" onClose={close} />;
         return (
           <AttachResourceDialog
             isOpen

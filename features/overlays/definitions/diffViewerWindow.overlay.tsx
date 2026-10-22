@@ -10,14 +10,16 @@
  * - `<DiffViewerWindowController />` — declarative wrapper.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { DiffEngine, DiffView } from "@ai-matrx/diff/react";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "diffViewerWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenDiffViewerWindowOptions {
   original: string;
@@ -42,11 +44,7 @@ export function createDiffViewerWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (opts: OpenDiffViewerWindowOptions): DiffViewerWindowHandle => {
     const instanceId = opts.instanceId ?? `${OVERLAY_ID}-${Date.now()}`;
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: {
+    opener.open(dispatch, { instanceId, data: {
           windowInstanceId: instanceId,
           original: opts.original,
           modified: opts.modified,
@@ -56,13 +54,11 @@ export function createDiffViewerWindowOpener(store: AppStore) {
           engine: opts.engine ?? "auto",
           language: opts.language ?? null,
           defaultView: opts.defaultView ?? "split",
-        },
-      }),
-    );
+        } });
     return {
       instanceId,
       close: () =>
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+        dispatch(opener.close(instanceId)),
     };
   };
 }
@@ -72,17 +68,7 @@ export function useOpenDiffViewerWindow() {
   return useMemo(() => createDiffViewerWindowOpener(store), [store]);
 }
 
-export function DiffViewerWindowController(
-  props: OpenDiffViewerWindowOptions,
-): null {
-  const open = useOpenDiffViewerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.instanceId, props.original, props.modified]);
-  return null;
-}
+export const DiffViewerWindowController = hookController<OpenDiffViewerWindowOptions>(useOpenDiffViewerWindow);
 
 export type DiffViewerWindowDefinitionData = OpenDiffViewerWindowOptions;
 

@@ -39,6 +39,8 @@ import type { FrameAction, FrameCrumb, FrameForm, FrameHeaderTool } from "./type
 
 export interface FrameFavorite {
   starred: boolean;
+  /** False while the saved state is not here yet: the star shows neutral and a press does nothing. */
+  known?: boolean;
   onToggle: () => void;
 }
 
@@ -147,12 +149,15 @@ export function SheetHeader({
 }: SheetHeaderProps) {
   const current = crumbs[crumbs.length - 1];
 
+  const starUnknown = favorite?.known === false;
   const star = favorite ? (
     <Button
       variant="quiet"
       icon={<Star className={cn(favorite.starred && "fill-current")} />}
-      aria-label={favorite.starred ? "Remove from favorites" : "Add to favorites"}
-      aria-pressed={favorite.starred}
+      aria-label={starUnknown ? "Favorites loading" : favorite.starred ? "Remove from favorites" : "Add to favorites"}
+      aria-pressed={starUnknown ? undefined : favorite.starred}
+      aria-busy={starUnknown || undefined}
+      disabled={starUnknown}
       onClick={favorite.onToggle}
     />
   ) : null;
@@ -193,9 +198,11 @@ export function SheetHeader({
     );
   }
 
-  const derived = (
+  // The crumb trail, the star and "…" are ALWAYS in the row (frame mode: a page's own header
+  // content lands in the center slot BESIDE them and never replaces them).
+  const crumbTrail = (
     <>
-      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center pl-1">
+      <nav aria-label="Breadcrumb" data-frame-crumbs="" className="flex min-w-0 shrink items-center pl-1">
         <ol className="flex min-w-0 items-center gap-0.5">
           {crumbs.map((crumb, i) => {
             const isLast = i === crumbs.length - 1;
@@ -221,11 +228,13 @@ export function SheetHeader({
           })}
         </ol>
       </nav>
-      <div className="flex shrink-0 items-center gap-0.5 pl-1">
-        {star}
-        <PageMenu actions={actions} />
-      </div>
     </>
+  );
+  const starAndMenu = (
+    <div className="flex shrink-0 items-center pl-1">
+      {star}
+      <PageMenu actions={actions} />
+    </div>
   );
 
   return (
@@ -235,18 +244,14 @@ export function SheetHeader({
       className={cn(topEdge && "mf-top-edge", "flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2")}
     >
       {start}
+      {crumbTrail}
+      {starAndMenu}
       {hostSlots ? (
-        <div id={FRAME_HEADER_CENTER_ID} className="flex h-full min-w-0 flex-1 items-center">
-          <div data-page-header-portal="fallback" data-frame-derived="" className="flex min-w-0 items-center">
-            {derived}
-          </div>
-        </div>
-      ) : (
-        derived
-      )}
+        <div id={FRAME_HEADER_CENTER_ID} className="flex h-full min-w-0 flex-1 items-center pl-2" />
+      ) : null}
       {hostSlots ? <div id={FRAME_HEADER_RIGHT_ID} className="flex shrink-0 items-center" /> : <div className="min-w-2 flex-1" />}
       {tools || canvasToggle || sideChatToggle ? (
-        <div data-mf-region="header-tools" data-matrx-controls="" className="flex shrink-0 items-center gap-0.5">
+        <div data-mf-region="header-tools" data-matrx-controls="" className="flex shrink-0 items-center">
           {tools}
           {sideChatToggle ? (
             <Button
@@ -399,7 +404,7 @@ export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHe
 /** The controls that bring a hidden sidebar back, shown at the header's start. */
 export function SidebarRestore({ onShow, grid, goTo }: { onShow: () => void; grid: ReactNode; goTo: ReactNode }) {
   return (
-    <div className="flex shrink-0 items-center gap-0.5">
+    <div className="flex shrink-0 items-center">
       <Button variant="quiet" icon={<PanelLeftOpen />} aria-label="Show sidebar" onClick={onShow} />
       {grid}
       {goTo}

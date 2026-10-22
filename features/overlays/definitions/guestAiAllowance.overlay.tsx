@@ -8,13 +8,11 @@
  * error sink (lib/guest/guest-ai-allowance.ts) and opens it when the server
  * answers `guest_ai_allowance_used`.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "guestAiAllowance" as const;
 
@@ -27,35 +25,14 @@ export interface GuestAiAllowanceHandle {
   close: () => void;
 }
 
-export function useOpenGuestAiAllowance() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenGuestAiAllowanceOptions = {}): GuestAiAllowanceHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { message: opts.message ?? null },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenGuestAiAllowanceOptions>(OVERLAY_ID, {
+  data: (opts: OpenGuestAiAllowanceOptions = {}) => ({ message: opts.message ?? null }),
+});
+
+export const useOpenGuestAiAllowance = opener.useOpen;
 
 /** Declarative form: opens on mount, closes on unmount. */
-export function GuestAiAllowanceController(
-  props: OpenGuestAiAllowanceOptions,
-): null {
-  const open = useOpenGuestAiAllowance();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.message]);
-  return null;
-}
+export const GuestAiAllowanceController = opener.Controller;
 
 export type GuestAiAllowanceDefinitionData = OpenGuestAiAllowanceOptions;
 

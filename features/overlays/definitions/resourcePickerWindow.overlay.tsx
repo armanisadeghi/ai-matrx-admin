@@ -10,13 +10,15 @@
 import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { openOverlay } from "@ai-matrx/summon/open";
 import {
   createResourcePickerWindowCallbackGroup,
   type ResourcePickerWindowCallbackGroup,
 } from "./callbacks/resourcePickerWindow";
 import type { ResourcePickerViewId } from "@/features/resource-manager/resource-picker/resource-picker-menu-items";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+
+const opener = createOpener<object>("resourcePickerWindow");
 
 export interface OpenResourcePickerWindowOptions extends ResourcePickerWindowCallbackGroup {
   initialView: Exclude<ResourcePickerViewId, null>;
@@ -33,7 +35,7 @@ export function createResourcePickerWindowOpener(store: { dispatch: AppDispatch 
   return ({ initialView, ...group }: OpenResourcePickerWindowOptions) => {
     const { callbackGroupId } = createResourcePickerWindowCallbackGroup(group);
     const data: ResourcePickerWindowOverlayData = { callbackGroupId, initialView };
-    dispatch(openOverlay({ overlayId: "resourcePickerWindow", data }));
+    opener.open(dispatch, { data });
   };
 }
 

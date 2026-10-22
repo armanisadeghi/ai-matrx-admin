@@ -1,0 +1,69 @@
+#!/bin/sh
+# Versioned pre-push hook for matrx-frontend (core.hooksPath = scripts/githooks, see install_githooks.sh).
+#
+# ONE JOB: a push that changes pnpm-lock.yaml may not carry a lockfile whose @ai-matrx versions no longer
+# ship something the code imports. 2026-10-21: commit 689c27aa4d adopted @ai-matrx/chat 0.8.307 by editing
+# the lockfile alone; nothing was installed, so every installed-package check passed, and 0.8.307 had dropped
+# `setDebrief`: two Vercel releases failed. The commit hook cannot see a commit made with --no-verify or by a
+# sweep; this one runs on what is about to LEAVE the machine. It reads the pushed commit, never the working tree.
+# An ordinary agent push is REFUSED (write time); on the release path (MATRX_RELEASE_PATH=1) it screams and the
+# push lands (Arman, 2026-10-21: nothing blocks a release). 2026-10-22: a sweep turned this into a plain echo and
+# v0.4.3436 failed on Vercel ("Export conversationRenameDialogOverlay doesn't exist") with nothing screaming.
+# Remedy: fix the importer (or restore the export in the package). Never pin.
+set -u
+HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$HOOK_DIR/../.." && pwd)
+ZERO=0000000000000000000000000000000000000000
+# THE RELEASE PATH IS NEVER BLOCKED (Arman 2026-09-24 / 10-02 / 10-21: "report warnings and errors and release").
+# ship.sh exports MATRX_RELEASE_PATH=1, so sync-main's push and release.sh's push run this hook REPORT ONLY:
+# a failure prints a banner, mails the ship-all lanes (matrx-ship/scripts/release-scream.py) and the push goes
+# through. An ordinary agent push is still refused. Guard: matrx-ship/scripts/test_release_path_never_blocked.py.
+SCREAM="$HOME/code/matrx-ship/scripts/release-scream.py"
+refuse() {  # refuse <check> <detail> [<sha>]
+    if [ "${MATRX_RELEASE_PATH:-0}" = "1" ]; then
+        if [ -f "$SCREAM" ]; then
+            python3 "$SCREAM" --repo matrx-frontend --where "pre-push (release path)" --check "$1" --detail "$2" --ref "${3:-}" || true
+        else
+            echo "RELEASE WARNING — PUSHED ANYWAY (release path never blocks): $1: $2" >&2
+        fi
+        return 0
+    fi
+    echo "PUSH REFUSED: $2" >&2
+    exit 1
+}
+
+# Setting core.hooksPath disables .git/hooks; keep any local hook of the same name running.
+LOCAL_HOOK="$(git rev-parse --git-common-dir)/hooks/pre-push"
+if [ -x "$LOCAL_HOOK" ]; then
+    # stdin is consumed below, so run the local hook on a copy of it
+    INPUT=$(cat)
+    printf '%s\n' "$INPUT" | "$LOCAL_HOOK" "$@" || refuse "local pre-push hook" "$LOCAL_HOOK exited non-zero (above)"
+else
+    INPUT=$(cat)
+fi
+
+REFS=$(mktemp "${TMPDIR:-/tmp}/matrx-prepush.XXXXXX")
+trap 'rm -f "$REFS"' EXIT
+printf '%s\n' "$INPUT" >"$REFS"
+# (a file, not a pipe: `exit 1` inside a piped loop would only leave its subshell and let the push through)
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ -n "${local_sha:-}" ] || continue
+    [ "$local_sha" != "$ZERO" ] || continue            # a deletion
+    [ "$remote_ref" = "refs/heads/main" ] || continue  # only what lands on main is built
+    [ "${MATRX_LOCK_IMPORTS_CHECKED:-}" != "$local_sha" ] || continue   # sync-main judged this exact commit
+    if [ "$remote_sha" != "$ZERO" ] && git cat-file -e "$remote_sha^{commit}" 2>/dev/null \
+        && git diff --quiet "$remote_sha" "$local_sha" -- pnpm-lock.yaml; then
+        continue                                        # the lockfile is the one origin already has
+    fi
+    git cat-file -e "$local_sha:pnpm-lock.yaml" 2>/dev/null || continue
+    if ! command -v node >/dev/null 2>&1; then
+        refuse "lockfile adoption" "the lockfile adoption check needs node on PATH and could not find it; $local_sha was not judged." "$local_sha"
+        continue
+    fi
+    (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --ref "$local_sha")
+    RC=$?
+    if [ "$RC" -ne 0 ]; then
+        refuse "lockfile adoption" "pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC). Fix the importer, or restore the export in the package. Never pin." "$local_sha"
+    fi
+done <"$REFS"
+exit 0

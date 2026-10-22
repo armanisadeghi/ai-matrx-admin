@@ -5,10 +5,9 @@
 // "Add everyone in <organization>") for MANY records at once, from anywhere.
 // The caller supplies `shareOne(userId, level)`, which grants that person on
 // every record and answers like the single-record door ({success, error}).
-// Zero React: the dialog lives behind `<RecordBulkDialogsHost />`.
+// Zero React: the dialog is the summon overlay `shareWithPeopleDialog`.
 
-import { createOpener } from "@ai-matrx/kit/opener";
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 import type { PermissionLevel, ResourceType, ShareActionResult } from "@/utils/permissions/types";
 
 export interface ShareWithPeopleRequest {
@@ -27,12 +26,6 @@ export interface ShareWithPeopleResponse {
   shared: number;
 }
 
-export const shareWithPeopleOpener = createOpener<ShareWithPeopleRequest, ShareWithPeopleResponse>(
-  "matrx-frontend.share-with-people-opener-state",
-  { hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)" },
-);
-
 export function shareWithPeople(request: ShareWithPeopleRequest): Promise<ShareWithPeopleResponse> {
-  requestDialogHosts();
-  return shareWithPeopleOpener.open(request);
+  return requestOverlay<ShareWithPeopleRequest, ShareWithPeopleResponse>("shareWithPeopleDialog", request, { cancel: { shared: 0 } });
 }

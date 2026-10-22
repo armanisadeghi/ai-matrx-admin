@@ -40,7 +40,7 @@ const JsonDisplay: React.FC<JsonDisplayProps> = ({
         "relative w-full h-full",
         "border rounded p-2",
         "bg-textured",
-        "text-gray-900 dark:text-gray-100",
+ "text-foreground",
         "border-gray-300 dark:border-gray-700",
         className
       )}
@@ -54,7 +54,7 @@ const JsonDisplay: React.FC<JsonDisplayProps> = ({
         onClick={handleCopy}
         className="absolute top-1 right-1 p-1 rounded
                   bg-textured
-                  text-gray-900 dark:text-gray-100
+                  text-foreground 
                   hover:bg-gray-100 dark:hover:bg-gray-700"
         title="Copy to clipboard"
       >

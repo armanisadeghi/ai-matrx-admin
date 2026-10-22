@@ -52,7 +52,7 @@ interface RawJsonExplorerProps {
 const RawJsonExplorer: React.FC<RawJsonExplorerProps> = (props) => {
   if (!props.pageData) {
     return (
-      <div className="p-4 text-gray-500 dark:text-gray-400">
+      <div className="p-4 text-muted-foreground">
         No raw data available
       </div>
     );

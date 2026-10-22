@@ -8,12 +8,9 @@
  * existing window instead of stacking duplicates.
  */
 
-import { useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 import { taskEditorInstanceId } from "./opener-instance-ids";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "taskEditorWindow" as const;
 
@@ -28,31 +25,14 @@ export interface TaskEditorWindowHandle {
   close: () => void;
 }
 
-
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createTaskEditorWindowOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (opts: OpenTaskEditorWindowOptions): TaskEditorWindowHandle => {
-    const instanceId = opts.instanceId ?? taskEditorInstanceId(opts.taskId);
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: { taskId: opts.taskId },
-      }),
-    );
-    return {
-      instanceId,
-      close: () =>
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-    };
-  };
-}
+const opener = appOpener<OpenTaskEditorWindowOptions>(OVERLAY_ID, {
+  instanceId: (opts: OpenTaskEditorWindowOptions) => opts.instanceId ?? taskEditorInstanceId(opts.taskId),
+});
 
-export function useOpenTaskEditorWindow() {
-  const store = useAppStore();
-  return useMemo(() => createTaskEditorWindowOpener(store), [store]);
-}
+export const createTaskEditorWindowOpener = opener.forStore;
+
+export const useOpenTaskEditorWindow = opener.useOpen;
 
 export type TaskEditorWindowDefinitionData = OpenTaskEditorWindowOptions;
 

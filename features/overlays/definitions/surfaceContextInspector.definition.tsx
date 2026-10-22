@@ -21,6 +21,5 @@ export const surfaceContextInspectorOverlay = defineOverlay<SurfaceContextInspec
     windowId: "surface-context-inspector-window",
     mobile: "drawer",
     mobileSidebarAs: "drawer",
-    ephemeral: true,
   },
 });

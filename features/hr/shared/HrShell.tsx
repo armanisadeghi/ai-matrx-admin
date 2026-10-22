@@ -45,6 +45,7 @@ import {
   type RouteNavItem,
 } from "@/features/shell/components/header/RouteModeNav";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { InfoHint } from "@/components/official/InfoHint";
 import { cn } from "@/lib/utils";
@@ -127,6 +128,11 @@ export function HrShell({
     ),
     title,
   });
+  // THE NEW APP FRAME draws the trail in its own header row: hand it HR's real trail and draw
+  // no breadcrumb strip in the body (classic: no host, the strip below renders as before).
+  const inFrame = useDeclareFrameCrumbs(
+    crumbs.length > 0 ? crumbs.map((c) => ({ label: c.label, href: c.href ?? undefined })) : null,
+  );
 
   return (
     <>
@@ -175,7 +181,7 @@ export function HrShell({
             <div className="px-4 pt-3 empty:hidden sm:px-6">
               <HrEmployerSubstitutionNotice />
             </div>
-            {crumbs.length > 0 ? (
+            {crumbs.length > 0 && !inFrame ? (
               <div className="px-4 pt-3 sm:px-6">
                 {crumbs.length > 0 ? (
                   <nav aria-label="Breadcrumb" className="min-w-0">

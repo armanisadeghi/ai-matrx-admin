@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { failOrScream } from "./lib/release-verdict.mjs";
 
 // A minified client chunk never contains Turbopack's raw import-binding name:
 // every `__TURBOPACK__imported__module__<id>__` is renamed to a short local.
@@ -51,6 +52,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     }
   } catch (error) {
     console.error(`[turbopack-bindings] ${error.message}`);
-    process.exitCode = 1;
+    process.exitCode = failOrScream("turbopack-bindings", error.message);
   }
 }

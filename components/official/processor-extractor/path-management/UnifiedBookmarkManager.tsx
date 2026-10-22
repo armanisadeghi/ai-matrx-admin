@@ -225,7 +225,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex items-center gap-2 p-2 border-b">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <SearchIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input adornment="start"
             placeholder="Search bookmarks..."
             value={searchTerm}
@@ -256,8 +256,8 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
         <TabsContent value="manage" className="flex-1 overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">
             {filteredBookmarks.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <BookmarkIcon className="mx-auto h-12 w-12 mb-4 text-gray-400 dark:text-gray-600" />
+              <div className="text-center py-8 text-muted-foreground">
+                <BookmarkIcon className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
                 <h3 className="font-medium text-lg mb-1">No bookmarks found</h3>
                 <p>
                   {bookmarks.length === 0
@@ -268,11 +268,11 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
             ) : (
               <div className="p-2">
                 <div className="flex justify-between items-center mb-2">
-                  <div className="type-body text-gray-500 dark:text-gray-400">
+                  <div className="type-body text-muted-foreground">
                     {filteredBookmarks.length} bookmarks found
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="type-secondary text-gray-500">Sort by:</span>
+                    <span className="type-secondary text-muted-foreground">Sort by:</span>
                     <Select value={sortBy} onValueChange={setSortBy}>
                       <SelectTrigger className="w-32">
                         <SelectValue placeholder="Sort by" />
@@ -311,7 +311,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                               <BookmarkIcon className="h-4 w-4 text-blue-500 mt-1" />
                               <div>
                                 <div className="font-medium">{bookmark.name}</div>
-                                <div className="type-secondary text-gray-500 dark:text-gray-400 flex flex-wrap gap-1 mt-1">
+                                <div className="type-secondary text-muted-foreground flex flex-wrap gap-1 mt-1">
                                   <span>Created {formatDate(bookmark.createdAt)}</span>
                                   {bookmark.configKey && bookmark.configKey !== 'default' && (
                                     <Badge variant="outline" className="text-[10px] h-4">
@@ -411,7 +411,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                     render: (bookmark) => (
                       <div className="p-4 type-body">
                                 {bookmark.description && (
-                                  <div className="mb-4 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 p-3 rounded-md border-border">
+                                  <div className="mb-4 text-foreground dark:text-muted-foreground bg-gray-100 dark:bg-gray-700 p-3 rounded-md border-border">
                                     <div className="font-semibold mb-1">Description:</div>
                                     <div>{bookmark.description}</div>
                                   </div>
@@ -419,58 +419,58 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
                                   <div className="bg-textured p-3 rounded-md border-border shadow-sm">
-                                    <div className="type-title text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b">
+                                    <div className="type-title text-foreground dark:text-muted-foreground mb-2 pb-1 border-b">
                                       Type Details
                                     </div>
                                     <div className="grid grid-cols-2 gap-y-2 gap-x-4 type-secondary">
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Type:</span> 
+                                      <span className="text-muted-foreground font-medium">Type:</span> 
                                       <span className="font-mono">{bookmark.type}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Subtype:</span> 
+                                      <span className="text-muted-foreground font-medium">Subtype:</span> 
                                       <span className="font-mono">{bookmark.subtype || "N/A"}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Depth:</span> 
+                                      <span className="text-muted-foreground font-medium">Depth:</span> 
                                       <span className="font-mono">{bookmark.depth}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Is Empty:</span> 
+                                      <span className="text-muted-foreground font-medium">Is Empty:</span> 
                                       <span className="font-mono">{bookmark.isEmpty ? "Yes" : "No"}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Count:</span> 
+                                      <span className="text-muted-foreground font-medium">Count:</span> 
                                       <span className="font-mono">{bookmark.count}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Readable Type:</span> 
+                                      <span className="text-muted-foreground font-medium">Readable Type:</span> 
                                       <span className="font-mono">{bookmark.readibleType}</span>
                                     </div>
                                   </div>
 
                                   <div className="bg-textured p-3 rounded-md border-border shadow-sm">
-                                    <div className="type-title text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b">
+                                    <div className="type-title text-foreground dark:text-muted-foreground mb-2 pb-1 border-b">
                                       Metadata
                                     </div>
                                     <div className="grid grid-cols-2 gap-y-2 gap-x-4 type-secondary">
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Created:</span> 
+                                      <span className="text-muted-foreground font-medium">Created:</span> 
                                       <span>{new Date(bookmark.createdAt).toLocaleString()}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Last Accessed:</span> 
+                                      <span className="text-muted-foreground font-medium">Last Accessed:</span> 
                                       <span>{bookmark.lastAccessed ? new Date(bookmark.lastAccessed).toLocaleString() : "Never"}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Config:</span> 
+                                      <span className="text-muted-foreground font-medium">Config:</span> 
                                       <span>{getConfigEntry(bookmark.configKey || 'default')?.name || bookmark.configKey || 'Default'}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Config Key:</span> 
+                                      <span className="text-muted-foreground font-medium">Config Key:</span> 
                                       <span className="font-mono">{bookmark.configKey || "default"}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Broker ID:</span> 
+                                      <span className="text-muted-foreground font-medium">Broker ID:</span> 
                                       <span className="font-mono">{bookmark.brokerId || "None"}</span>
                                       
-                                      <span className="text-gray-500 dark:text-gray-400 font-medium">Bookmark ID:</span> 
+                                      <span className="text-muted-foreground font-medium">Bookmark ID:</span> 
                                       <span className="font-mono text-[9px]">{bookmark.id}</span>
                                     </div>
                                   </div>
                                 </div>
 
                                 <div className="bg-textured p-3 rounded-md border-border shadow-sm">
-                                  <div className="type-title text-gray-700 dark:text-gray-300 mb-2 pb-1 border-b flex justify-between items-center">
+                                  <div className="type-title text-foreground dark:text-muted-foreground mb-2 pb-1 border-b flex justify-between items-center">
                                     <span>Full Path</span>
                                     <Button 
                                       variant="ghost" 
@@ -513,7 +513,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                 <FileUp className="w-4 h-4 mr-2" />
                 Export Bookmarks
               </h3>
-              <p className="type-secondary text-gray-500 dark:text-gray-400 mb-3">
+              <p className="type-secondary text-muted-foreground mb-3">
                 Export your bookmarks to share with others or back them up.
               </p>
               <Button 
@@ -530,7 +530,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                 <ImportIcon className="w-4 h-4 mr-2" />
                 Import Bookmarks
               </h3>
-              <p className="type-secondary text-gray-500 dark:text-gray-400 mb-3">
+              <p className="type-secondary text-muted-foreground mb-3">
                 Import bookmarks from a JSON string. This will replace all your current bookmarks.
               </p>
               <div className="space-y-3">
@@ -622,15 +622,15 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
             </div>
             
             <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md border-border">
-              <div className="type-title text-gray-700 dark:text-gray-300 mb-2">Path Information</div>
+              <div className="type-title text-foreground dark:text-muted-foreground mb-2">Path Information</div>
               <div className="mb-3">
-                <div className="type-secondary text-gray-500 dark:text-gray-400 mb-1">Type:</div>
+                <div className="type-secondary text-muted-foreground mb-1">Type:</div>
                 <div className="px-2 py-1 type-secondary rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 inline-block">
                   {editingBookmark.readibleType || editingBookmark.type}
                 </div>
               </div>
               <div>
-                <div className="type-secondary text-gray-500 dark:text-gray-400 mb-1">Path:</div>
+                <div className="type-secondary text-muted-foreground mb-1">Path:</div>
                 <code className="type-secondary block bg-gray-100 dark:bg-gray-800 p-2 rounded whitespace-pre-wrap break-all">
                   {editingBookmark.path}
                 </code>

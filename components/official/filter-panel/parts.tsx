@@ -147,7 +147,7 @@ export function FacetChips({
             placeholder={searchPlaceholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="min-w-0 flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/50"
+            className="min-w-0 flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-disabled-foreground"
           />
           {query && (
             <button

@@ -15,6 +15,5 @@ export const quickMessageTemplateSaveWindowOverlay = defineOverlay<QuickMessageT
     restoreDefaults: { initialContent: "", defaultRole: "assistant" },
     windowId: "quick-message-template-save-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

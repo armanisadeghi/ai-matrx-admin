@@ -14,6 +14,5 @@ export const agentFlexiblePanelOverlay = defineOverlay<AgentFlexiblePanelDefinit
   window: {
     restoreDefaults: {},
     windowId: "agent-flexible-panel",
-    ephemeral: true,
   },
 });

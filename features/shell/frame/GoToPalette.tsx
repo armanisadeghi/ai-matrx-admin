@@ -19,7 +19,7 @@ import {
 } from "@ai-matrx/design-system";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { ProductMark } from "./ProductMark";
-import { buildGoToIndex } from "./goToIndex";
+import { buildGoToIndex, MENU_GO_TO_PRODUCT_ID } from "./goToIndex";
 import type { GoToEntry } from "./goToIndex";
 import { FRAME_ROUTE_HOMES } from "./route-homes.generated";
 import { highlightMenuMatch, rankMenuSearch } from "./searchEngine";
@@ -90,7 +90,7 @@ export default function GoToPalette({ open, onOpenChange, products, families, on
       className="group gap-2.5 !py-2"
     >
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
-        <span className="shrink-0 truncate text-sm text-foreground/90">
+        <span className="shrink-0 truncate text-sm text-foreground">
           <Highlighted text={entry.label} query={trimmed} />
         </span>
         {entry.trail.length > 1 ? (
@@ -111,6 +111,8 @@ export default function GoToPalette({ open, onOpenChange, products, families, on
         <ProductMark product={product} size="inline" />
         {product.name}
       </span>
+    ) : productId === MENU_GO_TO_PRODUCT_ID ? (
+      "App menu"
     ) : (
       productId
     );

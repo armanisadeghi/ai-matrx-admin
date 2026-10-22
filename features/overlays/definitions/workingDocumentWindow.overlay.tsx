@@ -13,14 +13,16 @@
  * instead of stacking duplicates.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 import { workingDocumentInstanceId } from "./opener-instance-ids";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "workingDocumentWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenWorkingDocumentWindowOptions {
   conversationId: string;
@@ -38,17 +40,11 @@ export function createWorkingDocumentWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (opts: OpenWorkingDocumentWindowOptions): WorkingDocumentWindowHandle => {
     const instanceId = instanceIdFor(opts.conversationId);
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: { conversationId: opts.conversationId },
-      }),
-    );
+    opener.open(dispatch, { instanceId, data: { conversationId: opts.conversationId } });
     return {
       instanceId,
       close: () =>
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+        dispatch(opener.close(instanceId)),
     };
   };
 }
@@ -62,16 +58,7 @@ export function useOpenWorkingDocumentWindow() {
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function WorkingDocumentWindowController(
-  props: OpenWorkingDocumentWindowOptions,
-): null {
-  const open = useOpenWorkingDocumentWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.conversationId]);
-  return null;
-}
+export const WorkingDocumentWindowController = hookController<OpenWorkingDocumentWindowOptions>(useOpenWorkingDocumentWindow);
 
 export type WorkingDocumentWindowDefinitionData = OpenWorkingDocumentWindowOptions;
 

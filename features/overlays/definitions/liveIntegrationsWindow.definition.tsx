@@ -15,6 +15,5 @@ export const liveIntegrationsWindowOverlay = defineOverlay<LiveIntegrationsWindo
     restoreDefaults: {},
     windowId: "live-integrations-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

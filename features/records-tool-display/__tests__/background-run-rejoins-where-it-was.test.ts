@@ -56,16 +56,16 @@ describe("a card rejoining its run after a refresh", () => {
     state = reducer(state, setRunReplaying({ runId: RUN_ID, replaying: false }));
     const view = readBackgroundRun(state.byRunId[RUN_ID] ?? null, "import");
     expect(view.phase).toBe("working");
-    expect(view.sample).toEqual({ stageIndex: 3, detail: "Players", current: 200, total: 431 });
+    expect(view.sample).toEqual({ stageIndex: 4, detail: "Players", current: 200, total: 431 });
     ratchet = advanceRatchet(ratchet, view.sample, false);
-    // The first painted point is the run's real point: stage 3 (Rows), 200 of 431 into it.
-    expect(ratchet.stageIndex).toBe(3);
-    expect(ratchet.fraction).toBeCloseTo((3 + 200 / 431) / 6, 5);
+    // The first painted point is the run's real point: stage 4 (Rows), 200 of 431 into it.
+    expect(ratchet.stageIndex).toBe(4);
+    expect(ratchet.fraction).toBeCloseTo((4 + 200 / 431) / 7, 5);
 
     // New live activity after the rejoin still only moves the bar forward.
     state = reducer(state, ev(6, { event: "node_progress", node_id: "import", message: "columns: Players", current: 1, total: 4, ts: "2026-10-19T10:01:40Z" }, false));
     const after = advanceRatchet(ratchet, readBackgroundRun(state.byRunId[RUN_ID] ?? null, "import").sample, false);
-    expect(after.stageIndex).toBe(3);
+    expect(after.stageIndex).toBe(4);
     expect(after.fraction).toBe(ratchet.fraction);
   });
 });

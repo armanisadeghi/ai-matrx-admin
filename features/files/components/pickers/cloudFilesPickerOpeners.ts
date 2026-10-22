@@ -1,25 +1,14 @@
 /**
  * features/files/components/pickers/cloudFilesPickerOpeners.ts
  *
- * Pure-TS, framework-free opener registry + imperative API for the cloud
- * files pickers. Statically importable everywhere (Redux thunks, non-
- * React code, server actions if you want); contains zero React, zero
- * dialog markup, and zero static references to the heavy picker
- * components.
- *
- * The actual `<CloudFilesPickerHost />` (file picker + folder picker +
- * SaveAs dialog) is `next/dynamic`-loaded by the shell at
- * `CloudFilesPickerHost.tsx`. When the host body mounts on the client,
- * it calls `_setOpeners(...)` to populate the registry below; the
- * imperative functions short-circuit to `null`/`undefined` until that
- * happens (and warn in dev). This keeps the FilePicker / FolderPicker /
- * SaveAsDialog dep graph out of every entry's static graph while
- * preserving the existing public import path for callers.
+ * Pure-TS imperative API for the cloud files pickers, statically importable everywhere (thunks, non-React code).
+ * Each call asks the summon overlay `cloudFilesPicker` through requestOverlay; its body
+ * (CloudFilesPickerDialog.tsx: FilePickerWindow / FolderPicker / SaveAsDialog) loads only when asked.
  */
 
 import type { UseFolderPickerOpenOptions } from "./FolderPicker";
 import type { SaveAsDestination, UseSaveAsOpenOptions } from "./SaveAsDialog";
-import { ensureDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 
 /**
  * Options for `openFilePicker`. Since 2026-07-20 the opener mounts THE one
@@ -59,92 +48,31 @@ export type SaveAsOpener = (
   options?: UseSaveAsOpenOptions,
 ) => Promise<SaveAsDestination | null>;
 
-let activeFileOpener: FileOpener | null = null;
-let activeFolderOpener: FolderOpener | null = null;
-let activeSaveAsOpener: SaveAsOpener | null = null;
+export type CloudFilesPickerRequest =
+  | { mode: "file"; options: UseFilePickerOpenOptions }
+  | { mode: "folder"; options: UseFolderPickerOpenOptions }
+  | { mode: "saveAs"; options: UseSaveAsOpenOptions };
 
-// ---------------------------------------------------------------------------
-// Internal — called by `<CloudFilesPickerHost />` Impl on mount/unmount.
-// Underscore prefix marks them as internal-only — application code should
-// continue to use the three `open*` functions below.
-// ---------------------------------------------------------------------------
+export type CloudFilesPickerAnswer = string[] | string | null | undefined | SaveAsDestination;
 
-export function _setOpeners(
-  file: FileOpener,
-  folder: FolderOpener,
-  saveAs: SaveAsOpener,
-): void {
-  activeFileOpener = file;
-  activeFolderOpener = folder;
-  activeSaveAsOpener = saveAs;
+// Every picker is the summon overlay `cloudFilesPicker`, asked through requestOverlay: never in the tree until
+// asked, and closing it any way answers the cancel value below.
+
+/** File ids, or `null` when the person closed the picker without choosing. */
+export function openFilePicker(options: UseFilePickerOpenOptions = {}): Promise<string[] | null> {
+  return requestOverlay<CloudFilesPickerRequest, string[] | null>("cloudFilesPicker", { mode: "file", options }, { cancel: null });
 }
 
-export function _clearOpeners(): void {
-  activeFileOpener = null;
-  activeFolderOpener = null;
-  activeSaveAsOpener = null;
+/** A folder id (`null` = root), or `undefined` when canceled. */
+export function openFolderPicker(options: UseFolderPickerOpenOptions = {}): Promise<string | null | undefined> {
+  return requestOverlay<CloudFilesPickerRequest, string | null | undefined>(
+    "cloudFilesPicker",
+    { mode: "folder", options },
+    { cancel: undefined },
+  );
 }
 
-// ---------------------------------------------------------------------------
-// Public imperative API
-// ---------------------------------------------------------------------------
-
-/**
- * Open the shared FilePicker. Requires `<CloudFilesPickerHost />` to be
- * mounted somewhere in the tree (typically at the app root). Returns
- * `null` if the host is not yet mounted (the heavy picker chunk is
- * lazy-loaded — calls during the first ~tens of ms after page load can
- * land before the host hydrates).
- */
-export async function openFilePicker(
-  options: UseFilePickerOpenOptions = {},
-): Promise<string[] | null> {
-  if (!activeFileOpener) await ensureDialogHosts();
-  if (!activeFileOpener) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "[cloud-files] openFilePicker called but <DialogHosts /> never registered the picker host; returning null.",
-      );
-    }
-    return null;
-  }
-  return activeFileOpener(options);
-}
-
-/**
- * Open the shared FolderPicker. Returns the chosen folder id (or `null`
- * for root), or `undefined` if canceled / host not mounted.
- */
-export async function openFolderPicker(
-  options: UseFolderPickerOpenOptions = {},
-): Promise<string | null | undefined> {
-  if (!activeFolderOpener) await ensureDialogHosts();
-  if (!activeFolderOpener) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "[cloud-files] openFolderPicker called but <DialogHosts /> never registered the picker host.",
-      );
-    }
-    return undefined;
-  }
-  return activeFolderOpener(options);
-}
-
-/** Open the shared SaveAs dialog. */
-export async function openSaveAs(
-  options: UseSaveAsOpenOptions = {},
-): Promise<SaveAsDestination | null> {
-  if (!activeSaveAsOpener) await ensureDialogHosts();
-  if (!activeSaveAsOpener) {
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.warn(
-        "[cloud-files] openSaveAs called but <DialogHosts /> never registered the picker host.",
-      );
-    }
-    return null;
-  }
-  return activeSaveAsOpener(options);
+/** The chosen destination, or `null` when canceled. */
+export function openSaveAs(options: UseSaveAsOpenOptions = {}): Promise<SaveAsDestination | null> {
+  return requestOverlay<CloudFilesPickerRequest, SaveAsDestination | null>("cloudFilesPicker", { mode: "saveAs", options }, { cancel: null });
 }

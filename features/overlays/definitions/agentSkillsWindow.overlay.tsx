@@ -8,10 +8,8 @@
  * `close()` method.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "agentSkillsWindow" as const;
 
@@ -19,18 +17,12 @@ export interface AgentSkillsWindowHandle {
   close: () => void;
 }
 
-export function useOpenAgentSkillsWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (agentId: string): AgentSkillsWindowHandle => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { agentId } }));
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<string>(OVERLAY_ID, {
+  instanceId: () => undefined,
+  data: (agentId: string) => ({ agentId }),
+});
+
+export const useOpenAgentSkillsWindow = opener.useOpen;
 
 export type AgentSkillsWindowDefinitionData = Record<string, unknown>;
 

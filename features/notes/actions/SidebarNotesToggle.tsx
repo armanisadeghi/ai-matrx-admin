@@ -15,13 +15,12 @@
 
 import { useCallback } from "react";
 import { FileText } from "lucide-react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { toggleOverlay } from "@ai-matrx/summon/open";
-import { useOverlayOpen } from "@/features/window-panels/hooks/useOverlay";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { isOverlayOpen, toggleOverlay } from "@ai-matrx/summon/boot";
 
 export default function SidebarNotesToggle() {
   const dispatch = useAppDispatch();
-  const isOpen = useOverlayOpen("notesWindow");
+  const isOpen = useAppSelector((s) => isOverlayOpen(s, "notesWindow"));
 
   const toggle = useCallback(() => {
     dispatch(toggleOverlay({ overlayId: "notesWindow" }));

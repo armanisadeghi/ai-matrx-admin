@@ -13,13 +13,13 @@
  * matching the convention every other opener uses. The Controller component
  * is a thin wrapper that creates a handle on mount and disposes on unmount.
  */
-import { useEffect } from "react";
 import {
   useOpenImageUploaderWindow,
   type OpenImageUploaderWindowOptions,
   type ImageUploaderWindowHandle,
 } from "@/features/window-panels/windows/image/useOpenImageUploaderWindow";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
+import { hookController } from "./app-opener";
 
 export {
   useOpenImageUploaderWindow,
@@ -38,19 +38,7 @@ export {
  * dispose/reopen cycle. Pass stable functions (or memoize them) for
  * predictable behavior.
  */
-export function ImageUploaderWindowController(
-  props: OpenImageUploaderWindowOptions,
-): null {
-  const open = useOpenImageUploaderWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // The window's IDENTITY is the instance id; callback handler identity
-    // doesn't justify a remount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.windowInstanceId]);
-  return null;
-}
+export const ImageUploaderWindowController = hookController<OpenImageUploaderWindowOptions>(useOpenImageUploaderWindow);
 
 export type ImageUploaderWindowDefinitionData = OpenImageUploaderWindowOptions;
 

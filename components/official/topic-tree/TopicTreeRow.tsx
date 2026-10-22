@@ -89,7 +89,7 @@ export function TopicTreeRow({
     <span
       className={cn(
         "truncate",
-        row.selected ? "font-medium text-foreground" : "text-foreground/90",
+        row.selected ? "font-medium text-foreground" : "text-foreground",
       )}
     >
       {row.label}

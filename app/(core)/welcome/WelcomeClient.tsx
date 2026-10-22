@@ -89,28 +89,31 @@ export function WelcomeClient({
   newUser,
   foundAsked = false,
   meetSeen,
+  ageNotNow = false,
 }: {
   firstName: string | null;
   newUser: boolean;
   /** `/welcome?found=1`: the "here's what we found" step, only when asked for (it never blocks the way in). */
   foundAsked?: boolean;
   meetSeen: boolean;
+  /** Their "Not now" on the age question is on their account and still in force: the age step is skipped. */
+  ageNotNow?: boolean;
 }) {
   const router = useRouter();
   // One step on screen at a time. The server already knows the start (new account / met Matrx), so there is no flash.
-  const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen, foundAsked }));
+  const [step, setStep] = useState<WelcomeStep>(() => firstStep({ newUser, meetSeen, foundAsked, ageNotNow }));
   const [met, setMet] = useState(meetSeen);
   // Whether the age question is still owed: read while the identity step is on screen, so the age step is already
   // decided when it is reached. Only a new account is ever walked through it here.
-  const [ageNeeded, setAgeNeeded] = useState<boolean | null>(null);
+  const [ageNeeded, setAgeNeeded] = useState<boolean | null>(ageNotNow ? false : null);
   useEffect(() => {
-    if (!newUser) return;
+    if (!newUser || ageNotNow) return;
     let live = true;
     void ageStillNeeded().then((n) => live && setAgeNeeded(n));
     return () => {
       live = false;
     };
-  }, [newUser]);
+  }, [newUser, ageNotNow]);
   const afterAge = useCallback(() => setStep(nextStep("age", met)), [met]);
 
   /**

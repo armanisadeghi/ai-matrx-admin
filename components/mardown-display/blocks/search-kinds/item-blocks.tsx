@@ -140,7 +140,6 @@ function Highlighted({ value, terms }: { value: string; terms: string[] }) {
 
 export function WebResultBlock({ serverData, className }: SearchKindBlockProps) {
   const { value } = readSearchKindValue<"web_result">(serverData);
-  const [expanded, setExpanded] = useState(false);
   const title = text(value.title);
   const url = text(value.url);
   if (!title) return null;
@@ -149,21 +148,15 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
   const date = dateLine(value, formatDate);
   const rawSnippet = text(value.snippet);
   const snippet = rawSnippet ? stripLeadingDate(rawSnippet, date) : null;
-  const extraSnippets = strings(value.extra_snippets).filter(
-    (extra) => extra !== rawSnippet,
-  );
   const terms = strings(value.highlighted_terms);
-  const { readMoreUrl, annotations } = pendingWebResultFields(value);
+  const { annotations } = pendingWebResultFields(value);
   const rating = value.rating ?? null;
   const sitelinks = items(value.sitelinks);
   const thumbnail = text(value.thumbnail);
 
-  // Read more: the engine's own deep link wins (it jumps to the passage);
-  // otherwise a long snippet or extra passages expand in place.
+  // Google's snippet: about two lines, cut at a word with "…", no "Read more" (the title is the way in).
   const long = snippet !== null && snippet.length > SNIPPET_SHORT_CHARS;
-  const canExpand = !readMoreUrl && (long || extraSnippets.length > 0);
-  const shownSnippet =
-    snippet && long && !expanded ? shorten(snippet, SNIPPET_SHORT_CHARS) : snippet;
+  const shownSnippet = snippet && long ? shorten(snippet, SNIPPET_SHORT_CHARS) : snippet;
 
   return (
     <div className={cn("group/result", className)}>
@@ -212,56 +205,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
             <p className="mt-1 text-sm leading-[1.58] text-muted-foreground">
               {date && <span>{date} — </span>}
               <Highlighted value={shownSnippet} terms={terms} />
-              {readMoreUrl && (
-                <>
-                  {" "}
-                  <OutboundLink
-                    href={readMoreUrl}
-                    onClick={(e) => e.stopPropagation()}
-                    className="whitespace-nowrap text-foreground underline underline-offset-2 hover:text-primary"
-                  >
-                    Read more
-                  </OutboundLink>
-                </>
-              )}
-              {canExpand && !expanded && (
-                <>
-                  {" "}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExpanded(true);
-                    }}
-                    className="whitespace-nowrap text-foreground underline underline-offset-2 hover:text-primary"
-                  >
-                    Read more
-                  </button>
-                </>
-              )}
             </p>
-          )}
-
-          {expanded && extraSnippets.length > 0 && (
-            <div className="mt-1.5 space-y-1.5">
-              {extraSnippets.map((extra, i) => (
-                <p key={i} className="text-sm leading-[1.58] text-muted-foreground">
-                  <Highlighted value={extra} terms={terms} />
-                </p>
-              ))}
-            </div>
-          )}
-          {expanded && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExpanded(false);
-              }}
-              className="mt-0.5 text-sm text-foreground underline underline-offset-2 hover:text-primary"
-            >
-              Show less
-            </button>
           )}
 
           {((!snippet && date) || rating || text(value.author)) && (
@@ -302,7 +246,7 @@ export function WebResultBlock({ serverData, className }: SearchKindBlockProps) 
         {thumbnail && (
           <Thumb
             src={thumbnail}
-            className="mt-1 h-[72px] w-[72px] flex-shrink-0 rounded-lg object-cover @lg:h-[92px] @lg:w-[92px]"
+            className="mt-1 h-16 w-16 flex-shrink-0 rounded-lg bg-muted object-cover @lg:h-[72px] @lg:w-[72px]"
           />
         )}
       </div>

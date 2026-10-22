@@ -6,10 +6,8 @@
  * The window wraps the canonical `SiteAnalyticsPanel`.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "siteAnalyticsWindow" as const;
 
@@ -19,24 +17,14 @@ export interface OpenSiteAnalyticsWindowOptions {
   siteLabel?: string | null;
 }
 
-export function useOpenSiteAnalyticsWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenSiteAnalyticsWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenSiteAnalyticsWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenSiteAnalyticsWindowOptions) => ({
             siteId: options.siteId,
             siteLabel: options.siteLabel ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenSiteAnalyticsWindow = opener.useOpen;
 
 export type SiteAnalyticsWindowDefinitionData = OpenSiteAnalyticsWindowOptions;
 

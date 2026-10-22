@@ -6,23 +6,17 @@
  * id travels through the overlay data and the address (`?panels=search_review:<sessionId>`).
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "searchReviewWindow" as const;
 
-export function useOpenSearchReviewWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (sessionId: string) => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { sessionId } }));
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<string>(OVERLAY_ID, {
+  instanceId: () => undefined,
+  data: (sessionId: string) => ({ sessionId }),
+});
+
+export const useOpenSearchReviewWindow = opener.useOpen;
 
 export type SearchReviewWindowDefinitionData = Record<string, unknown>;
 

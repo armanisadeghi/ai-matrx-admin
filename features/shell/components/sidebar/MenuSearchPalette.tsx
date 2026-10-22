@@ -201,7 +201,7 @@ export default function MenuSearchPalette({ open, onOpenChange, query, onQueryCh
         <EntryIcon entry={entry} />
       </span>
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
-        <span className="shrink-0 truncate text-sm text-foreground/90">
+        <span className="shrink-0 truncate text-sm text-foreground">
           <Highlighted text={entry.label} query={trimmed} />
         </span>
         {entry.trail.length > 0 ? (

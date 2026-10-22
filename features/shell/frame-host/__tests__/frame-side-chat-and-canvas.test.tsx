@@ -14,12 +14,18 @@ import { join } from "node:path";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Search } from "lucide-react";
-import { AppFrame, type AppFrameProps } from "@/features/shell/frame/AppFrame";
+import {
+  AppFrame,
+  FRAME_COMPANION_DEFAULT_PX,
+  FRAME_COMPANION_MAX_PX,
+  FRAME_COMPANION_MIN_PX,
+  type AppFrameProps,
+} from "@/features/shell/frame/AppFrame";
 import { HeaderToolButtons } from "@/features/shell/frame/SheetHeader";
 import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
 import type { CompanionProps } from "@/features/shell/frame/types";
 import { useSideChatOpen } from "@ai-matrx/chat/canvas/workspace/side-chat-state";
-import { canvasChatCookieName } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
+import { CANVAS_CHAT_SIZES, canvasChatCookieName } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -141,5 +147,49 @@ describe("the frame's side chat follows the shared rule and loads only when open
     await flush();
     expect(document.cookie).toContain(`${canvasChatCookieName("page:notes")}=side:closed`);
     expect(loader).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("one width rule and one full-screen state", () => {
+  it("the frame's side chat widths are the classic dock's (owner: 340 to 768, default 350)", () => {
+    expect([FRAME_COMPANION_MIN_PX, FRAME_COMPANION_MAX_PX, FRAME_COMPANION_DEFAULT_PX]).toEqual([
+      CANVAS_CHAT_SIZES.minPx,
+      CANVAS_CHAT_SIZES.maxPx,
+      CANVAS_CHAT_SIZES.defaultPx,
+    ]);
+    expect([CANVAS_CHAT_SIZES.minPx, CANVAS_CHAT_SIZES.maxPx]).toEqual([340, 768]);
+  });
+
+  it("the canvas's full screen is the host's (the canvas store's), read and written through it", async () => {
+    const changes: boolean[] = [];
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    root = createRoot(host);
+    act(() =>
+      root.render(
+        <AppFrame
+          products={PRODUCTS}
+          families={PRODUCT_FAMILIES}
+          product={PRODUCTS[0]}
+          favorites={[]}
+          onFavoritesChange={() => {}}
+          crumbs={[{ id: "page", label: "Page" }]}
+          actions={[]}
+          phoneTools={[]}
+          variant="workspace"
+          form="wide"
+          canvasOpen
+          canvasFull
+          onCanvasFullChange={(full) => changes.push(full)}
+        >
+          <p>Body</p>
+        </AppFrame>,
+      ),
+    );
+    await flush();
+    const exit = host.querySelector<HTMLButtonElement>('button[aria-label="Exit full screen"]')!;
+    expect(exit.getAttribute("aria-pressed")).toBe("true");
+    act(() => exit.click());
+    expect(changes).toEqual([false]);
   });
 });

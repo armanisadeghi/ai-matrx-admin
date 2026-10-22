@@ -84,13 +84,13 @@ function ChangeDiffRow({ field }: { field: ChangeFieldDiff }) {
               className={cn(
                 "min-w-0 break-words [overflow-wrap:anywhere]",
                 before.empty
-                  ? "italic text-muted-foreground/60"
-                  : "text-muted-foreground/70 line-through",
+                  ? "italic text-muted-foreground"
+                  : "text-muted-foreground line-through",
               )}
             >
               {before.text}
             </span>
-            <ArrowRight className="size-3 shrink-0 text-muted-foreground/50" />
+            <ArrowRight className="size-3 shrink-0 text-muted-foreground" />
           </>
         )}
         <span

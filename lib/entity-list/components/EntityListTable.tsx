@@ -379,7 +379,7 @@ export function EntityListTable<TRow>({
           e.stopPropagation();
           actions.onToggleFavorite?.(row);
         }}
-        className="inline-flex h-11 w-11 items-center justify-center rounded text-muted-foreground/40 hover:text-amber-500 disabled:hover:text-muted-foreground/40 sm:h-6 sm:w-6"
+        className="inline-flex h-11 w-11 items-center justify-center rounded text-muted-foreground hover:text-amber-500 disabled:hover:text-disabled-foreground sm:h-6 sm:w-6"
       >
         <Star
           className={cn(

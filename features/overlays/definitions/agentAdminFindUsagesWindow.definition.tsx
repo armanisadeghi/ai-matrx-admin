@@ -15,6 +15,5 @@ export const agentAdminFindUsagesWindowOverlay = defineOverlay<AgentAdminFindUsa
     restoreDefaults: { agentId: null },
     windowId: "agent-admin-find-usages-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

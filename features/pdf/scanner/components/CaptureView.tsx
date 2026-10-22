@@ -44,6 +44,8 @@ import {
 } from "@/features/media-devices/deviceManager";
 import {
   acquireCameraLease,
+  nextCameraFlipTarget,
+  type CameraFlipTarget,
   type CameraLease,
 } from "@/features/media-capture/runtime/camera-stream-manager";
 import { CameraPreview } from "@ai-matrx/capture/react";
@@ -76,7 +78,10 @@ export function CaptureView({
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [notSupported, setNotSupported] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
-  const [deviceId, setDeviceId] = useState<string | null>(null);
+  // Which camera to hold: a side (phones) or a device id (desktop webcams).
+  const [target, setTarget] = useState<CameraFlipTarget>({
+    facingMode: "environment",
+  });
   const [shutterFlash, setShutterFlash] = useState(false);
   const [torchAvailable, setTorchAvailable] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
@@ -99,10 +104,7 @@ export function CaptureView({
     let myLease: CameraLease | null = null;
     let unsubscribe: (() => void) | null = null;
 
-    acquireCameraLease({
-      profile: "maximum-available",
-      ...(deviceId ? { deviceId } : { facingMode: "environment" as const }),
-    })
+    acquireCameraLease({ profile: "maximum-available", ...target })
       .then((lease) => {
         if (cancelled) {
           lease.release();
@@ -139,7 +141,7 @@ export function CaptureView({
       }
       setStream(null);
     };
-  }, [deviceId]);
+  }, [target]);
 
   const cameraBlocked = notSupported || permissionDenied;
 
@@ -170,18 +172,12 @@ export function CaptureView({
   }, [torchOn]);
 
   const switchCamera = useCallback(() => {
-    const cams = getMediaDevicesSnapshot().cameras;
-    if (cams.length < 2) return;
-    const currentIdx = deviceId
-      ? cams.findIndex((c) => c.deviceId === deviceId)
-      : cams.findIndex(
-          (c) =>
-            c.deviceId ===
-            leaseRef.current?.stream.getVideoTracks()[0]?.getSettings().deviceId,
-        );
-    const next = cams[(Math.max(currentIdx, 0) + 1) % cams.length];
-    if (next) setDeviceId(next.deviceId);
-  }, [deviceId]);
+    const next = nextCameraFlipTarget(
+      leaseRef.current?.stream.getVideoTracks()[0],
+      getMediaDevicesSnapshot().cameras,
+    );
+    if (next) setTarget(next);
+  }, []);
 
   const handleShutter = useCallback(() => {
     const video = videoRef.current;

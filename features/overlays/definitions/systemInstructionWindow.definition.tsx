@@ -15,6 +15,5 @@ export const systemInstructionWindowOverlay = defineOverlay<SystemInstructionWin
     restoreDefaults: { conversationId: "" },
     windowId: "system-instruction-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

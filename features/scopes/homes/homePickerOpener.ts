@@ -2,11 +2,10 @@
 //
 // `pickHome(...)` — open THE home picker from anywhere (a bulk action's run, a
 // thunk) and await the chosen home. Zero React: the dialog lives behind the
-// host mounted once in app/Providers.tsx (`<RecordBulkDialogsHost />`).
+// summon overlay `homePickerDialog` (features/overlays/definitions).
 // Resolves null when the person closes it without choosing.
 
-import { createOpener } from "@ai-matrx/kit/opener";
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 import type { ItemHome } from "./homeModel";
 
 export interface PickHomeRequest {
@@ -20,12 +19,6 @@ export interface PickHomeRequest {
 
 export type PickHomeResponse = { home: ItemHome; label: string } | null;
 
-export const homePickerOpener = createOpener<PickHomeRequest, PickHomeResponse>(
-  "matrx-frontend.home-picker-opener-state",
-  { hostHint: "<DialogHosts /> (components/dialogs/host, mounted once in app/Providers.tsx)" },
-);
-
 export function pickHome(request: PickHomeRequest): Promise<PickHomeResponse> {
-  requestDialogHosts();
-  return homePickerOpener.open(request);
+  return requestOverlay<PickHomeRequest, PickHomeResponse>("homePickerDialog", request, { cancel: null });
 }

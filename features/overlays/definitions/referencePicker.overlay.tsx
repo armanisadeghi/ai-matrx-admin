@@ -12,15 +12,16 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createReferencePickerCallbackGroup } from "./callbacks/referencePicker";
 import type {
   ReferenceDelivery,
   ReferencePick,
 } from "@/features/matrx-envelope/components/reference-picker/referencePickerTypes";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "referencePicker" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenReferencePickerOptions {
   /** `insert` when the caller can write into a surface (copy stays offered); `copy` otherwise. */
@@ -65,12 +66,12 @@ export function useOpenReferencePicker() {
       disposeGroup = dispose;
 
       const data: ReferencePickerOverlayData = { callbackGroupId, mode: opts.mode };
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
+      opener.open(dispatch, { data });
 
       return {
         callbackGroupId,
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+          dispatch(opener.close());
           detach();
         },
         dispose: detach,

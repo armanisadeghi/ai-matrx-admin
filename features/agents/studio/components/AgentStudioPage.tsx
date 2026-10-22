@@ -49,7 +49,7 @@ import {
   selectMessageById,
   selectOrderedMessageIds,
 } from "@ai-matrx/chat/agents/redux/execution-system/messages/messages.selectors";
-import { selectOwnSubmittedFirstTurnValues } from "@ai-matrx/chat/agents/redux/execution-system/instance-variable-values/instance-variable-values.selectors";
+import { runAgainSeed } from "../run-again";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { AGENT_BUILDER_CONTEXT_MENU_PROPS } from "@ai-matrx/chat/agents/agent-context/buildAgentBuilderContextData";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -79,7 +79,6 @@ import {
   EXAMPLES_CASE_SOURCE,
   approvedAnswerFrom,
   readStudioState,
-  rerunSeedFrom,
   studioJobParam,
   studioCaseFromBuild,
   studioCasesFromBuild,
@@ -605,10 +604,7 @@ function StudioWorkspace({
       return;
     }
     if (runConversation) {
-      const s = store.getState();
-      const values = selectOwnSubmittedFirstTurnValues(runConversation)(s) as Record<string, unknown> | undefined;
-      const messages = selectConversationMessages(runConversation)(s) as StudioMessageRecord[];
-      const again = rerunSeedFrom(values, messages);
+      const again = runAgainSeed(store.getState(), runConversation);
       setRerunSeed(again ? { ...again, autoRun: true } : null);
     }
     run.startWith(agentId);

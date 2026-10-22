@@ -87,6 +87,7 @@ export function CxRequestsDrill({ page, children }: { page: CxDrillPage; childre
           openRecord={{ column: "conversation_id", label: "Open conversation", href: (id) => `/administration/chat/cx-dashboard/conversations/${id}` }}
           location={`Administration › CX dashboard › ${p.title}`}
           headerExtras={extras}
+          urlStateId="cx-requests"
           dataAttributes={{ "data-cx-requests-drill": page }}
         />
       )}

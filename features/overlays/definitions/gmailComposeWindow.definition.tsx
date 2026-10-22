@@ -15,6 +15,5 @@ export const gmailComposeWindowOverlay = defineOverlay<GmailComposeWindowDefinit
     restoreDefaults: { partyId: null, organizationId: null, partyLabel: null },
     windowId: "gmail-compose-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

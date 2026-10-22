@@ -4,17 +4,20 @@
  * Typed, callback-aware opener for the multi-instance annotation window.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createImageAnnotationCallbackGroup,
   type ImageAnnotationWindowData,
   type ImageAnnotationWindowHandlers,
 } from "./callbacks/imageAnnotationWindow";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "imageAnnotationWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenImageAnnotationWindowOptions
   extends ImageAnnotationWindowHandlers {
@@ -34,22 +37,12 @@ export interface ImageAnnotationWindowHandle {
   dispose: () => void;
 }
 
-type HandleRef = {
-  instanceId: string;
-  dispose: () => void;
-};
-
 export function useOpenImageAnnotationWindow() {
   const dispatch = useAppDispatch();
-  const handlesRef = useRef<Set<HandleRef>>(new Set());
 
-  useEffect(() => {
-    const handles = handlesRef.current;
-    return () => {
-      for (const handle of handles) handle.dispose();
-      handles.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return useCallback(
     (
@@ -57,9 +50,15 @@ export function useOpenImageAnnotationWindow() {
     ): ImageAnnotationWindowHandle => {
       const instanceId =
         options.windowInstanceId ??
-        `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const { callbackGroupId, dispose } =
-        createImageAnnotationCallbackGroup(options);
+        mintInstanceId(OVERLAY_ID);
+      // The window closing itself releases its group (the window owns it).
+      const { callbackGroupId, dispose } = createImageAnnotationCallbackGroup({
+        ...options,
+        onWindowClose: (event) => {
+          options.onWindowClose?.(event);
+          dispose();
+        },
+      });
       const data: ImageAnnotationWindowData = {
         callbackGroupId,
         sourceFileId: options.sourceFileId ?? null,
@@ -70,31 +69,16 @@ export function useOpenImageAnnotationWindow() {
         overwriteSource: options.overwriteSource ?? false,
       };
 
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data,
-        }),
-      );
+      opener.open(dispatch, { instanceId, data });
 
-      const handleRef: HandleRef = { instanceId, dispose };
-      handlesRef.current.add(handleRef);
 
       const close = () => {
-        dispatch(
-          closeOverlay({
-            overlayId: OVERLAY_ID,
-            instanceId,
-          }),
-        );
+        dispatch(opener.close(instanceId));
         dispose();
-        handlesRef.current.delete(handleRef);
       };
 
       const detach = () => {
         dispose();
-        handlesRef.current.delete(handleRef);
       };
 
       return {
@@ -108,25 +92,7 @@ export function useOpenImageAnnotationWindow() {
   );
 }
 
-export function ImageAnnotationWindowController(
-  props: OpenImageAnnotationWindowOptions,
-): null {
-  const open = useOpenImageAnnotationWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.windowInstanceId,
-    props.sourceFileId,
-    props.sourceUrl,
-    props.sourceFilename,
-    props.defaultFolder,
-    props.title,
-    props.overwriteSource,
-  ]);
-  return null;
-}
+export const ImageAnnotationWindowController = hookController<OpenImageAnnotationWindowOptions>(useOpenImageAnnotationWindow);
 
 export type ImageAnnotationWindowDefinitionData = OpenImageAnnotationWindowOptions;
 

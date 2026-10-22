@@ -26,39 +26,50 @@ export function fitBreaks(text: string): string[] {
 
 export function FitText({ text }: { text: string }) {
   const box = useRef<HTMLSpanElement>(null);
-  const inner = useRef<HTMLSpanElement>(null);
-  const scale = useRef(1);
+  // An invisible full-size, unbroken copy: the text's natural width whatever the visible copy is doing (shrunk or
+  // wrapped). Measuring the visible copy fed its own state back in (live 2026-10-21: max-width capped the read, it
+  // said "fits", and the handle ran past the card edge at 375px).
+  const probe = useRef<HTMLSpanElement>(null);
   const [fit, setFit] = useState<number | null>(1);
 
   useLayoutEffect(() => {
     const measure = () => {
       const b = box.current;
-      const i = inner.current;
-      if (!b || !i) return;
-      const natural = i.getBoundingClientRect().width / scale.current;
-      const next = fitScale(natural, b.clientWidth);
-      scale.current = next ?? FIT_FLOOR;
-      setFit(next);
+      const p = probe.current;
+      if (!b || !p) return;
+      setFit(fitScale(p.scrollWidth, b.clientWidth));
     };
     measure();
     const ro = new ResizeObserver(measure);
     if (box.current) ro.observe(box.current);
-    return () => ro.disconnect();
+    // A web font landing after the first measure changes the text's width: measure again.
+    let live = true;
+    void document.fonts?.ready.then(() => live && measure());
+    return () => {
+      live = false;
+      ro.disconnect();
+    };
   }, [text]);
 
   // Past the floor the text may break: after a dot, a dash or an underscore (a domain, a LinkedIn handle), and a
   // single unbroken run past the edge wraps anywhere rather than be clipped (live 2026-10-21 at 375px).
   const parts = fit === null ? fitBreaks(text) : [text];
   return (
-    <span ref={box} className="block min-w-0 leading-[1.1]" style={fit === null ? { minHeight: "1.1em" } : { height: "1.1em" }} data-fit-text={fit === null ? "wrap" : String(fit)}>
+    <span
+      ref={box}
+      className="relative block min-w-0 leading-[1.1]"
+      style={fit === null ? { minHeight: "1.1em" } : { height: "1.1em" }}
+      data-fit-text={fit === null ? "wrap" : String(fit)}
+    >
+      <span ref={probe} aria-hidden className="invisible absolute left-0 top-0 w-0 overflow-hidden whitespace-nowrap">
+        {text}
+      </span>
       <span
-        ref={inner}
-        className="inline-block align-bottom"
+        className="inline-block max-w-full align-bottom"
         style={{
           fontSize: `${(fit ?? FIT_FLOOR) * 100}%`,
           whiteSpace: fit === null ? "normal" : "nowrap",
           overflowWrap: fit === null ? "anywhere" : "normal",
-          maxWidth: "100%",
           wordBreak: "normal",
         }}
       >

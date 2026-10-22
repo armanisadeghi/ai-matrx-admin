@@ -27,7 +27,7 @@ const TONE_CLASS: Record<StatusTone, string> = {
   danger:
     "border-rose-600/50 bg-rose-500/15 text-rose-800 dark:border-rose-400/40 dark:bg-rose-400/15 dark:text-rose-200",
   neutral:
-    "border-zinc-500/40 bg-zinc-500/15 text-zinc-700 dark:border-zinc-400/40 dark:bg-zinc-400/15 dark:text-zinc-200",
+ "border-zinc-500/40 bg-zinc-500/15 text-foreground dark:border-zinc-400/40 dark:bg-zinc-400/15 ",
   info: "border-sky-600/40 bg-sky-500/15 text-sky-800 dark:border-sky-400/40 dark:bg-sky-400/15 dark:text-sky-200",
 };
 

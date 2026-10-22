@@ -1,21 +1,20 @@
 "use client";
 
 /**
- * One data source, in full: what you get (every column), what to enter (with examples), how many
- * (capped by the organization's limit, shown with its Change link) and what it costs at THIS
- * source's own price, then Get data — the same fetch flow as the board's Get data tile
- * (`../server.fetchData` held by `../runs`, so leaving never loses it; a reload reconnects to the
- * newest open job for this source through `GET /data-sources/jobs/{id}`; refusals through the shared
- * `RefusalView`). Done → Open table · Add to a board.
- *
- * Rendered inside the `dataSourceWindow` window panel (desktop: floating; phone: full screen).
+ * One data source, in full, ON THE LIBRARY PAGE (no window): what you get (every column), what to
+ * enter (with examples), how many (capped by the organization's limit, shown with its Change link)
+ * and what it costs at THIS source's own price — the decide step, the only place points show — then
+ * Get data. The run streams its results right below the search (`./SourceResults`): the person's
+ * own custom table, drawn inline by the one table mount, filling as the server stores rows. The
+ * run is held by `../runs` (leaving never loses it); its job id rides the address (`&job=`), so a
+ * reload re-attaches to it (else to the newest open job for this source); refusals through the
+ * shared `RefusalView`. Earlier runs are listed below (`./PastRuns`) and reopen inline.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, DownloadCloud, Table2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { DownloadCloud } from "lucide-react";
 import {
   Badge,
   Button,
@@ -29,14 +28,9 @@ import {
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
-import { createClient } from "@/utils/supabase/client";
-
-import { buildInput, capCount, countChoices } from "../contract";
-import { AddToBoard } from "../AddToBoard";
+import { buildInput, capCount, countChoices, searchOptions } from "../contract";
 import { SourceInputFields, modeOf } from "../SourceInputFields";
 import { limitSettingHref, fetchedTablesKey } from "../hooks";
-import { RefusalView } from "../RefusalView";
-import { FetchProgress } from "../FetchProgress";
 import { clearRun, resumeRun, runState, startRun, useRun } from "../runs";
 import { fetchData, getJob } from "../server";
 import { orderTellingFields, plainIssue, type Library, type LibrarySource } from "./catalog";
@@ -47,13 +41,46 @@ import {
   useLibraryOrganizationId,
   usePriceText,
 } from "./hooks";
-
-const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"];
+import { PastRuns } from "./PastRuns";
+import { PAST_RUNS_PREFIX, isOpenStatus, useDataFetchJob, useOpenJob } from "./runHistory";
+import { LiveRunResults, SavedRunResults } from "./SourceResults";
 
 export const libraryRunKey = (sourceKey: string) => `library:${sourceKey}`;
 
-/** The window body: reads the library (cached) and shows the one source. */
-export function SourceDetail({ sourceKey, initialValues }: { sourceKey: string; initialValues?: Record<string, string> }) {
+/**
+ * What a shown run asked for, back in the form (a reload or a reopened past run keeps the question
+ * visible): the first input set's values, and the search option whose fields it carries. Pure.
+ */
+export function refillFromInputs(
+  source: Pick<LibrarySource, "input">,
+  inputs: unknown,
+): { values: Record<string, string>; option: string | null } | null {
+  const first = Array.isArray(inputs) ? inputs[0] : inputs;
+  if (!first || typeof first !== "object") return null;
+  const values: Record<string, string> = {};
+  for (const [k, v] of Object.entries(first as Record<string, unknown>)) {
+    if (typeof v === "string" && v.trim()) values[k] = v;
+    else if (typeof v === "number" && Number.isFinite(v)) values[k] = String(v);
+  }
+  if (Object.keys(values).length === 0) return null;
+  if (values.url) return { values, option: null };
+  const option = searchOptions(source).find((o) => o.fields.every((f) => f.name in values))?.name ?? null;
+  return { values, option };
+}
+
+export interface SourceDetailProps {
+  sourceKey: string;
+  initialValues?: Record<string, string>;
+  /** The run whose results show (the address's `&job=`); null = the run in memory, if any. */
+  jobId?: string | null;
+  /** Put a run in the address (null clears it). `replace`: the live run naming itself, not a new step. */
+  onJob?: (jobId: string | null, opts?: { replace?: boolean }) => void;
+  /** Reopen a past run of another source (a task's list) — the page moves to that source. */
+  onOpenRun?: (run: { id: string; sourceKey: string }) => void;
+}
+
+/** The source on the page: reads the library (cached) and shows the one source. */
+export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun }: SourceDetailProps) {
   const organizationId = useLibraryOrganizationId();
   const library = useLibrary(organizationId);
   if (library.isLoading) {
@@ -84,6 +111,7 @@ export function SourceDetail({ sourceKey, initialValues }: { sourceKey: string; 
       />
     );
   }
+  const labelOf = (key: string) => library.data?.sources.find((s) => s.key === key)?.label ?? key;
   return (
     <SourceRun
       key={source.key}
@@ -91,32 +119,12 @@ export function SourceDetail({ sourceKey, initialValues }: { sourceKey: string; 
       library={library.data}
       organizationId={organizationId}
       initialValues={initialValues}
+      jobId={jobId}
+      onJob={onJob ?? (() => {})}
+      onOpenRun={onOpenRun}
+      labelOf={labelOf}
     />
   );
-}
-
-/** The newest open fetch of this source by this person (read client-direct under RLS), for reconnect. */
-function useOpenJob(sourceKey: string) {
-  return useQuery({
-    queryKey: ["data-sources", "open-job", sourceKey],
-    queryFn: async (): Promise<string | null> => {
-      const since = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-      const { data, error } = await createClient()
-        .schema("scraper")
-        .from("data_fetch_job")
-        .select("id")
-        .eq("source_key", sourceKey)
-        .in("status", OPEN_STATUSES)
-        .gte("created_at", since)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (error) throw error;
-      return (data as { id?: string } | null)?.id ?? null;
-    },
-    staleTime: 0,
-  });
 }
 
 function SourceRun({
@@ -124,131 +132,115 @@ function SourceRun({
   library,
   organizationId,
   initialValues,
+  jobId,
+  onJob,
+  onOpenRun,
+  labelOf,
 }: {
   source: LibrarySource;
   library: Library;
   organizationId: string;
   initialValues?: Record<string, string>;
+  jobId: string | null;
+  onJob: NonNullable<SourceDetailProps["onJob"]>;
+  onOpenRun?: SourceDetailProps["onOpenRun"];
+  labelOf: (key: string) => string;
 }) {
   const key = libraryRunKey(source.key);
   const run = useRun(key);
   const queryClient = useQueryClient();
   const openJob = useOpenJob(source.key);
+  const addressJob = useDataFetchJob(jobId);
 
-  // A fetch still running on the server with nothing in memory (a reload): reconnect to it.
-  const savedJob = openJob.data ?? null;
+  const runJobId =
+    run.status === "running" ? (run.progress?.jobId ?? null) : run.status === "done" ? run.result.job_id || null : null;
+
+  // The live run names itself in the address once the server gives it an id: a reload re-attaches.
+  const named = useRef<string | null>(null);
+  useEffect(() => {
+    if (!runJobId || named.current === runJobId) return;
+    named.current = runJobId;
+    if (jobId !== runJobId) onJob(runJobId, { replace: true });
+  }, [runJobId, jobId, onJob]);
+
+  // A fetch still running on the server with nothing in memory (a reload): reconnect to it — the
+  // address's run when it is still open, else the newest open run of this source.
+  const savedJob = jobId ? (isOpenStatus(addressJob.data?.status) ? jobId : null) : (openJob.data ?? null);
   useEffect(() => {
     if (!savedJob || runState(key).status !== "idle") return;
-    return resumeRun(key, (signal) =>
-      getJob(savedJob, { organizationId, signal }),
-    );
+    named.current = savedJob;
+    return resumeRun(key, (signal) => getJob(savedJob, { organizationId, signal }));
   }, [savedJob, organizationId, key]);
 
   const done = run.status === "done" ? run.result : null;
   useEffect(() => {
-    if (done)
-      void queryClient.invalidateQueries({ queryKey: fetchedTablesKey });
+    if (!done) return;
+    void queryClient.invalidateQueries({ queryKey: fetchedTablesKey });
+    void queryClient.invalidateQueries({ queryKey: PAST_RUNS_PREFIX });
   }, [done, queryClient]);
 
-  if (run.status === "failed") {
-    return (
-      <div className="flex min-h-full p-4">
-        <RefusalView
-          refusal={run.refusal}
-          organizationId={organizationId}
-          onBack={() => clearRun(key)}
-        />
-      </div>
-    );
-  }
-  if (run.status === "running") {
-    return (
-      <div className="flex min-h-full p-4">
-        <FetchProgress
-          label={source.label}
-          progress={run.progress}
-          startedAt={run.startedAt}
-        />
-      </div>
-    );
-  }
-  if (done) {
-    const rows = done.rows_created + done.rows_updated;
-    return (
-      <div className="flex min-h-full p-4">
-        <div
-          className="m-auto flex max-w-sm flex-col items-center gap-3 p-2 text-center"
-          data-fetch-done={done.table_id}
-        >
-          <CheckCircle2 className="h-7 w-7 text-success" />
-          <div className="text-sm font-semibold text-foreground">
-            {formatCount(rows)} {rows === 1 ? "record" : "records"} in{" "}
-            {done.table_name}
-          </div>
-          {done.limit_applied && (
-            <div className="text-xs text-muted-foreground">
-              Lowered to your limit of {formatCount(done.limit_applied.value)}
-            </div>
-          )}
-          {(done.notices ?? []).map((n) => (
-            <p key={n} className="text-xs text-warning" data-fetch-notice="">
-              {n}
-            </p>
-          ))}
-          <div className="flex flex-wrap justify-center gap-2 pt-1">
-            <OpenTableButton tableId={done.table_id} />
-            <AddToBoard tableId={done.table_id} tableName={done.table_name} />
-          </div>
-          <Button variant="quiet" onClick={() => clearRun(key)}>
-            Get more
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <SourceForm
-      source={source}
-      library={library}
-      organizationId={organizationId}
-      initialValues={initialValues}
-      onFetch={(input, count) =>
-        startRun(
-          key,
-          (onProgress) =>
-            // org-filter: server-call the data fetch executes in the selected organization
-            fetchData(
-              { sourceKey: source.key, input, maxRecords: count },
-              { organizationId, onProgress },
-            ),
-          () => {
-            void queryClient.invalidateQueries({
-              queryKey: libraryKey(organizationId), // org-filter: server-call invalidates the selected organization library response
-            });
-          },
-        )
-      }
-    />
-  );
-}
+  // A run shown that this page did not start (a reload, a reopened past run): its question refills the form.
+  const refill =
+    jobId && jobId !== runJobId && addressJob.data?.source_key === source.key
+      ? refillFromInputs(source, addressJob.data.inputs)
+      : null;
 
-/** "Open table": busy the moment it is clicked (the table page can take seconds), then the window closes on arrival. */
-function OpenTableButton({ tableId }: { tableId: string }) {
-  const router = useRouter();
-  const [opening, setOpening] = useState(false);
+  // Which results show: the run in memory (unless the person reopened a different past run).
+  const showLive = run.status !== "idle" && (!jobId || !runJobId || jobId === runJobId);
+  const clear = () => {
+    clearRun(key);
+    onJob(null);
+  };
+
   return (
-    <Button
-      variant="primary"
-      icon={<Table2 className="h-4 w-4" />}
-      disabled={opening}
-      onClick={() => {
-        setOpening(true);
-        router.push(`/data/${encodeURIComponent(tableId)}`);
-      }}
-      data-open-table=""
-    >
-      {opening ? "Opening table" : "Open table"}
-    </Button>
+    <div className="flex flex-col gap-6">
+      <SourceForm
+        key={refill ? `run:${jobId}` : "new"}
+        source={source}
+        library={library}
+        organizationId={organizationId}
+        initialValues={refill?.values ?? initialValues}
+        initialOption={refill?.option ?? null}
+        busy={run.status === "running"}
+        onFetch={(input, count) => {
+          if (runState(key).status === "running") return;
+          clearRun(key);
+          named.current = null;
+          onJob(null);
+          void queryClient.invalidateQueries({ queryKey: PAST_RUNS_PREFIX });
+          startRun(
+            key,
+            (onProgress) =>
+              // org-filter: server-call the data fetch executes in the selected organization
+              fetchData(
+                { sourceKey: source.key, input, maxRecords: count },
+                { organizationId, onProgress },
+              ),
+            () => {
+              void queryClient.invalidateQueries({
+                queryKey: libraryKey(organizationId), // org-filter: server-call invalidates the selected organization library response
+              });
+            },
+          );
+        }}
+      />
+
+      {showLive ? (
+        <section className="flex flex-col gap-3" aria-label="Results" data-results="live">
+          <LiveRunResults label={source.label} run={run} organizationId={organizationId} onClear={clear} />
+        </section>
+      ) : jobId ? (
+        <section className="flex flex-col gap-3" aria-label="Results" data-results="saved">
+          <SavedRunResults jobId={jobId} />
+        </section>
+      ) : null}
+
+      <PastRuns
+        sourceKeys={[source.key]}
+        labelOf={labelOf}
+        onOpen={(r) => (r.sourceKey === source.key || !onOpenRun ? onJob(r.id) : onOpenRun(r))}
+      />
+    </div>
   );
 }
 
@@ -314,12 +306,18 @@ function SourceForm({
   library,
   organizationId,
   initialValues,
+  initialOption = null,
+  busy,
   onFetch,
 }: {
   source: LibrarySource;
   library: Library;
   organizationId: string;
   initialValues?: Record<string, string>;
+  /** The search option a refilled run used (null = by link). */
+  initialOption?: string | null;
+  /** A run of this source is going: Get data waits for it. */
+  busy: boolean;
   onFetch: (
     input: NonNullable<ReturnType<typeof buildInput>["input"]>,
     count: number,
@@ -327,7 +325,7 @@ function SourceForm({
 }) {
   const limit = library.limits.max_records_per_fetch;
   const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
-  const [option, setOption] = useState<string | null>(null);
+  const [option, setOption] = useState<string | null>(initialOption);
   const [choice, setChoice] = useState<CountChoice>(
     limit && limit.value < 10 ? "custom" : "10",
   );
@@ -346,7 +344,7 @@ function SourceForm({
 
   return (
     <form
-      className="flex min-h-full flex-col gap-5 p-4"
+      className="flex flex-col gap-5 rounded-xl border border-border bg-card p-4"
       data-source-detail={source.key}
       onSubmit={(e) => {
         e.preventDefault();
@@ -356,6 +354,7 @@ function SourceForm({
       <div className="flex items-start gap-3">
         <GroupMark group={source.group} subgroup={source.subgroup} />
         <div className="min-w-0 flex-1">
+          <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">{source.label}</h1>
           <div className="flex flex-wrap items-center gap-1.5">
             {source.knownIssue ? (
               <Badge tone="warning">Known issue</Badge>
@@ -458,7 +457,7 @@ function SourceForm({
         </div>
       </Section>
 
-      <div className="sticky bottom-0 -mx-4 -mb-4 mt-auto flex items-center justify-end gap-3 border-t border-border bg-card px-4 py-3">
+      <div className="-mx-4 -mb-4 flex items-center justify-end gap-3 border-t border-border px-4 py-3">
         <span
           className="mr-auto text-xs text-muted-foreground"
           data-estimate=""
@@ -470,9 +469,9 @@ function SourceForm({
           type="submit"
           variant="primary"
           icon={<DownloadCloud className="h-4 w-4" />}
-          disabled={!built.input}
+          disabled={!built.input || busy}
         >
-          Get data
+          {busy ? "Getting data" : "Get data"}
         </Button>
       </div>
     </form>

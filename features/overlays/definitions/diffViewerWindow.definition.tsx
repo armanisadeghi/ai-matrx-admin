@@ -25,6 +25,5 @@ export const diffViewerWindowOverlay = defineOverlay<DiffViewerWindowDefinitionD
         },
     windowId: "diff-viewer-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

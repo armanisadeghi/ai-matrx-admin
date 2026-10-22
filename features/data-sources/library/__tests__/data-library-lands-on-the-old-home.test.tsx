@@ -19,9 +19,6 @@ jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({
 jest.mock("@ai-matrx/chat/agents/identity/tool-search", () => ({
   useOwnToolSearch: () => ({ status: "ready", known: {}, hits: [] }),
 }));
-jest.mock("@/features/overlays/definitions/dataSourceWindow.overlay", () => ({
-  useOpenDataSourceWindow: () => jest.fn(),
-}));
 jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () => ({
   RecordPageHeader: ({ record }: { record: { name: string } }) => <h1 data-testid="title">{record.name}</h1>,
 }));

@@ -55,9 +55,9 @@ function shapeText(shape: unknown): string {
   if (typeof shape === "string") return shape;
   if (Array.isArray(shape)) return `list of ${shapeText(shape[0]) || "items"}`;
   if (typeof shape === "object") {
+    // The marker is part of the shape (THE `__kind` MARKER LAW): shown as the shape's kind, never dropped.
     return Object.entries(shape as Record<string, unknown>)
-      .filter(([k]) => k !== KIND_KEY)
-      .map(([k, v]) => `${k}: ${typeof v === "string" ? v : "object"}`)
+      .map(([k, v]) => `${k === KIND_KEY ? "kind" : k}: ${typeof v === "string" ? v : "object"}`)
       .join(", ");
   }
   return String(shape);

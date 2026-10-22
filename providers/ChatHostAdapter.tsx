@@ -94,7 +94,7 @@ import { SettingDoor } from "@/features/settings/doors/SettingDoor";
 import { VOICE_SETTING_DOORS } from "@/features/settings/tabs/voices/voiceSettingDoors";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { appChatServerApi } from "@/lib/api/chat-server-api";
-import { closeOverlay, openOverlay, selectIsOverlayOpen } from "@ai-matrx/summon/boot";
+import { closeOverlay, openOverlay, isOverlayOpen } from "@ai-matrx/summon/boot";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/boot";
 import { selectAllWindows } from "@ai-matrx/summon/boot-kit";
 import type { OverlayId } from "@ai-matrx/summon/open";
@@ -346,7 +346,7 @@ function reduxWindows(store: AppStore, canvas: CanvasController | null): ChatWin
     isOpen: (id, instanceId) =>
       isCanvasHosted(id)
         ? canvasHoldsKind(canvas, CANVAS_HOSTED_WINDOWS[id].kind)
-        : selectIsOverlayOpen(store.getState(), chatWindowOverlay(id), instanceId),
+        : isOverlayOpen(store.getState(), chatWindowOverlay(id), instanceId),
     managedWindowKeys: () =>
       selectAllWindows(store.getState()).map((entry) => entry.id),
     bringToFront(key) {

@@ -9,13 +9,28 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ExternalLink, Share2 } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
+import { copyText } from "@ai-matrx/kit/clipboard";
 
-import { del, getJson, postJson } from "@/lib/python-client";
+import type { OperationDescriptor } from "@ai-matrx/api";
+
+import { callOptionsFrom, serverApi } from "@/lib/api/server-api";
 import { toast } from "@/lib/toast";
 
 import { useComparisonOrganizationId } from "../hooks";
 import { CopyLinkButton } from "./SharedActions";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+
+// Hand-declared until `@ai-matrx/api/data` generates the share operations; they ride the ONE client.
+const SHARE_OP: OperationDescriptor = {
+  m: "GET",
+  p: "/comparison/runs/{run_id}/share",
+  d: "aidream",
+  a: "user",
+  o: "required",
+  n: "data.get_run_share",
+};
+const SHARE_CREATE_OP: OperationDescriptor = { ...SHARE_OP, m: "POST", n: "data.create_run_share" };
+const SHARE_STOP_OP: OperationDescriptor = { ...SHARE_OP, m: "DELETE", n: "data.stop_run_share" };
 
 interface ShareLink {
   slug: string;
@@ -32,14 +47,14 @@ export function ShareButton() {
   const organizationId = useComparisonOrganizationId();
   const [link, setLink] = useState<ShareLink | null>(null);
   const [busy, setBusy] = useState(false);
-  const base = runId ? `/comparison/runs/${encodeURIComponent(runId)}/share` : null;
+  const base = runId ? { run_id: runId } : null;
 
   useEffect(() => {
     setLink(null);
     if (!base || !organizationId) return;
     const ctrl = new AbortController();
-    getJson<unknown>(base, { organizationId, signal: ctrl.signal, captureErrors: false })
-      .then(({ data }) => setLink(asLink(data)))
+    serverApi.call<unknown>(SHARE_OP, { path: base }, callOptionsFrom({ organizationId, signal: ctrl.signal, captureErrors: false }))
+      .then((data) => setLink(asLink(data)))
       .catch(() => undefined); // not shared yet, or not readable: the button simply offers Share
     return () => ctrl.abort();
   }, [base, organizationId]);
@@ -49,12 +64,11 @@ export function ShareButton() {
   async function share() {
     setBusy(true);
     try {
-      const { data } = await postJson<unknown>(base!, {}, { organizationId: organizationId! });
+      const data = await serverApi.call<unknown>(SHARE_CREATE_OP, { path: base!, body: {} }, { organizationId: organizationId! });
       const made = asLink(data);
       if (!made) throw new Error("no link");
       setLink(made);
-      await navigator.clipboard.writeText(`${window.location.origin}${made.path}`).catch(() => undefined);
-      toast.success("Link copied");
+      await copyText(`${window.location.origin}${made.path}`, { successMessage: "Link copied" });
     } catch {
       toast.error("Could not share this comparison");
     } finally {
@@ -65,7 +79,7 @@ export function ShareButton() {
   async function stop() {
     setBusy(true);
     try {
-      await del(base!, { organizationId: organizationId! });
+      await serverApi.call<unknown>(SHARE_STOP_OP, { path: base! }, { organizationId: organizationId! });
       setLink(null);
     } catch {
       toast.error("Could not stop sharing");

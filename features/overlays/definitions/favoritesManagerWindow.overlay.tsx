@@ -12,10 +12,8 @@
  * the canonical shape in `audioDevices.tsx`.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "favoritesManagerWindow" as const;
 
@@ -25,31 +23,13 @@ export interface FavoritesManagerWindowHandle {
   close: () => void;
 }
 
-export function useOpenFavoritesManagerWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      _opts: OpenFavoritesManagerWindowOptions = {},
-    ): FavoritesManagerWindowHandle => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenFavoritesManagerWindowOptions>(OVERLAY_ID, {
+  data: () => ({}),
+});
 
-export function FavoritesManagerWindowController(
-  props: OpenFavoritesManagerWindowOptions,
-): null {
-  const open = useOpenFavoritesManagerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenFavoritesManagerWindow = opener.useOpen;
+
+export const FavoritesManagerWindowController = opener.Controller;
 
 export type FavoritesManagerWindowDefinitionData = OpenFavoritesManagerWindowOptions;
 

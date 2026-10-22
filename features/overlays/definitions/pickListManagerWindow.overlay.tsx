@@ -10,11 +10,8 @@
  *   open, unmount to close.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "pickListManagerWindow" as const;
 
@@ -29,42 +26,18 @@ export interface PickListManagerWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createPickListManagerWindowOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (
-    opts: OpenPickListManagerWindowOptions = {},
-  ): PickListManagerWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+const opener = appOpener<OpenPickListManagerWindowOptions>(OVERLAY_ID, {
+  data: (opts: OpenPickListManagerWindowOptions = {}) => ({
           title: opts.title,
           forcedListId: opts.forcedListId ?? null,
-        },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+        }),
+});
 
-export function useOpenPickListManagerWindow() {
-  const store = useAppStore();
-  return useMemo(() => createPickListManagerWindowOpener(store), [store]);
-}
+export const createPickListManagerWindowOpener = opener.forStore;
 
-export function PickListManagerWindowController(
-  props: OpenPickListManagerWindowOptions,
-): null {
-  const open = useOpenPickListManagerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.title, props.forcedListId]);
-  return null;
-}
+export const useOpenPickListManagerWindow = opener.useOpen;
+
+export const PickListManagerWindowController = opener.Controller;
 
 export type PickListManagerWindowDefinitionData = OpenPickListManagerWindowOptions;
 

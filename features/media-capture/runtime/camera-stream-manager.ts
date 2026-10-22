@@ -106,6 +106,31 @@ export function shouldCombineMicPrompt(
   return micPermissionState === "prompt" || micPermissionState === "unknown";
 }
 
+/** What a flip button should acquire next.
+ *
+ *  Phones list several cameras per side (wide, ultra-wide, telephoto), so
+ *  cycling device ids lands on another back lens and the flip "does nothing".
+ *  When the live track reports a side, flip the SIDE; only cameras with no
+ *  reported side (desktop webcams) cycle by device id. */
+export type CameraFlipTarget =
+  | { facingMode: "user" | "environment" }
+  | { deviceId: string };
+
+export function nextCameraFlipTarget(
+  currentTrack: MediaStreamTrack | null | undefined,
+  cameras: readonly { deviceId: string }[],
+): CameraFlipTarget | null {
+  const settings = currentTrack?.getSettings();
+  const facing = settings?.facingMode;
+  if (facing === "user" || facing === "environment") {
+    return { facingMode: facing === "user" ? "environment" : "user" };
+  }
+  if (cameras.length < 2) return null;
+  const idx = cameras.findIndex((c) => c.deviceId === settings?.deviceId);
+  const next = cameras[(Math.max(idx, 0) + 1) % cameras.length];
+  return next ? { deviceId: next.deviceId } : null;
+}
+
 /** Fired to a lease when the shared stream was reacquired at a different spec
  *  (an incompatible acquire won while nothing was pinned). Holders MUST swap
  *  to the new stream — the old one's tracks are already stopped. */

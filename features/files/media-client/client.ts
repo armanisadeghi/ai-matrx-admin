@@ -69,7 +69,7 @@ import {
   invalidate,
   setCached,
 } from "@/features/files/hooks/blob-cache";
-import { requestUpload } from "@/features/files/upload/UploadGuardHost";
+import { requestUpload } from "@/features/files/upload/uploadGuardOpeners";
 import type { AppDispatch } from "@/lib/redux/store";
 
 // --- injected identity -----------------------------------------------------

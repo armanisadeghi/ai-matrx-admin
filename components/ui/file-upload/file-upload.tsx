@@ -73,10 +73,10 @@ export const FileUpload = ({
           <GridPattern />
         </div>
         <div className="flex flex-col items-center justify-center">
-          <p className="relative z-20 font-sans font-bold text-neutral-700 dark:text-neutral-300 text-base">
+          <p className="relative z-20 font-sans font-bold text-foreground dark:text-muted-foreground text-base">
             Upload file
           </p>
-          <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-base mt-2">
+          <p className="relative z-20 font-sans font-normal text-muted-foreground text-base mt-2">
             Drag or drop your files here or click to upload
           </p>
           <div className="relative w-full mt-10 max-w-xl mx-auto">
@@ -95,7 +95,7 @@ export const FileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs"
+                      className="text-base text-foreground dark:text-muted-foreground truncate max-w-xs"
                     >
                       {file.name}
                     </motion.p>
@@ -103,13 +103,13 @@ export const FileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="rounded-lg px-2 py-1 w-fit flex-shrink-0 type-body text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input"
+                      className="rounded-lg px-2 py-1 w-fit flex-shrink-0 type-body text-muted-foreground dark:bg-neutral-800 dark:text-white shadow-input"
                     >
                       {formatFileSize(file.size)}
                     </motion.p>
                   </div>
 
-                  <div className="flex type-body md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
+                  <div className="flex type-body md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-muted-foreground">
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -148,13 +148,13 @@ export const FileUpload = ({
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-neutral-600 flex flex-col items-center"
+                    className="text-muted-foreground flex flex-col items-center"
                   >
                     Drop it
-                    <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                    <IconUpload className="h-4 w-4 text-muted-foreground" />
                   </motion.p>
                 ) : (
-                  <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                  <IconUpload className="h-4 w-4 text-muted-foreground" />
                 )}
               </motion.div>
             )}
@@ -271,10 +271,10 @@ export const MultiFileUpload = ({
           <GridPattern />
         </div>
         <div className="flex flex-col items-center justify-center">
-          <p className="relative z-20 font-sans font-bold text-neutral-700 dark:text-neutral-300 text-base">
+          <p className="relative z-20 font-sans font-bold text-foreground dark:text-muted-foreground text-base">
             Upload {multiple ? "files" : "file"}
           </p>
-          <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-base mt-2">
+          <p className="relative z-20 font-sans font-normal text-muted-foreground text-base mt-2">
             Drag or drop your files here or click to upload
           </p>
           <div
@@ -296,7 +296,7 @@ export const MultiFileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs"
+                      className="text-base text-foreground dark:text-muted-foreground truncate max-w-xs"
                     >
                       {isFile(file)
                         ? file.name
@@ -306,7 +306,7 @@ export const MultiFileUpload = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="rounded-lg px-2 py-1 w-fit flex-shrink-0 type-body text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input"
+                      className="rounded-lg px-2 py-1 w-fit flex-shrink-0 type-body text-muted-foreground dark:bg-neutral-800 dark:text-white shadow-input"
                     >
                       {isFile(file)
                         ? formatFileSize(file.size)
@@ -316,7 +316,7 @@ export const MultiFileUpload = ({
                     </motion.p>
                   </div>
 
-                  <div className="flex type-body md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
+                  <div className="flex type-body md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-muted-foreground">
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -359,13 +359,13 @@ export const MultiFileUpload = ({
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-neutral-600 flex flex-col items-center"
+                    className="text-muted-foreground flex flex-col items-center"
                   >
                     Drop {multiple ? "them" : "it"}
-                    <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                    <IconUpload className="h-4 w-4 text-muted-foreground" />
                   </motion.p>
                 ) : (
-                  <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                  <IconUpload className="h-4 w-4 text-muted-foreground" />
                 )}
               </motion.div>
             )}
@@ -457,8 +457,8 @@ export const MiniFileUpload = ({
         {/* Simplified upload interface */}
         <div className="flex flex-col items-center justify-center">
           <div className="flex items-center space-x-2">
-            <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
-            <p className="type-title text-neutral-700 dark:text-neutral-300">
+            <IconUpload className="h-4 w-4 text-muted-foreground" />
+            <p className="type-title text-foreground dark:text-muted-foreground">
               {isDragActive
                 ? `Drop ${multiple ? "files" : "file"}`
                 : `Upload ${multiple ? "files" : "file"}`}
@@ -466,7 +466,7 @@ export const MiniFileUpload = ({
           </div>
 
           {!displayedFiles.length && (
-            <p className="type-secondary text-neutral-500 dark:text-neutral-400 mt-1">
+            <p className="type-secondary text-muted-foreground mt-1">
               Drag or click to upload
             </p>
           )}
@@ -484,12 +484,12 @@ export const MiniFileUpload = ({
                 className="bg-white dark:bg-neutral-800 p-2 mb-2 rounded-md shadow-sm type-secondary"
               >
                 <div className="flex justify-between items-center">
-                  <p className="truncate max-w-[150px] text-neutral-700 dark:text-neutral-300">
+                  <p className="truncate max-w-[150px] text-foreground dark:text-muted-foreground">
                     {isFile(file)
                       ? file.name
                       : file.details?.filename || "Unknown file"}
                   </p>
-                  <span className="text-neutral-500 dark:text-neutral-400 type-secondary ml-2">
+                  <span className="text-muted-foreground type-secondary ml-2">
                     {isFile(file)
                       ? formatFileSize(file.size)
                       : file.details?.size
@@ -605,10 +605,10 @@ export const MultiFileUploadWithSpinner = ({
           <GridPattern />
         </div>
         <div className="flex flex-col items-center justify-center">
-          <p className="relative z-20 font-sans font-bold text-neutral-700 dark:text-neutral-300 text-base">
+          <p className="relative z-20 font-sans font-bold text-foreground dark:text-muted-foreground text-base">
             Upload {multiple ? "files" : "file"}
           </p>
-          <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-base mt-2">
+          <p className="relative z-20 font-sans font-normal text-muted-foreground text-base mt-2">
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="animate-pulse">Uploading files...</span>
@@ -634,7 +634,7 @@ export const MultiFileUploadWithSpinner = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs"
+                      className="text-base text-foreground dark:text-muted-foreground truncate max-w-xs"
                     >
                       {file.name}
                     </motion.p>
@@ -642,12 +642,12 @@ export const MultiFileUploadWithSpinner = ({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       layout
-                      className="rounded-lg px-2 py-1 w-fit flex-shrink-0 type-body text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input"
+                      className="rounded-lg px-2 py-1 w-fit flex-shrink-0 type-body text-muted-foreground dark:bg-neutral-800 dark:text-white shadow-input"
                     >
                       {formatFileSize(file.size)}
                     </motion.p>
                   </div>
-                  <div className="flex type-body md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
+                  <div className="flex type-body md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-muted-foreground">
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -685,15 +685,15 @@ export const MultiFileUploadWithSpinner = ({
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="text-neutral-600 flex flex-col items-center"
+                    className="text-muted-foreground flex flex-col items-center"
                   >
                     Drop {multiple ? "them" : "it"}
-                    <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                    <IconUpload className="h-4 w-4 text-muted-foreground" />
                   </motion.p>
                 ) : isLoading ? (
                   <LoadingIndicator />
                 ) : (
-                  <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+                  <IconUpload className="h-4 w-4 text-muted-foreground" />
                 )}
               </motion.div>
             )}

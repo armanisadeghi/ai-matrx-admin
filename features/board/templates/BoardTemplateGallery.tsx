@@ -81,7 +81,7 @@ export function BoardTemplateGallery({
   // A template that makes its own tables (a design system per brand) is named first: the name titles the
   // board and its tables ("Colors · Acme"), so two brands' boards never read alike.
   const [naming, setNaming] = useState(false);
-  // A board that starts EMPTY opens on its two starts instead: Build with AI (default) or Start from a style.
+  // A board that starts EMPTY opens on its two starts instead: the AI builds it (default) or Start from a style.
   const [starting, setStarting] = useState(false);
   // From the press until the new board is on screen, the start dialog shows the work in place.
   const [building, setBuilding] = useState<(DesignBoardProgress & { href?: string }) | null>(null);
@@ -112,7 +112,7 @@ export function BoardTemplateGallery({
       }
       const href = boardHref(board);
       if (start) {
-        stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
+        stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai" } : { mode: "style", styleName: start.styleName });
         setBuilding({ mode: start.mode, step: "start", href });
         toast.dismiss();
         onOpenChange(false);

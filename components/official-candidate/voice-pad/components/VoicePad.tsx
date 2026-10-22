@@ -273,7 +273,7 @@ export default function VoicePad({ instanceId }: VoicePadProps) {
       onClose={handleClose}
       urlSyncKey="voice"
       urlSyncId={instanceId}
-      actions={
+      actionsRight={
         <MicrophoneIconButton
           id={micId}
           onTranscriptionComplete={handleTranscriptionComplete}

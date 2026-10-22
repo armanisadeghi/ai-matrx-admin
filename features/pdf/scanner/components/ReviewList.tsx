@@ -36,9 +36,9 @@ import {
 
 import { cn } from "@/lib/utils";
 import { TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
-import { useMediaResolution } from "@ai-matrx/media/core";
 
 import type { ScanItem } from "../types";
+import { useScanThumbSrc } from "../useScanThumbSrc";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
 
 interface ReviewListProps {
@@ -119,14 +119,7 @@ function SortableTile({
     isDragging,
   } = useSortable({ id: item.itemId });
 
-  // Resumed sessions have no local preview — hydrate from the uploaded file.
-  const remoteSrc =
-    useMediaResolution(
-      !item.previewUrl && item.fileId && item.kind === "image"
-        ? item.fileId
-        : null,
-    ).resolution?.src ?? null;
-  const previewSrc = item.previewUrl ?? remoteSrc;
+  const previewSrc = useScanThumbSrc(item);
 
   return (
     <div

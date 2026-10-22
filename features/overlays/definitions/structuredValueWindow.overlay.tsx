@@ -18,10 +18,12 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
+import { mintInstanceId } from "@ai-matrx/summon/boot";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "structuredValueWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenStructuredValueWindowOptions {
   /** Any JSON value. It travels through Redux, so it must be serializable. */
@@ -47,24 +49,18 @@ export function useOpenStructuredValueWindow() {
     (opts: OpenStructuredValueWindowOptions): StructuredValueWindowHandle => {
       const instanceId =
         opts.instanceId ??
-        `structured-value-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+        mintInstanceId(OVERLAY_ID);
+      opener.open(dispatch, { instanceId, data: {
             windowInstanceId: instanceId,
             value: opts.value,
             kind: opts.kind ?? null,
             title: opts.title ?? null,
             subtitle: opts.subtitle ?? null,
-          },
-        }),
-      );
+          } });
       return {
         instanceId,
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],

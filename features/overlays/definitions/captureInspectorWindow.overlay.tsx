@@ -9,10 +9,8 @@
  *   unmount to close.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "captureInspectorWindow" as const;
 
@@ -24,36 +22,11 @@ export interface CaptureInspectorWindowHandle {
   close: () => void;
 }
 
-export function useOpenCaptureInspectorWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenCaptureInspectorWindowOptions = {},
-    ): CaptureInspectorWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { initialExchangeId: opts.initialExchangeId },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenCaptureInspectorWindowOptions>(OVERLAY_ID);
 
-export function CaptureInspectorWindowController(
-  props: OpenCaptureInspectorWindowOptions,
-): null {
-  const open = useOpenCaptureInspectorWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialExchangeId]);
-  return null;
-}
+export const useOpenCaptureInspectorWindow = opener.useOpen;
+
+export const CaptureInspectorWindowController = opener.Controller;
 
 export type CaptureInspectorWindowDefinitionData = OpenCaptureInspectorWindowOptions;
 

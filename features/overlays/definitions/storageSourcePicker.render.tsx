@@ -6,12 +6,11 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
         const data = overlayData as
           | Record<string, unknown>
           | null
           | undefined;
-        if (!isOpen || typeof data?.callbackGroupId !== "string") return <OverlayNeedsData overlayId="storageSourcePicker" onClose={close} />;
+        if (typeof data?.callbackGroupId !== "string") return <OverlayNeedsData overlayId="storageSourcePicker" onClose={close} />;
         if (typeof data.destinationFolderPath !== "string") return <OverlayNeedsData overlayId="storageSourcePicker" onClose={close} />;
         return (
           <StorageSourcePickerWindow

@@ -127,12 +127,26 @@ item links that item's `url`. A row whose `source` is `library` ALWAYS renders
 an origin — a missing or malformed block says "From a Library" rather than
 nothing, because a blank line is the silent failure this guards.
 
+**Test runs (since 2026-10-22).** A `captured` row carrying `metadata.test_run`
+(`{door, mandate_key, actor_user_id, run_conversation_id}`) is a TEST run saved
+by aidream's `capture_test_run` (`aidream/services/agent_testing/capture.py`):
+a mandate `test_holder` run (Mandate Runs "try", replay, Memory Lab) or an MCP
+`agent_run` dispatch. It holds the EXACT variables the run was sent — the run
+conversation withholds them (`{"__withheld__": true}`), so "Borrow from real
+runs" can never borrow a mandate run; this row is how its inputs come back.
+Filed in the agent's own organization, `visibility='internal'` (`personal` when
+that organization is globally readable, i.e. Matrx System), `status='candidate'`,
+`source_conversation_id` = the run. Only an actor who is a platform admin or a
+member of the agent's organization is captured; production runs never are. Cap:
+knob `agent_exemplars.test_run_capture_per_agent` (not counted against
+`auto_capture_target`). Both screens read it through `fetchAgentSamples` — RLS
+decides who sees it (verified 2026-10-22: platform admin and org member yes,
+non-member no).
+
 ## Server side (aidream)
 
-- `POST /agent-testing/agents/{agent_id}/tests` (super-admin) runs approved
-  samples through `run_one_agent`; results persist under
-  `metadata.agent_test_results` (separate key from the mandate bench's
-  `test_bench_results`). Core: `aidream/services/agent_testing/service.py`.
+- The `/agent-testing` batch runner (and `agent_testing/service.py`) is retired: stored cases run
+  through the Agent Evaluation runner (`POST /agent-tests/runs/live`, `aidream/services/agent_tests/`).
 - **Auto-capture**: successful plain `run_one_agent` head runs self-capture as
   `source='captured'` candidates until the knob
   `agent_exemplars.auto_capture_target` is met
@@ -156,6 +170,9 @@ nothing, because a blank line is the silent failure this guards.
 
 ## Change Log
 
+- 2026-10-22 — Test runs (mandate `test_holder`, MCP `agent_run`) now land as
+  `captured` candidate samples with their real inputs (`metadata.test_run`);
+  see "Where a sample came from". Server half: aidream `capture_test_run`.
 - 2026-10-04 — "Use" restores a test case's attachments as visible chips
   (they were written to hidden `messageParts`, so the files looked unloaded).
   Guard: `__tests__/a-test-case-loads-its-attachments-as-chips.test.ts`.

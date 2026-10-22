@@ -11,14 +11,16 @@
 
 import { useCallback, useContext } from "react";
 import { ReactReduxContext } from "react-redux";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createSaveToTableCallbackGroup,
   type SaveToTableHandlers,
 } from "./callbacks/saveToTable";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "saveToTable" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenSaveToTableOptions extends SaveToTableHandlers {
   /** Markdown, CSV/TSV, a note, an answer — every shape in it is offered. */
@@ -53,11 +55,9 @@ export function useOpenSaveToTable(): ((options: OpenSaveToTableOptions) => Save
   const dispatch = redux?.store.dispatch ?? null;
   const open = useCallback(
     (options: OpenSaveToTableOptions): SaveToTableHandle => {
-      const instanceId = `saveToTable-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const instanceId = mintInstanceId(OVERLAY_ID);
       const callbacks = options.onSaved ? createSaveToTableCallbackGroup({ onSaved: options.onSaved }) : null;
-      dispatch?.(
-        openOverlay({
-          overlayId: OVERLAY_ID,
+      if (dispatch) opener.open(dispatch, {
           instanceId,
           data: {
             text: options.text ?? null,
@@ -70,12 +70,11 @@ export function useOpenSaveToTable(): ((options: OpenSaveToTableOptions) => Save
             makeAtOnce: options.makeAtOnce === true,
             callbackGroupId: callbacks?.callbackGroupId ?? null,
           },
-        }),
-      );
+        });
       return {
         instanceId,
         close: () => {
-          dispatch?.(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+          dispatch?.(opener.close(instanceId));
           callbacks?.dispose();
         },
       };

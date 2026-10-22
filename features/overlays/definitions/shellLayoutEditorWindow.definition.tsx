@@ -16,6 +16,5 @@ export const shellLayoutEditorWindowOverlay = defineOverlay<ShellLayoutEditorWin
     windowId: "shell-layout-editor-window",
     mobile: "fullscreen",
     // A draft is shown live in the shell and never survives a reload: nothing to restore.
-    ephemeral: true,
   },
 });

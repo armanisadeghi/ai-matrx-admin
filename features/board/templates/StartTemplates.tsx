@@ -47,7 +47,7 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
 
   // A template that makes its own tables is named first (the name titles the board and its tables).
   const [naming, setNaming] = useState<{ key: string; title: string } | null>(null);
-  // A board that starts EMPTY opens on its two starts instead: Build with AI (default) or Start from a style.
+  // A board that starts EMPTY opens on its two starts instead: the AI builds it (default) or Start from a style.
   const [starting, setStarting] = useState<{ key: string; title: string } | null>(null);
   // From the press until the new board is on screen, the start dialog shows the work in place.
   const [building, setBuilding] = useState<(DesignBoardProgress & { href?: string }) | null>(null);
@@ -74,7 +74,7 @@ export function StartTemplates({ starterKey }: { starterKey?: string }) {
       }
       const href = boardHref(board);
       if (start) {
-        stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai", brief: start.brief } : { mode: "style", styleName: start.styleName });
+        stashBoardStart(board.id, start.mode === "ai" ? { mode: "ai" } : { mode: "style", styleName: start.styleName });
         setBuilding({ mode: start.mode, step: "start", href });
       }
       router.push(href);

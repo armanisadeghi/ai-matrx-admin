@@ -1,0 +1,170 @@
+/**
+ * Reading the structured facts a place comparison carries (star counts, hours, contact, status,
+ * attributes, reviews). Pure; the view and the tests share it. These are facts to read side by side,
+ * never scores: nothing here ranks, and nothing here feeds the headline.
+ */
+
+import type { CompareField, ComparedItem, ComparedValue, ComparisonResult } from "./contract";
+import { comparedItems } from "./verdict";
+
+/** Field types that render as their own side-by-side card (hours too, which older runs sent as text). */
+const RICH = new Set(["distribution", "contact", "status", "tags", "hours"]);
+export const isRich = (f: CompareField): boolean => RICH.has(f.type);
+/** Rendered on each contender's card (behind a disclosure), not as a table row. */
+export const isCardOnly = (f: CompareField): boolean => f.type === "reviews";
+
+const has = (v: ComparedValue | undefined): v is ComparedValue =>
+  Boolean(v) && v!.value !== null && v!.value !== undefined && v!.display !== "—";
+
+/** A rich row is worth showing only when at least two contenders have the value to set side by side. */
+export function hasSideBySide(field: CompareField, result: ComparisonResult): boolean {
+  return comparedItems(result).filter((i) => has(i.values[field.key])).length >= 2;
+}
+
+// ── star counts ──────────────────────────────────────────────────────────────
+
+export interface StarShares { total: number; counts: number[]; shares: number[] }
+
+/** Counts for 5..1 stars (index 0 = five-star) and each one's share of all counted reviews. */
+export function starShares(value: unknown): StarShares | null {
+  if (!value || typeof value !== "object") return null;
+  const o = value as Record<string, unknown>;
+  const counts = [5, 4, 3, 2, 1].map((s) => (typeof o[String(s)] === "number" ? (o[String(s)] as number) : 0));
+  const total = counts.reduce((a, b) => a + b, 0);
+  return total > 0 ? { total, counts, shares: counts.map((c) => c / total) } : null;
+}
+
+// ── hours ────────────────────────────────────────────────────────────────────
+
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+export interface Week { days: [string, string][]; timezone: string | null }
+
+/** The week and the business's own IANA zone. Accepts the bare {day: text} an earlier run sent (no zone). */
+export function weekOf(value: unknown): Week | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const o = value as Record<string, unknown>;
+  const raw = o.days && typeof o.days === "object" ? (o.days as Record<string, unknown>) : o;
+  const days = Object.entries(raw).filter(([, v]) => typeof v === "string") as [string, string][];
+  if (!days.length) return null;
+  const tz = typeof o.timezone === "string" && o.timezone ? o.timezone : null;
+  return { days: days.sort((a, b) => DAYS.indexOf(a[0]) - DAYS.indexOf(b[0])), timezone: tz };
+}
+
+/** The weekday and minutes-of-day on the business's wall clock; null without a zone (no guess) or if the zone is unknown. */
+export function clockIn(now: Date, timezone: string | null): { day: string; at: number } | null {
+  if (!timezone) return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, weekday: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(now);
+    const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+    return { day: get("weekday"), at: Number(get("hour")) * 60 + Number(get("minute")) };
+  } catch {
+    return null;
+  }
+}
+
+/** Today's line by the business's own clock ("Friday", "9 am–6 pm"); null without a zone or the day. */
+export function hoursToday(week: Week, now: Date): { day: string; text: string } | null {
+  const c = clockIn(now, week.timezone);
+  const hit = c ? week.days.find(([d]) => d.toLowerCase() === c.day.toLowerCase()) : undefined;
+  return c && hit ? { day: c.day, text: hit[1] } : null;
+}
+
+function minutes(token: string, fallbackMeridiem: string | null): { m: number; mer: string | null } | null {
+  const t = /^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i.exec(token.trim());
+  if (!t) return null;
+  const mer = t[3]?.toLowerCase() ?? fallbackMeridiem;
+  let h = Number(t[1]) % 12;
+  if (mer === "pm") h += 12;
+  else if (!mer && Number(t[1]) === 12) h = 12;
+  return { m: h * 60 + Number(t[2] ?? 0), mer: t[3]?.toLowerCase() ?? null };
+}
+
+/** A day's text as minute ranges ([start, end), end past 1440 = runs into the next day); null when not a clean time range. */
+function rangesOf(text: string): [number, number][] | null {
+  const t = text.trim().toLowerCase();
+  if (t === "closed") return [];
+  if (/^open 24 hours?$/.test(t)) return [[0, 1440]];
+  const out: [number, number][] = [];
+  for (const part of t.split(",")) {
+    const sides = part.split(/\s*(?:–|—|-|to)\s*/).map((x) => x.trim().replace(/[\u202f\u00a0]/g, " "));
+    if (sides.length !== 2) return null;
+    const end = minutes(sides[1], null);
+    if (!end) return null;
+    let start = minutes(sides[0], end.mer);
+    if (!start) return null;
+    // "9–5 pm": 9 inherits pm (21:00) and lands after 5 pm, so it was am
+    if (!/(am|pm)/.test(sides[0]) && start.m > end.m) start = minutes(sides[0], end.mer === "pm" ? "am" : "pm");
+    if (!start) return null;
+    out.push([start.m, end.m <= start.m ? end.m + 1440 : end.m]);
+  }
+  return out;
+}
+
+/**
+ * Open now / Closed on the business's clock. Today's line decides from its start on; the previous
+ * day's line decides the early hours when it runs past midnight ("6 pm–2 am"). null when today's text
+ * is not a clean time range or the business has no zone: we say nothing rather than guess.
+ */
+export function openStatus(week: Week, now: Date): boolean | null {
+  const c = clockIn(now, week.timezone);
+  if (!c) return null;
+  const line = (day: string) => week.days.find(([d]) => d.toLowerCase() === day.toLowerCase())?.[1];
+  const todayText = line(c.day);
+  if (todayText === undefined) return null;
+  const today = rangesOf(todayText);
+  if (!today) return null;
+  if (today.some(([s, e]) => c.at >= s && c.at < Math.min(e, 1440))) return true;
+  const prev = line(DAYS[(DAYS.indexOf(c.day) + 6) % 7]);
+  const yesterday = prev !== undefined ? rangesOf(prev) : null;
+  return Boolean(yesterday?.some(([, e]) => e > 1440 && c.at < e - 1440));
+}
+
+// ── contact, status, tags, reviews ───────────────────────────────────────────
+
+export interface Contact { phone?: string; website?: string; booking?: string }
+export function contactOf(value: unknown): Contact | null {
+  if (!value || typeof value !== "object") return null;
+  const o = value as Record<string, unknown>;
+  const pick = (k: string) => (typeof o[k] === "string" && o[k] ? (o[k] as string) : undefined);
+  const c = { phone: pick("phone"), website: pick("website"), booking: pick("booking") };
+  return c.phone || c.website || c.booking ? c : null;
+}
+
+export interface Status { closed: "permanently" | "temporarily" | null; claimed: boolean | null }
+export function statusOf(value: unknown): Status | null {
+  if (!value || typeof value !== "object") return null;
+  const o = value as Record<string, unknown>;
+  return {
+    closed: o.closed === "permanently" || o.closed === "temporarily" ? o.closed : null,
+    claimed: typeof o.claimed === "boolean" ? o.claimed : null,
+  };
+}
+
+export function tagsOf(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((x): x is string => typeof x === "string" && x.length > 0) : [];
+}
+
+/** Attribute names across every contender, in first-seen order, with who has each (the yes/no grid). */
+export function attributeGrid(items: ComparedItem[], key: string): { name: string; has: boolean[] }[] {
+  const sets = items.map((i) => new Set(tagsOf(i.values[key]?.value)));
+  const names: string[] = [];
+  for (const s of sets) for (const n of s) if (!names.includes(n)) names.push(n);
+  return names.map((name) => ({ name, has: sets.map((s) => s.has(name)) }));
+}
+
+export interface ReviewSample { rating: number | null; text: string; date: string | null; by: string | null }
+export interface ReviewSamples { top: ReviewSample[]; snippets: string[] }
+export function reviewsOf(value: unknown): ReviewSamples | null {
+  if (!value || typeof value !== "object") return null;
+  const o = value as Record<string, unknown>;
+  const top = (Array.isArray(o.top) ? o.top : []).flatMap((r): ReviewSample[] => {
+    const x = r as Record<string, unknown>;
+    return typeof x?.text === "string" ? [{
+      rating: typeof x.rating === "number" ? x.rating : null, text: x.text,
+      date: typeof x.date === "string" ? x.date : null, by: typeof x.by === "string" ? x.by : null,
+    }] : [];
+  });
+  const snippets = (Array.isArray(o.snippets) ? o.snippets : []).filter((s): s is string => typeof s === "string");
+  return top.length || snippets.length ? { top, snippets } : null;
+}

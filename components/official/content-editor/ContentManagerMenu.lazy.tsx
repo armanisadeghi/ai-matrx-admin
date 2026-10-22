@@ -59,7 +59,7 @@ export function ContentManagerMenu({
         title="Content options"
       >
         {loading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-500" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         ) : (
           <MoreVertical className="h-3.5 w-3.5" />
         )}

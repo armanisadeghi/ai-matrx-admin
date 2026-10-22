@@ -18,14 +18,15 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   siteCommandKey,
   type SiteCommandMode,
 } from "@/features/marketing/crawler/site-commands";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "siteCommandRunWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenSiteCommandRunWindowOptions {
   siteId: string;
@@ -49,23 +50,17 @@ export function useOpenSiteCommandRunWindow() {
       // One window per run identity: a second click on "Analyze now" must not
       // stack a second window over the one already showing that analysis.
       const instanceId = siteCommandKey(opts.siteId, opts.mode, target);
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             windowInstanceId: instanceId,
             siteId: opts.siteId,
             mode: opts.mode,
             target,
             brandId: opts.brandId ?? null,
-          },
-        }),
-      );
+          } });
       return {
         instanceId,
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],

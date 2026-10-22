@@ -308,7 +308,7 @@ All three follow Mode 2's directory shape. Notable differences:
 
 Contract (both lanes): `common-docs` matrix-battle contract held by the dispatching session; the
 shapes are `modes/matrix/types.ts`. Nothing renders a live stream here: cells run on the SERVER
-(`POST /agent-battles/{set_id}/run` and `/cancel`, aidream `agent_battle_matrix.py`) and the page
+(`POST /agent-battles/{set_id}/queue-run` and `/queue-cancel`, on the work queue; aidream `agent_battle_matrix.py`) and the page
 reads results from the database.
 
 - **Setup** = `metadata.matrix` on the set row: `base` Patch, `rows` / `columns` axes of

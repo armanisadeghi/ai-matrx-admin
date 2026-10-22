@@ -1,0 +1,628 @@
+{
+ "meta": {
+  "mode": "frame",
+  "origin": "http://sf09cad80.localhost:3001",
+  "seat": "admin@admin.com",
+  "widths": [
+   1440
+  ],
+  "recordedAt": "2026-10-22T07:55:50.806Z",
+  "routesInList": 1042,
+  "excludedByHome": 117,
+  "unsafeSkipped": [
+   "/marketing/connections/bing/callback"
+  ],
+  "screenshots": "/private/tmp/claude-501/-Users-armanisadeghi-code-matrx-frontend/d1322d17-1a7c-4afa-90cf-465dfc366734/scratchpad/crawl-frame"
+ },
+ "summary": {
+  "totalRows": 23,
+  "loaded": 21,
+  "skippedNoRecord": 2,
+  "statusCounts": {
+   "200": 6,
+   "nav-error": 15
+  },
+  "redirected": 0,
+  "endedOnLogin": 0,
+  "pagesWithConsoleErrors": 6,
+  "pagesWithRedErrors": 0,
+  "pagesWithServerErrorResponses": 0,
+  "horizontalOverflow": 0,
+  "clsOver0_1": 0,
+  "doubleHeaders": 0,
+  "noHeader": 1,
+  "lastElementHiddenUnderChrome": 0,
+  "medianTimeToStableMs": 49539,
+  "byWidth": {
+   "1440": {
+    "loaded": 21,
+    "overflow": 0,
+    "cls": 0,
+    "errors": 6
+   }
+  }
+ },
+ "rows": [
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/acquisition",
+   "url": "/acquisition",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "/acquisition?frame=new",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:50:15.163Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/acquisition/blocks",
+   "url": "/acquisition/blocks",
+   "status": 200,
+   "redirectedFrom": [],
+   "loadMs": 50581,
+   "screenshot": "1440/acquisition_blocks.jpg",
+   "frame": {
+    "active": false
+   },
+   "cls": 0,
+   "timeToStableMs": 50668,
+   "headerPortals": 0,
+   "headerPortalsAll": 0,
+   "headerCenterChars": 89,
+   "crumbTrails": 0,
+   "doubleHeader": false,
+   "overflowX": false,
+   "overflowPx": 0,
+   "hiddenUnderChrome": false,
+   "hiddenBy": null,
+   "redCount": 0,
+   "redSamples": [],
+   "title": "Acquisition — AI Matrx",
+   "scrollHeight": 900,
+   "finalUrl": "/acquisition/blocks?frame=new",
+   "consoleErrors": {
+    "count": 1,
+    "samples": [
+     "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:50:05.813Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections",
+   "url": "/agent-connections",
+   "status": 200,
+   "redirectedFrom": [],
+   "loadMs": 22134,
+   "screenshot": "1440/agent-connections.jpg",
+   "frame": {
+    "active": true,
+    "bodyHeaders": 1,
+    "bodyRails": 0,
+    "railSamples": [],
+    "bodyChars": 1542,
+    "bodyMedia": 13,
+    "bodyEmpty": false,
+    "bodyWide": 0,
+    "bodyWidePx": 0,
+    "bodyScrollOverflowPx": 0,
+    "dupTitles": [
+     "Agent Connections x2"
+    ],
+    "navLinks": 14,
+    "navLabels": [
+     "Overview",
+     "Agents",
+     "Sub-agents",
+     "Skills",
+     "Render Blocks",
+     "Resources",
+     "Instructions",
+     "Prompts",
+     "Commands",
+     "Hooks",
+     "MCP Servers",
+     "Coding Platforms"
+    ],
+    "navHasSubmenuHeading": false
+   },
+   "cls": 0,
+   "timeToStableMs": 22148,
+   "headerPortals": 1,
+   "headerPortalsAll": 1,
+   "headerCenterChars": 0,
+   "crumbTrails": 1,
+   "doubleHeader": false,
+   "overflowX": false,
+   "overflowPx": 0,
+   "hiddenUnderChrome": false,
+   "hiddenBy": null,
+   "redCount": 0,
+   "redSamples": [],
+   "title": "Agent Connections — AI Matrx",
+   "scrollHeight": 900,
+   "finalUrl": "/agent-connections?frame=new",
+   "consoleErrors": {
+    "count": 2,
+    "samples": [
+     "Failed to load resource: the server responded with a status of 404 (Not Found)",
+     "[tap-target] glass on a solid surface — glass only floats over moving content; use variant=\"transparent\" (or a solid group) JSHandle@node"
+    ]
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:49:37.314Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/agents",
+   "url": "/agent-connections/agents",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:50:37.940Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/commands",
+   "url": "/agent-connections/commands",
+   "status": 200,
+   "redirectedFrom": [],
+   "loadMs": 50896,
+   "screenshot": "1440/agent-connections_commands.jpg",
+   "frame": {
+    "active": true,
+    "bodyHeaders": 0,
+    "bodyRails": 0,
+    "railSamples": [],
+    "bodyChars": 235,
+    "bodyMedia": 1,
+    "bodyEmpty": false,
+    "bodyWide": 0,
+    "bodyWidePx": 0,
+    "bodyScrollOverflowPx": 0,
+    "dupTitles": [
+     "Connectors x2"
+    ],
+    "navLinks": 14,
+    "navLabels": [
+     "Overview",
+     "Agents",
+     "Sub-agents",
+     "Skills",
+     "Render Blocks",
+     "Resources",
+     "Instructions",
+     "Prompts",
+     "Commands",
+     "Hooks",
+     "MCP Servers",
+     "Coding Platforms"
+    ],
+    "navHasSubmenuHeading": false
+   },
+   "cls": 0,
+   "timeToStableMs": 50964,
+   "headerPortals": 1,
+   "headerPortalsAll": 1,
+   "headerCenterChars": 0,
+   "crumbTrails": 1,
+   "doubleHeader": false,
+   "overflowX": false,
+   "overflowPx": 0,
+   "hiddenUnderChrome": false,
+   "hiddenBy": null,
+   "redCount": 0,
+   "redSamples": [],
+   "title": "Commands | Agent Connections",
+   "scrollHeight": 900,
+   "finalUrl": "/agent-connections/commands?frame=new",
+   "consoleErrors": {
+    "count": 2,
+    "samples": [
+     "Failed to load resource: the server responded with a status of 404 (Not Found)",
+     "[tap-target] glass on a solid surface — glass only floats over moving content; use variant=\"transparent\" (or a solid group) JSHandle@node"
+    ]
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:50:57.564Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/hooks",
+   "url": "/agent-connections/hooks",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:51:15.918Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/instructions",
+   "url": "/agent-connections/instructions",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:51:38.680Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/mcp-servers",
+   "url": "/agent-connections/mcp-servers",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:51:58.341Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/plugins",
+   "url": "/agent-connections/plugins",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:52:16.609Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/preferences",
+   "url": "/agent-connections/preferences",
+   "status": 200,
+   "redirectedFrom": [],
+   "loadMs": 49513,
+   "screenshot": "1440/agent-connections_preferences.jpg",
+   "frame": {
+    "active": true,
+    "bodyHeaders": 5,
+    "bodyRails": 0,
+    "railSamples": [],
+    "bodyChars": 1571,
+    "bodyMedia": 13,
+    "bodyEmpty": false,
+    "bodyWide": 0,
+    "bodyWidePx": 0,
+    "bodyScrollOverflowPx": 0,
+    "dupTitles": [],
+    "navLinks": 14,
+    "navLabels": [
+     "Overview",
+     "Agents",
+     "Sub-agents",
+     "Skills",
+     "Render Blocks",
+     "Resources",
+     "Instructions",
+     "Prompts",
+     "Commands",
+     "Hooks",
+     "MCP Servers",
+     "Coding Platforms"
+    ],
+    "navHasSubmenuHeading": false
+   },
+   "cls": 0,
+   "timeToStableMs": 49539,
+   "headerPortals": 1,
+   "headerPortalsAll": 1,
+   "headerCenterChars": 0,
+   "crumbTrails": 1,
+   "doubleHeader": false,
+   "overflowX": false,
+   "overflowPx": 0,
+   "hiddenUnderChrome": false,
+   "hiddenBy": null,
+   "redCount": 0,
+   "redSamples": [],
+   "title": "Preferences | Agent Connections",
+   "scrollHeight": 900,
+   "finalUrl": "/agent-connections/preferences?frame=new",
+   "consoleErrors": {
+    "count": 2,
+    "samples": [
+     "Failed to load resource: the server responded with a status of 404 (Not Found)",
+     "[tap-target] glass on a solid surface — glass only floats over moving content; use variant=\"transparent\" (or a solid group) JSHandle@node"
+    ]
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:52:29.199Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/prompts",
+   "url": "/agent-connections/prompts",
+   "status": 200,
+   "redirectedFrom": [],
+   "loadMs": 49086,
+   "screenshot": "1440/agent-connections_prompts.jpg",
+   "frame": {
+    "active": true,
+    "bodyHeaders": 0,
+    "bodyRails": 0,
+    "railSamples": [],
+    "bodyChars": 153,
+    "bodyMedia": 2,
+    "bodyEmpty": false,
+    "bodyWide": 0,
+    "bodyWidePx": 0,
+    "bodyScrollOverflowPx": 0,
+    "dupTitles": [
+     "Connectors x2"
+    ],
+    "navLinks": 14,
+    "navLabels": [
+     "Overview",
+     "Agents",
+     "Sub-agents",
+     "Skills",
+     "Render Blocks",
+     "Resources",
+     "Instructions",
+     "Prompts",
+     "Commands",
+     "Hooks",
+     "MCP Servers",
+     "Coding Platforms"
+    ],
+    "navHasSubmenuHeading": false
+   },
+   "cls": 0,
+   "timeToStableMs": 49149,
+   "headerPortals": 1,
+   "headerPortalsAll": 1,
+   "headerCenterChars": 0,
+   "crumbTrails": 1,
+   "doubleHeader": false,
+   "overflowX": false,
+   "overflowPx": 0,
+   "hiddenUnderChrome": false,
+   "hiddenBy": null,
+   "redCount": 0,
+   "redSamples": [],
+   "title": "Prompts | Agent Connections",
+   "scrollHeight": 900,
+   "finalUrl": "/agent-connections/prompts?frame=new",
+   "consoleErrors": {
+    "count": 2,
+    "samples": [
+     "Failed to load resource: the server responded with a status of 404 (Not Found)",
+     "[tap-target] glass on a solid surface — glass only floats over moving content; use variant=\"transparent\" (or a solid group) JSHandle@node"
+    ]
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:52:48.148Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/registries",
+   "url": "/agent-connections/registries",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:53:17.279Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/render-blocks",
+   "url": "/agent-connections/render-blocks",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:53:29.965Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/resources",
+   "url": "/agent-connections/resources",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:53:49.186Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/skills",
+   "url": "/agent-connections/skills",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:54:18.194Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-connections/sub-agents",
+   "url": "/agent-connections/sub-agents",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:54:30.596Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agent-lists",
+   "url": "/agent-lists",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:54:50.055Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agents",
+   "url": "/agents",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:55:18.912Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agents/[id]",
+   "url": "/agents/a2525cd3-5cd7-41e3-a0d5-14a9507285d1",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:55:31.393Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/agents/[id]/answers",
+   "url": "/agents/a2525cd3-5cd7-41e3-a0d5-14a9507285d1/answers",
+   "navError": "page.goto: Timeout 60000ms exceeded.",
+   "finalUrl": "about:blank",
+   "consoleErrors": {
+    "count": 0,
+    "samples": []
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:55:50.806Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/notes",
+   "url": "/notes",
+   "status": 200,
+   "redirectedFrom": [],
+   "loadMs": 35775,
+   "screenshot": "1440/notes.jpg",
+   "frame": {
+    "active": true,
+    "bodyHeaders": 0,
+    "bodyRails": 0,
+    "railSamples": [],
+    "bodyChars": 8,
+    "bodyMedia": 2,
+    "bodyEmpty": false,
+    "bodyWide": 0,
+    "bodyWidePx": 0,
+    "bodyScrollOverflowPx": 0,
+    "dupTitles": [],
+    "navLinks": 8,
+    "navLabels": [
+     "Default",
+     "Modified",
+     "",
+     "All organizations",
+     "",
+     "",
+     "Trash",
+     "New Note"
+    ],
+    "navHasSubmenuHeading": false
+   },
+   "cls": 0,
+   "timeToStableMs": 35880,
+   "headerPortals": 1,
+   "headerPortalsAll": 1,
+   "headerCenterChars": 0,
+   "crumbTrails": 1,
+   "doubleHeader": false,
+   "overflowX": false,
+   "overflowPx": 0,
+   "hiddenUnderChrome": false,
+   "hiddenBy": null,
+   "redCount": 0,
+   "redSamples": [],
+   "title": "Notes — AI Matrx",
+   "scrollHeight": 900,
+   "finalUrl": "/notes?frame=new",
+   "consoleErrors": {
+    "count": 3,
+    "samples": [
+     "Failed to load resource: the server responded with a status of 404 (Not Found)",
+     "[tap-target] glass on a solid surface — glass only floats over moving content; use variant=\"transparent\" (or a solid group) JSHandle@node"
+    ]
+   },
+   "serverErrors": [],
+   "recordedAt": "2026-10-22T07:49:01.072Z"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/notes/[id]",
+   "skipped": "no record: [id] (list shows no records)"
+  },
+  {
+   "mode": "frame",
+   "width": 1440,
+   "route": "/notes/[id]/diff",
+   "skipped": "no record: [id] (list shows no records)"
+  }
+ ]
+}

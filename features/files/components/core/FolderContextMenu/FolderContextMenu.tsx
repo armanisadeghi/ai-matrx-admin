@@ -57,7 +57,7 @@ import { setActiveFolderId } from "@/features/files/redux/slice";
 import { extractErrorMessage } from "@/utils/errors";
 import { RenameDialog } from "@/features/files/components/core/RenameDialog/RenameDialog";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
-import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { openFolderPicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
 import { setClipboard } from "@/features/files/utils/clipboard";
 import type { Visibility } from "@/features/files/types";

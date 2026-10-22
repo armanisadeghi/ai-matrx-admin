@@ -16,15 +16,18 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "topicalMapWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 /** Mirrors `MapWorkspaceScreen` (declared here: an opener may not import feature modules). */
 export type TopicalMapWindowScreen =
@@ -71,15 +74,15 @@ export function createTopicalMapWindowOpener(store: AppStore) {
       // Already floating: surface it. A screen the caller named is applied
       // by re-dispatching the instance data, which the window observes.
       if (opts.screen) {
-        dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
+        opener.open(dispatch, { instanceId, data });
       }
       dispatch(restoreWindow(instanceId));
       dispatch(focusWindow(instanceId));
     } else {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
+      opener.open(dispatch, { instanceId, data });
     }
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+      close: () => dispatch(opener.close(instanceId)),
     };
   };
 }
@@ -90,14 +93,7 @@ export function useOpenTopicalMapWindow() {
 }
 
 /** Declarative form. Opens on mount, closes on unmount. */
-export function TopicalMapWindowController(props: OpenTopicalMapWindowOptions): null {
-  const open = useOpenTopicalMapWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.mapId, props.screen, props.siteId]);
-  return null;
-}
+export const TopicalMapWindowController = hookController<OpenTopicalMapWindowOptions>(useOpenTopicalMapWindow);
 
 export type TopicalMapWindowDefinitionData = OpenTopicalMapWindowOptions;
 

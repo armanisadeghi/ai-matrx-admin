@@ -47,4 +47,19 @@ describe("deriveTrail", () => {
     const t = deriveTrail({ pathname: "/notes/my-key_name", nav: NAV });
     expect(t[1]!.label.toLowerCase()).toContain("my");
   });
+  it("never repeats a level: a list page named like its section is one crumb", () => {
+    const nav: TrailNavNode[] = [
+      {
+        label: "Marketing",
+        href: "/marketing",
+        children: [
+          { label: "Brands", href: "/marketing/brands" },
+          { label: "Brands", href: "/marketing/brands/all" },
+        ],
+      },
+    ];
+    const t = deriveTrail({ pathname: "/marketing/brands/all", nav });
+    expect(t.map((c) => c.label)).toEqual(["Marketing", "Brands"]);
+    expect(t[1]!.href).toBeUndefined();
+  });
 });

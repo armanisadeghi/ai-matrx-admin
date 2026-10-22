@@ -104,6 +104,10 @@ import { NoteCleanupButton } from "./cleanup/NoteCleanupButton";
 import { NoteMetadataBar } from "./NoteMetadataBar";
 import { NoteTabBar } from "./NoteTabBar";
 import { NoteSidebar } from "./NoteSidebar";
+import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
 import { HomeQuickPick } from "../homes/HomeQuickPick";
 import { cn } from "@/lib/utils";
 import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
@@ -142,6 +146,11 @@ export interface NotesViewConfig {
    * Default true on the /notes route; overlays/windows should pass false.
    */
   syncUrl?: boolean;
+  /**
+   * The /notes route only: in the new app frame the notes list goes into the frame's ONE sidebar
+   * column (<FrameSidebarContent>) instead of a resizable column of its own. Embeds never set it.
+   */
+  frameSidebar?: boolean;
 }
 
 export interface NotesViewProps {
@@ -169,6 +178,8 @@ export function NotesView({
   const syncUrl = config?.syncUrl ?? !hidePageHeader;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const singleNote = config?.singleNote ?? null;
+  const inFrame = useFrameSidebarSlot();
+  const frameSidebar = inFrame && (config?.frameSidebar ?? false);
 
   // ── Narrow host (a canvas pane, a split) ────────────────────────────
   // Below NARROW_NOTES_PX of its OWN width the sidebar would squeeze the note
@@ -713,7 +724,7 @@ export function NotesView({
             tooltip="All notes"
           />
         )
-      ) : showSidebar && !singleNote ? (
+      ) : showSidebar && !singleNote && !frameSidebar ? (
         <PanelLeftTapButton
           variant="transparent"
           onClick={toggleSidebar}
@@ -887,6 +898,16 @@ export function NotesView({
               // pair slid under the canvas.
               <div className="flex min-h-0 min-w-0 flex-1 flex-col">{mainArea}</div>
             )
+          ) : showSidebar && !singleNote && frameSidebar ? (
+            // The new app frame: the list is the frame's sidebar; the frame's width governs it.
+            <>
+              <FrameSidebarContent>
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <NoteSidebar instanceId={instanceId} />
+                </div>
+              </FrameSidebarContent>
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col">{mainArea}</div>
+            </>
           ) : showSidebar && !singleNote ? (
             <ResizablePanelGroup
               id="notes-shell"

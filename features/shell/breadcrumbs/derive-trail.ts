@@ -184,5 +184,8 @@ export function deriveTrail(input: DeriveTrailInput): Crumb[] {
     parentLabel = label;
   });
 
-  return crumbs;
+  // Never the same level twice: a level that repeats the next one (a list page named like its
+  // section, "Brands › Brands") gives way to it — the same rule the new frame applies.
+  const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  return crumbs.filter((c, i) => i === crumbs.length - 1 || c.recordId || !same(c.label, crumbs[i + 1]!.label));
 }

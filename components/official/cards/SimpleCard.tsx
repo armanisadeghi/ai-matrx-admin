@@ -29,7 +29,7 @@ const SimpleCard: React.FC<SimpleCardProps> = ({ icon, title, description, onCli
         </span>
       )}
       {description && (
-        <p className="type-secondary text-center text-gray-600 dark:text-gray-400 mt-1">
+        <p className="type-secondary text-center text-muted-foreground mt-1">
           {description}
         </p>
       )}

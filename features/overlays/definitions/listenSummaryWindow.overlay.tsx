@@ -16,10 +16,12 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "listenSummaryWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenListenSummaryWindowOptions {
   /** The bound `spoken_summary` agent that writes the listening summary. */
@@ -60,7 +62,7 @@ export function useOpenListenSummaryWindow() {
     (opts: OpenListenSummaryWindowOptions): ListenSummaryWindowHandle => {
       dispatch(openListenSummaryWindowAction(opts));
       return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
       };
     },
     [dispatch],

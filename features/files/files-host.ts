@@ -33,6 +33,8 @@ import type { PermissionLevel } from "@/utils/permissions/types";
 type AppContextState = Parameters<typeof selectOrganizationId>[0];
 
 if (!isFilesHostConfigured()) configureFilesHost({
+  // The duplicate-upload guard: a summon overlay asked through requestOverlay, loaded on the first upload.
+  requestUploadGuard: (arg) => import("@/features/files/upload/requestUploadGuard").then((m) => m.requestUploadGuard(arg)),
   get db() {
     return supabaseClient.supabase;
   },

@@ -8,13 +8,11 @@
  * - `<ChatHistoryWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "quickChatHistory" as const;
 
@@ -28,40 +26,16 @@ export interface ChatHistoryWindowHandle {
   close: () => void;
 }
 
-export function useOpenChatHistoryWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenChatHistoryWindowOptions = {}): ChatHistoryWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            initialSelectedConversationId: opts.initialSelectedConversationId,
-            initialGroupBy: opts.initialGroupBy,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenChatHistoryWindowOptions>(OVERLAY_ID);
+
+export const useOpenChatHistoryWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function ChatHistoryWindowController(props: OpenChatHistoryWindowOptions): null {
-  const open = useOpenChatHistoryWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialSelectedConversationId, props.initialGroupBy]);
-  return null;
-}
+export const ChatHistoryWindowController = opener.Controller;
 
 export type QuickChatHistoryDefinitionData = OpenChatHistoryWindowOptions;
 
