@@ -342,6 +342,15 @@ import {
   publicWebModuleManifest,
 } from "./module-surfaces.manifest";
 
+// W2 page surfaces (surface declarations W2, 2026-10-22). One import per manifest, each under its
+// area marker, so parallel authors never edit the same lines.
+// W2 area: hr-a
+// W2 area: hr-b
+// W2 area: workflows-commerce
+// W2 area: print-rag-memory
+// W2 area: core-rest
+// W2 area: route-groups
+
 /**
  * Manifests exactly as authored. Do NOT consume directly at runtime — generic
  * baselines are injected below and inheritance is unresolved. Use
@@ -676,6 +685,13 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   adminUtilitiesManifest,
   adminDocumentationManifest,
   quickDataManifest,
+  // W2 page surfaces, one line per manifest under its area marker.
+  // W2 area: hr-a
+  // W2 area: hr-b
+  // W2 area: workflows-commerce
+  // W2 area: print-rag-memory
+  // W2 area: core-rest
+  // W2 area: route-groups
 ];
 
 // ---------------------------------------------------------------------------
