@@ -9,7 +9,7 @@
 import { SHELL_LAYOUT_SCHEMA_VERSION, type ShellLayoutBody, type ShellNode } from "../contract";
 import { buildShellCatalog, defaultSidebarTree, SHELL_CATALOG_VERSION } from "../catalog";
 import { resolveShellLayout } from "../resolve";
-import { standardPersonBody } from "../editor/regions";
+import { resetToStandardPlan, standardPersonBody } from "../editor/regions";
 import { primaryNavItems } from "../../constants/nav-data";
 import { RETIRED_NAV_IDS } from "../retired-nav-ids";
 
@@ -58,4 +58,18 @@ it("a new menu is offered as ONE row: entries under an offered entry ride in wit
   const parent = new Map(buildShellCatalog({ isAdmin: false }).map((e) => [e.id, e.parentId]));
   expect(memory.filter((id) => offered.includes(parent.get(id) ?? ""))).toEqual([]);
   expect(memory.length).toBeLessThan(24);
+});
+
+it("Reset to standard never archives a stored layout: it saves the empty body as a new version (History keeps the rest)", () => {
+  // Audit round 2 #5: a person without an organization layout was archived, and History went dark.
+  expect(resetToStandardPlan({ target: "person", stored: true, organizationHasLayout: false })).toBe("save-empty");
+  expect(resetToStandardPlan({ target: "person", stored: true, organizationHasLayout: true })).toBe("save-empty");
+  expect(resetToStandardPlan({ target: "organization", stored: true, organizationHasLayout: true })).toBe("save-empty");
+  // Nothing stored: only a person under an organization layout needs a body of her own to see the standard.
+  expect(resetToStandardPlan({ target: "person", stored: false, organizationHasLayout: true })).toBe("save-empty");
+  expect(resetToStandardPlan({ target: "person", stored: false, organizationHasLayout: false })).toBe("nothing");
+  expect(resetToStandardPlan({ target: "organization", stored: false, organizationHasLayout: false })).toBe("nothing");
+  const src = require("node:fs").readFileSync(require("node:path").join(__dirname, "../editor/ShellLayoutEditor.tsx"), "utf8") as string;
+  const reset = src.slice(src.indexOf("const resetToStandard"), src.indexOf("const showChoose"));
+  expect(reset).not.toMatch(/store\.clear\(/);
 });

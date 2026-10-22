@@ -46,7 +46,7 @@ import { AddRecordRow, recordKey, type PickedRecord } from "./AddRecordRow";
 import { ArrangeTree } from "./ArrangeTree";
 import { CatalogChecklist } from "./CatalogChecklist";
 import { HeaderPane } from "./HeaderPane";
-import { accentOf, dockOf, headerOf, lookOf, sidebarOf, standardPersonBody, startingBody, withAccent, withLook, type EditorRegion } from "./regions";
+import { accentOf, dockOf, headerOf, lookOf, resetToStandardPlan, sidebarOf, standardPersonBody, startingBody, withAccent, withLook, type EditorRegion } from "./regions";
 import { AccentPane, DEFAULT_SWATCH_LABEL } from "./AccentPane";
 import { LookPane } from "./LookPane";
 import { addRow, buildCatalogTree, placedRefs, removeNode, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
@@ -205,13 +205,10 @@ export function ShellLayoutEditor({
       variant: "destructive",
     });
     if (!ok) return;
-    // A person whose organization has a layout keeps a layout of her own so it wins — an EMPTY one: every
-    // region it does not carry is the built-in default, which keeps growing with the catalog. (Until
-    // 2026-10-22 it wrote the default trees out, freezing her out of every later addition.)
-    const answer =
-      target === "person" && store.organization
-        ? await store.save("person", standardPersonBody(), "Reset to standard")
-        : await store.clear(target);
+    // An EMPTY body, saved as a new version: every region it does not carry is the built-in default, which
+    // keeps growing with the catalog, and History keeps every earlier version (resetToStandardPlan).
+    const plan = resetToStandardPlan({ target, stored: Boolean(stored), organizationHasLayout: Boolean(store.organization) });
+    const answer = plan === "save-empty" ? await store.save(target, standardPersonBody(), "Reset to standard") : ({ ok: true } as const);
     if (answer.ok) {
       setDraft(null);
       toast.success(target === "organization" ? "The organization uses the standard layout" : "Your layout is the standard one");
