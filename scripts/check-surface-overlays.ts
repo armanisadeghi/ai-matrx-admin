@@ -13,6 +13,8 @@
 
 import { ALL_MANIFESTS } from "@/features/surfaces/manifests/registry";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 
 const manifestsByOverlay = new Map<string, string[]>();
@@ -27,11 +29,21 @@ for (const manifest of ALL_MANIFESTS) {
 // The catalogue's keys ARE the overlay ids; object keys cannot repeat, and
 // TypeScript rejects a duplicate key in the literal, so no duplicate-id pass.
 const overlayIds = new Set<string>(APP_OVERLAYS.map((d) => d.id));
+
+// Package windows this app hosts as canvas tabs instead of overlays (the context preview,
+// Quick Chat) are real window hosts too: `CANVAS_HOSTED_WINDOWS` in providers/ChatHostAdapter.tsx,
+// read as text because that file is a React client module. A manifest naming one is not a phantom.
+const canvasHosted = (() => {
+  const adapter = readFileSync(join(process.cwd(), "providers/ChatHostAdapter.tsx"), "utf8");
+  const block = adapter.match(/const CANVAS_HOSTED_WINDOWS = \{([\s\S]*?)\n\} as const/);
+  if (!block) throw new Error("check-surface-overlays: CANVAS_HOSTED_WINDOWS not found in providers/ChatHostAdapter.tsx");
+  return new Set([...block[1].matchAll(/^ {2}(\w+): \{/gm)].map((m) => m[1]));
+})();
 const missing = [...overlayIds].filter(
   (overlayId) => !manifestsByOverlay.has(overlayId),
 );
 const unknown = [...manifestsByOverlay.entries()].filter(
-  ([overlayId]) => !overlayIds.has(overlayId),
+  ([overlayId]) => !overlayIds.has(overlayId) && !canvasHosted.has(overlayId),
 );
 const duplicates = [...manifestsByOverlay.entries()].filter(
   ([, surfaceNames]) => surfaceNames.length > 1,

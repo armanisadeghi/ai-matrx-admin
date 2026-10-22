@@ -15,7 +15,7 @@ labor right and children stay tiny; get it wrong and you split the vocabulary.
 | The PARENT conveys | The CHILD owns |
 |---|---|
 | The **container's identity** — the ids and names every descendant is inside (`brand_id`, `site_id`, `project_id`). Almost always `alwaysAvailable`. | **What only this screen can see** — the record on screen, the selection, the editor's live state (`page_content`, `current_note`, `draft_content`). |
-| **Context every descendant would otherwise refetch** — the shared blob an agent needs to reason at all (`brand_context`, `site_context`). | Its **own identity**: `label`, `readiness`, `intro`, curated `groups`, its own scope builder. Never inherited. |
+| **Context every descendant would otherwise refetch** — the shared blob an agent needs to reason at all (`brand_context`, `site_context`). | Its **own identity**: `label`, `intro`, its own `situation`, curated `groups`, its own scope builder. Never inherited (an inherited situation renders, but only an own one counts toward readiness). |
 | **Family-wide rollups** that are true anywhere in the family (`open_findings_total`, `pages_total`). | Its **write targets** and **agent roles** — a child binds its own agents; it does not inherit a parent's job. |
 
 **The five rules**

@@ -3,8 +3,8 @@
 /**
  * 4. THE COMPLETENESS STRIP — the surfaces admin's three jewels, in one line.
  *
- *  - the readiness badge (`SurfaceReadinessBadge`'s tone table and its
- *    `readiness_note`-as-tooltip behavior),
+ *  - the canonical derived-readiness badge (`SurfaceReadinessBadge`: Ready /
+ *    Partial / Unproven, its gaps as the tooltip),
  *  - the drift summary chip opening the report — the 15-array report's
  *    severity-toned Section structure kept intact (amber / rose / orange, a
  *    count badge, and a prose consequence per section),
@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { SurfaceReadinessBadge } from "@/features/surfaces/components/SurfaceReadinessBadge";
 import { Inert } from "./preview-chrome";
 import {
   DRIFT_ISSUE_COUNT,
@@ -43,25 +44,6 @@ import {
   SYNC_RECEIPT,
   type DriftSection,
 } from "./mock-data";
-
-/** Same four buckets and the same tone table as `SurfaceReadinessBadge`. */
-const READINESS_META = {
-  verified: {
-    label: "verified",
-    className:
-      "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  },
-  partial: {
-    label: "partial",
-    className:
-      "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  },
-  stub: { label: "stub", className: "text-muted-foreground" },
-  unregistered: {
-    label: "unregistered",
-    className: "border-destructive/40 bg-destructive/5 text-destructive-ink",
-  },
-} as const;
 
 function DriftReportDialog({ onClose }: { onClose: () => void }) {
   return (
@@ -174,18 +156,15 @@ function SyncReceiptDialog({ onClose }: { onClose: () => void }) {
 
 export function CompletenessStrip({ readOnly }: { readOnly: boolean }) {
   const [dialog, setDialog] = useState<"drift" | "sync" | null>(null);
-  const readiness = READINESS_META[PLACE.readiness];
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
-        <Badge
-          variant="outline"
-          className={cn("text-[10px]", readiness.className)}
-          title={PLACE.readinessNote}
-        >
-          {readiness.label}
-        </Badge>
+        <SurfaceReadinessBadge
+          readiness={PLACE.readiness}
+          gaps={PLACE.readinessGaps}
+          className="text-[10px]"
+        />
 
         <span className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
           <CircleDot className="h-2.5 w-2.5 fill-current" />

@@ -85,7 +85,7 @@ export function PlacesWorkspace() {
             <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
               <code className="font-mono">{PLACE.routePattern}</code>
               <span>·</span>
-              <span>{PLACE.readinessNote}</span>
+              <span>{PLACE.readinessGaps.join(" · ")}</span>
             </p>
           </div>
 

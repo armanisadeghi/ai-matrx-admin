@@ -12,7 +12,7 @@ describe("agentComparisonModelManifest", () => {
       "/agents/battle/model",
     );
     expect(agentComparisonModelManifest.agentRoles).toBeUndefined();
-    expect(agentComparisonModelManifest.inheritsFrom).toBeUndefined();
+    expect(agentComparisonModelManifest.inheritsFrom).toBe("matrx-default/agents");
     expect(
       agentComparisonModelManifest.values.map((value) => value.name),
     ).toEqual(

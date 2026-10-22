@@ -47,6 +47,12 @@ describe("readiness needs a passing probe and the page's OWN situation (review B
     expect(deriveFleetReadiness({ ...clinicNotes, probe_result: null })).toBe("partial");
   });
 
+  it("an inconclusive probe is Unproven with its reason, never a fourth state", () => {
+    const inconclusive = { ...clinicNotes, probe_result: "inconclusive" };
+    expect(deriveFleetReadiness(inconclusive)).toBe("unproven");
+    expect(readinessGaps(inconclusive)).toEqual(["Last probe inconclusive"]);
+  });
+
   it("an inherited module sentence is not the page's situation", () => {
     expect(
       deriveFleetReadiness({ ...clinicNotes, situation_present: true, situation_source: "inherited" }),

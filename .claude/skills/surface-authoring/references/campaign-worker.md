@@ -120,7 +120,7 @@ returning name;
      in the surface's own terms), never new keys.
    - **List scope describes the rows its owner actually knows.** When a table owns filters/sort
      that the page scope cannot observe, describe values as "after the page's own filters" and
-     name that boundary in readiness. Check the installed table's controlled query and row
+     name that boundary in the report. Check the installed table's controlled query and row
      callbacks before claiming its displayed rows; never mutate scope refs during render.
    - **A docked panel with its own surface becomes primary while open.** The mounted page
      remains a `surface_chain` level. Declare panel-only values on the panel and follow
@@ -176,8 +176,9 @@ returning name;
      prefix table, and add both cases to `route-to-surface.test.ts`.
    - Never run a formatter over a whole file you did not create: a formatted file becomes a
      900-line diff that collides with everyone. Format only files you created.
-5. **Readiness:** `partial`, with a note naming exactly what is not proven yet (normally: "no
-   outside-helper binding test"). `verified` only when that is proven too.
+5. **Readiness:** never typed. Record a probe (`pnpm surface:probe --record`); the report names
+   each remaining `readinessGaps` line and what is not proven yet (normally: "no outside-helper
+   binding test").
 
 ## 3. Check, sync, commit (per batch)
 
@@ -273,7 +274,7 @@ reviewer to re-check only the fixes.
   - The reviewer sets it to `ready_for_human` only if it passes.
 - **Report** each surface with the entrypoint's integration receipt; a scratch report may hold
   detailed evidence. Never write `last_checked_*` or a final certification pass yourself. Cover:
-  - each surface: commit SHA, values before → after, probe counters per route, readiness and note;
+  - each surface: commit SHA, values before → after, probe counters per route, derived readiness and its gaps;
   - skipped or already-done surfaces;
   - the reviewer's findings and what you fixed;
   - every wall you hit;

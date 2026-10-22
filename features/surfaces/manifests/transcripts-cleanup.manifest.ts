@@ -91,7 +91,7 @@ const groups: SurfaceValueGroup[] = [
     description:
       "The user-configured custom output slots and the active slot's wiring.",
   },
-  { key: "parent_unavailable", label: "Not populated here", sortOrder: 900 },
+  { key: "parent_unavailable", label: "Not populated here", sortOrder: 890 },
 ];
 
 const surfaceSpecific: SurfaceValue[] = [

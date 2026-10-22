@@ -8,10 +8,11 @@
 **Owner**: tool-registry
 **Routes**: `/administration/ui/surfaces` (admin) · `/surfaces` (user hub) · `/agents/[id]/surfaces` (per-agent bindings)
 
-Alchemy's code-side value declarations include `exportable`, `classification`,
-and `includedByDefault`. These control content transfer independently of
-`autoContext`: disabling ambient agent context does not classify a value as
-secret. Package projection removes secret, credential, and non-exportable
+Alchemy's code-side value declarations include `exportable` and
+`classification`. These control content transfer independently of
+`autoContext`, the one on/off knob for agent context (`includedByDefault` is
+gone, surface declarations D6): disabling ambient agent context does not
+classify a value as secret. Package projection removes secret, credential, and non-exportable
 values before serializers or custom callbacks. Runtime integration is tracked
 in [Matrx Alchemy](../../../common-docs/systems/platform/ui-shell/projects/matrx-alchemy/PLAN.md).
 
@@ -125,8 +126,10 @@ Returns `blocks[]` (`id`, `label`, `chars`, `sha256`, `text`, `retained`, `sourc
 | Document evidence sources       | `registry.ts` union; the universal launcher turns each resolved declaration into a lazy processed-document context source before value mappings run                              |
 
 - Guards are LOUD: unknown parent, cycle, or depth > 5 ancestors (AI Matrx › module › feature › sub-feature, plus the DB root; D5) **throws at module init** (`getSurfaceAncestry`).
-- Manifest sync mirrors `inheritsFrom` → `ui_surface.parent_surface_name` (never clears a DB-authored parent when the manifest is silent) and mirrors the MERGED value set into `ui_surface_value`.
-- The chain is code-first (registry manifests). The DB's blanket `parent_surface_name = matrx-default/default` rows do NOT cascade bindings — only manifest-declared parents do (deliberate: cascading Default to all ~100 surfaces would be a behavior change).
+- **The hierarchy:** AI Matrx (`matrx-default/default`, a database-declared row with no manifest) › module › feature › sub-feature. Module surfaces are `matrx-default/<domain>`, one per domain-tree domain, in [`manifests/module-surfaces.manifest.ts`](./manifests/module-surfaces.manifest.ts): they carry only what is true on every page beneath them (the active organization; HR adds its employer), all `alwaysAvailable: false`, filled from shell state (`utils/module-values.ts`), plus a `label`, a `situation` and a `taxonomyNode`. Never put tools, write targets, client tools or agent roles on a module.
+- Manifest sync mirrors `inheritsFrom` → `ui_surface.parent_surface_name` and mirrors the MERGED value set into `ui_surface_value`. A manifest with no `inheritsFrom` (modules, standalone pages) is a child of the database root: `withDatabaseRoot` ([`services/surface-database-root.ts`](./services/surface-database-root.ts)) makes every plan builder claim `parent_surface_name = matrx-default/default` for it, so the sync parents it and `--check` reports a mismatch.
+- Values and launch-time binding layers follow the registry chain (`getSurfaceAncestry`), which stops below the database root, so a binding on `matrx-default/default` does not cascade at launch. The Intelligence read (`ui.surface_intelligence`, below) walks the database chain including the root.
+- **Situation, own vs inherited.** `situation` is the moment in words with `{value}` blanks, rendered first every turn (aidream `situation.py`), module paragraph before page paragraph. A surface's situation is **own** when its manifest (or `situation_override`) sets it, **inherited** when only an ancestor does, **none** otherwise; the fleet metric reports `situation_source` and only an own situation counts toward readiness. `situation_override` sits beside `intro_override`, protected from the sync, edited in the same admin editor.
 - Live families: `matrx-user/transcripts` ⊃ `transcripts-cleanup` (60 effective values, 36 own); `matrx-user/pdf-extractor` ⊃ `extractor-chunker` / `analysis-studio` / `scanner`. Bind an agent ONCE on the parent and it applies on every child.
 
 ## The surface chain — every open screen reaches the agent (2026-09-26, ARE-010/011/012)
@@ -192,7 +195,50 @@ Two per-surface settings primitives, both resolved `manifest/DB default → glob
 
 ## Full-screen admin editor — `/administration/ui/surfaces/[...name]`
 
-[`admin-detail/SurfaceAdminDetailPage.tsx`](./admin-detail/SurfaceAdminDetailPage.tsx) (Wave 4). Catch-all route (slash-safe via `surfaceAdminHref` in `utils/surface-hierarchy.ts`) and reusable embedded body for `surfaceContextInspector`. Edits identity (active/description/rename/url_pattern/executor/parent), shows the parent/child tree (`buildChildrenByParent` / `getAncestorChain` — reads the DB mirror), authored-vs-resolved manifest provenance, declared values, roles + prefs, config namespaces, bound agents, and tools. Platform-global config namespace JSON is editable here through the namespace handler's canonical validation; manifest declarations and evidence sources remain code-owned. The 5-panel per-agent shell (`/agents/[id]/surfaces`, `admin/`) and the batch editor (`admin/batch/SurfaceBindingsBatchEditor.tsx`) write through the same associations-backed thunks.
+[`admin-detail/SurfaceAdminDetailPage.tsx`](./admin-detail/SurfaceAdminDetailPage.tsx). Catch-all route (slash-safe via `surfaceAdminHref` in `utils/surface-hierarchy.ts`) and reusable embedded body for `surfaceContextInspector`. Edits identity (active/description/rename/url_pattern/executor/parent) and the `intro` / `situation` overrides (`AgentIntroSection`); platform-global config namespace JSON is editable through the namespace handler's validation; manifest declarations and evidence sources stay code-owned. Example: https://manage.aimatrx.com/administration/ui/surfaces/matrx-user/notes
+
+Sections, for code and database surfaces alike ([`admin-detail/SurfaceDeclarationSections.tsx`](./admin-detail/SurfaceDeclarationSections.tsx), [`services/surface-declaration.service.ts`](./services/surface-declaration.service.ts)):
+
+- **Chain** — AI Matrx › module › … › page, each level opening its own page (`ui.mv_surface_chain` + one `ui_surface` read).
+- **Declaration** — values (on by default, always there, type, inline limit, item type), write targets (handler handled / missing / unknown, patchable, mode, updates value), client tools and actions, each row naming the level that declares it; raw JSON through `CopyButtons data=`.
+- **Intro and situation** — each level's, own vs inherited, and the rendered situation (`utils/situation-render.ts`, a port of aidream `render_situation`; blanks filled from the probe's `last_check.values`, else `[Label]`).
+- **Latest probe** — `last_check` parsed by `utils/probe-record.ts`.
+- **What the agent receives** — [`admin-detail/SurfaceReceivesSection.tsx`](./admin-detail/SurfaceReceivesSection.tsx) over the receives endpoint (§ What the agent receives); loads when scrolled into view; an unknown route shows "Available after the next server release".
+- **Readiness** — the derived state, the rule, and what is still missing (`readinessGaps`).
+- **Run supply** — 30-day receipt keys; keys from other open screens (`<surface>::<value>`, `window::<title>`) show apart.
+- **Bindings** — `ui.surface_intelligence`, grouped Level (This page / Module / AI Matrx) then Scope (Person / Organization / System); fixed jobs (`ui_surface_agent_role`) are a direct read.
+- Also: roles + prefs, config namespaces, tools. The 5-panel per-agent shell (`/agents/[id]/surfaces`, `admin/`) and the batch editor (`admin/batch/SurfaceBindingsBatchEditor.tsx`) write through the same associations-backed thunks.
+
+## Readiness, probes and the fleet metric (surface declarations, 2026-10-22)
+
+**Readiness is earned, three states only** ([`utils/fleet-readiness.ts`](./utils/fleet-readiness.ts) `deriveFleetReadiness`; badge [`components/SurfaceReadinessBadge.tsx`](./components/SurfaceReadinessBadge.tsx); type `DerivedReadiness` in `@ai-matrx/chat/surfaces/host-surface-types`):
+
+- **Ready** — the latest probe passed, every declared-on value was supplied, every write target has a handler, and the page has its OWN situation.
+- **Partial** — some declared-on value was supplied, but not all of the above.
+- **Unproven** — nothing declared-on was supplied, nothing is declared on, or the latest probe was **inconclusive** (it proved nothing). `readinessGaps` names the reason ("Last probe inconclusive", "Never probed", "3 of 12 on values not supplied", "Situation is inherited, not its own", …); there is no fourth state.
+- A write target whose handler cannot be measured (database/applet surfaces) never counts as handled.
+
+**The fleet metric** — `ui.vw_surface_fleet_metric`, one row per active surface, both sources (`declared_by` code and database): declared-on values over the chain (`auto_context` not false), values supplied (a 30-day receipt or context object in `ui.mv_surface_run_supply`, or `last_check.suppliedValues`), write targets, handled targets (from `data/write-handler-coverage.generated.json`, written by `pnpm surface:write-handlers:emit` in the build; NULL for database surfaces), patchable share, `situation_source` own / inherited / none, `probe_result` = `last_check.status`. The supply rollup is materialized and re-rolled on demand by `ui.refresh_surface_run_supply()` (platform admins), which the list page calls after first paint. Shown at https://manage.aimatrx.com/administration/ui/surfaces (columns Readiness, On values, Supplied, Supplied %, Write targets, With handler, Patchable, Situation, Last run; header toggles, filter bar, badge and peek panel all read the derived readiness).
+
+**The probe record** — `pnpm surface:probe --record [recordId]` (one surface) and `pnpm surface:probe:batch` (every active code surface with a route; dynamic routes from a fixture map of admin-owned records; at most 2 browsers) open the page as `admin@admin.com` only and MERGE into `ui_surface.last_check`: `status` `pass` (every declared-on `alwaysAvailable` value over the chain supplied; conditional values listed apart, never failing) / `fail` / `inconclusive` (access refused or no record loaded, with a `reason`), `at`, `route`, `recordId`, `declaredOn`, `required`, `conditional`, `suppliedValues`, `suppliedEmpty`, `missing`, `conditionalMissing`, `values` (each supplied value's preview, cut to 300 chars), `readMode`, `probedAs`, `probeVersion`; plus `last_checked_at/by`. An inconclusive probe never overwrites an earlier pass or fail: it lands as `lastInconclusive`. A certification ledger already in `last_check` is kept.
+
+**Manifest sync — retry and drift** ([`scripts/sync-surface-manifests-direct.ts`](../../scripts/sync-surface-manifests-direct.ts), [`scripts/lib/surface-sync-runner.ts`](../../scripts/lib/surface-sync-runner.ts), [`scripts/lib/surface-sync-check.ts`](../../scripts/lib/surface-sync-check.ts)):
+
+- Failed surfaces are retried in rounds, and the full `--check` is retried on a missing module (knobs `SURFACE_SYNC_ATTEMPTS`, default 3; `SURFACE_SYNC_RETRY_DELAY_MS`, default 30000). The run prints one `SURFACE SYNC SUMMARY` line and exits non-zero when any surface never synced.
+- Drift covers values, `parent_surface_name` (including the database-root claim), `situation` and `taxonomy_node_slug`; read-only mode runs the full drift check. Proof: `scripts/lib/__tests__/surface-sync-drift-and-retry.test.ts`.
+
+**Checks** (`pnpm check:surface-*`):
+
+| Check | Fails on |
+|---|---|
+| `check:surface-drift` | manifest rules: label presence and per-client uniqueness, groups, `mandateKey` vs `defaultAgentId`, and every `situation` `{blank}` naming a value the resolved chain declares (`scripts/lib/surface-situation-blanks.ts`) |
+| `check:surface-routes` | phantom surface names; undeclared routes reported unless in `DELIBERATELY_UNMAPPED` with a reason |
+| `check:surface-impact` / `:strict` | per parent, every descendant, binding, shortcut and write twin; `SHADOWED_VALUE` (strict fails) |
+| `check:surface-chrome-labels` (+ `:self-test`) | a surface, value or target KEY rendered in the Surface Context window, the Agents popover or the admin declaration sections |
+| `check:surface-patchable` (+ `:census`, `:self-test`) | a ratchet on long-text write targets declared `patchable` with `approvalComparison: "text-replacement"` |
+| `check:surface-inline-text` | text bodies small enough to pass whole without `inlineUpTo` |
+| `check:surface-write-handlers` / `:fresh` | declared write targets with no mounted handler; a stale committed handler snapshot |
+| `check:surface-overlays`, `check:surface-orphans`, `check:surface-executors`, `check:surface-index`, `check:surface-approval-render`, `check:surface-interactive-roots` | overlay ids, orphan manifests, undecided executors, a stale surface index, approval rendering, interactive roots |
 
 ## The 360 loop — read, write, policy (2026-07-29)
 
@@ -1860,7 +1906,7 @@ After the user-requested "go all in" pass, the page picks up:
 
 ## Readiness tracking + overlay surfaces (2026-07-24, ruled)
 
-- **`SurfaceManifest.readiness`** (`verified | partial | stub`, REQUIRED) + `readinessNote` — the campaign tracker for "verified correct and complete". Mirrored to `ui_surface.readiness`; NULL = unregistered (no manifest). Code-owned; the admin board at `/administration/ui/surfaces` rolls up the four states. `verified` is earned via the full surface-authoring checklist, never aspirational.
+- **Readiness is derived, never typed** — see § Readiness, probes and the fleet metric. Manifests carry no `readiness` / `readinessNote`; the `ui_surface.readiness` column stays, unwritten.
 - **Overlay surfaces**: every window-panel overlay gets its own surface, identified by `SurfaceManifest.overlayId` → `ui_surface.overlay_id` (the overlay twin of `url_pattern`). Emitters mount `SurfaceRuntimeProvider` inside the window component — nested providers out-depth the page, so the window's scope wins while open.
 - 🚨 **Registration coverage is its own check — `pnpm check:surface-routes`** ([scripts/check-surface-routes.ts](../../scripts/check-surface-routes.ts), 2026-08-17). `check:surface-drift` validates manifests AGAINST THEMSELVES and is structurally blind to two failure modes: a **phantom** (route-to-surface points live routes at a surface name with no manifest — this hid `matrx-user/agent-shortcuts`, ten live routes with no manifest and no DB row) and an **undeclared route** (a `(core)` route resolving to no surface at all — 60 of them, including the agent-LAUNCHING `/work/new`). The new check walks every `(core)` route through the real resolver: phantoms FAIL, undeclared routes are REPORTED unless listed with a written reason in `DELIBERATELY_UNMAPPED`. Adding a route to that list without a real reason re-creates the blindness.
 - 11 zero-reference stale `ui_surface` rows hard-deleted 2026-07-24 (ai-voice, browser-workbench, code-workspace, multi-file-smart-editor, news, notes-beta, prompt-apps, applets, voice-pad-advanced, voice-pad-ai, custom-apps — all had 0 values/roles/bindings/tool-defaults).

@@ -65,7 +65,7 @@ Fill this receipt, rather than replacing it with a narrative. For a read-only as
 - Runtime/menu proof: <each editable/presentational region, actual controlled-state mutation, current live values, terminal UI result>
 - Contract truth: <all routes sharing identity checked for Always keys; async values belong to current inputs; source attribution names the actual product>
 - Helper-context proof: <agent/job, surface, purpose, mode: none|named_inputs|approved_surface_context, allowed names or approved snapshot, approval provenance, save receipt, launch request, persisted variables or native/resident isolation evidence>
-- Readiness: <partial|verified>; note: <exact remaining condition or why earned>
+- Readiness (derived, after the probe): <ready|partial|unproven> + `readinessGaps`: <each remaining gap or none>
 - Remaining work: <none OR exact work>; owner: <name>; boundary/next action: <text>
 - Independent certification: <not requested|candidate ref|verifier name, timestamp, evidence>
 ```
@@ -149,13 +149,15 @@ own engineered context.
 
 Undeclared runtime keys show loudly in the Surface Context window under **"Undeclared (runtime only)"** — every entry there is a defect: either declare the value or stop emitting it. Use `autoContext: false` to keep declared-but-rarely-needed values out of automatic agent context; never use non-declaration for that.
 
-## READINESS TRACKING — the campaign field
+## READINESS — earned, never typed
 
-Every manifest declares `readiness: "verified" | "partial" | "stub"` (REQUIRED — the compiler enforces it) plus `readinessNote` saying what's missing whenever it isn't `verified`. This is the platform's tracker for "which surfaces are verified correct and complete". Rules:
+A manifest declares NO `readiness` or `readinessNote` (surface declarations D2). Readiness is derived from the fleet metric `ui.vw_surface_fleet_metric`, three states only (`deriveFleetReadiness`, `features/surfaces/utils/fleet-readiness.ts`):
 
-- `verified` is EARNED: full completeness audit against the live page, curated groups, emitter wired, checklist green. Never stamp it aspirationally.
-- Any change that adds page data without declaring it, or declares without emitting, demotes the surface — update `readiness` in the same edit.
-- Mirrored to `ui_surface.readiness`; the admin board at `/administration/ui/surfaces` rolls up Verified / Partial / Stub / Unregistered (DB rows with no manifest). Readiness is code-owned — never edited in the DB.
+- **Ready**: the latest probe passed, every declared-on value was supplied, every write target has a handler, and the surface sets its OWN `situation` (an inherited module sentence does not count).
+- **Partial**: some declared-on value was supplied, but not all of the above.
+- **Unproven**: nothing supplied, nothing declared on, or the latest probe was inconclusive; `readinessGaps` names the reason. Never add a fourth state.
+
+To move a surface: give it its own `situation`, wire its emitter and write handlers, then record a probe with `pnpm surface:probe --record [recordId]` (admin test account only). The admin list https://manage.aimatrx.com/administration/ui/surfaces and each surface's page show the state and its gaps. Mechanics (probe record fields, metric columns, sync retry and drift, the checks): `features/surfaces/FEATURE.md` § Readiness, probes and the fleet metric.
 
 ## OVERLAY SURFACES — windows are surfaces too
 
@@ -413,12 +415,12 @@ Verify like the owner does:
 
 ## Registration ship checklist
 
-- [ ] `readiness` stamped honestly (verified only after the full checklist; note required otherwise); overlay surfaces carry `overlayId`
+- [ ] No typed `readiness`; own `situation` written (its `{blanks}` name values on the chain); a probe recorded (`pnpm surface:probe --record`); overlay surfaces carry `overlayId`
 - [ ] Manifest + scope builder; required `label`; groups declared + every value grouped; completeness sweep clean; honest values; baselines not duplicated
 - [ ] Roles/namespaces declared where the surface plugs in agents/config
 - [ ] Registered in `registry.ts`; `pnpm check:surface-drift` AND `pnpm check:surface-routes` green
 - [ ] Focused DB sync AND matching full `--check` receipt passed
 - [ ] Completion receipt lists every helper/native/resident invocation contract and its evidence; no blanket N/A/exclusion
 - [ ] Route prefix in `utils/route-to-surface.ts` (more-specific prefixes ABOVE their parent)
-- [ ] Emitter wired; an explicitly deferred emitter keeps `readiness: "partial"` with its remaining boundary named and cannot support a functioning-integration, `verified`, or certification claim
+- [ ] Emitter wired; an explicitly deferred emitter is named as the remaining boundary in the report and cannot support a functioning-integration, Ready, or certification claim
 - [ ] Outside helper: non-matching-name binding + Matrx-vs-matrix test passed live; native: only engineered inputs and no ambient/ad-hoc surface values; resident: no automatic inheritance and its deliberate contract only

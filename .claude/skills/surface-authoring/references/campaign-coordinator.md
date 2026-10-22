@@ -37,7 +37,7 @@ campaign ends when the census says so, not when workers say so.
 ## The list
 
 `pnpm surface:census` (about a minute, no network) prints, per surface:
-- declared readiness;
+- derived readiness (from the fleet metric; the census no longer reads a typed field);
 - host (route or overlay);
 - value count;
 - whether anything EMITS it, and how the census knows (`detectedBy`): `builder` = the manifest's
@@ -64,8 +64,8 @@ and focused mirror checks rather than a historical snapshot.
 - `pnpm check:surface-drift` must be green on main. If it's red, fix it first: a red gate stops
   every worker.
 - Reconcile assigned Work Loop work; clear expired legacy claims only for the fallback campaign.
-- Settle every "verified but not emitting" lead (probe each): either the census learns its emitter or
-  their readiness drops to `partial`.
+- Settle every "declared but not emitting" lead (probe each): either the census learns its emitter or
+  the probe records the gap.
 - Resolve shared sync credentials or retain a named external boundary with the worker's exact check receipt.
 
 **Each wave:**
@@ -88,7 +88,7 @@ and focused mirror checks rather than a historical snapshot.
      2026-10-22. More workers means more containers (one session each).
 4. Workers report through durable state, not messages:
    - assigned Work Loop state, or explicitly bounded legacy claim state;
-   - readiness and note synced to the DB;
+   - a probe recorded in `last_check` (`pnpm surface:probe --record`);
    - one review-queue row per assignment (lane tag `surface-emitters`);
    - a `REPORT-<name>.md` returned as their final output.
 
@@ -113,5 +113,5 @@ and focused mirror checks rather than a historical snapshot.
 - Runtime/menu evidence against changed code, with the verification host and commit recorded.
 - Reviewer findings fixed, or written up as handoffs.
 - Focused DB sync and matching full live check passed; integration receipt complete.
-- Readiness honest: `partial` plus the exact remaining gap (usually the outside-helper binding test).
-  `verified` only when that is proven too.
+- Readiness is derived (never typed): the probe is recorded, and the report names each remaining
+  `readinessGaps` line (plus the outside-helper binding test if not yet proven).

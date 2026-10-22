@@ -7,7 +7,10 @@
  *            situation (an inherited module sentence never counts), and the
  *            latest probe (`last_check.status`) passed
  * - partial  at least one declared-on value was supplied, but not all of the above
- * - unproven nothing declared-on was supplied (or nothing is declared on)
+ * - unproven nothing declared-on was supplied (or nothing is declared on), or
+ *            the latest probe was inconclusive (refused page, nothing loaded):
+ *            it proved nothing, so its supply never lifts the surface to
+ *            partial; `readinessGaps` names the reason. Three states only.
  *
  * A write target whose handler cannot be measured (database/applet surfaces)
  * never counts as handled, so such a surface with write targets is at most
@@ -46,6 +49,7 @@ type ReadinessInputs = Pick<
 
 export function deriveFleetReadiness(m: ReadinessInputs | undefined): FleetReadiness {
   if (!m || m.values_declared_on === 0 || m.values_supplied === 0) return "unproven";
+  if (m.probe_result === "inconclusive") return "unproven";
   const allSupplied = m.values_supplied >= m.values_declared_on;
   const allHandled = m.write_targets === 0 || m.handled_targets === m.write_targets;
   const ownSituation = m.situation_source === "own";

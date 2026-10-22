@@ -52,10 +52,9 @@ const surfaceSpecific: SurfaceValue[] = [
 export const <localSlug>Manifest: SurfaceManifest = {
   surfaceName: "<client>/<local>",
   label: "<Canonical Display Name>",          // REQUIRED — THE NAMING LAW
-  readiness: "partial",
-  readinessNote: "<what prevents verified/certified status>",
   urlPattern: "/things/[thingId]",
-  inheritsFrom: "<client>/<parent>",          // omit when standalone
+  inheritsFrom: "<client>/<parent>",          // omit = child of the AI Matrx root; a feature page names its module or parent
+  situation: "<The moment in words, with {value_name} blanks for values on the chain.>",
   intro: `<surface_intro>
 What this surface IS, what the user does here, how to read its values.
 </surface_intro>`,

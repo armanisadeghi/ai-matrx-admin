@@ -20,6 +20,8 @@
  * identically on every load.
  */
 
+import type { FleetReadiness } from "@/features/surfaces/utils/fleet-readiness";
+
 /* ------------------------------------------------------------------ */
 /* Known values — the shared middle vocabulary                         */
 /* ------------------------------------------------------------------ */
@@ -167,8 +169,10 @@ export interface PlaceSummary {
   fullName: string;
   client: string;
   routePattern: string;
-  readiness: "verified" | "partial" | "stub" | "unregistered";
-  readinessNote: string;
+  /** Derived readiness (surface declarations D2), never a typed field. */
+  readiness: FleetReadiness;
+  /** What still stands between the place and Ready, in `readinessGaps` form. */
+  readinessGaps: readonly string[];
   lastCheckedLabel: string;
 }
 
@@ -178,8 +182,7 @@ export const PLACE: PlaceSummary = {
   client: "matrx-web",
   routePattern: "/crm/contacts/[contactId]",
   readiness: "partial",
-  readinessNote:
-    "Manifest complete and synced; 2 declared write targets still have no registered handler.",
+  readinessGaps: ["2 of 4 write targets without a handler"],
   lastCheckedLabel: "checked 3d ago by admin@admin.com",
 };
 

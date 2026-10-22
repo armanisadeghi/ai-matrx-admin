@@ -37,7 +37,7 @@ export const READINESS_META: Record<
     label: FLEET_READINESS_LABEL.unproven,
     className: "bg-muted text-muted-foreground border-border",
     iconClassName: "text-muted-foreground",
-    description: "Nothing supplied or probed yet",
+    description: "Nothing supplied, or the last probe proved nothing",
   },
 };
 
