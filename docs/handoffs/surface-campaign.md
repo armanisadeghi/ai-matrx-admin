@@ -56,6 +56,26 @@ names the page and lists its live values. His review inbox gets one row per fini
 - About 48 pages had a page-pass between 2026-09-27 and 2026-10-10; the fleet campaign itself
   has not been run.
 
+## Tonight's pages (2026-10-22), waiting on the next release
+
+Built and pushed by page-pass workers, statically checked; none is proven live yet (no release
+since 05:36 UTC). Their DB mirrors are NOT synced: every write through the Supabase MCP that
+changes a surface hung without reaching the database (a 40 s server-side timeout never fired),
+so the tool layer is holding writes, most likely for an approval no one could give.
+
+- /education/quizzes, /education/practice-tests — own builders, `list_view` target
+- /education/learn — new emitter, menu, readable titles
+- /pick-lists/<id> — mounted, header names the list, honest load states, `delete_list_items`
+- /work, /work/new, /work/conversations — list surface + rename/favorite/trash, composer scope
+- /images/manager — emitter, menu, `open_image_workspace`; /camera — emitter, `capture_filter`
+- Feedback fixes: crm-record task attach, research-topics restored ids, library suggestions,
+  class hub `load_status`, settings hidden_models — all set to `awaiting_review`
+
+**After the release:** sync every mirror at once from
+https://manage.aimatrx.com/administration/ui/surfaces (Sync manifests; POST
+`/api/admin/surfaces/sync-manifests`, super admin, runs the deployed code), then probe each
+page with the commands in its worker's report (`pnpm surface:probe … --agent '…'`).
+
 ## Future — everything still open
 
 1. **Run the campaign.** Start a coordinator session with `campaign-coordinator.md`; it dispatches
