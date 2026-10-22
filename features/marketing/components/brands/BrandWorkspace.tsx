@@ -2,6 +2,7 @@
 
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
+import { BrandResearchReadiness } from "@/features/marketing/components/brands/BrandResearchReadiness";
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { useState } from "react";
@@ -169,6 +170,8 @@ import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/us
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { DiscoverBrandButton, DiscoverBrandMenuItem } from "@/features/marketing/components/brands/DiscoverBrandButton";
+import { useLiveBrand } from "@/features/marketing/components/brands/useLiveBrand";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -596,6 +599,8 @@ function BusinessFactGroup({
 }
 
 export function BrandWorkspace({ brandId }: { brandId: string }) {
+  // What a server run writes for this brand (discovery, Smart Add) shows without a reload.
+  useLiveBrand(brandId);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -993,6 +998,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                           </Link>
                         </DropdownMenuItem>
                       ) : null}
+                      {canEdit ? <DiscoverBrandMenuItem brandId={current.id} organizationId={current.organization_id} /> : null}
                       {canEdit ? (
                         <DropdownMenuItem onSelect={() => setEditorOpen(true)}>
                           <Pencil />
@@ -1059,6 +1065,7 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                           Enrich Brand
                         </Link>
                       </Button>
+                      <DiscoverBrandButton brandId={current.id} organizationId={current.organization_id} />
                       <Button
                         icon={<Pencil />}
                         variant="outline"
@@ -1245,6 +1252,8 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
               <BrandPalette colors={paletteColors} fonts={paletteFonts} canEdit={canEdit} onOpen={() => setTab("assets")} />
               {/* Brand assists: at most three 30-second enrichments across all brands; a "no" is final. */}
               {canEdit ? <BrandAssists brandId={current.id} organizationId={current.organization_id} /> : null}
+              {/* Research on conditions: the four conditions per area and the one action that fixes each. */}
+              {canEdit ? <BrandResearchReadiness brandId={current.id} organizationId={current.organization_id} /> : null}
               <div className="grid items-start gap-3 lg:grid-cols-3">
                 <div className="grid min-w-0 gap-3 lg:col-span-2">
                   <BrandOverviewAbout
