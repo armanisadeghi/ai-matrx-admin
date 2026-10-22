@@ -18,7 +18,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'enrich_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -63,8 +62,7 @@ begin
   values (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
          (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
-  values ('custom','system_enabled','organization', v_org, v_org, 'true'),
-         ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"');
+  values ('custom','system_enabled','organization', v_org, v_org, 'true');
 
   insert into custom.record (organization_id, table_id, data_class, data, created_by)
   values (v_org, custom.organization_kernel_id(), 'record',

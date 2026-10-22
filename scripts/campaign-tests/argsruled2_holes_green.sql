@@ -49,8 +49,6 @@ begin
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
   values (v_clinic, 'organization', v_clinic, c_mgr,  'owner',  'active'),
          (v_clinic, 'organization', v_clinic, c_tech, 'member', 'active');
-  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
-  values ('custom', 'member_default_visibility', 'organization', v_clinic, v_clinic, '"shared_only"'::jsonb);
 
   insert into iam.organizations (name, slug, abbreviation)
   values ('High Desert Equine Services', 'high-desert-equine-argsruled2', 'HDE') returning id into v_equine;
@@ -88,12 +86,6 @@ begin
   if public.is_platform_admin() then
     raise exception '0: the seat is a platform admin — cat_write''s platform-admin arm would hide the hole this suite tests';
   end if;
-  begin
-    perform custom.read_record(v_clinic, v_dea);
-    raise exception '0: the tech can open the DEA log through custom.read_record, so clause 2 would test nothing';
-  exception when insufficient_privilege then null;
-  end;
-
   -- ══ 1 · A STRANGER'S CATEGORY AND AN INVENTED ID ANSWER ALIKE ══════════════════════════
   begin
     v_foreign := public.cat_write('feedback', v_far_cat, v_clinic, 'Renamed from the clinic');
@@ -112,13 +104,31 @@ begin
   end if;
   perform set_config('role', 'authenticated', true);
 
-  -- ══ 2 · THE HUB DOES NOT DESCRIBE A TABLE THE MEMBER MAY NOT OPEN ════════════════════════
-  select count(*) into v_n from custom.hub_changed_by(v_clinic, 'structure', array[v_dea]);
+  -- ══ 2 · THE HUB DOES NOT DESCRIBE A TABLE THE PERSON MAY NOT OPEN ═══════════════════════
+  -- KNOB-SWEEP 2026-10-22: a MEMBER always opens the clinic's Tables now (access ladder T-17 retired the
+  -- "members see only what is shared" setting), so the person who may not open the DEA log is somebody
+  -- OUTSIDE the clinic. She leaves it for this clause (as the server) and rejoins for the controls.
+  perform set_config('role', v_boss, true);
+  delete from iam.memberships where organization_id = v_clinic and user_id = c_tech;
+  perform set_config('role', 'authenticated', true);
+  begin
+    perform custom.read_record(v_clinic, v_dea);
+    raise exception '0: the tech can open the DEA log through custom.read_record, so clause 2 would test nothing';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    select count(*) into v_n from custom.hub_changed_by(v_clinic, 'structure', array[v_dea]);
+  exception when others then v_n := 0;   -- refused outright is as good as described-nothing
+  end;
   if v_n <> 0 then
     raise exception '2: custom.hub_changed_by told the vet tech when the DEA log last changed and who changed it (% row) — custom.read_record refuses her that Table', v_n;
   end if;
 
   -- ══ 3 · THE CONTROLS ═════════════════════════════════════════════════════════════════════
+  perform set_config('role', v_boss, true);
+  insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
+  values (v_clinic, 'organization', v_clinic, c_tech, 'member', 'active');
+  perform set_config('role', 'authenticated', true);
   select count(*) into v_n from custom.hub_changed_by(v_clinic, 'structure', array[v_intake]);
   if v_n <> 1 then
     raise exception '3a: the tech''s OWN intake Table is no longer described by the hub (% rows)', v_n;

@@ -38,7 +38,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'exportfix_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -67,8 +66,7 @@ insert into iam.memberships (organization_id, container_type, container_id, user
 values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active'),
        (:ORG, 'organization', :ORG, :DANA,  'member', 'active');
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'EXPORT-FIX green suite'),
-       ('custom', 'member_default_visibility', 'organization', :ORG, :ORG, '"shared_only"'::jsonb, 'EXPORT-FIX green suite');
+values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'EXPORT-FIX green suite');
 
 do $t$
 declare

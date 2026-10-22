@@ -331,9 +331,7 @@ $function$
          ('2ef10000-0000-4a00-8a00-0000000000e1', 'organization', '2ef10000-0000-4a00-8a00-0000000000e1', '4060701e-706a-4c76-b3ca-0bbc69fa5a14', 'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
   values ('custom', 'system_enabled', 'organization', '2ef10000-0000-4a00-8a00-0000000000e1', '2ef10000-0000-4a00-8a00-0000000000e1',
-          'true'::jsonb, 'check:store-doors-decide two-home probe'),
-         ('custom', 'member_default_visibility', 'organization', '2ef10000-0000-4a00-8a00-0000000000e1', '2ef10000-0000-4a00-8a00-0000000000e1',
-          '"shared_only"'::jsonb, 'check:store-doors-decide two-home probe');
+          'true'::jsonb, 'check:store-doors-decide two-home probe');
   do $probe$
   declare
     v_org   constant uuid := '2ef10000-0000-4a00-8a00-0000000000e1';
@@ -405,9 +403,7 @@ set local lock_timeout = '10s';
          ('2ef10000-0000-4a00-8a00-0000000000e1', 'organization', '2ef10000-0000-4a00-8a00-0000000000e1', '4060701e-706a-4c76-b3ca-0bbc69fa5a14', 'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
   values ('custom', 'system_enabled', 'organization', '2ef10000-0000-4a00-8a00-0000000000e1', '2ef10000-0000-4a00-8a00-0000000000e1',
-          'true'::jsonb, 'check:store-doors-decide two-home probe'),
-         ('custom', 'member_default_visibility', 'organization', '2ef10000-0000-4a00-8a00-0000000000e1', '2ef10000-0000-4a00-8a00-0000000000e1',
-          '"shared_only"'::jsonb, 'check:store-doors-decide two-home probe');
+          'true'::jsonb, 'check:store-doors-decide two-home probe');
   do $probe$
   declare
     v_org   constant uuid := '2ef10000-0000-4a00-8a00-0000000000e1';

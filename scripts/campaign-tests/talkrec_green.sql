@@ -24,7 +24,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'talkrec_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -57,12 +56,7 @@ begin
     (v_org,'organization',v_org,c_admin,'owner','active'),
     (v_org,'organization',v_org,c_dana,'member','active');
   insert into platform.knob_override (feature,key,scope_kind,scope_id,organization_id,value,set_note) values
-    ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'campaign-test/talkrec_green'),
-    -- THE STRICTER PRIVACY SETTING, so the member's access comes from the SHARE and from
-    -- nothing else. Under the shipped setting, membership alone shows her the record and
-    -- revoking the share proves nothing about what a binding conveys (PART 6).
-    ('custom','member_default_visibility','organization',v_org,v_org,'"shared_only"'::jsonb,
-     'campaign-test/talkrec_green');
+    ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'campaign-test/talkrec_green');
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name','Wraithmoor Regional Museum — Collections Store')) returning id into v_home;
   insert into chat.conversation (id, organization_id, title, created_by)

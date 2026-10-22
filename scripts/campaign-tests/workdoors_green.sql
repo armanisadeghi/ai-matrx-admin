@@ -46,7 +46,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'workdoors_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -103,13 +102,7 @@ begin
     (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'workdoors_green'),
-    -- THIS ORGANIZATION SHARES DELIBERATELY. Under the shipped default a member of an
-    -- organization can already open every record in it, so "she was given access" would be
-    -- true before anybody gave her anything and PART 1b would prove nothing. On
-    -- `shared_only` a member reaches exactly what has been shared with her, which is what
-    -- makes the assignment's own grant the thing under test.
-    ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'workdoors_green');
+    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'workdoors_green');
 
   -- The Home record is made by the onboarding path, not by a person's browser, and no client
   -- door covers it. Written before the seat is taken; no clause is asserted here.

@@ -25,7 +25,7 @@
 //      her supplier's portal does not exist, which is both false and alarming.
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight, FileText } from "lucide-react";
 
@@ -39,6 +39,10 @@ import {
 } from "@/features/portals/PortalBrand";
 import { portalLook, type PortalLook } from "@/features/portals/look";
 import { PortalSignInForm } from "@/features/portals/PortalSignInForm";
+import { PortalPasswordSetter } from "@/features/portals/PortalPasswordSetter";
+import { portalRecordMatches, portalSearchTerms } from "@/features/portals/search";
+import { bindSignedInClient } from "@/features/portals/bindSignedIn";
+import { Input } from "@ai-matrx/design-system/controls";
 import { PortalSignOutButton } from "@/features/portals/PortalSignOutButton";
 import {
   membershipFor,
@@ -73,10 +77,15 @@ export async function generateMetadata({
 
 export default async function ClientPortalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  // CD-PAGE-12: her search, in the address (?q=) so a reload and the Back button keep it.
+  const asked = (await searchParams).q;
+  const terms = portalSearchTerms(asked);
 
   // ONE ANSWER TO THREE QUESTIONS: missing, closed, and "this organization has
   // not opened its external lane" are all `null`, and all 404.
@@ -113,7 +122,7 @@ export default async function ClientPortalPage({
           <p className="mt-2 text-sm text-muted-foreground">
             {look.welcome ?? "Sign in to see your jobs and invoices."}
           </p>
-          <PortalSignInForm slug={portal.slug} />
+          <PortalSignInForm slug={portal.slug} ways={portal.access ?? null} />
         </section>
         <PortalFooter look={look} />
       </Shell>
@@ -122,6 +131,17 @@ export default async function ClientPortalPage({
 
   const me = await portalMe();
   const membership = membershipFor(me, portal.slug);
+
+  // CD-PAGE-12: she came in with Google (or a password) rather than her emailed link, so nothing has bound her
+  // sign-in to her place on this portal yet. A confirmed address that is on the portal is bound now, then the page
+  // is asked again (portal_me is read once per request).
+  if (!membership && (portal.access?.google || portal.access?.password)) {
+    const bound = await bindSignedInClient(portal.slug, viewer.id).catch((thrown: unknown) => {
+      console.error("portal: binding a signed-in client failed", { slug: portal.slug, reason: thrown instanceof Error ? thrown.message : "unknown" });
+      return false;
+    });
+    if (bound) redirect(`/portal/c/${encodeURIComponent(portal.slug)}`);
+  }
 
   if (!membership) {
     return (
@@ -157,8 +177,16 @@ export default async function ClientPortalPage({
   const forms = [...(membership.forms ?? [])].sort((a, b) => a.order - b.order);
   // One read of her rows per Table; the plain sections and the owner's blocks both draw from it.
   const data = new Map<string, TableData>(
-    (await Promise.all(membership.tables.map((table) => tableData(membership, table)))).map((d) => [d.table.table_id, d]),
+    (await Promise.all(membership.tables.map((table) => tableData(membership, table)))).map((d) => [
+      d.table.table_id,
+      // CD-PAGE-12: a search keeps the rows that say every word in a field she is SHOWN (never a hidden one).
+      terms.length === 0
+        ? d
+        : { ...d, records: d.records.filter((r) => portalRecordMatches(r.document, d.fields.map((f) => f.key), terms)) },
+    ]),
   );
+  const found = terms.length === 0 ? null : [...data.values()].reduce((n, d) => n + d.records.length, 0);
+  const searchText = typeof asked === "string" ? asked.slice(0, 200) : "";
   const hasBlocks = (membership.blocks ?? []).length > 0;
 
   return (
@@ -177,9 +205,40 @@ export default async function ClientPortalPage({
               <p className="mt-0.5 truncate text-sm text-muted-foreground">{membership.title}</p>
             </div>
           </div>
-          <PortalSignOutButton slug={membership.slug} />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <PortalSignOutButton slug={membership.slug} />
+            {portal.access?.password ? <PortalPasswordSetter /> : null}
+          </div>
         </header>
         {her.welcome ? <p className="mt-4 px-1 text-sm text-muted-foreground">{her.welcome}</p> : null}
+
+        {membership.tables.length > 0 ? (
+          <form method="get" role="search" className="mt-5 flex items-center gap-2" data-portal-search="">
+            <Input
+              name="q"
+              type="search"
+              aria-label={`Search ${membership.title}`}
+              placeholder="Search"
+              defaultValue={searchText}
+              className="min-w-0 flex-1"
+            />
+            <button
+              type="submit"
+              data-tap-target
+              className="h-9 shrink-0 rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-accent/60"
+            >
+              Search
+            </button>
+          </form>
+        ) : null}
+        {found !== null ? (
+          <p className="mt-2 px-1 text-sm text-muted-foreground" data-portal-search-found={found}>
+            {found === 0 ? `Nothing matches \u201c${searchText}\u201d.` : `${found} ${found === 1 ? "match" : "matches"} for \u201c${searchText}\u201d.`}{" "}
+            <Link href={`/portal/c/${encodeURIComponent(membership.slug)}`} className="font-medium text-primary underline underline-offset-4">
+              Show everything
+            </Link>
+          </p>
+        ) : null}
 
         <div className="mt-6 space-y-8 pb-12">
           {forms.length > 0 ? <FormsSection slug={membership.slug} forms={forms} look={her} /> : null}

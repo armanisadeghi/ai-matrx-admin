@@ -18,6 +18,14 @@ jest.mock("@/features/payments/server", () => {
   };
 });
 
+const FORM = "22222222-2222-4222-8222-222222222222";
+jest.mock("@/lib/custom-domains/lookup", () => ({
+  lookupDomain: async (host: string) =>
+    host === "book.theirbusiness.com"
+      ? { organization_id: "o", routes: [{ path_prefix: "/intake", target_kind: "form", target_id: "22222222-2222-4222-8222-222222222222" }] }
+      : null,
+}));
+
 import { NextRequest } from "next/server";
 import { GET as returnGET } from "@/app/api/payments/return/route";
 import { POST as retryPOST } from "@/app/api/payments/retry/route";
@@ -37,6 +45,29 @@ describe("payment return stays on the host it was served on", () => {
       new NextRequest("https://internal.vercel.app/api/payments/retry", { method: "POST", headers: { ...HOST, "content-type": "application/x-www-form-urlencoded" }, body }),
     );
     expect(new URL(res.headers.get("location") ?? "").origin).toBe("https://book.theirbusiness.com");
+  });
+
+  it("a retry POST with no form body is refused back to the page, never a 500", async () => {
+    const res = await retryPOST(new NextRequest("https://internal.vercel.app/api/payments/retry", { method: "POST", headers: HOST }));
+    expect(res.status).toBe(303);
+    expect(new URL(res.headers.get("location") ?? "").origin).toBe("https://book.theirbusiness.com");
+  });
+
+  it("on a business's own domain, Pay again comes back to the page's path there, never /f/<id>", async () => {
+    const body = new URLSearchParams({ subject: "bogus", record: "bogus", back: `/f/${FORM}` });
+    const refused = await retryPOST(
+      new NextRequest("https://internal.vercel.app/api/payments/retry", { method: "POST", headers: { ...HOST, "content-type": "application/x-www-form-urlencoded" }, body }),
+    );
+    expect(new URL(refused.headers.get("location") ?? "").pathname).toBe("/intake");
+    startCheckout.mockClear();
+    await retryPOST(
+      new NextRequest("https://internal.vercel.app/api/payments/retry", {
+        method: "POST",
+        headers: { ...HOST, "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ subject: UUID, record: UUID, back: `/f/${FORM}` }),
+      }),
+    );
+    expect(startCheckout).toHaveBeenCalledWith(expect.objectContaining({ back: "/intake" }));
   });
 
   it("retry hands Stripe the served host, never the Origin header", async () => {
@@ -65,6 +96,11 @@ describe("no payer-facing route trusts the Origin header", () => {
     }
     return out;
   }
+  it("reads a public POST body without letting a non-form post throw a 500", () => {
+    const offenders = DIRS.flatMap((d) => files(join(ROOT, d))).filter((f) => /\.formData\(\)(?!\s*\.catch)/.test(readFileSync(f, "utf8")));
+    expect(offenders.map((f) => f.slice(ROOT.length + 1))).toEqual([]);
+  });
+
   it("imports requestHostOrigin, never requestOrigin", () => {
     const offenders = DIRS.flatMap((d) => files(join(ROOT, d))).filter((f) => /\brequestOrigin\s*\(/.test(readFileSync(f, "utf8")));
     expect(offenders.map((f) => f.slice(ROOT.length + 1))).toEqual([]);

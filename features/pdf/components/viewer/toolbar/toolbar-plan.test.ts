@@ -132,11 +132,19 @@ describe("PDF toolbar fold plan", () => {
  * h-11, w-[3.25rem] …) would let the row drift while every case above stays
  * green — and `overflow-hidden` would clip it silently.
  */
-describe("the renderer draws the toolbar with the plan's sizes", () => {
-  const src = readFileSync(join(__dirname, "../PdfDocumentRenderer.tsx"), "utf8");
-  const start = src.indexOf("Toolbar — rendered FROM the fold plan");
-  const end = src.indexOf("Viewport frame keeps floating deck controls");
+describe("the shared toolbar row draws with the plan's sizes", () => {
+  const src = readFileSync(join(__dirname, "PdfToolbarRow.tsx"), "utf8");
+  const start = src.indexOf("export function PdfToolbarRow");
+  const end = src.length;
   const block = src.slice(start, end);
+
+  it("the omit knob drops a control from row AND menu", () => {
+    const plan = planPdfToolbar({ width: 120, coarse: false, pages: 5, pageNav: true, omit: ["fitPage", "actual", "rotate"] });
+    for (const c of ["fitPage", "actual", "rotate"] as const) {
+      expect(plan.row).not.toContain(c);
+      expect(plan.menu).not.toContain(c);
+    }
+  });
 
   it("finds the toolbar block", () => {
     expect(start).toBeGreaterThan(0);

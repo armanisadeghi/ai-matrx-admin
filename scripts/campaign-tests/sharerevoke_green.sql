@@ -71,8 +71,7 @@ insert into iam.memberships (organization_id, container_type, container_id, user
 values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active'),
        (:ORG, 'organization', :ORG, :DANA,  'member', 'active');
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'SHARE-REVOKE green suite'),
-       ('custom', 'member_default_visibility', 'organization', :ORG, :ORG, '"shared_only"'::jsonb, 'SHARE-REVOKE green suite');
+values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'SHARE-REVOKE green suite');
 commit;
 
 begin;

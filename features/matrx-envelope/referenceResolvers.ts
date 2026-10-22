@@ -28,6 +28,7 @@ import { noteRecordChanged, recordRevision, useRecordRevision } from "@ai-matrx/
 
 import { scopesService } from "@/features/scopes/service/scopesService";
 import { supabase } from "@/utils/supabase/client";
+import { readRowById } from "@/features/matrx-envelope/readableRow";
 
 import type { KnownItemType } from "@/features/item-presentation/types";
 import {
@@ -828,13 +829,12 @@ function derivedResolver(noun: string): ReferenceResolver | undefined {
     resolveValue: async (supabase, ref) => {
       if (!ref.id || !isUuidShape(ref.id)) return stringify(ref.label);
       try {
-        const from =
-          schema === "public" ? supabase.from(table) : supabase.schema(schema).from(table);
-        const { data, error } = await from.select("*").eq("id", ref.id).maybeSingle();
+        // Readable columns only: a table with client-excluded columns 42501s on `*`.
+        const { data, error } = await readRowById(supabase, schema, table, ref.id, titleFields);
         if (error) return undefined;
         // The read worked and found nothing this reader can see: missing.
         if (!data) return null;
-        return firstField(data as Record<string, unknown>, titleFields) ?? stringify(ref.label);
+        return firstField(data, titleFields) ?? stringify(ref.label);
       } catch {
         return undefined; // graceful chip — display.label fallback
       }

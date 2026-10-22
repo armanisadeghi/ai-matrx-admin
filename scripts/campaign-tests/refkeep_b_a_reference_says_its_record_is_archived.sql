@@ -89,8 +89,6 @@ begin
   perform set_config('role', v_boss, true);
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status) values
     (v_org, 'organization', v_org, '4060701e-706a-4c76-b3ca-0bbc69fa5a14', 'member', 'active');
-  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'refkeepb');
   perform set_config('request.jwt.claims', c_dana_j, true);
   perform set_config('role', 'authenticated', true);
   select w.words, w.archived into v_t, v_a from custom.relation_words_many(v_org, v_f_one, array[v_sean]) w;

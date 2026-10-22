@@ -6,8 +6,8 @@
 -- answer: the organization wall (iam.has_org_access / custom.portal_admits), then the one ladder
 -- (custom.has_visibility). The four rulings of SCOPES-READS-ACCESS (2026-09-29) the switch must keep:
 --   V0   as things are: she opens Dana and may edit her (context Tables carry member level editor)
---   S11  the clinic chooses "members see only what is shared with them" (custom/member_default_visibility
---        = shared_only): she can no longer open Dana; the owner still can
+--   S11  she is outside the clinic (the retired "members see only what is shared" setting used to stand in
+--        for this): she can no longer open Dana; the owner still can
 --   S12  the clinic is archived: the scopes write door (custom.context_scope_write) refuses her edit of Dana (the archive wall)
 --   S13  she made the scope, then left the clinic: the organization wall refuses her (creator ≠ member);
 --        the departed-member portal (features/continued-access) is reported, not asserted
@@ -82,9 +82,10 @@ begin
 
   -- S11 shared-only ---------------------------------------------------------------------------
   begin
-    insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-    values ('custom', 'member_default_visibility', 'organization', c_org, c_org, '"shared_only"'::jsonb, 'regression-bar S11 (rolled back)')
-    on conflict (feature, key, scope_kind, scope_id, organization_id) do update set value = excluded.value;
+    -- KNOB-SWEEP 2026-10-22: the shared-only setting is retired (access ladder T-17: membership always opens);
+    -- the person only a share could reach is OUTSIDE the clinic, so she leaves it here (undone below).
+    update iam.memberships set deleted_at = now(), status = 'removed'
+     where container_type = 'organization' and container_id = c_org and user_id = c_member;
     perform set_config('request.jwt.claims', json_build_object('sub', c_member, 'role', 'authenticated')::text, true);
     v_open := (iam.has_org_access(c_org) or custom.portal_admits(c_org)) and coalesce(custom.has_visibility(c_member, 'record', c_scope, 'viewer'), false);
     perform set_config('request.jwt.claims', json_build_object('sub', c_owner, 'role', 'authenticated')::text, true);

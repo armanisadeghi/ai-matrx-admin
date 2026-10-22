@@ -21,10 +21,17 @@ import { recordRevision, type DirectiveRecordRef } from "@ai-matrx/content-ir/re
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/utils/supabase/client";
+import { readRowById } from "@/features/matrx-envelope/readableRow";
 import {
   CATALOG_ALIASES,
   CATALOG_NOUNS,
 } from "@/features/matrx-envelope/catalog-nouns.generated";
+
+/** What a confirm reads on a table that withholds columns from the client (a table that withholds none is read whole). */
+const DIRECTIVE_ROW_FIELDS = [
+  "name", "title", "label", "display_name", "slug", "description", "status",
+  "organization_id", "created_at", "updated_at", "deleted_at", "is_archived",
+];
 
 function tableFor(noun: string): { schema: string; table: string } | null {
   const entry = CATALOG_NOUNS[CATALOG_ALIASES[noun] ?? noun];
@@ -63,14 +70,15 @@ export function readDirectiveRecord(
   // The table comes from the catalog at run time, so the read goes through the
   // untyped client view — exactly as the catalog-derived reference resolver does.
   const db: SupabaseClient = supabase;
-  const from =
-    where.schema === "public" ? db.from(where.table) : db.schema(where.schema).from(where.table);
-  const started = Promise.resolve(
-    from.select("*").eq("id", ref.id).maybeSingle(),
-  )
+  const entry = CATALOG_NOUNS[CATALOG_ALIASES[ref.noun] ?? ref.noun];
+  // Readable columns only (a table with client-excluded columns 42501s on `*`).
+  const started = readRowById(db, where.schema, where.table, ref.id, [
+    ...(entry?.title_column ? [entry.title_column] : []),
+    ...DIRECTIVE_ROW_FIELDS,
+  ])
     .then(({ data, error }) => {
       if (error) throw new Error(error.message);
-      const value = (data as Record<string, unknown> | null) ?? null;
+      const value = data ?? null;
       settled.set(key, { at: Date.now(), value });
       return value;
     })

@@ -47,7 +47,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'w4_agg_red.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -84,8 +83,7 @@ begin
   -- The store answers a person only where it is switched ON, and `shared_only` because RED 1's
   -- whole subject is a principal entitled to NONE of the rows the number counts.
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,          'w4_agg_red'),
-    ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb, 'w4_agg_red');
+    ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,          'w4_agg_red');
   -- A HOME record has no client door of its own. This step asserts nothing.
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name', 'Home')) returning id into v_home;

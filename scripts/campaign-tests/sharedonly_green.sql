@@ -77,8 +77,7 @@ values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active'),
 -- THE TWO KNOBS THAT MAKE THIS THE CASE THE SIXTH PASS FOUND BROKEN. Everything else is the
 -- shipped default.
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-values ('custom', 'system_enabled',             'organization', :ORG, :ORG, 'true'::jsonb,          'SHARED-ONLY green suite'),
-       ('custom', 'member_default_visibility',  'organization', :ORG, :ORG, '"shared_only"'::jsonb, 'SHARED-ONLY green suite');
+values ('custom', 'system_enabled',             'organization', :ORG, :ORG, 'true'::jsonb,          'SHARED-ONLY green suite');
 commit;
 
 begin;

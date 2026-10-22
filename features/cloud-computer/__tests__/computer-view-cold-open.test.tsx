@@ -71,6 +71,8 @@ jest.mock("@/features/cloud-browser/hooks/useCloudBrowser", () => {
         handoff: null,
         error: null,
         retry: jest.fn(),
+        restart: jest.fn(),
+        checkRun: jest.fn(async () => undefined),
         takeControl,
         returnControl,
       };

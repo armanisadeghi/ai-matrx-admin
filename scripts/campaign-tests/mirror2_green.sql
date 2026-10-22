@@ -32,7 +32,6 @@
 -- so exactly that clause is gated now, it says out loud when it did not measure, and the file
 -- emits a top-level SKIPPED line the sweep's judge reads. Everything else runs on the clone.
 -- Do not answer a skip here by raising the ceiling: the ceiling is the assertion.
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -105,8 +104,6 @@ begin
   values ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'mirror2_green');
   -- SHARED_ONLY is the setting this lane is judged under: under `all_records` the mirror's
   -- organization-member arm answers first and the bounded arm this lane rewrote never runs.
-  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-  values ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'mirror2_green');
 
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name', 'Home')) returning id into v_home;

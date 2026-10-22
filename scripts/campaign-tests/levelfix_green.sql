@@ -367,9 +367,6 @@ commit;
 begin;
 set local statement_timeout = '60s';
 select set_config('app.actor_system', 'levelfix_green_suite', true);
-insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-values ('custom', 'member_default_visibility', 'organization', :ORG, :ORG, '"shared_only"'::jsonb,
-        'LEVEL-FIX green suite');
 commit;
 
 begin;
@@ -399,8 +396,6 @@ commit;
 begin;
 set local statement_timeout = '60s';
 select set_config('app.actor_system', 'levelfix_green_suite', true);
-delete from platform.knob_override
- where organization_id = :ORG and feature = 'custom' and key = 'member_default_visibility';
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
 values ('custom', 'member_default_level', 'organization', :ORG, :ORG, '"editor"'::jsonb,
         'LEVEL-FIX green suite');

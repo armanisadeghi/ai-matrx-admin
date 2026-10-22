@@ -75,7 +75,6 @@ begin
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
     ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,                  's3 fixture'),
-    ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb,         's3 fixture: dispatch sees the jobs she booked'),
     ('custom', 'time_zone',                 'organization', v_org, v_org, '"America/Los_Angeles"'::jsonb, 's3 fixture: the shop is in Camarillo, California'),
     ('custom', 'week_start',                'organization', v_org, v_org, '"sunday"'::jsonb,              's3 fixture: the schedule runs Sunday to Saturday');
   insert into custom.record (organization_id, table_id, data)

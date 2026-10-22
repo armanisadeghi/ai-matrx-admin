@@ -23,7 +23,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'doorstwo_red.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -57,9 +56,7 @@ begin
   values (v_org, 'organization', v_org, c_admin, 'owner', 'active', c_admin),
          (v_org, 'organization', v_org, c_dana, 'member', 'active', c_admin);
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note, updated_by)
-  values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb, 'doorstwo_red.sql', c_admin),
-         ('custom', 'member_default_visibility', 'organization', v_org, v_org,
-          '"shared_only"'::jsonb, 'doorstwo_red.sql', c_admin);
+  values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb, 'doorstwo_red.sql', c_admin);
 
   perform set_config('app.actor_system', 'campaign-test/doorstwo_red.sql', true);
   perform set_config('request.jwt.claims', c_admin_j, true);

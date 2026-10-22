@@ -41,10 +41,6 @@ begin
     insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
     values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb, 'readspeed3_b fixture');
   end if;
-  if not exists (select 1 from platform.knob_override where feature = 'custom' and key = 'member_default_visibility' and scope_kind = 'organization' and scope_id = v_org) then
-    insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-    values ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb, 'readspeed3_b fixture: she sees what she is shared');
-  end if;
   select t.id into v_cust from custom.record t
    where t.organization_id = v_org and t.table_id = '11111111-0000-4000-8000-000000000001'::uuid and t.deleted_at is null and t.data ->> 'slug' = 'customers';
   if v_cust is not null then

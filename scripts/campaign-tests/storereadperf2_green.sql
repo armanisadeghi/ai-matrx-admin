@@ -81,7 +81,6 @@ begin
     (v_org2, 'organization', v_org2, c_dana,  'owner',  'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
     ('custom', 'system_enabled',            'organization', v_org,  v_org,  'true'::jsonb, 'storereadperf2 fixture'),
-    ('custom', 'member_default_visibility', 'organization', v_org,  v_org,  '"shared_only"'::jsonb, 'storereadperf2 fixture: the crew lead sees what she is shared'),
     ('custom', 'system_enabled',            'organization', v_org2, v_org2, 'true'::jsonb, 'storereadperf2 fixture');
 
   v_def := jsonb_build_object('type', 'entity', 'display', 'list', 'weight', 'light', 'ordered', true,

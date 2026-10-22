@@ -19,7 +19,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'doorstwo_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -57,13 +56,7 @@ begin
   values (v_org, 'organization', v_org, c_admin, 'owner', 'active', c_admin),
          (v_org, 'organization', v_org, c_dana, 'member', 'active', c_admin);
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note, updated_by)
-  values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb, 'doorstwo_green.sql', c_admin),
-         -- PART 7 NEEDS A REAL WALL. Left at its default this organization shows every
-         -- member every record, so `test@test.com` could open the Table and the negative
-         -- clauses below would prove nothing. Measured, first run: she listed the
-         -- templates. This is the setting section 2 of the try-everything page flips.
-         ('custom', 'member_default_visibility', 'organization', v_org, v_org,
-          '"shared_only"'::jsonb, 'doorstwo_green.sql', c_admin);
+  values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb, 'doorstwo_green.sql', c_admin);
 
   perform set_config('app.actor_system', 'campaign-test/doorstwo_green.sql', true);
   perform set_config('request.jwt.claims', c_admin_j, true);

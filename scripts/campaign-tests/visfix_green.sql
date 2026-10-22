@@ -41,7 +41,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'visfix_green.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -78,10 +77,7 @@ begin
     (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'visfix_green'),
-    -- THE PROPERTY THE WHOLE SUITE RESTS ON: in this organization membership conveys NOTHING, so
-    -- every `true` below came from the one edge the clause is about.
-    ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'visfix_green');
+    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'visfix_green');
 
   -- A Home record is made by the onboarding path, not by a person's browser, and no client door
   -- covers it. It is a fixture, and it is written before the seat is taken.

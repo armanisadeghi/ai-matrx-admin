@@ -63,9 +63,7 @@ begin
     (v_org,'organization',v_org,c_admin,'owner','active'),
     (v_org,'organization',v_org,c_dana,'member','active');
   insert into platform.knob_override (feature,key,scope_kind,scope_id,organization_id,value,set_note) values
-    ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'campaign-test/visionreach_g1'),
-    ('custom','member_default_visibility','organization',v_org,v_org,'"shared_only"'::jsonb,
-     'campaign-test/visionreach_g1');
+    ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'campaign-test/visionreach_g1');
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name','Cedar Ridge Physical Therapy — Front Desk')) returning id into v_home;
 

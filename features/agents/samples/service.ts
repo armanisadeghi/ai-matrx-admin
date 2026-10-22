@@ -21,6 +21,7 @@
  */
 
 import { createClient } from "@/utils/supabase/client";
+import { filesDb } from "@/features/files/filesDb";
 import { writeOne } from "@/utils/supabase/writeOne";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import type { Database } from "@/types/database.types";
@@ -652,12 +653,22 @@ export function fileRefPart(file: { fileId: string; mimeType?: string | null; fi
   } as unknown as MessagePart;
 }
 
+/** The stored mime type of each file (the request's context object names the file, not its type), so a case file part carries it like an uploaded one. */
+async function fileMimeTypes(fileIds: string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (fileIds.length === 0) return out;
+  const { data, error } = await filesDb(createClient()).from("files").select("id, mime_type").in("id", fileIds);
+  if (error) throw error;
+  for (const row of data ?? []) if (row.mime_type) out.set(row.id, row.mime_type);
+  return out;
+}
+
 /**
  * The files a person attached on one turn. An attachment does not ride in the stored message: the
  * request records it as a context object (`resource_file_<id>`, `source.kind = "file"`, label = the
  * file's name) in `chat.user_request.metadata.context_objects` (live 2026-10-21, conversation e99f13c8).
  */
-export function attachedFilesOf(requestMetadata: unknown): MessagePart[] {
+export function attachedFilesOf(requestMetadata: unknown, mimeTypes: ReadonlyMap<string, string> = new Map()): MessagePart[] {
   if (!isJsonObject(requestMetadata)) return [];
   const objects = requestMetadata.context_objects;
   if (!Array.isArray(objects)) return [];
@@ -666,7 +677,9 @@ export function attachedFilesOf(requestMetadata: unknown): MessagePart[] {
     if (!isJsonObject(o) || !isJsonObject(o.source)) continue;
     const { kind, id } = o.source;
     if (kind !== "file" || typeof id !== "string" || !id) continue;
-    parts.push(fileRefPart({ fileId: id, fileName: typeof o.label === "string" ? o.label : null }));
+    parts.push(
+      fileRefPart({ fileId: id, mimeType: mimeTypes.get(id) ?? null, fileName: typeof o.label === "string" ? o.label : null }),
+    );
   }
   return parts;
 }
@@ -702,12 +715,15 @@ export async function fetchRunPersonTurn(
   if (messages.error) throw messages.error;
   if (requests.error) throw requests.error;
   const last = messages.data?.[0];
+  const requestMetadata = requests.data?.[0]?.metadata;
+  const ids = attachedFilesOf(requestMetadata).map((p) => (p as unknown as { file_id: string }).file_id);
+  const files = attachedFilesOf(requestMetadata, await fileMimeTypes(ids));
   const content = last?.user_content ?? last?.content;
   const text = Array.isArray(content) ? (textFromMessageContent(parseMessageContent(content)) ?? "") : "";
   return {
     isFirst: (messages.data?.length ?? 0) <= 1,
     text,
-    files: attachedFilesOf(requests.data?.[0]?.metadata),
+    files,
   };
 }
 

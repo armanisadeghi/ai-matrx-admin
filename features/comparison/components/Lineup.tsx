@@ -186,11 +186,13 @@ export function Lineup({
         ))}
         {canAdd ? (
           <li>
-            <Button variant="quiet" icon={<Plus className="h-5 w-5" />}
+            <div className="flex h-full min-h-40 items-center justify-center rounded-2xl border border-dashed border-border">
+            <Button variant="quiet" icon={<Plus className="h-4 w-4" />}
               onClick={() => onRows((rs) => [...rs, newRow(places && near.trim() ? { city: near.trim(), cityFromNear: true, focus: true } : { focus: true })])}
-              className="h-full min-h-40 w-full flex-col gap-2 rounded-2xl border border-dashed border-border">
+              >
               Add another
             </Button>
+            </div>
           </li>
         ) : null}
       </ol>
@@ -327,8 +329,7 @@ function SlotAnswer({ row, photo, places, kind, onPick }: { row: CompareRow; pho
         <ul className="space-y-1">
           {row.candidates.slice(0, 5).map((c, n) => (
             <li key={`${c.match.item.url ?? c.match.url ?? c.match.name}-${n}`}>
-              <button type="button" data-clickable="" onClick={() => onPick(c)}
-                className="flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-border bg-background p-2 text-left transition-colors hover:border-primary">
+              <Button variant="outline" onClick={() => onPick(c)} className="h-auto w-full min-w-0 justify-start py-2 text-left">
                 <ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={36} fill={photo} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate type-secondary font-medium text-foreground">{c.match.name}</span>
@@ -341,7 +342,7 @@ function SlotAnswer({ row, photo, places, kind, onPick }: { row: CompareRow; pho
                     <Star className="h-3 w-3 fill-current text-warning" aria-hidden />{c.match.rating.toFixed(1)}
                   </span>
                 ) : null}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>

@@ -66,7 +66,7 @@ const RECORDER = () => {
           sources: (e.sources || []).map((s) => {
             const n = s.node;
             const d = n && n.nodeType === 1 ? `${n.tagName}.${String(n.className).slice(0, 60)}` : n ? n.nodeName : "?";
-            return `${d} ${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)} h${Math.round(s.previousRect.height)}->${Math.round(s.currentRect.height)}`;
+            return `${d} x${Math.round(s.previousRect.x)}->${Math.round(s.currentRect.x)} y${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)} h${Math.round(s.previousRect.height)}->${Math.round(s.currentRect.height)}`;
           }),
         });
       }
@@ -114,6 +114,9 @@ const RECORDER = () => {
       title: titleEl ? titleEl.textContent.trim() : "",
       pillY: pill ? Math.round(pill.getBoundingClientRect().top) : null,
       footer: footer ? `${Math.round(footer.getBoundingClientRect().top)}/${Math.round(footer.getBoundingClientRect().height)}` : null,
+      footerRows: footer ? [...footer.querySelectorAll(".shell-nav-label")].map((n) => n.textContent.trim()).join(",") : null,
+      // The route menu's bottom block (Archived) sits right above the footer.
+      archiveRow: (() => { const a = document.querySelector(".shell-sidebar-route-nav .shrink-0.border-t"); return a ? Math.round(a.getBoundingClientRect().height) : null; })(),
       scroll: scroller && scroller.scrollHeight > scroller.clientHeight
         ? Math.round(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop)
         : null,
@@ -125,9 +128,15 @@ const RECORDER = () => {
         ? [...dock.querySelectorAll("*")].filter((n) => n.children.length === 0 && n.textContent.trim() && !(ed && boxOf(ed).contains(n))).map((n) => n.textContent.trim().slice(0, 50)).slice(0, 4).join(" | ")
         : null,
     });
-    requestAnimationFrame(sample);
+    requestAnimationFrame(afterPaint);
   };
-  requestAnimationFrame(sample);
+  // Sample what was PAINTED: a rAF callback runs before the frame's layout and resize
+  // observers, so reading there sees content that grew before the scroll pin answers it.
+  // A message posted from rAF is handled after that frame is painted.
+  const channel = new MessageChannel();
+  channel.port1.onmessage = sample;
+  const afterPaint = () => channel.port2.postMessage(0);
+  requestAnimationFrame(afterPaint);
   window.__chatStabilityReset = (clickedId) => {
     S.t0 = performance.now();
     S.frames = [];
@@ -196,7 +205,13 @@ function judge(step) {
   }
   const foots = [];
   for (const f of after) if (f.footer && foots[foots.length - 1] !== f.footer) foots.push(f.footer);
-  if (foots.length > 1) fails.push(`sidebar footer moved ${foots.join("→")}`);
+  if (foots.length > 1) {
+    const rows = [];
+    for (const f of after) if (f.footerRows != null && rows[rows.length - 1] !== f.footerRows) rows.push(f.footerRows);
+    const arch = [];
+    for (const f of after) if (arch[arch.length - 1] !== f.archiveRow) arch.push(f.archiveRow);
+    fails.push(`sidebar footer moved ${foots.join("→")} (rows ${rows.join(" ⇒ ")}; archive block ${arch.join("→")})`);
+  }
 
   // The transcript lands at the bottom in one step.
   if (targetIsConversation) {

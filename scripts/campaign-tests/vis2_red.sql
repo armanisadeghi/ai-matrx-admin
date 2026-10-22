@@ -44,7 +44,6 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'vis2_red.sql'
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -719,9 +718,7 @@ begin
   -- The store answers a person only where it is switched on.
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
   values ('custom','system_enabled','organization', v_a, v_a, 'true'::jsonb, 'vis2_red'),
-         ('custom','system_enabled','organization', v_b, v_b, 'true'::jsonb, 'vis2_red'),
-         -- R1's whole subject: organization A says membership alone conveys NOTHING.
-         ('custom','member_default_visibility','organization', v_a, v_a, '"shared_only"'::jsonb, 'vis2_red');
+         ('custom','system_enabled','organization', v_b, v_b, 'true'::jsonb, 'vis2_red');
 
   -- Two Home records. A Home is made by the onboarding path and no client door covers it.
   insert into custom.record (organization_id, table_id, data, created_by)

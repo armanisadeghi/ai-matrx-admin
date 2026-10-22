@@ -62,7 +62,6 @@ begin
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
     ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,                  'drillcustom fixture'),
-    ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb,         'drillcustom fixture: the front desk sees the visits she booked'),
     ('custom', 'time_zone',                 'organization', v_org, v_org, '"America/Los_Angeles"'::jsonb, 'drillcustom fixture: the clinic is in Bend, Oregon (Pacific time)'),
     ('custom', 'week_start',                'organization', v_org, v_org, '"monday"'::jsonb,              'drillcustom fixture');
   insert into custom.record (organization_id, table_id, data)

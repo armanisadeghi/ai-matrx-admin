@@ -1,7 +1,7 @@
 // scripts/frame-crawl/crawl.mjs — the frame crawl: every signed-in app page, measured the same way, every phase.
 //
 //   node scripts/frame-crawl/crawl.mjs [--mode classic|frame] [--only /prefix] [--widths 1440,390]
-//        [--concurrency 4] [--origin URL] [--out NAME] [--discover-only] [--report] [--retry-errors] [--limit N]
+//        [--concurrency 4] [--origin URL] [--shuffle] [--out NAME] [--discover-only] [--report] [--retry-errors] [--limit N]
 //
 // Plan + why: common-docs/projects/app-frame/ROLLOUT-PLAN.md (P0 baseline, "Measuring breakage: the crawl").
 // Target is the LIVE site as admin@admin.com (AI_ADMIN_USERNAME / AI_ADMIN_PASSWORD from .env.local, never printed).
@@ -544,6 +544,7 @@ if (flag("discover-only")) {
   process.exit(0);
 }
 
+const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 const tasks = [];
 for (const route of routes) {
   const c = concreteRoute(route);
@@ -554,6 +555,7 @@ for (const route of routes) {
   }
 }
 console.log(`[crawl] ${tasks.length} page loads to do (${done.size} already recorded)`);
+if (flag("shuffle")) tasks.sort((a, b) => (hash(a.route) - hash(b.route))); // spread a partial run across every prefix
 const todo = LIMIT ? tasks.slice(0, LIMIT) : tasks;
 let n = 0;
 await pool(todo, async (t, ctxFor) => {

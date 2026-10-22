@@ -96,18 +96,17 @@ begin
   if v_data is not null and iam.member_default_level(f.org, v_data) is distinct from iam.member_default_level(f.org, null) then
     raise exception 'E5 RED: a data Table of Titanium moved off the organization''s own default';
   end if;
-  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-  values ('custom', 'member_default_visibility', 'organization', f.org, f.org, '"shared_only"'::jsonb, 'scopesaccess suite E6')
-  on conflict do nothing;
-  update platform.knob_override set value = '"shared_only"'::jsonb
-   where feature = 'custom' and key = 'member_default_visibility' and scope_kind = 'organization' and scope_id = f.org;
+  -- E6 (KNOB-SWEEP 2026-10-22): "members see only what is shared" is retired (access ladder T-17); the person a
+  -- share alone must reach is OUTSIDE the organization, so she leaves it here (rolled back with the file).
+  update iam.memberships set deleted_at = now(), status = 'removed'
+   where container_type = 'organization' and container_id = f.org and user_id = f.me;
 end $t$;
 do $t$
 declare f e_fx;
 begin
   select * into f from e_fx;
   if custom.has_visibility(f.me, 'record', f.tag, 'editor') then
-    raise exception 'E6 RED: Titanium shows members only what is shared and the member still edits %', f.tag;
+    raise exception 'E6 RED: a person outside Titanium still edits %', f.tag;
   end if;
   raise notice 'GREEN E1–E6: a member edits a tag in the store as she does today; an owner''s viewer is kept; a data Table and a members-see-shared-only organization are unchanged.';
 end $t$;

@@ -5,6 +5,7 @@
  * As admin@admin.com (the seat with the largest organizations) and test@test.com, inside a
  * transaction that is ROLLED BACK, with `role authenticated` and the person's JWT claims:
  *   - `public.trash_list(array[kind], 50, 0)` for EVERY registered kind   — ceiling 300 ms each
+ *   - `public.trash_list(null, 10, 0)` (the personal Recent overview)      — ceiling 1 s
  *   - `public.trash_counts()`                                              — ceiling 2 s
  *   - for the organization admin@admin.com administers with the most archived rows:
  *     `public.org_trash_list(org, array[kind], null, 50, 0)` per kind       — 300 ms each
@@ -79,6 +80,8 @@ async function main(): Promise<number> {
         const t = await timed(db, seat.id, "select * from public.trash_list(array[$1]::text[], 50, 0)", [kind]);
         rows.push({ label: `trash_list ${kind} (${seat.email})`, class: "kind", ...t });
       }
+      const ov = await timed(db, seat.id, "select * from public.trash_list(null, 10, 0)", []);
+      rows.push({ label: `trash_list Recent overview (${seat.email})`, class: "overview", ...ov });
       const c = await timed(db, seat.id, "select * from public.trash_counts()", []);
       rows.push({ label: `trash_counts (${seat.email})`, class: "counts", ...c });
     }

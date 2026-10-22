@@ -64,12 +64,12 @@ export function ConfirmFacetLine({ item, facet, confirm }: { item: ComparedItem;
         </span>
         {confirm ? (
           <span className="flex items-center gap-1.5">
-            <Button variant="outline" size="sm" loading={busy === "yes"} disabled={busy !== null}
+            <Button variant="outline" disabled={busy !== null}
               meta={price.data && price.data > 0 ? formatPoints(price.data) : undefined}
               onClick={() => void reply("yes")}>
-              Yes, use it
+              {busy === "yes" ? "Reading" : "Yes, use it"}
             </Button>
-            <Button variant="quiet" size="sm" loading={busy === "no"} disabled={busy !== null} onClick={() => void reply("no")}>
+            <Button variant="quiet" disabled={busy !== null} onClick={() => void reply("no")}>
               Not them
             </Button>
           </span>
