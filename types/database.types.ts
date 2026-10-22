@@ -63481,6 +63481,7 @@ export type Database = {
           id: string
           metadata: Json
           organization_id: string
+          page_receipt: Json | null
           size_bytes: number | null
           storage_uri: string
           version_number: number
@@ -63495,6 +63496,7 @@ export type Database = {
           id?: string
           metadata?: Json
           organization_id: string
+          page_receipt?: Json | null
           size_bytes?: number | null
           storage_uri: string
           version_number: number
@@ -63509,6 +63511,7 @@ export type Database = {
           id?: string
           metadata?: Json
           organization_id?: string
+          page_receipt?: Json | null
           size_bytes?: number | null
           storage_uri?: string
           version_number?: number
@@ -64742,6 +64745,10 @@ export type Database = {
         Args: { p_actor_id: string; p_kind: string; p_limit: number }
         Returns: Json
       }
+      apply_page_map: {
+        Args: { p_file_id: string; p_ops: Json; p_version: number }
+        Returns: Json
+      }
       assert_safe_file_name: {
         Args: { p_max_segment?: number; p_raw: string }
         Returns: string
@@ -64788,6 +64795,10 @@ export type Database = {
           p_owner_id: string
         }
         Returns: string
+      }
+      ensure_pdf_pages: {
+        Args: { p_file_id: string; p_page_count?: number }
+        Returns: number
       }
       file_path_matches_parent: {
         Args: { p_file_id: string }
@@ -104686,7 +104697,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      pdf_pages: {
+        Args: { p_file_id?: string; p_processed_document_id?: string }
+        Returns: Database["public"]["Views"]["pdf_unified_pages"]["Row"][]
+        SetofOptions: {
+          from: "*"
+          to: "pdf_unified_pages"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never
@@ -118404,6 +118424,16 @@ export type Database = {
         Args: { p_after_id?: number; p_limit: number; p_partition: string }
         Returns: Json
       }
+      lifecycle_run_raw_capture_custody_stage: {
+        Args: {
+          p_due_at: string
+          p_file_id: string
+          p_operation_id: string
+          p_policy_id: string
+          p_policy_updated_at: string
+        }
+        Returns: Json
+      }
       lifecycle_schema_fingerprint: { Args: never; Returns: string }
       lifecycle_sweep_plan: {
         Args: {
@@ -119445,15 +119475,29 @@ export type Database = {
         Returns: Json
       }
       resolve_id: { Args: { p_id: string; p_side?: string }; Returns: Json }
-      resolve_retention_policy: {
-        Args: {
-          p_entity_token: string
-          p_organization_id?: string
-          p_user_id?: string
-        }
-        Returns: Json
-      }
+      resolve_retention_policy:
+        | {
+            Args: {
+              p_entity_token: string
+              p_organization_id?: string
+              p_user_id?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_custody_selector: Json
+              p_entity_token: string
+              p_organization_id: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
       resolve_short_link: { Args: { p_token: string }; Returns: Json }
+      retention_custody_selector_matches: {
+        Args: { p_row_selector: Json; p_selector: Json }
+        Returns: boolean
+      }
       retention_predicate_matches: {
         Args: { p_predicate: Json; p_user_id: string }
         Returns: boolean
@@ -122615,37 +122659,42 @@ export type Database = {
       }
       pdf_unified_pages: {
         Row: {
+          blocks: Json | null
+          cleaned_char_count: number | null
           cleaned_text: string | null
           excluded_at: string | null
+          excluded_reason: string | null
           extract_rotation: number | null
+          extraction_confidence: number | null
+          extraction_method: string | null
           file_id: string | null
           file_page_id: string | null
+          has_extraction: boolean | null
           height: number | null
           image_cld_file_id: string | null
+          image_dpi: number | null
           is_continuation: boolean | null
+          organization_id: string | null
           page_id: string | null
           page_index: number | null
           page_number: number | null
           processed_document_id: string | null
+          raw_char_count: number | null
           raw_text: string | null
+          row_source: string | null
           section_kind: string | null
           section_title: string | null
+          source_page_index: number | null
+          text_source: string | null
           thumbnail_url: string | null
           used_ocr: boolean | null
           user_modified: boolean | null
           user_rotation: number | null
           user_status: string | null
           width: number | null
+          words: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "processed_document_pages_image_cld_file_id_fkey"
-            columns: ["image_cld_file_id"]
-            isOneToOne: false
-            referencedRelation: "pdf_unified_pages"
-            referencedColumns: ["file_id"]
-          },
-        ]
+        Relationships: []
       }
       v_context_item_suggestions: {
         Row: {
@@ -139749,11 +139798,13 @@ export type Database = {
         Row: {
           billed_at: string | null
           call_id: string | null
+          collected_at: string | null
           cost_usd: number | null
           created_at: string
           created_by: string | null
           dataset_id: string | null
           deleted_at: string | null
+          duration_ms: number | null
           error: string | null
           error_code: string | null
           finished_at: string | null
@@ -139764,6 +139815,7 @@ export type Database = {
           max_records: number
           metadata: Json
           organization_id: string
+          provider_ready_at: string | null
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -139771,9 +139823,11 @@ export type Database = {
           result: Json | null
           rows_created: number
           rows_updated: number
+          saved_at: string | null
           shown_to: Database["platform"]["Enums"]["shown_to"] | null
           snapshot_id: string | null
           source_key: string
+          stage_log: Json
           started_at: string | null
           status: string
           table_id: string | null
@@ -139789,11 +139843,13 @@ export type Database = {
         Insert: {
           billed_at?: string | null
           call_id?: string | null
+          collected_at?: string | null
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
           dataset_id?: string | null
           deleted_at?: string | null
+          duration_ms?: number | null
           error?: string | null
           error_code?: string | null
           finished_at?: string | null
@@ -139804,6 +139860,7 @@ export type Database = {
           max_records: number
           metadata?: Json
           organization_id: string
+          provider_ready_at?: string | null
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -139811,9 +139868,11 @@ export type Database = {
           result?: Json | null
           rows_created?: number
           rows_updated?: number
+          saved_at?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           snapshot_id?: string | null
           source_key: string
+          stage_log?: Json
           started_at?: string | null
           status?: string
           table_id?: string | null
@@ -139829,11 +139888,13 @@ export type Database = {
         Update: {
           billed_at?: string | null
           call_id?: string | null
+          collected_at?: string | null
           cost_usd?: number | null
           created_at?: string
           created_by?: string | null
           dataset_id?: string | null
           deleted_at?: string | null
+          duration_ms?: number | null
           error?: string | null
           error_code?: string | null
           finished_at?: string | null
@@ -139844,6 +139905,7 @@ export type Database = {
           max_records?: number
           metadata?: Json
           organization_id?: string
+          provider_ready_at?: string | null
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -139851,9 +139913,11 @@ export type Database = {
           result?: Json | null
           rows_created?: number
           rows_updated?: number
+          saved_at?: string | null
           shown_to?: Database["platform"]["Enums"]["shown_to"] | null
           snapshot_id?: string | null
           source_key?: string
+          stage_log?: Json
           started_at?: string | null
           status?: string
           table_id?: string | null
@@ -139910,8 +139974,10 @@ export type Database = {
           known_issue: string | null
           label: string
           metadata: Json
+          method: string | null
           organization_id: string
           output_fields: Json
+          provider: string | null
           published_to_web: boolean
           published_to_web_at: string | null
           published_to_web_by: string | null
@@ -139947,8 +140013,10 @@ export type Database = {
           known_issue?: string | null
           label: string
           metadata?: Json
+          method?: string | null
           organization_id: string
           output_fields?: Json
+          provider?: string | null
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -139984,8 +140052,10 @@ export type Database = {
           known_issue?: string | null
           label?: string
           metadata?: Json
+          method?: string | null
           organization_id?: string
           output_fields?: Json
+          provider?: string | null
           published_to_web?: boolean
           published_to_web_at?: string | null
           published_to_web_by?: string | null
@@ -140476,6 +140546,26 @@ export type Database = {
     Functions: {
       _column_name: { Args: { p_key: string }; Returns: string }
       canonical_url: { Args: { u: string }; Returns: string }
+      data_fetch_method_words: { Args: { p_method: string }; Returns: string }
+      data_fetch_typical_speed: {
+        Args: { p_source_keys?: string[] }
+        Returns: {
+          p95_ms: number
+          runs: number
+          source_key: string
+          typical_ms: number
+        }[]
+      }
+      data_fetch_under_the_hood: { Args: { p_job_id: string }; Returns: Json }
+      data_library_knob_int: {
+        Args: { p_default: number; p_key: string }
+        Returns: number
+      }
+      data_source_methods: { Args: never; Returns: Json }
+      data_source_under_the_hood: {
+        Args: { p_source_key: string }
+        Returns: Json
+      }
       data_sources_library: {
         Args: {
           p_featured_only?: boolean
@@ -140485,6 +140575,7 @@ export type Database = {
         }
         Returns: Json
       }
+      duration_words: { Args: { p_seconds: number }; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -157515,6 +157606,10 @@ export type Database = {
         Args: { p_features: Json; p_org: string }
         Returns: number
       }
+      watchtower_rebuild_data_sources: {
+        Args: { p_org: string }
+        Returns: number
+      }
       watchtower_record: {
         Args: { p_org: string; p_rows: Json }
         Returns: number
@@ -168652,6 +168747,7 @@ export type Database = {
           ok: boolean
         }[]
       }
+      __brand_name_search_result_selftest: { Args: never; Returns: Json }
       __brand_non_person_seat_ids_selftest: { Args: never; Returns: Json }
       __decision_retraction_selftest: {
         Args: never
@@ -168662,6 +168758,10 @@ export type Database = {
         }[]
       }
       __site_removal_keeps_answers_selftest: { Args: never; Returns: Json }
+      _brand_name_search_result: {
+        Args: { p_context: Json; p_terms: string[] }
+        Returns: boolean
+      }
       _domain_knob: { Args: { p_key: string }; Returns: Json }
       _learn_domain: {
         Args: { p_category: string; p_host: string }
@@ -168761,6 +168861,15 @@ export type Database = {
       brand_choice_propose: {
         Args: { p_choice_id: string; p_value: Json }
         Returns: string
+      }
+      brand_list_counts: {
+        Args: { p_brand_ids: string[] }
+        Returns: {
+          assets: number
+          brand_id: string
+          facts: number
+          pending_discovered: number
+        }[]
       }
       brand_non_person_seat_ids: {
         Args: { p_brand_id: string }

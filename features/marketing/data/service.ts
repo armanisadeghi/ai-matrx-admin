@@ -3189,6 +3189,18 @@ export async function dismissDiscoveredItem(itemId: string): Promise<void> {
 const BRAND_COLUMNS =
   "id, organization_id, created_at, updated_at, created_by, updated_by, deleted_at, version, metadata, custom_fields, name, slug, previous_slugs, description, website_url, logo_url, favicon_url, og_image_url, industry, notes, status, published_to_web, published_to_web_at, published_to_web_by, settings, integrations, profile, shown_to, kind, person_party_id, person_user_id, test_run_id, test_expires_at";
 
+/** `web.brand_list_counts` rows by brand (bigint counts arrive as numbers or strings). */
+export function brandListCountsByBrand(
+  rows: ReadonlyArray<{ brand_id: string; pending_discovered: number | string; assets: number | string; facts: number | string }>,
+): Map<string, { pending_discovered: number; assets: number; facts: number }> {
+  return new Map(
+    rows.map((r) => [
+      r.brand_id,
+      { pending_discovered: Number(r.pending_discovered), assets: Number(r.assets), facts: Number(r.facts) },
+    ]),
+  );
+}
+
 export async function listBrands(
   state: MatrxDataTableQueryState,
   signal?: AbortSignal,
@@ -3237,13 +3249,12 @@ export async function listBrands(
 
   const brandIds = brands.map((brand) => brand.id);
   const abortSignal = signal ?? new AbortController().signal;
-  const [
-    sitesResponse,
-    pendingResponse,
-    socialCounts,
-    assetsResponse,
-    factsResponse,
-  ] = await Promise.all([
+  // Per-brand counts are COUNTED in the database (web.brand_list_counts). Reading the matching rows
+  // and counting them here stopped at PostgREST's row cap: a page of brands with 2,000+ items to
+  // review summed to exactly the cap (D190 class — a bare select is never a complete list).
+  let countsQuery = db.rpc("brand_list_counts", { p_brand_ids: brandIds });
+  countsQuery = countsQuery.abortSignal(abortSignal);
+  const [sitesResponse, countsResponse, socialCounts] = await Promise.all([
     db
       .from("site")
       .select(
@@ -3253,29 +3264,11 @@ export async function listBrands(
       .is("deleted_at", null)
       .order("name", { ascending: true })
       .abortSignal(abortSignal),
-    db
-      .from("discovered_item")
-      .select("brand_id")
-      .in("brand_id", brandIds)
-      .eq("status", "pending")
-      .is("deleted_at", null)
-      .abortSignal(abortSignal),
+    countsQuery,
     readBrandSocialCounts(brandIds, abortSignal),
-    db
-      .from("brand_asset")
-      .select("brand_id")
-      .in("brand_id", brandIds)
-      .is("deleted_at", null)
-      .abortSignal(abortSignal),
-    db
-      .from("business_fact")
-      .select("brand_id")
-      .in("brand_id", brandIds)
-      .is("deleted_at", null)
-      .abortSignal(abortSignal),
   ]);
   const sites = assertData(sitesResponse.data, sitesResponse.error);
-  const pending = assertData(pendingResponse.data, pendingResponse.error);
+  const counts = brandListCountsByBrand(assertData(countsResponse.data, countsResponse.error));
   const sitesByBrand = new Map<string, BrandListRow["sites"]>();
   for (const site of sites) {
     if (!site.brand_id) continue;
@@ -3283,36 +3276,16 @@ export async function listBrands(
     bucket.push(site);
     sitesByBrand.set(site.brand_id, bucket);
   }
-  const pendingByBrand = new Map<string, number>();
-  for (const item of pending) {
-    pendingByBrand.set(
-      item.brand_id,
-      (pendingByBrand.get(item.brand_id) ?? 0) + 1,
-    );
-  }
-  const countBy = (rowsWithBrand: Array<{ brand_id: string }>) => {
-    const map = new Map<string, number>();
-    for (const row of rowsWithBrand) {
-      map.set(row.brand_id, (map.get(row.brand_id) ?? 0) + 1);
-    }
-    return map;
-  };
-  const assetsByBrand = countBy(
-    assertData(assetsResponse.data, assetsResponse.error),
-  );
-  const factsByBrand = countBy(
-    assertData(factsResponse.data, factsResponse.error),
-  );
 
   return {
     rows: brands.map((brand) => ({
       ...brand,
       sites: sitesByBrand.get(brand.id) ?? [],
-      pending_discovered: pendingByBrand.get(brand.id) ?? 0,
+      pending_discovered: counts.get(brand.id)?.pending_discovered ?? 0,
       social_count: socialCounts.get(brand.id)?.accounts ?? 0,
       social_tracked_count: socialCounts.get(brand.id)?.tracked ?? 0,
-      asset_count: assetsByBrand.get(brand.id) ?? 0,
-      fact_count: factsByBrand.get(brand.id) ?? 0,
+      asset_count: counts.get(brand.id)?.assets ?? 0,
+      fact_count: counts.get(brand.id)?.facts ?? 0,
     })),
     total: response.count ?? 0,
   };
