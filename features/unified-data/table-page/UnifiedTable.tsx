@@ -307,6 +307,7 @@ export function UnifiedTableBody({
   onRecordChange,
   content,
   skeleton,
+  rowPeek = false,
 }: {
   mount: UnifiedTableMount;
   before?: ReactNode;
@@ -323,6 +324,8 @@ export function UnifiedTableBody({
   onViewAddressChange?: (state: ViewAddressState | null) => void;
   /** The open record in the address (AT-RECORD): pushed on open, replaced on step and close, so Back closes it. */
   onRecordChange?: (recordId: string | null, how: "open" | "step" | "close") => void;
+  /** A hovered row shows the one Peek (records-ui `rowPeek`). Default off. */
+  rowPeek?: boolean;
 }) {
   const router = useRouter();
   const { tableId, address, object, shared, pendingInvitation } = mount;
@@ -363,6 +366,7 @@ export function UnifiedTableBody({
           {...shownViewReport}
           {...viewInAddress}
           {...recordInAddress}
+          {...(rowPeek ? { rowPeek } : {})}
           cameFrom={address.from}
           filter={address.filter}
           onViewChanged={onViewChanged}

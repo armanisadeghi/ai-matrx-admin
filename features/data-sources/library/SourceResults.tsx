@@ -36,7 +36,7 @@ export function InlineResultsTable({ tableId, job }: { tableId: string; job?: Fe
   if (runHasNoRowsYet(job)) return <RowsComing />;
   return (
     <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
-      <LocatedTableViewer tableId={tableId} filter={filter} />
+      <LocatedTableViewer tableId={tableId} filter={filter} rowPeek />
     </div>
   );
 }
