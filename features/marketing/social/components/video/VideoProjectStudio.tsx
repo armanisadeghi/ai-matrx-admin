@@ -37,7 +37,7 @@ import {
 } from "../../video/clone";
 import { useActiveBatch, useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
-import { confirmLine, downloadName, estimateLabel, finishedDownloadName, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, downloadName, estimateLabel, facesCostLine, finishedDownloadName, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
 import { batchCounts, batchProgressText, batchStanding, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, zipFileName, type BatchStanding } from "../../video/variants";
@@ -368,6 +368,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
 
   const captionTrack = Object.keys(doc.tracks.captions)[0] ?? null;
   const preset = captionTrack ? doc.tracks.captions[captionTrack]?.style.preset ?? "" : "";
+  const followSpeaker = captionTrack ? doc.tracks.captions[captionTrack]?.style.follow === "speaker" : false;
   const labelOf = (id: string) => (id === HEAD_ITEM ? "the video" : (variants.data?.find((v) => v.id === id)?.label ?? "variant"));
 
   const runGenerate = async (confirmed: boolean) => {
@@ -387,6 +388,13 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
         else if (e.type === "cache_hit") setSteps((p) => pushStep(p, { id: media, label: `${mediaLabel(media)} reused`, state: "done" }));
         else if (e.type === "applying") setSteps((p) => pushStep(p, { id: "apply", label: "Placing files and syncing captions", state: "running" }));
         else if (e.type === "applied") setSteps((p) => pushStep(p, { id: "apply", label: `Saved as v${String(e.version)}`, state: "done" }));
+        else if (e.type === "faces")
+          setSteps((p) =>
+            e.status === "done"
+              ? p.map((s) => (s.id === `faces:${media}` ? { ...s, label: `Faces tracked in ${mediaLabel(media)}`, state: "done" } : s))
+              : pushStep(p, { id: `faces:${media}`, label: `Tracking faces in ${mediaLabel(media)}`, state: "running" }),
+          );
+        else if (e.type === "faces_applied") setSteps((p) => pushStep(p, { id: "faces", label: `Saved as v${String(e.version)}`, state: "done" }));
         else if (e.type === "error" || e.type === "preflight_failed") errored = String(e.message ?? e.code ?? "Generation failed");
       });
       if (needsConfirm) {
@@ -478,6 +486,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
               {sum ? <CostLine label={estimateLabel(sum)} pts={sum.points} /> : null}
             </span>
           </div>
+          {estimate.data && facesCostLine(estimate.data) ? <span className="type-meta text-muted-foreground">{facesCostLine(estimate.data)}</span> : null}
           {estimate.data && confirmLine(estimate.data) ? <span className="type-meta text-muted-foreground">{confirmLine(estimate.data)}</span> : null}
           <div className="flex flex-wrap items-center gap-2">
             {pending || (sum && sum.toMake > 0) ? (
@@ -555,11 +564,21 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
               disabled={busy}
               onChange={(id) =>
                 void changeWithUndo(
-                  [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset: id } }],
+                  [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset: id, ...(followSpeaker ? { follow: "speaker" } : {}) } }],
                   `captions: ${id}`,
-                  preset ? [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset } }] : null,
+                  preset ? [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: { preset, ...(followSpeaker ? { follow: "speaker" } : {}) } }] : null,
                 )
               }
+              follow={followSpeaker}
+              onFollowChange={(on) => {
+                const style = doc.tracks.captions[captionTrack]?.style ?? { preset };
+                const without = Object.fromEntries(Object.entries(style).filter(([k]) => k !== "follow"));
+                void changeWithUndo(
+                  [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: on ? { ...without, follow: "speaker" } : without }],
+                  on ? "captions follow the speaker" : "captions stay in place",
+                  [{ op: "set", path: ["tracks", "captions", captionTrack, "style"], value: style }],
+                );
+              }}
             />
           ) : (
             <span className="type-meta text-muted-foreground">This plan has no captions</span>

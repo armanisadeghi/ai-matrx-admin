@@ -1,5 +1,6 @@
 /** One reading of the estimate for every screen (plan page, project page, run log): what is left to make and its price. */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import type { EstimateAnswer } from "./types";
 
 export interface EstimateSummary {
@@ -28,6 +29,14 @@ export function summarizeEstimate(est: EstimateAnswer & { to_make?: number; reus
 export function estimateLabel(s: EstimateSummary): string {
   if (s.toMake === 0) return s.reused > 0 ? `${s.reused} reused` : "All made";
   return s.reused > 0 ? `${s.toMake} to make · ${s.reused} reused` : `${s.toMake} to make`;
+}
+
+/** Face tracking for captions that follow the speaker, as one cost-summary line: "Face tracking 306 points"; null when nothing needs it. */
+export function facesCostLine(est: Pick<EstimateAnswer, "lines">): string | null {
+  const lines = est.lines.filter((l) => l.capability === "faces");
+  if (!lines.length) return null;
+  const pts = lines.reduce((a, l) => a + (l.points ?? 0), 0);
+  return pts > 0 ? `Face tracking ${formatCount(Math.round(pts))} points` : "Face tracking";
 }
 
 /** The line that tells the person when the studio stops to ask: "Asks before large spends". Null when the setting is unknown. */
