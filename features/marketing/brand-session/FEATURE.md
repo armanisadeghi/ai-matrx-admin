@@ -75,4 +75,5 @@ chrome on the page.
   choices elsewhere (the decide door's `retract` serves any screen).
 
 ## Change log
+- 2026-10-22 — Cards no longer repeat their four answers as rows under the text (`choicesOnCard={false}`): the edges are the answers (owner rule: nothing on the screen but the thing being asked about).
 - 2026-10-22 — Created: decide/correct/propose doors, the deck binding, the route, the surface.

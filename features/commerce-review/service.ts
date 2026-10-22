@@ -596,3 +596,18 @@ async function fetchAsset(assetId: string): Promise<AssetRow> {
   if (!data) throw new Error("This asset no longer exists.");
   return data as AssetRow;
 }
+
+/** Whether the organization has a live (not removed) eBay store connection. */
+export async function hasConnectedEbayStore(
+  organizationId: string,
+): Promise<boolean> {
+  const { data, error } = await db()
+    .from("marketplace_account")
+    .select("id")
+    .eq("organization_id", organizationId) // org-filter: onboarding asks about the organization being set up, not a list
+    .eq("marketplace_provider", "ebay")
+    .is("deleted_at", null)
+    .limit(1);
+  if (error) throw new Error(`Could not read eBay connections: ${error.message}`);
+  return (data ?? []).length > 0;
+}

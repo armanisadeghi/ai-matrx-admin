@@ -61,6 +61,9 @@ function SessionDeck({ brand }: { brand: MarketingBrand }) {
         <SwipeDeck
           binding={binding}
           layout="fullscreen"
+          // Each card carries its own key, which would also draw its answers as rows under the text; the four edges
+          // already are the answers, and the screen holds only the thing being asked about.
+          choicesOnCard={false}
           onExit={back}
           tourKey="matrx.brand-session.tour"
           renderEnd={() => (

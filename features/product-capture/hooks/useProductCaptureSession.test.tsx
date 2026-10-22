@@ -10,6 +10,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import { renderHook, settle, type HookHandle } from "@/test-utils/renderHook";
+// eslint-disable-next-line no-restricted-syntax -- test fixture: seeds the store's active organization the way the shell's load ladder does; not a product surface write
 import appContextReducer, {
   setOrganization,
 } from "@/lib/redux/slices/appContextSlice";
