@@ -46,7 +46,7 @@ async function read(): Promise<ServerLaunchpads | null> {
     console.warn(`[launchpad] server read refused (${listed.error.code}): ${listed.error.message}; the browser reads it`);
     return null;
   }
-  const pads = visibleLaunchpadRows(listed.data.rows, userId, null).flatMap((r) =>
+  const pads = visibleLaunchpadRows(listed.data.rows, userId, null, { organizations: false }).flatMap((r) =>
     typeof r.doc === "string" ? [{ key: r.key, title: r.title || r.key, savedAt: r.saved_at ?? null, doc: r.doc }] : [],
   );
   return { userId, pads };
