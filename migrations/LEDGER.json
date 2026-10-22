@@ -500,6 +500,12 @@
       "checksum": "502ffba020ef5da8b062e641606a60499e715618a973f006d4ebb9014092824b",
       "applied_at": "2026-10-22 09:06:11.144877+00"
     },
+    "migrations/campaign/20261022181500_closeformula_c_a_number_filter_asks_the_number.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261022181500_closeformula_c_a_number_filter_asks_the_number.sql",
+      "checksum": "f4768d2ee826e56c19d6288dc6ff017f170f40da318b34b51ff8b1d5025482bf",
+      "applied_at": "2026-10-22 17:56:10.034804+00"
+    },
     "migrations/campaign/20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql": {
       "source": "matrx-frontend",
       "filename": "20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql",
