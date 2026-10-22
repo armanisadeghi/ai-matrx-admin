@@ -34,7 +34,7 @@ export default async function WelcomePage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader>
-        <HeaderIconTitle icon="Sparkles" title="Welcome" />
+        <HeaderIconTitle icon="DoorOpen" title="Welcome" />
       </PageHeader>
       <WelcomeClient firstName={firstName} newUser={isNewUser(user)} foundAsked={askedForFound} meetSeen={meetMatrxSeen(user)} ageNotNow={ageNotNowActive(user)} />
     </>

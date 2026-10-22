@@ -47,7 +47,11 @@ import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/Surface
 import { createTask } from "@/features/tasks/services/taskService";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { getAssociationsStore } from "@/features/scopes/host/associationsStore";
-import { parseTaskDraft } from "../../agent-context/crmRecordSurfaceWrite";
+import {
+  parseTaskDraft,
+  taskAttachEdge,
+  taskAttachFailureMessage,
+} from "../../agent-context/crmRecordSurfaceWrite";
 import type { DealRow } from "../../deals/types";
 import type { ContactCandidateView } from "../../enrichment/service";
 import { useOpenGmailComposeWindow } from "@/features/overlays/definitions/gmailComposeWindow.overlay";
@@ -376,16 +380,12 @@ export function PartyRecordPage({ partyId, initialHeading, embedded = false, onN
       // "Party attached to a task", the TASK is the container). The reverse
       // is refused by the database. The shared Tasks tile counts only
       // task → party, so it does not show these — reported as a shared defect.
-      const linked = await getAssociationsStore().add({
-        sourceType: "party",
-        sourceId: party.id,
-        targetType: "task",
-        targetId: task.id,
-        orgId: party.organization_id,
-      });
+      const linked = await getAssociationsStore().add(
+        taskAttachEdge(party.id, task.id, party.organization_id),
+      );
       if (!linked.ok) {
         throw new Error(
-          `Task "${task.title}" was created but could not be attached to ${party.display_name}: ${linked.error ?? "unknown error"}.`,
+          taskAttachFailureMessage(task, party.display_name, linked.error),
         );
       }
       return {

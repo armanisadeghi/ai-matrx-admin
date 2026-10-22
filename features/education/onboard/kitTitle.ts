@@ -258,3 +258,27 @@ export async function resolveKitTitle(
   if (first === "late") return { ...floor, late: named };
   return first ?? floor;
 }
+
+/**
+ * THE NAME OF ONE ARTIFACT MADE FROM SEVERAL SOURCES (a deck, a quiz, a
+ * summary): the same namer the kits use, reading an equal share of every
+ * Source, so the title is the subject of all of them — never "<first> and more".
+ * One Source keeps `floor` (its own name). NEVER throws; a slow or failed
+ * namer degrades to `floor`.
+ */
+export async function nameFromSources(
+  sources: readonly { label: string; text: string }[],
+  ctx: { dispatch: AppDispatch; store: AppStore; orgId?: string },
+  floor: string,
+): Promise<string> {
+  const live = sources.filter((s) => s.text.trim().length > 0);
+  if (live.length < 2) return floor;
+  const named = await resolveKitTitle(ctx.dispatch, ctx.store, {
+    text: live.map((s) => s.text).join("\n\n"),
+    rawTitle: floor,
+    sourceTitles: live.map((s) => s.label),
+    sourceSamples: live.map((s) => s.text.slice(0, NAMER_SAMPLE_CHARS)),
+    orgId: ctx.orgId,
+  });
+  return named.title;
+}

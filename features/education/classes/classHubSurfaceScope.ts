@@ -8,6 +8,7 @@
 import {
   createEducationClassScope,
   type ClassHubContentEntry,
+  type ClassHubLoadState,
   type ClassHubView,
 } from "@/features/surfaces/manifests/education-class.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
@@ -30,6 +31,15 @@ export function buildClassHubPlaceholderScope(
   classParam: string,
 ): SurfaceScopePayload {
   return createEducationClassScope({ view, class_param: classParam });
+}
+
+/** One list's read state, so the agent can tell "still loading" from "failed". */
+export function loadState(read: {
+  loading: boolean;
+  error: string | null;
+}): ClassHubLoadState {
+  if (read.error) return `failed: ${read.error}`;
+  return read.loading ? "loading" : "ready";
 }
 
 function contentScope(content: UseClassContentReturn): {
@@ -87,12 +97,29 @@ export function buildClassHubOwnerScope(input: {
     assignments.assignments.map((a) => [`${a.token}:${a.resourceId}`, a.title]),
   );
   const assignmentsReady = !assignments.loading && !assignments.error;
-  const progressReady = !progress.loading && !progress.error && progress.overview;
+  // class_progress is emitted only from a non-null overview, so its load state
+  // is derived from the same condition: a settled read with no overview (not
+  // read at all) is reported as such, never as "ready" with the list missing.
+  const progressState = loadState({
+    loading: progress.loading,
+    error:
+      progress.error ??
+      (!progress.loading && !progress.overview
+        ? "class progress was not read"
+        : null),
+  });
+  const progressReady = progressState === "ready";
 
   return createEducationClassScope({
     view: "owner",
     class_param: input.classParam,
     my_status: access.state?.myStatus ?? null,
+    load_status: {
+      roster: loadState(roster),
+      assignments: loadState(assignments),
+      class_progress: progressState,
+      study_content: loadState(content),
+    },
     class_id: cls.id,
     class_slug: cls.slug,
     class_name: cls.name,
@@ -161,7 +188,10 @@ export function buildClassHubMemberScope(input: {
     myProgress &&
     !assignments.loading &&
     !assignments.error &&
-    !myProgress.loading;
+    !myProgress.loading &&
+    // useMyClassProgress leaves progress=[] on a failed read; emitting the list
+    // then would mark every row "not_started" while load_status says failed.
+    !myProgress.error;
   const progressByKey = new Map(
     (myProgress?.progress ?? []).map((p) => [`${p.token}:${p.resourceId}`, p]),
   );
@@ -170,6 +200,18 @@ export function buildClassHubMemberScope(input: {
     view: "member",
     class_param: input.classParam,
     my_status: state.myStatus,
+    ...(isActive && input.roster && assignments && myProgress
+      ? {
+          load_status: {
+            roster: loadState(input.roster),
+            my_assignments: loadState({
+              loading: assignments.loading || myProgress.loading,
+              error: assignments.error ?? myProgress.error,
+            }),
+            study_content: loadState(input.content),
+          },
+        }
+      : {}),
     class_id: state.classId,
     class_slug: state.slug,
     class_name: state.name,

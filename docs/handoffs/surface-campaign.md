@@ -3,7 +3,7 @@ type: Handoff
 title: "Surface campaign — handoff"
 description: "Make every registered surface agent-readable, verified on the live site, with one list that stays true."
 status: active
-updated: 2026-09-26
+updated: 2026-10-22
 repos: [matrx-frontend, aidream]
 scope: program
 feature: surfaces
@@ -15,7 +15,7 @@ vision: []
 looking at, so an AI agent launched there sees it. It also removes the platform gaps that stopped the
 last attempt.
 
-**Seen from his seat:** on any page, the header button "Agents for this page" → "Surface Context"
+**Seen from his seat:** on any page, the header button "Agents for this page" → "This page"
 names the page and lists its live values. His review inbox gets one row per finished batch.
 
 ## Vision — Arman's words
@@ -26,23 +26,60 @@ names the page and lists its live values. His review inbox gets one row per fini
 
 > "The key that would make this work really well is if each agent worked on multiple surfaces at once … the agent is fixing x pages and commiting each as he goes. Then, when he's all done, already one or more of the pages are live for testing … even if they did batches of 5, they would fix 5, commit, wait, test 5, recommit..."
 
-## Where it stands
+## Where it stands (2026-10-22)
 
-- The method is written down:
-  - worker brief: `.claude/skills/surface-authoring/references/campaign-worker.md` (batches of 5,
-    verify on production, one independent reviewer);
-  - coordinator brief: `.../campaign-coordinator.md`.
-- The list is computed, not declared: `pnpm surface:census` (plus `--sql` for the DB mirror). On
-  2026-09-26: 214 surfaces, 193 emitting, 21 not emitting.
-- Verification needs no dev server: `pnpm surface:probe --surface <name> --route <path> --commit <sha>`
-  checks the live site in ~40 s per surface.
-- The pilot surface is done and reviewed: `matrx-user/artifacts` (`features/artifacts/lib/artifacts-scope.ts`).
-- The Surface Context window now shows "Supplied, empty" distinctly from "not supplied".
+- **One path in.** A worker takes pages through the `page-pass` skill
+  (`.claude/skills/page-pass/SKILL.md`), dispatched with
+  `.claude/skills/page-pass/loop/worker-brief.md` and graded blind with `loop/judge-brief.md`.
+  The coordinator brief (`.claude/skills/surface-authoring/references/campaign-coordinator.md`)
+  owns the list and the waves; `campaign-worker.md` is the surface-mechanics reference page-pass
+  sends workers to.
+- **Both lanes work.** A cloud container (15 GB) cannot run the whole-repo type check (killed,
+  measured 2026-10-22), so it uses `pnpm type-check:files <files>`; it has no direct-Postgres
+  credentials, so it syncs a surface by running `scripts/emit-surface-sync-sql.ts` output through
+  the Supabase MCP and checks with the same script's `--check` SELECT (no rows = in sync).
+- **The list is computed.** `pnpm surface:census` (about a minute) sees scope builders in this
+  repo and inside the installed `@ai-matrx/chat` package, plus mounts that name the surface in
+  code (comments never count): a runtime provider, a context menu that resolves per-target context
+  (`resolveContextOnOpen`, how `assistant-message` emits), a name constant, or a `surfaceName`
+  prop. On 2026-10-22: 278 surfaces, 260 emitting, 18 not; 72 verified / 194 partial / 12 stub;
+  16 detected by name only (probe these). Columns: write targets, guide, budgeted values.
+- **Cloud gaps that remain:** `check:agent-disclosure` needs the aidream checkout and errors in a
+  container; writes through the Supabase MCP sometimes hang for 60 s and do not apply (a sync of
+  ~28 KB timed out twice on 2026-10-22; small single updates mostly work) — read back, never
+  retry blind.
+- **The context budget** (10,000 chars per page, one bundle; `contextBudgetApproval` for
+  exceptions) replaced the per-value inline rule; see page-pass area 1.
+- **Agents can report problems** with the `surface_feedback` write target on every surface;
+  read them with `pnpm surface:feedback`.
+- Stale claims from 2026-08-26 were cleared on 2026-10-22.
+- About 48 pages had a page-pass between 2026-09-27 and 2026-10-10; the fleet campaign itself
+  has not been run.
+
+## Tonight's pages (2026-10-22), waiting on the next release
+
+Built and pushed by page-pass workers, statically checked; none is proven live yet (no release
+since 05:36 UTC). Their DB mirrors are NOT synced: every write through the Supabase MCP that
+changes a surface hung without reaching the database (a 40 s server-side timeout never fired),
+so the tool layer is holding writes, most likely for an approval no one could give.
+
+- /education/quizzes, /education/practice-tests — own builders, `list_view` target
+- /education/learn — new emitter, menu, readable titles
+- /pick-lists/<id> — mounted, header names the list, honest load states, `delete_list_items`
+- /work, /work/new, /work/conversations — list surface + rename/favorite/trash, composer scope
+- /images/manager — emitter, menu, `open_image_workspace`; /camera — emitter, `capture_filter`
+- Feedback fixes: crm-record task attach, research-topics restored ids, library suggestions,
+  class hub `load_status`, settings hidden_models — all set to `awaiting_review`
+
+**After the release:** sync every mirror at once from
+https://manage.aimatrx.com/administration/ui/surfaces (Sync manifests; POST
+`/api/admin/surfaces/sync-manifests`, super admin, runs the deployed code), then probe each
+page with the commands in its worker's report (`pnpm surface:probe … --agent '…'`).
 
 ## Future — everything still open
 
-1. **Run the campaign.** Start a coordinator session with `campaign-coordinator.md`. Its Wave 0 list
-   is in that file.
+1. **Run the campaign.** Start a coordinator session with `campaign-coordinator.md`; it dispatches
+   page-pass workers with the worker brief. Wave 0 is in that file.
 
 2. **`MatrxDataTable` must tell its host which rows are on screen.**
    - **Where:** `aidream/apps/shared/design-system`, the `data-table` export.
@@ -71,16 +108,12 @@ names the page and lists its live values. His review inbox gets one row per fini
      holds the example, `5dc930e9…`, `3e790542…`).
    - **Done when:** DB rows equal the rows shown, per type tab, and the example opens.
 
-4. **Cloud sessions cannot sync or check a surface's DB mirror.**
-   - **Problem:** `scripts/sync-surface-manifests-direct.ts` needs the five `SUPABASE_MATRIX_*`
-     direct-Postgres variables, which cloud sessions lack. The fallback,
-     `scripts/emit-surface-sync-sql.ts`, needs an undocumented `--organization-id`
-     (`39c38960-d30c-4840-b0c1-c9960de95582`), and its ~27 KB of SQL must be pasted through the
-     Supabase MCP. There is no `--check` in the cloud.
-   - **Fix:** make one command work with what cloud sessions have (`SUPABASE_SECRET_KEY` +
-     `NEXT_PUBLIC_SUPABASE_URL`, e.g. an admin RPC pair `ui.sync_surface(jsonb)` /
-     `ui.check_surface(text)`), and update the skill's Layer 4 and pre-flight checklist.
-   - **Done when:** sync and `--check` for `matrx-user/artifacts` run from a cloud session.
+4. **DONE 2026-10-22 — cloud sync and check.** `emit-surface-sync-sql.ts` names how to find the
+   system org when it is missing, and `--check` prints a read-only SELECT comparing every column
+   the direct check compares (surface row and every keyed child table, both archival directions,
+   the guide skill). Not covered in the cloud: the direct check's EXPLAIN of every sync
+   statement. Still better: an admin RPC pair (`ui.sync_surface(jsonb)` /
+   `ui.check_surface(text)`) so no SQL is pasted, which would also dodge the MCP write timeouts.
 
 5. **A docked panel with its own surface replaces the page's surface.**
    - **Problem:** runtimes resolve "deepest wins, most recent breaks ties"
@@ -96,8 +129,7 @@ names the page and lists its live values. His review inbox gets one row per fini
    - `/administration/ui/surfaces` should show the census facts beside declared readiness: emitting,
      mirror in sync, claim age, last independent check.
    - A claim older than 6 hours reads as free.
-   - Clear the four stale claims from 2026-08-26 (`matrx-user/files`, `applets`, `messages`,
-     `chat`).
+   - (Done 2026-10-22: the five stale 2026-08-26 claims were cleared.)
    - Until this lands, the coordinator's census is the board.
 
 7. **DB rows with no manifest (31 on 2026-09-26).**
@@ -109,10 +141,11 @@ names the page and lists its live values. His review inbox gets one row per fini
    - Before deleting an orphan, move any `platform.associations` agent bindings that target it.
    - Two value-count drifts to resync: `matrx-user/markdown-pdf`, `matrx-user/settings`.
 
-8. **Four surfaces are declared verified, but the census found no emitter:**
-   `matrx-user/assistant-message`, `working-document`, `masterwork-rulebook`, `crm-manager`. Probe
-   each. Either teach the census their emitter (a shared builder such as
-   `_conversation-document.manifest.ts`) or demote them to `partial`.
+8. **Surfaces the census sees only by name (16 on 2026-10-22).** Probe each once the release
+   carrying the probe fix is live (`pnpm surface:census` lists them as "by name"); either the
+   census learns the emitter or readiness drops to `partial`. `masterwork-rulebook` was probed
+   live on 2026-10-22 and emits (33 values shown). `working-document` is declared verified but
+   nothing in this repo emits it — it is built inside `@ai-matrx/chat` (item 14).
 
 9. **Artifacts surface, remaining gaps.**
    - The access gate distinguishes "no access" from "not found" but emits only
@@ -142,19 +175,13 @@ names the page and lists its live values. His review inbox gets one row per fini
       2026-09-26 21:39 UTC) and the three type-level context items are test debris. The person
       decides whether to delete them.
 
-12. **UNVERIFIED — how the server decides which surface values an agent sees in full.**
-    - **Seen (2026-09-27, /education/classes):** an agent fetched `owned_classes` (~1,500 chars)
-      with the `context` tool four times instead of seeing it up front.
-    - **Not known:** how the live server decides inline vs lookup for SURFACE values, and whether
-      an existing mechanism already covers this. Nobody in this session has read that server code;
-      an earlier version of this item called it a server bug without evidence.
-    - **Parked, pending Arman's inline policy:** the `inlineUpTo` manifest field / column
-      `ui.ui_surface_value.max_inline_chars` added 2026-09-27, and its values on the classes
-      manifest. Do not set it on other surfaces. First step for whoever owns the server: say how
-      surface values are inlined today, so the policy builds on the existing mechanism instead of
-      a second one.
+12. **SETTLED 2026-09-27 — how much of a page an agent sees up front.** The context budget (10,000
+    chars per page as one bundle, with an approval path for exceptions) replaced the per-value
+    inline rule. `inlineUpTo` is still sent as `max_inline_chars`; set it only as page-pass
+    area 1 allows.
 
-13. **Conversations should record the surface they ran on.**
+13. **Conversations should record the surface they ran on.** (needs a session attached to
+    AI-Matrix-Engine/aidream — the send path lives in `@ai-matrx/chat`)
     - **Why:** `pnpm surface:openers` (how often agents open a run with lookups, Arman's surface
       scorecard) can only estimate by matching value names; `chat.conversation` has only
       `source_feature` (e.g. "ai-results"), which does not name the page.
@@ -164,12 +191,20 @@ names the page and lists its live values. His review inbox gets one row per fini
     - **Done when:** the openers query for `matrx-user/education-classes` counts runs by surface,
       not by value names.
 
+14. **Pages hosted inside `@ai-matrx/chat` can only be finished from aidream.** Chat, agent run,
+    the message thread and the working document build their scope inside the package. Their
+    open feedback (chat: no `transcript` value for its message write targets, row 66868128) and
+    their page-pass need a session with AI-Matrix-Engine/aidream attached.
+
 ## Resources
 
-- Worker brief: `.claude/skills/surface-authoring/references/campaign-worker.md`
+- Per-page entry point: `.claude/skills/page-pass/SKILL.md`; dispatch brief `loop/worker-brief.md`;
+  blind judge `loop/judge-brief.md`
+- Surface mechanics: `.claude/skills/surface-authoring/references/campaign-worker.md`
 - Coordinator brief: `.claude/skills/surface-authoring/references/campaign-coordinator.md`
-- Tools: `scripts/surface-census.ts` (`pnpm surface:census`), `scripts/surface-probe.mjs`
-  (`pnpm surface:probe`)
+- Tools: `pnpm surface:census`, `pnpm surface:probe` (`--agent` for writes), `pnpm surface:feedback`,
+  `pnpm surface:openers`, `pnpm page:look`, `pnpm page:checks`, `pnpm type-check:files`,
+  `scripts/emit-surface-sync-sql.ts` (`--check`)
 - Pilot, worked example: `features/artifacts/lib/artifacts-scope.ts`,
   `features/artifacts/components/CmsArtifactList.tsx`, `CmsArtifactDetail.tsx`
 - Review row for the pilot: https://manage.aimatrx.com/administration/users/agent-review/3eed121b-6a96-4850-a49c-7e309289958b

@@ -13,7 +13,7 @@ import { useAppletPageValues } from "../../bus/react";
 export function AppletWidget({ config, editing }: LaunchpadWidgetBodyProps) {
   const appId = configText(config, "appId");
   // Page bus: connected inputs reach the Applet as `useValue("in_record" | "in_file" | "in_text")`; what it
-  // sets with `useValue("out_record" | "out_text")` reaches the widgets connected to this one.
+  // sets with `useValue("out_record" | "out_text" | "out_shape")` reaches the widgets connected to this one.
   const pageValues = useAppletPageValues();
   if (!appId) {
     return (

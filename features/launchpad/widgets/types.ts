@@ -24,7 +24,7 @@ export interface LaunchpadWidgetField {
   key: string;
   label: string;
   options?: readonly { value: string; label: string }[];
-  picker?: "dataPage" | "dataTable" | "metricKeys" | "launchpad" | "applet" | "appPage";
+  picker?: "dataPage" | "dataTable" | "metricKeys" | "launchpad" | "applet" | "appPage" | "boardItem" | "tableDashboard" | "kindInstance" | "spacePage";
 }
 
 export interface LaunchpadWidgetBodyProps {
@@ -57,6 +57,12 @@ export interface LaunchpadWidgetSpec {
   href?: (config: Readonly<Record<string, unknown>>) => string | null;
   publishes?: readonly LaunchpadPort[];
   accepts?: readonly LaunchpadPort[];
+  /**
+   * A body whose height is its own content, not its box (tiles that wrap), says how tall it draws on a phone
+   * (px). On a phone a box grows to its content, so the frame reserves this from the first HTML and a body
+   * landing late never pushes the widgets below it down. Absent = the body fills its box (lists, frames).
+   */
+  phoneBodyPx?: (config: Readonly<Record<string, unknown>>) => number;
 }
 
 export interface LaunchpadWidgetType extends LaunchpadWidgetSpec {

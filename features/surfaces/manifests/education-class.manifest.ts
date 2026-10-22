@@ -116,6 +116,17 @@ const surfaceSpecific: SurfaceValue[] = [
     sortOrder: 120,
     group: "class_view",
   },
+  {
+    name: "load_status",
+    label: "What has loaded",
+    description:
+      'Each list this view reads, as { name: "loading" | "ready" | "failed: <reason>" }: owner view roster, assignments, class_progress, study_content; member view (active) roster, my_assignments, study_content. A list is present exactly when it reads "ready" (then an empty array means truly empty). Present in the owner and member views.',
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 110,
+    sortOrder: 130,
+    group: "class_view",
+  },
 
   // ── Class details ──────────────────────────────────────────────────────
   {
@@ -370,7 +381,7 @@ export const educationClassManifest: SurfaceManifest = {
   intro: `<surface_intro>
 You are on one class's hub at /education/classes/<id>. A class gathers one course's material: its details and exam dates, the people on its roster, decks and quizzes assigned to every student, and study content tagged to it.
 
-Read \`view\` first. "owner" is the person's own class — everything is present and editable. "member" is a class they joined: they see the class, the active roster, their own assignments (my_assignments) and the study content, and cannot change anything. "loading", "needs_workspace" and "unavailable" carry no class data yet.
+Read \`view\` first. "owner" is the person's own class — everything is present and editable. "member" is a class they joined: they see the class, the active roster, their own assignments (my_assignments) and the study content, and cannot change anything. "loading", "needs_workspace" and "unavailable" carry no class data yet. In the owner and member views, \`load_status\` says per list whether it is "loading", "ready" or "failed: <reason>" — a list missing from the context is never empty; read its load_status.
 
 For the owner, change the class only through these targets (each takes a JSON value, never a string):
 - update_class — fix details, access, price or exam dates, or archive (archived: true). Only the fields you send change.
@@ -425,6 +436,9 @@ export interface ClassHubMyAssignment {
   score_pct: number | null;
 }
 
+/** One list's read state: "loading", "ready" or "failed: <reason>". */
+export type ClassHubLoadState = "loading" | "ready" | `failed: ${string}`;
+
 export interface ClassHubContentEntry {
   token: string;
   id: string;
@@ -443,6 +457,7 @@ export function createEducationClassScope(values: {
   selection?: string;
   context?: Record<string, unknown>;
   my_status?: string | null;
+  load_status?: Record<string, ClassHubLoadState>;
   class_id?: string;
   class_slug?: string | null;
   class_name?: string;

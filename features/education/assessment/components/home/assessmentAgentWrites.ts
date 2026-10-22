@@ -438,3 +438,51 @@ export function parseGenerateValue(
     timeLimitMinutes,
   };
 }
+
+// ── list_view — which assessments the list shows (UI only, nothing saved) ───
+
+export const LIST_VIEW_LANES = ["all", "mine", "team", "orgs", "shared", "public"] as const;
+export type ListViewLane = (typeof LIST_VIEW_LANES)[number];
+const ARCHIVE_VIEWS = ["active", "archived", "all"] as const;
+
+export interface AssessmentListViewPlan {
+  lane?: ListViewLane;
+  archived?: (typeof ARCHIVE_VIEWS)[number];
+  search?: string;
+}
+
+/**
+ * `list_view`: switch the lane, the archive filter or the search so the agent
+ * can READ rows that are not on screen (the bundle carries the page shown).
+ * Writes already reach any assessment the person may edit; this is for seeing.
+ */
+export function parseAssessmentListView(value: unknown): AssessmentListViewPlan {
+  const where = "list_view";
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw new Error(`${where} expects an OBJECT like { "lane": "mine", "archived": "all" }; received ${JSON.stringify(value)}.`);
+  const r = value as Record<string, unknown>;
+  const problems = new ProblemList(where);
+  const unknownKeys = Object.keys(r).filter((k) => !["lane", "archived", "search"].includes(k));
+  if (unknownKeys.length > 0)
+    problems.add(`${where} does not accept ${unknownKeys.join(", ")}. Allowed keys: lane, archived, search.`);
+  const plan: AssessmentListViewPlan = {};
+  if (r.lane !== undefined) {
+    if (!(LIST_VIEW_LANES as readonly unknown[]).includes(r.lane))
+      problems.add(`${where}.lane must be one of ${LIST_VIEW_LANES.join(", ")}; received ${JSON.stringify(r.lane)}.`);
+    else plan.lane = r.lane as ListViewLane;
+  }
+  if (r.archived !== undefined) {
+    if (!(ARCHIVE_VIEWS as readonly unknown[]).includes(r.archived))
+      problems.add(`${where}.archived must be one of ${ARCHIVE_VIEWS.join(", ")}; received ${JSON.stringify(r.archived)}.`);
+    else plan.archived = r.archived as AssessmentListViewPlan["archived"];
+  }
+  if (r.search !== undefined) {
+    if (typeof r.search !== "string") problems.add(`${where}.search must be text ("" clears it).`);
+    else if (r.search.length > 200) problems.add(`${where}.search must be at most 200 characters.`);
+    else plan.search = r.search.trim();
+  }
+  problems.throwIfAny();
+  if (Object.keys(plan).length === 0)
+    throw new Error(`${where} changes nothing — send lane, archived or search.`);
+  return plan;
+}

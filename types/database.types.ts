@@ -158642,6 +158642,17 @@ export type Database = {
           why: string
         }[]
       }
+      brand_audience_answer: {
+        Args: {
+          p_action?: string
+          p_brand_id: string
+          p_name: string
+          p_origin?: string
+          p_row: string
+          p_via?: string
+        }
+        Returns: Json
+      }
       brand_choice_correct: {
         Args: {
           p_action?: string
@@ -158912,6 +158923,10 @@ export type Database = {
         }[]
       }
       page_provenance: { Args: { p_page_id: string }; Returns: Json }
+      person_validated_offering_ids: {
+        Args: { p_brand_id: string }
+        Returns: string[]
+      }
       property_identity: {
         Args: { p_handle: string; p_kind: string; p_url: string }
         Returns: string

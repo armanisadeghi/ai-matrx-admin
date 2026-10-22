@@ -176,6 +176,8 @@ export const marketingRoutes = {
   cost: () => "/marketing/reports/cost",
   /** The agency-plane social roll-up (every brand's tracked accounts and outliers). */
   social: () => "/marketing/social",
+  /** Every brand's video projects in one list (Social > Videos). */
+  socialVideos: () => "/marketing/social/videos",
   /** Cross-brand rank roll-up (was /marketing/ranks). */
   ranksRollup: () => "/marketing/reports/ranks",
   /** Cross-brand Search Console landing (site picker inside). */
@@ -218,6 +220,8 @@ export const marketingRoutes = {
     `/marketing/${brandId}/${section}`,
   /** The brand home. `view` = media | media/research | … */
   brandIdentity: (brandId: string) => `/marketing/${brandId}/identity`,
+  /** The owner's story sitting (spoken or typed answers; Question Desk story seat). */
+  brandOwnerStory: (brandId: string) => `/marketing/${brandId}/identity/story`,
   /** The brand session: the full-screen deck where the person places each brand candidate. */
   brandSession: (brandId: string) => `/marketing/${brandId}/identity/session`,
   /**

@@ -78,7 +78,7 @@ import { LabelFace, LevelLayers, StructureFace } from "./lod/TileLevels";
 import type { CardLine } from "../items/card-lines";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
 import { tileContentReady } from "../engine/content-ready";
-import { FIT_MIN_SCROLLER_H, FULL_CHROME, type ScrollerBox, type TileChrome, atAutoHeightCeiling, autoContentHeight, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
+import { FIT_MIN_SCROLLER_H, FLOATING_TILE_MENU_PLACE, FULL_CHROME, type ScrollerBox, type TileChrome, atAutoHeightCeiling, autoContentHeight, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
 
 /**
  * The tile lays out at its content's height (page layout, `BoardItemType.autoHeight`): a body reads
@@ -705,7 +705,8 @@ export function BoardTile({
       {headerless && (
         <div
           className={cn(
-            "absolute right-2 top-2 z-10 transition-opacity focus-within:opacity-100 group-hover/tile:opacity-100 [@media(hover:none)]:opacity-100",
+            FLOATING_TILE_MENU_PLACE,
+            "transition-opacity focus-within:opacity-100 group-hover/tile:opacity-100 [@media(hover:none)]:opacity-100",
             selected || (menu?.comment?.count ?? 0) > 0 ? "opacity-100" : "opacity-0",
           )}
         >

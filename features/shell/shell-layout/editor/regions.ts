@@ -71,6 +71,15 @@ export function startingBody(own: ShellLayoutBody | null, organization: ShellLay
   return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: SHELL_CATALOG_VERSION };
 }
 
+/**
+ * "Reset to standard" for a person whose organization has a layout: a body of her own (so it wins) that
+ * carries NO region — each shows the built-in default, which keeps growing with the catalog. Never the
+ * default trees written out (that froze a person out of every later addition, audit 2026-10-22 #3).
+ */
+export function standardPersonBody(): ShellLayoutBody {
+  return { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: SHELL_CATALOG_VERSION };
+}
+
 /** The catalog entry a path opens, when one does exactly (a page already in our menus). */
 export function catalogEntryForPath(entries: readonly ShellCatalogEntry[], pathname: string): ShellCatalogEntry | undefined {
   const path = pathname.replace(/\/+$/, "") || "/";

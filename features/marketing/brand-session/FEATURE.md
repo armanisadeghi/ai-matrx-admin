@@ -18,12 +18,15 @@ through a `SwipeDeckBinding` (`useBrandSessionDeck`). A screen the design sessio
 
 | Card | Swipes | Written through |
 |---|---|---|
+| Offering stance (an agent's open A3 row, one card per offering; its precise `value.stance` is the Suggestion via `suggestedLabel`) | right Grow · up Sustain or Accept · left Sunset or Refuse · down not sure | the person's own A3 row via `web.brand_choice_correct` (`{stance, offering, answer_to}`, chosen; the person's OWN earlier answer is withdrawn first — `ownLiveAnswers` by `created_by` — and a colleague's is superseded by the database, single per offering); not sure parks the agent's row |
+| Audience category (Who / Cares about: the brand's `brand_audience` rows, and categories the word checks name) | the four placements | `web.brand_audience_answer` (adds the category in the brand's organization when new) |
+| Tagline / one-liner (`h6_tagline`, `h0_description`: pick-one groups) | right Could be it · left not us · down not sure; then the pick | `decide` `shortlist` / `not_us` / `not_sure`; the pick = `decide lead` (switching shortlists the old pick back first); one left in the running is picked |
 | Finding to confirm (`web.discovered_item` pending, built by Smart Add's own `loadSavedFindings` → `buildQueue` → `foldQueue`) | right confirm · left reject · down not sure (nothing written) | Smart Add `persistAnswer` (its one confirm path; its `undo` on undo). A name is kept as an alias, never renamed. |
 | Brand candidate (`web.brand_choice` open) | right lead · up ours, not the face · left not us · down not sure | `web.brand_choice_decide(p_choice_id, p_action, p_reason, p_via)` |
-| A word held (part screen) | the same four | `web.brand_choice_correct` → a NEW row, origin `said`, value `{text, part_of, start, end}`, `grew_from` the candidate; re-placed / withdrawn through `decide` |
+| A word held (part screen) | the same four; tag it from the Who / Cares about rows (`categoryRows`), `+` adds a category with its answer | `web.brand_choice_correct` → a NEW row, origin `said`, value `{text, part_of, start, end, categories, category_ids}`, `grew_from` the candidate; re-placed / withdrawn through `decide`; a changed tag replaces the row; a category answer → `web.brand_audience_answer` |
 | Page agent rewording (write target `session_propose_rewording`) | — | `web.brand_choice_propose` → a NEW OPEN row, origin `ai`, `grew_from` the card |
 
-Order: findings first, then candidates by the element's `position`, oldest first; kept for the whole sitting
+Order: stances, then audience categories, then candidates by the element's `position` (oldest first), then findings; kept for the whole sitting
 (`keepOrder`) so an answered card stays where it was and undo brings it back in place. A candidate a run writes
 meanwhile joins the end. Undo is the deck's own unlimited undo: each change's inverse goes back through the same
 doors (a choice answer taken back = `retract`).
@@ -55,6 +58,27 @@ doors (a choice answer taken back = `retract`).
   red on the old bodies and green after: undeclared server refused (door + trigger), agent direct write refused,
   browser person passes (role authenticated, PostgREST headers), undo on re-place, element lock held.
 
+- `web.brand_choice_decide` also takes `shortlist` (decision `shortlisted`, person only, also in the trigger), and
+  `withdraw` of a chosen row restores what it had replaced (2026-10-22, cases 17-19).
+- `web.brand_audience_answer(p_brand_id, p_row, p_name, p_action, p_origin, p_via)` — SECURITY DEFINER, person only,
+  editor on the brand; finds or adds the category (child of its row, brand's organization) and the brand's one row about
+  it (`about` edge to the category), then decides it. Cases 20-21.
+- **REVIEW3 (2026-10-22), cases 22-27** — red on the old bodies, green after (and 1-21 green on the new ones):
+  - **Subject of a stance (C1).** `single_per_subject` supersedes on whatever subject the row has: its `about`
+    targets (the offering) and the PENDING offering finding it `grew_from`. `brand_choice_correct` copies the
+    answered row's `grew_from → web_discovered_item` edge onto the answer, so a stance answer is one per offering
+    before the offering is kept. `web._stance_follows_kept_offering` links the agent row AND every answer that grew
+    from it on a person's Yes, so `seo.map_foundation` reads the answer.
+  - **Who decides (I1).** Trigger `brand_choice_person_decides` fires on `decision, placement, decided_by`; any move
+    to or away from chosen / declined / shortlisted / parked / superseded needs tier `user`, `auth.uid()` and
+    `decided_by = auth.uid()`. The decide door's own supersede / restore / retract writes carry the transaction-local
+    flag `web.brand_choice_door` (set and restored inside the door; still tier `user`).
+  - **Test seats (I4).** A seat (`platform.non_person_account_ids()` + `agent_test_account_ids()`, admin@admin.com
+    included) may answer, but `decide` refuses its change to a person's decided row and never supersedes or restores
+    a person's row; its Yes / No on an offering finding fires neither stance trigger.
+  - **Audience origin.** `brand_audience_answer` takes origin `said` or `team` only; the deck always sends `said`.
+- Data design: common-docs `projects/brand-discovery/DATA-MODEL.md` § The brand session's answers.
+
 ## Live refresh
 
 The deck's query is under the brand's key (`["marketing","brand",<id>,"session-deck"]`); the page mounts
@@ -75,4 +99,7 @@ chrome on the page.
   choices elsewhere (the decide door's `retract` serves any screen).
 
 ## Change log
+- 2026-10-22 — REVIEW3: a stance answer is one per offering and reaches the topical map (subject = `about` or the pending finding); only a person moves a decided value (trigger on decision/placement/decided_by, door flag); test seats never displace a person; a second editor's answer withdraws only their own (`personId`, `created_by` read); audience answers are origin `said`. Proof: rollback cases 22-27; jest `deck.test.ts`.
+- 2026-10-22 — Stances first (four swipes, the agent's precise stance as the Suggestion), audience categories with their answer, word tags, taglines and one-liners as picks; the audience door and `shortlist`.
+- 2026-10-22 — Cards no longer repeat their four answers as rows under the text (`choicesOnCard={false}`): the edges are the answers (owner rule: nothing on the screen but the thing being asked about).
 - 2026-10-22 — Created: decide/correct/propose doors, the deck binding, the route, the surface.

@@ -132,6 +132,27 @@ export function useCloudBrowser(
     void load(initialProfileId ?? "", initialRunId);
   }, [initialProfileId, initialRunId, load]);
 
+  /**
+   * Re-read THIS run's row, quietly (no loading state). A viewer calls it when
+   * its live picture goes away: a run the server ended — its browser died and
+   * could not restart (2026-10-22) — then shows its honest failed state instead
+   * of reconnecting to an empty stream for good.
+   */
+  const checkRun = useCallback(async () => {
+    const runId = run?.id;
+    const profileId = activeProfileId;
+    if (!runId || !profileId) return;
+    try {
+      const snap = target
+        ? await service.loadSnapshot(profileId, runId, { target })
+        : await service.loadSnapshot(profileId, runId);
+      if (snap.run?.id === runId) dispatch(hydrateSnapshot(snap));
+    } catch {
+      // A failed check changes nothing on screen; the viewer's own
+      // reconnect/expired states stay in charge.
+    }
+  }, [run?.id, activeProfileId, target, dispatch]);
+
   // D-8 tier 1 — the DEFAULT face stays live for as long as this panel is
   // mounted. `load` above is the one-shot hydrate; this is what keeps it true.
   // Stops on unmount, on a terminal run, and while the tab is hidden.
@@ -320,6 +341,13 @@ export function useCloudBrowser(
      */
     retry: () =>
       load(activeProfileId ?? initialProfileId ?? "", initialRunId),
+    /**
+     * A FRESH run on the same profile — the way back from a run whose browser
+     * died ("Browser not running", `browser_not_running`). Never the dead run's
+     * id: re-reading it would only show the same failure again.
+     */
+    restart: () => load(activeProfileId ?? initialProfileId ?? "", null),
+    checkRun,
     takeControl,
     requestControl,
     returnControl,

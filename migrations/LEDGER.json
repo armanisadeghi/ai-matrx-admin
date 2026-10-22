@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-22T03:38:37.537Z",
+  "generated_at": "2026-10-22T09:17:38.978Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -487,6 +487,18 @@
       "filename": "20261022000000_closeview_a_a_past_page_lists_only_the_rows_there_were_then.sql",
       "checksum": "90c0f7029e54364dec81052003e63590054e50312c7c103bd78ec7a3920e9efa",
       "applied_at": "2026-10-22 00:36:42.639929+00"
+    },
+    "migrations/campaign/20261022010000_closelink_g_a_link_can_point_at_several_tables.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261022010000_closelink_g_a_link_can_point_at_several_tables.sql",
+      "checksum": "7e5d4925fff019519c69bc25cdbade0d59ff8d3514879ebc0c99c3e6bb70e9fc",
+      "applied_at": "2026-10-22 08:31:16.019953+00"
+    },
+    "migrations/campaign/20261022090000_closeshare_d_a_table_known_through_a_shared_row_opens_by_id.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261022090000_closeshare_d_a_table_known_through_a_shared_row_opens_by_id.sql",
+      "checksum": "502ffba020ef5da8b062e641606a60499e715618a973f006d4ebb9014092824b",
+      "applied_at": "2026-10-22 09:06:11.144877+00"
     },
     "migrations/campaign/20261022240000_readspeed6_a_a_column_write_holds_only_the_tables_it_feeds.sql": {
       "source": "matrx-frontend",
@@ -1376,6 +1388,18 @@
       "checksum": "0b064d5a23fd69df6896289d5c368dcb96320f7d3b95c75ec0c849bc696196f2",
       "applied_at": "2026-09-20 19:34:26.452869+00"
     },
+    "migrations/campaign/bookingx_a_a_booking_page_seats_takes_turns_carries_a_video_room_and_skips_busy_times.inverse.sql": {
+      "source": "matrx-frontend",
+      "filename": "bookingx_a_a_booking_page_seats_takes_turns_carries_a_video_room_and_skips_busy_times.inverse.sql",
+      "checksum": "f4079b6d6480a5b1642122aa861dfc6c242032591e2834e86b422c522aa66721",
+      "applied_at": "2026-10-22 08:58:59.823205+00"
+    },
+    "migrations/campaign/bookingx_a_a_booking_page_seats_takes_turns_carries_a_video_room_and_skips_busy_times.sql": {
+      "source": "matrx-frontend",
+      "filename": "bookingx_a_a_booking_page_seats_takes_turns_carries_a_video_room_and_skips_busy_times.sql",
+      "checksum": "05e1052f565a7a0348f2fd03c34f9768e83a355e3318dde17adb1ff1f60253f1",
+      "applied_at": "2026-10-22 08:59:39.389093+00"
+    },
     "migrations/campaign/builders_a_booking_page_that_can_never_write_down.sql": {
       "source": "matrx-frontend",
       "filename": "builders_a_booking_page_that_can_never_write_down.sql",
@@ -2215,6 +2239,18 @@
       "filename": "close_core_a_c_a_a_field_a_retype_makes_apply_is_required.sql",
       "checksum": "fcfb32abd1a052a7a84cdade8fd91cfb8dd447415c5e4f4d4d24d684d86dbde9",
       "applied_at": "2026-10-22 00:44:28.25241+00"
+    },
+    "migrations/campaign/close_core_b_a_a_every_column_of_a_typed_table.sql": {
+      "source": "matrx-frontend",
+      "filename": "close_core_b_a_a_every_column_of_a_typed_table.sql",
+      "checksum": "192533a2c1e96ccf64aaa3422658862b4161d2156f10542c7a364e25e8de8a4c",
+      "applied_at": "2026-10-22 08:17:10.174885+00"
+    },
+    "migrations/campaign/close_core_b_a_b_a_table_page_opens_with_every_column.sql": {
+      "source": "matrx-frontend",
+      "filename": "close_core_b_a_b_a_table_page_opens_with_every_column.sql",
+      "checksum": "4f5641b6bae58d65f7aa73950581d60d4a5215f499aa6eb7e7513eb01428c2e1",
+      "applied_at": "2026-10-22 09:06:28.772716+00"
     },
     "migrations/campaign/closeperf_a_a_a_door_probe_follows_its_door_when_an_argument_is_added.sql": {
       "source": "matrx-frontend",
@@ -3763,6 +3799,18 @@
       "filename": "drillledger_a_recount_never_queues_behind_a_rebuild.sql",
       "checksum": "3e5bbe2b643ee0b28b7b053583eebd2565686d0ba612ae7a4bd63c71ad4b883c",
       "applied_at": "2026-10-03 00:37:15.386839+00"
+    },
+    "migrations/campaign/drillnightrecords_a_records_say_their_own_noun.sql": {
+      "source": "matrx-frontend",
+      "filename": "drillnightrecords_a_records_say_their_own_noun.sql",
+      "checksum": "dd09b48a2f11009227369b63d1ed6712fe6c952231fa2a1e68b0fc4a59060b49",
+      "applied_at": "2026-10-22 09:46:21.707193+00"
+    },
+    "migrations/campaign/drillnightrecords_drill_declares_agents_by_model_and_ai_calls_and_ai_usage_and_structured_logs_and_tool_refetch.sql": {
+      "source": "matrx-frontend",
+      "filename": "drillnightrecords_drill_declares_agents_by_model_and_ai_calls_and_ai_usage_and_structured_logs_and_tool_refetch.sql",
+      "checksum": "370ec324c70d70ffab31efb86fd50d2f6a12f8eaf17f14f6caa32bb2fff3e297",
+      "applied_at": "2026-10-22 09:47:24.907138+00"
     },
     "migrations/campaign/drillstandarddoor_drill_declares_agents_by_model.sql": {
       "source": "matrx-frontend",
@@ -7831,6 +7879,18 @@
       "filename": "reltargets_a_relation_across_organizations_holds_its_value.sql",
       "checksum": "ad8d55a20e1b5b7b79c4e7d7e4a1ce46427b0d74c2928f5ab8092cba5f7cd165",
       "applied_at": "2026-09-23 09:57:53.072928+00"
+    },
+    "migrations/campaign/restoreadvance_a_every_restore_call_advances_or_says_why.sql": {
+      "source": "matrx-frontend",
+      "filename": "restoreadvance_a_every_restore_call_advances_or_says_why.sql",
+      "checksum": "90baf6ef7d6f5d0543914d5b9fadccaca4b832903d7a2d6d947155a320f00280",
+      "applied_at": "2026-10-22 09:12:22.972075+00"
+    },
+    "migrations/campaign/restoreadvance_b_a_restore_call_never_starts_an_item_it_cannot_finish.sql": {
+      "source": "matrx-frontend",
+      "filename": "restoreadvance_b_a_restore_call_never_starts_an_item_it_cannot_finish.sql",
+      "checksum": "6b94fdc1dfe12bf4806a6c3e246751f6accbf0a252029475201cb7b9c501dbf3",
+      "applied_at": "2026-10-22 09:17:37.822164+00"
     },
     "migrations/campaign/reversible_a_an_archive_acts_at_once_and_offers_undo.sql": {
       "source": "matrx-frontend",

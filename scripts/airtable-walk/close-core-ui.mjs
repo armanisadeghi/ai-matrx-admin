@@ -12,7 +12,7 @@ import { mkdirSync, existsSync } from "node:fs";
 import { admin as adminStore, say } from "./at-fix-j-lib.mjs";
 import { ORIGIN } from "./lib.mjs";
 const STATE = process.env.HOME + "/lane-resume/close-core-state/";
-const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r2-";
+const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r3-";
 mkdirSync(process.env.HOME + "/lane-resume/close-core-shots", { recursive: true });
 const parts = process.argv.slice(2).length ? process.argv.slice(2) : ["admin", "member"];
 const MEMBER = "4060701e-706a-4c76-b3ca-0bbc69fa5a14"; // test@test.com
@@ -115,6 +115,7 @@ try {
         if (!item) { check(false, `CD-CORE-04 Insert column ${side} is on the header menu`, await menuItems(page)); continue; }
         await item.click();
         await fillNewColumnDialog(page, `Ins ${side}`);
+        await page.waitForTimeout(8000);
       }
       await page.reload({ waitUntil: "domcontentloaded" });
       await page.waitForSelector("[data-table-toolbar]", { timeout: 900000 }); await page.getByText("Alpha", { exact: true }).first().waitFor({ timeout: 300000 }); await page.waitForTimeout(2500);

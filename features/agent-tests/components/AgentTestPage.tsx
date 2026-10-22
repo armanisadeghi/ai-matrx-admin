@@ -211,6 +211,11 @@ function CaseList({
   );
 }
 
+/** A paused run resumes; a canceled run resumes too (the server reopens it for the results still pending). */
+export function runCanResume(status: string): boolean {
+  return status.startsWith("paused_") || status === "cancelled";
+}
+
 /**
  * One test run: progress, cancel/resume/re-check, its results and the open
  * result's checks + judge. The ONE run view — the Agent Studio's Cases tab
@@ -314,7 +319,7 @@ export function TestRunPanel({
 
   const paused = run.status.startsWith("paused_");
   // A canceled run continues too: the server reopens it for the results still pending.
-  const canResume = paused || run.status === "cancelled";
+  const canResume = runCanResume(run.status);
   return (
     <div className="flex flex-col gap-3">
       <RecordId value={runId} label="Run" token="agent_test_run" />

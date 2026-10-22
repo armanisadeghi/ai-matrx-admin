@@ -45,7 +45,7 @@ import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
 import {
   FLASHCARD_SOURCE_DELIVERIES,
   backfillFileIds,
-  lineageSourceOf,
+  lineageSourcesOf,
 } from "@/features/flashcards/data/generateDeckFromSources";
 import { useTabBoundRun, type TabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
 import { associationsService } from "@/features/scopes/service/associationsService";
@@ -63,6 +63,8 @@ import type { ClassTest } from "../classTests";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const config = PRACTICE_TEST_CONFIG;
 const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
+const TOPUP_EXTRA_KINDS = ["fc_set"] as const;
 const FOCUS_MAX = 2000;
 
 const questionCount = (n: number) => `${n} ${n === 1 ? "question" : "questions"}`;
@@ -312,7 +314,8 @@ function MakePracticeTestDialog({
             title: assessment.title,
             detail: questionCount(made.questions.length),
           };
-          const linkSources = made.sources.map(lineageSourceOf);
+          // Record-store Sources (tables, pick lists) have no lineage edge (lineageSourcesOf).
+          const linkSources = lineageSourcesOf({ ...resolved, sources: made.sources });
           announceLineage(
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),
@@ -357,6 +360,7 @@ function MakePracticeTestDialog({
             title="Sources"
             purpose="the questions"
             kinds={TOPUP_KINDS}
+            extraKinds={TOPUP_EXTRA_KINDS}
             required
             deliveries={FLASHCARD_SOURCE_DELIVERIES}
           />

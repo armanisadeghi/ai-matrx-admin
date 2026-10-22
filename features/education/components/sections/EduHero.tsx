@@ -6,6 +6,7 @@ import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RichContentServer } from "@ai-matrx/rich-content/levels/server/RichContentServer";
 import type { EduLink } from "../../types";
+import { EduHeroAudienceLink } from "./EduHeroAudienceLink";
 
 interface EduHeroProps {
   /** Small pill above the headline. */
@@ -18,6 +19,13 @@ interface EduHeroProps {
   /** Hero chips (e.g. grade range, "12 subjects"). */
   chips?: string[];
   primary?: EduLink;
+  /**
+   * What a SIGNED-IN person gets in place of `primary` (null: nothing). Set it
+   * when `primary` is a visitor pitch ("Start studying free") — a signed-in
+   * person never gets a sign-up pitch for what they already have. Omitted:
+   * everyone sees `primary`.
+   */
+  primarySignedIn?: EduLink | null;
   secondary?: EduLink;
 }
 
@@ -29,6 +37,7 @@ export function EduHero({
   description,
   chips,
   primary,
+  primarySignedIn,
   secondary,
 }: EduHeroProps) {
   return (
@@ -78,7 +87,9 @@ export function EduHero({
         ) : null}
         {(primary || secondary) && (
           <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
-            {primary ? (
+            {primary && primarySignedIn !== undefined ? (
+              <EduHeroAudienceLink guest={primary} signedIn={primarySignedIn} />
+            ) : primary ? (
               <Button hero
                 variant="primary"
                 className="w-full sm:w-auto"

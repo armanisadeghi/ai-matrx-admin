@@ -30,6 +30,7 @@ import { DesktopFilterPanel } from "@ai-matrx/chat/agents/components/shared/Desk
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { buildAgentDeleteConfirm } from "@/features/agents/deletion/agentDeleteConfirm";
 import { Button } from "@/components/ui/button";
+import { Button as ControlButton, SearchField } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
@@ -658,49 +659,33 @@ export function AgentsGrid() {
               hasShared={hasShared}
             />
 
-            {/* Search */}
+            {/* Search — THE search control; the Prompts toggle and clear sit in its end slot */}
             <div className="flex-1 relative">
-              <div className="flex items-center gap-3 p-1 rounded-md border border-border bg-card">
-                <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search agents..."
-                  className="flex-1 bg-transparent border-0 outline-none text-base text-foreground placeholder:text-muted-foreground"
-                />
-                {isServerSearching && (
-                  <Loader2 className="h-4 w-4 text-muted-foreground animate-spin flex-shrink-0" />
-                )}
-                {searchTerm && (
-                  <button
-                    onClick={() => setDeepSearch(!deepSearch)}
-                    title={
-                      deepSearch
-                        ? "Searching prompts too; click for names and tags only"
-                        : "Also search inside agent prompts"
-                    }
-                    aria-pressed={deepSearch}
-                    className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex-shrink-0",
-                      deepSearch
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted/50",
+              <SearchField
+                className="w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search agents"
+                end={
+                  <>
+                    {isServerSearching && <Loader2 className="h-4 w-4 text-muted-foreground animate-spin flex-shrink-0" />}
+                    {searchTerm && (
+                      <ControlButton
+                        variant={deepSearch ? "primary" : "quiet"}
+                        onClick={() => setDeepSearch(!deepSearch)}
+                        title={deepSearch ? "Searching prompts too; click for names and tags only" : "Also search inside agent prompts"}
+                        aria-pressed={deepSearch}
+                        icon={<FileSearch />}
+                      >
+                        Prompts
+                      </ControlButton>
                     )}
-                  >
-                    <FileSearch className="h-3.5 w-3.5" />
-                    Prompts
-                  </button>
-                )}
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="p-1.5 hover:bg-muted/50 rounded-lg transition-colors flex-shrink-0"
-                  >
-                    <X className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                )}
-              </div>
+                    {searchTerm && (
+                      <ControlButton variant="quiet" removes aria-label="Clear search" icon={<X />} onClick={() => setSearchTerm("")} />
+                    )}
+                  </>
+                }
+              />
             </div>
 
             {/* Ownership tabs (only when shared agents exist) */}

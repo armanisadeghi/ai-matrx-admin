@@ -88,7 +88,8 @@ test("organization mode reads the organization's doors, names the owner, and res
   expect(container.textContent).toContain("Dana Ruiz");
   expect(container.querySelector('[aria-label="Filter by member"]')).not.toBeNull();
 
-  const restore = [...container.querySelectorAll("button")].find((b) => b.textContent?.includes("Restore"))!;
+  // The row's own Restore (each row also carries a selection checkbox, and the bulk bar can offer "Restore").
+  const restore = [...container.querySelectorAll("li[data-trash-id] button")].find((b) => b.textContent?.includes("Restore")) as HTMLButtonElement;
   await act(async () => {
     restore.click();
   });

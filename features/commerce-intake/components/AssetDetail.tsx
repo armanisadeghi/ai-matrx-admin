@@ -14,12 +14,15 @@
 import { StaleDataNotice } from "@ai-matrx/design-system";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Loader2, QrCode, RotateCw } from "lucide-react";
+import { Camera, FileAudio, Loader2, QrCode, RotateCw, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { CaptureThumb } from "@/features/media-capture/components/CaptureThumb";
+import { FileRightClickMenu } from "@/features/files/components/core/FileContextMenu/FileRightClickMenu";
+import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
+import { AssetPipelineResults } from "@/features/commerce-review/components/AssetPipelineResults";
 import {
   CommitField,
   EditableRows,
@@ -85,8 +88,11 @@ export function AssetDetail({ assetId }: { assetId: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    void (async () => {
+    // Deferred a tick — no synchronous setState in the effect body (React
+    // Compiler rule); the loading flag and the read start together.
+    const timer = setTimeout(() => void (async () => {
+      if (cancelled) return;
+      setLoading(true);
       try {
         const [loaded, arts, ids] = await Promise.all([
           loadAsset(assetId),
@@ -105,9 +111,10 @@ export function AssetDetail({ assetId }: { assetId: string }) {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    })(), 0);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [assetId, adopt, reloadNonce]);
 
@@ -125,20 +132,56 @@ export function AssetDetail({ assetId }: { assetId: string }) {
     }
   }, [notesDraft, adopt]);
 
+  // Attribute rows are a LOCAL DRAFT over `asset.attributes`: a freshly added
+  // row has no name yet, and only named rows persist — deriving the rows from
+  // the saved object made "Add attribute" vanish on its own save (the blank
+  // row was dropped from the write, then re-derived away). The draft re-seeds
+  // when the saved attributes change underneath it (adjust-during-render).
+  // Re-seed on CONTENT change, never on object identity: every guarded write
+  // (a notes autosave, Mark captured) adopts a fresh row object, and re-seeding
+  // on identity dropped the unnamed row a person was still naming. Unnamed
+  // draft rows ride across a re-seed untouched.
+  const savedAttributes = asset?.attributes ?? null;
+  const savedKey = JSON.stringify(savedAttributes ?? {});
+  const [attributeRows, setAttributeRows] = useState<AttributeRow[]>([]);
+  const [seededFrom, setSeededFrom] = useState<string | null>(null);
+  if (savedKey !== seededFrom) {
+    setSeededFrom(savedKey);
+    setAttributeRows((prev) => [
+      ...Object.entries(savedAttributes ?? {}).map(([key, value]) => ({
+        key,
+        value,
+      })),
+      ...prev.filter((r) => !r.key.trim()),
+    ]);
+  }
+
   const saveAttributes = useCallback(
     async (rows: AttributeRow[]) => {
       const current = assetRef.current;
       if (!current) return;
+      setAttributeRows(rows);
       const attributes: Record<string, string> = {};
       for (const row of rows) {
         const k = row.key.trim();
         if (k) attributes[k] = row.value;
       }
-      // Optimistic local rows keep typing fluid; the CAS save adopts the row
-      // that lands.
-      adopt({ ...current, attributes });
+      // Only NAMED rows reach the row; an unnamed draft row stays on screen
+      // until it is named. Nothing to write when the named set is unchanged.
+      const unchanged =
+        JSON.stringify(attributes) === JSON.stringify(current.attributes);
+      if (unchanged) return;
       try {
-        adopt(await setAssetAttributes(current, attributes));
+        const saved = await setAssetAttributes(current, attributes);
+        // Adopt the saved row but keep the unnamed draft rows the user is
+        // still typing in.
+        const drafts = rows.filter((r) => !r.key.trim());
+        setSeededFrom(JSON.stringify(saved.attributes ?? {}));
+        setAttributeRows([
+          ...Object.entries(saved.attributes).map(([key, value]) => ({ key, value })),
+          ...drafts,
+        ]);
+        adopt(saved);
       } catch (err) {
         console.error("[commerce-intake] attributes save failed", err);
         toast.error("Could not save the attributes.");
@@ -201,9 +244,6 @@ export function AssetDetail({ assetId }: { assetId: string }) {
     );
   }
 
-  const attributeRows: AttributeRow[] = Object.entries(asset.attributes).map(
-    ([key, value]) => ({ key, value }),
-  );
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 pb-safe">
@@ -212,12 +252,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
         <div className="flex items-center gap-1.5 overflow-x-auto rounded-xl border border-border bg-card p-2">
           {artifacts.map((a) =>
             a.fileId ? (
-              <div
-                key={a.id}
-                className="relative h-20 w-16 shrink-0 overflow-hidden rounded bg-muted"
-              >
-                <CaptureThumb fileId={a.fileId} alt={`${a.kind} artifact`} />
-              </div>
+              <ArtifactTile key={a.id} fileId={a.fileId} kind={a.kind} />
             ) : null,
           )}
         </div>
@@ -325,6 +360,17 @@ export function AssetDetail({ assetId }: { assetId: string }) {
         )}
       </PanelSection>
 
+      <AssetPipelineResults
+        assetId={asset.id}
+        instantAnalysis={
+          asset.metadata.instant_analysis &&
+          typeof asset.metadata.instant_analysis === "object" &&
+          !Array.isArray(asset.metadata.instant_analysis)
+            ? (asset.metadata.instant_analysis as Record<string, unknown>)
+            : null
+        }
+      />
+
       <PanelSection title="Attributes">
         <EditableRows<AttributeRow>
           rows={attributeRows}
@@ -386,5 +432,45 @@ export function AssetDetail({ assetId }: { assetId: string }) {
         }}
       />
     </div>
+  );
+}
+
+/**
+ * One artifact in the strip. A photo shows its thumbnail; audio and video
+ * show their media kind (a thumbnail transport cannot draw them — that is
+ * how they used to render as "Image failed to load" tiles). Every tile
+ * opens the canonical File Preview and carries the universal file menu.
+ */
+function ArtifactTile({
+  fileId,
+  kind,
+}: {
+  fileId: string;
+  kind: IntakeArtifact["kind"];
+}) {
+  const label =
+    kind === "video" ? "Video" : kind === "audio" ? "Voice note" : "Photo";
+  return (
+    <FileRightClickMenu fileId={fileId}>
+      <button
+        type="button"
+        onClick={() => openFilePreview(fileId)}
+        aria-label={`Preview ${label.toLowerCase()}`}
+        className="relative h-20 w-16 shrink-0 overflow-hidden rounded bg-muted"
+      >
+        {kind === "photo" ? (
+          <CaptureThumb fileId={fileId} alt="Photo" />
+        ) : (
+          <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+            {kind === "video" ? (
+              <Video className="h-6 w-6" />
+            ) : (
+              <FileAudio className="h-6 w-6" />
+            )}
+            <span className="text-[10px]">{label}</span>
+          </span>
+        )}
+      </button>
+    </FileRightClickMenu>
   );
 }

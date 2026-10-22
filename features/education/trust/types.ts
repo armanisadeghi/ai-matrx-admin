@@ -91,7 +91,8 @@ export type RecordCitationKind =
   | "pick_list"
   | "saved_result"
   | "document" // a markdown document (content.document)
-  | "udt_document"; // a cloud document (workbench.udt_documents)
+  | "udt_document" // a cloud document (workbench.udt_documents)
+  | "flashcard_deck"; // a flashcard deck (education.fc_set), cited by card range
 
 export const RECORD_CITATION_KINDS: readonly RecordCitationKind[] = [
   "conversation",
@@ -100,6 +101,7 @@ export const RECORD_CITATION_KINDS: readonly RecordCitationKind[] = [
   "saved_result",
   "document",
   "udt_document",
+  "flashcard_deck",
 ];
 
 /**

@@ -11,7 +11,8 @@
 
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, ExternalLink, MapPin, Pencil, Plus, Star, X } from "lucide-react";
+import { Check, ExternalLink, MapPin, Pencil, Star, X } from "lucide-react";
+import { AddTile, MediaOption } from "@ai-matrx/design-system";
 import { Badge, Button, Chip } from "@ai-matrx/design-system/controls";
 import { formatCount, formatPoints } from "@ai-matrx/kit/format";
 
@@ -186,11 +187,9 @@ export function Lineup({
         ))}
         {canAdd ? (
           <li>
-            <Button variant="quiet" icon={<Plus className="h-5 w-5" />}
-              onClick={() => onRows((rs) => [...rs, newRow(places && near.trim() ? { city: near.trim(), cityFromNear: true, focus: true } : { focus: true })])}
-              className="h-full min-h-40 w-full flex-col gap-2 rounded-2xl border border-dashed border-border">
+            <AddTile onClick={() => onRows((rs) => [...rs, newRow(places && near.trim() ? { city: near.trim(), cityFromNear: true, focus: true } : { focus: true })])}>
               Add another
-            </Button>
+            </AddTile>
           </li>
         ) : null}
       </ol>
@@ -327,21 +326,15 @@ function SlotAnswer({ row, photo, places, kind, onPick }: { row: CompareRow; pho
         <ul className="space-y-1">
           {row.candidates.slice(0, 5).map((c, n) => (
             <li key={`${c.match.item.url ?? c.match.url ?? c.match.name}-${n}`}>
-              <button type="button" data-clickable="" onClick={() => onPick(c)}
-                className="flex w-full min-w-0 items-center gap-2.5 rounded-xl border border-border bg-background p-2 text-left transition-colors hover:border-primary">
-                <ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={36} fill={photo} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate type-secondary font-medium text-foreground">{c.match.name}</span>
-                  <span className="block truncate type-meta text-muted-foreground">
-                    {[c.category, c.match.detail].filter(Boolean).join(" · ")}
-                  </span>
-                </span>
-                {c.match.rating !== null ? (
-                  <span className="type-meta inline-flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground">
-                    <Star className="h-3 w-3 fill-current text-warning" aria-hidden />{c.match.rating.toFixed(1)}
-                  </span>
-                ) : null}
-              </button>
+              <MediaOption onClick={() => onPick(c)} size={48}
+                media={<ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={48} fill={photo} />}
+                title={c.match.name}
+                lines={[c.category?.split(",")[0], c.match.detail && !(c.category ?? "").startsWith(c.match.detail) ? c.match.detail : null]}
+                facts={c.match.rating !== null ? (
+                  <><Star className="h-3 w-3 fill-current text-warning" aria-hidden />
+                    <span className="font-medium tabular-nums text-foreground">{c.match.rating.toFixed(1)}</span>
+                    {c.match.reviews_count !== null ? <span className="tabular-nums">({formatCount(c.match.reviews_count)})</span> : null}</>
+                ) : undefined} />
             </li>
           ))}
         </ul>

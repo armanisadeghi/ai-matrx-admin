@@ -5,7 +5,7 @@ import { chromium } from "playwright";
 import { declareTable } from "@ai-matrx/records/core";
 import { admin as adminStore, say } from "./at-fix-j-lib.mjs";
 import { ORIGIN } from "./lib.mjs";
-const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r2-375b-";
+const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r3-375b-";
 const { client } = await adminStore();
 const t = await declareTable(client, { name: `CC phone ${Math.random().toString(36).slice(2, 6)}`, fields: [
   { key: "name", label: "Name", type: "text", sort: 10 },

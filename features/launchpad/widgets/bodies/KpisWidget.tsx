@@ -22,8 +22,13 @@ export function KpisWidget({ config }: LaunchpadWidgetBodyProps) {
   const { metrics, isLoading, isError } = useDashboardMetrics();
   const cards = kpiCards(configText(config, "keys"));
   return (
-    // Phone: a two-column grid (the slot grows by its known rows — the widget's phone placement); wider: one row.
-    <ul className="grid h-full grid-cols-2 auto-rows-[52px] gap-1 md:auto-rows-auto md:grid-flow-col md:auto-cols-[minmax(8rem,1fr)] md:grid-cols-none">
+    // The grid's phone layout (its container under 40rem, the same test the grid canvas draws by): two tiles a
+    // row at KPI_TILE_PX, KPI_GAP_PX apart — the height `kpiPhoneBodyPx` reserves before this body draws.
+    // Wider: one row. Classes are literal for Tailwind; the guard test ties them to the constants.
+    <ul
+      data-launchpad-kpis
+      className="grid h-full grid-cols-2 auto-rows-[52px] gap-1 @min-[40rem]/matrx-grid-canvas:auto-rows-auto @min-[40rem]/matrx-grid-canvas:grid-flow-col @min-[40rem]/matrx-grid-canvas:auto-cols-[minmax(8rem,1fr)] @min-[40rem]/matrx-grid-canvas:grid-cols-none"
+    >
       {cards.map((card) => {
         const value = metrics[card.key];
         return (

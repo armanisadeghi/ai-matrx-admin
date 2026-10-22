@@ -154,6 +154,17 @@ export interface AssetReviewRow {
   metadata: Json;
 }
 
+/** The slice of `commerce.marketplace_account` the connect page reads. */
+export interface MarketplaceAccountRow {
+  id: string;
+  organization_id: string;
+  marketplace_provider: string;
+  health_status: string;
+  store_name: string | null;
+  username_observed: string | null;
+  deleted_at: string | null;
+}
+
 type TableShape<Row> = {
   Row: Row;
   Insert: Partial<Row>;
@@ -168,6 +179,7 @@ export interface CommerceReviewSchema {
     recall_audit: TableShape<RecallAuditRow>;
     human_correction: TableShape<HumanCorrectionRow>;
     asset_review: TableShape<AssetReviewRow>;
+    marketplace_account: TableShape<MarketplaceAccountRow>;
   };
   Views: Record<string, never>;
   Functions: Record<string, never>;
@@ -226,12 +238,13 @@ export interface DraftField {
 export type AttentionKind =
   | "recall_disagreement"
   | "recall_escalation"
-  | "high_impact_unknown";
+  | "high_impact_unknown"
+  | "blocked_asset";
 
 /** One attention row — each opens its asset. */
 export interface AttentionItem {
   kind: AttentionKind;
-  /** recall_audit.id or asset_unknown.id. */
+  /** recall_audit.id, asset_unknown.id, or intake_asset.id (blocked_asset). */
   id: string;
   assetId: string | null;
   /** The organization the row belongs to (queues read across all of them). */

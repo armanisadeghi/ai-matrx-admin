@@ -10,7 +10,9 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Badge, Button, PropertyRow, RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { callApi } from "@/lib/api/call-api";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
@@ -74,7 +76,10 @@ export function BrandResearchReadiness({ brandId, organizationId }: { brandId: s
       }),
     );
     if (result.error) setError(result.error.message || "Readiness could not be read.");
-    else if (isReadiness(result.data)) setReadiness(result.data);
+    else if (isReadiness(result.data)) {
+      setError(null);
+      setReadiness(result.data);
+    } else setError("Readiness came back in a shape this page cannot read.");
   };
 
   // Re-checked on every visit and whenever the brand changes (nothing is cached server-side either).
@@ -82,9 +87,16 @@ export function BrandResearchReadiness({ brandId, organizationId }: { brandId: s
     void load(false);
   }, [brandId]);
 
+  // Each server action key opens its own existing door; a key with no door here shows no button (never a guess).
+  const ACTION_HREF: Record<string, (id: string) => string> = {
+    confirm_identity: smartAddEnrichHref,
+    review_results: smartAddValidateHref,
+    owner_questions: marketingRoutes.brandOwnerStory,
+    crawl_site: marketingRoutes.brandWebsites,
+  };
   const open = (key: string) => {
-    const href = key === "review_results" ? smartAddValidateHref(brandId) : smartAddEnrichHref(brandId);
-    startTransition(() => router.push(href));
+    const to = ACTION_HREF[key];
+    if (to) startTransition(() => router.push(to(brandId)));
   };
 
   const start = async (custom: boolean) => {
@@ -121,7 +133,16 @@ export function BrandResearchReadiness({ brandId, organizationId }: { brandId: s
         </Button>
       }
     >
-      {error ? <p className="type-body text-muted-foreground">{error}</p> : null}
+      {error ? (
+        <div className="flex items-center gap-2">
+          <p className="type-body text-muted-foreground">{error}</p>
+          <ErrorAlchemyMenu error={error} />
+          <Button variant="outline" onClick={() => void load(false)}>
+            Try again
+          </Button>
+        </div>
+      ) : null}
+      {!readiness && !error ? <RegionSkeleton shape="rows" count={4} aria-label="Reading research readiness" /> : null}
       {(readiness?.areas ?? []).map((area) => (
         <div key={area.key} className="grid gap-2 py-2">
           <div className="flex items-center gap-2">
@@ -135,8 +156,11 @@ export function BrandResearchReadiness({ brandId, organizationId }: { brandId: s
             if (!c) return null;
             return (
               <div key={key} className="flex items-center gap-3">
+                <Badge tone={c.met ? "success" : c.met === false ? "warning" : "neutral"}>
+                  {c.met ? "Met" : c.met === false ? "Missing" : "Not measured"}
+                </Badge>
                 <PropertyRow label={c.label} value={c.met ? c.detail : (c.missing ?? c.detail)} />
-                {!c.met && c.action ? (
+                {!c.met && c.action && ACTION_HREF[c.action.key] ? (
                   <Button variant="outline" onClick={() => open(c.action?.key ?? "")}>
                     {c.action.label}
                   </Button>

@@ -176,5 +176,14 @@ export interface LaunchpadDoc {
   bindings?: LaunchpadBinding[];
 }
 
-/** `slot` of a launchpad row: unique per organization copy of the table. */
-export type LaunchpadSlot = `org:${string}` | `person:${string}:${string}`;
+/**
+ * `slot` of a launchpad row: unique per organization copy of the table. `org:<key>` = the organization's launchpad
+ * (every member sees it); `person:<uuid>:<key>` = one person's. A launchpad saved as a template is a copy in the
+ * same table under `template:org:<key>` (the organization's templates) or `template:person:<uuid>:<key>` (one
+ * person's) — never listed as a launchpad (amendment 2026-10-22, lane T).
+ */
+export type LaunchpadSlot =
+  | `org:${string}`
+  | `person:${string}:${string}`
+  | `template:org:${string}`
+  | `template:person:${string}:${string}`;

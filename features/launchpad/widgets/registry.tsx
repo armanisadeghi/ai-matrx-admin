@@ -1,7 +1,9 @@
 // features/launchpad/widgets/registry.tsx — THE ONE LAUNCHPAD WIDGET REGISTRY: each catalog entry with its body.
 // A body reads through its feature's own existing hook or service (no new data paths). The Start page's nine
 // widgets were adapted into this registry (their bodies moved here); Applets, launchpad links and any app page
-// (the Board's Page item) joined them.
+// (the Board's Page item) joined them; lane U folded in records-ui dashboards and EVERY Board item type
+// (`board_item`: the type's own Body for a saved record); lane W added any kind (`kind`, the ONE kind pipeline)
+// and a Space page (`space_page`, the Spaces editor through its fence door).
 import type { ComponentType } from "react";
 import { LAUNCHPAD_WIDGET_CATALOG } from "./catalog";
 import type { LaunchpadWidgetBodyProps, LaunchpadWidgetType } from "./types";
@@ -18,6 +20,10 @@ import { AppletWidget } from "./bodies/AppletWidget";
 import { LaunchpadLinkWidget } from "./bodies/LaunchpadLinkWidget";
 import { AppPageWidget } from "./bodies/AppPageWidget";
 import { MeetMatrxWidget } from "./bodies/MeetMatrxWidget";
+import { DashboardWidget } from "./bodies/DashboardWidget";
+import { BoardItemWidget } from "./bodies/BoardItemWidget";
+import { KindWidget } from "./bodies/KindWidget";
+import { SpacePageWidget } from "./bodies/SpacePageWidget";
 
 const BODIES: Record<string, ComponentType<LaunchpadWidgetBodyProps>> = {
   kpis: KpisWidget,
@@ -33,6 +39,10 @@ const BODIES: Record<string, ComponentType<LaunchpadWidgetBodyProps>> = {
   launchpad_link: LaunchpadLinkWidget,
   app_page: AppPageWidget,
   meet_matrx: MeetMatrxWidget,
+  records_dashboard: DashboardWidget,
+  board_item: BoardItemWidget,
+  kind: KindWidget,
+  space_page: SpacePageWidget,
 };
 
 export const LAUNCHPAD_WIDGETS: readonly LaunchpadWidgetType[] = LAUNCHPAD_WIDGET_CATALOG.flatMap((spec) => {

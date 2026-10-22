@@ -6,6 +6,7 @@
 // one `study_attempt` per spoken answer (item_type 'spoken_prompt', response_kind
 // 'spoken'). See FEATURE.md.
 
+import type { SourceSet } from "@ai-matrx/agents/sources";
 import type {
   GradeResult,
   TrustConfidence,
@@ -50,6 +51,10 @@ export interface PracticeSource {
   title: string;
   /** The grounding text passed to the designer as `study_material`. */
   material: string;
+  /** The Sources exactly as chosen on the Source input (kept on the session as its lineage). */
+  sourceSet?: SourceSet;
+  /** How each chosen Source was named on its card (the Source input's own map). */
+  sourceNames?: Record<string, { label: string; kind: string; sourceKind?: string }>;
 }
 
 /** One planned prompt: the agent's output + a client-minted id + assembled trust. */

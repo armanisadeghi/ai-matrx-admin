@@ -51,7 +51,7 @@ import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
 import {
   FLASHCARD_SOURCE_DELIVERIES,
   backfillFileIds,
-  lineageSourceOf,
+  lineageSourcesOf,
 } from "@/features/flashcards/data/generateDeckFromSources";
 import { useTabBoundRun, type TabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
 import { assessmentService } from "../data/assessmentService";
@@ -69,6 +69,8 @@ import { kindConfigFor } from "./kindConfig";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /** The top-up never offers "Just a topic": the questions come from material. */
 const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
+const TOPUP_EXTRA_KINDS = ["fc_set"] as const;
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   multiple_choice: "Multiple choice",
@@ -304,6 +306,8 @@ function AddMoreQuestionsDialog({
                 : config.kind === "practice_test"
                   ? "exam"
                   : "applied",
+            // Same exam styling as the questions it already has.
+            examType: assessment.exam_type ?? "",
             title: assessment.title,
             steer,
             existing: items.map((it) => ({ prompt: it.prompt, correctAnswer: it.correct_answer })),
@@ -347,7 +351,8 @@ function AddMoreQuestionsDialog({
             title: assessment.title,
             detail: `${questionCount(made.questions.length)} more`,
           };
-          const linkSources = made.sources.map(lineageSourceOf);
+          // Record-store Sources (tables, pick lists) have no lineage edge (lineageSourcesOf).
+          const linkSources = lineageSourcesOf({ ...resolved, sources: made.sources });
           announceLineage(
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),
@@ -413,6 +418,7 @@ function AddMoreQuestionsDialog({
         title="Sources"
         purpose="the new questions"
         kinds={TOPUP_KINDS}
+        extraKinds={TOPUP_EXTRA_KINDS}
         required
         deliveries={FLASHCARD_SOURCE_DELIVERIES}
         attachTo={{ entityType: "assessment", entityId: assessment.id, label: assessment.title }}

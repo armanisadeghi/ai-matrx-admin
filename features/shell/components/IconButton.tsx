@@ -26,10 +26,11 @@ const OUTER =
   "flex items-center justify-center w-11 h-11 min-w-11 shrink-0 p-0 cursor-pointer " +
   "bg-transparent! border-none! shadow-none! [-webkit-tap-highlight-color:transparent]";
 
-// 30×30 glass pill. overflow-hidden clips the backdrop-filter to the pill edge.
+// 30×30 glass box, 6px corners (THE CONTROL SHAPE, Arman 2026-10-21). overflow-hidden clips the
+// backdrop-filter to the box edge.
 const GLASS =
   "flex items-center justify-center w-[1.875rem] h-[1.875rem] min-w-[1.875rem] max-w-[1.875rem] " +
-  "rounded-full overflow-hidden shrink-0";
+  "rounded-md overflow-hidden shrink-0";
 
 // 16×16 icon area; the svg fills it.
 const ICON =

@@ -29,6 +29,7 @@
 // worse. `useLiveRunHandle` owns the kept-alive instance (released on the next
 // run and on unmount).
 
+import { recordPracticeLineage } from "../data/recordPracticeLineage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -211,8 +212,8 @@ export function useSpokenPractice(
 
       // 3) Arm (never write) the study-spine session — mode carries the
       //    practice type. The first graded answer opens it.
-      lazySession.arm(() =>
-        studyService.createSession({
+      lazySession.arm(async () => {
+        const opened = await studyService.createSession({
           mode: config.mode,
           sourceKind: config.source?.kind ?? "topic",
           sourceSetId: config.source?.setId ?? null,
@@ -221,12 +222,30 @@ export function useSpokenPractice(
             difficulty: config.difficulty,
             count: config.count,
             sourceTitle: config.source?.title ?? null,
+            // Lineage: the Sources exactly as chosen (parts, form, limit) and
+            // how each was named — read back to say what a session came from.
+            ...(config.source?.sourceSet
+              ? {
+                  source_set: JSON.parse(JSON.stringify(config.source.sourceSet)),
+                  source_names: config.source.sourceNames ?? {},
+                }
+              : {}),
             sessionTitle: designed.sessionTitle,
             intro: designed.intro,
             prompts: designed.prompts,
           },
-        }),
-      );
+        });
+        // Lineage edges: study_session --source--> every Source it was built on. The
+        // session IS saved; a failed edge is logged loudly by the writer, never fatal.
+        if (opened.data) {
+          await recordPracticeLineage(
+            opened.data,
+            config.source?.sourceSet,
+            config.source?.sourceNames,
+          );
+        }
+        return opened;
+      });
       setPlan(designed);
       setPhase("asking");
       return true;

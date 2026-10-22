@@ -89,11 +89,26 @@ async function readBank(): Promise<BankQuestion[]> {
   return data ?? [];
 }
 
+/** One open in flight per person per brand: two mounts share it (never two inserts). */
+const inFlight = new Map<string, Promise<OpenedSitting>>();
+
 /**
  * Resume this person's open sitting for the brand, or open a new one holding
- * every bank question they have not been asked. Never a second open sitting.
+ * every bank question they have not been asked. Never a second open sitting:
+ * concurrent callers share one promise, and the database's unique index
+ * `interview.decision_interview_one_open_owner_sitting` refuses a second open
+ * row from another tab — that refusal (23505) resumes the winner's sitting.
  */
-export async function openOwnerSitting(args: OwnerSittingArgs): Promise<OpenedSitting> {
+export function openOwnerSitting(args: OwnerSittingArgs): Promise<OpenedSitting> {
+  const key = `${args.userId}:${args.brandId}`;
+  const pending = inFlight.get(key);
+  if (pending) return pending;
+  const run = openOrResume(args).finally(() => inFlight.delete(key));
+  inFlight.set(key, run);
+  return run;
+}
+
+async function openOrResume(args: OwnerSittingArgs): Promise<OpenedSitting> {
   const sittings = await mySittings(args);
   const open = sittings.find((s) => s.status !== "complete");
   if (open) return { status: "open", interviewId: open.id, created: false };
@@ -132,6 +147,11 @@ export async function openOwnerSitting(args: OwnerSittingArgs): Promise<OpenedSi
     })
     .select("id")
     .single();
+  if (error?.code === "23505") {
+    // Another tab opened the sitting between our read and our insert: resume it.
+    const winner = (await mySittings(args)).find((s) => s.status !== "complete");
+    if (winner) return { status: "open", interviewId: winner.id, created: false };
+  }
   if (error || !interview) {
     throw new Error(`The sitting could not be opened: ${error?.message ?? "no row came back"}`);
   }

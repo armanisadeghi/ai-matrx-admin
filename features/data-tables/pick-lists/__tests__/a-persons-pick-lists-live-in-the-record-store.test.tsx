@@ -301,7 +301,7 @@ test("E. an agent's choice writes land as Records of the list's Table, in the li
   const { getListWithItems } = await import("../service");
   await getListWithItems(STORE_LIST);
   const { buildListSurfaceWriteHandlers } = await import("../surface-write-handlers");
-  const handlers = buildListSurfaceWriteHandlers({ resolveListId: () => STORE_LIST, afterWrite: () => undefined });
+  const handlers = buildListSurfaceWriteHandlers({ resolveListId: () => STORE_LIST, knownItemIds: () => ["c1"], canEditList: () => true, afterWrite: () => undefined });
   const apply = (name: string, value: unknown) => {
     const handler = handlers[name];
     return typeof handler === "function" ? handler(value) : handler.apply(value);

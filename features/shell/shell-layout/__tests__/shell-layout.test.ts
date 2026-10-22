@@ -24,6 +24,9 @@ import {
   SHELL_CATALOG_VERSION,
 } from "../catalog";
 import { parseShellLayoutBody, serializeShellLayoutBody, SHELL_DOCK_MAX_ITEMS } from "../validate";
+import { isAddPagesHref } from "../addPagesHref";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { launchpadHref, resolveShellLayout, shellLandingHref, type ResolvedNavChild } from "../resolve";
 
 const body = (extra: Partial<ShellLayoutBody> = {}): ShellLayoutBody => ({
@@ -182,6 +185,11 @@ describe("resolver", () => {
     const group = (out.sidebar as ShellNavItem[])[1];
     expect(group).toMatchObject({ id: "qa", label: "QA Group", iconName: "Folder", section: "primary" });
     expect(group?.children).toEqual([expect.objectContaining({ label: "Add pages…", action: "edit-sidebar" })]);
+    // Its label never navigates (before 2026-10-22 it went to /launchpad): the renderers open its menu.
+    expect(isAddPagesHref(group?.href)).toBe(true);
+    for (const renderer of ["components/sidebar/NavFlyoutGroup.tsx", "components/mobile-sheet/MobileNavigationDrawer.tsx"]) {
+      expect(readFileSync(join(__dirname, "../..", renderer), "utf8")).toMatch(/isAddPagesHref\(item\.href\)/);
+    }
   });
 
   it("person wins whole over organization; organization applies when the person has none", () => {
@@ -242,8 +250,9 @@ describe("resolver", () => {
   });
 
   it("offers newer catalog entries in What's new, never in the tree", () => {
-    const out = asPerson(body({ basedOnCatalogVersion: 0 as number, sidebar: [{ kind: "nav", id: "c", ref: "chat" }] }));
-    // Every entry is version 1, so a body reviewed against version 0 is offered all but what it placed and dismissed.
+    // `dock: []`: a region the body does not carry shows its default, and what a default shows is never offered.
+    const out = asPerson(body({ basedOnCatalogVersion: 0 as number, sidebar: [{ kind: "nav", id: "c", ref: "chat" }], dock: [] }));
+    // A body reviewed against version 0 is offered every entry but what it shows and dismissed.
     expect(out.whatsNew.some((e) => e.id === "chat")).toBe(false);
     expect(out.whatsNew.some((e) => e.id === "data")).toBe(true);
     expect(out.sidebar.map((s) => s.id)).toEqual(["c"]);

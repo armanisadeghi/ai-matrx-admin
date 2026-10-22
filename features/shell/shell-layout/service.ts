@@ -9,6 +9,7 @@
 import { removeAppRow, upsertAppRow, type RecordHistoryEntry, type useRecordsClient } from "@ai-matrx/records/react";
 import { readVersionNow } from "@ai-matrx/records/versions";
 import { orgLayoutSlot, personLayoutSlot, type ShellLayoutBody, type StoredShellLayout } from "./contract";
+import { clientInOrganization } from "@ai-matrx/records/core";
 import { shellLayoutTable } from "./shellLayout.typed-table";
 import { parseShellLayoutBody, serializeShellLayoutBody } from "./validate";
 import type { ShellLayoutTarget } from "./shellLayoutSlice";
@@ -57,11 +58,21 @@ export async function saveShellLayout(
     return {
       ok: false,
       stale,
-      error: stale ? "This layout was changed somewhere else. Reload it and try again." : answer.error.message,
+      error: stale ? "This layout was changed somewhere else. Reload it and try again." : plainLayoutRefusal(answer.error.message),
     };
   }
-  const version = (await readVersionNow(client, answer.data)) ?? (input.current ? input.current.version + 1 : 1);
+  const version = (await readVersionNow(clientInOrganization(client, organizationId), answer.data)) ?? (input.current ? input.current.version + 1 : 1);
   return { ok: true, data: { recordId: answer.data, organizationId, version, updatedAt: savedAt, body: text } };
+}
+
+/**
+ * The store's refusal in the person's words. An archived organization's refusal names the storage step
+ * ("…so creating a table is not possible there…", custom._not_a_member_refusal); a layout save says what
+ * it means for her instead. Every other refusal is the store's own sentence, unchanged.
+ */
+export function plainLayoutRefusal(message: string): string {
+  if (/^This organization is archived\b/i.test(message)) return "This organization is archived. Restore it to change its layout.";
+  return message;
 }
 
 /** Archive a stored layout (the store's soft delete; restorable). The default (or the organization's) applies. */
@@ -70,25 +81,30 @@ export async function clearShellLayout(
   stored: Pick<StoredShellLayout, "recordId" | "organizationId">,
 ): Promise<ShellLayoutResult<null>> {
   const answer = await removeAppRow(client, shellLayoutTable, stored.recordId, { organizationId: stored.organizationId });
-  return answer.ok ? { ok: true, data: null } : { ok: false, error: answer.error.message };
+  return answer.ok ? { ok: true, data: null } : { ok: false, error: plainLayoutRefusal(answer.error.message) };
 }
 
 /** Every version of one stored layout, newest first (the store keeps them; nothing else does). */
 export async function listShellLayoutVersions(
   client: ShellRecordsClient,
-  recordId: string,
+  row: Pick<StoredShellLayout, "recordId" | "organizationId">,
 ): Promise<ShellLayoutResult<RecordHistoryEntry[]>> {
-  const answer = await client.recordHistory({ record_id: recordId, limit: 50 });
+  const answer = await clientInOrganization(client, row.organizationId).recordHistory({ record_id: row.recordId, limit: 50 });
   return answer.ok ? { ok: true, data: answer.data } : { ok: false, error: answer.error.message };
+}
+
+/** The record's version now, read in the row's own organization (null = could not read). */
+export function readShellLayoutVersionNow(client: ShellRecordsClient, row: Pick<StoredShellLayout, "recordId" | "organizationId">) {
+  return readVersionNow(clientInOrganization(client, row.organizationId), row.recordId);
 }
 
 /** The body as it stood at `version` (read-only preview). */
 export async function previewShellLayoutVersion(
   client: ShellRecordsClient,
-  recordId: string,
+  row: Pick<StoredShellLayout, "recordId" | "organizationId">,
   version: number,
 ): Promise<ShellLayoutResult<{ body: ShellLayoutBody | null; problems: string[] }>> {
-  const answer = await client.restorePreview({ record_id: recordId, version });
+  const answer = await clientInOrganization(client, row.organizationId).restorePreview({ record_id: row.recordId, version });
   if (!answer.ok) return { ok: false, error: answer.error.message };
   const change = answer.data.changes.find((c) => c.key === "body");
   if (!change) return { ok: true, data: { body: null, problems: ["that version did not change the layout"] } };
@@ -110,10 +126,10 @@ export async function restoreShellLayoutVersion(
     userId: string;
   },
 ): Promise<ShellLayoutResult<StoredShellLayout>> {
-  const now = await readVersionNow(client, input.current.recordId);
+  const now = await readShellLayoutVersionNow(client, input.current);
   if (now === null) return { ok: false, error: "Could not check your layout for changes. Try again." };
   if (now !== input.seenVersion) return { ok: false, stale: true, error: "Your layout changed since you previewed it. Preview the version again." };
-  const preview = await previewShellLayoutVersion(client, input.current.recordId, input.version);
+  const preview = await previewShellLayoutVersion(client, input.current, input.version);
   if (!preview.ok) return preview;
   if (!preview.data.body) return { ok: false, error: `Version ${input.version} cannot be restored: ${preview.data.problems.join("; ")}` };
   return saveShellLayout(client, {

@@ -82,6 +82,6 @@ it("shows every kind with a dash instead of one red error block", async () => {
   expect(tiles.some((t) => t.startsWith("Tables") && t.endsWith("3"))).toBe(true);
   // The approved list, in the registry's order, one flat row.
   expect(tiles.map((t) => t.replace(/[\d,—]+$/, ""))).toEqual([
-    "Files", "Notes", "Documents", "Websites", "Transcripts", "Conversations", "Tables", "Workbooks", "Saved results",
+    "Files", "Notes", "Docs", "Websites", "Transcripts", "Conversations", "Tables", "Sheets", "Saved results",
   ]);
 });

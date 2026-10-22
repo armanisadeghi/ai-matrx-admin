@@ -36,7 +36,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "session_current",
     label: "Card in focus",
     description:
-      "{ card_id, kind ('choice' = a brand candidate to place, 'finding' = a found fact to confirm), element (the brand element, e.g. Tagline), candidate (its words), suggestion (the recommended answer id: lead | support | not_us | not_sure, or confirm | reject), reason, origin (found | said | ai | customer | team) }. Null when every card is answered.",
+      "{ card_id, kind ('stance' = an offering's stance, 'audience' = an audience category, 'choice' = a brand candidate to place or a tagline/one-liner to shortlist, 'finding' = a found fact to confirm), element (the brand element, e.g. Tagline), candidate (its words), suggestion (the recommended answer: lead | support | not_us | not_sure | shortlist, a precise stance such as Accept, or confirm | reject), reason, origin (found | said | ai | customer | team) }. Null when every card is answered.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 400,
@@ -46,7 +46,7 @@ const surfaceSpecific: SurfaceValue[] = [
   {
     name: "session_counts",
     label: "Progress",
-    description: "{ total, answered, choices, findings } — the cards of this sitting and how many are answered.",
+    description: "{ total, answered, stances, audience, choices, findings } — the cards of this sitting and how many are answered.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 80,

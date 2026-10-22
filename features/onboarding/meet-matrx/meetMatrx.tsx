@@ -17,6 +17,7 @@ import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES } from "@ai-matrx/icons/
 import AppLink from "@/components/navigation/AppLink";
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { MeetMatrxCanMake } from "./MeetMatrxCanMake";
 
 export const MEET_MATRX_PATH = "/meet-matrx";
 
@@ -30,7 +31,7 @@ export const MEET_MATRX_LEAD = "Three studios to build with. Six pieces to build
  * system ingests today. Guarded in __tests__ — add a kind here only when it is ingested for real.
  * Chats = `cx_message` (the conversation pipeline), People = the Knowledge Graph's entities.
  */
-export const KNOWLEDGE_FLOW = ["Notes", "Documents", "Chats", "Web pages", "Sheets", "Research", "Tasks", "People"] as const;
+export const KNOWLEDGE_FLOW = ["Notes", "Docs", "Chats", "Web pages", "Sheets", "Research", "Tasks", "People"] as const;
 
 export const MEET_MATRX_GROUPS: IntroGroup[] = [
   {
@@ -91,6 +92,7 @@ export function MeetMatrx({ eyebrow, children }: { eyebrow?: ReactNode; children
       groups={MEET_MATRX_GROUPS}
       renderLink={meetMatrxLink}
     >
+      <MeetMatrxCanMake />
       {children}
     </IntroStage>
   );

@@ -1,8 +1,8 @@
 /**
  * WHAT'S NEW RENDERS when the catalog gains an entry the person's own sidebar has not reviewed.
- * The live catalog has no new entries yet (SHELL_CATALOG_VERSION 1, CATALOG_ADDED_IN empty), so nothing
- * on screen proves the slot works — this does: a fake catalog version (one real entry marked added in
- * version 2) and a person layout based on version 1 must render "New: <label>" with Add and Dismiss, and
+ * The live catalog is at version 2 (three ids added 2026-10-19); this adds one more real entry "added in
+ * version 2" so the slot is proven on an entry not in the default sidebar: a person layout based on
+ * version 1 must render "New: <label>" with Add and Dismiss, and
  * Add must save that entry into her sidebar. A dismissed or already-placed entry must render nothing.
  */
 import * as React from "react";
@@ -74,7 +74,7 @@ it("shows 'New: <label>' with Add and Dismiss, and Add saves it into her sidebar
 });
 
 it("renders nothing once dismissed", async () => {
-  hold(personBody({ dismissedNew: [NEW_ID] }));
+  hold(personBody({ dismissedNew: Object.keys(CATALOG_ADDED_IN) }));
   const { host, unmount } = await render();
   expect(host.textContent).not.toContain("New:");
   unmount();

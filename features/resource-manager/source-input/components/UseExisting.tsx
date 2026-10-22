@@ -49,6 +49,7 @@ import {
 import {
   fetchSourceInputKinds,
   sourceInputEntries,
+  withExtraKinds,
   type SourceInputEntry,
 } from "@/features/resource-manager/source-input/sourceInputKinds";
 import { MiddleTruncate } from "@/components/official/MiddleTruncate";
@@ -65,6 +66,8 @@ export interface UseExistingProps {
   scope: KindScope;
   /** The input's one search box. Empty = the kind tiles. */
   query: string;
+  /** Extra registry tokens this screen offers beyond the approved list (SourceInputProps.extraKinds). */
+  extraKinds?: readonly string[];
   isPicked: (token: string, id: string) => boolean;
   /** `sourceKind`: the stored Source kind a saved-Source row is (Websites → "web_page"), so its card names it. */
   onToggle: (token: string, item: KindItem, sourceKind?: string) => void;
@@ -78,7 +81,7 @@ export interface OfferedKind {
   token: string;
   /** Every inventory token this entry counts and lists (Documents = two); empty for own-reader kinds. */
   tokens: string[];
-  /** The entry's name ("Files", "Documents"…). */
+  /** The entry's name ("Files", "Docs"…). */
   plural: string;
   Icon: ComponentType<{ className?: string }>;
   /** Set when the kind is listed from the person's saved Sources (Websites). */
@@ -111,18 +114,19 @@ export function offeredKindsFrom(entries: readonly SourceInputEntry[]): OfferedK
 }
 
 /** The offered kinds, read from the registry once per page load. */
-function useOfferedKinds(): { offered: OfferedKind[]; loading: boolean; error: Error | null; reload: () => void } {
+function useOfferedKinds(extraKinds?: readonly string[]): { offered: OfferedKind[]; loading: boolean; error: Error | null; reload: () => void } {
   const [state, setState] = useState<{ offered: OfferedKind[]; loading: boolean; error: Error | null }>({
     offered: [],
     loading: true,
     error: null,
   });
   const [attempt, setAttempt] = useState(0);
+  const extraKey = (extraKinds ?? []).join("|");
   useEffect(() => {
     let cancelled = false;
     fetchSourceInputKinds().then(
       (rows) => {
-        if (!cancelled) setState({ offered: offeredKindsFrom(sourceInputEntries(rows)), loading: false, error: null });
+        if (!cancelled) setState({ offered: offeredKindsFrom(withExtraKinds(sourceInputEntries(rows), extraKinds)), loading: false, error: null });
       },
       (error: unknown) => {
         if (!cancelled)
@@ -132,7 +136,7 @@ function useOfferedKinds(): { offered: OfferedKind[]; loading: boolean; error: E
     return () => {
       cancelled = true;
     };
-  }, [attempt]);
+  }, [attempt, extraKey]);
   return { ...state, reload: () => setAttempt((n) => n + 1) };
 }
 
@@ -253,8 +257,8 @@ function shortDate(iso: string | null): string {
     : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-export function UseExisting({ scope, query, isPicked, onToggle }: UseExistingProps) {
-  const registry = useOfferedKinds();
+export function UseExisting({ scope, query, extraKinds, isPicked, onToggle }: UseExistingProps) {
+  const registry = useOfferedKinds(extraKinds);
   const offered = registry.offered;
   const counts = useOfferedCounts(scope, offered);
   const [open, setOpen] = useState<string | null>(null);

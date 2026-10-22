@@ -14,16 +14,15 @@
  */
 
 import { useEffect, useEffectEvent, useState } from "react";
-import { BadgeCheck, Check, ChevronLeft, ChevronRight, ExternalLink, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, Peek, PeekHoverCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
-import { Button, DecisionControl, PropertyRow } from "@ai-matrx/design-system/controls";
-import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { CandidateCard, type PeekBlock, type PeekRecord } from "@ai-matrx/design-system";
+import { Button } from "@ai-matrx/design-system/controls";
 import { formatCount } from "@ai-matrx/kit/format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
-import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { useCandidateImage } from "../candidateImage";
 import type { BrandRelationKind } from "@/features/marketing/data/service";
 import { isOurs, websiteHost, type Candidate, type Decision, type EvidenceItem, type Relation } from "../evidence";
 import { accountHandleLine, CUSTOM_RELATION, CustomRelation, relationWayOut, useRelationKinds } from "../SmartAddExtras";
@@ -155,7 +154,7 @@ function CompareBody({ onClose, items, decisions, relations, skipped, onSkip, on
       ) : null}
       <section className="grid gap-4 sm:grid-cols-2">
         {current.candidates.map((c) => (
-          <CandidateCard
+          <CompareCandidate
             key={c.id}
             c={c}
             decision={decisions[c.anchor.key]}
@@ -187,33 +186,6 @@ function CompareBody({ onClose, items, decisions, relations, skipped, onSkip, on
         ))}
       </section>
     </div>
-  );
-}
-
-/** Logo or avatar, sized to the text block beside it (48px). */
-function CandidateAvatar({ c }: { c: Candidate }) {
-  if (c.platform === "website") {
-    return c.iconUrl ? (
-      <img src={c.iconUrl} alt="" className="size-12 shrink-0 rounded-lg object-contain" />
-    ) : (
-      <PlatformMark platform="website" size={48} />
-    );
-  }
-  const initial = avatarInitial(c.name, c.handle);
-  return (
-    <span className="relative size-12 shrink-0">
-      <Avatar className="size-12">
-        <SocialImage
-          door={c.profileId ? profileAvatarDoor(c.profileId) : null}
-          url={c.photoUrl}
-          fallback={<AvatarFallback className="type-title">{initial}</AvatarFallback>}
-          className="rounded-full"
-        />
-      </Avatar>
-      <span className="absolute -right-1 -bottom-1 rounded-md ring-2 ring-card">
-        <PlatformMark platform={c.platform} size={18} />
-      </span>
-    </span>
   );
 }
 
@@ -250,8 +222,8 @@ function candidatePeek(c: Candidate, title: string, sub: string): PeekRecord | n
   };
 }
 
-/** One candidate: who it is (hover for where it came from), Open, and the page's Yes / No / Other. */
-function CandidateCard({
+/** One candidate: the shared CandidateCard (who, Open, hover peek) wired to the page's Yes / No / Other + relationships. */
+function CompareCandidate({
   c,
   decision,
   relation,
@@ -282,42 +254,24 @@ function CandidateCard({
   const title = c.name ?? handleLine ?? c.anchor.value;
   const sub = [handleLine !== title ? handleLine : null, c.followers != null ? `${formatCount(c.followers)} followers` : null].filter(Boolean).join(" · ");
   const peek = candidatePeek(c, title, sub);
-  const who = (
-    <div className="flex min-w-0 flex-1 items-start gap-3">
-      <CandidateAvatar c={c} />
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="flex min-w-0 items-center gap-1">
-          <span className="type-title truncate">{title}</span>
-          {c.verified ? <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Verified" /> : null}
-        </span>
-        {sub ? <span className="type-secondary truncate text-muted-foreground">{sub}</span> : null}
-        {c.bio ? <span className="type-secondary line-clamp-2 text-muted-foreground">{c.bio}</span> : null}
-      </div>
-    </div>
-  );
+  const image = useCandidateImage(c.platform !== "website" && c.profileId ? profileAvatarDoor(c.profileId) : null, c.platform === "website" ? c.iconUrl : c.photoUrl);
   return (
-    <article
-      className={`flex min-w-0 flex-col gap-4 rounded-xl border p-4 transition-colors ${
-        ours ? "border-primary ring-1 ring-primary" : "border-border"
-      }`}
-      data-testid="smart-add-candidate"
-      data-candidate={c.id}
-    >
-      <div className="flex min-w-0 items-start gap-2">
-        {peek ? (
-          <PeekHoverCard side="bottom" align="start" trigger={who}>
-            <Peek size="sm" record={peek} />
-          </PeekHoverCard>
-        ) : (
-          who
-        )}
-        {c.url ? (
-          <Button asChild variant="quiet" icon={<ExternalLink aria-hidden />} aria-label="Open">
-            <OutboundLink href={/^https?:\/\//i.test(c.url) ? c.url : `https://${c.url}`} />
-          </Button>
-        ) : null}
-      </div>
-      <DecisionControl
+    <div className="flex min-w-0 flex-col gap-2" data-testid="smart-add-candidate">
+      <CandidateCard
+        candidate={{
+          id: c.id,
+          name: title,
+          handle: handleLine !== title ? handleLine : null,
+          imageUrl: image,
+          imageFit: c.platform === "website" ? "contain" : "cover",
+          badge: c.platform !== "website" && image ? <PlatformMark platform={c.platform} size={14} /> : null,
+          mark: c.platform === "website" ? <PlatformMark platform="website" size={24} /> : <span className="type-title">{avatarInitial(c.name, c.handle)}</span>,
+          verified: Boolean(c.verified),
+          followers: c.followers,
+          bio: c.bio,
+          href: c.url,
+        }}
+        peek={peek}
         value={ours ? "yes" : rejected ? "no" : relation || skipped ? "other" : null}
         suggested={suggested}
         onChange={(a) => onClaim(c, a)}
@@ -340,6 +294,6 @@ function CandidateCard({
           }}
         />
       ) : null}
-    </article>
+    </div>
   );
 }

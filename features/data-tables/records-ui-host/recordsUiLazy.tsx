@@ -182,12 +182,14 @@ export const ArchiveDeliberatelyDialog = requested("ArchiveDeliberatelyDialog", 
 export const ArchivedDisclosure = requested("ArchivedDisclosure", dynamic<Props<"ArchivedDisclosure">>(() => loadFrontDoor().then((m) => provided(m, "ArchivedDisclosure")), { ssr: true, loading: () => null }));
 export const BookingBuilder = requested("BookingBuilder", dynamic<Props<"BookingBuilder">>(() => loadFrontDoor().then((m) => provided(m, "BookingBuilder")), { ssr: true, loading: () => null }));
 export const CalendarLinks = requested("CalendarLinks", dynamic<Props<"CalendarLinks">>(() => loadFrontDoor().then((m) => provided(m, "CalendarLinks")), { ssr: true, loading: () => null }));
+export const CalendarView = requested("CalendarView", dynamic<Props<"CalendarView">>(() => loadFrontDoor().then((m) => provided(m, "CalendarView")), { ssr: true, loading: () => <RecordsSkeleton layout="calendar" embedded /> }));
 export const CaptureRun = requested("CaptureRun", dynamic<Props<"CaptureRun">>(() => loadFrontDoor().then((m) => provided(m, "CaptureRun")), { ssr: true, loading: () => null }));
 export const ChartBlock = requested("ChartBlock", dynamic<Props<"ChartBlock">>(() => loadFrontDoor().then((m) => provided(m, "ChartBlock")), { ssr: true, loading: () => <RecordsSkeleton layout="chart" /> }));
 export const ChecklistTemplateEditor = requested("ChecklistTemplateEditor", dynamic<Props<"ChecklistTemplateEditor">>(() => loadFrontDoor().then((m) => provided(m, "ChecklistTemplateEditor")), { ssr: true, loading: () => null }));
 export const ConditionGroup = requested("ConditionGroup", dynamic<Props<"ConditionGroup">>(() => loadFrontDoor().then((m) => provided(m, "ConditionGroup")), { ssr: true, loading: () => null }));
 export const CustomFieldsSection = requested("CustomFieldsSection", dynamic<Props<"CustomFieldsSection">>(() => loadFrontDoor().then((m) => provided(m, "CustomFieldsSection")), { ssr: true, loading: () => null }));
 export const DashboardCanvas = requested("DashboardCanvas", dynamic<Props<"DashboardCanvas">>(() => loadFrontDoor().then((m) => provided(m, "DashboardCanvas")), { ssr: true, loading: () => null }));
+export const EntityBoard = requested("EntityBoard", dynamic<Props<"EntityBoard">>(() => loadFrontDoor().then((m) => provided(m, "EntityBoard")), { ssr: true, loading: () => <RecordsSkeleton layout="kanban" embedded /> }));
 export const EntityChartBlock = requested("EntityChartBlock", dynamic<Props<"EntityChartBlock">>(() => loadFrontDoor().then((m) => provided(m, "EntityChartBlock")), { ssr: true, loading: () => <RecordsSkeleton layout="chart" /> }));
 export const FieldControl = requested("FieldControl", dynamic<Props<"FieldControl">>(() => loadFrontDoor().then((m) => provided(m, "FieldControl")), { ssr: true, loading: () => null }));
 export const FieldEditor = requested("FieldEditor", dynamic<Props<"FieldEditor">>(() => loadFrontDoor().then((m) => provided(m, "FieldEditor")), { ssr: true, loading: () => null }));
@@ -216,6 +218,7 @@ export const TableRenameDialog = requested("TableRenameDialog", dynamic<Props<"T
 export const TableSettings = requested("TableSettings", dynamic<Props<"TableSettings">>(() => loadFrontDoor().then((m) => provided(m, "TableSettings")), { ssr: true, loading: () => null }));
 export const RecordsTableCard = requested("RecordsTableCard", dynamic<Props<"RecordsTableCard">>(() => loadFrontDoor().then((m) => provided(m, "RecordsTableCard")), { ssr: true, loading: () => <RecordsSkeleton layout="list" /> }));
 export const SectionCard = requested("SectionCard", dynamic<Props<"SectionCard">>(() => loadFrontDoor().then((m) => provided(m, "SectionCard")), { ssr: true, loading: () => <RecordsSkeleton layout="list" /> }));
+export const TimelineView = requested("TimelineView", dynamic<Props<"TimelineView">>(() => loadFrontDoor().then((m) => provided(m, "TimelineView")), { ssr: true, loading: () => <RecordsSkeleton layout="timeline" embedded /> }));
 export const TableTokensProvider = requested("TableTokensProvider", dynamic<Props<"TableTokensProvider">>(() => loadFrontDoor().then((m) => provided(m, "TableTokensProvider")), { ssr: true, loading: () => null }));
 export const TablesHome = requested("TablesHome", dynamic<Props<"TablesHome">>(() => loadFrontDoor().then((m) => provided(m, "TablesHome")), { ssr: true, loading: () => <RecordsSkeleton layout="home" /> }));
 export const ViewSwitcher = requested("ViewSwitcher", dynamic<Props<"ViewSwitcher">>(() => loadFrontDoor().then((m) => provided(m, "ViewSwitcher")), { ssr: true, loading: () => null }));

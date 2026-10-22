@@ -134,6 +134,39 @@ export function parseDeleteTopics(value: unknown, rows: ResearchTopicListRow[]):
   return ids.map((id) => known(target, rows, id));
 }
 
+/**
+ * Topics this page's own writes changed in this session, as they now stand.
+ * A topic restored from the Archived view (or archived from Active) leaves the
+ * on-screen list at once; without this, the next update_topics / delete_topics
+ * on that same id was refused as unknown (feedback d63cf385). Ids that are
+ * neither on the page nor touched here are still refused.
+ */
+export type TouchedTopics = Map<string, ResearchTopicListRow>;
+
+/** Record a topic after a write the page made succeeded. */
+export function rememberTouchedTopic(
+  touched: TouchedTopics,
+  row: ResearchTopicListRow,
+  change: { name?: string; description?: string | null; archived?: boolean },
+): void {
+  touched.set(row.id, {
+    ...row,
+    ...(change.name !== undefined ? { name: change.name } : {}),
+    ...(change.description !== undefined ? { description: change.description ?? "" } : {}),
+    ...(change.archived === true ? { archived_at: new Date().toISOString() } : {}),
+    ...(change.archived === false ? { archived_at: "" } : {}),
+  });
+}
+
+/** The rows a write target may act on: the page's rows, then touched topics no longer on it. */
+export function rowsWithTouched(
+  rows: ResearchTopicListRow[],
+  touched: TouchedTopics,
+): ResearchTopicListRow[] {
+  const onPage = new Set(rows.map((r) => r.id));
+  return [...rows, ...[...touched.values()].filter((r) => !onPage.has(r.id))];
+}
+
 export interface ListViewPlan {
   scope?: "mine" | "team" | "orgs";
   archived?: "active" | "archived" | "all";

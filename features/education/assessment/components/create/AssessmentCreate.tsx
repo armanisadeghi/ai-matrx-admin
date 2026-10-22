@@ -1,13 +1,19 @@
 // features/education/assessment/components/create/AssessmentCreate.tsx
 //
 // The generate-a-<quiz|practice test> surface. One component, kind-parameterized.
-// Three grounded/ungrounded source modes:
-//   • Topic     → the topic generator (confidence "inferred", no citations)
-//   • Deck      → the from-source generator over a flashcard deck's cards (cited)
-//   • Document  → the from-source generator over a Knowledge document's chunks (cited)
-// Depth-on-demand + question-type mix + exam-type are first-class config on
-// every path. Generation is metered via useEntitlement (permissive stub until P8
-// enforcement flips) — the remaining count shows BEFORE the action (TRUST §6).
+// Create → choose sources, style and details → results, the same page shape as
+// flashcards (`CreateDeckPage`):
+//   • Sources: THE one Source input (`SourceInput`, Use existing + Add new, the
+//     review above the knob), picks kept across a reload under its surfaceKey.
+//     Its Topic tile alone runs the topic generator (no citations); any picked
+//     Source runs THE one question generator over the server-resolved set
+//     (`useAssessmentGeneration` → `/sources/resolve` → cited questions +
+//     a lineage edge per Source). A flashcard deck is one more Source (Use
+//     existing → Decks, an fc_set read on the server as its cards).
+//   • Style and details: count, difficulty, depth, question types, exam type,
+//     time limit (timed kinds), instructions — kept across a reload too.
+// Generation is metered via useEntitlement — the remaining count shows BEFORE
+// the action (TRUST §6).
 //
 // React Compiler is on: no manual useMemo / useCallback / React.memo.
 
@@ -15,17 +21,10 @@
 
 import { InfoHint } from "@/components/official/InfoHint";
 import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
-import { useState, useTransition } from "react";
+import { useEffect, useEffectEvent, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { recordToast, toast } from "@/lib/toast";
-import {
-  ArrowLeft,
-  Layers,
-  FileSearch,
-  Type,
-  Loader2,
-  FileText,
-} from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
@@ -37,18 +36,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
-import { useLibrary } from "@/features/rag/hooks/useLibrary";
-import type { LibraryDocSummary } from "@/features/rag/types/library";
-import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
+import { FLASHCARD_SOURCE_DELIVERIES } from "@/features/flashcards/data/generateDeckFromSources";
+import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
+import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
+import { createSourceRef } from "@ai-matrx/agents/sources";
+import type { SourceDraft } from "@ai-matrx/agents/sources/runtime";
+import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
+import { WizardDraftRestored } from "@/lib/wizard-draft/WizardDraftRestored";
+import { RunStoppedNotice } from "@/lib/wizard-draft/RunStoppedNotice";
+import { useTabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
+import { cardRunRequest, restoreCardRunRequest } from "@/features/flashcards/data/cardRunRequest";
+import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
+import { ArrowRight } from "lucide-react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import { createEducationAssessmentScope } from "@/features/surfaces/manifests/education-assessment.manifest";
 import { ASSESSMENT_MANDATES } from "../../data/mandates";
 import { useAssessmentGeneration } from "../../data/useAssessmentGeneration";
+import {
+  restoreAssessmentStyle,
+  type AssessmentStyleDraft,
+} from "../../data/createStyleDraft";
 import {
   DEPTHS,
   DIFFICULTIES,
@@ -67,12 +77,24 @@ import { KIND_CONFIG, type KindConfig } from "../kindConfig";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { ReadFailure } from "@ai-matrx/design-system";
-import { SOURCES_PATH } from "@/features/knowledge/modulePaths";
+<<<<<<< HEAD
+
+/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
+const QUIZ_EXTRA_KINDS = ["fc_set"] as const;
+=======
+>>>>>>> origin/main
 
 const FIELD = "text-base"; // 16px+ prevents iOS zoom-on-focus
 
-type SourceMode = "topic" | "deck" | "document";
+/** The Source input's key on this page — picks are kept under it across a reload. */
+export function assessmentCreateSurfaceKey(base: string): string {
+  return `${base}:new`;
+}
+
+/** A flashcard deck as a ready Source (read on the server as its cards). */
+export function deckSourceDraft(deck: { id: string; name: string }): SourceDraft {
+  return { kind: "records", label: deck.name, ref: createSourceRef("fc_set", deck.id), sourceKind: "Flashcard deck" };
+}
 
 // Presentation only — the VALUE vocabularies live in data/types.ts and are
 // imported above, so these option lists cannot drift from what the surface's
@@ -125,76 +147,120 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
   const seedDepthRaw = searchParams.get("depth")?.trim() ?? "";
   const seedDepth: Depth = isDepth(seedDepthRaw) ? seedDepthRaw : "applied";
 
-  const [mode, setMode] = useState<SourceMode>("topic");
-  const [topic, setTopic] = useState(seedTopic);
+  const surfaceKey = assessmentCreateSurfaceKey(config.base);
+  const set = useSourceSet(surfaceKey);
+  const tabRun = useTabBoundRun(`${surfaceKey}:run`, restoreCardRunRequest);
+  const styleDraft = useWizardDraft<AssessmentStyleDraft>(`${surfaceKey}:style`, {
+    restore: restoreAssessmentStyle,
+  });
+  const defaultTime = config.timed ? 20 : 0;
   const [count, setCount] = useState(config.defaultCount);
   const [difficulty, setDifficulty] = useState<Difficulty>("Medium");
   const [depth, setDepth] = useState<Depth>(seedDepth);
   const [types, setTypes] = useState<Set<QuestionType>>(new Set());
   const [examType, setExamType] = useState(seedExamType);
-  const [timeLimitMin, setTimeLimitMin] = useState(config.timed ? 20 : 0);
+  const [timeLimitMin, setTimeLimitMin] = useState(defaultTime);
   const [userRequest, setUserRequest] = useState("");
-  const [selectedDeck, setSelectedDeck] = useState<FcSetRow | null>(null);
-  const [decks, setDecks] = useState<FcSetRow[] | null>(null);
-  const [decksError, setDecksError] = useState<string | null>(null);
-  const [selectedDoc, setSelectedDoc] = useState<LibraryDocSummary | null>(null);
+  const keep = (fields: AssessmentStyleDraft) => styleDraft.patch({ ...fields });
+
+  // Never lose input: the style answers come back after a reload, said out
+  // loud (the Sources and topic are kept by the Source input itself). A link's
+  // own exam type / depth still win over a kept answer.
+  const applyStyleDraft = useEffectEvent(() =>
+    styleDraft.applyOnce((v) => {
+      if (v.count !== undefined) setCount(Math.min(config.countMax, v.count));
+      if (v.difficulty) setDifficulty(v.difficulty);
+      if (v.depth && !isDepth(seedDepthRaw)) setDepth(v.depth);
+      if (v.questionTypes) setTypes(new Set(v.questionTypes));
+      if (v.examType !== undefined && !seedExamType) setExamType(v.examType);
+      if (v.timeLimitMinutes !== undefined && config.timed) setTimeLimitMin(v.timeLimitMinutes);
+      if (v.userRequest !== undefined) setUserRequest(v.userRequest);
+    }),
+  );
+  const styleDraftStatus = styleDraft.status;
+  useEffect(() => {
+    if (styleDraftStatus === "found") applyStyleDraft();
+  }, [styleDraftStatus]);
+  const startFresh = () => {
+    styleDraft.discard();
+    setCount(config.defaultCount);
+    setDifficulty("Medium");
+    setDepth(seedDepth);
+    setTypes(new Set());
+    setExamType(seedExamType);
+    setTimeLimitMin(defaultTime);
+    setUserRequest("");
+  };
+
+  // ── Seeds from the link: an exam hub's topic, a deck or document opened elsewhere ──
+  const seeded = useRef(false);
+  const seed = useEffectEvent(() => {
+    if (seeded.current || set.restoring) return;
+    seeded.current = true;
+    if (seedTopic && !set.topic.trim()) set.setTopic(seedTopic);
+    const deckId = searchParams.get("deck");
+    if (deckId && !set.hasRef("fc_set", deckId))
+      set.addReady(deckSourceDraft({ id: deckId, name: searchParams.get("name") ?? "The deck you opened" }));
+    const docId = searchParams.get("document") ?? searchParams.get("source");
+    if (docId && !set.hasRef("processed_document", docId))
+      set.addReady({
+        kind: "your_sources",
+        label: searchParams.get("name") ?? "The document you opened",
+        ref: createSourceRef("processed_document", docId),
+        processedDocumentId: docId,
+      });
+  });
+  useEffect(() => {
+    seed();
+  }, [set.restoring]);
 
   const busy = isGenerating || isNavigating;
   const Icon = config.icon;
 
-  // Deck list (lazy — only when the deck mode is chosen).
-  const loadDecks = async () => {
-    if (decks) return;
-    const res = await fcService.listDecks();
-    // A failed read is said, never "You have no decks yet" (RC-B12).
-    if (res.error) {
-      setDecksError(res.error);
-      return;
-    }
-    setDecksError(null);
-    setDecks(res.data ?? []);
+  const toggleType = (t: QuestionType) => {
+    const next = new Set(types);
+    if (next.has(t)) next.delete(t);
+    else next.add(t);
+    setTypes(next);
+    keep({ questionTypes: Array.from(next) });
   };
 
-  const { docs, loading: docsLoading } = useLibrary({
-    status: "ready",
-    search: undefined,
-  });
+  const ready = set.sources.filter((s) => s.status === "ready" && s.draft.ref);
+  const landing = set.sources.filter((s) => s.status === "pending" || s.status === "resolving");
+  const topic = set.topic.trim();
+  const hasSources = ready.length > 0;
+  const firstDeck = ready.find((s) => s.draft.ref?.resource_type === "fc_set");
+  const firstOther = ready.find((s) => s.draft.ref?.resource_type !== "fc_set");
+  const blockedReason = landing.length
+    ? `Wait until ${landing.length === 1 ? "your new source has" : `${landing.length} new sources have`} finished adding.`
+    : !hasSources && !topic
+      ? "Add a source or a topic."
+      : null;
 
-  const toggleType = (t: QuestionType) =>
-    setTypes((prev) => {
-      const next = new Set(prev);
-      if (next.has(t)) next.delete(t);
-      else next.add(t);
-      return next;
-    });
-
-  const canGenerate =
-    !busy &&
-    ((mode === "topic" && topic.trim().length > 0) ||
-      (mode === "deck" && !!selectedDeck) ||
-      (mode === "document" && !!selectedDoc));
+  const canGenerate = !busy && !blockedReason;
 
   const handleGenerate = async () => {
     if (!canGenerate) return;
-    const source =
-      mode === "topic"
-        ? ({ mode: "topic", topic } as const)
-        : mode === "deck" && selectedDeck
-          ? ({ mode: "deck", deck: { id: selectedDeck.id, name: selectedDeck.name } } as const)
-          : mode === "document" && selectedDoc
-            ? ({ mode: "document", document: { id: selectedDoc.id, name: selectedDoc.name } } as const)
-            : null;
-    if (!source) return;
-    const outcome = await generation.run({
-      source,
-      count,
-      difficulty,
-      depth,
-      questionTypes: Array.from(types),
-      examType,
-      userRequest,
-      timeLimitMinutes: timeLimitMin,
-    });
+    // The run is orchestrated in this tab (read, fan out, save): a reload
+    // mid-run stops it. Its request is kept so the page says so and offers the
+    // same request again — and a reload after the save began never repeats it.
+    const outcome = await tabRun.track(
+      cardRunRequest(count, set.toSourceSet(), sourceNamesOf(set.sources), topic),
+      (_settle, saving, attach) =>
+        generation.run({
+          source: hasSources
+            ? { mode: "sources", sources: set.toSourceSet(), topic, resolve: set.resolve }
+            : { mode: "topic", topic },
+          count,
+          difficulty,
+          depth,
+          questionTypes: Array.from(types),
+          examType,
+          userRequest,
+          timeLimitMinutes: timeLimitMin,
+          tabRun: { saving, attach },
+        }),
+    );
     // A blocked run already showed its own dialog (COPPA / paywall) or toast.
     if (outcome.status === "failed") {
       toast.error(outcome.error);
@@ -206,8 +272,39 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
       { type: "assessment", id: assessment.id, title: assessment.title },
       `Created "${assessment.title}" with ${questionCount} question${questionCount === 1 ? "" : "s"}`,
     );
+    if (outcome.gapNote) toast.info(outcome.gapNote);
+    // Made and saved: the draft is done.
+    for (const s of set.sources) set.remove(s.id);
+    set.setTopic("");
+    styleDraft.clear();
     startNavigation(() => router.push(`${base}/${assessment.id}`));
   };
+
+  // ── A run that stopped with its page: the same request, one click ───────
+  const stoppedRun = tabRun.stopped;
+  const [redoNonce, setRedoNonce] = useState(0);
+  // A ref, not state: the redo waits for the restored picks to land, then fires once.
+  const redoCount = useRef<number | null>(null);
+  const redoStopped = () => {
+    const req = stoppedRun?.request;
+    if (!req) return;
+    tabRun.dismiss();
+    for (const s of set.sources) set.remove(s.id);
+    for (const draft of req.drafts) set.addReady(draft);
+    set.setTopic(req.topic);
+    const n = Math.min(config.countMax, req.count);
+    setCount(n);
+    keep({ count: n });
+    redoCount.current = n;
+    setRedoNonce((x) => x + 1);
+  };
+  const fireRedo = useEffectEvent(() => {
+    redoCount.current = null;
+    void handleGenerate();
+  });
+  useEffect(() => {
+    if (redoCount.current !== null && canGenerate && count === redoCount.current) fireRedo();
+  }, [redoNonce, canGenerate, count]);
 
   // Live surface scope for the Agents chrome (matrx-user/education-assessment,
   // create view). Plain function reading the live render values at Run time.
@@ -215,7 +312,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
     createEducationAssessmentScope({
       assessment_kind: config.kind,
       view: "create",
-      source_mode: mode,
+      source_mode: hasSources ? "sources" : "topic",
       ...(topic.trim() ? { topic: topic.trim() } : {}),
       question_count: count,
       difficulty,
@@ -224,11 +321,11 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
       ...(examType.trim() ? { exam_type: examType.trim() } : {}),
       ...(config.timed ? { time_limit_minutes: timeLimitMin } : {}),
       ...(userRequest.trim() ? { user_request: userRequest.trim() } : {}),
-      ...(selectedDeck
-        ? { selected_deck: { id: selectedDeck.id, name: selectedDeck.name } }
+      ...(firstDeck?.draft.ref
+        ? { selected_deck: { id: firstDeck.draft.ref.resource_id, name: firstDeck.draft.label } }
         : {}),
-      ...(selectedDoc
-        ? { selected_document: { id: selectedDoc.id, name: selectedDoc.name } }
+      ...(firstOther?.draft.ref
+        ? { selected_document: { id: firstOther.draft.ref.resource_id, name: firstOther.draft.label } }
         : {}),
       is_generating: isGenerating,
     });
@@ -249,12 +346,9 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
         throw new Error(
           `generation_topic expects a non-empty string of at most ${TOPIC_MAX} characters.`,
         );
-      setTopic(value.trim());
-      // The topic field only feeds topic-mode generation; staging it while the
-      // form sits in deck/document mode would be invisible and would not reach
-      // the generator. Switching is reversible — the picked deck/document stays
-      // in state and returns if the user switches back.
-      setMode("topic");
+      // The Source input's Topic: alone it is the subject; beside picked
+      // Sources it narrows them ("Focus on: …").
+      set.setTopic(value.trim());
     },
     generation_difficulty: (value: unknown) => {
       if (typeof value !== "string" || !isDifficulty(value))
@@ -262,6 +356,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_difficulty expects exactly one of: ${DIFFICULTIES.join(", ")} (case-sensitive).`,
         );
       setDifficulty(value);
+      keep({ difficulty: value });
     },
     generation_depth: (value: unknown) => {
       if (typeof value !== "string" || !isDepth(value))
@@ -269,6 +364,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_depth expects exactly one of: ${DEPTHS.join(", ")}.`,
         );
       setDepth(value);
+      keep({ depth: value });
     },
     generation_question_types: (value: unknown) => {
       if (!Array.isArray(value))
@@ -281,6 +377,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_question_types rejected — unsupported question type(s): ${bad.map((t) => JSON.stringify(t)).join(", ")}. Allowed: ${QUESTION_TYPES.join(", ")}.`,
         );
       setTypes(new Set(value as QuestionType[]));
+      keep({ questionTypes: value as QuestionType[] });
     },
     generation_question_count: (value: unknown) => {
       if (!Number.isInteger(value) || (value as number) < 1)
@@ -292,6 +389,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_question_count of ${value} exceeds the maximum for a ${config.noun} (${config.countMax}).`,
         );
       setCount(value as number);
+      keep({ count: value as number });
     },
     generation_exam_type: (value: unknown) => {
       if (typeof value !== "string" || value.length > EXAM_TYPE_MAX)
@@ -299,6 +397,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_exam_type expects a string of at most ${EXAM_TYPE_MAX} characters (the empty string clears it).`,
         );
       setExamType(value.trim());
+      keep({ examType: value.trim() });
     },
     generation_user_request: (value: unknown) => {
       if (typeof value !== "string" || value.length > USER_REQUEST_MAX)
@@ -306,6 +405,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_user_request expects a string of at most ${USER_REQUEST_MAX} characters (the empty string clears it).`,
         );
       setUserRequest(value);
+      keep({ userRequest: value });
     },
     generation_time_limit_minutes: (value: unknown) => {
       if (!config.timed)
@@ -321,6 +421,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           `generation_time_limit_minutes expects a whole number of minutes between 0 and ${TIME_LIMIT_MAX_MIN} (0 means untimed).`,
         );
       setTimeLimitMin(value as number);
+      keep({ timeLimitMinutes: value as number });
     },
   });
 
@@ -332,7 +433,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
       getWriteHandlers={getSurfaceWriteHandlers}
     >
     <div className="min-h-full w-full bg-textured">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="flex items-center gap-3">
           <Button
@@ -353,7 +454,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                 feature="education"
                 mandateKeys={[ASSESSMENT_MANDATES.generateQuiz, ASSESSMENT_MANDATES.generateQuizFromSource]}
               />
-            </h1><InfoHint text="Generate graded questions from a topic, a deck, or a document." label="About this page" /></div>
+            </h1><InfoHint text="Graded questions from your sources, a deck, or just a topic." label="About this page" /></div>
           </div>
         </div>
 
@@ -366,8 +467,9 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                   Generating your {config.noun}…
                 </p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Writing {Math.min(config.countMax, Math.max(1, count || 1))}{" "}
-                  questions at {depth} depth — watch them arrive below.
+                  {generation.progress && generation.progress.total > 1
+                    ? `Part ${Math.min(generation.progress.done + 1, generation.progress.total)} of ${generation.progress.total}`
+                    : `${Math.min(config.countMax, Math.max(1, count || 1))} questions at ${depth} depth`}
                 </p>
               </div>
             </div>
@@ -381,128 +483,43 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
           </div>
         ) : (
           <div className="mt-6 flex flex-col gap-5 rounded-xl border border-border bg-card p-4 sm:p-6">
-            {/* Source mode */}
-            <div className="flex flex-col gap-2">
-              <Label>Source</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <ModeButton
-                  active={mode === "topic"}
-                  icon={Type}
-                  label="Topic"
-                  onClick={() => setMode("topic")}
-                />
-                <ModeButton
-                  active={mode === "deck"}
-                  icon={Layers}
-                  label="Deck"
-                  onClick={() => {
-                    setMode("deck");
-                    void loadDecks();
-                  }}
-                />
-                <ModeButton
-                  active={mode === "document"}
-                  icon={FileSearch}
-                  label="Document"
-                  onClick={() => setMode("document")}
-                />
-              </div>
-            </div>
-
-            {mode === "topic" && (
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="as-topic">Topic</Label>
-                <Input
-                  id="as-topic"
-                  autoFocus
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="e.g. Cellular respiration, The French Revolution"
-                  className={FIELD}
-                />
-              </div>
-            )}
-
-            {mode === "deck" && (
-              <div className="flex flex-col gap-1.5">
-                <Label>Flashcard deck</Label>
-                {decks === null && decksError ? (
-                  <ReadFailure
-                    error={decksError}
-                    what="your flashcard decks"
-                    onRetry={() => void loadDecks()}
-                    className="m-0"
-                  />
-                ) : decks === null ? (
-                  <Skeleton className="h-10 w-full rounded-md" />
-                ) : decks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    You have no decks yet. Create one in Flashcards first.
-                  </p>
-                ) : (
-                  <Select
-                    value={selectedDeck?.id ?? ""}
-                    onValueChange={(id) =>
-                      setSelectedDeck(decks.find((d) => d.id === id) ?? null)
-                    }
-                  >
-                    <SelectTrigger className={FIELD}>
-                      <SelectValue placeholder="Pick a deck to build from" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {decks.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          {d.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )}
-
-            {mode === "document" && (
-              <div className="flex flex-col gap-1.5">
-                <Label>Document</Label>
-                {docsLoading ? (
-                  <Skeleton className="h-10 w-full rounded-md" />
-                ) : docs.filter((d) => d.chunks > 0).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No processed documents. Upload one in your{" "}
-                    <a className="underline" href={SOURCES_PATH}>
-                      Knowledge library
-                    </a>{" "}
-                    first.
-                  </p>
-                ) : (
-                  <Select
-                    value={selectedDoc?.id ?? ""}
-                    onValueChange={(id) =>
-                      setSelectedDoc(docs.find((d) => d.id === id) ?? null)
-                    }
-                  >
-                    <SelectTrigger className={FIELD}>
-                      <SelectValue placeholder="Pick a document to build from" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {docs
-                        .filter((d) => d.chunks > 0)
-                        .map((d) => (
-                          <SelectItem key={d.id} value={d.id}>
-                            {d.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {selectedDoc && (
-                  <p className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <FileText className="h-3 w-3" />
-                    Every question will cite the passage it came from.
-                  </p>
-                )}
-              </div>
-            )}
+            {/* Sources — the one Source input (its Topic tile included) */}
+            <SourceInput
+              surfaceKey={surfaceKey}
+              title="Sources"
+              purpose={`your ${config.noun}`}
+              deliveries={FLASHCARD_SOURCE_DELIVERIES}
+              extraKinds={QUIZ_EXTRA_KINDS}
+            />
+<<<<<<< HEAD
+            {stoppedRun?.whileSaving ? (
+              // The save had been sent and may have landed: never redo it blind.
+              <RunStoppedNotice
+                message={`The page closed while saving your ${config.noun}. Check your ${config.pluralLabel.toLowerCase()}.`}
+                redoLabel={`Your ${config.pluralLabel.toLowerCase()}`}
+                redoIcon={ArrowRight}
+                onRedo={() => {
+                  tabRun.dismiss();
+                  startNavigation(() => router.push(base));
+                }}
+                onDismiss={tabRun.dismiss}
+              />
+            ) : stoppedRun ? (
+              <RunStoppedNotice
+                message={`Making ${stoppedRun.request.count} ${stoppedRun.request.count === 1 ? "question" : "questions"} stopped when the page closed.`}
+                onRedo={redoStopped}
+                onDismiss={tabRun.dismiss}
+              />
+            ) : null}
+=======
+>>>>>>> origin/main
+            {styleDraft.didRestore ? (
+              <WizardDraftRestored
+                what="your style and details"
+                onDismiss={styleDraft.acknowledge}
+                onStartFresh={startFresh}
+              />
+            ) : null}
 
             {/* Count + difficulty */}
             <div className="grid grid-cols-2 gap-4">
@@ -513,7 +530,10 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                   min={1}
                   max={config.countMax}
                   value={count}
-                  onChange={setCount}
+                  onChange={(v) => {
+                    setCount(v);
+                    keep({ count: v });
+                  }}
                   className={FIELD}
                 />
               </div>
@@ -521,7 +541,10 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                 <Label htmlFor="as-diff">Difficulty</Label>
                 <Select
                   value={difficulty}
-                  onValueChange={(v) => setDifficulty(v as Difficulty)}
+                  onValueChange={(v) => {
+                    setDifficulty(v as Difficulty);
+                    keep({ difficulty: v as Difficulty });
+                  }}
                 >
                   <SelectTrigger id="as-diff" className={FIELD}>
                     <SelectValue />
@@ -545,7 +568,10 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                   <button
                     key={d.value}
                     type="button"
-                    onClick={() => setDepth(d.value)}
+                    onClick={() => {
+                      setDepth(d.value);
+                      keep({ depth: d.value });
+                    }}
                     className={cn(
                       "flex flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors",
                       depth === d.value
@@ -599,7 +625,10 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                 <Input
                   id="as-exam"
                   value={examType}
-                  onChange={(e) => setExamType(e.target.value)}
+                  onChange={(e) => {
+                    setExamType(e.target.value);
+                    keep({ examType: e.target.value });
+                  }}
                   placeholder="e.g. AP Biology, SAT"
                   className={FIELD}
                 />
@@ -611,7 +640,10 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
                     id="as-time"
                     min={0}
                     value={timeLimitMin}
-                    onChange={setTimeLimitMin}
+                    onChange={(v) => {
+                      setTimeLimitMin(v);
+                      keep({ timeLimitMinutes: v });
+                    }}
                     className={FIELD}
                   />
                 </div>
@@ -623,7 +655,10 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
               <ProTextarea
                 id="as-req"
                 value={userRequest}
-                onChange={(e) => setUserRequest(e.target.value)}
+                onChange={(e) => {
+                  setUserRequest(e.target.value);
+                  keep({ userRequest: e.target.value });
+                }}
                 placeholder="e.g. Emphasize mechanisms; one case study"
                 className={cn(FIELD, "min-h-[60px]")}
               />
@@ -631,9 +666,13 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
 
             {/* Metering (visible BEFORE the action — TRUST §6), canonical primitive */}
             <EntitlementMeter capability={config.capability} showAllWindows />
-            <generation.Gates />
 
-            <div className="flex items-center justify-end gap-2 pt-1">
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+              {blockedReason ? (
+                <span role="status" className="mr-auto text-xs text-muted-foreground">
+                  {blockedReason}
+                </span>
+              ) : null}
               <Button
                 variant="quiet"
                 onClick={() => startNavigation(() => router.push(base))}
@@ -652,36 +691,9 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
             </div>
           </div>
         )}
+        <generation.Gates />
       </div>
     </div>
     </SurfaceRuntimeProvider>
-  );
-}
-
-function ModeButton({
-  active,
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  icon: typeof Type;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex flex-col items-center gap-1 rounded-lg border px-3 py-3 text-xs font-medium transition-colors",
-        active
-          ? "border-primary bg-primary/5 text-foreground"
-          : "border-border text-muted-foreground hover:bg-accent/40",
-      )}
-    >
-      <Icon className="h-4 w-4" />
-      {label}
-    </button>
   );
 }

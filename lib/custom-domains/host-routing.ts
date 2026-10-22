@@ -92,6 +92,7 @@ const PUBLIC_API_PREFIXES = [
   "/api/bookings/",
   "/api/portal/",
   "/api/payments/return",
+  "/api/payments/retry", // "Pay again" / "Pay now" on a form or booking page (PaymentNotice)
   "/api/diagnostics/client-error",
   "/api/set-theme",
 ];

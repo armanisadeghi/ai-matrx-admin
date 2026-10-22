@@ -21,7 +21,6 @@
  */
 
 import { RecordId } from "@ai-matrx/design-system";
-import { InfoHint } from "@/components/official/InfoHint";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import React, { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -337,8 +336,8 @@ const DETAIL_COLUMNS: MatrxColumnDef<ToolRefetchDetailRow>[] = [
   {
     id: "sameData",
     accessorKey: "sameData",
-    header: <span className="inline-flex items-center gap-1">Data<InfoHint text="Same-data means the output matched the earlier call, new-data that it changed, unknown that it was not stored." label="About Data" /></span>,
-    label: "Data",
+    header: "Data",
+    helpText: "Same-data means the output matched the earlier call, new-data that it changed, unknown that it was not stored.",
     filter: "boolean",
     width: 105,
     cell: (row) => <SameDataBadge value={row.sameData} />,
@@ -346,8 +345,8 @@ const DETAIL_COLUMNS: MatrxColumnDef<ToolRefetchDetailRow>[] = [
   {
     id: "trimmedBeforeRepeat",
     accessorKey: "trimmedBeforeRepeat",
-    header: <span className="inline-flex items-center gap-1">After trim<InfoHint text="The first result was cleared from context before the repeat; n/a means no trim was recorded." label="About After trim" /></span>,
-    label: "After trim",
+    header: "After trim",
+    helpText: "The first result was cleared from context before the repeat; n/a means no trim was recorded.",
     filter: "boolean",
     width: 110,
     cell: (row) => <TrimBadge value={row.trimmedBeforeRepeat} />,
@@ -506,7 +505,8 @@ export function ToolDetail({
           pagination: {
             queryKey: `tool-refetch:${toolName}:${win}`,
             rows,
-            loading: detail.isPending,
+            // Rows already loaded stay the answer while the next window fetches: "loading" means none yet.
+            loading: detail.isPending && rows.length === 0,
             isFetchingNextPage: detail.isFetching && pages > 1,
             error: detail.error instanceof Error ? detail.error : null,
             hasNextPage:
@@ -570,7 +570,7 @@ export function ToolRefetchConsole() {
     { id: "sameDataRate", accessorKey: "sameDataRate", header: "Same-data %", filter: "number", width: 125, cell: (row) => <span className={cn("tabular-nums", (row.sameDataRate ?? 0) >= 0.05 && "font-semibold text-rose-600 dark:text-rose-400")}>{fmtPct(row.sameDataRate)}</span> },
     { id: "newDataRepeats", accessorKey: "newDataRepeats", header: "New-data", filter: "number", width: 105, cell: (row) => <span className="tabular-nums text-muted-foreground">{fmtCount(row.newDataRepeats)}</span> },
     { id: "unknownDataRepeats", accessorKey: "unknownDataRepeats", header: "Unknown", filter: "number", width: 105, cell: (row) => <span className="tabular-nums text-muted-foreground">{fmtCount(row.unknownDataRepeats)}</span> },
-    { id: "afterTrimRepeats", accessorKey: "afterTrimRepeats", header: <span className="inline-flex items-center gap-1">After trim<InfoHint text="The first result was cleared from context before the repeat; n/a means no trim was recorded." label="About After trim" /></span>, label: "After trim", filter: "number", width: 105, cell: (row) => <span className="tabular-nums">{fmtCount(row.afterTrimRepeats)}</span> },
+    { id: "afterTrimRepeats", accessorKey: "afterTrimRepeats", header: "After trim", helpText: "The first result was cleared from context before the repeat; n/a means no trim was recorded.", filter: "number", width: 105, cell: (row) => <span className="tabular-nums">{fmtCount(row.afterTrimRepeats)}</span> },
     { id: "medianGapCalls", accessorKey: "medianGapCalls", header: "Gap calls", filter: "number", width: 105, cell: (row) => <span className="tabular-nums">{fmtGapCalls(row.medianGapCalls)}</span> },
     { id: "medianGapSecs", accessorKey: "medianGapSecs", header: "Gap", filter: "number", width: 100, cell: (row) => <span className="tabular-nums">{fmtDuration(row.medianGapSecs)}</span> },
     { id: "charsRefetchedSameData", accessorKey: "charsRefetchedSameData", header: "Chars re-fetched", filter: "number", width: 135, cell: (row) => <span className="tabular-nums">{fmtCount(row.charsRefetchedSameData)}</span> },

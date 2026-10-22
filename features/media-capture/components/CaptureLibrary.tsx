@@ -33,7 +33,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { FileAudio, ImageOff, Video } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
-import { cn } from "@/lib/utils";
+import { Tabs } from "@ai-matrx/design-system/controls";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
@@ -47,16 +47,16 @@ import { CaptureItemActions } from "@/features/media-capture/components/CaptureI
 import { CaptureThumb } from "@/features/media-capture/components/CaptureThumb";
 import { ReadFailure } from "@ai-matrx/design-system";
 
-type CaptureKindFilter = "all" | "photo" | "video" | "audio";
+export type CaptureKindFilter = "all" | "photo" | "video" | "audio";
 
-const FILTERS: Array<{ key: CaptureKindFilter; label: string }> = [
+export const CAPTURE_FILTERS: Array<{ key: CaptureKindFilter; label: string }> = [
   { key: "all", label: "All" },
   { key: "photo", label: "Photos" },
   { key: "video", label: "Videos" },
   { key: "audio", label: "Audio" },
 ];
 
-interface CaptureItem {
+export interface CaptureItem {
   file: CloudFile;
   kind: "photo" | "video" | "audio";
 }
@@ -104,16 +104,22 @@ function kindOfFile(
   return folderKind;
 }
 
-export interface CaptureLibraryProps {
-  /** Bumped by the page on every studio save so the lens re-reads promptly. */
-  refreshToken?: number;
+export interface CaptureItemsState {
+  /** Every capture, newest first. Empty until the tree has loaded. */
+  allCaptures: CaptureItem[];
+  counts: Record<CaptureKindFilter, number>;
+  status: "loading" | "loaded" | "error";
+  error: unknown;
+  retry: () => void;
 }
 
-export function CaptureLibrary({ refreshToken = 0 }: CaptureLibraryProps) {
+/**
+ * The captures in the person's file tree, read through the ONE files data
+ * layer. Safe to call from the page and the library together: `useCloudTree`
+ * starts the tree read only while it is idle, so the read happens once.
+ */
+export function useCaptureItems(): CaptureItemsState {
   const userId = useAppSelector(selectUserId);
-  const [filter, setFilter] = useState<CaptureKindFilter>("all");
-  // Bumped when a recovery saves a new capture so the recovery list re-reads.
-  const [recoveryToken, setRecoveryToken] = useState(0);
 
   // ── Existing files data layer only ─────────────────────────────────────────
   // `useCloudTree` triggers/observes the whole-user-tree read; the tree RPC is
@@ -131,18 +137,10 @@ export function CaptureLibrary({ refreshToken = 0 }: CaptureLibraryProps) {
       if (!folderKind) continue;
       collected.push({ file, kind: kindOfFile(file, folderKind) });
     }
-    return collected;
-  }, [filesById]);
-
-  const items = useMemo<CaptureItem[]>(() => {
-    const filtered =
-      filter === "all"
-        ? allCaptures
-        : allCaptures.filter((i) => i.kind === filter);
-    return [...filtered].sort((a, b) =>
+    return collected.sort((a, b) =>
       (b.file.updatedAt ?? "").localeCompare(a.file.updatedAt ?? ""),
     );
-  }, [allCaptures, filter]);
+  }, [filesById]);
 
   const counts = useMemo(() => {
     const c = { all: allCaptures.length, photo: 0, video: 0, audio: 0 };
@@ -150,30 +148,64 @@ export function CaptureLibrary({ refreshToken = 0 }: CaptureLibraryProps) {
     return c;
   }, [allCaptures]);
 
+  return {
+    allCaptures,
+    counts,
+    status: treeReady ? "loaded" : status === "error" ? "error" : "loading",
+    error: treeError,
+    retry: retryTree,
+  };
+}
+
+export interface CaptureLibraryProps {
+  /** Bumped by the page on every studio save so the lens re-reads promptly. */
+  refreshToken?: number;
+  /** Controlled kind filter (the page owns it so its agent can set it too). */
+  filter?: CaptureKindFilter;
+  onFilterChange?: (filter: CaptureKindFilter) => void;
+}
+
+export function CaptureLibrary({
+  refreshToken = 0,
+  filter: controlledFilter,
+  onFilterChange,
+}: CaptureLibraryProps) {
+  const [localFilter, setLocalFilter] = useState<CaptureKindFilter>("all");
+  const filter = controlledFilter ?? localFilter;
+  const setFilter = (next: CaptureKindFilter) => {
+    setLocalFilter(next);
+    onFilterChange?.(next);
+  };
+  // Bumped when a recovery saves a new capture so the recovery list re-reads.
+  const [recoveryToken, setRecoveryToken] = useState(0);
+  const { allCaptures, counts, status, error: treeError, retry: retryTree } =
+    useCaptureItems();
+
+  const items =
+    filter === "all"
+      ? allCaptures
+      : allCaptures.filter((i) => i.kind === filter);
+
   const treeFailed = status === "error";
-  const loading = !treeReady && !treeFailed;
+  const loading = status === "loading";
 
   return (
     <section className="flex min-h-0 flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-1.5">
-        <h2 className="mr-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Captures
-        </h2>
-        {FILTERS.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            onClick={() => setFilter(f.key)}
-            className={cn(
-              "rounded-md border px-2 py-0.5 text-[11px] font-medium tabular-nums transition-colors",
-              filter === f.key
-                ? "border-primary/40 bg-primary/10 text-primary-ink"
-                : "border-border bg-card text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {f.label} ({counts[f.key]})
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2">
+        <h2 className="text-sm font-semibold text-foreground">Captures</h2>
+        {/* Counts appear only once the tree has loaded — a "(0)" beside a
+            loading grid contradicted itself. */}
+        <Tabs<CaptureKindFilter>
+          variant="capsule"
+          aria-label="Filter captures by kind"
+          value={filter}
+          onValueChange={setFilter}
+          data={CAPTURE_FILTERS.map((f) => ({
+            value: f.key,
+            label: f.label,
+            count: loading || treeFailed ? null : counts[f.key],
+          }))}
+        />
       </div>
 
       <CaptureTransportStrip />
@@ -252,7 +284,7 @@ function CaptureTile({
 
         {/* Always visible on touch (there is no hover to reveal it); hover-
             revealed from sm: up so desktop tiles stay clean. */}
-        <div className="absolute right-1 top-1 transition-opacity focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+        <div className="absolute right-1 top-1 transition-opacity focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100">
           <CaptureItemActions
             fileId={file.id}
             fileName={file.fileName}
@@ -263,7 +295,7 @@ function CaptureTile({
 
         {/* The filename caption is the only identity a tile carries — on touch
             it must not be hidden behind a hover that can never happen. */}
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1 bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3 text-[10px] text-white transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1 bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3 text-xs text-white transition-opacity sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100">
           {kind === "video" && <Video className="h-3 w-3 shrink-0" />}
           {kind === "audio" && <FileAudio className="h-3 w-3 shrink-0" />}
           <span className="truncate">{file.fileName}</span>

@@ -52,6 +52,12 @@ import {
   SKIP_DEFER_MINUTES,
 } from "./types";
 import type { OutreachListKind } from "./types";
+import {
+  BEST_CONTACT_POINT_CHANNELS,
+  BEST_CONTACT_POINT_COLUMNS,
+  pickBestContactPoints,
+  type BestContactPointCandidate,
+} from "./best-contact-point";
 import { postgrestError } from "@/lib/failure/postgrestError";
 
 // ── Error mapping (same contract as ../service.ts) ──────────────────────────
@@ -61,8 +67,9 @@ function pgError(error: { message?: string; code?: string }): Error {
   if (error instanceof WriteDidNotLandError) return error;
   return postgrestError(error, {
     action: "working with the outreach lists",
-    fallback: "Supabase returned an error with no message — usually a gateway/PostgREST " +
-          "failure rather than a query error.",
+    fallback:
+      "Supabase returned an error with no message — usually a gateway/PostgREST " +
+      "failure rather than a query error.",
   });
 }
 
@@ -151,11 +158,7 @@ export async function updateOutreachList(
   >,
 ): Promise<void> {
   const { error } = await tryWriteOne(
-    crm()
-      .from("outreach_list")
-      .update(patch)
-      .eq("id", id)
-      .select("id"),
+    crm().from("outreach_list").update(patch).eq("id", id).select("id"),
     { action: "update", noun: "outreach list" },
   );
   if (error) throw pgError(error);
@@ -185,7 +188,9 @@ export async function setOutreachListStatus(
  * Start (or resume) a list's cadence. Call ONLY from `ActivateOutreachListDialog`,
  * after the person has seen the pitch advisory for this list.
  */
-export async function activateOutreachList(list: OutreachListRow): Promise<void> {
+export async function activateOutreachList(
+  list: OutreachListRow,
+): Promise<void> {
   await writeOutreachListStatus(list, "active");
 }
 
@@ -201,11 +206,7 @@ async function writeOutreachListStatus(
     patch.ended_at = list.ended_at ?? new Date().toISOString();
   }
   const { error } = await tryWriteOne(
-    crm()
-      .from("outreach_list")
-      .update(patch)
-      .eq("id", list.id)
-      .select("id"),
+    crm().from("outreach_list").update(patch).eq("id", list.id).select("id"),
     { action: "update", noun: "outreach list" },
   );
   if (error) throw pgError(error);
@@ -344,40 +345,28 @@ export async function fetchExistingMemberPartyIds(
  * component RETURNING is forbidden (rule 1).
  */
 /**
- * Best contact point per party, for binding at enrollment (D223): the list
- * kind's channel first (call → phone, otherwise email), primary before
- * non-primary, falling back to the other channel. A member with no binding is
- * reported "blocked" by Chasebox even when the party is perfectly reachable —
- * so the binding happens here, once, for every enrollment entry point.
+ * Best contact point per party, for binding at enrollment (D223). The rule is
+ * `pickBestContactPoints` — the same one the server door applies. A member with
+ * no binding is reported "blocked" by Chasebox even when the party is perfectly
+ * reachable — so the binding happens here, once, for every enrollment entry point.
  */
 async function fetchBestContactPointIds(
   partyIds: string[],
   listKind: string,
 ): Promise<Map<string, string>> {
-  const preferred = listKind === "call" ? "phone" : "email";
-  const best = new Map<string, string>();
+  const rows: BestContactPointCandidate[] = [];
   for (let i = 0; i < partyIds.length; i += 200) {
     const chunkIds = partyIds.slice(i, i + 200);
     const { data, error } = await crm()
       .from("party_contact_point")
-      .select("id, party_id, channel, is_primary")
+      .select(BEST_CONTACT_POINT_COLUMNS)
       .in("party_id", chunkIds)
-      .in("channel", ["email", "phone"])
+      .in("channel", [...BEST_CONTACT_POINT_CHANNELS])
       .is("deleted_at", null);
     if (error) throw pgError(error);
-    const rank = (r: { channel: string | null; is_primary: boolean }) =>
-      (r.channel === preferred ? 0 : 2) + (r.is_primary ? 0 : 1);
-    const bestRank = new Map<string, number>();
-    for (const r of data ?? []) {
-      const current = bestRank.get(r.party_id);
-      const score = rank(r);
-      if (current === undefined || score < current) {
-        bestRank.set(r.party_id, score);
-        best.set(r.party_id, r.id);
-      }
-    }
+    rows.push(...((data ?? []) as BestContactPointCandidate[]));
   }
-  return best;
+  return pickBestContactPoints(rows, listKind);
 }
 
 export async function addMembersByPartyIds(args: {
@@ -607,11 +596,19 @@ export async function requeueMember(memberId: string): Promise<void> {
  * The pitch-advisory "wait" / "hold until" offers (E7, E10, E12) call this —
  * the person chose a later send instead of sending now.
  */
-export async function scheduleMember(memberId: string, at: string): Promise<void> {
+export async function scheduleMember(
+  memberId: string,
+  at: string,
+): Promise<void> {
   const { error } = await tryWriteOne(
     crm()
       .from("outreach_list_member")
-      .update({ status: "queued", next_attempt_at: at, claimed_by: null, claimed_until: null })
+      .update({
+        status: "queued",
+        next_attempt_at: at,
+        claimed_by: null,
+        claimed_until: null,
+      })
       .eq("id", memberId)
       .select("id"),
     { action: "update", noun: "list member" },

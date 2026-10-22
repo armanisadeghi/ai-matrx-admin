@@ -74,6 +74,14 @@ export interface TileChrome {
   growToFit: boolean;
 }
 
+/**
+ * Where a headerless tile's floating "…" menu sits: ON the card's top edge (half above it), never inside
+ * the body. The body names itself and carries its own header controls at its top right (a records-ui
+ * section card's Add); a menu drawn inside the corner covered them, and on a phone (no hover) it is
+ * always shown. Half a 28px button (14px) fits in the 16px page tile gap above.
+ */
+export const FLOATING_TILE_MENU_PLACE = "absolute -top-3.5 right-3 z-10";
+
 export const FULL_CHROME: TileChrome = { headerless: false, bare: false, autoHeight: false, growToFit: false };
 
 /** A tile's chrome in a layout, from what its type says about this source. */

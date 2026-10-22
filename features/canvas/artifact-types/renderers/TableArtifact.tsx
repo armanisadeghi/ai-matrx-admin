@@ -14,6 +14,7 @@ import { parseMarkdownTable } from "@ai-matrx/rich-content/display/blocks/table/
 import { deriveDatasetNameForChatTable, isPlaceholderTableTitle } from "@/features/data-tables/derive-dataset-name";
 import { readTableDetails } from "@/features/data-tables/service";
 import { useOpenUserTableWindow } from "@/features/overlays/definitions/userTableWindow.overlay";
+import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/block-edit";
 import { StreamingTableRenderer as StreamingTableRenderer } from "@ai-matrx/rich-content/display/blocks/table/StreamingTableRenderer";
 import LocatedTableViewer from "@/features/data-tables/components/LocatedTableViewerDoor";
 import type { ArtifactRendererProps } from "../types";
@@ -44,6 +45,8 @@ export default function TableArtifact({
 }: ArtifactRendererProps) {
   const content = typeof data === "string" ? data : raw;
   const materialized = isMaterializedArtifactId(artifactId);
+  // A table whose answer holds no row yet still saves a cell edit through the answer's own write.
+  const answerWrite = useBlockEdit();
 
   // Streaming / inline (not yet a persisted artifact): identical to the old
   // `case "table"` — full toolbar (gated on metadata.isComplete) + inline edits
@@ -61,7 +64,7 @@ export default function TableArtifact({
           content={content}
           metadata={metadata}
           isStreamActive={isStreamActive}
-          onContentChange={onContentChange}
+          onContentChange={onContentChange ?? (answerWrite ? answerWrite.write : undefined)}
         />
       </Suspense>
     );
@@ -124,17 +127,31 @@ function TableArtifactMaterialized({
     return fallbackContent;
   }, [row, fallbackContent]);
 
-  // Persist an inline edit. Update the message (so the model's history matches)
-  // when the chat threaded a write-back; ALSO keep the canvas row in sync so the
-  // artifact context + render-by-id reflect it. Either path alone is safe.
+  // Persist an inline edit. INSIDE A CHAT ANSWER the edit goes through the answer's ONE save (the
+  // block-edit write: saveAnswerEdit, which writes the message AND this row, adds the edit chip and
+  // keeps content history) — never a second row writer here, and never the dropped
+  // `onContentChange` (a chat answer does not give one; defect 82: the cell edit reached neither
+  // the message nor the row). With no answer around it (the canvas pane) the row is written here,
+  // and a refused write is said out loud.
+  const blockEdit = useBlockEdit();
   const persistEdit = useCallback(
     (updatedMarkdown: string) => {
+      if (blockEdit) {
+        blockEdit.write(updatedMarkdown);
+        return;
+      }
       onContentChange?.(updatedMarkdown);
       void canvasItemsService
         .update(canvasItemId, {
           content: { data: updatedMarkdown, type: "table", metadata: {} },
         })
-        .then(() => {
+        .then(({ error }) => {
+          if (error) {
+            toast.error("The table edit was not saved", {
+              description: error instanceof Error ? error.message : String((error as { message?: unknown })?.message ?? error),
+            });
+            return;
+          }
           window.dispatchEvent(
             new CustomEvent(CANVAS_ITEM_UPDATED_EVENT, {
               detail: { rootId: canvasItemId, latestId: canvasItemId },
@@ -142,7 +159,7 @@ function TableArtifactMaterialized({
           );
         });
     },
-    [canvasItemId, onContentChange],
+    [blockEdit, canvasItemId, onContentChange],
   );
 
   // THE ARTIFACT BECOMES A LIVE TABLE through the ONE "Save to a table" (SAVE-AS-TABLE-EVERYWHERE,

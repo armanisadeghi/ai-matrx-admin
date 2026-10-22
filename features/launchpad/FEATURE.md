@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-20`
+**Last updated:** `2026-10-22`
 
 ## Purpose
 
@@ -22,11 +22,15 @@ Two things live here, one feature:
 - `app/(core)/launchpad/[key]/page.tsx` — one launchpad (`components/LaunchpadPage.tsx`).
 - `app/(core)/start/page.tsx` — permanent redirect to `/launchpad/start`.
 - `components/LaunchpadPage.tsx` — view / Edit / History / Chat; `RecordPageHeader` with the launchpads as
-  record siblings (switcher), Actions menu Rename · Duplicate · Archive.
+  record siblings (switcher), Actions menu Rename · Duplicate · Save as template · (owner/admin) Save as
+  organization template · Share with organization · Archive. On an organization's launchpad a member reads it
+  ("Organization" status) and gets "Copy to mine" instead of Edit; Rename and Archive are owner/admin only.
 - `components/LaunchpadGrid.tsx` — a `LaunchpadDoc` on `GridCanvas` (`@ai-matrx/design-system`).
 - `components/LaunchpadPanels.tsx` — Add (catalog by Board section), Set up (width, height, fields with
   pickers), History (preview in place, Set active).
-- `components/YourLaunchpads.tsx` — the strip and the New launchpad template picker.
+- `components/YourLaunchpads.tsx` — the strip and the New launchpad gallery: the role templates, "Your
+  templates" and "Your organization's templates" (saved launchpads, removable), and for an owner/admin of the
+  active organization a "Just me | Everyone in the organization" choice that creates an organization launchpad.
 - `server/readLaunchpads.ts` — the person's own launchpads read on the server (same `listAppRows`, same
   `visibleLaunchpadRows` pick, 6 s deadline, announced on failure) so `/launchpad/<key>` has its saved layout in
   the first HTML and `/launchpad`'s strip streams in without waiting for the browser.
@@ -44,12 +48,27 @@ Two things live here, one feature:
 ## Data model
 
 - **`launchpad` typed table** (`launchpad.typed-table.ts`; slug `LAUNCHPAD_TABLE_SLUG`, kept_for
-  `custom_experience`, organization scope, key `slot`). Fields: `slot` (unique: `org:<key>` or
-  `person:<uuid>:<key>`), `key`, `title`, `owner` (`org` | `person:<uuid>`), `doc` (JSON `LaunchpadDoc` —
-  the frozen contract in `features/shell/shell-layout/contract.ts`), `note`, `saved_at`. Every save is a
-  record version (History). A person's launchpads are read across all their organizations (newest wins per
-  key) plus the active organization's `org` launchpads; a key opens the person's own first. Every write names
-  its organization: the row's own, else the active organization.
+  `custom_experience`, organization scope, key `slot`). Fields: `slot` (unique per organization copy:
+  `<owner>:<key>`), `key`, `title`, `owner`, `doc` (JSON `LaunchpadDoc` — the frozen contract in
+  `features/shell/shell-layout/contract.ts`), `note`, `saved_at`. Every save is a record version (History).
+  Owners: `person:<uuid>` (one person's launchpad), `org` (the organization's: every member sees it),
+  `template:person:<uuid>` and `template:org` (a launchpad saved as a template — never listed as a launchpad).
+- **Who sees what** (`visibleLaunchpadRows` / `visibleTemplateRows`, one pure pick for the browser and the
+  server): the person's own launchpads across all their organizations (newest wins per key) plus the `org`
+  launchpads of EVERY organization they read — the active organization is never a list filter; it only breaks a
+  key tie (`byKey`: own → active organization's → any organization's). The server read is the person's own only.
+  Templates: their own (newest per key) plus every organization's.
+- **Who changes what**: the person's own rows, themselves. An `org` launchpad or `template:org` row is written
+  or archived only by an owner or admin of its organization (`refuseUnlessAdmin` in `save`/`archive` reads
+  `getUserRole`, the organization Layout's gate; the UI hides those doors from members). Every write names its
+  organization: the row's own, else the one the caller names, else the active organization.
+- **Templates** (PLAN §5.6): "Save as template" copies the current layout into `template:person:<me>:<key>` (in
+  the launchpad's organization) or, owner/admin, `template:org:<key>` (in the launchpad's organization when it
+  is an `org` launchpad, else the active one). "New launchpad" copies a template's layout into a new launchpad.
+  Why not the labeled-template door (`features/spaces/state/templates.ts`, a `labeled` edge to the
+  `document_label/template` category): the store refuses that edge on a record — "a relation on a record has to
+  say which field it came from" (REL-10, tried live 2026-10-22) — so the label lives in the slot, in the same
+  table, never a second store.
 - **Start move**: on first visit (`/launchpad` or any `/launchpad/<key>`), `startMigration.ts` writes the
   person's newest `start_layout` doc as their `start` launchpad (s / m / l → 3 / 6 / 12 columns, same order),
   or today's first-visit layout plus their old start data page if they had none. Once per person (per-tab memo
@@ -67,7 +86,27 @@ Two things live here, one feature:
   sizes `defaultW/defaultH/minW/minH/maxW?/maxH?`, default config, fields, `describe`, optional `href`,
   `publishes` and `accepts` — its page-bus ports, below) + one body in `widgets/registry.tsx` taking
   `{ config, editing, capacity }`. The registry test fails without both. A new field picker goes in
-  `LaunchpadPanels.tsx`.
+  `LaunchpadPanels.tsx`. **Nobody types an id**: every `*Id` field names a `picker` (registry test). A
+  dashboard widget's `dashboardId` is the `tableDashboard` picker (`TableDashboardPicker`: the table's own
+  `dashboards` read in the table's organization; Pages and Interfaces excluded; empty = the table's first);
+  choosing another table clears it.
+- **One registry for every placeable thing (lane U)**: records-ui pages (`page`) and dashboards
+  (`records_dashboard`, the table's own `DashboardCanvas`), Applets (`applet`), any app page (`app_page`) and
+  EVERY Board item type (`board_item`: config `{ itemType, id, title }`, the reference a board tile holds; the
+  body is that type's own `Body`, the picker is that type's own bring-in picker; the board catalog loads only
+  when used). The Board is a free canvas, not a grid; its item catalog is the source `board_item` reads.
+  Lane W added **any kind** (`kind`, "Shape": a saved kind instance picked shape → instance through
+  `listAllKinds` + `listKindInstances`, or a page value of kind `shape` — any JSON carrying `__kind`, kept whole;
+  an Applet offers one as `out_shape`; drawn by `KindInstanceRender`, the ONE kind pipeline, behind one dynamic
+  edge) and a **Space page** (`space_page`: the Spaces editor through the fence door
+  `features/spaces/embed/SpaceWidget.tsx`, read-only while the launchpad is in Edit mode).
+  Guard: `__tests__/one-grid-one-registry.census.test.ts` fails on a second grid engine or a second widget
+  registry anywhere in app/, features/, components/, lib/ (three collection-reorder sortables are named
+  exceptions); `widgets/__tests__/boardItemWidget.test.tsx`.
+- **No late shift on a phone**: a phone box grows to its content (the grid canvas's phone CSS). A body whose
+  height is its own content (the counts tiles) declares `phoneBodyPx(config)` on its catalog entry; the frame
+  reserves that height in the first HTML under the canvas's own phone container test, so the body landing at
+  hydration moves nothing below it.
 - Widgets today: counts, count, recent, tasks, today, favorites, pinned agents, data page, table (the Start
   nine), Applet (`AppletInPage`), launchpad link, app page (the Board's Page item body — any app address,
   which also covers a Space page), Meet Matrx (`meet_matrx`: the welcome title (`part: "hero"`, the same
@@ -126,6 +165,8 @@ as ONE version ("Agent for you" in History).
 - `/dashboard` stays a hub. Do not move its metrics or rotating discovery content here.
 - The default browse state stays compact. Full destination density appears only after a search or an explicit `View all` action.
 - The route uses the canonical `(core)` AppShell sidebar and header. The page is a normal document in `.shell-main` — it does not become a second full-height scroller. The last cards sit above at least a quarter-viewport of empty space.
+- Browse grids (apps, folders, search results) fill by the page's own width (`auto-fill` with a per-card floor:
+  15 / 20 / 17rem), never by window breakpoint — a tile carries two buttons beside its name.
 - Browse is two grids on one page: apps with no children in a uniform dense row, folders with children in a second grid sorted by size. Folder heights are one of four 32px steps. Descriptions stay on one line. The left shell sidebar stays visible.
 - Area-card descriptions stay on one line. The catalog shortens long nav copy for the card; search still ranks the full nav description.
 
@@ -145,6 +186,21 @@ No existing primitive combined the user navigation hierarchy, start actions,
 and favorites into an always-open launcher.
 
 ## Change log
+
+- `2026-10-22` — Lane W: `kind` (Shape) and `space_page` widgets; page-bus value kind `shape`; Applet `out_shape`.
+- `2026-10-22` — Lane W: the dashboard widget picks its dashboard from the chosen table's dashboards (no raw id
+  field); registry guard: no `*Id` field without a picker.
+
+- `2026-10-22` — Lane U (one grid engine, one widget registry): `records_dashboard` and `board_item` widgets
+  (records-ui dashboards and every Board item type placeable on a launchpad); the census guard
+  `one-grid-one-registry.census.test.ts`. records-ui's own grid was deleted in the package (its blocks now ride
+  GridCanvas line mode).
+- `2026-10-22` — Lane T (custom-experience audit fixes): any launchpad saves as a template (the person's own, or
+  the organization's) and the gallery lists them beside the role templates; an owner or admin creates, edits and
+  shares organization launchpads (members read them and copy them; set as landing works through the existing
+  picker); organization launchpads of every organization are listed (no active-organization filter); the counts
+  strip reserves its phone height in the first HTML (CLS 0.089 on a phone, audit #10); the launcher's area grids
+  fill by page width (names were cut to one letter at 1440px with the sidebar open, audit #11).
 
 - `2026-10-20` — Lane O: an App page no longer shows the framed page's phone dock over its text (the notes editor's
   undo/format/Home·Copy·Tags·More dock drew over the note); in a frame a page dock is the page's last row

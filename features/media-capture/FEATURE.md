@@ -126,3 +126,7 @@ The studio matches the audio recorder's bar. Three rules:
 - **Review goes A-to-Z.** Playback routes through the selected speaker (`useOutputSinkRef`); after a successful save of video/audio, **Transcribe** calls `transcribeCloudFile({fileId})` → `POST /audio/transcribe-file` (server-side demux + chunking, bytes never re-uploaded) and renders the transcript with the shared `<ContentActionBar />` (Save to Notes/Tasks/File/copy — never rebuilt here). Transcription state carries its `file_id`, so a new capture can never display the previous one's transcript and a late response for an old file is discarded.
 
 `useStreamAudioLevel` (`features/audio/useStreamAudioLevel.ts`) is the canonical level-meter hook — shared `AudioContext`, analysis-only, disconnect on every exit. New code consumes the hook, never an inline analyzer.
+
+## Change log
+
+- `2026-10-22` — page-pass 2026-10-22: type single-workspace tool page (capture + list), posture sharp after Apple Photo Booth / Loom, `/camera`. Header title stands alone (subtitle removed). `/camera` now mounts `matrx-user/camera` (emitter `cameraSurfaceScope.ts`: session values + captures status, counts, shown rows and an XML overview), the canonical page menu (Show captures: All/Photos/Videos/Audio) and the `capture_filter` ui target. `CaptureLibrary` exports `useCaptureItems()` (one files-layer read shared with the page) and takes a controlled filter; its hand-styled filter chips became the design-system capsule `Tabs`, and counts show only once loaded (was "(0)" beside a loading grid). Tile caption 10px → 12px.

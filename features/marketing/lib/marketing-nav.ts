@@ -409,6 +409,13 @@ export const MARKETING_PILLARS: readonly MarketingNavPillar[] = [
         iconName: "Share2",
       },
       {
+        label: "Videos",
+        href: marketingRoutes.socialVideos(),
+        description:
+          "Every video project across your brands; each card opens in its brand.",
+        iconName: "Video",
+      },
+      {
         label: "News monitors",
         href: marketingRoutes.monitoring(),
         description:

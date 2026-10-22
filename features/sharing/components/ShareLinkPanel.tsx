@@ -128,6 +128,7 @@ export function ShareLinkPanel({
 
   const activeLinks = links.filter((l) => l.isActive);
   const isLoading = loading || loadedResourceKey !== resourceKey;
+  const hasLink = !isLoading && activeLinks.length > 0;
 
   const copyLink = useCallback(
     async (sourceLink: ShareLink, alreadyRefreshed?: ShareLink[]) => {
@@ -453,7 +454,9 @@ export function ShareLinkPanel({
           <div className="min-w-0">
             <h3 className="text-sm font-medium">Anyone with the link</h3>
             <p className="text-xs text-muted-foreground">
-              Create a link that opens with no sign-in required
+              {hasLink
+                ? `Link is on · ${activeLinks.length} active`
+                : "Create a link that opens with no sign-in required"}
             </p>
           </div>
         </div>
@@ -468,7 +471,9 @@ export function ShareLinkPanel({
           ) : (
             <Plus className="w-4 h-4" />
           )}
-          <span className="ml-1 hidden sm:inline">Create link</span>
+          <span className="ml-1 hidden sm:inline">
+            {hasLink ? "New link" : "Create link"}
+          </span>
         </Button>
       </div>
 

@@ -36,7 +36,7 @@ import {
   Layers,
   Lightbulb,
   MessageSquare,
-  MessagesSquare,
+  MessageSquareText,
   Search,
 } from "lucide-react";
 import { SHELL_CHAT_TOGGLE_EVENT } from "@ai-matrx/chat/canvas/workspace/shell-chat-route";
@@ -405,8 +405,8 @@ export function HeaderPhoneOverflow({
               ) : null}
               {isAuthenticated && chatAvailable ? (
                 <Row
-                  icon={<MessagesSquare className="h-5 w-5" />}
-                  label="Chat"
+                  icon={<MessageSquareText className="h-5 w-5" />}
+                  label="Side Chat"
                   onClick={() => {
                     close();
                     window.dispatchEvent(new Event(SHELL_CHAT_TOGGLE_EVENT));

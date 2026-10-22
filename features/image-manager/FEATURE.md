@@ -213,6 +213,7 @@ The Image Manager Hub plan landed across Phases 1–7 (May 2026). Pending owner-
 
 ## Change log
 
+- `2026-10-22` — page-pass 2026-10-22: type Dashboard-like navigation landing, posture sharp after Linear's settings index, `/images/manager`. Dropped the hero (eyebrow, headline, two-sentence description) and the phone hero card — the header already names the page, so the six tool tiles are the first screen. The landing now mounts `matrx-user/image-manager` (`features/image-manager/managerLandingSurface.ts` emits `image_hub_tab: "manager"` + the displayed tools as an XML overview), the canonical page menu with "Open <tool>" items, and the `open_image_workspace` ui target (same validator as the Images landing, `hub-surface.ts`).
 - `2026-09-15` — codex: the Images Large Route sidebar now resolves the single most-specific route owner before applying the shared blue selected treatment, so overlapping paths such as Studio and Studio Light cannot both appear active.
 
 - `2026-09-15` — codex: **My Cloud has a bounded, honest terminal-load test

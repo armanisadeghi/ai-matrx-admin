@@ -16,14 +16,13 @@
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { Check, ChevronDown, SearchX, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@ai-matrx/design-system";
+import { Check, ChevronDown, SearchX } from "lucide-react";
+import { CandidateCard, CandidatePickList, type Candidate } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
-import { formatCount, formatDurationMs } from "@ai-matrx/kit/format";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { browserImageUrl } from "@/lib/media/external-image";
 import { maskOffensive } from "@/lib/text/maskOffensive";
-import { OpenLink } from "../SmartAddExtras";
 import { autoEscalation } from "./escalation";
 import { pollLinkedinJob } from "../helpers/service";
 import { onHelperAnswer } from "../helpers/store";
@@ -589,17 +588,26 @@ export function PersonHarderStage({
   );
 }
 
-function CandidateAvatar({ c }: { c: HarderCandidate }) {
-  return (
-    <Avatar size="md" className="border border-border">
-      {c.image_url ? <AvatarImage src={browserImageUrl(c.image_url)} alt="" className="object-cover" /> : null}
-      <AvatarFallback>
-        <PlatformMark platform={c.platform} size={18} />
-      </AvatarFallback>
-    </Avatar>
-  );
+/** A harder-search result as the shared card's candidate. */
+function toCandidate(c: HarderCandidate, shape: "account" | "page"): Candidate {
+  const name = maskOffensive(c.name);
+  if (shape === "page") {
+    return { id: c.key, name: name ?? host(c.url), handle: name ? host(c.url) : null, bio: maskOffensive(c.snippet), href: c.url, mark: <PlatformMark platform={c.platform} size={18} /> };
+  }
+  const detail = [maskOffensive(c.headline), c.employer, c.location].filter(Boolean).join(" · ");
+  return {
+    id: c.key,
+    name: name ?? c.handle ?? host(c.url),
+    handle: name && c.handle ? `@${c.handle}` : null,
+    imageUrl: c.image_url ? browserImageUrl(c.image_url) : null,
+    mark: <PlatformMark platform={c.platform} size={18} />,
+    followers: c.followers,
+    detail: detail || maskOffensive(c.snippet),
+    href: c.url,
+  };
 }
 
+/** "Which of these is you?": the shared pick-one list over one platform's results. */
 function PickOne({
   testId,
   title,
@@ -624,46 +632,21 @@ function PickOne({
   const picked = list.find((c) => answers[c.key] === "me");
   const none = list.length > 0 && list.every((c) => answers[c.key] === "not_me");
   return (
-    <div data-testid={testId} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3">
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-        {status ? <span className="text-xs text-muted-foreground">{status}</span> : null}
-      </div>
-      <ul className="flex flex-col gap-1">
-        {list.slice(0, 12).map((c) => {
-          const on = picked?.key === c.key;
-          return (
-            <li key={c.key} className={`flex items-center gap-2 rounded-lg px-1.5 py-1 ${on ? "bg-primary/10 ring-1 ring-primary" : ""} ${picked && !on ? "opacity-50" : ""}`}>
-              <CandidateAvatar c={c} />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm text-foreground">
-                  {maskOffensive(c.name) ?? c.handle ?? host(c.url)}
-                  {c.handle ? <span className="text-muted-foreground"> · @{c.handle}</span> : null}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {[maskOffensive(c.headline), c.employer, c.location, c.followers != null ? `${formatCount(c.followers)} followers` : null]
-                    .filter(Boolean)
-                    .join(" · ") || maskOffensive(c.snippet)}
-                </span>
-              </div>
-              <OpenLink url={c.url} />
-              <Button variant={on ? "primary" : "outline"} icon={<Check aria-hidden />} aria-pressed={on} onClick={() => onPick(c)}>
-                This one
-              </Button>
-            </li>
-          );
-        })}
-      </ul>
-      <div className="flex flex-wrap gap-1.5">
-        <Button variant={none ? "primary" : "quiet"} icon={<X aria-hidden />} aria-pressed={none} onClick={onNone}>
-          None of these
-        </Button>
-        {onMore ? (
-          <Button variant="quiet" icon={<ChevronDown aria-hidden />} disabled={busy} onClick={onMore}>
-            More
-          </Button>
-        ) : null}
-      </div>
+    <div data-testid={testId}>
+      <CandidatePickList
+        title={title}
+        status={status ?? null}
+        candidates={list.map((c) => toCandidate(c, "account"))}
+        pickedId={picked?.key ?? null}
+        none={none}
+        onPick={(x) => {
+          const c = list.find((y) => y.key === x.id);
+          if (c) onPick(c);
+        }}
+        onNone={onNone}
+        {...(onMore ? { onMore } : {})}
+        busy={Boolean(busy)}
+      />
     </div>
   );
 }
@@ -672,29 +655,20 @@ function PickOne({
 const WEB_TIER_LABEL: Record<string, string> = { mid: "Also names you", low: "Less likely", junk: "People-search sites" };
 
 function WebRow({ c, tierLabel, answer, onAnswer }: { c: HarderCandidate; tierLabel: string | null; answer: HarderAnswer | null; onAnswer: (a: HarderAnswer) => void }) {
-  const out = answer === "not_me";
   return (
     <>
-    {tierLabel ? <li className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground" data-testid="smart-add-web-tier">{tierLabel}</li> : null}
-    <li data-answer={answer ?? "open"} data-tier={c.tier ?? "mid"} className={`flex items-start gap-2 rounded-lg border p-2 ${answer === "me" ? "border-primary ring-1 ring-primary" : out ? "border-dashed border-border bg-muted/40 opacity-60" : "border-border"}`}>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className={`truncate text-sm text-foreground ${out ? "line-through" : ""}`}>{maskOffensive(c.name) ?? host(c.url)}</span>
-        <span className="truncate text-xs text-muted-foreground">{host(c.url)}</span>
-        {c.snippet ? <span className="line-clamp-2 text-xs text-muted-foreground">{maskOffensive(c.snippet)}</span> : null}
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        <OpenLink url={c.url} />
-        <Button variant={answer === "me" ? "primary" : "outline"} icon={<Check aria-hidden />} aria-pressed={answer === "me"} onClick={() => onAnswer("me")}>
-          Yes it&apos;s me
-        </Button>
-        <Button variant={out ? "outline" : "quiet"} aria-pressed={out} onClick={() => onAnswer("not_me")}>
-          {out ? "Not you" : "Not me"}
-        </Button>
-        <Button variant="quiet" onClick={() => onAnswer("skip")}>
-          Skip
-        </Button>
-      </div>
-    </li>
+      {tierLabel ? <li className="pt-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground" data-testid="smart-add-web-tier">{tierLabel}</li> : null}
+      <li data-answer={answer ?? "open"} data-tier={c.tier ?? "mid"}>
+        <CandidateCard
+          candidate={toCandidate(c, "page")}
+          aria-label="Is this about you?"
+          value={answer === "me" ? "yes" : answer === "not_me" ? "no" : answer === "skip" ? "other" : null}
+          labels={{ yes: "Yes it's me", no: "Not me" }}
+          onChange={(a) => onAnswer(a === "yes" ? "me" : "not_me")}
+          onSkip={() => onAnswer("skip")}
+          skipped={answer === "skip"}
+        />
+      </li>
     </>
   );
 }

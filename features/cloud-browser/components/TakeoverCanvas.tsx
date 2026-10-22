@@ -32,6 +32,7 @@ export function TakeoverCanvas({
   openError,
   openElsewhere = false,
   onReconnect,
+  onConnectionLost,
   className,
 }: {
   controller: ControllerState;
@@ -51,6 +52,9 @@ export function TakeoverCanvas({
    */
   openElsewhere?: boolean;
   onReconnect: () => void;
+  /** The live connection went away: the owner re-reads the run, which may
+   *  have ended (its browser died) — then the panel shows that, not Reconnect. */
+  onConnectionLost?: () => void;
   className?: string;
 }) {
   const [loadedSessionId, setLoadedSessionId] = useState<string | null>(null);
@@ -71,6 +75,7 @@ export function TakeoverCanvas({
         // A dead claim stays dead: stop renewing it (a superseded ticket
         // answered 404 on every tick, 2026-10-16) and offer Reconnect.
         window.clearInterval(renew);
+        onConnectionLost?.();
         setConnectionError({
           sessionId: ticket.streamSessionId,
           message:

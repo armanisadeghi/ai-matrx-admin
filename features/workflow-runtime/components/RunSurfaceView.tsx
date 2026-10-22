@@ -13,6 +13,8 @@
  * the whole run read as a wall of tiny panels. Now `w` picks a column span in
  * a 12-column flow, `(y, x)` is the order, and `h` is a MINIMUM height — the
  * content decides the rest, so a step that is writing gets room to be read.
+ * That flow is drawn by THE ONE GRID ENGINE (design-system GridCanvas line
+ * mode, `fit="content"`; conversion in `surface/grid.ts`, lane W 2026-10-22).
  *
  * Zero page shift: the flow only ever GROWS. A readout that has rendered is
  * never unmounted because data arrived — showing depends ONLY on trigger
@@ -25,7 +27,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
 
 import {
@@ -54,6 +55,8 @@ import {
   useTileActionsTarget,
 } from "@ai-matrx/rich-content/display/blocks/generic/tile-actions-slot";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { GridCanvas } from "@ai-matrx/design-system";
+import { runCanvasItems } from "../surface/grid";
 
 /** nodeId → human label from the definition (label ?? id). */
 export function definitionNodeLabels(
@@ -131,8 +134,6 @@ function readoutOutputKind(
   return nodeOutputKind(definition, source.nodeId);
 }
 
-/** The flow grid the authored 24-column `pos.w` maps onto. */
-const FLOW_COLUMNS = 12;
 /** A tall readout still scrolls internally rather than running off forever. */
 const READOUT_MAX_HEIGHT_PX = 560;
 
@@ -145,12 +146,6 @@ const READOUT_MAX_HEIGHT_PX = 560;
  * is still wide enough to read.
  */
 const MIN_STAGE_WIDTH_FOR_COLUMNS_PX = 1100;
-
-/** 24-col author span → 12-col flow span, never narrower than a readable third. */
-function flowSpan(w: number): number {
-  const span = Math.round((w / GRID_COLUMNS) * FLOW_COLUMNS);
-  return Math.min(FLOW_COLUMNS, Math.max(4, span));
-}
 
 /** The rendered width of the grid — measured, because the stage's width is a
  * property of the LAYOUT it sits in, not of the viewport. */
@@ -172,16 +167,11 @@ function useMeasuredWidth() {
 function ReadoutCell({
   runId,
   item,
-  mobile,
-  fullWidth,
   ensureLane,
   definition,
 }: {
   runId: string;
   item: ReadoutRender;
-  mobile: boolean;
-  /** The stage is too narrow for columns — span everything. */
-  fullWidth: boolean;
   ensureLane?: (invocationKey: string, seedText?: string) => string | null;
   definition?: WorkflowDefinitionLike;
 }) {
@@ -201,12 +191,8 @@ function ReadoutCell({
     READOUT_MAX_HEIGHT_PX,
     Math.max(64, readout.pos.h * GRID_ROW_HEIGHT_PX),
   );
-  const style = mobile
-    ? { minHeight }
-    : {
-        gridColumn: `span ${fullWidth ? FLOW_COLUMNS : flowSpan(readout.pos.w)}`,
-        minHeight,
-      };
+  // The grid engine owns the box's place and width; the cell keeps the author's floor.
+  const style = { minHeight };
 
   return (
     <div
@@ -311,7 +297,6 @@ export function RunSurfaceView({
       ? (invocationKey: string, seedText?: string) =>
           ensureLane(runId, invocationKey, seedText)
       : undefined;
-  const isMobile = useIsMobile();
   const { ref: gridRef, width: gridWidth } = useMeasuredWidth();
   const runStatus = useAppSelector(selectRunStatus(runId));
   const nodePhases = useAppSelector(selectNodeAggregatePhases(runId));
@@ -381,9 +366,16 @@ export function RunSurfaceView({
     rendered.push({ readout, mode: "content" });
   }
 
-  const ordered = isMobile
-    ? [...rendered].sort((a, b) => compareMobile(a.readout, b.readout))
-    : rendered;
+  // ONE grid engine: design-system GridCanvas in line mode. Desktop = the array order flowed in lines (a
+  // stage too narrow for columns spans everything); a phone = one column in mobile order.
+  const byId = new Map(rendered.map((item) => [item.readout.id, item]));
+  const items = runCanvasItems(
+    rendered.map((item) => item.readout),
+    {
+      fullWidth: gridWidth !== null && gridWidth < MIN_STAGE_WIDTH_FOR_COLUMNS_PX,
+      phoneOrder: [...rendered].sort((a, b) => compareMobile(a.readout, b.readout)).map((item) => item.readout.id),
+    },
+  );
 
   return (
     <div className="space-y-3">
@@ -403,43 +395,24 @@ export function RunSurfaceView({
         </>
       )}
 
-      {isMobile ? (
-        <div className="flex flex-col gap-3">
-          {ordered.map((item) => (
-            <ReadoutCell
-              key={item.readout.id}
-              runId={runId}
-              item={item}
-              mobile
-              fullWidth
-              ensureLane={promoteLane}
-              definition={definition}
-            />
-          ))}
-        </div>
-      ) : (
-        <div
-          ref={gridRef}
-          className="grid items-start gap-3"
-          style={{
-            gridTemplateColumns: `repeat(${FLOW_COLUMNS}, minmax(0, 1fr))`,
+      <div ref={gridRef}>
+        <GridCanvas
+          fit="content"
+          gap={12}
+          items={items}
+          renderItem={(id) => {
+            const item = byId.get(id);
+            return item ? (
+              <ReadoutCell
+                runId={runId}
+                item={item}
+                ensureLane={promoteLane}
+                definition={definition}
+              />
+            ) : null;
           }}
-        >
-          {ordered.map((item) => (
-            <ReadoutCell
-              key={item.readout.id}
-              runId={runId}
-              item={item}
-              mobile={false}
-              fullWidth={
-                gridWidth !== null && gridWidth < MIN_STAGE_WIDTH_FOR_COLUMNS_PX
-              }
-              ensureLane={promoteLane}
-              definition={definition}
-            />
-          ))}
-        </div>
-      )}
+        />
+      </div>
     </div>
   );
 }

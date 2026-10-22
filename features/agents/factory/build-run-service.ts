@@ -65,6 +65,14 @@ export function buildRunInputs(input: {
   };
 }
 
+/**
+ * The registered source feature a build run is stamped with. The door is not a source feature
+ * (the server refuses `studio`, `generate`, … as unregistered); it rides in the run's inputs.
+ */
+export function buildSourceFeature(door: string | null | undefined): "agent-studio" | "agent-factory" {
+  return door === "studio" ? "agent-studio" : "agent-factory";
+}
+
 /** Start one build run. Its id is the build id the view follows. */
 export async function startBuildRun(
   dispatch: AppDispatch,
@@ -83,7 +91,7 @@ export async function startBuildRun(
     {
       subject: `build:${sourceRef}`,
       organizationId: input.organizationId,
-      sourceFeature: input.door ?? "agent_build",
+      sourceFeature: buildSourceFeature(input.door),
       inputs: buildRunInputs({ ...input, sourceRef }),
     },
     "The agent build did not start",

@@ -195,6 +195,11 @@ export function VideoProjectStudio({ projectId }: { projectId: string }) {
         </Button>
         <span className="type-title truncate text-foreground">{answer.name}</span>
         <Badge>{`v${answer.head_version}`}</Badge>
+        {answer.reference_post_ids[0] ? (
+          <Button asChild variant="quiet" className="ml-auto">
+            <Link href={`${marketingRoutes.brandSocials(brandSeg)}/post/${answer.reference_post_ids[0]}`}>Reference post</Link>
+          </Button>
+        ) : null}
       </div>
       {!doc ? (
         <EmptyState

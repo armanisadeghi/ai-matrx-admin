@@ -28,6 +28,7 @@ import { humanError } from "@/features/rich-document/annotations/errors";
 import type { AnnotationAuthor } from "@/features/rich-document/annotations/types";
 import { associationsDataSource } from "@/features/scopes/host/associationsStore";
 import { getUserId } from "@/utils/auth/getUserId";
+import { hasBrowserSession } from "@/lib/supabase/hasBrowserSession";
 
 export { deleteComment, editComment, notifyMentions, resolveComment } from "@/features/rich-document/annotations/service";
 export { mentionedUserIds } from "@/features/rich-document/annotations/mentions";
@@ -84,6 +85,8 @@ const noAnswer = (e: { message: string; code?: string }) => !e.code && !e.messag
 
 /** Every thread on the record, oldest first, replies nested. `stale()` = the person moved on (no error then). */
 export async function listAnchoredThreads(token: string, id: string, stale: () => boolean = () => false): Promise<AnchoredThread[]> {
+  // Signed out: no session, so the database would answer 401, and a visitor has no threads to read.
+  if (!(await hasBrowserSession())) return [];
   const args = { p_entity_type: token, p_entity_id: id };
   let { data, error } = await seam("cmt_list", args);
   if (error && noAnswer(error)) {

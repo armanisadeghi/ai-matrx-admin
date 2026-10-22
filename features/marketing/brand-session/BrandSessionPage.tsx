@@ -30,7 +30,7 @@ export const BRAND_SESSION_SURFACE = "matrx-user/marketing-brand-session";
 function SessionDeck({ brand }: { brand: MarketingBrand }) {
   const router = useRouter();
   useLiveBrand(brand.id);
-  const { binding, snapshot, proposeForCurrent, empty } = useBrandSessionDeck(brand);
+  const { binding, snapshot, proposeForCurrent, empty, deckProps } = useBrandSessionDeck(brand);
   const back = () => router.push(marketingRoutes.brand(marketingSeg(brand)));
 
   const handlers = {
@@ -61,6 +61,13 @@ function SessionDeck({ brand }: { brand: MarketingBrand }) {
         <SwipeDeck
           binding={binding}
           layout="fullscreen"
+          // Each card carries its own key, which would also draw its answers as rows under the text; the four edges
+          // already are the answers, and the screen holds only the thing being asked about.
+          choicesOnCard={false}
+          categoryRows={deckProps.categoryRows}
+          pickOne={deckProps.pickOne}
+          pickAnswer={deckProps.pickAnswer}
+          groupLabels={deckProps.groupLabels}
           onExit={back}
           tourKey="matrx.brand-session.tour"
           renderEnd={() => (

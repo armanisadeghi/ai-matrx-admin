@@ -141,12 +141,17 @@ export async function updateList(input: UpdateListInput) {
 
 /** The records client for one list: its own organization, the person's own seat. */
 async function recordsClientForList(listId: string): Promise<RecordsClient> {
+  return (await listAndClient(listId)).client;
+}
+
+/** The list as stored right now and its records client — for a write that must check what the list holds. */
+async function listAndClient(listId: string): Promise<{ list: UserListWithItems; client: RecordsClient }> {
   // NEVER the version-reading read: a version read just before a write would hide a colleague's change.
   const list = await readListWithItems(listId);
   if (!list?.organization_id) {
     throw new Error("This list could not be opened, so nothing was written to it.");
   }
-  return clientFor(list.organization_id, await currentUserId());
+  return { list, client: await clientFor(list.organization_id, await currentUserId()) };
 }
 
 export interface NewChoice {
@@ -201,7 +206,11 @@ export async function updateChoice(
  * and read it as retired, so a choice in use is never lost.
  */
 export async function archiveChoice(listId: string, choiceId: string): Promise<void> {
-  const client = await recordsClientForList(listId);
+  const { list, client } = await listAndClient(listId);
+  // `recordDelete` archives ANY record the seat may admin, so the id must be one of THIS list's
+  // choices, read from the list as stored now, before anything is archived.
+  const held = Object.values(list.items_grouped ?? {}).some((items) => items.some((i) => i.id === choiceId));
+  if (!held) throw new Error(`${choiceId} is not a choice of this list, so nothing was archived.`);
   const archived = await client.recordDelete({ record_id: choiceId });
   if (!archived.ok) throw new Error(`Failed to archive the choice: ${archived.error.message}`);
 }

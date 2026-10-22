@@ -1,7 +1,8 @@
 "use client";
 
+import { primitiveLeading } from "./primitive-leading";
 import { useEffect, useState } from "react";
-import { Loader2, Notebook } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { listAccessibleWorkbooks } from "@ai-matrx/office/sheets";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type Workbook } from "@ai-matrx/office/core";
@@ -66,7 +67,7 @@ export function WorkbooksResourcePicker({
         search={
           <PickerSearchField
             ref={searchInputRef}
-            placeholder="Search workbooks"
+            placeholder="Search sheets"
             value={searchQuery}
             onChange={setSearchQuery}
           />
@@ -84,14 +85,13 @@ export function WorkbooksResourcePicker({
           </div>
         ) : filteredWorkbooks.length === 0 ? (
           <PickerEmpty>
-            {searchQuery ? "No workbooks found" : "No workbooks yet"}
+            {searchQuery ? "No sheets found" : "No sheets yet"}
           </PickerEmpty>
         ) : (
           filteredWorkbooks.map((workbook) => (
             <PickerRow
               key={workbook.id}
-              icon={Notebook}
-              iconClassName="text-primary"
+              leading={primitiveLeading("workbooks")}
               label={workbook.workbook_name}
               trailing={
                 <span className="shrink-0 text-xs tabular-nums text-muted-foreground">

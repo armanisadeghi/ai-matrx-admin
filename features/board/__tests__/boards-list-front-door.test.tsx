@@ -25,11 +25,11 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectUserId: () => "u1",
   selectAccessToken: () => "tok",
 }));
-jest.mock("@ai-matrx/design-system", () => ({ ShimmerText: ({ text }: { text: string }) => <span>{text}</span> }));
 // `cn` is imported by packaged chat panels the page graph reaches; the Dialog family is what the design-start dialog draws.
 jest.mock("@ai-matrx/design-system", () => {
   const box = ({ children }: { children?: unknown }) => <div>{children as never}</div>;
   return {
+    ShimmerText: ({ text }: { text: string }) => <span>{text}</span>,
     cn: (...a: unknown[]) => a.filter(Boolean).join(" "),
     ErrorNotice: ({ message }: { message: string }) => <div>{message}</div>,
     TextInputDialog: () => null,
@@ -53,6 +53,8 @@ jest.mock("@/components/ui/dialog", () => ({
   DialogContent: ({ children }: { children: unknown }) => <div>{children as never}</div>,
   DialogTitle: ({ children }: { children: unknown }) => <h2>{children as never}</h2>,
 }));
+// The page top derives its breadcrumb from the address through the associations store; these cases are about where /board goes.
+jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () => ({ RecordPageHeader: () => null }));
 jest.mock("@/features/shell/components/header/PageHeader", () => ({ __esModule: true, default: () => null }));
 jest.mock("@/lib/entity-list/components/EntityListPage", () => ({ EntityListPage: () => <div>THE BOARDS LIST</div> }));
 jest.mock("../boards/listConfig", () => ({ boardListConfig: {} }));

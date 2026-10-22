@@ -1043,6 +1043,9 @@ if $STRICT; then
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
+        # ONE SOURCE INPUT (unified-source-input G1): no screen renders its own upload/paste/web/YouTube tile row; shrink-only census.
+        "Local source-input copy outside the canonical SourceInput|pnpm check:one-source-input"
+        "One-source-input guard self-test|pnpm check:one-source-input:self-test"
         "Catalog Tools hidden from whole-table tool reads|pnpm check:tool-catalog-readers"
         "Catalog-readers guard self-test|pnpm check:tool-catalog-readers:self-test"
         # EVERY LINK LEAVING AI MATRX CARRIES OUR REFERRAL DATA (Arman, 2026-10-12: "We need sites to know
@@ -1850,6 +1853,9 @@ else
         # NO VENDOR NAMES ON CUSTOMER SCREENS (Arman, 2026-10-11: "via ScrapeCreators" reached the site).
         "Vendor name in customer-facing UI text|pnpm check:no-vendor-names"
         "No-vendor-names guard self-test|pnpm check:no-vendor-names:self-test"
+        # ONE SOURCE INPUT (unified-source-input G1): no screen renders its own upload/paste/web/YouTube tile row; shrink-only census.
+        "Local source-input copy outside the canonical SourceInput|pnpm check:one-source-input"
+        "One-source-input guard self-test|pnpm check:one-source-input:self-test"
         "Catalog Tools hidden from whole-table tool reads|pnpm check:tool-catalog-readers"
         "Catalog-readers guard self-test|pnpm check:tool-catalog-readers:self-test"
         # EVERY LINK LEAVING AI MATRX CARRIES OUR REFERRAL DATA (Arman, 2026-10-12: "We need sites to know

@@ -34,6 +34,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  displayId,
 } from "@ai-matrx/design-system";
 import { useDialogContainer } from "@/components/ui/dialog";
 import { ResourcePickerMenu } from "@/features/resource-manager/resource-picker/ResourcePickerMenu";
@@ -66,7 +67,7 @@ function resourceTypeToBlockType(type: Resource["type"]): ResourceBlockType {
 
 // A short display label for a MediaRef chip.
 function mediaRefLabel(ref: MediaRef): string {
-  if (ref.file_id) return `file:${ref.file_id.slice(0, 8)}…`;
+  if (ref.file_id) return `file:${displayId(ref.file_id)}…`;
   if (ref.url) {
     try {
       const u = new URL(ref.url);

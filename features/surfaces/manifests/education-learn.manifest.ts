@@ -15,24 +15,16 @@
  * nothing: no manifest, no emitter, not even a mount point. THE COMPLETENESS
  * LAW still applies to a server-rendered page: `EducationLearnPage` and
  * `LearnArticlePage` genuinely load doc data (the published list; one
- * published doc's full content), so that data is declared here even though it
- * can't be emitted at runtime yet — see the readiness note.
+ * published doc's full content), so that data is declared here; the index
+ * emits it, the article half does not yet — see the readiness note.
  *
- * WHY THERE IS NO EMITTER (readiness stays `stub`, not `partial`). Every
- * component in this path — `app/(core)/education/learn/page.tsx`,
- * `.../learn/[...slug]/page.tsx`, and `features/education/components/
- * LearnArticle.tsx` — is a Server Component with zero client-side state.
- * `SurfaceRuntimeProvider` requires a client mount point to expose a live
- * `getScope()` to the Agents chrome; wrapping this path would mean either
- * converting genuinely-static SEO content to a client component (a real
- * regression: these pages are ISR-cached and 100% server-rendered on purpose,
- * for SEO) or bolting on a thin client shell purely to host the provider. That
- * is a real decision, not a "forgot the emitter" gap, so it is left to a
- * follow-up rather than done here. If/when it lands, it most likely wants a
- * thin client wrapper around `<LearnArticle>` (a stable, cheap place to mount
- * `getScope` without touching the SSR body) — same shape as the pattern
- * `marketing-page.manifest.ts` documents for a server-rendered page with a
- * live runtime.
+ * THE EMITTER (index only). The pages stay Server Components (ISR, SEO). The
+ * index hands its already-loaded published list to `LearnIndexSurface`
+ * (`features/education/publishing/components/`), a thin client wrapper that
+ * mounts `SurfaceRuntimeProvider` + the page's right-click menu around the
+ * server-rendered grid; `learnIndexSurfaceScope.ts` builds the scope from those
+ * rows (no fetch). The article page has no wrapper yet — its article_* values
+ * are declared vocabulary, not emitted.
  *
  * Curated groups (band 0-899):
  *
@@ -43,6 +35,7 @@
 
 import type {
   SurfaceManifest,
+  SurfaceScopePayload,
   SurfaceValue,
   SurfaceValueGroup,
 } from "@ai-matrx/chat/surfaces/types";
@@ -79,7 +72,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "view",
     label: "Current view",
     description:
-      'Which public reader page is open: "index" (the study-guide library at /education/learn) or "article" (one open guide at /education/learn/[...slug]). Declared for completeness; NOT currently emitted at runtime — see the manifest header.',
+      'Which public reader page is open: "index" (the study-guide library at /education/learn) or "article" (one open guide at /education/learn/[...slug]). The index emits "index" (LearnIndexSurface); the article page does not emit yet.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 7,
@@ -100,13 +93,26 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "guide_library",
   },
   {
+    name: "guide_library_xml",
+    label: "Guide library (bundle)",
+    description:
+      "The index's guide grid as one XML bundle: <study_guides total shown> with one <guide href subject updated>title<summary/></guide> per card, most recently updated first (first 25; summaries clipped to 220 chars). This is what the visitor sees on screen. Only on the index view.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 3200,
+    inlineUpTo: 4000,
+    sortOrder: 305,
+    group: "guide_library",
+  },
+  {
     name: "guide_library",
     label: "Guide library",
     description:
-      "Every published study guide listed on the index, as { title, summary, href }, in the order the index server-computes them. Only meaningful on the index view.",
+      "Every published study guide listed on the index, as { title, summary, href, subject, updated }, in the order the index shows them (most recently updated first). Full rows for lookup; guide_library_xml is the compact on-screen copy. Only on the index view.",
     valueType: "array",
     alwaysAvailable: false,
-    typicalCharCount: 2000,
+    typicalCharCount: 3000,
+    autoContext: false,
     sortOrder: 310,
     group: "guide_library",
   },
@@ -210,16 +216,40 @@ export const educationLearnManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Published Learn library articles, server-rendered (/education/learn).",
-  readiness: "stub",
+  readiness: "partial",
   readinessNote:
-    "Manifest-only, never audited against a live runtime: the vocabulary is declared from a code read of EducationLearnPage / LearnArticlePage / LearnArticle.tsx (all Server Components), but NO SurfaceRuntimeProvider is mounted anywhere in this path and none can be without either converting genuinely-static SEO content to a client component or adding a thin client shell purely to host the provider — see the manifest header for the real decision this needs. DB sync has not been run. No write targets (this is a public reader page, nothing is authored here — authoring lives on matrx-user/education-learn-authoring). No agent roles, no Locate anchors, no live-agent verification.",
+    "The index (/education/learn) emits view, guide_count, guide_library_xml and guide_library from LearnIndexSurface (a thin client wrapper around the server-rendered grid, so the page stays ISR/SSR) and mounts the page's right-click menu; proven by code read and type check, live probe pending the release carrying it. The article page (/education/learn/[...slug]) still emits nothing — its article_* values are declared vocabulary only. No write targets: a reader page has nothing to author (authoring is matrx-user/education-learn-authoring). No agent roles.",
   label: "Study guide library",
   urlPattern: "/education/learn",
   intro: `<surface_intro>
 You are on the PUBLIC study-guide reader at /education/learn — free, SEO-facing explainer articles, anonymous and server-rendered. This is not the authoring surface (that is a separate super-admin surface) and not a study session; it is what any visitor, signed in or not, reads.
-On the index (\`view: "index"\`) \`guide_library\` lists every published guide. On an article (\`view: "article"\`) \`article_sections\` is the full body the reader is looking at, with \`article_title\`/\`article_summary\` as the header and \`article_related\` naming which app tools and hubs the page funnels toward.
-This surface currently emits NOTHING at runtime — see readinessNote. Treat any value here as declared vocabulary for future binding, not as live data you can rely on today.
+On the index (\`view: "index"\`) \`guide_library_xml\` lists every published guide. On an article (\`view: "article"\`) \`article_sections\` is the full body the reader is looking at, with \`article_title\`/\`article_summary\` as the header and \`article_related\` naming which app tools and hubs the page funnels toward.
+On the index, guide_library_xml is the grid the visitor sees (title, subject, updated date, summary, link) and guide_count the number published. The article_* values are not emitted yet. This page has nothing to edit: there are no write targets, so answer, recommend and link (each guide's href) — publishing guides is the separate authoring page.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
+
+export const EDUCATION_LEARN_SURFACE_NAME = educationLearnManifest.surfaceName;
+
+/** One row of `guide_library` — what the index card shows, as data. */
+export interface LearnGuideLibraryRow {
+  title: string;
+  summary: string;
+  href: string;
+  subject: string | null;
+  updated: string | null;
+}
+
+/**
+ * Type-safe payload helper for the index view. Optional keys mirror
+ * `alwaysAvailable: false`; the article_* keys are not emitted yet.
+ */
+export function createEducationLearnIndexScope(values: {
+  view: "index";
+  guide_count: number;
+  guide_library_xml: string;
+  guide_library: LearnGuideLibraryRow[];
+}): SurfaceScopePayload {
+  return values as unknown as SurfaceScopePayload;
+}

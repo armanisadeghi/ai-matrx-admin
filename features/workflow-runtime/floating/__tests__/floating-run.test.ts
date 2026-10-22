@@ -101,13 +101,13 @@ describe("currentLivenessLine — the one line the float has room for", () => {
       entry("completed", null),
     ]);
     // "completed" is newer but says nothing about what is happening NOW.
-    expect(line?.text).toBe("Writing it out");
+    expect(line?.text).toBe("Writing the answer");
   });
 
   it("speaks the closed AgentStepPhase vocabulary in the reader's words", () => {
     for (const [phase, words] of [
       ["preparing", "Getting ready"],
-      ["streaming", "Writing it out"],
+      ["streaming", "Writing the answer"],
       ["reasoning", "Reasoning"],
       ["finalizing", "Finishing up"],
       ["retrying", "Trying again"],

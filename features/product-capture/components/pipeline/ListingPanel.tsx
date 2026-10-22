@@ -73,6 +73,9 @@ export function ListingPanel({
   onApprove: () => Promise<void>;
 }) {
   const approved = listing.approved === true;
+  // Nothing to approve until a listing has been generated — an Approve that
+  // marks an empty draft approved would move the item to Listed with no listing.
+  const hasListing = Object.keys(listing).length > 0;
   const baseName = (item.code ?? item.id).replace(/[^A-Za-z0-9_-]+/g, "-");
 
   return (
@@ -115,7 +118,13 @@ export function ListingPanel({
             CSV
           </Button>
           {!approved && (
-            <Button icon={<CheckCircle2 />} variant="primary" onClick={() => void onApprove()}>
+            <Button
+              icon={<CheckCircle2 />}
+              variant="primary"
+              disabled={!hasListing}
+              title={hasListing ? undefined : "Generate the listing first"}
+              onClick={() => void onApprove()}
+            >
               Approve
             </Button>
           )}

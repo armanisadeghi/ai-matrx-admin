@@ -136,6 +136,12 @@ export function AnswerQueue() {
 
   const skip = useCallback(async () => {
     if (!current) return;
+    // Skip sends a question to the BACK of the queue; with one question the
+    // back is the front, and a tap that changes nothing has to say so.
+    if ((queue?.length ?? 0) <= 1) {
+      toast.info("This is the only open question — skip has nowhere to send it.");
+      return;
+    }
     setBusy(true);
     try {
       const updated = await skipQuestion(current.question);
@@ -146,7 +152,7 @@ export function AnswerQueue() {
     } finally {
       setBusy(false);
     }
-  }, [current, advance]);
+  }, [current, advance, queue]);
 
   const defer = useCallback(async () => {
     if (!current) return;
@@ -276,7 +282,7 @@ export function AnswerQueue() {
           <Button asChild variant="quiet" className="shrink-0">
             <Link href={`/tools/product-capture/manage?item=${item.id}`} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-1 h-3.5 w-3.5" />
-              Full listing
+              Open in pipeline
             </Link>
           </Button>
         </div>

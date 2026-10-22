@@ -234,7 +234,7 @@ export function LinkAgentToShortcutModal({
         responseDensity: "comfortable",
         showPreExecutionGate: false,
         preExecutionMessage: null,
-        bypassGateSeconds: 3,
+        bypassGateSeconds: 0,
         defaultUserInput: null,
         defaultVariables: null,
         contextOverrides: null,

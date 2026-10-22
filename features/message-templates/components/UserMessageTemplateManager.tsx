@@ -19,10 +19,9 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { Button, SearchField, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { PUBLISHED_TO_WEB_LABEL } from "@/lib/row-access";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
@@ -123,26 +122,18 @@ function TopBar({
           className="flex-shrink-0"
         />
 
-        {/* Search — a page control, solid card skin (glass only floats) */}
-        <div className="flex-1 flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-border bg-card min-w-0">
-          <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-          <input
-            type="text"
-            value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search..."
-            style={{ fontSize: "16px" }}
-            className="flex-1 bg-transparent border-0 outline-none text-xs text-foreground placeholder:text-muted-foreground min-w-0"
-          />
-          {searchValue && (
-            <button
-              onClick={() => onSearchChange("")}
-              className="flex-shrink-0 text-muted-foreground active:opacity-70"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
-        </div>
+        {/* Search — THE search control (focus, clear, 6px) */}
+        <SearchField
+          className="flex-1 min-w-0"
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search"
+          end={
+            searchValue ? (
+              <Button variant="quiet" removes aria-label="Clear search" icon={<X />} onClick={() => onSearchChange("")} />
+            ) : undefined
+          }
+        />
 
         {/* Filter */}
         <button

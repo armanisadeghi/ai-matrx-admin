@@ -62,6 +62,7 @@ import { TREE_INCLUDE } from "./MapTreeHarness";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 
+import { displayId } from "@ai-matrx/design-system";
 /** Which statuses the history read may be narrowed to (the function's own list). */
 const STATUS_CHOICES: readonly MapTopicStatus[] = ["rejected", "retired", "proposed", "active"];
 
@@ -256,7 +257,7 @@ function HistoryFilterBar({
           }
           options={[
             { value: "", label: "Anyone" },
-            ...actors.map((id) => ({ value: id, label: id.slice(0, 8) })),
+            ...actors.map((id) => ({ value: id, label: displayId(id) })),
           ]}
         />
       </label>

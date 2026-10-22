@@ -12,7 +12,9 @@ import {
     getSnapshot,
 } from "@/lib/diagnostics/errorCaptureStore";
 
+import Dexie from "dexie";
 import {
+    __resetIdbForTests,
     clearAll,
     clearIdentity,
     IDB_OPERATION_TIMEOUT_MS,
@@ -168,6 +170,42 @@ describe("persistence/idb", () => {
                 configurable: true,
                 value: originalNodeEnv,
             });
+        }
+    });
+
+    it("a slow open is awaited once and adopted: no second open queued behind it, one capture (defect 85)", async () => {
+        __resetIdbForTests();
+        clearCapturedErrors();
+        const realOpen = Dexie.prototype.open;
+        let opens = 0;
+        const open = jest.spyOn(Dexie.prototype, "open").mockImplementation(function (
+            this: Dexie,
+        ) {
+            opens += 1;
+            // The first open answers after the 1 s bound; any later open would
+            // queue behind it in a real browser, so it is slower still.
+            const delay = opens === 1 ? IDB_OPERATION_TIMEOUT_MS + 400 : IDB_OPERATION_TIMEOUT_MS * 10;
+            return new Promise((resolve, reject) =>
+                globalThis.setTimeout(() => realOpen.call(this).then(() => resolve(this), reject), delay),
+            ) as ReturnType<typeof realOpen>;
+        });
+        try {
+            expect(await openDb()).toBeNull(); // timed out: caller falls back
+            expect(await openDb()).toBeNull(); // still opening: no new open
+            await writeSlice("auth:u1", "slow", 1, { ok: true }); // no new open either
+            expect(opens).toBe(1);
+            expect(
+                getSnapshot().filter((e) => e.code === "sync-idb-operation-timeout"),
+            ).toHaveLength(1);
+            await wait(600);
+            const adopted = await openDb();
+            expect(adopted).not.toBeNull();
+            expect(opens).toBe(1);
+            await writeSlice("auth:u1", "slow", 1, { ok: true });
+            expect((await readSlice("auth:u1", "slow", 1))!.body).toEqual({ ok: true });
+        } finally {
+            open.mockRestore();
+            __resetIdbForTests();
         }
     });
 

@@ -15,6 +15,8 @@ jest.mock("./service", () => ({
     fetchOutputFeedbackForSubjects(subjectType, ids),
 }));
 
+jest.mock("@/lib/supabase/hasBrowserSession", () => ({ hasBrowserSession: async () => true }));
+
 import { loadOutputFeedback } from "./batchLoader";
 import { peekOutputFeedback } from "./store";
 

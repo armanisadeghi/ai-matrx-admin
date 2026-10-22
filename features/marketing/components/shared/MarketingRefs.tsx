@@ -36,6 +36,7 @@ import {
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { cn } from "@/lib/utils";
 
+import { displayId } from "@ai-matrx/design-system";
 const SUBJECT_TOKENS: Record<string, string> = {
   site: "web_site",
   page: "web_page",
@@ -178,7 +179,7 @@ export function CrawlSessionRef({
     <EntityRef
       token="web_crawl_session"
       id={sessionId}
-      name={label ?? `Crawl ${sessionId.slice(0, 8)}`}
+      name={label ?? `Crawl ${displayId(sessionId)}`}
       href={marketingRoutes.site(brandId, siteId, `/crawls/${sessionId}`)}
       wrap
       className={className}
@@ -201,7 +202,7 @@ export function AnalysisRunRef({
   if (crawl.isLoading) {
     return (
       <span className={cn("text-[11px] text-muted-foreground", className)}>
-        Resolving run {runId.slice(0, 8)}…
+        Resolving run {displayId(runId)}…
       </span>
     );
   }

@@ -2,18 +2,29 @@
 
 // features/education/spoken-practice/components/PracticeSetup.tsx
 //
-// Configure a session for one mode: the required focus (subject / interview type
-// / resolution), optional grounding (a deck or pasted material), difficulty, and
-// prompt count. The metered start is guarded + the limit is shown BEFORE the cap
-// (TRUST mandate) via the canonical entitlement primitives.
+// Create page for one mode: 1 Sources (the ONE Source input — a deck, a web
+// page, pasted text, files…; optional), 2 Style and details (the required focus
+// — subject / interview type / resolution —, level, question count), 3 Start.
+// The chosen SourceSet is resolved by the server (POST /sources/resolve) and
+// recorded on the session as its lineage. The metered start is guarded + the
+// limit is shown BEFORE the cap (TRUST mandate) via the canonical entitlement
+// primitives.
 
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { ArrowLeft, Loader2, Mic } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Select } from "@ai-matrx/design-system/controls";
 import { ProInput } from "@/components/official/ProInput";
-import { ProTextarea } from "@/components/official/ProTextarea";
+import { createSourceRef } from "@ai-matrx/agents/sources";
+import { CreateStep } from "@/features/education/components/CreateStep";
+import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
+import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
+import { useSourceIntake } from "@/features/resource-manager/source-input/useSourceIntake";
+import { ALL_SOURCE_KIND_IDS, type SourceInputKindId } from "@/features/resource-manager/source-input/sourceKinds";
+import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
+import { useWizardDraft } from "@/lib/wizard-draft/useWizardDraft";
+import { WizardDraftRestored } from "@/lib/wizard-draft/WizardDraftRestored";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
@@ -29,19 +40,53 @@ import {
   DEFAULT_PROMPTS,
   PROMPT_COUNT_OPTIONS,
 } from "../constants";
-import { buildDeckSource, buildTopicSource } from "../data/grounding";
+import { practiceSourceFromResolved } from "../data/practiceSources";
 import {
   publishPracticeSetupSnapshot,
   type PracticeSetupSnapshot,
 } from "../setupSnapshot";
 import { resolvePracticeSetupPatch } from "../setupWrites";
-import type {
-  PracticeConfig,
-  PracticeSource,
-  SpokenPracticeMode,
-} from "../types";
+import type { PracticeConfig, SpokenPracticeMode } from "../types";
 
 const SURFACE_NAME = "matrx-user/education-practice-oral";
+
+/** The focus is the topic, so "Just a topic" is not offered as a Source. */
+const PRACTICE_SOURCE_KINDS: readonly SourceInputKindId[] =
+  ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** Practice works FROM a deck, so Use existing offers Decks here (and only on screens that ask). */
+const PRACTICE_EXTRA_KINDS = ["fc_set"] as const;
+/** The designer needs the text up front. */
+const PRACTICE_SOURCE_DELIVERIES = ["direct"] as const;
+/** The name a pasted passage written by the assistant is filed under. */
+const PASTED_NAME = "Pasted material";
+
+/** The surface key the Source input holds this mode's picks under. */
+export const practiceSourceKey = (mode: SpokenPracticeMode) =>
+  `education-practice-oral:${mode}`;
+const practiceStyleDraftId = (mode: SpokenPracticeMode) =>
+  `education-practice-oral:${mode}:style`;
+
+interface StyleDraft {
+  focus?: string;
+  difficulty?: string;
+  count?: number;
+}
+
+/** Map the stored bag back to the form — refusing (and naming) anything unknown. */
+export function restorePracticeStyleDraft(data: Record<string, unknown>): {
+  values: StyleDraft;
+  rejectedKeys: string[];
+} {
+  const values: StyleDraft = {};
+  const rejectedKeys: string[] = [];
+  for (const [key, v] of Object.entries(data)) {
+    if (key === "focus" && typeof v === "string") values.focus = v;
+    else if (key === "difficulty" && typeof v === "string" && (DIFFICULTY_OPTIONS as readonly string[]).includes(v)) values.difficulty = v;
+    else if (key === "count" && typeof v === "number" && (PROMPT_COUNT_OPTIONS as readonly number[]).includes(v)) values.count = v;
+    else rejectedKeys.push(key);
+  }
+  return { values, rejectedKeys };
+}
 
 export function PracticeSetup({
   mode,
@@ -62,16 +107,59 @@ export function PracticeSetup({
   // blocked from AI generation until a parent approves (never a silent failure).
   const coppa = useAiComplianceGate();
 
+  const set = useSourceSet(practiceSourceKey(mode));
+  const intake = useSourceIntake(set, {});
+  const styleDraft = useWizardDraft<StyleDraft>(practiceStyleDraftId(mode), {
+    restore: restorePracticeStyleDraft,
+  });
+
   const [focus, setFocus] = useState("");
   const [difficulty, setDifficulty] = useState<string>(DIFFICULTY_OPTIONS[1]);
   const [count, setCount] = useState(DEFAULT_PROMPTS);
-  const [deckId, setDeckId] = useState(initialDeckId ?? "");
-  const [pasted, setPasted] = useState("");
   const [decks, setDecks] = useState<FcSetRow[]>([]);
   const [busy, setBusy] = useState(false);
+  // What the assistant last wrote as pasted material (read back by the surface).
+  const [pasted, setPasted] = useState("");
 
+  // Never lose input: the style answers come back after a reload, said out loud
+  // (the Sources are kept by the Source input itself).
+  const applyStyleDraft = useEffectEvent(() =>
+    styleDraft.applyOnce((v) => {
+      if (v.focus !== undefined) setFocus(v.focus);
+      if (v.difficulty) setDifficulty(v.difficulty);
+      if (v.count !== undefined) setCount(v.count);
+    }),
+  );
+  const styleDraftStatus = styleDraft.status;
   useEffect(() => {
-    if (!cfg.offersDeckGrounding) return;
+    if (styleDraftStatus === "found") applyStyleDraft();
+  }, [styleDraftStatus]);
+  const keep = (fields: StyleDraft) => styleDraft.patch({ ...fields });
+
+  // The deep-linked deck (a deck page's "Oral practice" door) is a picked Source.
+  const seededDeck = useEffectEvent(() => {
+    if (!initialDeckId || set.restoring) return;
+    if (set.hasRef("fc_set", initialDeckId)) return;
+    const name = decks.find((d) => d.id === initialDeckId)?.name;
+    if (!name) return;
+    set.addReady({
+      kind: "records",
+      label: name,
+      ref: createSourceRef("fc_set", initialDeckId),
+    });
+  });
+  const deckSeedable = decks.some((d) => d.id === initialDeckId);
+  const seededOnce = useRef(false);
+  useEffect(() => {
+    if (seededOnce.current || !deckSeedable || set.restoring) return;
+    seededOnce.current = true;
+    seededDeck();
+  }, [deckSeedable, set.restoring]);
+
+  // The learner's decks — named for the assistant (`available_decks`) and for
+  // the deep link; the Source input's Use existing lists them for the learner.
+  useEffect(() => {
+    if (!cfg.offersDeckGrounding && !initialDeckId) return;
     let alive = true;
     void (async () => {
       const { fcService } =
@@ -82,7 +170,15 @@ export function PracticeSetup({
     return () => {
       alive = false;
     };
-  }, [cfg.offersDeckGrounding]);
+  }, [cfg.offersDeckGrounding, initialDeckId]);
+
+  const ready = set.sources.filter((s) => s.status === "ready" && s.draft.ref);
+  const landing = set.sources.filter(
+    (s) => s.status === "pending" || s.status === "resolving",
+  );
+  const deckId =
+    ready.find((s) => s.draft.ref?.resource_type === "fc_set")?.draft.ref
+      ?.resource_id ?? "";
 
   // ── Surface: the setup half of `matrx-user/education-practice-oral` ────
   //
@@ -123,30 +219,65 @@ export function PracticeSetup({
   /**
    * The value is validated by the ONE validator in `../setupWrites.ts` — which
    * reads the same DIFFICULTY_OPTIONS / PROMPT_COUNT_OPTIONS the pickers below
-   * render, so the options the learner sees, the enum the agent is told about,
-   * and this check cannot drift — and is then applied through the SAME setters
-   * the learner's own typing goes through. Never a parallel write path, and
-   * never a direct service call. A bad shape throws, and the writeback seam
-   * turns that into the error envelope the agent reads back.
+   * render — and is then applied through the SAME setters (and the same Source
+   * input core) the learner's own typing and picking go through. Never a
+   * parallel write path, and never a direct service call. A bad shape throws,
+   * and the writeback seam turns that into the error envelope the agent reads.
    *
-   * Note what this does NOT do: it fills the form and stops. Pressing Start is
-   * the learner's — it spends an agent run, opens the microphone, and meters
-   * their entitlement.
+   * It fills the form and stops. Pressing Start is the learner's — it spends an
+   * agent run, opens the microphone, and meters their entitlement.
    */
   useSurfaceWriteHandlers(SURFACE_NAME, {
     practice_setup: (value: unknown) => {
       const patch = resolvePracticeSetupPatch(value, surfaceSnapshot());
-      if (patch.focus !== undefined) setFocus(patch.focus);
-      if (patch.difficulty !== undefined) setDifficulty(patch.difficulty);
-      if (patch.count !== undefined) setCount(patch.count);
-      if (patch.deckId !== undefined) setDeckId(patch.deckId);
-      if (patch.pasted !== undefined) setPasted(patch.pasted);
+      if (patch.focus !== undefined) {
+        setFocus(patch.focus);
+        keep({ focus: patch.focus });
+      }
+      if (patch.difficulty !== undefined) {
+        setDifficulty(patch.difficulty);
+        keep({ difficulty: patch.difficulty });
+      }
+      if (patch.count !== undefined) {
+        setCount(patch.count);
+        keep({ count: patch.count });
+      }
+      if (patch.deckId !== undefined) {
+        for (const s of set.sources) {
+          if (s.draft.ref?.resource_type === "fc_set") set.remove(s.id);
+        }
+        const deck = decks.find((d) => d.id === patch.deckId);
+        if (deck) {
+          set.addReady({
+            kind: "records",
+            label: deck.name,
+            ref: createSourceRef("fc_set", deck.id),
+          });
+        }
+      }
+      if (patch.pasted !== undefined) {
+        for (const s of set.sources) {
+          if (s.draft.label === PASTED_NAME) set.remove(s.id);
+        }
+        setPasted(patch.pasted);
+        if (patch.pasted.trim()) void intake.addPastedText(patch.pasted, PASTED_NAME);
+      }
     },
   });
+
+  const blockedReason = set.restoring
+    ? "Reading your saved sources…"
+    : landing.length
+      ? `Wait until ${landing.length === 1 ? "your new source has" : `${landing.length} new sources have`} finished adding.`
+      : null;
 
   async function handleStart() {
     if (!focus.trim()) {
       toast.error(`Enter a ${cfg.focusLabel.toLowerCase()} first`);
+      return;
+    }
+    if (blockedReason) {
+      toast.info(blockedReason);
       return;
     }
     // School-safe gate FIRST (COPPA): is this account allowed to collect/process
@@ -155,14 +286,38 @@ export function PracticeSetup({
     if (!(await coppa.ensureAllowed())) return;
     setBusy(true);
     try {
-      // Resolve the grounding source (deck > pasted > none).
-      let source: PracticeSource | null = null;
-      if (cfg.offersDeckGrounding && deckId) {
-        source = await buildDeckSource(deckId);
-        if (!source)
-          toast.error("That deck has no cards — continuing ungrounded");
+      // Resolve the grounding on the server: the chosen SourceSet in, the
+      // readable text out (a deck's cards, a page's clean text, pasted text).
+      let source: PracticeConfig["source"] = null;
+      if (ready.length > 0) {
+        const chosen = set.toSourceSet();
+        const names = sourceNamesOf(set.sources);
+        let resolved;
+        try {
+          resolved = await set.resolve();
+        } catch (e) {
+          toast.error(
+            e instanceof Error
+              ? e.message
+              : "Your sources could not be read. Try again.",
+          );
+          return;
+        }
+        if (resolved.dropped.length) {
+          toast.info(
+            resolved.dropped
+              .map((d) => d.detail ?? `One source was left out (${d.reason.replace("_", " ")}).`)
+              .join(" "),
+          );
+        }
+        const made = practiceSourceFromResolved(resolved, chosen, names);
+        source = made.source;
+        if (!source) {
+          toast.error("Your sources have no readable text — continuing ungrounded");
+        } else if (made.cut) {
+          toast.info("A long source was cut to fit. Review what goes in to choose parts.");
+        }
       }
-      if (!source) source = buildTopicSource(focus.trim(), pasted);
 
       const config: PracticeConfig = {
         mode,
@@ -186,7 +341,7 @@ export function PracticeSetup({
   const heldStart = useHeldStudyStart(handleStart);
 
   return (
-    <div className="matrx-touch-targets mx-auto w-full max-w-md space-y-5 px-4 pb-4 sm:px-6 sm:pb-6">
+    <div className="matrx-touch-targets mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-4 sm:gap-5 sm:px-6 sm:pb-6">
       <div className="flex items-center gap-3">
         <Button icon={<ArrowLeft />} variant="quiet" onClick={onBack} aria-label="Back" />
         <div className="flex items-center gap-2">
@@ -206,95 +361,106 @@ export function PracticeSetup({
         {cfg.howItWorks}
       </p>
 
-      <div className="space-y-4">
-        <ProInput
-          floatingLabel={cfg.focusLabel}
-          value={focus}
-          onChange={(e) => setFocus(e.target.value)}
-          placeholder={cfg.focusPlaceholder}
+      <CreateStep n={1} title="What should the session come from?">
+        <SourceInput
+          surfaceKey={practiceSourceKey(mode)}
+          title="Sources"
+          purpose="your practice session"
+          kinds={PRACTICE_SOURCE_KINDS}
+          extraKinds={PRACTICE_EXTRA_KINDS}
+          deliveries={PRACTICE_SOURCE_DELIVERIES}
         />
+      </CreateStep>
 
-        {cfg.offersDeckGrounding && (
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">
-              Ground in one of your decks (optional)
-            </span>
-            <Select
-              value={deckId}
-              onValueChange={setDeckId}
-              aria-label="Ground in one of your decks"
-              className="w-full"
-              options={[
-                { value: "", label: "No deck — use the subject above" },
-                ...decks.map((d) => ({ value: d.id, label: d.name })),
-              ]}
+      <CreateStep n={2} title="Style and details">
+        <div className="flex flex-col gap-4">
+          {styleDraft.didRestore ? (
+            <WizardDraftRestored
+              what="your style and details"
+              onDismiss={styleDraft.acknowledge}
+              onStartFresh={() => {
+                styleDraft.discard();
+                setFocus("");
+                setDifficulty(DIFFICULTY_OPTIONS[1]);
+                setCount(DEFAULT_PROMPTS);
+              }}
             />
-          </label>
-        )}
-
-        {!(cfg.offersDeckGrounding && deckId) && (
-          <ProTextarea
-            floatingLabel="Paste your own material (optional)"
-            value={pasted}
-            onChange={(e) => setPasted(e.target.value)}
-            placeholder="Notes, an outline, or a source passage to ground the session in…"
-            rows={3}
-            enableTextStats
+          ) : null}
+          <ProInput
+            floatingLabel={cfg.focusLabel}
+            value={focus}
+            onChange={(e) => {
+              setFocus(e.target.value);
+              keep({ focus: e.target.value });
+            }}
+            placeholder={cfg.focusPlaceholder}
           />
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">
-              Level
-            </span>
-            <Select
-              value={difficulty}
-              onValueChange={setDifficulty}
-              aria-label="Level"
-              className="w-full"
-              options={DIFFICULTY_OPTIONS.map((d) => ({ value: d, label: d }))}
-            />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">
-              Questions
-            </span>
-            <Select
-              value={String(count)}
-              onValueChange={(v) => setCount(Number(v))}
-              aria-label="Questions"
-              className="w-full"
-              options={PROMPT_COUNT_OPTIONS.map((n) => ({
-                value: String(n),
-                label: String(n),
-              }))}
-            />
-          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
+                Level
+              </span>
+              <Select
+                value={difficulty}
+                onValueChange={(v) => {
+                  setDifficulty(v);
+                  keep({ difficulty: v });
+                }}
+                aria-label="Level"
+                className="w-full"
+                options={DIFFICULTY_OPTIONS.map((d) => ({ value: d, label: d }))}
+              />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
+                Questions
+              </span>
+              <Select
+                value={String(count)}
+                onValueChange={(v) => {
+                  setCount(Number(v));
+                  keep({ count: Number(v) });
+                }}
+                aria-label="Questions"
+                className="w-full"
+                options={PROMPT_COUNT_OPTIONS.map((n) => ({
+                  value: String(n),
+                  label: String(n),
+                }))}
+              />
+            </label>
+          </div>
         </div>
-      </div>
+      </CreateStep>
 
-      <div className="space-y-2">
-        {heldStart.held && (
-          <StudyOrganizationHoldNotice what="Starting this practice session" />
-        )}
-        <Button
-          icon={busy || guard.isChecking ? (
-            <Loader2 className="animate-spin" />
-          ) : (
-            <Mic />
+      <CreateStep n={3} title="Start">
+        <div className="space-y-2">
+          {heldStart.held && (
+            <StudyOrganizationHoldNotice what="Starting this practice session" />
           )}
-          variant="primary"
-          className="w-full"
-          onClick={() => heldStart.start()}
-          disabled={busy || guard.isChecking}
-        >
-          Start {cfg.label.toLowerCase()}
-        </Button>
-        <div className="flex justify-center">
-          <EntitlementMeter capability="education.spoken_practice" />
+          {blockedReason ? (
+            <p role="status" className="text-xs text-muted-foreground">
+              {blockedReason}
+            </p>
+          ) : null}
+          <Button
+            icon={busy || guard.isChecking ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Mic />
+            )}
+            variant="primary"
+            className="w-full"
+            onClick={() => heldStart.start()}
+            disabled={busy || guard.isChecking || Boolean(blockedReason)}
+          >
+            Start {cfg.label.toLowerCase()}
+          </Button>
+          <div className="flex justify-center">
+            <EntitlementMeter capability="education.spoken_practice" />
+          </div>
         </div>
-      </div>
+      </CreateStep>
 
       <guard.Paywall />
       <coppa.Gate />
