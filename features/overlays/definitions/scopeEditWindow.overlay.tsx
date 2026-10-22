@@ -8,11 +8,9 @@
  * - `<ScopeEditWindowController />` — declarative wrapper (mount = open).
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { ScopeEditWindowData } from "@/features/window-panels/windows/context-scopes/ScopeEditWindow";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "scopeEditWindow" as const;
 
@@ -22,39 +20,19 @@ export interface ScopeEditWindowHandle {
   close: () => void;
 }
 
-export function useOpenScopeEditWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenScopeEditWindowOptions): ScopeEditWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenScopeEditWindowOptions>(OVERLAY_ID, {
+  instanceId: () => undefined,
+  data: (opts: OpenScopeEditWindowOptions) => ({
             scopeId: opts.scopeId ?? null,
             scopeTypeId: opts.scopeTypeId,
             organizationId: opts.organizationId,
             parentScopeId: opts.parentScopeId ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function ScopeEditWindowController(
-  props: OpenScopeEditWindowOptions,
-): null {
-  const open = useOpenScopeEditWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.scopeId, props.scopeTypeId, props.organizationId]);
-  return null;
-}
+export const useOpenScopeEditWindow = opener.useOpen;
+
+export const ScopeEditWindowController = opener.Controller;
 
 export type ScopeEditWindowDefinitionData = OpenScopeEditWindowOptions;
 

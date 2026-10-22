@@ -9,11 +9,8 @@
  *   unmount to close.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "promptPreviewWindow" as const;
 
@@ -26,42 +23,17 @@ export interface PromptPreviewWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createPromptPreviewWindowOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (opts: OpenPromptPreviewWindowOptions): PromptPreviewWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
-          conversationId: opts.conversationId,
-        },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+const opener = appOpener<OpenPromptPreviewWindowOptions>(OVERLAY_ID);
 
-export function useOpenPromptPreviewWindow() {
-  const store = useAppStore();
-  return useMemo(() => createPromptPreviewWindowOpener(store), [store]);
-}
+export const createPromptPreviewWindowOpener = opener.forStore;
+
+export const useOpenPromptPreviewWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function PromptPreviewWindowController(
-  props: OpenPromptPreviewWindowOptions,
-): null {
-  const open = useOpenPromptPreviewWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.conversationId]);
-  return null;
-}
+export const PromptPreviewWindowController = opener.Controller;
 
 export type PromptPreviewWindowDefinitionData = OpenPromptPreviewWindowOptions;
 

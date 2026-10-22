@@ -8,15 +8,12 @@
  * - `<AgentConvertSystemWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "agentConvertSystemWindow" as const;
 
@@ -34,44 +31,18 @@ export interface AgentConvertSystemWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createAgentConvertSystemWindowOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (opts: OpenAgentConvertSystemWindowOptions = {}): AgentConvertSystemWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
-          agentId: opts.agentId,
-          mandateId: opts.mandateId,
-          mandateKey: opts.mandateKey,
-          mandateLabel: opts.mandateLabel,
-        },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+const opener = appOpener<OpenAgentConvertSystemWindowOptions>(OVERLAY_ID);
 
-export function useOpenAgentConvertSystemWindow() {
-  const store = useAppStore();
-  return useMemo(() => createAgentConvertSystemWindowOpener(store), [store]);
-}
+export const createAgentConvertSystemWindowOpener = opener.forStore;
+
+export const useOpenAgentConvertSystemWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function AgentConvertSystemWindowController(props: OpenAgentConvertSystemWindowOptions): null {
-  const open = useOpenAgentConvertSystemWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.agentId]);
-  return null;
-}
+export const AgentConvertSystemWindowController = opener.Controller;
 
 export type AgentConvertSystemWindowDefinitionData = OpenAgentConvertSystemWindowOptions;
 

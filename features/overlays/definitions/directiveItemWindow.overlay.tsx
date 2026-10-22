@@ -15,7 +15,7 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "directiveItemWindow" as const;
@@ -44,7 +44,7 @@ export function useOpenDirectiveItemWindow() {
     (opts: OpenDirectiveItemWindowOptions): DirectiveItemWindowHandle => {
       const instanceId =
         opts.instanceId ??
-        `directive-item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        mintInstanceId(OVERLAY_ID);
       dispatch(
         openOverlay({
           overlayId: OVERLAY_ID,

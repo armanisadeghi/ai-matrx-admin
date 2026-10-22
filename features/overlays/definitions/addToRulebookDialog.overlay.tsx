@@ -10,10 +10,8 @@
  * - `<AddToRulebookDialogController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "addToRulebookDialog" as const;
 
@@ -32,45 +30,18 @@ export interface AddToRulebookDialogHandle {
   close: () => void;
 }
 
-export function useOpenAddToRulebookDialog() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenAddToRulebookDialogOptions): AddToRulebookDialogHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenAddToRulebookDialogOptions>(OVERLAY_ID, {
+  data: (opts: OpenAddToRulebookDialogOptions) => ({
             initialContent: opts.initialContent,
             initialConversationId: opts.initialConversationId ?? null,
             initialMessageId: opts.initialMessageId ?? null,
             initialQuestion: opts.initialQuestion ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function AddToRulebookDialogController(
-  props: OpenAddToRulebookDialogOptions,
-): null {
-  const open = useOpenAddToRulebookDialog();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.initialContent,
-    props.initialConversationId,
-    props.initialMessageId,
-    props.initialQuestion,
-  ]);
-  return null;
-}
+export const useOpenAddToRulebookDialog = opener.useOpen;
+
+export const AddToRulebookDialogController = opener.Controller;
 
 export type AddToRulebookDialogDefinitionData = OpenAddToRulebookDialogOptions;
 

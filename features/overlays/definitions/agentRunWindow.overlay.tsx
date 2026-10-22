@@ -16,7 +16,7 @@ import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { OverlayWire } from "./overlay-types";
@@ -98,7 +98,7 @@ export function createAgentRunWindowOpener(store: AppStore) {
   return (opts: OpenAgentRunWindowOptions = {}): AgentRunWindowHandle => {
     const instanceId =
       opts.instanceId ??
-      `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      mintInstanceId(OVERLAY_ID);
     const state = store.getState();
     const userId = selectUserId(state);
     const organizationId = selectOrganizationId(state);

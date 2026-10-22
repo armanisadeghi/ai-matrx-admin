@@ -8,13 +8,11 @@
  * - `<AnnouncementsViewerController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "announcements" as const;
 
@@ -27,39 +25,18 @@ export interface AnnouncementsViewerHandle {
   close: () => void;
 }
 
-export function useOpenAnnouncementsViewer() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenAnnouncementsViewerOptions = {}): AnnouncementsViewerHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { initialAnnouncementId: opts.initialAnnouncementId ?? null },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenAnnouncementsViewerOptions>(OVERLAY_ID, {
+  data: (opts: OpenAnnouncementsViewerOptions = {}) => ({ initialAnnouncementId: opts.initialAnnouncementId ?? null }),
+});
+
+export const useOpenAnnouncementsViewer = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function AnnouncementsViewerController(
-  props: OpenAnnouncementsViewerOptions,
-): null {
-  const open = useOpenAnnouncementsViewer();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialAnnouncementId]);
-  return null;
-}
+export const AnnouncementsViewerController = opener.Controller;
 
 export type AnnouncementsDefinitionData = OpenAnnouncementsViewerOptions;
 

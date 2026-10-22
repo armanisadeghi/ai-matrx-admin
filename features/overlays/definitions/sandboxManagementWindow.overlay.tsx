@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "sandboxManagementWindow" as const;
 
@@ -18,38 +16,17 @@ export interface SandboxManagementWindowHandle {
   close: () => void;
 }
 
-export function useOpenSandboxManagementWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenSandboxManagementWindowOptions): SandboxManagementWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenSandboxManagementWindowOptions>(OVERLAY_ID, {
+  data: (opts: OpenSandboxManagementWindowOptions) => ({
             sandboxId: opts.sandboxId,
             title: opts.title ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenSandboxManagementWindow = opener.useOpen;
 
 /** Opens while mounted and closes when the owning view unmounts. */
-export function SandboxManagementWindowController(
-  props: OpenSandboxManagementWindowOptions,
-): null {
-  const open = useOpenSandboxManagementWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.sandboxId, props.title]);
-  return null;
-}
+export const SandboxManagementWindowController = opener.Controller;
 
 export type SandboxManagementWindowDefinitionData = OpenSandboxManagementWindowOptions;
 

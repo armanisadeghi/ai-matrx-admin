@@ -5,14 +5,11 @@
  * the person's tables, those tables and the agents that share them become a template their
  * organization can install.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "saveTemplateDialog" as const;
 
@@ -26,27 +23,17 @@ export interface OpenSaveTemplateDialogOptions {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createSaveTemplateDialogOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (opts: OpenSaveTemplateDialogOptions = {}) => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+const opener = appOpener<OpenSaveTemplateDialogOptions>(OVERLAY_ID, {
+  data: (opts: OpenSaveTemplateDialogOptions = {}) => ({
           initialAgentId: opts.initialAgentId ?? null,
           tableIds: opts.tableIds ?? null,
           name: opts.name ?? null,
-        },
-      }),
-    );
-    return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-  };
-}
+        }),
+});
 
-export function useOpenSaveTemplateDialog() {
-  const store = useAppStore();
-  return useMemo(() => createSaveTemplateDialogOpener(store), [store]);
-}
+export const createSaveTemplateDialogOpener = opener.forStore;
+
+export const useOpenSaveTemplateDialog = opener.useOpen;
 
 export type SaveTemplateDialogDefinitionData = OpenSaveTemplateDialogOptions;
 

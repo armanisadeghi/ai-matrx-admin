@@ -4,11 +4,9 @@
  * Opener for the `flashcardsBlockWindow` overlay.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "flashcardsBlockWindow" as const;
 
@@ -28,16 +26,8 @@ export interface FlashcardsBlockWindowHandle {
   close: () => void;
 }
 
-export function useOpenFlashcardsBlockWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenFlashcardsBlockWindowOptions = {},
-    ): FlashcardsBlockWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenFlashcardsBlockWindowOptions>(OVERLAY_ID, {
+  data: (opts: OpenFlashcardsBlockWindowOptions = {}) => ({
             content: opts.content ?? null,
             serverData: opts.serverData ?? null,
             title: opts.title ?? null,
@@ -47,27 +37,12 @@ export function useOpenFlashcardsBlockWindow() {
             messageId: opts.messageId ?? null,
             conversationId: opts.conversationId ?? null,
             blockIndex: opts.blockIndex ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function FlashcardsBlockWindowController(
-  props: OpenFlashcardsBlockWindowOptions,
-): null {
-  const open = useOpenFlashcardsBlockWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.content, props.serverData, props.title]);
-  return null;
-}
+export const useOpenFlashcardsBlockWindow = opener.useOpen;
+
+export const FlashcardsBlockWindowController = opener.Controller;
 
 export type FlashcardsBlockWindowDefinitionData = OpenFlashcardsBlockWindowOptions;
 

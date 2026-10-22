@@ -6,10 +6,8 @@
  * plain serializable `{ token, id, title }`. Mirrors `contextAssignment`.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "linkRecordSheet" as const;
 
@@ -18,16 +16,9 @@ export interface OpenLinkRecordSheetOptions {
   target: { token: string; id: string; title: string; tableId?: string; organizationId?: string };
 }
 
-export function useOpenLinkRecordSheet() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenLinkRecordSheetOptions) => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { target: opts.target } }));
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenLinkRecordSheetOptions>(OVERLAY_ID);
+
+export const useOpenLinkRecordSheet = opener.useOpen;
 
 export type LinkRecordSheetDefinitionData = OpenLinkRecordSheetOptions;
 

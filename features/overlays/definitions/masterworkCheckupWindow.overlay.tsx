@@ -8,10 +8,8 @@
  * - `<MasterworkCheckupWindowController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "masterworkCheckupWindow" as const;
 
@@ -24,36 +22,11 @@ export interface MasterworkCheckupWindowHandle {
   close: () => void;
 }
 
-export function useOpenMasterworkCheckupWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      opts: OpenMasterworkCheckupWindowOptions,
-    ): MasterworkCheckupWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { rulebookId: opts.rulebookId },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenMasterworkCheckupWindowOptions>(OVERLAY_ID);
 
-export function MasterworkCheckupWindowController(
-  props: OpenMasterworkCheckupWindowOptions,
-): null {
-  const open = useOpenMasterworkCheckupWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.rulebookId]);
-  return null;
-}
+export const useOpenMasterworkCheckupWindow = opener.useOpen;
+
+export const MasterworkCheckupWindowController = opener.Controller;
 
 export type MasterworkCheckupWindowDefinitionData = OpenMasterworkCheckupWindowOptions;
 

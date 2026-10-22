@@ -10,7 +10,7 @@
 import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
 const OVERLAY_ID = "shortcutEditorWindow" as const;
@@ -26,7 +26,7 @@ export interface OpenShortcutEditorWindowArgs {
 export function shortcutEditorWindowAction(args: OpenShortcutEditorWindowArgs) {
   return openOverlay({
     overlayId: OVERLAY_ID,
-    instanceId: `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    instanceId: mintInstanceId(OVERLAY_ID),
     data: {
       agentId: args.agentId,
       shortcutId: args.shortcutId ?? "new",

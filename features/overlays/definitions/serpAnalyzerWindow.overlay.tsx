@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "serpAnalyzerWindow" as const;
 
@@ -18,25 +16,15 @@ export interface OpenSerpAnalyzerWindowOptions {
   description?: string;
 }
 
-export function useOpenSerpAnalyzerWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenSerpAnalyzerWindowOptions = {}) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenSerpAnalyzerWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenSerpAnalyzerWindowOptions = {}) => ({
             url: options.url ?? "",
             title: options.title ?? "",
             description: options.description ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenSerpAnalyzerWindow = opener.useOpen;
 
 export type SerpAnalyzerWindowDefinitionData = OpenSerpAnalyzerWindowOptions;
 

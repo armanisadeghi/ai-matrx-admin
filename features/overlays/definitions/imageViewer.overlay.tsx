@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { OverlayWire } from "./overlay-types";
 
@@ -82,7 +82,7 @@ export function useOpenImageViewerWindow() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenImageViewerWindowOptions): ImageViewerWindowHandle => {
-      const instanceId = opts.instanceId ?? `imageViewer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const instanceId = opts.instanceId ?? mintInstanceId(OVERLAY_ID);
       dispatch(
         openOverlay({
           overlayId: OVERLAY_ID,

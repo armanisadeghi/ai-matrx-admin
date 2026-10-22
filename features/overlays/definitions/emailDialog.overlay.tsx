@@ -8,13 +8,11 @@
  * - `<EmailDialogBridgeController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "emailDialog" as const;
 
@@ -28,41 +26,18 @@ export interface EmailDialogBridgeHandle {
   close: () => void;
 }
 
-export function useOpenEmailDialogBridge() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenEmailDialogBridgeOptions = {}): EmailDialogBridgeHandle => {
-      const instanceId = opts.instanceId ?? `emailDialog-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
-          },
-        }),
-      );
-      return {
-        instanceId,
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenEmailDialogBridgeOptions>(OVERLAY_ID, {
+  multi: true,
+});
+
+export const useOpenEmailDialogBridge = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function EmailDialogBridgeController(props: OpenEmailDialogBridgeOptions): null {
-  const open = useOpenEmailDialogBridge();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const EmailDialogBridgeController = opener.Controller;
 
 export type EmailDialogDefinitionData = OpenEmailDialogBridgeOptions;
 

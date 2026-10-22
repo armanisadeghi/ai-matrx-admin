@@ -1,13 +1,11 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type {
   RagAiCopyBundle,
   RagAiSectionKey,
 } from "@/features/rag/components/search/ragAiCopy";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "ragAiCopyWindow" as const;
 
@@ -21,37 +19,16 @@ export interface RagAiCopyWindowHandle {
   close: () => void;
 }
 
-export function useOpenRagAiCopyWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenRagAiCopyWindowOptions): RagAiCopyWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenRagAiCopyWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenRagAiCopyWindowOptions) => ({
             bundle: options.bundle,
             initialSections: options.initialSections ?? null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
 
-export function RagAiCopyWindowController(
-  props: OpenRagAiCopyWindowOptions,
-): null {
-  const open = useOpenRagAiCopyWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.bundle, props.initialSections]);
-  return null;
-}
+export const useOpenRagAiCopyWindow = opener.useOpen;
+
+export const RagAiCopyWindowController = opener.Controller;
 
 export type RagAiCopyWindowDefinitionData = OpenRagAiCopyWindowOptions;
 

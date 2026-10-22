@@ -8,13 +8,11 @@
  * - `<ObservationalMemoryWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "observationalMemoryWindow" as const;
 
@@ -26,39 +24,16 @@ export interface ObservationalMemoryWindowHandle {
   close: () => void;
 }
 
-export function useOpenObservationalMemoryWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenObservationalMemoryWindowOptions = {}): ObservationalMemoryWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            initialSelectedConversationId: opts.initialSelectedConversationId,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenObservationalMemoryWindowOptions>(OVERLAY_ID);
+
+export const useOpenObservationalMemoryWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function ObservationalMemoryWindowController(props: OpenObservationalMemoryWindowOptions): null {
-  const open = useOpenObservationalMemoryWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialSelectedConversationId]);
-  return null;
-}
+export const ObservationalMemoryWindowController = opener.Controller;
 
 export type ObservationalMemoryWindowDefinitionData = OpenObservationalMemoryWindowOptions;
 
