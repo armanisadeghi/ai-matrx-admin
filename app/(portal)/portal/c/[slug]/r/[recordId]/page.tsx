@@ -45,6 +45,8 @@ import { detailFieldKeys } from "@/features/portals/blocks";
 import { isHers, readable, shownFields } from "@/features/portals/shown";
 
 import { addPortalComment, payPortalRecord, savePortalField } from "./actions";
+import { PortalSurfaceRuntime, type PortalRecordWrites } from "@/features/portals/PortalSurfaceRuntime";
+import { CLIENT_PORTAL_RECORD_SURFACE_NAME } from "@/features/surfaces/manifests/client-portal.manifest";
 import { readAsk, recordPaymentStatus } from "@/features/payments/server";
 import { PortalPayButton } from "@/features/portals/PortalPayButton";
 import { resolveAmountCents } from "@/features/payments/amount";
@@ -66,11 +68,24 @@ export default async function PortalRecordPage({
 
   const portal = await portalPublic(slug);
   if (!portal) notFound();
+  // Surface `matrx-public/client-portal-record`: what each screen below shows.
+  const surface = (values: Record<string, unknown>, node: React.ReactNode, writes?: PortalRecordWrites) => (
+    <PortalSurfaceRuntime
+      surfaceName={CLIENT_PORTAL_RECORD_SURFACE_NAME}
+      values={{ portal_slug: portal.slug, portal_title: portal.title, business_name: portal.organization, record_id: recordId, ...values }}
+      writes={writes}
+    >
+      {node}
+    </PortalSurfaceRuntime>
+  );
   // THE STORE IS SWITCHED OFF: the same whole-screen sentence the portal's front page shows, asked
   // FIRST — every door below would refuse and this page used to fall to the error screen
   // (measured live 2026-09-25, lane S6's store-off probe).
   if (portal.state === "unavailable") {
-    return <PublicLinkNotice title={portal.title} message={portal.message} />;
+    return surface(
+      { portal_access: "unavailable", record_state: "sign_in" },
+      <PublicLinkNotice title={portal.title} message={portal.message} />,
+    );
   }
 
   const viewer = await portalViewer();
@@ -81,7 +96,8 @@ export default async function PortalRecordPage({
   // own front page says the right sentence for both, so send them there rather
   // than writing a second, quieter version of it here.
   if (!membership) {
-    return (
+    return surface(
+      { portal_access: viewer ? "not_on_portal" : "signed_out", business_name: look.name, record_state: "sign_in" },
       <Frame look={look}>
         <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-sm shadow-sm sm:p-8">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">{portal.title}</h1>
@@ -95,13 +111,20 @@ export default async function PortalRecordPage({
             Go to the sign-in page
           </Link>
         </section>
-      </Frame>
+      </Frame>,
     );
   }
 
   const located = await locate(membership, recordId);
+  const herValues = {
+    portal_access: "client",
+    portal_title: membership.title,
+    business_name: look.name,
+    client_name: membership.client,
+  };
   if (!located) {
-    return (
+    return surface(
+      { ...herValues, record_state: "not_hers" },
       <Frame look={look}>
         <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-sm shadow-sm sm:p-8">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
@@ -118,7 +141,7 @@ export default async function PortalRecordPage({
             Back to your portal
           </Link>
         </section>
-      </Frame>
+      </Frame>,
     );
   }
 
@@ -176,7 +199,32 @@ export default async function PortalRecordPage({
   const readOnly = worded.filter((field) => !field.editable);
   const editable = fields.filter((field) => field.editable && (!pick || pick.has(field.key)));
 
-  return (
+  const shownKeys = new Set([...worded, ...editable].map((field) => field.key));
+  return surface(
+    {
+      ...herValues,
+      record_state: "shown",
+      record_headline: headline || table.name,
+      table_name: table.name,
+      record_stage: stageKey ? stageLabel(table.stage, document[stageKey]) || null : null,
+      record_fields: fields
+        .filter((field) => shownKeys.has(field.key))
+        .map((field) => ({
+          key: field.key,
+          label: field.label,
+          value: field.key === stageKey ? stageLabel(table.stage, document[field.key]) : readable(document[field.key]),
+          editable: field.editable,
+        })),
+      payment: payAsk
+        ? {
+            description: payAsk.description || "Payment",
+            amount: payAmount?.ok ? payLabel.replace(/^Pay /, "") : null,
+            status: payStatus ?? "unpaid",
+          }
+        : null,
+      messages_enabled: table.comments,
+      messages: comments.map((comment) => ({ author: comment.author, body: comment.body, when: comment.when })),
+    },
     <Frame align="start" look={look}>
       <div className="w-full max-w-2xl">
         <header className="flex items-start justify-between gap-3 pt-1">
@@ -276,7 +324,16 @@ export default async function PortalRecordPage({
         )}
         <PortalFooter look={look} />
       </div>
-    </Frame>
+    </Frame>,
+    {
+      slug: membership.slug,
+      recordId,
+      editableKeys: editable.map((field) => field.key),
+      version,
+      comments: table.comments,
+      saveField: savePortalField,
+      addComment: addPortalComment,
+    },
   );
 }
 

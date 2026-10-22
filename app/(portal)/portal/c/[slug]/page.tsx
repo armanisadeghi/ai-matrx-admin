@@ -55,6 +55,8 @@ import { readable } from "@/features/portals/shown";
 import { tableData, type TableData } from "@/features/portals/hers";
 import { PortalBlocks } from "@/features/portals/PortalBlocks";
 import { stageLabel } from "@/features/portals/timeline";
+import { PortalSurfaceRuntime } from "@/features/portals/PortalSurfaceRuntime";
+import { CLIENT_PORTAL_SURFACE_NAME } from "@/features/surfaces/manifests/client-portal.manifest";
 
 // Who is asking decides the whole page, and her rows move.
 export const dynamic = "force-dynamic";
@@ -102,8 +104,21 @@ export default async function ClientPortalPage({
   // before the panel, in the store's own words.
   // NOT inside `Shell`: the notice IS the whole screen and carries its own
   // full-height `<main>`, and a host frame either IS the chrome or has none.
+  // Surface `matrx-public/client-portal`: what each of the three screens below shows.
+  const surface = (values: Record<string, unknown>, node: React.ReactNode) => (
+    <PortalSurfaceRuntime
+      surfaceName={CLIENT_PORTAL_SURFACE_NAME}
+      values={{ portal_slug: portal.slug, portal_title: portal.title, business_name: portal.organization, ...values }}
+    >
+      {node}
+    </PortalSurfaceRuntime>
+  );
+
   if (portal.state === "unavailable") {
-    return <PublicLinkNotice title={portal.title} message={portal.message} />;
+    return surface(
+      { portal_access: "unavailable", unavailable_message: portal.message ?? null },
+      <PublicLinkNotice title={portal.title} message={portal.message} />,
+    );
   }
 
   // S6: WHOSE PORTAL THIS IS, before she types anything — the business's own name, logo and
@@ -112,7 +127,8 @@ export default async function ClientPortalPage({
 
   const viewer = await portalViewer();
   if (!viewer) {
-    return (
+    return surface(
+      { portal_access: "signed_out", business_name: look.name },
       <Shell look={look}>
         <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <PortalBrandHeading look={look} withWelcome={false} />
@@ -125,7 +141,7 @@ export default async function ClientPortalPage({
           <PortalSignInForm slug={portal.slug} ways={portal.access ?? null} />
         </section>
         <PortalFooter look={look} />
-      </Shell>
+      </Shell>,
     );
   }
 
@@ -144,7 +160,8 @@ export default async function ClientPortalPage({
   }
 
   if (!membership) {
-    return (
+    return surface(
+      { portal_access: "not_on_portal", business_name: look.name },
       <Shell look={look}>
         <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <PortalBrandHeading look={look} withWelcome={false} />
@@ -168,7 +185,7 @@ export default async function ClientPortalPage({
             />
           </div>
         </section>
-      </Shell>
+      </Shell>,
     );
   }
 
@@ -189,7 +206,17 @@ export default async function ClientPortalPage({
   const searchText = typeof asked === "string" ? asked.slice(0, 200) : "";
   const hasBlocks = (membership.blocks ?? []).length > 0;
 
-  return (
+  return surface(
+    {
+      portal_access: "client",
+      portal_title: membership.title,
+      business_name: her.name,
+      client_name: membership.client,
+      portal_forms: forms.map((form) => ({ form_id: form.form_id, label: form.label || form.title })),
+      portal_tables: [...data.values()].map(surfaceTable),
+      search_text: searchText,
+      search_match_count: found,
+    },
     <Shell align="start" look={her}>
       <div className="w-full max-w-3xl">
         <header className="flex items-start justify-between gap-3 pt-2">
@@ -257,8 +284,29 @@ export default async function ClientPortalPage({
         </div>
         <PortalFooter look={her} />
       </div>
-    </Shell>
+    </Shell>,
   );
+}
+
+/** One Table as the surface carries it: her records, each with the fields she is shown. */
+function surfaceTable({ table, fields, records }: TableData) {
+  const worded = fields.filter((f) => f.type !== "relation");
+  const stageKey = table.stage?.field ?? null;
+  return {
+    table_id: table.table_id,
+    name: table.name,
+    record_count: records.length,
+    records: records.map((record) => {
+      const details: Record<string, string> = {};
+      for (const field of worded) {
+        const raw = record.document[field.key];
+        const value = field.key === stageKey ? stageLabel(table.stage, raw) : readable(raw);
+        if (value) details[field.label] = value;
+      }
+      const lead = worded.find((f) => f.key !== stageKey && readable(record.document[f.key]));
+      return { id: record.id, headline: lead ? readable(record.document[lead.key]) : "", details };
+    }),
+  };
 }
 
 /**

@@ -417,6 +417,7 @@ import { sourceLibraryManifest } from "./source-library.manifest";
 import { termListsManifest } from "./term-lists.manifest";
 import { acquisitionConsoleManifest } from "./acquisition-console.manifest";
 // W2 area: route-groups
+import { clientPortalManifest, clientPortalFormManifest, clientPortalRecordManifest } from "./client-portal.manifest";
 
 /**
  * Manifests exactly as authored. Do NOT consume directly at runtime — generic
@@ -827,6 +828,9 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   termListsManifest,
   acquisitionConsoleManifest,
   // W2 area: route-groups
+  clientPortalManifest,
+  clientPortalFormManifest,
+  clientPortalRecordManifest,
 ];
 
 // ---------------------------------------------------------------------------

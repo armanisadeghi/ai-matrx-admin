@@ -27,6 +27,9 @@ import {
   type PortalFormSpec,
 } from "@/features/portals/service";
 
+import { PortalSurfaceRuntime } from "@/features/portals/PortalSurfaceRuntime";
+import { CLIENT_PORTAL_FORM_SURFACE_NAME } from "@/features/surfaces/manifests/client-portal.manifest";
+
 import { PortalFormRunner } from "./PortalFormRunner";
 
 export const dynamic = "force-dynamic";
@@ -49,9 +52,27 @@ export default async function PortalFormPage({
   const viewer = await portalViewer();
   const membership = viewer ? membershipFor(await portalMe(), portal.slug) : null;
   const back = `/portal/c/${encodeURIComponent(portal.slug)}`;
+  // Surface `matrx-public/client-portal-form`: what each screen below shows.
+  const surface = (values: Record<string, unknown>, node: React.ReactNode) => (
+    <PortalSurfaceRuntime
+      surfaceName={CLIENT_PORTAL_FORM_SURFACE_NAME}
+      values={{
+        portal_slug: portal.slug,
+        portal_title: membership?.title ?? portal.title,
+        business_name: look.name,
+        portal_access: membership ? "client" : viewer ? "not_on_portal" : "signed_out",
+        client_name: membership?.client ?? null,
+        form_id: formId,
+        ...values,
+      }}
+    >
+      {node}
+    </PortalSurfaceRuntime>
+  );
 
   if (!membership) {
-    return (
+    return surface(
+      { form_state: "sign_in" },
       <Frame look={look}>
         <Notice
           look={look}
@@ -60,7 +81,7 @@ export default async function PortalFormPage({
           href={back}
           cta="Go to the sign-in page"
         />
-      </Frame>
+      </Frame>,
     );
   }
 
@@ -77,15 +98,31 @@ export default async function PortalFormPage({
       error instanceof DoorRefusal
         ? [error.message, error.hint].filter(Boolean).join(" ")
         : "This form could not be opened just now. Go back to your portal and try again.";
-    return (
+    return surface(
+      { business_name: her.name, form_state: "refused", form_message: said },
       <Frame look={her}>
         <Notice look={her} title="That form is not open to you" body={said} href={back} cta="Back to your portal" />
-      </Frame>
+      </Frame>,
     );
   }
 
+  const shown = {
+    business_name: her.name,
+    form_title: form.label || form.title,
+    form_state: form.state,
+    form_message: form.message,
+    form_intro: form.presentation?.intro ?? null,
+    form_questions: (form.presentation?.questions ?? []).map((q) => ({
+      field: q.field,
+      ask: q.ask ?? null,
+      help: q.help ?? null,
+      required: q.required ?? form.required.includes(q.field),
+    })),
+  };
+
   if (form.state !== "open") {
-    return (
+    return surface(
+      shown,
       <Frame look={her}>
         <Notice
           look={her}
@@ -94,11 +131,12 @@ export default async function PortalFormPage({
           href={back}
           cta="Back to your portal"
         />
-      </Frame>
+      </Frame>,
     );
   }
 
-  return (
+  return surface(
+    shown,
     <Frame look={her} align="start">
       <div className="w-full max-w-xl">
         <Link
@@ -118,7 +156,7 @@ export default async function PortalFormPage({
         </section>
         <PortalFooter look={her} />
       </div>
-    </Frame>
+    </Frame>,
   );
 }
 
