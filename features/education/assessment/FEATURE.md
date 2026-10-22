@@ -37,4 +37,4 @@ Data (`migrations/edu_assessment_tables.sql`, RLS via `iam.apply_rls`): `educati
 
 ## Change Log
 
-- page-pass 2026-10-22: type list, posture dense after Linear, fixed the twin-row note repeating the question count (already the Questions column and the phone facts line) and each list now emits through its own surface builder (`createEducationQuizzesScope` / `createEducationPracticeTestsScope`), so `surface:census` sees both pages emitting.
+- page-pass 2026-10-22: type list, posture dense after Linear, fixed the twin-row note repeating the question count (already the Questions column and the phone facts line) and each list now emits through its own surface builder (`createEducationQuizzesScope` / `createEducationPracticeTestsScope`), so `surface:census` sees both pages emitting; added the `list_view` target (lane, archive filter, search — UI only, applies without asking) so an agent can read rows that are not on screen.

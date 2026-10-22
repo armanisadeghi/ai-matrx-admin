@@ -142,7 +142,7 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     {
       name: "visibility_filter",
       label: "Lane",
-      description: `The active lane (scope tab): "mine" (${w.plural} the person made), "orgs" (org-mates' ${w.plural} visible to the organization), "shared" (someone else's ${w.noun} granted to the person) or "public" (someone else's published ${w.noun}). Always present.`,
+      description: `The active lane (scope tab): "all" (every lane), "mine" (${w.plural} the person made), "team" (their team's), "orgs" (org-mates' ${w.plural} visible to the organization), "shared" (someone else's ${w.noun} granted to the person) or "public" (someone else's published ${w.noun}). Always present.`,
       valueType: "string",
       alwaysAvailable: true,
       typicalCharCount: 6,
@@ -196,6 +196,17 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
 
   const writeTargets: SurfaceWriteTarget[] = [
     {
+      name: "list_view",
+      label: "List view",
+      description: `Changes WHICH ${w.plural} the list shows — nothing is saved or changed on any ${w.noun}. Value is a JSON OBJECT with any of { lane?: "all" | "mine" | "team" | "orgs" | "shared" | "public" (the lane tabs: all, the person's own, their team's, their organizations', shared with them, published), archived?: "active" | "archived" | "all", search?: string (title, topic, exam, description; "" clears it) }, e.g. { "lane": "mine", "archived": "all" }. assessment_list carries only the page on screen, so switch the view to read ${w.plural} that are not showing; read assessment_list again once assessments_loaded is true. An unknown key or value refuses the whole change.`,
+      valueType: "object",
+      updatesValue: "visibility_filter",
+      mode: "ui",
+      applyPolicy: "auto",
+      group: "list_view",
+      sortOrder: 90,
+    },
+    {
       name: `create_${w.targetPlural}`,
       label: `Create ${w.plural}`,
       description: `Creates one or more EMPTY ${w.plural} (no questions yet), saved immediately as drafts in the person's active organization (they may be asked to pick one). Value is a JSON ARRAY (not a string) of 1-25 objects, each { ${FIELDS} }, e.g. [{ "title": "Cell Biology Checkpoint", "topic": "Cell biology", "depth": "applied" }]. Questions are added on the ${w.noun}'s Edit questions page, or the person generates a full ${w.noun} with New ${w.noun} (or generate_${w.targetPlural}, which is metered). A missing title, an unknown key, a bad depth, a title repeated in the list or one the person's live ${w.plural} already use refuses the whole write with every reason, and nothing is created.`,
@@ -248,13 +259,13 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     executionMode: "python-stream",
     description: `${w.label} — the person's ${w.plural} on the canonical list (lanes, search, sort and filter on every column, archive); agents can generate (metered), create, change and archive the person's own ${w.plural}.`,
     readiness: "partial",
-    readinessNote: `page-pass 2026-09-27: the list moved onto EntityListPage over education.assessment_list_scoped with its own surface, the assessment_list bundle and create/update/delete_${w.targetPlural}. Live agent proof is recorded in the page-pass report.`,
+    readinessNote: `page-pass 2026-09-27 moved the list onto EntityListPage over education.assessment_list_scoped with the assessment_list bundle and create/generate/update/delete_${w.targetPlural}; page-pass 2026-10-22 added list_view. Unproven: a live surface:probe --agent run (create two, update one, archive one, one refused).`,
     label: w.label,
     urlPattern: w.urlPattern,
     intro: `<surface_intro>
 You are on ${w.label} at ${w.urlPattern} — the person's LIST of ${w.plural}, not a ${w.noun} being taken. Lanes (Mine, My Orgs, Shared, Public), a search box, sort and filter on every column and an archive filter decide what is on screen; each row opens the ${w.noun}, Take starts it.
 Read assessment_list first: it is the page on screen, with ids. While assessments_loaded is false the list is loading (or load_error explains a real failure) — never say the person has none. If a lane, search, filter or the archive filter narrows the list (visibility_filter, search_query, list_filters, archive_filter), say so rather than concluding a ${w.noun} does not exist.
-To make a full ${w.noun} with AI questions use generate_${w.targetPlural} — it starts a generation the person must approve, so ask for their go-ahead before calling it. To change ${w.plural} use ONLY create_${w.targetPlural} (empty drafts), update_${w.targetPlural} (title, topic, description, exam, depth, archive/restore) and delete_${w.targetPlural} (archive), on ${w.plural} the person may edit (my_assessments). Questions are edited on each ${w.noun}'s own page.
+To make a full ${w.noun} with AI questions use generate_${w.targetPlural} — it starts a generation the person must approve, so ask for their go-ahead before calling it. To read ${w.plural} that are not on screen, switch the lane, archive filter or search with list_view (it changes only the view). To change ${w.plural} use ONLY create_${w.targetPlural} (empty drafts), update_${w.targetPlural} (title, topic, description, exam, depth, archive/restore) and delete_${w.targetPlural} (archive), on ${w.plural} the person may edit (my_assessments). Questions are edited on each ${w.noun}'s own page.
 </surface_intro>`,
     groups,
     values: mergeBaselineValues(pickBaseline("selection", "context"), values),
