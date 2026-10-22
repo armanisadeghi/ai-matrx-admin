@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { formatSessionTimestamp } from "@/features/agent-connections/coding-sessions/verdict";
 import { ConversationAnalyzePanel } from "@/features/ai-work/analysis/ConversationAnalyzePanel";
 import { ConversationOrganizationPanel } from "@/features/ai-work/components/ConversationOrganizationPanel";

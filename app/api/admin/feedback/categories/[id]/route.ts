@@ -18,6 +18,7 @@ import {
 } from "../_lib/categoryRow";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { tryWriteOne, writeFailureStatus, writeOneRow } from "@/utils/supabase/writeOne";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -55,7 +56,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json(
           { error: "Category not found" },
           { status: 404 },

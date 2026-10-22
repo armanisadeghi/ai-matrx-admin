@@ -39,7 +39,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Edit3,
   ExternalLink,
@@ -64,7 +64,7 @@ import { usePages } from "@/features/file-analysis/hooks/usePages";
 import type {
   AnnotationLayerMode,
   PdfRegion,
-} from "@/features/pdf/components/viewer/annotation-layer/types";
+} from "@ai-matrx/media/viewers/pdf";
 
 export interface PdfEditTabProps {
   fileId: string;

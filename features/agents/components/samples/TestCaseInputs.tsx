@@ -40,7 +40,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { formatCount } from "@ai-matrx/kit/format";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import { buildVariableDisplayLines } from "@ai-matrx/chat/agents/utils/variable-display-lines";
 import { MessageAttachmentStrip } from "@ai-matrx/chat/agents/components/messages-display/MessageAttachmentStrip";

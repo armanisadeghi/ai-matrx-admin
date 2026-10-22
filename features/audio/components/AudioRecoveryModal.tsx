@@ -39,7 +39,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
 import AudioOutputBlock from "@/components/mardown-display/blocks/audio/AudioOutputBlock";
 import { useAudioRecovery } from "../providers/AudioRecoveryProvider";
-import { SafetyRecord } from "../services/audioSafetyStore";
+import type { SafetyRecord } from "@ai-matrx/browser-audio/core";
 import { uploadAndTranscribeFull } from "../services/audioFallbackUpload";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). THE UNIT LAW: the unit is in the name.
@@ -88,7 +88,7 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isRetranscribing, setIsRetranscribing] = useState(false);
-  const [localText, setLocalText] = useState(item.accumulatedText);
+  const [localText, setLocalText] = useState(item.transcript);
 
   useEffect(() => {
     let url: string | null = null;
@@ -166,11 +166,11 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
     const report = [
       `[Audio Recovery Failure]`,
       `Recording ID: ${record.id}`,
-      `Session ID: ${record.sessionId}`,
+      `Origin: ${record.origin ? `${record.origin.surface}${record.origin.label ? ` (${record.origin.label})` : ""}` : "unknown"}`,
       `Status: ${record.status}`,
       `Created: ${formatTimestamp(record.createdAt)}`,
-      `Audio chunks saved: ${record.audioChunks.length}`,
-      `Text captured: ${record.accumulatedText ? `"${record.accumulatedText.slice(0, 120)}..."` : "none"}`,
+      `Audio chunks saved: ${record.chunks.length}`,
+      `Text captured: ${record.transcript ? `"${record.transcript.slice(0, 120)}..."` : "none"}`,
       `MIME type: ${record.mimeType}`,
       `Error: ${record.errorMessage ?? "none"}`,
       ``,
@@ -185,7 +185,7 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
     dispatch(openOverlay({ overlayId: "feedbackDialog" }));
   };
 
-  const hasAudio = item.audioChunks.length > 0;
+  const hasAudio = item.chunks.length > 0;
   const hasText = localText.trim().length > 0;
   const isEmpty = !hasAudio && !hasText;
 
@@ -200,7 +200,7 @@ function RecoveryItem({ item, onDismiss, onClose }: RecoveryItemProps) {
           </span>
           {hasAudio && (
             <span className="text-xs text-muted-foreground">
-              {estimateChunkDuration(item.audioChunks)}
+              {estimateChunkDuration(item.chunks)}
             </span>
           )}
           <span

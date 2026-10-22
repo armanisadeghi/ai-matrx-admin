@@ -79,7 +79,7 @@ import {
   removeSourceAt,
   sourcesFor,
 } from "./consumption-writer";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier, displayLabel } from "@ai-matrx/kit/text-case";
 

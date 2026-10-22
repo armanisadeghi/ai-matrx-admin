@@ -20,7 +20,7 @@
 
 import { ChevronRight, MoreHorizontal } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { hasPeek } from "@/features/organizations/peek/kinds-list";
 import { cn } from "@/lib/utils";
 

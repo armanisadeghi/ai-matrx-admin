@@ -55,7 +55,7 @@ import {
 import { useKindItems } from "@/features/scopes/hooks/useKindItems";
 import { useKindCounts } from "@/features/scopes/hooks/useKindCounts";
 import { isEntityTypeToken } from "@ai-matrx/associations";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { OrganizationAccessGate } from "./OrganizationAccessGate";
 import {
   getEntry,

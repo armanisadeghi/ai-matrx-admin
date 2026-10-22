@@ -46,11 +46,12 @@ export interface PreparedMaterial {
   fromSources: boolean;
 }
 
-/** Up to two names, then "and N more". */
-export function sourceTitleOf(labels: readonly string[]): string {
-  if (labels.length === 0) return "Study material";
-  if (labels.length <= 2) return labels.join(" and ");
-  return `${labels[0]}, ${labels[1]} and ${labels.length - 2} more`;
+/**
+ * The floor under THE kit namer (`nameFromSources`): the first readable
+ * Source's own name. One Source keeps it; several are named from the material.
+ */
+export function namerFloorOf(sources: readonly { label: string; text: string }[]): string {
+  return sources.find((s) => s.text.trim())?.label.trim() || "Study material";
 }
 
 const CHUNK_HEADER_LINE = /^### Chunk \S+(?: \(page \d+\))?[ \t]*\n/gm;
@@ -148,14 +149,14 @@ export function trustFromResolved(sources: readonly ResolvedSource[]): TrustEnve
   };
 }
 
-/** Provenance of the artifact: one deck is "deck"; anything else is named material. */
-export function mediaSourceOf(sources: readonly ResolvedSource[]): EduMediaSource {
+/** Provenance of the artifact: one deck is "deck"; anything else is named material (`title`, from the namer). */
+export function mediaSourceOf(sources: readonly ResolvedSource[], title: string): EduMediaSource {
   const readable = sources.filter((s) => s.text.trim().length > 0);
   const only = readable.length === 1 ? readable[0]! : null;
   if (only && only.ref.resource_type === "fc_set") {
     return { kind: "deck", id: only.ref.resource_id, title: only.label };
   }
-  return { kind: "topic", id: null, title: sourceTitleOf(readable.map((s) => s.label)).slice(0, 120) };
+  return { kind: "topic", id: null, title: title.slice(0, 120) };
 }
 
 /** Deck ids among the readable Sources. */

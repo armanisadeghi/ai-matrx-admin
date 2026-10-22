@@ -13,7 +13,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
+import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 import { MandateStatusBadge } from "../status/MandateStatusBadge";
 import { featureIntelligenceHref } from "./hrefs";
 import { useSurfaceLabels } from "./useSurfaceLabels";

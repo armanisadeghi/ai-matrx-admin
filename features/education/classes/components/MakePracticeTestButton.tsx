@@ -14,7 +14,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
+import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/spinner";
@@ -61,10 +61,9 @@ import type { ClassContentItem } from "../types";
 import type { ClassTest } from "../classTests";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 const config = PRACTICE_TEST_CONFIG;
 const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
-/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
-const TOPUP_EXTRA_KINDS = ["fc_set"] as const;
 const FOCUS_MAX = 2000;
 
 const questionCount = (n: number) => `${n} ${n === 1 ? "question" : "questions"}`;
@@ -360,7 +359,7 @@ function MakePracticeTestDialog({
             title="Sources"
             purpose="the questions"
             kinds={TOPUP_KINDS}
-            extraKinds={TOPUP_EXTRA_KINDS}
+            extraKinds={STUDY_FROM_DECK_KINDS}
             required
             deliveries={FLASHCARD_SOURCE_DELIVERIES}
           />

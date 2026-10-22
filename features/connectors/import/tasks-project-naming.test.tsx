@@ -44,7 +44,8 @@ jest.mock("next/link", () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ id }: { id: string }) => <span data-testid="project-ref">{id}</span>,
 }));
 

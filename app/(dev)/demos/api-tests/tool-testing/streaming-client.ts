@@ -10,6 +10,7 @@ import type {
   ToolDefinition,
   TestContext,
 } from "@/features/tool-call-visualization/testing/types";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 /**
  * Execute a tool test via the Python backend streaming endpoint.
@@ -61,7 +62,7 @@ export async function executeToolTest(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${authToken}`,
-        ...(organizationId ? { "X-Organization-Id": organizationId } : {}),
+        ...(organizationId ? { [MATRX_HEADERS.organization]: organizationId } : {}),
       },
       body: JSON.stringify(body),
     },

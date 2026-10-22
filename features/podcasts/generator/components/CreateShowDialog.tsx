@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import { recordToast, toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Loader2, Mic } from "lucide-react";
 import {
   Dialog,

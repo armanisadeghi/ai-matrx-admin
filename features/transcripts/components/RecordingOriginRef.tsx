@@ -15,7 +15,7 @@
 
 import Link from "next/link";
 import { MessagesSquare } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { RecordingOrigin } from "@/features/audio/recordingOrigin";
 
 export function RecordingOriginRef({

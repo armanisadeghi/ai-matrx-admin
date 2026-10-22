@@ -27,7 +27,7 @@
 //
 // Renders NOTHING when there is nothing to say: no empty box, no "no notes".
 
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 
 export interface ServerNotesProps {

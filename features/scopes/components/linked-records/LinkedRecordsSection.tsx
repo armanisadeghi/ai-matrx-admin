@@ -25,7 +25,7 @@ import { Link2, Plus, Unlink } from "lucide-react";
 import { useAssociations } from "@/features/scopes/hooks/useAssociations";
 import { getAssociationsStore } from "@/features/scopes/host/associationsStore";
 import { entityTitleFallback, fetchEntityTitles } from "@/features/scopes/service/entityTitles";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenLinkRecordSheet } from "@/features/overlays/definitions/linkRecordSheet.overlay";
 import { toast } from "@/components/ui/use-toast";
 

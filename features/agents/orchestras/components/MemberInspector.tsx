@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { removeAgentFromOrchestra, saveMemberMeta } from "@/features/agents/redux/orchestras/thunks";
 import { AgentPeekButton } from "./AgentPeekButton";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AgentIODetails } from "./AgentIODetails";
 import { MemberReceivesCard } from "./MemberReceivesCard";
 import { accentClasses } from "./accents";

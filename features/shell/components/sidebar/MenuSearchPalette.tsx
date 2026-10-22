@@ -43,7 +43,7 @@ import { useNavPanelActions } from "../../navigation/navPanelActions";
 import { buildMenuSearchIndex, type MenuSearchEntry } from "../../utils/menu-search";
 import { highlightMenuMatch, rankMenuSearch } from "../../frame/searchEngine";
 import ShellIcon from "../ShellIcon";
-import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
+import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 
 const RECENT_KEY = "matrx.shell.menuSearch.recent";
 const RECENT_LIMIT = 5;

@@ -123,6 +123,11 @@ export function agentSettingsTarget(input: AgentSettingsTargetInput): SettingsWr
       write({ ...record, [key]: value });
     },
 
+    // One choice over several keys (the Voice row's voice + multi-speaker flag): one write.
+    changeMany(changes: Record<string, unknown>) {
+      write({ ...record, ...changes });
+    },
+
     turnOn(key: string, control: ControlDefinition) {
       const start = startingValueFor(key, control);
       if (start !== undefined) write({ ...record, [key]: start });

@@ -99,7 +99,10 @@ jest.mock("next/link", () => ({
 }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "11f4e747-c13a-49c7-81a3-66e6391f8a9b" }));
-jest.mock("@/components/official/entity-ref/EntityDoorControls", () => ({ EntityDoorControls: () => null }));
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
+  EntityDoorControls: () => null,
+}));
 jest.mock("@ai-matrx/context-menu/react", () => ({
   NonEditableContextMenu: ({ children, entity }: { children: React.ReactNode; entity?: unknown }) => {
     mockMenuEntities.push(entity);

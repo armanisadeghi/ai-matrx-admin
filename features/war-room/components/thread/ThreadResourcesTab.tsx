@@ -28,7 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { folderForWarRoomThread } from "@/features/files/utils/folder-conventions";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";

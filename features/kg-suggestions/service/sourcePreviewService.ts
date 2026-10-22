@@ -23,7 +23,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { projectsDb } from "@/utils/supabase/projectsDb";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { filesDb } from "@/features/files/filesDb";
 import { formatFileSize } from "@ai-matrx/kit/format";
 

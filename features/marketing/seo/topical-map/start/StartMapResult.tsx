@@ -36,8 +36,8 @@ import Link from "next/link";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { ExternalLink, FlaskConical, Info } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 
 import { useMapLinks } from "../links";

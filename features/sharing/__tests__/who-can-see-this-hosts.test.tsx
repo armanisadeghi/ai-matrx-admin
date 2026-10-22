@@ -61,7 +61,10 @@ jest.mock("@/features/sharing/components/AccessSummaryPanel", () => ({ AccessSum
 jest.mock("@/features/sharing/outside/OutsideSharePanel", () => ({ OutsideSharePanel: () => null }));
 jest.mock("@/components/agent-copy/page-capture/usePageCapture", () => ({ usePageCapture: () => undefined }));
 jest.mock("@/components/agent-copy/page-capture/PageCaptureButton", () => ({ PageCaptureButton: () => null }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({ EntityRef: () => null }));
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
+  EntityRef: () => null,
+}));
 jest.mock("@/components/ui/use-toast", () => ({ useToast: () => ({ toast: jest.fn() }) }));
 jest.mock("@ai-matrx/summon/window", () => ({
   WindowPanel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

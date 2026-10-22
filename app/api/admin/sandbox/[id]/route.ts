@@ -8,6 +8,7 @@ import {
   resolvePersistedOrchestrator,
 } from "@/lib/sandbox/orchestrator-routing";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 type SandboxInstance = Tables<"sandbox_instances">;
 
@@ -76,7 +77,7 @@ async function load(id: string) {
     };
   }
   if (error || !data) {
-    if (error?.code === "PGRST116") {
+    if (error?.code === PG_CODES.pgrstNoRows) {
       return {
         error: NextResponse.json(
           { error: "Sandbox not found" },
@@ -119,7 +120,7 @@ async function loadForRead(id: string) {
     };
   }
   if (!error && data) return { data, error: null };
-  if (error?.code === "PGRST116") {
+  if (error?.code === PG_CODES.pgrstNoRows) {
     return {
       error: NextResponse.json(
         { error: "Sandbox not found" },

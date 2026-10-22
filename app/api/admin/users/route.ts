@@ -30,6 +30,7 @@ import {
   type AccountPlanRow,
   type AccountPointsRow,
 } from "@/features/admin/users/lib/accountPlan";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 const PER_PAGE = 1000;
 const MAX_PAGES = 50; // hard ceiling: 50k users
@@ -430,7 +431,7 @@ export async function PATCH(request: NextRequest) {
     p_reason: reason ?? undefined,
   });
   if (setError) {
-    const status = setError.code === "P0002" ? 404 : setError.code === "42501" ? 403 : setError.code === "22023" ? 400 : 500;
+    const status = setError.code === PG_CODES.noDataFound ? 404 : setError.code === PG_CODES.insufficientPrivilege ? 403 : setError.code === "22023" ? 400 : 500;
     return NextResponse.json({ error: setError.message }, { status });
   }
 

@@ -27,8 +27,7 @@ import {
   AccessDenied,
   type AccessDeniedSuggestion,
 } from "@/features/access-gate/components/AccessDenied";
-import { classifyDataError } from "@/features/access-gate/classifyDataError";
-import { readServerRefusal } from "@/features/access-gate/service/serverRefusal";
+import { classifyDataError, readServerRefusal } from "@ai-matrx/data/access";
 import { useAccessGate } from "@/features/access-gate/hooks/useAccessGate";
 import type { AccessRequestability } from "@/features/access-gate/types";
 

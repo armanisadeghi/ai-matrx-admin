@@ -29,6 +29,8 @@ export interface AudioStudyCreateInput {
   hostCount?: number;
   adaptive?: boolean;
   language?: string;
+  /** Awaited just before the first save (the tab-bound run's `saving`). */
+  beforeSave?: () => Promise<void>;
 }
 
 const FORMAT_LABEL: Record<EduAudioFormat, string> = {
@@ -68,7 +70,9 @@ export function useAudioStudyCreate() {
 
       const title = `${FORMAT_LABEL[input.format]} · ${resolved.source.title}`;
 
-      // 3. Create the durable run row (the recovery spine).
+      // 3. Create the durable run row (the recovery spine). Past this point the
+      //    save may land even if this page never hears back.
+      await input.beforeSave?.();
       const run = await studioRunsService.createRun({
         status: "running",
         input_data_type: request.input_data_type,

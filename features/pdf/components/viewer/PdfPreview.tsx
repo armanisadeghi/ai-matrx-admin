@@ -1,8 +1,8 @@
 /**
- * features/files/components/core/FilePreview/previewers/PdfPreview.tsx
+ * features/pdf/components/viewer/PdfPreview.tsx
  *
  * Cloud-files PDF previewer. Thin wrapper around the shared
- * `<PdfDocumentRenderer/>` core. Uses pdfjs's progressive Range-based
+ * `<PdfDocumentViewer/>` (`@ai-matrx/media/viewers/pdf`). Uses pdfjs's progressive Range-based
  * loading: pdfjs fetches the cross-ref table + first page's bytes and
  * paints them while the rest of the document streams in.
  *
@@ -32,8 +32,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { usePdfRemoteSource } from "@/features/files/hooks/usePdfRemoteSource";
 import { isAuthenticatedFileBytesUrl } from "@/features/files/handler/utils/python-base";
-import PdfDocumentRenderer from "./PdfDocumentRenderer";
-import PdfSourceUnavailable from "./PdfSourceUnavailable";
+import { PdfDocumentViewer, PdfSourceUnavailable } from "@ai-matrx/media/viewers/pdf";
 
 export interface PdfPreviewProps {
   fileId: string;
@@ -62,7 +61,7 @@ export interface PdfPreviewProps {
    * Optional render-slot for the overlay mounted on top of the rendered
    * page (annotation rectangles, search highlights, etc.). Receives
    * geometry the overlay needs to translate PDF user-space points into
-   * canvas pixels. Pass-through to `PdfDocumentRenderer.renderOverlay`.
+   * canvas pixels. Pass-through to `PdfDocumentViewer.renderOverlay`.
    */
   renderOverlay?: (info: {
     pageNumber: number;
@@ -70,7 +69,7 @@ export interface PdfPreviewProps {
     pageHeightPt: number;
     rotation: number;
   }) => React.ReactNode;
-  /** Pass-through to `PdfDocumentRenderer.layout` ("continuous": every page, the caller scrolls). */
+  /** Pass-through to `PdfDocumentViewer.layout` ("continuous": every page, the caller scrolls). */
   layout?: "paged" | "continuous";
   continuousZoom?: number;
   onContinuousZoomChange?: (zoom: number) => void;
@@ -81,7 +80,7 @@ export interface PdfPreviewProps {
   fileName?: string | null;
   /** Extra line on the "source unavailable" panel (e.g. what is still usable). */
   unavailableHint?: string;
-  /** Chrome knobs — pass-through to `PdfDocumentRenderer` (see there). */
+  /** Chrome knobs — pass-through to `PdfDocumentViewer` (see there). */
   toolbar?: "full" | "none";
   pageNav?: boolean;
   toolbarStart?: React.ReactNode;
@@ -146,7 +145,7 @@ export default function PdfPreview({
   const continuous = layout === "continuous";
   return (
     <div className={cn(continuous ? "relative w-full" : "relative h-full w-full", className)}>
-      <PdfDocumentRenderer
+      <PdfDocumentViewer
         remoteUrl={useHookSource ? remoteUrl : providedRemoteUrl}
         remoteHeaders={useHookSource ? headers : undefined}
         withCredentials={useHookSource && withCredentials}

@@ -11,7 +11,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { Upload, ClipboardPaste, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";

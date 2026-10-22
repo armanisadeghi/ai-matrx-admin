@@ -57,9 +57,18 @@ export function SpokenPracticeSurface({
   // A practice session is filed under one organization: setup's Start holds
   // (PracticeSetup shows the notice) and nothing is written until one is chosen.
   const practice = useSpokenPractice({ enabled: useStudyOrganizationReady() });
-  const [selectedMode, setSelectedMode] = useState<SpokenPracticeMode | null>(
+  const [selectedMode, setSelectedModeState] = useState<SpokenPracticeMode | null>(
     initialMode && isSpokenPracticeMode(initialMode) ? initialMode : null,
   );
+  // The picked mode rides in the link (`?mode=`), so a reload comes back to the
+  // same setup — and to its "stopped when the page closed" notice.
+  const setSelectedMode = (next: SpokenPracticeMode | null) => {
+    setSelectedModeState(next);
+    const url = new URL(window.location.href);
+    if (next) url.searchParams.set("mode", next);
+    else url.searchParams.delete("mode");
+    window.history.replaceState(window.history.state, "", url);
+  };
 
   const { phase } = practice;
 

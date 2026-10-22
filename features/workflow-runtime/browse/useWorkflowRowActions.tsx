@@ -16,7 +16,7 @@ import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast, recordToast, dismissRecordToasts } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { buildRecordReferenceFence } from "@/features/matrx-envelope/recordReference";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";

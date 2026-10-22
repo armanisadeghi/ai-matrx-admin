@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { getPlacementTypeMeta } from "../constants";
 import { useShortcutDirectory } from "../hooks/useShortcutDirectory";

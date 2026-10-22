@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
-import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { isGovernedActionDenial } from "@ai-matrx/data/access";
 import {
   buildSiteMenu,
   siteRowCopy,

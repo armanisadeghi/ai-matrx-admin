@@ -42,7 +42,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Skeleton } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { recordToast, toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";

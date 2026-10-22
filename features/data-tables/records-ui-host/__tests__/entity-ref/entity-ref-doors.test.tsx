@@ -13,8 +13,8 @@
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { EntityDoorControls } from "../EntityDoorControls";
-import { EntityRef } from "../EntityRef";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   __resetAgentAddressCache,
   seedAgentAddress,

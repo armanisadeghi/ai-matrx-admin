@@ -37,7 +37,7 @@ import {
   updateProjectThunk,
   deleteProjectThunk,
 } from "@/features/tasks/redux/thunks";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import EditableProjectName from "./EditableProjectName";
 import TaskScopeFilter from "./TaskScopeFilter";
 import { Button } from "@ai-matrx/design-system";

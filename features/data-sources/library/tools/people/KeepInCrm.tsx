@@ -11,7 +11,7 @@ import { useState } from "react";
 import { ContactRound } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { addContactPoint, ensurePrimaryContactPoints, resolveParty } from "@/features/crm/service";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { toast } from "@/lib/toast";

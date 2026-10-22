@@ -21,7 +21,7 @@ import { useMemo, useState } from "react";
 import { Select } from "@ai-matrx/design-system/controls";
 import { FilePlus2, Loader2 } from "lucide-react";
 import { toast, recordToast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import {
   Dialog,
   DialogContent,

@@ -3,7 +3,7 @@
  * twin inside /administration, and at the user route everywhere else.
  */
 import { adminTwinHref, ADMIN_TWIN_HREF } from "../adminTwins";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 const ID = "0b00eba0-5b28-457e-8d53-002feb40d6cc";
 

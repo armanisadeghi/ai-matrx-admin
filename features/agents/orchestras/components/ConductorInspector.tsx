@@ -18,7 +18,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { AgentPeekButton } from "./AgentPeekButton";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AgentIODetails } from "./AgentIODetails";
 import { accentClasses } from "./accents";
 import type { OrchestraAccent } from "../constants";

@@ -12,7 +12,7 @@
 
 import React from "react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import { cn } from "@/utils/cn";
 import { CLOUD_BROWSER_RESOURCE_TYPE } from "../constants";
 import { AlertTriangle } from "lucide-react";

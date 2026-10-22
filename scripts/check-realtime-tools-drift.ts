@@ -31,6 +31,7 @@ import { dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { exitAfterDrain } from "./lib/exit-after-drain";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STRICT = process.argv.includes("--strict");
@@ -179,7 +180,7 @@ async function checkLiveEndpoint(env: {
     method: "POST",
     headers: {
       Authorization: `Bearer ${env.token}`,
-      "X-Organization-Id": env.organizationId,
+      [MATRX_HEADERS.organization]: env.organizationId,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({

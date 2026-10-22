@@ -10,7 +10,7 @@ import {
 } from "@/features/scopes/components/active-context/quick-pick/engine";
 import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { FolderKanban } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { invalidateAndRefetchFullContext } from "@/features/agent-context/redux/hierarchyThunks";

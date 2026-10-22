@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { isOpenStatus } from "@/features/tasks/constants/status";
 import { ChevronDown, ChevronRight, FolderOpen, CheckSquare } from 'lucide-react';
 import { useAppSelector } from '@/lib/redux/hooks';

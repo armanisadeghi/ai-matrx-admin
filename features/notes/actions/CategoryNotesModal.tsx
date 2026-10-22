@@ -26,7 +26,7 @@ import type { Note } from '../types';
 import { toast } from "@/lib/toast";
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";

@@ -78,7 +78,7 @@ import {
   MCP_SERVER_DEEP_LINK_PARAM,
   toolHref,
 } from "@/features/tool-registry/doors";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import {

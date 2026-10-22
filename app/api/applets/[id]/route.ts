@@ -3,6 +3,7 @@ import { hasAdminPower } from "@/utils/auth/adminLaneServer";
 import { NextRequest, NextResponse } from "next/server";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { tryWriteOne, writeFailureStatus, writeOneRow } from "@/utils/supabase/writeOne";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 export async function GET(
   _request: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
       .single();
 
     if (error) {
-      if (error.code === "PGRST116") {
+      if (error.code === PG_CODES.pgrstNoRows) {
         return NextResponse.json(
           { error: "Applet not found" },
           { status: 404 },

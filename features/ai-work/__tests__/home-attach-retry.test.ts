@@ -27,7 +27,7 @@ import {
   ASSOC_ACCESS_REFUSAL_CODE,
   decideHomeAttachRetry,
 } from "../compose/homeAttach";
-import { readTypedRefusal } from "@/features/access-gate/service/serverRefusal";
+import { readTypedRefusal } from "@ai-matrx/data/access";
 
 /** Exactly what `@ai-matrx/associations` hands back for SQLSTATE 42501. */
 const ACCESS_REFUSAL = {

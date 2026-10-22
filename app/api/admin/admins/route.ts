@@ -12,6 +12,7 @@ import { createClient } from "@/utils/supabase/server";
 import { requireSuperAdmin } from "@/utils/auth/adminUtils";
 import type { Database, Json } from "@/types/database.types";
 import { extractErrorMessage } from "@/utils/errors";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 type AdminLevel = Database["public"]["Enums"]["admin_level"];
 
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    const status = error.code === "42501" ? 403 : error.code === "23503" ? 404 : 400;
+    const status = error.code === PG_CODES.insufficientPrivilege ? 403 : error.code === PG_CODES.foreignKeyViolation ? 404 : 400;
     return NextResponse.json({ error: error.message }, { status });
   }
 

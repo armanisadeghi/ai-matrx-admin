@@ -28,10 +28,10 @@ import { useRequestAccess } from "@/features/access-gate/hooks/useRequestAccess"
 import {
   contextLines,
   type RequestAccessTarget,
-} from "@/features/access-gate/service/requestAccess";
+} from "@ai-matrx/data/access";
 import { presentOrganizationRefusal } from "@ai-matrx/chat/host/org";
 
-export type { RequestAccessTarget } from "@/features/access-gate/service/requestAccess";
+export type { RequestAccessTarget } from "@ai-matrx/data/access";
 
 export function RequestAccess({
   target,

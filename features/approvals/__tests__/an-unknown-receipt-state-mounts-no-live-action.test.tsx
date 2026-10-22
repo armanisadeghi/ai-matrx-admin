@@ -76,7 +76,8 @@ jest.mock("../data", () => ({
   readProposalStatus: async () => ({ status: "unknown" }),
   recordApprovalDecision: jest.fn(),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ id }: { id: string }) => <a>{id}</a>,
 }));
 jest.mock("@/lib/redux/hooks", () => ({

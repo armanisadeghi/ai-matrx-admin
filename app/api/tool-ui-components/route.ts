@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { extractErrorMessage } from "@/utils/errors";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 /**
  * Public endpoint to fetch active tool UI component code by tool_name.
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
             .single();
 
         if (error) {
-            if (error.code === "PGRST116") {
+            if (error.code === PG_CODES.pgrstNoRows) {
                 return NextResponse.json({ component: null });
             }
             return NextResponse.json(

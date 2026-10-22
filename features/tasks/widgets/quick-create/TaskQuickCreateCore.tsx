@@ -58,7 +58,7 @@ import {
 } from "@/features/scopes/redux/selectors/tree";
 import { openOverlay } from "@ai-matrx/summon/open";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { ConversationHoverPreview } from "@/features/agents/components/previews/ConversationHoverPreview";
 import { MessageHoverPreview } from "@/features/agents/components/previews/MessageHoverPreview";
 import {

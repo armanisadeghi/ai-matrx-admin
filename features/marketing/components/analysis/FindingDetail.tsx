@@ -51,7 +51,7 @@ import {
   confidenceLabel,
 } from "@/features/marketing/components/analysis/AnalysisResultInspector";
 import { AnalysisSubjectRef } from "@/features/marketing/components/shared/MarketingRefs";
-import { RecordStamps } from "@/components/official/record-stamps/RecordStamps";
+import { RecordStamps } from "@ai-matrx/records-ui/entity-ref";
 import { useRecordActors } from "@/components/official/record-stamps/useRecordActors";
 import {
   analysisKeys,

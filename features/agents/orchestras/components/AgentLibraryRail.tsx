@@ -28,7 +28,7 @@ import {
 } from "@ai-matrx/agents/catalog";
 import { DesktopFilterPanel } from "@ai-matrx/chat/agents/components/shared/DesktopFilterPanel";
 import { AgentPeekButton } from "./AgentPeekButton";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 
 /** MIME key used to hand an agent id from the rail to the canvas drop target. */
 export const AGENT_DND_MIME = "application/x-matrx-agent-id";

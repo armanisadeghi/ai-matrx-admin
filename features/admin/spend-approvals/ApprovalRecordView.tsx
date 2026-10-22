@@ -18,7 +18,7 @@ import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
 import { ReadGate } from "@ai-matrx/design-system";
 import { EmptyState, PropertyRow, CalloutBanner } from "@ai-matrx/design-system/controls";
 import { carryTableViewParams } from "@ai-matrx/design-system/data-table";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { RecordPageHeader, type RecordPageAction } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { agentBuildHref } from "@/features/admin/held-runs/heldRuns";

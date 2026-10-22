@@ -98,7 +98,7 @@ type CreateContentBlockInput = Omit<CreateContentBlockInputShape, RetiredKey> & 
 import { createClient } from "@/utils/supabase/client";
 import { WriteDidNotLandError, tryWriteOne, writeOne } from "@/utils/supabase/writeOne";
 import { CONTENT_BLOCK_PARAM } from "@/components/admin/content-blocks-route";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";

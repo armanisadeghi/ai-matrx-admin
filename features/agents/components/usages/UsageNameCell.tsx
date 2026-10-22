@@ -19,7 +19,7 @@
 import { AppWindow, ExternalLink } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { agentHref } from "@/features/mandates/admin/mandate-health";

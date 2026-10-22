@@ -15,7 +15,7 @@ import { TapTargetButtonTransparent } from "@ai-matrx/design-system/tap-target";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   Briefcase,
   Building2,

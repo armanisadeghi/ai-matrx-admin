@@ -11,7 +11,7 @@ import { lazy, Suspense, type Ref } from "react";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 
-const PdfDocumentRenderer = lazy(() => import("@/features/pdf/components/viewer/PdfDocumentRenderer"));
+const PdfDocumentViewer = lazy(() => import("@ai-matrx/media/viewers/pdf").then((m) => ({ default: m.PdfDocumentViewer })));
 
 export interface StackDoc {
   id: string;
@@ -74,7 +74,7 @@ export function DocumentStack({
           ) : (
             <div className={cn(dim && "[&_canvas]:brightness-[0.82]")}>
               <Suspense fallback={<PageSkeleton />}>
-                <PdfDocumentRenderer
+                <PdfDocumentViewer
                   blobUrl={doc.url}
                   fileName={doc.name}
                   layout="continuous"
@@ -109,7 +109,7 @@ export function PageThumbnails({
           <div key={doc.id} className="flex flex-col gap-1">
             {docs.length > 1 ? <span className="truncate type-secondary text-muted-foreground">{doc.name}</span> : null}
             <Suspense fallback={<PageSkeleton />}>
-              <PdfDocumentRenderer
+              <PdfDocumentViewer
                 blobUrl={doc.url}
                 fileName={doc.name}
                 layout="continuous"

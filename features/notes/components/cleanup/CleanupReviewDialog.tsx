@@ -15,7 +15,7 @@ import {
   Columns2,
   ListChecks,
 } from "lucide-react";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import {
   Dialog,
   DialogContent,

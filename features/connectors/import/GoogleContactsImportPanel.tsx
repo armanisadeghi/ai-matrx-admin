@@ -33,7 +33,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/lib/toast";
 import { getUserMessage } from "@ai-matrx/api";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   importGoogleContacts,
   searchGoogleContacts,

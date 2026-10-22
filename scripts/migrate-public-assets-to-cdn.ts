@@ -38,6 +38,7 @@ import { createHash, randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 import { agentTrafficHeaders } from "./lib/agent-traffic.mjs";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 // ---------------------------------------------------------------------------
 // Inventory — every file currently referenced from /public/ that we want
@@ -258,7 +259,7 @@ async function findExisting(
       ...agentTrafficHeaders("migrate-public-assets-to-cdn"),
       Authorization: `Bearer ${ADMIN_JWT}`,
       ...(ADMIN_ORGANIZATION_ID
-        ? { "X-Organization-Id": ADMIN_ORGANIZATION_ID }
+        ? { [MATRX_HEADERS.organization]: ADMIN_ORGANIZATION_ID }
         : {}),
       "X-Request-Id": randomUUID(),
     },
@@ -301,7 +302,7 @@ async function uploadOne(
       ...agentTrafficHeaders("migrate-public-assets-to-cdn"),
       Authorization: `Bearer ${ADMIN_JWT}`,
       ...(ADMIN_ORGANIZATION_ID
-        ? { "X-Organization-Id": ADMIN_ORGANIZATION_ID }
+        ? { [MATRX_HEADERS.organization]: ADMIN_ORGANIZATION_ID }
         : {}),
       "X-Request-Id": randomUUID(),
     },

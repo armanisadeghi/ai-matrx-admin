@@ -106,7 +106,8 @@ jest.mock("@/features/google-workspace/agent/GmailReviewCard", () => ({
     return <div>CARD to {ask.email.to}</div>;
   },
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => null,
 }));
 jest.mock("@/lib/redux/hooks", () => ({

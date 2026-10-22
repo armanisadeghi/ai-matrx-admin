@@ -31,7 +31,7 @@ jest.mock("@/lib/toast", () => ({
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppDispatch: () => dispatch }));
 jest.mock("@ai-matrx/summon", () => ({
-  openOverlay: (payload: unknown) => ({ type: "overlay/open", payload }),
+  openOverlay: (payload: unknown) => ({ type: "overlays/openOverlay", payload }),
 }));
 jest.mock("@ai-matrx/design-system", () => ({ ReadFailure: () => null }));
 jest.mock("@/components/mardown-display/blocks/audio/AudioOutputBlock", () => ({ __esModule: true, default: () => null }));
@@ -65,10 +65,11 @@ import { AudioRecoveryModal } from "../AudioRecoveryModal";
 
 const record = (overrides: Record<string, unknown>) => ({
   id: "r1",
-  sessionId: "s1",
-  audioChunks: [],
+  chunks: [],
+  chunkTranscripts: {},
+  journaledChunkIndices: [],
   mimeType: "audio/webm",
-  accumulatedText: "",
+  transcript: "",
   status: "recording",
   failedChunkIndices: [],
   createdAt: 1_700_000_000_000,
@@ -104,7 +105,7 @@ afterEach(() => {
 });
 
 it("Open in Chat closes and navigates even when the clipboard refuses — with ONE notice", async () => {
-  items.push(record({ accumulatedText: "my transcript" }));
+  items.push(record({ transcript: "my transcript" }));
   await act(async () => root.render(<AudioRecoveryModal isOpen onClose={onClose} />));
   await click("Open in Chat");
   expect(writeText).toHaveBeenCalledWith("my transcript");
@@ -114,17 +115,17 @@ it("Open in Chat closes and navigates even when the clipboard refuses — with O
 });
 
 it("Report Lost Recording opens the feedback form even when the clipboard refuses — with ONE notice", async () => {
-  items.push(record({ accumulatedText: "" }));
+  items.push(record({ transcript: "" }));
   await act(async () => root.render(<AudioRecoveryModal isOpen onClose={onClose} />));
   await click("Report Lost Recording");
   expect(writeText).toHaveBeenCalled();
-  expect(dispatch).toHaveBeenCalledWith({ type: "overlay/open", payload: { overlayId: "feedbackDialog" } });
+  expect(dispatch).toHaveBeenCalledWith({ type: "overlays/openOverlay", payload: { overlayId: "feedbackDialog" } });
   expect(notices).toEqual([["error", "Couldn't copy the bug report — please describe what happened"]]);
 });
 
 it("a landed copy navigates with the one copied notice, no paste-it-yourself hint", async () => {
   writeText.mockResolvedValue(undefined);
-  items.push(record({ accumulatedText: "my transcript" }));
+  items.push(record({ transcript: "my transcript" }));
   await act(async () => root.render(<AudioRecoveryModal isOpen onClose={onClose} />));
   await click("Open in Chat");
   expect(push).toHaveBeenCalledWith("/agents/all");
@@ -133,7 +134,7 @@ it("a landed copy navigates with the one copied notice, no paste-it-yourself hin
 
 it("Copy Text that lands shows exactly ONE success toast (AP-2: the kit's and the modal's both fired)", async () => {
   writeText.mockResolvedValue(undefined);
-  items.push(record({ accumulatedText: "my transcript" }));
+  items.push(record({ transcript: "my transcript" }));
   await act(async () => root.render(<AudioRecoveryModal isOpen onClose={onClose} />));
   await click("Copy Text");
   expect(writeText).toHaveBeenCalledWith("my transcript");

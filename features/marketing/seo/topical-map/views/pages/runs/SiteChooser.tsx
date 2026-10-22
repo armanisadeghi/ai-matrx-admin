@@ -15,7 +15,7 @@
 // sites apart from a uuid.
 
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 export interface SiteChooserProps {
   /** `seo.map_diagnostics.sites_using_map` — every site this map is used by. */

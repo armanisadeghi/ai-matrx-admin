@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useAnnotations } from "@/features/file-analysis/hooks/useAnnotations";
 import { useLabelCatalog } from "@/features/file-analysis/hooks/useLabelCatalog";
-import { colorsFor } from "@/features/pdf/components/viewer/annotation-layer/colors";
+import { colorsFor } from "@ai-matrx/media/viewers/pdf";
 import { InlineRawToggle } from "@/features/file-analysis/content/RawView";
 import { RawView } from "@/features/file-analysis/content/RawView";
 

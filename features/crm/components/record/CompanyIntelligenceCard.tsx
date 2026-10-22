@@ -34,7 +34,7 @@ import {
 } from "../../company-intelligence";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { toolLookupHref } from "@/features/data-sources/library/tools/people/lookupPlan";
-import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
+import { NewTabLink } from "@ai-matrx/records-ui/entity-ref";
 
 interface CardParty {
   id: string;

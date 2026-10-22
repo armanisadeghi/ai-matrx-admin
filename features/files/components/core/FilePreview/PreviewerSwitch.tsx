@@ -11,7 +11,7 @@
  * (`@ai-matrx/media` 0.4.0). What remains here is the only part that is
  * genuinely ours: the engines a package cannot ship.
  *
- *   - PdfPreview / PdfDocumentRenderer — `features/pdf` (PDF.js + the
+ *   - PdfPreview (`features/pdf`) / PdfDocumentViewer (`@ai-matrx/media/viewers/pdf`) (PDF.js + the
  *     annotation layer + the surface registry + server-side extraction).
  *   - MarkdownPreview — the remark/rehype/KaTeX stack.
  *   - DataPreview — SheetJS + PapaParse.
@@ -49,14 +49,14 @@ import { AudioPreview } from "./previewers/AudioPreview";
 import { CodeHighlighter } from "./previewers/CodeHighlighter";
 
 // Heavy engines — in-gate async edges (React.lazy, NOT next/dynamic).
-const PdfPreview = lazy(() => import("./previewers/PdfPreview"));
+const PdfPreview = lazy(() => import("@/features/pdf/components/viewer/PdfPreview"));
 const MarkdownPreview = lazy(() => import("./previewers/MarkdownPreview"));
 const OfficePreview = lazy(() => import("./previewers/OfficePreview"));
 const DataPreview = lazy(() => import("./previewers/DataPreview"));
 // Blob-backed PDF arm (code editor's already-downloaded bytes) — renders the
 // CANONICAL viewer directly.
 const BlobPdfPreview = lazy(
-  () => import("@/features/pdf/components/viewer/PdfDocumentRenderer"),
+  () => import("@ai-matrx/media/viewers/pdf").then((m) => ({ default: m.PdfDocumentViewer })),
 );
 
 /**
@@ -147,7 +147,7 @@ function HostAudioViewer({
   );
 }
 
-function HostPdfViewer({
+export function HostPdfViewer({
   source,
   fileName,
   className,

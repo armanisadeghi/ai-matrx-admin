@@ -13,7 +13,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { OrgAdminBoundary } from "@/features/organizations/admin/components/OrgAdminBoundary";
 import { fetchAutomationRuns, type AutomationRunCost } from "@/features/scheduling/service/automationCosts";

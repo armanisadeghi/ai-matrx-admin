@@ -20,7 +20,7 @@
 
 import { useState } from "react";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import type { AppDispatch, RootState } from "@/lib/redux/store";

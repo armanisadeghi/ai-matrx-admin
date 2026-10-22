@@ -159,7 +159,8 @@ jest.mock("@ai-matrx/context-menu/react", () => ({
   __esModule: true,
   NonEditableContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   __esModule: true,
   EntityRef: ({ name, token }: { name?: string | null; token: string }) => (
     <span data-entity-ref={token}>{name}</span>

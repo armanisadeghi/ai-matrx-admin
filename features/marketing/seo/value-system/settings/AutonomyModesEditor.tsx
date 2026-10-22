@@ -22,7 +22,7 @@ import {
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Badge, Chip, Input, Select } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";

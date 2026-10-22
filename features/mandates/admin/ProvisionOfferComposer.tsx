@@ -38,7 +38,7 @@ import {
   fetchProvision,
   type ProvisionOffer,
 } from "@/features/mandates/provisions";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const KindInputForm = dynamic(

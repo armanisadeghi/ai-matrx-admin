@@ -30,7 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatFileSize } from "@ai-matrx/kit/format";
 import { recordUnavailableMessage } from "@/lib/records/recordUnavailable";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   useDocumentLineage,
   type ProcessingNode,

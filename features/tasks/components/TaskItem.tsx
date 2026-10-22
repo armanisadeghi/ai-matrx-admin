@@ -27,7 +27,7 @@ import {
   updateTaskFieldThunk,
   deleteTaskThunk,
 } from "@/features/tasks/redux/thunks";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import TaskDetails from "./TaskDetails";
 import EditableTaskTitle from "./EditableTaskTitle";
 import { ScopeTagsDisplay } from "@/features/agent-context/components/ScopeTagsDisplay";

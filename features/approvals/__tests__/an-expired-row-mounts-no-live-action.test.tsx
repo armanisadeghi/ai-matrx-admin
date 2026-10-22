@@ -151,7 +151,8 @@ jest.mock("@/features/marketing/google/hooks", () => ({
     isError: false,
   }),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => null,
 }));
 jest.mock("@/lib/redux/hooks", () => ({

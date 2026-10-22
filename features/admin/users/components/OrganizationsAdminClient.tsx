@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
 import { restoreOrganization } from "@/features/organizations/service/organizationArchive";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { USERS_ADMIN_LOCATION } from "@/features/admin/users/constants";
 import type {

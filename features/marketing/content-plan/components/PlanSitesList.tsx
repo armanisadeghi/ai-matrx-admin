@@ -50,7 +50,7 @@ import type {
 } from "@ai-matrx/design-system/data-table/types";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
-import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { isGovernedActionDenial } from "@ai-matrx/data/access";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   CONTEXT_MENU_ENTITY_KEY,

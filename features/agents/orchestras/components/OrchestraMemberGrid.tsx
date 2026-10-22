@@ -31,7 +31,7 @@ import { removeAgentFromOrchestra, reorderOrchestraMembers } from "@/features/ag
 import { AgentRoleCard } from "./AgentRoleCard";
 import { Button } from "@ai-matrx/design-system/controls";
 import { AgentPeekButton } from "./AgentPeekButton";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { useMemberRunState } from "../run/OrchestraRunStatusContext";
 import { accentClasses } from "./accents";
 import type { OrchestraAccent } from "../constants";

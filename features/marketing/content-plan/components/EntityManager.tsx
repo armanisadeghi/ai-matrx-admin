@@ -19,7 +19,7 @@
  * mutation the dialog's own buttons run.
  */
 import { useEffect, useRef, useState } from "react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   Building2,
   Check,

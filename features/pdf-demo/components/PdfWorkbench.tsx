@@ -5,7 +5,7 @@
  *
  * Left pane:
  *   - `PdfSourcePicker` when no source is set yet (Upload / Cloud / URL).
- *   - `PdfPreview` (the canonical viewer that wraps `PdfDocumentRenderer`)
+ *   - `PdfPreview` (the canonical viewer that wraps `PdfDocumentViewer`)
  *     once a `file_id` is in hand. Drives scroll-sync via `pageNumber`.
  *   - An optional caller-provided `overlay` rendered ON TOP of the
  *     viewer — used by `/detect-repeated-regions` to draw bbox boxes.
@@ -49,7 +49,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const PdfPreview = dynamic(
   () =>
     import(
-      "@/features/files/components/core/FilePreview/previewers/PdfPreview"
+      "@/features/pdf/components/viewer/PdfPreview"
     ),
   { ssr: false, loading: () => <PreviewSkeleton /> },
 );

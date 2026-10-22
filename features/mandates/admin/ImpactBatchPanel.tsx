@@ -48,7 +48,7 @@ import { Button } from "@/components/ui/button";
 import { Peek, PeekHoverCard } from "@ai-matrx/design-system";
 import { verdictPeekRecord } from "./verdict-peek";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors";

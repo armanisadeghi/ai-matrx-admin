@@ -13,7 +13,7 @@ import {
   BottomSheetHeader,
   BottomSheetBody,
 } from "@ai-matrx/design-system";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 
 import {
   createWorkbook,

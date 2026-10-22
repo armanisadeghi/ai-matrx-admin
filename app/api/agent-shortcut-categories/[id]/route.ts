@@ -12,6 +12,7 @@ import {
 } from "../_lib/categoryRow";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 type CategoryUpdate = Database["platform"]["Tables"]["categories"]["Update"];
 
@@ -183,7 +184,7 @@ export async function PATCH(
 
     if (error) {
       console.error("Error updating shortcut category:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status = error.code === PG_CODES.insufficientPrivilege || error.code === PG_CODES.pgrstJwtInvalid ? 403 : 500;
       return NextResponse.json(
         {
           error: "Failed to update shortcut category",
@@ -247,7 +248,7 @@ export async function DELETE(
 
     if (error) {
       console.error("Error deleting shortcut category:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status = error.code === PG_CODES.insufficientPrivilege || error.code === PG_CODES.pgrstJwtInvalid ? 403 : 500;
       return NextResponse.json(
         {
           error: "Failed to delete shortcut category",

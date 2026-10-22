@@ -99,7 +99,8 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
 // that may be inside a window panel. `target`/`rel` are set only when
 // `openInNewTab` is true, exactly as the real `EntityRef` renders them, so
 // a call site that dropped the prop would fail this mock's assertions too.
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({
     token,
     id,

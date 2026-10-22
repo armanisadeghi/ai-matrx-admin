@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { DataFreshnessLine } from "@/features/marketing/components/shared/DataFreshnessLine";
 import { GscBindingRefusalLine } from "@/features/marketing/components/shared/GscBindingRefusalLine";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 import { listSites } from "@/features/marketing/data/service";
 import {

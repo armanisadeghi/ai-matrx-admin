@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@ai-matrx/design-system";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import {
   Select,
   SelectContent,

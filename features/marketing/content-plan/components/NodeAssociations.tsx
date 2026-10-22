@@ -34,7 +34,7 @@ import {
   usePlanNodeEdgeMutation,
   useSeoTopics,
 } from "../data/hooks";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { PartyRow } from "@/features/crm/types";
 
 import {

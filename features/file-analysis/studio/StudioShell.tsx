@@ -34,8 +34,7 @@ import { createAnalysisStudioScope } from "@/features/surfaces/manifests/analysi
 import { buildAnalysisStudioWriteHandlers } from "./analysis-studio-write-handlers";
 import { ThumbnailStrip } from "./ThumbnailStrip";
 import { InspectorRail, type StudioInspectorTab } from "./InspectorRail";
-import type { PdfRegion } from "@/features/pdf/components/viewer/annotation-layer/types";
-import type { AnnotationLayerMode } from "@/features/pdf/components/viewer/annotation-layer/types";
+import type { AnnotationLayerMode, PdfRegion } from "@ai-matrx/media/viewers/pdf";
 import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 
 interface StudioShellProps {
