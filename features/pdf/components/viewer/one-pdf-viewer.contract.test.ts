@@ -27,6 +27,8 @@ const ROOT = join(__dirname, "../../../..");
 const SCAN_DIRS = ["app", "features", "components"];
 const RENDERER = "features/pdf/components/viewer/PdfDocumentRenderer.tsx";
 const PREVIEW = "features/pdf/components/viewer/PdfPreview.tsx";
+const TOOLBAR_ROW = "features/pdf/components/viewer/toolbar/PdfToolbarRow.tsx";
+const STACK_TOOLBAR = "features/pdf/components/viewer/toolbar/PdfStackToolbar.tsx";
 
 /** Rasterizes pages to images for print — not a viewer. */
 const RAW_PDFJS_ALLOWED = new Set(["features/print/document/pdfPages.tsx"]);
@@ -89,10 +91,12 @@ describe("one PDF viewer", () => {
     const src = readFileSync(join(ROOT, RENDERER), "utf8");
     // The row is drawn from the measured fold plan (toolbar/toolbar-plan.ts,
     // proven by toolbar-plan.test.ts) — never from blind CSS breakpoints.
-    expect(src).toMatch(/planPdfToolbar\(\{\s*width: containerSize\.width/);
+    const row = readFileSync(join(ROOT, TOOLBAR_ROW), "utf8");
+    expect(row).toMatch(/planPdfToolbar\(\{\s*width,/);
+    expect(src).toMatch(/<PdfToolbarRow\s+width=\{containerSize\.width\}/);
     expect(src).not.toMatch(/@\[\d+rem\]\/pdf-viewer/);
     expect(src).not.toMatch(/\bsm:h-7\b/);
-    expect(src).toContain('aria-label="More view options"');
+    expect(row).toContain('aria-label="More view options"');
     for (const knob of ["toolbar?:", "pageNav?:", "toolbarStart?:", "toolbarEnd?:"]) {
       expect(src).toContain(knob);
     }
@@ -105,5 +109,28 @@ describe("one PDF viewer", () => {
     ]) {
       expect(preview).toContain(pass);
     }
+  });
+
+  it("the continuous layout draws the SAME shared toolbar (page nav + zoom for all pages)", () => {
+    const src = readFileSync(join(ROOT, RENDERER), "utf8");
+    const stack = readFileSync(join(ROOT, STACK_TOOLBAR), "utf8");
+    // The continuous branch mounts the stack toolbar unless the host opted out.
+    const continuous = src.slice(src.indexOf("function ContinuousPages"));
+    expect(continuous).toMatch(/toolbar === "full"[\s\S]{0,80}<PdfStackToolbar/);
+    // ...which is the one row, fed page + zoom for the whole stack.
+    expect(stack).toContain("<PdfToolbarRow");
+    expect(stack).toContain("useScrollPages");
+    expect(stack).toContain("[data-pdf-page]");
+  });
+
+  it("no host draws its own zoom control — they dock into the shared toolbar", () => {
+    // A hand-built "Zoom in" / "Zoom out" control next to a PDF is a second toolbar.
+    const ALLOWED = new Set([TOOLBAR_ROW]);
+    const offenders = files
+      .filter((f) => !ALLOWED.has(f.path))
+      .filter((f) => /aria-label=["']Zoom (in|out)["']/.test(f.src))
+      .filter((f) => /\bPdf(Preview|DocumentRenderer|StackToolbar)\b/.test(f.src))
+      .map((f) => f.path);
+    expect(offenders).toEqual([]);
   });
 });

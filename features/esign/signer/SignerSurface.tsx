@@ -17,7 +17,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { PanelLeft, Minus, Plus, ScanLine } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 
 import { Button } from "@ai-matrx/design-system/controls";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
@@ -54,6 +54,7 @@ import {
 import { ControlInput } from "./parts/ControlInput";
 import { AssignDialog, DeclineDialog, FinishDialog, HelpDialog, HistoryDialog, type RecordedRow } from "./parts/Dialogs";
 import { DocumentStack, PageThumbnails, type StackDoc } from "./parts/DocumentStack";
+import { useStackZoom } from "@/features/pdf/components/viewer/toolbar/stack-hooks";
 import { ConsentPanel, EndScreen, PhoneDrawer, type EndKind, type LandingFacts } from "./parts/Panels";
 import { PaperField } from "./parts/PaperField";
 import { TopBar, type GuideMode } from "./parts/TopBar";
@@ -63,6 +64,12 @@ import { errorText, reasonText } from "./text";
 const SignatureCreatorDialog = dynamic(
   () => import("../signature-creator/SignatureCreatorDialog").then((m) => m.SignatureCreatorDialog),
   { ssr: false },
+);
+
+// The shared PDF toolbar row loads with the viewer, never with the page; the placeholder holds its height.
+const PdfStackToolbar = dynamic(
+  () => import("@/features/pdf/components/viewer/toolbar/PdfStackToolbar").then((m) => m.PdfStackToolbar),
+  { ssr: false, loading: () => <div className="h-10 shrink-0 border-b border-border/60" aria-hidden /> },
 );
 
 interface DocState extends StackDoc {
@@ -132,6 +139,8 @@ export function SignerSurface({
   const [dialog, setDialog] = useState<DialogName>(null);
   const [formView, setFormView] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const stackZoom = useStackZoom(zoom, setZoom);
+  const stackRef = useRef<HTMLDivElement | null>(null);
   const [thumbs, setThumbs] = useState(false);
   const [dimChoice, setDimChoice] = useState<boolean | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -883,22 +892,26 @@ export function SignerSurface({
       />
 
       {!compact ? (
-        <div className="flex h-9 shrink-0 items-center gap-1 border-b border-border bg-background/80 px-2 sm:px-4">
-          <Button variant="quiet" icon={<PanelLeft />} pressed={thumbs} aria-label="Pages" onClick={() => setThumbs((t) => !t)} />
-          <span className="mx-1 h-4 w-px bg-border" />
-          <Button variant="quiet" icon={<Minus />} aria-label="Zoom out" disabled={zoom <= 0.5} onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2)))} />
-          <span className="w-12 text-center type-secondary tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
-          <Button variant="quiet" icon={<Plus />} aria-label="Zoom in" disabled={zoom >= 2} onClick={() => setZoom((z) => Math.min(2, +(z + 0.1).toFixed(2)))} />
-          <Button variant="quiet" icon={<ScanLine />} pressed={zoom === 1} onClick={() => setZoom(1)}>
-            Fit width
-          </Button>
-          {showFillAll ? (
-            <Button variant="quiet" onClick={() => fillAll("signature")}>
-              Fill all signature fields
-            </Button>
+        <>
+          <PdfStackToolbar
+            contentRef={stackRef}
+            zoom={stackZoom}
+            pageLabel="page"
+            toolbarStart={<Button variant="quiet" icon={<PanelLeft />} pressed={thumbs} aria-label="Pages" onClick={() => setThumbs((t) => !t)} />}
+            toolbarEnd={
+              showFillAll ? (
+                <Button variant="quiet" onClick={() => fillAll("signature")}>
+                  Fill all signature fields
+                </Button>
+              ) : null
+            }
+          />
+          {notice ? (
+            <div className="shrink-0 border-b border-border bg-background px-3 py-1 type-secondary">
+              <ErrorNotice size="inline" message={notice} operation="Sign" />
+            </div>
           ) : null}
-          {notice ? <ErrorNotice size="inline" message={notice} operation="Sign" className="ml-2 truncate type-secondary" /> : null}
-        </div>
+        </>
       ) : notice ? (
         <div className="shrink-0 border-b border-border bg-background px-3 py-1 type-secondary">
           <ErrorNotice size="inline" message={notice} operation="Sign" />
@@ -927,6 +940,7 @@ export function SignerSurface({
             </div>
           ) : (
             <DocumentStack
+              contentRef={stackRef}
               docs={docs}
               zoom={zoom}
               dim={dim}
