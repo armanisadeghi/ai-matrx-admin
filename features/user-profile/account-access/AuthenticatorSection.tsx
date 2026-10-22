@@ -8,7 +8,17 @@ import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { createClient } from "@/utils/supabase/client";
 import { authenticatorError, enrollAuthenticator, generateRecoveryCodes, readAuthenticators, removeAuthenticator, verifyAuthenticator, verifyRecoveryCode, type AuthenticatorSetup, type AuthenticatorState } from "./mfa";
 
-export function AuthenticatorSection() {
+export interface AuthenticatorSectionProps {
+  /**
+   * Challenge mode (the administrator verify page): opens the code box for the
+   * first verified authenticator and reports when this session reaches aal2.
+   */
+  challenge?: boolean;
+  /** Called after a code or recovery code elevates this session to aal2. */
+  onElevated?: () => void;
+}
+
+export function AuthenticatorSection({ challenge = false, onElevated }: AuthenticatorSectionProps = {}) {
   const [state, setState] = useState<AuthenticatorState | null>(null);
   const [setup, setSetup] = useState<AuthenticatorSetup | null>(null);
   const [name, setName] = useState("");
@@ -42,6 +52,8 @@ export function AuthenticatorSection() {
         if (!active || version !== generation.current) return;
         identity.current = current.userId;
         setState(current);
+        const verified = current.factors.find(factor => factor.verified);
+        if (challenge && !current.elevated && verified) setSelected(verified.id);
       } catch {
         if (active && version === generation.current) setError("Couldn’t load authenticators. Try again.");
       }
@@ -88,6 +100,7 @@ export function AuthenticatorSection() {
     pendingSetup.current = null;
     setState(current); setSetup(null); setSelected(null); setCode(""); setName("");
     setNotice("Authenticator verified.");
+    if (current.elevated) onElevated?.();
   });
   const remove = (id: string) => run(async (version, userId) => {
     await removeAuthenticator(userId, id);
@@ -112,6 +125,7 @@ export function AuthenticatorSection() {
     if (version !== generation.current) return;
     setState(current); setRecoveryCode(""); setSelected(null); setCode("");
     setNotice("Recovery code verified.");
+    if (current.elevated) onElevated?.();
   });
 
   return (
