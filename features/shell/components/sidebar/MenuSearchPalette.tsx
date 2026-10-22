@@ -40,12 +40,8 @@ import {
 import { resolveShellIconName } from "../../shellIconMap";
 import { useNavActions } from "../../navigation/navActions";
 import { useNavPanelActions } from "../../navigation/navPanelActions";
-import {
-  buildMenuSearchIndex,
-  highlightMenuMatch,
-  rankMenuSearch,
-  type MenuSearchEntry,
-} from "../../utils/menu-search";
+import { buildMenuSearchIndex, type MenuSearchEntry } from "../../utils/menu-search";
+import { highlightMenuMatch, rankMenuSearch } from "../../frame/searchEngine";
 import ShellIcon from "../ShellIcon";
 import { NewTabLink } from "@/components/official/entity-ref/NewTabLink";
 

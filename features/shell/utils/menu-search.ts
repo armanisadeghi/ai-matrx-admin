@@ -5,7 +5,7 @@
 // for admins, the Administration cascade — into one list of destinations, each
 // carrying its breadcrumb trail ("Data › Tables"), then ranks them per query.
 //
-// Ranking lives in the shared engine (frame/searchEngine.ts), re-exported below.
+// Ranking lives in the shared engine (frame/searchEngine.ts), imported from there directly.
 
 import type {
   ShellNavActionId,
@@ -91,6 +91,3 @@ export function buildMenuSearchIndex(
   for (const entry of extra) push(entry);
   return out;
 }
-
-// The tokenizer, ranker and highlighter are the frame's shared engine (frame/searchEngine.ts).
-export { highlightMenuMatch, rankMenuSearch, tokenizeMenuQuery } from "../frame/searchEngine";
