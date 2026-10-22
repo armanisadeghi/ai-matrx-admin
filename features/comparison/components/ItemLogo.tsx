@@ -96,7 +96,7 @@ export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = fals
               onError={() => { setLoaded(false); setFailed((n) => n + 1); }}
               className={photo
                 ? "h-full w-full object-cover"
-                : "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain dark:rounded-lg dark:bg-neutral-100 dark:p-[var(--logo-pad)]"}
+                : "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 object-contain dark:rounded-lg dark:bg-logo-backing dark:p-[var(--logo-pad)]"}
               style={photo ? undefined : { width: size, height: size, ["--logo-pad" as string]: `${Math.max(2, Math.round(size * 0.1))}px` }}
             />
           </>
@@ -112,7 +112,7 @@ export function ItemLogo({ name, logoUrl: given, website, size = 40, fill = fals
   return (
     <span
       className={cn("relative inline-flex shrink-0 items-center justify-center overflow-hidden", fill ? "rounded-lg" : "rounded-md",
-        src && !photo && "dark:rounded-lg dark:bg-neutral-100 dark:p-[var(--logo-pad)]", className)}
+        src && !photo && "dark:rounded-lg dark:bg-logo-backing dark:p-[var(--logo-pad)]", className)}
       // Fixed pixels, never a percentage: percent padding resolves against the PARENT's width and
       // crushed small chips' logos to 0-3px.
       style={{ width: size, height: size, ["--logo-pad" as string]: `${Math.max(2, Math.round(size * 0.1))}px` }}
