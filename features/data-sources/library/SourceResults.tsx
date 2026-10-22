@@ -21,7 +21,8 @@ import { FetchProgress } from "../FetchProgress";
 import { RefusalView } from "../RefusalView";
 import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
-import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useRunRowKeys, type FetchJobRow } from "./runHistory";
+import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, type FetchJobRow } from "./runHistory";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
 const LocatedTableViewer = dynamic(() => import("@/features/data-tables/components/LocatedTableViewer"), {
@@ -66,7 +67,7 @@ function OpenAsTable({ tableId }: { tableId: string }) {
     <Button
       variant="quiet"
       icon={<Table2 className="h-4 w-4" />}
-      onClick={() => window.open(`/data/${encodeURIComponent(tableId)}`, "_blank", "noopener")}
+      onClick={() => openOutbound(`/data/${encodeURIComponent(tableId)}`, "_blank", "noopener")}
       data-open-table=""
     >
       Open as table
@@ -133,6 +134,7 @@ export function LiveRunResults({
 }) {
   const liveJobId = run.status === "running" ? (run.progress?.jobId ?? null) : null;
   const liveJob = useDataFetchJob(liveJobId);
+  useResumeStalledRun(liveJob.data);
   if (run.status === "failed") {
     return (
       <div className="flex py-6">
@@ -181,6 +183,7 @@ function DoneRunResults({ result: done }: { result: DataFetchResult }) {
 /** An earlier run, reopened from its row (a past run, or the address after a reload). */
 export function SavedRunResults({ jobId }: { jobId: string }) {
   const job = useDataFetchJob(jobId);
+  useResumeStalledRun(job.data);
   if (job.isLoading) return <RowsComing />;
   const row: FetchJobRow | null = job.data ?? null;
   if (!row) {

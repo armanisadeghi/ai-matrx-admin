@@ -10,11 +10,12 @@
  * - `usePastRuns(sourceKeys)` — the earlier runs of a source (or every source of a task), newest first.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RecordFilter } from "@ai-matrx/records";
 
 import { createClient } from "@/utils/supabase/client";
-import { getJobRowKeys } from "../server";
+import { getJob, getJobRowKeys } from "../server";
 import { useLibraryOrganizationId } from "./hooks";
 
 export const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"] as const;
@@ -39,10 +40,12 @@ export interface FetchJobRow {
   key_column: string | null;
   /** The store's field KEY of that column ("place_id"), the short word the server wrote beside the run's keys. */
   row_key_field: string | null;
+  /** The worker's lease on an open run; lapsed = nobody is advancing it. */
+  lease_until: string | null;
 }
 
 export const JOB_COLUMNS =
-  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, row_key_field:metadata->>row_key_field";
+  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, lease_until, row_key_field:metadata->>row_key_field";
 
 const POLL_OPEN_MS = 3000;
 
@@ -129,6 +132,40 @@ export function runScope(
   if (runRowFilter(job, keys)) return "this-run";
   if (isOpenStatus(job?.status) && (job?.key_column || job?.row_key_field)) return "coming";
   return "all-rows";
+}
+
+/** How long past its lease an open run waits before the page asks the server to look at it. */
+export const STALLED_AFTER_MS = 15_000;
+const NUDGE_EVERY_MS = 30_000;
+
+/** An open run whose worker lease has lapsed: nothing is advancing it. Pure. */
+export function isStalled(job: Pick<FetchJobRow, "status" | "lease_until"> | null | undefined, now: number = Date.now()): boolean {
+  if (!job || !isOpenStatus(job.status) || !job.lease_until) return false;
+  const lease = Date.parse(job.lease_until);
+  return Number.isFinite(lease) && now - lease > STALLED_AFTER_MS;
+}
+
+/**
+ * The page reads runs straight from the table, so nothing on the server learns that a run's worker is
+ * gone (a restart mid-run). A stalled run is therefore shown to the server, whose read finishes a paid
+ * run or closes one that never reached the provider (and says so on the run). Re-asked every 30 s.
+ */
+export function useResumeStalledRun(job: Pick<FetchJobRow, "id" | "status" | "lease_until"> | null | undefined) {
+  const organizationId = useLibraryOrganizationId();
+  const queryClient = useQueryClient();
+  const jobId = job?.id ?? null;
+  const stalled = isStalled(job);
+  useEffect(() => {
+    if (!jobId || !stalled || !organizationId) return;
+    const nudge = () => {
+      void getJob(jobId, { organizationId })
+        .catch(() => undefined) // the next tick asks again; the run's own row says what is true
+        .finally(() => void queryClient.invalidateQueries({ queryKey: fetchJobKey(jobId) }));
+    };
+    nudge();
+    const timer = setInterval(nudge, NUDGE_EVERY_MS);
+    return () => clearInterval(timer);
+  }, [jobId, stalled, organizationId, queryClient]);
 }
 
 /** The newest open fetch of this source (read under RLS), for reconnect after a reload. */
