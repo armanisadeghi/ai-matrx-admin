@@ -172,6 +172,12 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 
 ## Change log
 
+- `2026-10-22` — claude (lane BB, audit 3): dismissing or adding a new menu in What's new covers its whole subtree
+  (`whatsNewFor` hid children only while the parent was still offered, so a dismissed "Topics" let its children
+  surface); the editor window passes region `look` through (org "Look and brand color" opened on Sidebar); the
+  Start page picker tags an organization's launchpad "Organization" so it is not a twin of the member's copy.
+  Guards `catalog-additions.test.ts`, `shellLayoutEditorRegion.test.tsx`, `landingOptions.test.ts`.
+
 - `2026-10-22` — claude (lane AA): What's new is one list and one component in two places (Sidebar slot + launchpad
   band); "Your organization updated its menu" is kept in her body (`reviewedOrgLayouts`, contract amendment), offered
   from the server seed (no localStorage, no first-sight silence), and Review shows the organization's rows hers

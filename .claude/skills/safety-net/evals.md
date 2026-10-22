@@ -1,9 +1,9 @@
 ---
 type: Reference
 title: "safety-net — proof record"
-description: "The RED/GREEN record skill-authoring §5 requires. Not yet run: the first real change that uses this skill is its eval, and this file records it."
+description: "The RED/GREEN record skill-authoring §5 requires: real uses 2026-10-01 to 10-15, and the 2026-10-22 agent-path rewrite with its scenarios, trigger prompts and what is still owed."
 tags: [testing, skill-eval, safety-net]
-timestamp: 2026-10-15T00:00:00Z
+timestamp: 2026-10-22T00:00:00Z
 ---
 
 # safety-net — evals
@@ -28,3 +28,38 @@ The look-alike suites were renamed the same day (matrx-frontend `tests/smoke-jou
 **Trigger check, 2026-10-15 (new description; `researcher`/sonnet agent `ab6b3766593374528`, listing = every canonical skill's frontmatter):** 6/6 as designed. Should-fire: "check whether Smart Add actually works end to end right now" → safety-net; "set up testing before moving auth and orgs into a shared package" → safety-net; "the variables rebuild shipped with no tests, prove it works" → safety-net. Near-miss: "regression test for archived lists in search" → forcing-function-tests; "replacing the old notes table with the canonical records store" → safe-cutover; "a settings button doesn't save, fix it and add a test" → diagnose. Closest call: safe-cutover vs safety-net on a replacement.
 
 > Note (2026-10-03): the rows above that say "Mode: clone" are historical. Arman ruled that real tests run on live as admin@admin.com; the clone is only for rehearsing destructive migrations.
+
+## 2026-10-22 rewrite — the agent path (SKILL.md 478 → under 200 lines; method moved verbatim to net-method.md)
+
+**Status: RED observed in real work; GREEN and the trigger check OWED.** The rewrite was made by a `deep`
+worker lane that has no way to dispatch fresh reps, and an author never grades its own reps. The owner
+of the rewrite dispatches the reps below and records each with its agent id.
+
+RED (observed in real sessions and ledgers, not dispatched reps):
+- General Chat used for tests (owner ruling 2026-10-17; `test-model-selection` §2b).
+- Localhost used as the test bed (owner ruling 2026-10-18; HANDOFF "Rules that bit us").
+- PB-08 fault row amended after its fault run; that proof no longer counted (core-chain LEDGER, 2026-10-20).
+- PB-06 L2 graded PASS under an allow-list in a coordinator's brief (net-method §4, 2026-10-19).
+- Grades taken on drifted fixtures (another session re-versioned PB-03 copies, 2026-10-19; fixture gate NB-2).
+- Coordinator subagents ended with no output: children's completion notices never reached them (HANDOFF).
+
+GREEN scenario (3 reps, `standard` lane, with the new skill installed, plan-only): "You just changed the
+instructions of the routing-desk agent and added a `gate_code` variable bound from an organization
+context item. Arman wants it live today. Prove it works." Pass = all three reps: name the live build
+check and no localhost; pick a Haiku fixture or cheap agent, not General Chat; drift-check fixtures in
+Safety Net Real Tests; write sealed rows (marker in the bound value, must-not on an unbound value,
+identity row) and commit before any run; read `chat.request_snapshot` and the as-sent script; brief a
+separate grader with no rulings; write the fault row first, plant blind, restore, re-check drift; save
+a platform test case and a ledger row.
+
+Trigger check (6 prompts to fresh agents with every canonical skill's frontmatter as the listing):
+should fire — "I updated the SEO analyst's system prompt, make sure it still works"; "added the
+records tool to the Test Data Agent"; "bound the brand_voice mandate to a new holder version".
+Near-miss — "the settings page button doesn't save" (diagnose); "add a regression test for archived
+lists in search" (forcing-function-tests); "make a new agent that writes blog intros" (create-agent first;
+this skill after it runs).
+
+| Date | Rep | Lane | Agent id / transcript | Result |
+|---|---|---|---|---|
+| | GREEN 1-3 | standard | owed | owed |
+| | Trigger 1-6 | researcher | owed | owed |

@@ -11,12 +11,12 @@ import {
   deleteBrandAsset,
   deleteBusinessFact,
   deleteProperty,
-  deleteSite,
   getBrand,
   updateBrand,
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { associationsService } from "@/features/scopes/service/associationsService";
+import { restoreRetraction, withdrawSite, type RetractionSummary } from "@/features/marketing/data/retraction";
 import { isJsonRecord, type MarketingBrand } from "@/features/marketing/types";
 import type { EvidenceItem } from "../evidence";
 import type { SuggestContext } from "../webKinds";
@@ -41,6 +41,14 @@ export interface SavedAnswers {
   facts: BrandFact[];
 }
 
+/**
+ * Where an answer was given that the tray lists: the validation page AND Create (an account or website answered Yes at
+ * Create is recorded through the same writer, `persistAnswer(... { created })`, from "smart_add.create"). A Create answer
+ * left out could be neither seen nor undone here (2026-10-22). Undo is the same path for both: the homes the answer
+ * names (Create's property / site) are taken back, then the finding goes back to pending.
+ */
+export const ANSWERED_FROM = ["smart_add.validate", "smart_add.create"] as const;
+
 const ANSWERS: ReadonlySet<string> = new Set(["preferred", "ours", "alias", "not_us", "related", "correct", "wrong", "ignore"]);
 
 const rec = (j: Json | null | undefined): Record<string, Json | undefined> => (isJsonRecord(j) ? (j as Record<string, Json | undefined>) : {});
@@ -60,10 +68,16 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
     PROMOTED_TYPES.map((t) => [t, Array.isArray(promoted[t]) ? (promoted[t] as Json[]).filter((id): id is string => typeof id === "string") : []]),
   ) as Record<PromotedFindingType, string[]>;
   await undoPromotion(created);
+  // Homes that were on the brand before the answer (an unconfirmed account / website confirmed on the page) stay.
+  const kept = new Set(Array.isArray(answer.kept) ? answer.kept.filter((h): h is string => typeof h === "string") : []);
   for (const home of [...homes].reverse()) {
+    if (kept.has(home)) continue;
     const [table, id] = [home.slice(0, home.indexOf(":")), home.slice(home.indexOf(":") + 1)];
     if (table === "web.property") await deleteProperty(id);
-    else if (table === "web.site") await deleteSite(id);
+    // The site goes through the retraction door AS THIS ANSWER (root decision = the row carrying the `caused` edge), so
+    // the pending findings its crawl produced go with it, a site another live answer still names stays, and no other
+    // answer is rewritten (REVIEW5 I1).
+    else if (table === "web.site") await withdrawSite(id, leadId);
     else if (table === "web.brand_asset") await deleteBrandAsset(id);
     else if (table === "web.brand_exclusion") {
       const { error } = await (await db()).from("brand_exclusion").update({ deleted_at: new Date().toISOString() }).eq("id", id);
@@ -92,12 +106,14 @@ async function undoSaved(brandId: string, rowIds: string[], leadId: string, answ
       if (!gone.ok) throw new Error(gone.error.message);
     }
   }
+  // A Not us on a home already on the brand withdrew it: bring back exactly what that took.
+  const taken = Array.isArray(before.retractions) ? (before.retractions as unknown as RetractionSummary[]) : [];
+  for (const t of [...taken].reverse()) await restoreRetraction(t);
   const { error } = await (await db())
     .from("discovered_item")
     .update({ status: "pending", relation_key: null, reviewed_at: null, reviewed_by: null, resolved_property_id: null, resolved_fact_id: null })
     .in("id", rowIds);
   if (error) throw new Error(error.message);
-  void leadId;
 }
 
 /** The brand's answered findings, latest first, as Answered-tray entries that can be undone. */
@@ -109,7 +125,7 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     .eq("brand_id", brand.id)
     .eq("source", "smart_add")
     .in("status", ["confirmed", "dismissed"])
-    .eq("context->answer->>from", "smart_add.validate")
+    .in("context->answer->>from", [...ANSWERED_FROM])
     .is("deleted_at", null)
     .order("reviewed_at", { ascending: false })
     .limit(300);
@@ -152,7 +168,11 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     if (!item) continue;
     const rowIds = [r.id, ...(copiesOf.get(r.id) ?? [])];
     const homes = Array.isArray(answerCtx.homes) ? answerCtx.homes : [];
-    const pulled = Boolean(r.resolved_property_id) || homes.some((h) => typeof h === "string" && h.startsWith("web.site:"));
+    // Only a home the answer brought in pulled data in; one that predates it (context.answer.kept) is never retracted.
+    const kept = Array.isArray(answerCtx.kept) ? answerCtx.kept : [];
+    const pulled =
+      (Boolean(r.resolved_property_id) && !kept.includes(`web.property:${r.resolved_property_id}`)) ||
+      homes.some((h) => typeof h === "string" && h.startsWith("web.site:") && !kept.includes(h));
     const relationKey = r.relation_key;
     const value = typeof rec(r.value).text === "string" ? (rec(r.value).text as string) : item.value;
     out.entries.push({

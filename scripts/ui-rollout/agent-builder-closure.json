@@ -292,7 +292,6 @@
  "components/official/ResponsiveIconButtonGroup.tsx",
  "components/official/TextIconButton.tsx",
  "components/official/aspect-ratio/AspectRatioSelect.tsx",
- "components/official/citation-chip/CitationChip.tsx",
  "components/official/entity-ref/EntityDoorControls.tsx",
  "components/official/entity-ref/EntityRef.tsx",
  "components/official/entity-ref/TextWithDoors.tsx",

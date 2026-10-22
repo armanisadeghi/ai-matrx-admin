@@ -40,12 +40,19 @@ import { BattleOutcome } from "@/features/agent-tests/components/BattleOutcome";
 import { TestRunPanel } from "@/features/agent-tests/components/AgentTestPage";
 import { selectActiveBattleColumns, selectMountedBattleSetId, type BattleColumnDescriptor } from "../shared/activeBattleColumns";
 import { useCatalogBoundSelector } from "../shared/useCatalogBoundSelector";
-import { SYNTHETIC_PREFIX, planBattleTests, withVersionIds, type ColumnFacts } from "../shared/battleTestSetups";
+import { SYNTHETIC_PREFIX, planBattleTests, withVersionIds, type ColumnFacts, type ToolSet } from "../shared/battleTestSetups";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+
+const toolSet = (def: { tools?: string[]; customTools?: unknown[]; mcpServers?: string[] }): ToolSet => ({
+  tools: def.tools ?? [],
+  customTools: def.customTools ?? [],
+  mcpServers: def.mcpServers ?? [],
+});
 
 function columnFacts(state: RootState, column: BattleColumnDescriptor): ColumnFacts {
   const instanceAgentId = selectAgentIdFromInstance(column.conversationId)(state) ?? null;
   const def = instanceAgentId?.startsWith(SYNTHETIC_PREFIX) ? selectAgentById(state, instanceAgentId) : null;
+  const source = column.agentId ? selectAgentById(state, column.agentId) : null;
   return {
     instanceAgentId,
     synthetic: def
@@ -53,8 +60,10 @@ function columnFacts(state: RootState, column: BattleColumnDescriptor): ColumnFa
           messages: [...(def.messages ?? [])],
           settings: { ...((def.settings ?? {}) as Record<string, unknown>) },
           modelId: def.modelId ?? null,
+          tools: toolSet(def),
         }
       : null,
+    sourceTools: source ? toolSet(source) : null,
     overrides: selectSettingsOverridesForApi(column.conversationId)(state) ?? null,
   };
 }

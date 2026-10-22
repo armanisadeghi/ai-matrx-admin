@@ -485,28 +485,30 @@ export function PublicImageSearch({
               {selectedUrls.map((url, index) => (
                 <div
                   key={index}
-                  className="matrx-touch-targets h-14 w-20 shrink-0 rounded-md overflow-hidden cursor-pointer border border-border bg-muted relative group"
+                  className="matrx-touch-targets h-14 w-20 shrink-0 rounded-md overflow-hidden cursor-pointer border border-border bg-muted flex flex-col group"
                   onClick={() => handlePreviewClick(url)}
                 >
-                  <img
-                    src={url}
-                    alt={`Preview ${index + 1}`}
-                    className="absolute inset-0 h-full w-full object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==";
-                    }}
-                  />
-                  <div className="absolute top-0 left-0 bg-black/50 text-white type-secondary px-1 rounded-br">
-                    {index + 1}
+                  <div className="flex shrink-0 items-center justify-between gap-1 bg-black/50 pl-1">
+                    <span className="text-white type-secondary">{index + 1}</span>
+                    <button
+                      className="h-4 w-4 shrink-0 bg-red-500 rounded-full flex items-center justify-center"
+                      onClick={(e) => handleRemoveImage(url, e)}
+                      aria-label={`Remove image ${index + 1}`}
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </button>
                   </div>
-                  <button
-                    className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
-                    onClick={(e) => handleRemoveImage(url, e)}
-                    aria-label="Remove image"
-                  >
-                    <X className="h-3 w-3 text-white" />
-                  </button>
+                  <div className="relative min-h-0 flex-1">
+                    <img
+                      src={url}
+                      alt={`Preview ${index + 1}`}
+                      className="absolute inset-0 h-full w-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMyA4QzMgOC41NTIyOCAzLjQ0NzcyIDkgNCA5SDIwQzIwLjU1MjMgOSAyMSA4LjU1MjI4IDIxIDhDMjEgNy40NDc3MiAyMC41NTIzIDcgMjAgN0g0QzMuNDQ3NzIgNyAzIDcuNDQ3NzIgMyA4WiIgZmlsbD0iY3VycmVudENvbG9yIi8+PHBhdGggZD0iTTMgMTZDMyAxNi41NTIzIDMuNDQ3NzIgMTcgNCAxN0gyMEMyMC41NTIzIDE3IDIxIDE2LjU1MjMgMjEgMTZDMjEgMTUuNDQ3NyAyMC41NTIzIDE1IDIwIDE1SDRDMy40NDc3MiAxNSAzIDE1LjQ0NzcgMyAxNloiIGZpbGw9ImN1cnJlbnRDb2xvciIvPjwvc3ZnPg==";
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

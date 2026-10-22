@@ -17,6 +17,7 @@
  */
 
 import { promoteSmartAddFindings } from "./promote";
+import { createdAnswers, recordCreateAnswers, recordedWebKeys } from "./createAnswers";
 import { websiteLinkIn } from "./personPrefill";
 import { FoundStage } from "./found/FoundStage";
 import { addWitnesses, foundAnswers, foundCards, foundCoreReady } from "./found/foundCards";
@@ -1304,8 +1305,8 @@ export function SmartAddBrand({
           .map((i) => ({ name: siteNameOf({ title: i.label, host: websiteHost(i.url ?? i.value) }), domain: websiteHost(i.url ?? i.value) })),
       ];
       // A web result answered "Ours" that is a site of its own becomes one of the brand's websites.
-      const webSites = webItems
-        .filter((i) => kindOf(i.key)?.routesTo === "brand_property")
+      const webOurs = webItems.filter((i) => kindOf(i.key)?.routesTo === "brand_property");
+      const webSites = webOurs
         .map(webSiteRoot)
         .filter((u): u is string => Boolean(u) && !webCtx.ourHosts.includes(websiteHost(u as string)));
       // Every fact the facts agent found that the person did not say No to is kept (keptFacts.ts); the basics
@@ -1365,6 +1366,9 @@ export function SmartAddBrand({
       });
       const problems: string[] = [...ruleProblems];
       const accounts: { handle_or_url: string; platform: string; property_id: string }[] = [];
+      // Each Yes Create made a home for, recorded as the person's answer below (createAnswers.ts).
+      const madeAccounts: { item: (typeof basics.accounts)[number]; propertyId: string }[] = [];
+      const madeSites: { url: string; siteId: string }[] = [];
       for (const item of basics.accounts) {
         try {
           const row = await createProperty({
@@ -1377,6 +1381,7 @@ export function SmartAddBrand({
             displayName: item.label,
             status: "active",
           });
+          madeAccounts.push({ item, propertyId: row.id });
           // Only a platform the server can look up is tracked; a profile site stays a property.
           if (item.platform && TRACKABLE_PLATFORMS.has(item.platform)) accounts.push({ handle_or_url: item.url ?? item.value, platform: item.platform, property_id: row.id });
         } catch (error) {
@@ -1400,7 +1405,10 @@ export function SmartAddBrand({
             host: parsedUrl.hostname.toLowerCase(),
           });
           if (claim.kind === "tracked-elsewhere") problems.push(claim.note);
-          else siteIds.push(claim.site.id);
+          else {
+            siteIds.push(claim.site.id);
+            madeSites.push({ url, siteId: claim.site.id });
+          }
         } catch (error) {
           problems.push(`${websiteHost(url)}: ${extractErrorMessage(error)}`);
         }
@@ -1410,14 +1418,34 @@ export function SmartAddBrand({
       // Nothing is lost: every finding the person did not answer is kept as a candidate in the
       // brand's discovery inbox (web.discovered_item); only "Not us" is left out.
       // Related items keep their relationship (and land in their home: people, competitors).
+      // The person's Yes on each account and website is their word, recorded through the validation page's ONE
+      // confirm path (never a second writer): what research reads as "a person said this is theirs".
+      // A web result answered "Ours" whose site Create claimed is recorded here too (naming that site), never by
+      // routeWebChoices below, whose row names no site.
+      let createdBrand = brand;
+      const createPlan = createdAnswers({
+        accounts: madeAccounts,
+        sites: madeSites,
+        websites: [...items.values()].filter((i) => i.field === "website" && (decisions[i.key] === "yes" || decisions[i.key] === "preferred")),
+        webOurs,
+      });
+      const webRecorded = recordedWebKeys(createPlan, webOurs);
+      problems.push(
+        ...(await recordCreateAnswers(
+          { organizationId, getBrand: () => createdBrand, setBrand: (b) => (createdBrand = b), kinds: relationKinds },
+          createPlan,
+          relationKinds,
+          webCtx,
+        )),
+      );
       const relatedSaved = await routeRelated(organizationId, brand.id, related, decisions);
       problems.push(...relatedSaved.problems);
       // Every answered web result keeps its answer, sentiment and where it was found; "Not us" (here and
       // in the compare rows) also lands on the brand's exclusion list.
-      const webSaved = await routeWebChoices(organizationId, brand.id, webItems, webChoices, relationKinds, webSuggestions, unnamedPeople);
+      const webSaved = await routeWebChoices(organizationId, brand.id, webItems.filter((i) => !webRecorded.has(i.key)), webChoices, relationKinds, webSuggestions, unnamedPeople);
       problems.push(...webSaved.problems);
       recordWebAnswers(organizationId, webItems, webChoices, relationKinds);
-      for (const k of webSaved.keys) relatedSaved.keys.add(k);
+      for (const k of [...webSaved.keys, ...webRecorded]) relatedSaved.keys.add(k);
       problems.push(...(await excludeNotUs(organizationId, brand.id, [...items.values()], decisions, namesakes)));
       problems.push(
         ...(await saveCandidates(

@@ -73,3 +73,15 @@ it("Reset to standard never archives a stored layout: it saves the empty body as
   const reset = src.slice(src.indexOf("const resetToStandard"), src.indexOf("const showChoose"));
   expect(reset).not.toMatch(/store\.clear\(/);
 });
+
+it("dismissing a new menu keeps its children out of What's new (the list never grows)", () => {
+  const body = (dismissedNew: string[]): ShellLayoutBody => ({ schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: 1, sidebar: [], dock: [], header: [], dismissedNew });
+  const before = asPerson(body([])).whatsNew.map((e) => e.id);
+  expect(before).toContain("memory.topics");
+  expect(before).not.toContain("memory.topics-home");
+  const after = asPerson(body(["memory.topics"])).whatsNew.map((e) => e.id);
+  expect(after).not.toContain("memory.topics");
+  expect(after).not.toContain("memory.topics-home");
+  expect(after).not.toContain("memory.research-topics");
+  expect(after).not.toContain("memory.topics-data-stores");
+});

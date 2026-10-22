@@ -60,8 +60,26 @@ describe("battle columns → server setups", () => {
     expect(withVersionIds(plan.setups, () => undefined)).toEqual({ reason: "Version 3 of c1 was not found" });
   });
 
+  it("a Tools column runs with its tool changes against the source agent, and keeps every door", () => {
+    const src = { tools: ["t-search", "t-calc"], customTools: [], mcpServers: [] };
+    const facts: Record<string, ColumnFacts> = {
+      conv1: { instanceAgentId: "cmp-1", synthetic: { messages: [{ role: "system", content: "x" }], settings: {}, modelId: "m", tools: src }, sourceTools: src, overrides: null },
+      conv2: { instanceAgentId: "cmp-2", synthetic: { messages: [{ role: "system", content: "x" }], settings: {}, modelId: "m", tools: { ...src, tools: ["t-calc", "t-mail"] } }, sourceTools: src, overrides: null },
+    };
+    const plan = planBattleTests("tools", [col({ mode: "tools" }), col({ columnId: "c2", conversationId: "conv2", mode: "tools" })], (c) => facts[c.conversationId], label);
+    if (!plan.ok) throw new Error(plan.reason);
+    expect(plan.setups[0].setup.patch).toBeUndefined();
+    // No messages / settings: the locked instructions are the agent's own, so the column is not "unsaved".
+    expect(plan.setups[1].setup.patch).toEqual({ tools_add: ["t-mail"], tools_remove: ["t-search"] });
+  });
+
+  it("a Tools column that changes custom tools or MCP servers says why", () => {
+    const src = { tools: [], customTools: [], mcpServers: [] };
+    const facts: ColumnFacts = { instanceAgentId: "cmp-1", synthetic: { messages: [], settings: {}, modelId: null, tools: { ...src, mcpServers: ["srv"] } }, sourceTools: src, overrides: null };
+    expect(planBattleTests("tools", [col({}), col({ columnId: "c2" })], () => facts, label)).toEqual({ ok: false, reason: "Custom tool and MCP server changes do not reach the server run yet" });
+  });
+
   it("a mode the runner cannot carry says why instead of running something else", () => {
-    expect(planBattleTests("tools", [col({}), col({ columnId: "c2" })], () => none, label)).toEqual({ ok: false, reason: "Tool changes do not reach the server run yet" });
     expect(planBattleTests("conversation", [col({}), col({ columnId: "c2" })], () => none, label).ok).toBe(false);
     expect(planBattleTests("model", [col({})], () => none, label)).toEqual({ ok: false, reason: "Add a second column" });
     expect(planBattleTests("model", [col({ agentId: null }), col({ columnId: "c2" })], () => none, label)).toEqual({ ok: false, reason: "Pick an agent in the first column" });

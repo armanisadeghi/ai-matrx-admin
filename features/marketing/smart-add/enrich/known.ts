@@ -104,7 +104,8 @@ function factText(fact: BusinessFact): string | null {
   return text?.trim() || null;
 }
 
-function seed(
+/** An evidence item for something already on the brand (enrich's known facts; validate's unconfirmed homes). */
+export function seed(
   field: EvidenceField,
   key: string,
   value: string,

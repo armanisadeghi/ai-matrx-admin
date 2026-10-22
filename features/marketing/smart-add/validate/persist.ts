@@ -35,7 +35,6 @@ import {
   deleteBrandAsset,
   deleteBusinessFact,
   deleteProperty,
-  deleteSite,
   getBrand,
   mergeBrandProfile,
   moveSiteBrand,
@@ -43,6 +42,7 @@ import {
   type BrandRelationKind,
 } from "@/features/marketing/data/service";
 import { startSystemRun } from "@/lib/workflows/system-runs";
+import { applyRetraction, restoreRetraction, withdrawSite, type RetractionSummary } from "@/features/marketing/data/retraction";
 import { sourceAccountOf } from "@/features/marketing/components/brands/logo-rank";
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { linkPersonToBrand } from "../relations";
@@ -80,6 +80,27 @@ export interface PersistOptions {
    * show it. Off by default: the validation queue's Ask me later keeps writing nothing.
    */
   recordMark?: boolean;
+  /**
+   * Create's Yes (SmartAddBrand): Create already made this answer's home (the account's property, the website's site),
+   * so this records the person's answer on the finding and writes none. Create promotes once for the whole brand, so no
+   * per-answer promotion. The finding row is the person evidence research reads (aidream research/verified_identity.py
+   * person_validated_properties): without it a brand made through Smart Add was never "known as theirs".
+   */
+  created?: { propertyId?: string; siteId?: string; existing?: boolean };
+}
+
+/**
+ * `created.existing` (validate/unconfirmed.ts): the home was on the brand BEFORE this answer (an account or website no
+ * person had confirmed). Yes records the person's answer naming it (the same row Create writes); Undo takes back only the
+ * answer, never the home. Not us withdraws the home through `web.decision_retraction` (no second NO LIST entry: the
+ * answer adds its own) and Undo restores exactly what that took. The homes it predates are kept on the answer
+ * (`context.answer.kept`), the withdrawals' summaries in `context.answer.before.retractions`, so a later visit's Undo
+ * (savedAnswers.ts) does the same.
+ */
+function keptHomes(opts: PersistOptions): string[] {
+  const c = opts.created;
+  if (!c?.existing) return [];
+  return [...(c.propertyId ? [`web.property:${c.propertyId}`] : []), ...(c.siteId ? [`web.site:${c.siteId}`] : [])];
 }
 
 export interface PersistContext {
@@ -135,8 +156,9 @@ async function recordDiscovered(
   relationKey: string | null,
   value: string,
   resolved: { resolved_property_id?: string; resolved_fact_id?: string },
-  trail: { homes: string[]; before: Record<string, Json> } = { homes: [], before: {} },
+  trail: { homes: string[]; before: Record<string, Json>; kept?: string[] } = { homes: [], before: {} },
   sentiment: PersistOptions["sentiment"] = null,
+  from: "smart_add.validate" | "smart_add.create" = "smart_add.validate",
 ): Promise<{ id: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const w = await db();
@@ -148,10 +170,12 @@ async function recordDiscovered(
     answer,
     by: "person",
     at,
-    from: "smart_add.validate",
+    from,
     // What the answer wrote and what it replaced: a reload's Undo (savedAnswers.ts) takes it back from this alone.
     homes: trail.homes,
     before: trail.before,
+    // Homes named here that were on the brand before this answer: an Undo never takes them away.
+    ...(trail.kept?.length ? { kept: trail.kept } : {}),
     suggested: item.suggestion ? (item.suggestion as unknown as Json) : null,
     ...(item.fact && value !== item.fact.value ? { edited_from: item.fact.value } : {}),
   };
@@ -356,7 +380,12 @@ function startIngest(
   ).catch((error) => console.error("[smart-add] background ingest not started", error));
 }
 
-async function addSite(ctx: PersistContext, url: string): Promise<{ id: string | null; note?: string; undo: () => Promise<void> }> {
+async function addSite(
+  ctx: PersistContext,
+  url: string,
+  /** The answer that made the site, once recorded with its `caused` edge: its undo acts as exactly that answer. */
+  decisionOf: () => string | null = () => null,
+): Promise<{ id: string | null; note?: string; undo: () => Promise<void> }> {
   const brand = ctx.getBrand();
   const parsed = normalizeWebsiteUrl(url);
   const host = parsed.hostname.toLowerCase();
@@ -383,7 +412,8 @@ async function addSite(ctx: PersistContext, url: string): Promise<{ id: string |
   // The crawl every confirmed site gets (as on Create), on the server; never blocks the answer.
   startIngest(ctx, site.id, { sites: [site.id] });
   if (existing.data?.id === site.id) return { id: null, undo: async () => {} };
-  return { id: site.id, undo: async () => deleteSite(site.id) };
+  // Undo goes through the retraction door (never a bare site delete): what the site's crawl found goes with it.
+  return { id: site.id, undo: async () => void (await withdrawSite(site.id, decisionOf())) };
 }
 
 /** A live web.business_fact on the brand of this finding's kind with the same text (case and spacing ignored). */
@@ -601,7 +631,7 @@ export async function persistAnswer(
   const turn = (saving.get(slot) ?? Promise.resolve())
     .catch(() => undefined)
     .then(() => persistAnswerOnce(ctx, item, answer, opts))
-    .then((persisted) => (CONFIRMED.has(answer) ? withPromotion(ctx, persisted) : persisted));
+    .then((persisted) => (CONFIRMED.has(answer) && !opts.created ? withPromotion(ctx, persisted) : persisted));
   saving.set(slot, turn);
   try {
     return await turn;
@@ -731,11 +761,18 @@ async function persistAnswerOnce(
   const value = opts.value?.trim() || item.value;
   const ev = item.evidence;
   let siteId: string | null = null;
+  // Set once the answer row AND its `caused` edge to the site exist: the site's undo then names this answer.
+  let decidedId: string | null = null;
 
   if (answer === "later" && !opts.recordMark) return { discoveredId: null, homes, undo: async () => undefined };
   if (item.key.startsWith(GAP_PREFIX)) return persistGap(ctx, item, answer, value);
 
-  if (answer === "ours" && item.kind === "account" && ev) {
+  if (answer === "ours" && item.kind === "account" && ev && opts.created?.propertyId) {
+    // Create made the property (and starts its tracking in the setup run): the answer names it, and a failed record
+    // never takes Create's row back (no undo here; a later undo goes through the retraction, which reads the link).
+    resolved.resolved_property_id = opts.created.propertyId;
+    homes.push(`web.property:${opts.created.propertyId}`);
+  } else if (answer === "ours" && item.kind === "account" && ev) {
     const row = await createProperty({
       organizationId: ctx.organizationId,
       brandId: ctx.getBrand().id,
@@ -754,10 +791,14 @@ async function persistAnswerOnce(
     }
     undos.push(() => deleteProperty(row.id));
   }
-  if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev) {
+  if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev && opts.created?.siteId) {
+    // Create claimed the site (and crawls it in the setup run): the answer names it (same rule as the account above).
+    siteId = opts.created.siteId;
+    homes.push(`web.site:${siteId}`);
+  } else if (answer === "ours" && (item.kind === "website" || item.kind === "web") && ev) {
     const root = item.kind === "website" ? (ev.url ?? ev.value) : webSiteRoot(ev);
     if (root) {
-      const site = await addSite(ctx, root);
+      const site = await addSite(ctx, root, () => decidedId);
       siteId = site.id;
       if (site.id) homes.push(`web.site:${site.id}`);
       undos.push(site.undo);
@@ -877,6 +918,21 @@ async function persistAnswerOnce(
     }
   }
   if (answer === "not_us") {
+    if (opts.created?.existing) {
+      // Not ours after all: the home it was saved as leaves the brand with everything that grew from it.
+      const taken: RetractionSummary[] = [];
+      try {
+        if (opts.created.siteId) taken.push(await applyRetraction("site", opts.created.siteId, false));
+        if (opts.created.propertyId) taken.push(await applyRetraction("property", opts.created.propertyId, false));
+      } catch (error) {
+        for (const t of [...taken].reverse()) await restoreRetraction(t).catch(() => undefined);
+        throw error;
+      }
+      before.retractions = taken as unknown as Json;
+      undos.push(async () => {
+        for (const t of [...taken].reverse()) await restoreRetraction(t);
+      });
+    }
     const ex = await addExclusion(ctx, item);
     if (ex.id) homes.push(`web.brand_exclusion:${ex.id}`);
     undos.push(ex.undo);
@@ -932,14 +988,30 @@ async function persistAnswerOnce(
   }
 
   try {
-    const discovered = await recordDiscovered(ctx, item, answer, opts.relationKey ?? null, value, resolved, { homes: [...homes], before }, opts.sentiment ?? null);
+    const discovered = await recordDiscovered(
+      ctx,
+      item,
+      answer,
+      opts.relationKey ?? null,
+      value,
+      resolved,
+      { homes: [...homes], before, kept: keptHomes(opts).filter((h) => homes.includes(h)) },
+      opts.sentiment ?? null,
+      opts.created && !opts.created.existing ? "smart_add.create" : "smart_add.validate",
+    );
     homes.unshift(`web.discovered_item:${discovered.id}`);
     undos.unshift(discovered.undo);
     // Provenance: the site exists because of this decision (the account's is resolved_property_id).
-    if (siteId) await recordCause(ctx, discovered.id, "web_site", siteId);
+    if (siteId) {
+      await recordCause(ctx, discovered.id, "web_site", siteId);
+      decidedId = discovered.id;
+    }
     return {
       discoveredId: discovered.id,
-      ...(resolved.resolved_property_id || siteId ? { retraction: { rootType: "decision" as const, rootId: discovered.id } } : {}),
+      // A home this answer brought in is taken back through the retraction; a home that predates it (existing) never is.
+      ...((resolved.resolved_property_id && !opts.created?.existing) || (siteId && !(opts.created?.existing && opts.created.siteId))
+        ? { retraction: { rootType: "decision" as const, rootId: discovered.id } }
+        : {}),
       homes,
       undo: async () => {
         // Reverse order: the homes first, then the finding back to its earlier state.

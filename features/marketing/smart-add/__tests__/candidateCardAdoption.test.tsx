@@ -40,7 +40,8 @@ describe("AnchorCard on the shared CandidateCard", () => {
     expect(host.querySelector("[data-candidate-card]")?.getAttribute("data-answer")).toBe("yes");
     expect(host.textContent).toContain("Mara Lin");
     expect(host.textContent).toContain("@mara.lin");
-    expect(host.textContent).toContain("12.4K followers");
+    // The shared card counts in kit's compact voice ("12.4k"; design-system CHANGELOG, formatAudience).
+    expect(host.textContent).toContain("12.4k followers");
   });
   it("This is me answers me, and pressing it again clears", () => {
     const calls: unknown[] = [];

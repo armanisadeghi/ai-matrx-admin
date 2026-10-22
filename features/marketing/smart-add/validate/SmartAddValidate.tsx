@@ -22,6 +22,7 @@ import { persistAnswer, type Persisted } from "./persist";
 import { reportAnswerNotSaved } from "./notSaved";
 import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
 import { loadSavedFindings } from "./fromSaved";
+import type { UnconfirmedHome } from "./unconfirmed";
 import { loadSavedAnswers, type SavedAnswers } from "./savedAnswers";
 import { emptyAnswers, useRunMemory } from "../runMemory";
 import { ValidateStage, type AnsweredEntry, type AnswerOptions } from "./ValidateStage";
@@ -81,10 +82,21 @@ export function SmartAddValidate({
   const answeredNow = useRef<Set<string>>(new Set());
   // An "Ours" that pulled data in (tracking, posts, a crawl) is undone through the retraction: preview first.
   const [retracting, setRetracting] = useState<Saved | null>(null);
+  // Cards an Undo put back: they return to focus even when the brand (read on load) still knows what the answer wrote.
+  const [reopened, setReopened] = useState<ReadonlySet<string>>(new Set());
+  const reopen = (item: FocusItem, on: boolean) =>
+    setReopened((cur) => {
+      const next = new Set(cur);
+      for (const k of answeredKeysOf(item)) {
+        if (on) next.add(k);
+        else next.delete(k);
+      }
+      return next;
+    });
 
   // Everything Create saved on the brand (and what the brand already knows): the page opens from it, and the
   // live rounds' findings join on top (same key = the live copy).
-  const [saved, setSaved] = useState<{ items: Ev[]; facts: BrandFact[]; known: KnownOnBrand } | null>(null);
+  const [saved, setSaved] = useState<{ items: Ev[]; facts: BrandFact[]; known: KnownOnBrand; unconfirmed: UnconfirmedHome[] } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   // Earlier answers (a reload, a return visit) fill the Answered tray, latest first, each undoable (MKT-137).
   const [past, setPast] = useState<SavedAnswers | null>(null);
@@ -134,7 +146,9 @@ export function SmartAddValidate({
     names: [...(saved?.known.names ?? []), brand.name],
     images: [...(saved?.known.images ?? []), ...(brand.logo_url ? [brand.logo_url] : []), ...answeredLogoImages],
   };
-  const folded = foldQueue({ queue: raw, known, later });
+  // The brand's own accounts / websites no person confirmed: asked as ordinary cards, answered naming the existing home.
+  const homeOf = new Map((saved?.unconfirmed ?? []).map((u) => [u.item.key, u]));
+  const folded = foldQueue({ queue: raw, known, later, reopened, unconfirmed: new Set(homeOf.keys()) });
   // The card in focus stays in focus: a finding arriving live never jumps in front of it.
   const pinned = useRef<string | null>(null);
   const pinnedAt = folded.findIndex((q) => q.key === pinned.current);
@@ -154,6 +168,7 @@ export function SmartAddValidate({
     const cardKeys = answeredKeysOf(item);
     if (cardKeys.some((k) => answeredNow.current.has(k))) return;
     for (const k of cardKeys) answeredNow.current.add(k);
+    reopen(item, false);
     const id = crypto.randomUUID();
     const relationLabel = opts.relationKey ? (kinds.find((k) => k.key === opts.relationKey)?.label ?? opts.relationKey) : null;
     const entry: Saved = {
@@ -197,6 +212,10 @@ export function SmartAddValidate({
   const pctx = { organizationId, getBrand: () => brandRef.current, setBrand, kinds };
   // A set card: every value answered at once — Yes keeps the values left on (the rest are Wrong), No marks all Wrong.
   const persistCard = async (item: FocusItem, answer: Answer, opts: AnswerOptions): Promise<Persisted> => {
+    const home = homeOf.get(item.key);
+    if (home && (answer === "ours" || answer === "not_us")) {
+      return persistAnswer(pctx, item, answer, { ...opts, created: { propertyId: home.propertyId, siteId: home.siteId, existing: true } });
+    }
     if (!item.members?.length) return persistAnswer(pctx, item, answer, opts);
     const off = new Set(opts.off ?? []);
     const done: Persisted[] = [];
@@ -224,6 +243,7 @@ export function SmartAddValidate({
 
   const forget = (entry: AnsweredEntry, label: string) => {
     release(entry.item);
+    reopen(entry.item, true);
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `${label}: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });
@@ -238,6 +258,7 @@ export function SmartAddValidate({
       return;
     }
     release(entry.item);
+    reopen(entry.item, true);
     setAnswered((list) => list.filter((a) => a.id !== entry.id));
     if (decisionFor(entry.answer) && entry.item.evidence) for (const k of [entry.item.key, ...entry.item.twins]) onDecide(k, null);
     publish({ key: `validate.answer.${entry.item.key}`, label: `Undone: ${entry.value}`, group: "inputs", data: { item: entry.item, undone: entry.answer }, source: "smart_add.validate" });

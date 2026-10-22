@@ -4,7 +4,8 @@ import { answerRows } from "../battle";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { FlaskConical, Play, Plus, RotateCcw, Square, StepForward } from "lucide-react";
+import Link from "@/components/navigation/AppLink";
+import { FlaskConical, Play, Plus, RotateCcw, Scale, Square, StepForward } from "lucide-react";
 import {
   Button,
   EmptyState,
@@ -531,7 +532,10 @@ export function AgentTestPage({
               }}
             />
           ) : null}
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-2">
+            <Button asChild variant="quiet" icon={<Scale />}>
+              <Link href={`${basePath}/${agentId}/test/agreement`}>Judge agreement</Link>
+            </Button>
             <ArchiveFilter
               value={archive}
               onValueChange={setArchive}

@@ -11,6 +11,7 @@
  * static list.
  */
 
+import { runOnServerAction } from "@/features/agent-comparison/shared/runOnServerAction";
 import { useState } from "react";
 import type { HeaderAction } from "@/features/shell/components/header/variants/types";
 import { recordToast, toast } from "@/lib/toast";
@@ -206,6 +207,7 @@ export function TuningToolbar({
       label: runsWindowOpen ? "Close runs comparison" : "Compare runs",
       onPress: onToggleRunsWindow,
     },
+    runOnServerAction(runsWindowOpen, onToggleRunsWindow),
     {
       icon: "Library",
       label: "Open a saved battle",

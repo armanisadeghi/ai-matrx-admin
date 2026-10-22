@@ -2514,7 +2514,7 @@ export default function FeedbackDetailDialog({
                           {composeImages.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                               {composeImages.map((url, idx) => (
-                                <div key={idx} className="matrx-touch-targets relative group">
+                                <div key={idx} className="matrx-touch-targets flex items-start gap-1 group">
                                   <InlineMediaRef
                                     ref={url}
                                     size={{ width: 64, height: 64 }}
@@ -2530,7 +2530,7 @@ export default function FeedbackDetailDialog({
                                         prev.filter((_, i) => i !== idx),
                                       )
                                     }
-                                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
+                                    className="shrink-0 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
                                     aria-label={`Remove attachment ${idx + 1}`}
                                   >
                                     <X className="w-2.5 h-2.5" />
@@ -2782,7 +2782,7 @@ export default function FeedbackDetailDialog({
                   {replyImages.length > 0 && (
                     <div className="flex flex-wrap gap-2 px-1">
                       {replyImages.map((url, idx) => (
-                        <div key={idx} className="matrx-touch-targets relative group">
+                        <div key={idx} className="matrx-touch-targets flex items-start gap-1 group">
                           <InlineMediaRef
                             ref={url}
                             size={{ width: 64, height: 64 }}
@@ -2798,7 +2798,7 @@ export default function FeedbackDetailDialog({
                                 prev.filter((_, i) => i !== idx),
                               )
                             }
-                            className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
+                            className="shrink-0 bg-destructive text-destructive-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-100 transition-opacity sm:[@media(hover:hover)]:opacity-0 sm:[@media(hover:hover)]:group-hover:opacity-100 focus-visible:opacity-100"
                             aria-label={`Remove attachment ${idx + 1}`}
                           >
                             <X className="w-2.5 h-2.5" />

@@ -73,9 +73,13 @@ doors (a choice answer taken back = `retract`).
     to or away from chosen / declined / shortlisted / parked / superseded needs tier `user`, `auth.uid()` and
     `decided_by = auth.uid()`. The decide door's own supersede / restore / retract writes carry the transaction-local
     flag `web.brand_choice_door` (set and restored inside the door; still tier `user`).
-  - **Test seats (I4).** A seat (`platform.non_person_account_ids()` + `agent_test_account_ids()`, admin@admin.com
-    included) may answer, but `decide` refuses its change to a person's decided row and never supersedes or restores
-    a person's row; its Yes / No on an offering finding fires neither stance trigger.
+  - **Test seats (I4).** Who is a seat is decided per brand, in ONE place: `web.brand_non_person_seat_ids(brand_id)`
+    (`platform.non_person_account_ids()` + `agent_test_account_ids()`: admin@admin.com, test@test.com, persona
+    fixtures, canaries, bots). One exemption (2026-10-22): a persona-factory account is a person on a brand in the test
+    organization it created, owns and stamped with its own run (`iam.organizations.metadata.test_fixture.test_run_id`);
+    on every other brand it stays a seat. `decide`, `person_validated_offering_ids` and the stance triggers read that
+    function. A seat may answer, but `decide` refuses its change to a person's decided row and never supersedes or
+    restores a person's row; its Yes / No on an offering finding fires neither stance trigger.
   - **Audience origin.** `brand_audience_answer` takes origin `said` or `team` only; the deck always sends `said`.
 - Data design: common-docs `projects/brand-discovery/DATA-MODEL.md` § The brand session's answers.
 
@@ -99,6 +103,7 @@ chrome on the page.
   choices elsewhere (the decide door's `retract` serves any screen).
 
 ## Change log
+- 2026-10-22 — Test seats are per brand (`web.brand_non_person_seat_ids`): a persona is a person only on the brand its own test organization owns.
 - 2026-10-22 — REVIEW3: a stance answer is one per offering and reaches the topical map (subject = `about` or the pending finding); only a person moves a decided value (trigger on decision/placement/decided_by, door flag); test seats never displace a person; a second editor's answer withdraws only their own (`personId`, `created_by` read); audience answers are origin `said`. Proof: rollback cases 22-27; jest `deck.test.ts`.
 - 2026-10-22 — Stances first (four swipes, the agent's precise stance as the Suggestion), audience categories with their answer, word tags, taglines and one-liners as picks; the audience door and `shortlist`.
 - 2026-10-22 — Cards no longer repeat their four answers as rows under the text (`choicesOnCard={false}`): the edges are the answers (owner rule: nothing on the screen but the thing being asked about).

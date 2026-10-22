@@ -8,8 +8,8 @@
  "not_in_manifest": [
   "PB-04/PB-06 second organization admin's Workspace itself (only its fixture rows are listed)",
   "test@test.com seat (a person, not a fixture)",
-  "UI-QUICK 2026-10-19: spare column 'Dock lane' e55d5573-9a7e-4586-8492-3237b7065df5 on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built",
-  "UI-QUICK 2026-10-22: Dock lane (Q-23 spare column, text) was changed to Choice while finding the live path and could not be changed back; the field was removed and recreated as a Text column of the same name (new field id, key dock_lane); reset recipe after Q-23: column menu > Column settings > Remove this field, then + (Actions header) > name Dock lane, Text > Create column",
+  "UI-QUICK 2026-10-19: spare column 'Dock lane' 8fbcbed8-4dcc-4fda-9144-22e7fed9af4a (current; the 2026-10-19 field e55d5573-9a7e-4586-8492-3237b7065df5 was removed) on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built",
+  "UI-QUICK 2026-10-22: Dock lane (Q-23 spare column, text) was changed to Choice while finding the live path and could not be changed back; the field was removed and recreated as a Text column of the same name (new field id 8fbcbed8-4dcc-4fda-9144-22e7fed9af4a, key dock_lane_2, type text, no choice list, options_table_id empty; read back 2026-10-22 through custom.applicable_fields); reset recipe after Q-23: column menu > Column settings > Remove this field, then + (Actions header) > name Dock lane, Text > Create column",
   "UI-QUICK 2026-10-22: shortcut f0bdf085-7cf3-47db-bfb1-394ce843a9b0 (Q-06, Q-24) relabelled 'Compass Hub lookup (inline)' because admin's other organization holds a second shortcut labelled 'Hub lookup'; read back after reload"
  ],
  "playbooks": {
@@ -1496,7 +1496,7 @@
     "organization_id"
    ],
    "sha256": "43179fa3b7dd3d88723d61b9c266aa6a4931d9e5850944ea3e75f0aeab52c321",
-   "version": 1
+   "version": 2
   },
   "conv_ledger_share": {
    "kind": "row",
@@ -1668,6 +1668,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1677,7 +1678,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "d9983255e259f5bf25ede56760b1390cd322133ec675c4df1285717fa14be304",
+   "sha256": "38659976051d483a3169c8a4d9850fec2c33e5bad6da37de4856f35fbb74b1c4",
    "version": 1
   },
   "shortcut_hub_replace": {
@@ -1692,6 +1693,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1701,7 +1703,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "0fff2f1e0a2fba03160398569d64cce9c099e4421b9ffd77992eb8e53f6e6d90",
+   "sha256": "139263e72b5dcfe89ff54e86d93e0d53dc3cbc7cb4b80a066455375ec0bb7984",
    "version": 1
   },
   "shortcut_hub_manual": {
@@ -1716,6 +1718,7 @@
     "display_mode",
     "auto_run",
     "show_pre_execution_gate",
+    "bypass_gate_seconds",
     "keyboard_shortcut",
     "agent_id",
     "agent_version_id",
@@ -1725,7 +1728,7 @@
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "a42de93760fd5df2c75b54a403ca80d9422f41bc8bf7141ad54bf0a9731dec7c",
+   "sha256": "6373c2fe597bdc252950063c8545e9f6bdbb9eb5dbed7c25dc0dd84160320c74",
    "version": 1
   },
   "skill_dispatch_ref": {

@@ -198,3 +198,23 @@ describe("logos already answered (MKT-139)", () => {
     expect(cards[0].folded ?? []).toHaveLength(0);
   });
 });
+
+describe("an undone earlier answer comes back (2026-10-22, pxdocs.com on brand e641a6d5)", () => {
+  // The bio link the person answered "Ours": that answer made pxdocs.com one of the brand's sites, so the brand read on
+  // load knows the host. Undo on the Answered list must still put the card back in focus.
+  const bio = row("identity", "bio_link", "https://pxdocs.com/?utm_source=ig", { label: "pxdocs" }, "https://pxdocs.com/?utm_source=ig");
+  const queue = () => {
+    const one = fromRow(bio);
+    const items = one && "item" in one ? [one.item] : [];
+    return buildQueue({ items, facts: [], decisions: {}, webChoices: {}, answered: new Set(), later: [], kinds: [], ctx: { ourHosts: [], ourAccounts: [], name: null } });
+  };
+  const known = { names: [], hosts: ["https://pxdocs.com/", "pxdocs.com"], urls: ["https://pxdocs.com/"], values: [] };
+  it("a page on a host the brand knows is not asked (unchanged rule)", () => {
+    expect(foldQueue({ queue: queue(), known, later: [] })).toHaveLength(0);
+  });
+  it("the same card returns once its answer is undone", () => {
+    const raw = queue();
+    const cards = foldQueue({ queue: raw, known, later: [], reopened: new Set([raw[0].key]) });
+    expect(cards.map((c) => c.key)).toEqual([raw[0].key]);
+  });
+});

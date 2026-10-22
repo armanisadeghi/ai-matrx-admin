@@ -169,7 +169,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: "citation-chip",
     name: "Citation Chip",
-    path: "components/official/citation-chip/CitationChip.tsx",
+    path: "@ai-matrx/design-system/controls (CitationChip)",
     description:
       "The shared citation source chip + excerpt popover (number, icon, title, locator, quote, open action). Chat Sources footer, education trust chips, and the inline superscript marker all render through it.",
     categories: ["data-display", "interactive", "text"],
@@ -324,7 +324,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: "collapsible-text",
     name: "Collapsible Text",
-    path: "components/official/CollapsibleText.tsx",
+    path: "@ai-matrx/design-system/controls (CollapsibleText)",
     description:
       "Measured multiline text preview with a bottom fade, individual expand/collapse, and coordinated group controls",
     categories: ["collapsible", "text", "data-display", "interactive"],

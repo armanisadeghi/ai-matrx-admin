@@ -6,8 +6,6 @@ import React from 'react';
 import {motion, AnimatePresence} from 'motion/react';
 import {cn} from '@/styles/themes/utils';
 import {Tabs, TabsList, TabsTrigger, TabsContent} from '@/components/ui/tabs';
-import { X } from 'lucide-react';
-import { IconButton } from '@ai-matrx/design-system';
 import AnimatedForm from './FormComponent';
 import {AnimatedTabModalProps, TabButton} from "@/types/AnimatedFormTypes";
 
@@ -146,7 +144,13 @@ const AnimatedTabModal: React.FC<AnimatedTabModalProps & { className?: string }>
                                     {title && <h2 className="text-xl font-semibold">{title}</h2>}
                                     {description && <p className="text-sm text-muted-foreground">{description}</p>}
                                 </div>
-                                <IconButton icon={X} tooltip="Close" onClick={closeModal} />
+                                <button
+                                    onClick={closeModal}
+                                    aria-label="Close"
+                                    className="shrink-0 text-foreground hover:text-primary"
+                                >
+                                    &times;
+                                </button>
                             </div>
 
                             {tabs || customTab ? (
