@@ -4,7 +4,6 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   FileChartColumn,
-  Globe2,
   Landmark,
   Plug,
   SearchCheck,
@@ -14,8 +13,9 @@ import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 export const MARKETING_WORKSPACE_ROUTES = [
-  { name: "Brands", href: marketingRoutes.brands(), icon: Landmark },
-  { name: "Sites", href: marketingRoutes.sites(), icon: Globe2 },
+  // A website belongs to a brand (Arman's ruling): there is no top-level Sites list — a brand's
+  // websites live at /marketing/brands/<brand>/websites. Brands points at the list itself, no hop.
+  { name: "Brands", href: marketingRoutes.brandsAll(), icon: Landmark },
   { name: "Search", href: marketingRoutes.searchConsole(), icon: SearchCheck },
   { name: "Ranks", href: marketingRoutes.ranks(), icon: TrendingUp },
   { name: "Approvals", href: marketingRoutes.approvals(), icon: ClipboardCheck },

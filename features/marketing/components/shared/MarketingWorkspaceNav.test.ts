@@ -16,4 +16,14 @@ describe("MarketingWorkspaceNav", () => {
         ?.name,
     ).toBe("Ranks");
   });
+
+  it("never has two tabs with the same destination (Sites used to repeat Brands)", () => {
+    const hrefs = MARKETING_WORKSPACE_ROUTES.map((r) => r.href);
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    expect(MARKETING_WORKSPACE_ROUTES.map((r) => r.name)).not.toContain("Sites");
+  });
+
+  it("the Brands tab is the brands list itself", () => {
+    expect(resolveActiveRouteMode(MARKETING_WORKSPACE_ROUTES, "/marketing/brands/all")?.name).toBe("Brands");
+  });
 });
