@@ -5,6 +5,7 @@
 // One map, open. The canvas itself is InteractiveDiagramBlock in authoring
 // mode — this file owns loading, the name, and saving. Nothing here draws.
 
+import { SizedTitleInput } from "@/features/shell/host-chrome/SizedTitleInput";
 import { HostedRecordBar, useHostNamesRecord } from "@/features/shell/host-chrome/RecordHostChrome";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -329,26 +330,48 @@ export function MapEditor({
     replace_map: replaceMapFromSurface,
   });
 
-  const nameField = (
+  const nameField = embedded && hostNamesMap ? (
+    // In a tile's header: as wide as its words, so the rest of the header still drags the tile.
+    <SizedTitleInput
+      data-surface-value="map_title"
+      value={diagram?.title ?? ""}
+      onChange={(e) => renameMap(e.target.value)}
+      disabled={!diagram}
+      aria-label="Map name"
+      placeholder="Untitled map"
+    />
+  ) : (
     <Input
       data-surface-value="map_title"
       value={diagram?.title ?? ""}
       onChange={(e) => renameMap(e.target.value)}
       disabled={!diagram}
       aria-label="Map name"
-      className={hostNamesMap ? "w-full" : "w-full text-center"}
+      className="w-full text-center"
     />
   );
   // Not the page (a board tile): the host names the map, so the name field moves into its header and the
-  // row keeps only the save state.
+  // row keeps only the save state — and no row at all while there is no state to show.
   const header = embedded ? (
     <HostedRecordBar
       record={{ token: "canvas_item", id: mapId }}
-      titleField={<div className="min-w-0 flex-1">{nameField}</div>}
+      titleField={
+        hostNamesMap ? (
+          // The save state rides beside the name in the header: no bar row, so nothing moves under the canvas.
+          <div className="flex min-w-0 items-center gap-2" data-map-bar>
+            {nameField}
+            <SaveIndicator state={saveState} />
+          </div>
+        ) : (
+          <div className="min-w-0 flex-1">{nameField}</div>
+        )
+      }
       actions={
-        <div className="flex w-28 shrink-0 justify-end" data-map-bar>
-          <SaveIndicator state={saveState} />
-        </div>
+        hostNamesMap ? undefined : (
+          <div className="flex w-28 shrink-0 justify-end" data-map-bar>
+            <SaveIndicator state={saveState} />
+          </div>
+        )
       }
     />
   ) : (

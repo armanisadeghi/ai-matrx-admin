@@ -19,16 +19,8 @@
 // § Page-top templates. The system page specimen renders THIS component inside
 // <HeaderSpecimen>, never a mock.
 
-import { Fragment } from "react";
-import { ChevronDown, type LucideIcon } from "lucide-react";
-import { Badge, Button, type BadgeTone } from "@ai-matrx/design-system/controls";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { type LucideIcon } from "lucide-react";
+import { Badge, type BadgeTone } from "@ai-matrx/design-system/controls";
 import type { RouteNavItem } from "@/features/shell/components/header/RouteModeNav";
 import {
   EntityModeHeader,
@@ -39,7 +31,7 @@ import type { Crumb, CrumbOption } from "@/features/shell/components/header/temp
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
 import { DesktopAction } from "@/features/shell/components/header/templates/EntityModeHeader";
-import { RecordActionsMenu as HostRecordActionsMenu } from "@/components/official/RecordActionsMenu";
+import { RecordActionsMenu, type RecordMenuAction } from "@/components/official/RecordActionsMenu";
 import { HostedRecordBar, useHostChromeFor } from "@/features/shell/host-chrome/RecordHostChrome";
 
 export type { EntityHeaderAction as RecordPageAction } from "@/features/shell/components/header/templates/EntityModeHeader";
@@ -97,32 +89,17 @@ export interface RecordPageHeaderProps {
   menu?: { label?: string; items: RecordPageMenuItem[] };
 }
 
-function RecordActionsMenu({ label, items }: { label: string; items: RecordPageMenuItem[] }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="quiet" iconEnd={<ChevronDown />}>
-          {label}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {items.map((item, i) => {
-          const Icon = item.icon;
-          const newGroup = i > 0 && item.group !== items[i - 1]!.group;
-          return (
-            <Fragment key={item.id}>
-              {newGroup ? <DropdownMenuSeparator /> : null}
-              <DropdownMenuItem disabled={item.disabled} onClick={item.onPress}>
-                <Icon className={item.destructive ? "mr-2 h-4 w-4 text-destructive" : "mr-2 h-4 w-4"} /> {item.label}
-                {item.disabled && item.hint ? <span className="ml-auto pl-4 type-meta">{item.hint}</span> : null}
-              </DropdownMenuItem>
-            </Fragment>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
+/** A page-header menu item as the one record menu takes it. */
+const menuAction = (item: RecordPageMenuItem): RecordMenuAction => ({
+  id: item.id,
+  label: item.label,
+  icon: item.icon,
+  onPress: item.onPress,
+  destructive: item.destructive,
+  disabled: item.disabled,
+  hint: item.hint,
+  group: item.group,
+});
 
 /**
  * The record's header inside a HOST (a board tile, a window — `RecordHostChrome`): the host's bar names
@@ -152,10 +129,7 @@ function HostedRecordPageHeader({
               <DesktopAction key={a.label} action={a} />
             ))}
             {/* The one record overflow for a host bar (shared with the meeting and sandbox bars). */}
-            <HostRecordActionsMenu
-              label={menu?.label ?? "Actions"}
-              actions={menuItems.map((item) => ({ label: item.label, icon: item.icon, onPress: item.onPress, destructive: item.destructive, disabled: item.disabled }))}
-            />
+            <RecordActionsMenu label={menu?.label ?? "Actions"} actions={menuItems.map(menuAction)} />
           </>
         ) : undefined
       }
@@ -215,7 +189,7 @@ function PageRecordHeader({
       onModeSelect={onModeSelect}
       steps={steps}
       actions={menuItems.length ? [...(actions ?? []), ...phoneMenuActions] : actions}
-      rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : undefined}
+      rightEnd={menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} triggerLabel={menu?.label ?? "Actions"} actions={menuItems.map(menuAction)} /> : undefined}
     />
   );
 }

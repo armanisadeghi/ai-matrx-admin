@@ -403,16 +403,11 @@ export function ScopeDetailEditor({
               </span>
             )}
           </h2>
-          {inTile ? null : (
-            <Button
-              asChild
-              variant="quiet"
-            >
-              <Link href={scopeContextItemsHref(orgSlugOrId, scopeType, scope)}>
-                Open full page
-              </Link>
-            </Button>
-          )}
+          <Button asChild variant="quiet" data-scope-context-items-door="">
+            <Link href={scopeContextItemsHref(orgSlugOrId, scopeType, scope)}>
+              {inTile ? "Open context items" : "Open full page"}
+            </Link>
+          </Button>
         </div>
         {loading && !rows && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

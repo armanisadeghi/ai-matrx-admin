@@ -100,6 +100,13 @@ export interface EntityHeaderAction {
    * not lose it and the desktop does not show it twice.
    */
   phoneOnly?: boolean;
+  /**
+   * In a HOST's one-row bar (a Board tile — `HostedRecordBar`): `bar` = a labelled button on the row,
+   * anything else = the bar's "…" menu. Chosen by the action list, never by matching the label text.
+   */
+  placement?: "bar" | "menu";
+  /** In a host bar's labelled button: `danger` draws it as the danger button (Stop, End…). */
+  barTone?: "danger";
 }
 
 export interface EntityModeHeaderProps {

@@ -25,6 +25,7 @@ import { EditorDetailsDialog, formatDetailDate } from "@/components/editor-chrom
 import { useRouter } from "next/navigation";
 import { useMenuBarState } from "@/components/editor-chrome/EditorMenuBar";
 import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
+import { SizedTitleInput } from "@/features/shell/host-chrome/SizedTitleInput";
 import { type EditorMenuEntry, type DocumentRow } from "@ai-matrx/office/core";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
 import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
@@ -37,7 +38,6 @@ import { useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorG
 import { DOCUMENT_ADAPTER } from "@/features/file-actions/adapters";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
-import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/utils/supabase/client";
 import { useAppStore } from "@/lib/redux/hooks";
@@ -521,7 +521,8 @@ export function DocumentRecord({
 
   const title = (
     <>
-      <Input
+      <SizedTitleInput
+        aria-label="Document name"
         value={renameDraft}
         onChange={(e) => setRenameDraft(e.target.value)}
         onBlur={commitRename}
@@ -532,7 +533,7 @@ export function DocumentRecord({
             (e.target as HTMLInputElement).blur();
           }
         }}
-        className="min-w-0 max-w-[45vw] sm:max-w-xs"
+        wrapperClassName="max-w-[45vw] sm:max-w-xs"
         disabled={!doc || !canEdit}
         // Same bound the write handler enforces and the manifest quotes,
         // from the same module — the agent path and the human path

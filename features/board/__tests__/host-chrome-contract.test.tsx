@@ -24,6 +24,7 @@ import { BoardTile } from "../components/BoardTile";
 import { FocusHostContext, BoardCameraStoreContext } from "../engine/react";
 import { BoardCameraStore } from "../engine/camera-store";
 import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
+import { SizedTitleInput } from "@/features/shell/host-chrome/SizedTitleInput";
 
 const ROOT = join(__dirname, "..", "..", "..");
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
@@ -168,5 +169,136 @@ describe("source contract", () => {
       }
     }
     expect(existsSync(join(ROOT, "features/crm/components/record/EmbeddedRecordHeader.tsx"))).toBe(false);
+  });
+});
+
+// ── Round 2 guards (2026-10-22 adversarial review) ──────────────────────────────────────────────
+describe("a hosted bar never draws an empty row", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  beforeEach(() => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  async function renderTile(bar: React.ReactNode) {
+    const store = new BoardCameraStore({ x: 0, y: 0, z: 1 });
+    function H() {
+      const [focusHost, setFocusHost] = useState<HTMLDivElement | null>(null);
+      return (
+        <BoardCameraStoreContext.Provider value={store}>
+          <FocusHostContext.Provider value={focusHost}>
+            <div ref={setFocusHost} />
+            <BoardTile id="tile" rect={{ x: 0, y: 0, w: 480, h: 320 }} title="T" hostRecord={{ token: "task", id: "t1" }} menu={{ href: "/tasks/t1", actions: [] }} onMove={() => {}} onResize={null}>
+              {() => <div data-testid="body">{bar}</div>}
+            </BoardTile>
+          </FocusHostContext.Provider>
+        </BoardCameraStoreContext.Provider>
+      );
+    }
+    act(() => root.render(<H />));
+    act(() => store.focus("tile"));
+    for (let i = 0; i < 5 && !document.querySelector("[data-testid='body']"); i++) {
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 30));
+      });
+    }
+  }
+
+  it("a rename field and nothing else: the field moves to the header and NO bar row is left", async () => {
+    await renderTile(<HostedRecordBar record={{ token: "task", id: "t1" }} titleField={<input aria-label="Only title" />} open={<button type="button">Open</button>} />);
+    expect(document.querySelector("[aria-label='Only title']")?.closest("[data-board-title-slot]")).not.toBeNull();
+    expect(document.querySelector("[data-hosted-record-bar]")).toBeNull();
+  });
+
+  it("a bar with an action keeps its one row", async () => {
+    await renderTile(<HostedRecordBar record={{ token: "task", id: "t1" }} name="N" actions={<button type="button">Act</button>} />);
+    expect(document.querySelectorAll("[data-hosted-record-bar]")).toHaveLength(1);
+  });
+});
+
+describe("a hosted title field is as wide as its text", () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  beforeEach(() => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it("SizedTitleInput sizes its wrapper from a hidden mirror of the value and never fills the slot", () => {
+    act(() => root.render(<SizedTitleInput aria-label="t" value="Axolotl" onChange={() => {}} />));
+    const wrap = container.querySelector("[data-sized-title]") as HTMLElement;
+    expect(wrap).not.toBeNull();
+    expect(wrap.textContent).toBe("Axolotl"); // the mirror carries the text that gives the wrapper its width
+    expect(wrap.className).not.toMatch(/(^|\s)(w-full|flex-1)(\s|$)/);
+    expect(wrap.className).toContain("inline-grid");
+  });
+
+  // Every record that moves a plain input into a tile header uses the sized field (or the editor-style
+  // title, which sizes the same way). A bare Input/ProInput there fills the header and the tile cannot be dragged.
+  const SIZED: Array<[label: string, file: string, marker: RegExp]> = [
+    ["Task", "features/tasks/components/TaskEditor.tsx", /<HostTitle record=\{hostRecord\}>\s*<SizedTitleInput/],
+    ["Visual map", "features/canvas/maps/MapEditor.tsx", /<SizedTitleInput\s+data-surface-value="map_title"/],
+    ["Document", "features/documents/components/DocumentRecord.tsx", /const title = \(\s*<>\s*<SizedTitleInput/],
+    ["Workbook", "features/workbooks/components/WorkbookRecord.tsx", /<EditorTitleField/],
+    ["Presentation", "features/presentations/components/PresentationEditor.tsx", /<EditorTitleField/],
+  ];
+  it.each(SIZED)("%s: the title field in the tile header is text-sized", (_l, file, marker) => {
+    expect(read(file)).toMatch(marker);
+  });
+});
+
+describe("the tile keeps every door that is not its own Open", () => {
+  it("Scope: the Context items page link is drawn in a tile too (it is a different page than the scope's Open)", () => {
+    const src = read("features/scopes/components/pages/ScopeDetailEditor.tsx");
+    const at = src.indexOf("scopeContextItemsHref(orgSlugOrId");
+    expect(at).toBeGreaterThan(0);
+    const around = src.slice(Math.max(0, at - 260), at);
+    expect(around).toContain("data-scope-context-items-door");
+    expect(around).not.toMatch(/inTile \? null/);
+  });
+
+  it("the Meeting and Sandbox bars choose their buttons from explicit flags, not label text", () => {
+    for (const f of ["features/meet/components/manage/MeetingDetail.tsx", "features/code/views/sandboxes/SandboxRecord.tsx"]) {
+      const src = read(f);
+      expect(src).not.toMatch(/a\.label === "(Invite|Restore|Stop|Stopping…)"/);
+      expect(src).toContain('a.placement === "bar"');
+    }
+    // Stop keeps its danger look in the bar.
+    expect(read("features/code/views/sandboxes/SandboxRecord.tsx")).toMatch(/barTone === "danger" \? "danger"/);
+  });
+});
+
+describe("the tile's record identity and the header's record id are the same kind of id", () => {
+  it("Scope: the tile hands the editor the scope's uuid (the id `comments(source)` carries), never its slug", () => {
+    const items = read("features/board/items/scope-items.tsx");
+    expect(items).toMatch(/scopeParam=\{scope\.id\}/);
+    expect(items).not.toMatch(/scopeParam=\{scope\.(slug|name)/);
+    // entityComments hands the host chrome `source.id`.
+    expect(read("features/board/items/types.ts")).toMatch(/entityComments[\s\S]{0,400}source\.id/);
+    // The editor matches the host record by the id it was handed.
+    expect(read("features/scopes/components/pages/ScopeDetailEditor.tsx")).toMatch(/useHostNamesRecord\(\{ token: "scope", id: scopeParam \}\)/);
+  });
+
+  it("Meeting / Sandbox / Map bars match the host by the record's row id, not a route param or name", () => {
+    expect(read("features/meet/components/manage/MeetingDetail.tsx")).toMatch(/token: "meet_meeting", id: meeting\.id/);
+    expect(read("features/code/views/sandboxes/SandboxRecord.tsx")).toMatch(/token: "sandbox_instance", id: recordId/);
+    expect(read("features/canvas/maps/MapEditor.tsx")).toMatch(/token: "canvas_item", id: mapId/);
+  });
+
+  it("BoardTile hands HostTitle a stable claim callback", () => {
+    expect(read("features/board/components/BoardTile.tsx")).toMatch(/onTitleClaim=\{claimTitle\}/);
   });
 });

@@ -342,6 +342,7 @@ export function MeetingDetail({
       primaryActions.push({
         label: "Invite",
         icon: UserPlus,
+        placement: "bar",
         onPress: () => void run("invite", meeting),
       });
     if (canManage && !ended)
@@ -379,6 +380,7 @@ export function MeetingDetail({
     moreActions.push({
       label: focus ? "Cancel…" : "Cancel meeting",
       icon: XCircle,
+      barTone: "danger",
       onPress: () => void run("cancel", meeting, focus, invitees),
     });
   if (!meeting.deletedAt && canManage)
@@ -391,6 +393,7 @@ export function MeetingDetail({
     primaryActions.push({
       label: "Restore",
       icon: ArchiveRestore,
+      placement: "bar",
       onPress: () => void run("restore", meeting),
       showLabel: true,
     });
@@ -405,6 +408,7 @@ export function MeetingDetail({
           : "Join",
       icon: Video,
       primary: true,
+      placement: "bar",
       onPress: () => (onJoin ? onJoin(meeting) : void run("join", meeting)),
     });
   }
@@ -418,7 +422,7 @@ export function MeetingDetail({
           label: a.label,
           icon: a.icon,
           onPress: a.onPress,
-          destructive: a.icon === XCircle,
+          destructive: a.barTone === "danger",
         }))}
       />
     ) : null;
@@ -600,9 +604,7 @@ function EmbeddedMeetingBar({
   // Invite / Restore), then every other action in ONE "…" menu. A host that
   // names the meeting (a Board tile — the shared host chrome) drops the name;
   // any other host keeps it on the row.
-  const visible = actions.filter(
-    (a) => a.primary || a.label === "Invite" || a.label === "Restore",
-  );
+  const visible = actions.filter((a) => a.placement === "bar");
   const overflow = actions.filter((a) => !visible.includes(a));
   return (
     <HostedRecordBar
@@ -627,7 +629,7 @@ function EmbeddedMeetingBar({
               label: a.label,
               icon: a.icon,
               onPress: a.onPress,
-              destructive: a.icon === XCircle,
+              destructive: a.barTone === "danger",
             }))}
           />
         </>
