@@ -47,6 +47,7 @@ import {
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+import { displayId } from "@ai-matrx/design-system";
 interface RestoreDialogProps {
   fileId: string;
   open: boolean;
@@ -178,7 +179,7 @@ export function RestoreDialog({ fileId, open, onOpenChange }: RestoreDialogProps
                         className="text-xs"
                       >
                         {new Date(s.created_at).toLocaleString()} —{" "}
-                        {s.session_id.slice(0, 8)}…
+                        {displayId(s.session_id)}…
                       </SelectItem>
                     ))}
                     {recoverable.map((s) => (
@@ -188,7 +189,7 @@ export function RestoreDialog({ fileId, open, onOpenChange }: RestoreDialogProps
                         className="text-xs"
                       >
                         {new Date(s.created_at).toLocaleString()} —{" "}
-                        {s.session_id.slice(0, 8)}… (org escrow)
+                        {displayId(s.session_id)}… (org escrow)
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -23,6 +23,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileById } from "@/features/files/redux/selectors";
 import { cn } from "@/lib/utils";
 
+import { displayId } from "@ai-matrx/design-system";
 export interface FileDuplicateOfBadgeProps {
   /** The keeper's `cld_files.id` (i.e. `file.duplicateOfFileId`). */
   keeperFileId: string | null | undefined;
@@ -45,7 +46,7 @@ export function FileDuplicateOfBadge({
   if (!keeperFileId) return null;
 
   const label =
-    keeper?.fileName ?? `file:${keeperFileId.slice(0, 8)}`;
+    keeper?.fileName ?? `file:${displayId(keeperFileId)}`;
 
   const heightClass = density === "sm" ? "h-4" : "h-5";
   const textClass = density === "sm" ? "text-[9px]" : "text-[10px]";

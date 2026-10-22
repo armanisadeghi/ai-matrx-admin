@@ -11,7 +11,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, displayId } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 
 import { getReview } from "../api";
@@ -110,8 +110,8 @@ export function ReviewRow({
                   // this was — reviews that silently read the previous session
                   // were the blind test's worst failure. Null on old reviews.
                   const label = ex.at
-                    ? `${kind} ${id.slice(0, 8)} · ${fmtDate(ex.at)}`
-                    : `${kind} ${id.slice(0, 8)}`;
+                    ? `${kind} ${displayId(id)} · ${fmtDate(ex.at)}`
+                    : `${kind} ${displayId(id)}`;
                   return door ? (
                     <DoorLink
                       key={`${id}-${i}`}

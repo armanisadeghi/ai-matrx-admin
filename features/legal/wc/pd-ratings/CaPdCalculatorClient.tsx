@@ -25,6 +25,7 @@ import {
   BottomSheet,
   BottomSheetHeader,
   BottomSheetBody,
+  displayId,
 } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
@@ -420,7 +421,7 @@ function ResumeSavedCasesPanel({
       </header>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {cases.map((c) => {
-          const subtitle = c.case_number ?? `${c.id.slice(0, 8)}…`;
+          const subtitle = c.case_number ?? `${displayId(c.id)}…`;
           const stamp = c.updated_at ?? c.created_at;
           return (
             <li key={c.id}>

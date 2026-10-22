@@ -25,7 +25,7 @@ import { truncateFilename, formatFileSize } from "@/features/files/utils/format"
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileIcon } from "@ai-matrx/media/react";
 import { FileDuplicateOfBadge } from "@/features/files/components/core/FileBadges/FileDuplicateOfBadge";
-import { ReadEmpty, ReadStaleNotice, type ReadOutcome } from "@ai-matrx/design-system";
+import { ReadEmpty, ReadStaleNotice, type ReadOutcome, displayId } from "@ai-matrx/design-system";
 
 export interface FileChipProps {
   fileId: string;
@@ -79,7 +79,7 @@ export function FileChip({
     [actions],
   );
 
-  const name = file?.fileName ?? `file:${fileId.slice(0, 8)}`;
+  const name = file?.fileName ?? `file:${displayId(fileId)}`;
   const size = file?.fileSize ?? null;
   const isKnown = !!file;
 
