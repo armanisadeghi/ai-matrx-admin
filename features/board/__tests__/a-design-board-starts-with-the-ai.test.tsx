@@ -11,11 +11,14 @@ import { createRoot } from "react-dom/client";
 
 jest.mock("@ai-matrx/design-system", () => ({
   Dialog: ({ open, children }: { open: boolean; children: unknown }) => (open ? <div>{children as never}</div> : null),
-  DialogContent: ({ children }: { children: unknown }) => <div>{children as never}</div>,
+  DialogContent: ({ children, showCloseButton, ...rest }: { children: unknown; showCloseButton?: boolean } & Record<string, unknown>) => (
+    <div {...(rest as object)} data-close={showCloseButton === false ? "hidden" : "shown"}>{children as never}</div>
+  ),
   DialogHeader: ({ children }: { children: unknown }) => <div>{children as never}</div>,
   DialogFooter: ({ children }: { children: unknown }) => <div>{children as never}</div>,
   DialogTitle: ({ children }: { children: unknown }) => <h2>{children as never}</h2>,
   DialogDescription: ({ children }: { children: unknown }) => <p>{children as never}</p>,
+  ShimmerText: ({ text }: { text: string }) => <span data-shimmer="">{text}</span>,
 }));
 jest.mock("@ai-matrx/design-system/controls", () => ({
   Button: ({ children, variant, onClick, disabled }: { children: unknown; variant?: string; onClick?: () => void; disabled?: boolean }) => (
@@ -43,7 +46,6 @@ jest.mock("@/components/official/ProTextarea", () => ({
 const listBoardStyles = jest.fn(async () => [{ templateId: "tpl-calm", name: "Calm neutral", forWho: "Software products and SaaS teams" }]);
 jest.mock("../templates/board-packs", () => ({ listBoardStyles: (...a: unknown[]) => listBoardStyles(...(a as [])) }));
 jest.mock("../templates/board-start", () => ({}));
-jest.mock("@/components/loaders/ShimmerText", () => ({ ShimmerText: ({ text }: { text: string }) => <span data-shimmer="">{text}</span> }));
 
 import { DesignBoardStartDialog, type DesignBoardProgress } from "../templates/design-start";
 
@@ -92,6 +94,8 @@ describe("a new design system board starts with the AI", () => {
     const host = await mount(jest.fn(), { mode: "ai", step: "board", detail: null });
     expect(buttons(host)).toEqual([]);
     expect(host.querySelector("textarea")).toBeNull();
+    // Nothing to close while it builds: the box carries no close control.
+    expect(host.querySelector("[data-building]")!.getAttribute("data-close")).toBe("hidden");
     const stages = Array.from(host.querySelectorAll("li")).map((li) => [li.textContent, li.dataset.state]);
     expect(stages).toEqual([
       ["Making the board", "current"],
