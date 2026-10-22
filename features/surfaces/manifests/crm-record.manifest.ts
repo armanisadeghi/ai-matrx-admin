@@ -181,6 +181,7 @@ const values: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 800,
+    inlineUpTo: 2000,
     group: "record_identity",
     sortOrder: 132,
   },

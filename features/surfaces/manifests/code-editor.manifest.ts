@@ -92,6 +92,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 8000,
+    inlineUpTo: 6000,
     sortOrder: 320,
     group: "active_file",
   },

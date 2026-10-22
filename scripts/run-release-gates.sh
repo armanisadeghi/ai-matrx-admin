@@ -704,6 +704,9 @@ if $STRICT; then
         # Long-text write targets take an anchored edit (patchable) and show the shared diff
         # on overwrite; patchable count never drops below its baseline. ADVISORY.
         "Surface text targets not patchable|pnpm check:surface-patchable"
+        # A record's text small enough to pass whole goes whole (inlineUpTo); the number of
+        # text-body values without one never rises above its ceiling. ADVISORY.
+        "Surface text bodies without inlineUpTo|pnpm check:surface-inline-text"
         "Admin dashboard catalog|pnpm exec tsx scripts/check-admin-catalog.ts --strict"
         "Entity registry generation drift|pnpm check:entity-types"
         # --live pulls the deployed agx_sync_linked_agents() and diffs the TS
@@ -1592,6 +1595,9 @@ else
         # Long-text write targets take an anchored edit (patchable) and show the shared diff
         # on overwrite; patchable count never drops below its baseline. ADVISORY.
         "Surface text targets not patchable|pnpm check:surface-patchable"
+        # A record's text small enough to pass whole goes whole (inlineUpTo); the number of
+        # text-body values without one never rises above its ceiling. ADVISORY.
+        "Surface text bodies without inlineUpTo|pnpm check:surface-inline-text"
         "Admin dashboard catalog|pnpm exec tsx scripts/check-admin-catalog.ts"
         "Entity registry generation drift|pnpm check:entity-types"
         "Agent sync fields vs live RPC (snapshot fallback)|pnpm exec tsx scripts/check-agent-sync-fields.ts --live"

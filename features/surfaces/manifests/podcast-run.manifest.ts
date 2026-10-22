@@ -322,6 +322,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 400,
+    inlineUpTo: 2000,
     sortOrder: 510,
     group: "episode",
   },

@@ -56,6 +56,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "document",
     alwaysAvailable: false,
     typicalCharCount: 3000,
+    inlineUpTo: 6000,
     sortOrder: 300,
     group: "strategy_document",
   },

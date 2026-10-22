@@ -372,6 +372,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 1500,
+    inlineUpTo: 2000,
     sortOrder: 800,
     group: "markdown_tester",
   },

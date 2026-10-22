@@ -200,6 +200,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 1200,
+    inlineUpTo: 2000,
     sortOrder: 200,
     group: "review_content",
   },

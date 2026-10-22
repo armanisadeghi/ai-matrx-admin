@@ -291,6 +291,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "document",
     alwaysAvailable: false,
     typicalCharCount: 4000,
+    inlineUpTo: 6000,
     sortOrder: 460,
     group: "thread_work",
   },

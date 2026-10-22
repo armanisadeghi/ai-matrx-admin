@@ -82,6 +82,7 @@ const values: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 300,
+    inlineUpTo: 2000,
     sortOrder: 120,
     group: "rulebook_identity",
   },

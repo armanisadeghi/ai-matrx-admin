@@ -269,6 +269,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 1500,
+    inlineUpTo: 2000,
     group: "meeting_plan",
     sortOrder: 310,
   },

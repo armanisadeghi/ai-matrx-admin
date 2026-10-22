@@ -241,6 +241,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 1500,
+    inlineUpTo: 6000,
     sortOrder: 300,
     group: "component_content",
   },
