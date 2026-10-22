@@ -24,6 +24,7 @@ import {
 } from "../catalog";
 import { useVisibilityAwarePageRefresh } from "../hooks/useVisibilityAwarePageRefresh";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { WhatsNewOffers } from "@/features/shell/shell-layout/editor/WhatsNewOffers";
 import { YourLaunchpads, type ServerLaunchpadList } from "./YourLaunchpads";
 
 const PREVIEW_DESTINATION_COUNT = 3;
@@ -125,6 +126,7 @@ export default function UserLaunchpad({ serverLaunchpads }: { serverLaunchpads?:
   return (
     <div className="bg-textured text-foreground">
       <div className="mx-auto w-full max-w-[1680px] px-3 pt-[calc(var(--shell-header-h)+1rem)] sm:px-5 lg:px-7">
+        <WhatsNewOffers placement="band" />
         <YourLaunchpads serverLaunchpads={serverLaunchpads ?? null} />
         <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-border bg-card-textured p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <div className="min-w-0">

@@ -16,6 +16,7 @@ import { resolveMandate } from "@ai-matrx/chat/mandates/service";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { TextInputDialog } from "@ai-matrx/design-system";
+import { WhatsNewOffers } from "@/features/shell/shell-layout/editor/WhatsNewOffers";
 import { RecordPageHeader, type RecordPageAction } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { launchpadHref } from "@/features/shell/shell-layout/resolve";
 import type { LaunchpadDoc } from "@/features/shell/shell-layout/contract";
@@ -307,6 +308,7 @@ function LaunchpadBody({
       />
       <PageBusProvider busKey={launchpadKey} doc={shown ?? early?.doc ?? EMPTY_LAUNCHPAD_DOC}>
       <div className="h-full overflow-y-auto px-3 pb-6 pt-[calc(var(--shell-header-h)+0.75rem)]" data-matrx-page-scroll>
+        <WhatsNewOffers placement="band" />
         {pads.loading ? (
           early ? (
             <LaunchpadGrid doc={early.doc} />

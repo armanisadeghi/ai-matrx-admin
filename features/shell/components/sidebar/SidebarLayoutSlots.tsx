@@ -1,29 +1,13 @@
 "use client";
 
 // The Sidebar's two reserved places for custom layouts (custom-experience PLAN §5.5):
-//   • WhatsNewSlot — at the top: one quiet row per destination added to our menus since the person's layout
-//     was last reviewed ("New: X" — Add / Dismiss), and "Your organization updated its menu" (Review /
-//     Dismiss) when the organization's layout moved since she last looked. Only for a person with her own
-//     custom Sidebar; never a modal, never injected into her tree.
+//   • WhatsNewSlot — at the top: the What's new offers (`WhatsNewOffers`, the same list and actions as the
+//     launchpad band): "New: X" — Add / Dismiss, and "Your organization updated its menu" — Review / Dismiss.
+//     Only for a person with her own layout; never a modal, never injected into her tree.
 //   • EditSidebarRow — at the bottom of the menu: "Edit sidebar…".
-import { useEffect, useSyncExternalStore } from "react";
-import { PanelLeft, X } from "lucide-react";
-import { Button } from "@ai-matrx/design-system/controls";
-import { toast } from "@/lib/toast";
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
-import type { RootState } from "@/lib/redux/rootReducer";
+import { PanelLeft } from "lucide-react";
 import { useOpenShellLayoutEditor } from "@/features/overlays/definitions/shellLayoutEditorWindow.overlay";
-import { useResolvedShellLayout } from "@/features/shell/shell-layout/useResolvedShellLayout";
-import { initialShellLayoutState } from "@/features/shell/shell-layout/shellLayoutSlice";
-import { parseShellLayoutBody } from "@/features/shell/shell-layout/validate";
-import { acceptNew, dismissNew } from "@/features/shell/shell-layout/editor/regions";
-import { ShellLayoutMount } from "@/features/shell/shell-layout/editor/ShellLayoutMount";
-import { useShellLayoutStore } from "@/features/shell/shell-layout/useShellLayoutStore";
-import ShellIcon from "../ShellIcon";
-
-const selectHeld = (state: RootState) => state.shellLayout ?? initialShellLayoutState;
-const SEEN_KEY = (organizationId: string) => `matrx:shell:org-layout-seen:${organizationId}`;
+import { WhatsNewOffers } from "@/features/shell/shell-layout/editor/WhatsNewOffers";
 
 export function EditSidebarRow() {
   const open = useOpenShellLayoutEditor();
@@ -38,108 +22,5 @@ export function EditSidebarRow() {
 }
 
 export function WhatsNewSlot() {
-  const layout = useResolvedShellLayout();
-  const held = useAppSelector(selectHeld);
-  const ownSidebar = layout.source === "person" && held.person ? parseShellLayoutBody(held.person.body).body?.sidebar !== undefined : false;
-  const org = held.organizationId ? held.organizations[held.organizationId] : undefined;
-  const orgMoved = useOrgMoved(layout.source === "person" ? org : undefined);
-  const news = ownSidebar ? layout.whatsNew : [];
-  if (news.length === 0 && !orgMoved.moved) return null;
-  return (
-    <div className="flex flex-col" data-shell-whats-new>
-      {news.length > 0 ? (
-        <ShellLayoutMount>
-          <NewOffers ids={news.map((n) => n.id)} labels={Object.fromEntries(news.map((n) => [n.id, n.label]))} icons={Object.fromEntries(news.map((n) => [n.id, n.iconName]))} />
-        </ShellLayoutMount>
-      ) : null}
-      {orgMoved.moved ? <OrgUpdatedOffer onDismiss={orgMoved.dismiss} /> : null}
-    </div>
-  );
-}
-
-/**
- * The organization's layout moved since this person last saw it (first sight only records the version).
- * Read through useSyncExternalStore with a server snapshot of "not seen": the server cannot read
- * localStorage, and reading it during the first client render made the hydrated HTML differ from the
- * server's — React then threw the whole tree away and rebuilt it (the launchpad "reloading itself").
- */
-function subscribeSeen(onChange: () => void): () => void {
-  window.addEventListener("storage", onChange);
-  window.addEventListener(SEEN_EVENT, onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(SEEN_EVENT, onChange);
-  };
-}
-const SEEN_EVENT = "matrx:shell:org-layout-seen";
-
-function useOrgMoved(org: { organizationId: string; version: number } | undefined) {
-  const key = org ? SEEN_KEY(org.organizationId) : null;
-  const seen = useSyncExternalStore(
-    subscribeSeen,
-    () => (key ? window.localStorage.getItem(key) : null),
-    () => SEEN_UNKNOWN,
-  );
-  const remember = (version: number) => {
-    if (!key) return;
-    window.localStorage.setItem(key, String(version));
-    window.dispatchEvent(new Event(SEEN_EVENT));
-  };
-  useEffect(() => {
-    if (key && org && seen === null) remember(org.version);
-  });
-  if (!org || seen === null || seen === SEEN_UNKNOWN) return { moved: false, dismiss: () => {} };
-  return { moved: Number(seen) < org.version, dismiss: () => remember(org.version) };
-}
-const SEEN_UNKNOWN = "server";
-
-function OfferRow({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-9 items-center gap-1 rounded-md px-1" title={label}>
-      <span className="shell-nav-icon text-muted-foreground">{icon}</span>
-      <span className="min-w-0 flex-1 truncate type-secondary text-muted-foreground">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function NewOffers({ ids, labels, icons }: { ids: string[]; labels: Record<string, string>; icons: Record<string, Parameters<typeof ShellIcon>[0]["name"]> }) {
-  const store = useShellLayoutStore();
-  const isAdmin = useAppSelector(selectIsAdmin);
-  const body = store.person ? parseShellLayoutBody(store.person.body).body : null;
-  if (!body) return null;
-  const write = async (next: typeof body, note: string) => {
-    const answer = await store.save("person", next, note);
-    if (!answer.ok) toast.error(answer.error);
-  };
-  return (
-    <>
-      {ids.map((id) => (
-        <OfferRow key={id} icon={<ShellIcon name={icons[id] ?? "Plus"} size={16} strokeWidth={1.75} />} label={`New: ${labels[id]}`}>
-          <Button variant="quiet" disabled={store.saving} onClick={() => void write(acceptNew(body, id, ids, { isAdmin }), `Added ${labels[id]}`)}>
-            Add
-          </Button>
-          <Button variant="quiet" aria-label={`Dismiss ${labels[id]}`} icon={<X />} disabled={store.saving} onClick={() => void write(dismissNew(body, id), `Dismissed ${labels[id]}`)} />
-        </OfferRow>
-      ))}
-    </>
-  );
-}
-
-function OrgUpdatedOffer({ onDismiss }: { onDismiss: () => void }) {
-  const open = useOpenShellLayoutEditor();
-  return (
-    <OfferRow icon={<PanelLeft size={16} strokeWidth={1.75} />} label="Your organization updated its menu">
-      <Button
-        variant="quiet"
-        onClick={() => {
-          onDismiss();
-          open({ region: "sidebar" });
-        }}
-      >
-        Review
-      </Button>
-      <Button variant="quiet" aria-label="Dismiss" icon={<X />} onClick={onDismiss} />
-    </OfferRow>
-  );
+  return <WhatsNewOffers placement="sidebar" />;
 }

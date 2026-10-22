@@ -581,6 +581,7 @@ const GUEST_OK_SINCE_DOMAIN_TREE: readonly string[] = [
   "/marketing/calendar",
   "/marketing/monitoring",
   "/marketing/social",
+  "/marketing/social/videos",
   "/marketing/tools/domain",
   "/medical",
   // The Memory home serves a guest the Knowledge landing, like /knowledge/hub.
