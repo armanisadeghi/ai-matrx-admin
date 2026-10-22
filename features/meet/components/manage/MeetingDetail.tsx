@@ -18,6 +18,7 @@
 // `?at=<original start>` names the occurrence the person came from, so Edit and
 // Cancel can ask "this occurrence or the whole series".
 
+import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -596,52 +597,58 @@ function EmbeddedMeetingBar({
   actions: EntityHeaderAction[];
 }) {
   // ONE row: sections, the state, the everyday buttons (the main action and
-  // Invite / Restore), then every other action in ONE "…" menu. The host names
-  // the meeting, so the strip does not.
+  // Invite / Restore), then every other action in ONE "…" menu. A host that
+  // names the meeting (a Board tile — the shared host chrome) drops the name;
+  // any other host keeps it on the row.
   const visible = actions.filter(
     (a) => a.primary || a.label === "Invite" || a.label === "Restore",
   );
   const overflow = actions.filter((a) => !visible.includes(a));
   return (
-    <div
-      className="flex shrink-0 flex-wrap items-center gap-1 border-b border-border bg-card/60 px-3 py-2"
-      data-meeting-bar=""
+    <HostedRecordBar
+      record={{ token: "meet_meeting", id: meeting.id }}
+      className="gap-1 px-3 py-2"
+      name={<p className="min-w-0 truncate text-sm font-medium text-foreground">{meeting.title}</p>}
+      actions={
+        <>
+          {visible.map((a) => (
+            <Button
+              key={a.label}
+              type="button"
+              variant={a.primary ? "primary" : "outline"}
+              onClick={() => a.onPress?.()}
+            >
+              <a.icon className="h-3.5 w-3.5" aria-hidden="true" />
+              {a.label}
+            </Button>
+          ))}
+          <RecordActionsMenu
+            actions={overflow.map((a) => ({
+              label: a.label,
+              icon: a.icon,
+              onPress: a.onPress,
+              destructive: a.icon === XCircle,
+            }))}
+          />
+        </>
+      }
     >
-      {sections.map((s) => (
-        <Button
-          key={s.key}
-          type="button"
-          variant={s.key === section ? "outline" : "quiet"}
-          aria-pressed={s.key === section}
-          onClick={() => onSection(s.key)}
-        >
-          <s.icon className="h-3.5 w-3.5" aria-hidden="true" />
-          {s.name}
-        </Button>
-      ))}
-      <StatusPill meeting={meeting} live={live} />
-      <div className="ml-auto flex items-center gap-1">
-        {visible.map((a) => (
+      <span className="contents" data-meeting-bar="">
+        {sections.map((s) => (
           <Button
-            key={a.label}
+            key={s.key}
             type="button"
-            variant={a.primary ? "primary" : "outline"}
-            onClick={() => a.onPress?.()}
+            variant={s.key === section ? "outline" : "quiet"}
+            aria-pressed={s.key === section}
+            onClick={() => onSection(s.key)}
           >
-            <a.icon className="h-3.5 w-3.5" aria-hidden="true" />
-            {a.label}
+            <s.icon className="h-3.5 w-3.5" aria-hidden="true" />
+            {s.name}
           </Button>
         ))}
-        <RecordActionsMenu
-          actions={overflow.map((a) => ({
-            label: a.label,
-            icon: a.icon,
-            onPress: a.onPress,
-            destructive: a.icon === XCircle,
-          }))}
-        />
-      </div>
-    </div>
+        <StatusPill meeting={meeting} live={live} />
+      </span>
+    </HostedRecordBar>
   );
 }
 

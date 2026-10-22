@@ -131,6 +131,9 @@ describe("source contract", () => {
     ["Presentation", "office-items.tsx", "presentation", "features/presentations/components/PresentationEditor.tsx"],
     ["Visual map", "platform-items.tsx", "canvas_item", "features/canvas/maps/MapEditor.tsx"],
     ["Knowledge source", "platform-items.tsx", "data_store", "features/rag/components/data-stores/DataStoresPage.tsx"],
+    ["Meeting", "feature-items.tsx", "meet_meeting", "features/meet/components/manage/MeetingDetail.tsx"],
+    ["Sandbox", "platform-items.tsx", "sandbox_instance", "features/code/views/sandboxes/SandboxRecord.tsx"],
+    ["Scope", "scope-items.tsx", "scope", "features/scopes/components/pages/ScopeDetailEditor.tsx"],
     ["Transcript", "transcript-items.tsx", "transcript", "features/transcripts/components/TranscriptViewer.tsx"],
   ];
 

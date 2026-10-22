@@ -141,6 +141,8 @@ One primitive, `features/shell/host-chrome/RecordHostChrome.tsx`. A host (Board 
 - `<HostedRecordBar record name|titleField open actions>{modes, status}</HostedRecordBar>` — the ONE in-body record row (replaced the board's `TileBar` and CRM's `EmbeddedRecordHeader`); empty → no row.
 - `RecordPageHeader` (with `record.token` + `record.id`) and `EditorDocumentHeader` (with `record`) read it: in a host holding that record they draw one compact row of modes/menus/actions, the title in the host slot.
 
+Hosts today: `BoardTile` (every tile), `AdminMeetingDetail` (`host="frame"`). The hosted `RecordPageHeader` overflow is `components/official/RecordActionsMenu` (the same menu the meeting and sandbox bars use).
+
 Baseline of a record header: its modes, its own verbs, its status. Not baseline (the host owns it when present): its name, Open-in-page, back/crumbs, close/focus. Guard: `features/board/__tests__/host-chrome-contract.test.tsx`.
 
 ## A ROUTE CAN OWN CMD+K / CMD+P (2026-10-05)

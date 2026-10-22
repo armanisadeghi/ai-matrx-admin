@@ -39,6 +39,7 @@ import type { Crumb, CrumbOption } from "@/features/shell/components/header/temp
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import { RouteModeNav } from "@/features/shell/components/header/RouteModeNav";
 import { DesktopAction } from "@/features/shell/components/header/templates/EntityModeHeader";
+import { RecordActionsMenu as HostRecordActionsMenu } from "@/components/official/RecordActionsMenu";
 import { HostedRecordBar, useHostChromeFor } from "@/features/shell/host-chrome/RecordHostChrome";
 
 export type { EntityHeaderAction as RecordPageAction } from "@/features/shell/components/header/templates/EntityModeHeader";
@@ -150,7 +151,11 @@ function HostedRecordPageHeader({
             {visible.map((a) => (
               <DesktopAction key={a.label} action={a} />
             ))}
-            {menuItems.length ? <RecordActionsMenu label={menu?.label ?? "Actions"} items={menuItems} /> : null}
+            {/* The one record overflow for a host bar (shared with the meeting and sandbox bars). */}
+            <HostRecordActionsMenu
+              label={menu?.label ?? "Actions"}
+              actions={menuItems.map((item) => ({ label: item.label, icon: item.icon, onPress: item.onPress, destructive: item.destructive, disabled: item.disabled }))}
+            />
           </>
         ) : undefined
       }

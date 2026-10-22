@@ -6,7 +6,8 @@
  * showed its name and status again in a footer strip and kept four loose
  * buttons. Source contract (the real components need a store, a router and a
  * live channel):
- *  - an embedded bar never prints the record's name; the host does;
+ *  - an embedded bar is the shared host bar (`HostedRecordBar`): a host that names the record
+ *    (Board tile, admin frame) drops it — features/shell/host-chrome;
  *  - both fold their secondary actions into the canonical menu
  *    (`RecordActionsMenu` -> v3 `ItemMenu`), never a hand-rolled dropdown;
  *  - the sandbox has no footer strip repeating name / status / time.
@@ -36,7 +37,9 @@ describe("meeting + sandbox one-row chrome", () => {
   it("the embedded meeting bar does not print the meeting name", () => {
     const bar = slice(meeting, "function EmbeddedMeetingBar(");
     const body = bar.slice(0, bar.indexOf("function BriefBlock") > 0 ? bar.indexOf("function BriefBlock") : undefined);
-    expect(body).not.toContain("meeting.title");
+    // The name is the shared host bar's `name`: dropped when the host (Board tile, admin frame) names it.
+    expect(body).toContain("<HostedRecordBar");
+    expect(body).toContain('record={{ token: "meet_meeting", id: meeting.id }}');
     expect(body).toContain("<RecordActionsMenu");
   });
 
@@ -58,7 +61,8 @@ describe("meeting + sandbox one-row chrome", () => {
 
   it("the embedded sandbox bar names nothing and folds actions into the menu", () => {
     const header = slice(sandbox, "function SandboxHeader(");
-    expect(header).toContain("hostNames");
+    expect(header).toContain("<HostedRecordBar");
+    expect(header).toContain('record={{ token: "sandbox_instance", id: recordId }}');
     expect(header).toContain("<RecordActionsMenu");
     expect(header).not.toContain("detailActions");
   });

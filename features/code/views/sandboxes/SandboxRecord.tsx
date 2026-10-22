@@ -1,5 +1,6 @@
 "use client";
 
+import { HostedRecordBar } from "@/features/shell/host-chrome/RecordHostChrome";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
@@ -412,7 +413,7 @@ export function SandboxRecord({
   if (loading) {
     return (
       <SandboxFrame embedded={embedded}>
-        <SandboxHeader embedded={embedded} label="Loading…" />
+        <SandboxHeader embedded={embedded} recordId={id} label="Loading…" />
         <div className={embedded ? "min-h-0 flex-1 overflow-y-auto bg-textured px-4 pt-3 pb-8" : "h-full overflow-y-auto bg-textured px-4 pt-[calc(var(--shell-header-h)+1rem)] pb-8"}>
           <div className="max-w-6xl mx-auto space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -444,7 +445,7 @@ export function SandboxRecord({
   if (!instance) {
     return (
       <SandboxFrame embedded={embedded}>
-        <SandboxHeader embedded={embedded} label="Sandbox" />
+        <SandboxHeader embedded={embedded} recordId={id} label="Sandbox" />
         <div className={embedded ? "min-h-0 flex-1 overflow-hidden bg-textured" : "h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]"}>
           <AccessGate
             token="sandbox_instance"
@@ -628,7 +629,7 @@ export function SandboxRecord({
       <SandboxHeader
         embedded={embedded}
         label={displayName}
-        hostNames
+        recordId={id}
         actions={detailActions}
         right={
           <div className="flex items-center gap-2">
@@ -1169,18 +1170,19 @@ function SandboxFrame({ embedded, children }: { embedded: boolean; children: Rea
 /**
  * The page's header (back, name, status, actions) — or, in a tile, ONE bar:
  * state, the everyday button (Stop) and every other action in ONE "…" menu.
- * A tile's own header names the sandbox (`hostNames`), so the bar does not.
+ * A host that names the sandbox (a Board tile — the shared host chrome) drops the name from the bar.
  */
 function SandboxHeader({
   embedded,
   label,
-  hostNames = false,
+  recordId,
   actions,
   right,
 }: {
   embedded: boolean;
   label: string;
-  hostNames?: boolean;
+  /** The sandbox row id: the host chrome drops the name when its host holds this sandbox. */
+  recordId: string;
   actions?: EntityHeaderAction[];
   right?: ReactNode;
 }) {
@@ -1189,10 +1191,12 @@ function SandboxHeader({
   const visible = all.filter((a) => a.label === "Stop" || a.label === "Stopping…");
   const overflow = all.filter((a) => !visible.includes(a));
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2" data-sandbox-bar>
-      {hostNames ? null : <span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>}
-      {right}
-      <div className="ml-auto flex items-center gap-1">
+    <HostedRecordBar
+      record={{ token: "sandbox_instance", id: recordId }}
+      className="gap-2 bg-card px-3 py-2"
+      name={<span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>}
+      actions={
+        <>
         {visible.map((a) => (
           <Button
             key={a.label}
@@ -1214,7 +1218,10 @@ function SandboxHeader({
             disabled: a.disabled,
           }))}
         />
-      </div>
-    </div>
+        </>
+      }
+    >
+      <span className="contents" data-sandbox-bar="">{right}</span>
+    </HostedRecordBar>
   );
 }

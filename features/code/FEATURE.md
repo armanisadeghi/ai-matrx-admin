@@ -182,6 +182,7 @@ The management list exposes stored template/tier, resources, heartbeat, expiry, 
 ## Change log
 
 - 2026-10-22 — `SandboxRecord` one row of chrome (platform component review): the footer strip that repeated name, status and time is gone (one status chip, in the header); the embedded bar no longer prints the sandbox name (the tile header does), shows Stop and puts +1h / Rename / Delete in the shared `RecordActionsMenu`. Guard: `features/meet/components/manage/__tests__/one-row-chrome.contract.test.ts`.
+- 2026-10-22 — The embedded bar is the shared `HostedRecordBar` (`features/shell/host-chrome`): the name drops when a host that names this sandbox holds it (a Board tile), stays in any other host; the hard-coded `hostNames` flag is gone.
 - **2026-10-02** — **`TerminalTab` runs on `@ai-matrx/terminal`.** xterm creation, fit, refit on reveal, theme, phone touch and the keyboard accessory bar are the package's; this tab keeps only the read-line emulation and the PTY wiring (keystrokes arrive through the package's `onData`, already modified by the bar's Ctrl/Alt; hardware Ctrl-C through `onInterrupt` → the PTY's SIGINT frame; the grid through `onResize`). The whole `/sandbox/[id]` terminal moved onto the same package (`components/sandbox/SandboxConsole.tsx`): output, prompt, command line, history and the agent-staged markers, with the package's line editor as the exec API's line discipline. `TerminalTab`'s read-line emulation is the same editor (`createLineEditor`).
 
 
