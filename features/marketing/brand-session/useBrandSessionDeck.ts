@@ -54,7 +54,7 @@ import {
   type ChoiceRow,
   type FindingAnswer,
 } from "./deck";
-import { answerAudience, correctChoice, decideChoice, loadSession, proposeRewording, type SessionData } from "./service";
+import { answerAudience, correctChoice, decideChoice, loadSession, proposeRewording, sessionPersonId, type SessionData } from "./service";
 
 export const sessionDeckKey = (brandId: string) => [...marketingKeys.root, "brand", brandId, "session-deck"] as const;
 
@@ -270,6 +270,7 @@ export function useBrandSessionDeck(brand: MarketingBrand) {
       await applyDeckOps(ops, {
         decide: decideChoice,
         correct: correctChoice,
+        personId: await sessionPersonId(),
         audience: (row, name, action, origin) => answerAudience(brand.id, row, name, action, origin),
         answerFinding: applyFinding,
         wordsOf: (choiceId) => data?.words.get(choiceId) ?? [],

@@ -21,8 +21,17 @@
 // written for a question until its saved draft has been read, so a reload can
 // never wipe a draft. A refused write is reported to the caller so the screen
 // can say the draft is not kept; the box keeps working either way.
+//
+// A Save can never be undone by a late draft write (REVIEW3, 2026-10-22): every
+// server write runs in order on one queue, and a draft write older than the
+// last clear of its question is dropped — so an upsert still in flight when
+// the person presses Save lands BEFORE the retire, never after it.
+//
+// The mutable state lives in one controller object created once per mount
+// (React Compiler is on: no manual useCallback/useMemo, and no ref writes during
+// render).
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@ai-matrx/chat/host/identity";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -65,43 +74,48 @@ interface Pending {
   userId: string;
   key: string;
   text: string;
+  /** Order of the act: a draft write older than its question's last clear is dropped. */
+  gen: number;
 }
 
-export function useAnswerDraft(
-  interviewId: string | null,
-  questionId: string | null,
-): AnswerDraft {
-  const userId = useAppSelector(selectUserId);
-  const key =
-    interviewId && questionId ? answerDraftKey(interviewId, questionId) : null;
-  const [text, setTextState] = useState("");
-  const [storageError, setStorageError] = useState<string | null>(null);
+interface DraftController {
+  /** Point at a question: flush the previous one's words, then read this one's saved draft. Returns the cleanup. */
+  open: (key: string | null, userId: string | null) => () => void;
+  /** Flush on page hide / unmount. Returns the cleanup. */
+  watchPage: () => () => void;
+  setText: (next: string) => void;
+  clear: () => void;
+}
 
-  const keyRef = useRef<string | null>(key);
-  keyRef.current = key;
-  const userRef = useRef<string | null>(userId);
-  userRef.current = userId;
+function createDraftController(
+  show: (text: string) => void,
+  report: (error: string | null) => void,
+): DraftController {
+  let key: string | null = null;
+  let userId: string | null = null;
   /** The key whose saved draft has been read (writes for it are allowed). */
-  const restoredRef = useRef<string | null>(null);
+  let restored: string | null = null;
   /** The key the person typed into before its read came back. */
-  const typedBeforeRestore = useRef<string | null>(null);
-  const pending = useRef<Pending | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  let typedBeforeRestore: string | null = null;
+  let pending: Pending | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let gen = 0;
+  /** Per question: the order number of its last clear (Save). */
+  const clearedAt = new Map<string, number>();
+  /** Every server write, in order. */
+  let queue: Promise<void> = Promise.resolve();
 
-  const write = useCallback(async (p: Pending) => {
-    const fail = (message: string) => {
-      setStorageError(`${NOT_KEPT} (${message})`);
-    };
+  const fail = (message: string) => report(`${NOT_KEPT} (${message})`);
+
+  const run = async (p: Pending) => {
     if (p.text.length === 0) {
-      const error = await retireSurfaceState({
-        userId: p.userId,
-        feature: ANSWER_DRAFT_FEATURE,
-        surfaceKey: p.key,
-      });
+      const error = await retireSurfaceState({ userId: p.userId, feature: ANSWER_DRAFT_FEATURE, surfaceKey: p.key });
       if (error) fail(error);
-      else setStorageError(null);
+      else report(null);
       return;
     }
+    // Saved (cleared) after these words were typed: never bring the draft back.
+    if ((clearedAt.get(p.key) ?? -1) > p.gen) return;
     let organizationId: string;
     try {
       organizationId = await ensureOrgId(null);
@@ -117,103 +131,112 @@ export function useAnswerDraft(
       state: { text: p.text, at: new Date().toISOString() },
     });
     if (error) fail(error);
-    else setStorageError(null);
-  }, []);
+    else report(null);
+  };
 
-  const flush = useCallback(() => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
+  const write = (p: Pending) => {
+    queue = queue.then(() => run(p)).catch((error: unknown) => fail(error instanceof Error ? error.message : String(error)));
+  };
+
+  const flush = () => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
     }
-    const p = pending.current;
-    pending.current = null;
-    if (p) void write(p);
-  }, [write]);
+    const p = pending;
+    pending = null;
+    if (p) write(p);
+  };
+
+  return {
+    open(nextKey, nextUser) {
+      flush();
+      key = nextKey;
+      userId = nextUser;
+      show("");
+      if (!nextKey || !nextUser) return () => {};
+      let live = true;
+      typedBeforeRestore = null;
+      void readSurfaceState({ userId: nextUser, feature: ANSWER_DRAFT_FEATURE, surfaceKey: nextKey })
+        .then((row) => {
+          if (!live) return;
+          restored = nextKey;
+          // Words typed while the read was in flight win: they are newer.
+          if (typedBeforeRestore === nextKey) {
+            if (pending && pending.key === nextKey) {
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(flush, ANSWER_DRAFT_DEBOUNCE_MS);
+            }
+            return;
+          }
+          show(draftTextOf(row?.state));
+        })
+        .catch((error: unknown) => {
+          if (!live) return;
+          // The saved draft could not be read; writing now could overwrite it,
+          // so this question's draft stays local and the screen says so.
+          fail(error instanceof Error ? error.message : String(error));
+        });
+      return () => {
+        live = false;
+      };
+    },
+    watchPage() {
+      const onHide = () => {
+        if (document.visibilityState === "hidden") flush();
+      };
+      document.addEventListener("visibilitychange", onHide);
+      window.addEventListener("pagehide", flush);
+      return () => {
+        document.removeEventListener("visibilitychange", onHide);
+        window.removeEventListener("pagehide", flush);
+        flush();
+      };
+    },
+    setText(next) {
+      show(next);
+      if (!key || !userId) return;
+      gen += 1;
+      pending = { userId, key, text: next, gen };
+      if (restored !== key) {
+        typedBeforeRestore = key;
+        return;
+      }
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(flush, ANSWER_DRAFT_DEBOUNCE_MS);
+    },
+    clear() {
+      show("");
+      if (!key || !userId) return;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      pending = null;
+      typedBeforeRestore = null;
+      gen += 1;
+      clearedAt.set(key, gen);
+      write({ userId, key, text: "", gen });
+    },
+  };
+}
+
+export function useAnswerDraft(
+  interviewId: string | null,
+  questionId: string | null,
+): AnswerDraft {
+  const userId = useAppSelector(selectUserId);
+  const key =
+    interviewId && questionId ? answerDraftKey(interviewId, questionId) : null;
+  const [text, setTextState] = useState("");
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const [draft] = useState(() => createDraftController(setTextState, setStorageError));
 
   // Restore on question change: flush the previous question's pending words
   // first, then read this one's saved draft. A missing row is an empty box.
-  useEffect(() => {
-    flush();
-    setTextState("");
-    if (!key || !userId) return;
-    let live = true;
-    typedBeforeRestore.current = null;
-    void readSurfaceState({
-      userId,
-      feature: ANSWER_DRAFT_FEATURE,
-      surfaceKey: key,
-    })
-      .then((row) => {
-        if (!live) return;
-        restoredRef.current = key;
-        // Words typed while the read was in flight win: they are newer.
-        if (typedBeforeRestore.current === key) {
-          const p = pending.current;
-          if (p && p.key === key) {
-            if (timer.current) clearTimeout(timer.current);
-            timer.current = setTimeout(flush, ANSWER_DRAFT_DEBOUNCE_MS);
-          }
-          return;
-        }
-        setTextState(draftTextOf(row?.state));
-      })
-      .catch((error: unknown) => {
-        if (!live) return;
-        // The saved draft could not be read; writing now could overwrite it,
-        // so this question's draft stays local and the screen says so.
-        setStorageError(
-          `${NOT_KEPT} (${error instanceof Error ? error.message : String(error)})`,
-        );
-      });
-    return () => {
-      live = false;
-    };
-  }, [key, userId, flush]);
-
+  useEffect(() => draft.open(key, userId), [draft, key, userId]);
   // Unmount and a hidden page flush what is pending.
-  useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === "hidden") flush();
-    };
-    document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("pagehide", flush);
-    return () => {
-      document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("pagehide", flush);
-      flush();
-    };
-  }, [flush]);
+  useEffect(() => draft.watchPage(), [draft]);
 
-  const setText = useCallback(
-    (next: string) => {
-      setTextState(next);
-      const k = keyRef.current;
-      const u = userRef.current;
-      if (!k || !u) return;
-      pending.current = { userId: u, key: k, text: next };
-      if (restoredRef.current !== k) {
-        typedBeforeRestore.current = k;
-        return;
-      }
-      if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(flush, ANSWER_DRAFT_DEBOUNCE_MS);
-    },
-    [flush],
-  );
-
-  const clear = useCallback(() => {
-    setTextState("");
-    const k = keyRef.current;
-    const u = userRef.current;
-    if (!k || !u) return;
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-    }
-    pending.current = null;
-    typedBeforeRestore.current = null;
-    void write({ userId: u, key: k, text: "" });
-  }, [write]);
-
-  return { text, setText, clear, storageError };
+  return { text, setText: draft.setText, clear: draft.clear, storageError };
 }

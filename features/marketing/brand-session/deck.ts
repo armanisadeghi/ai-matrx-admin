@@ -137,6 +137,8 @@ export interface ChoiceRow {
   decision_reason: string | null;
   organization_id: string;
   created_at: string;
+  /** Who wrote the row (a stance answer's author: only they can withdraw it). */
+  created_by?: string | null;
 }
 
 const ORIGIN_TAG: Record<string, string> = {
@@ -303,6 +305,12 @@ export function stanceAnswersOf(aiId: string, rows: readonly ChoiceRow[]): Choic
   return rows.filter((r) => r.origin === "said" && isJsonRecord(r.value) && (r.value as Record<string, Json>).answer_to === aiId);
 }
 
+/** The person's own answers that are still live (chosen or parked, never superseded): the ones a new answer withdraws. */
+export function ownLiveAnswers(answers: readonly ChoiceRow[], personId: string | null | undefined): ChoiceRow[] {
+  if (!personId) return [];
+  return answers.filter((a) => a.decision !== "superseded" && a.created_by === personId);
+}
+
 /** A stance card's answer: the person's live answer row (chosen first, newest), else not sure when parked. */
 export function answerOfStance(ai: ChoiceRow, answers: readonly ChoiceRow[]): StanceAnswer | "not_sure" | null {
   const live = [...answers].filter((r) => r.decision === "chosen" || r.decision === "superseded").sort((a, b) => (a.decision === "chosen" ? -1 : 0) - (b.decision === "chosen" ? -1 : 0) || b.created_at.localeCompare(a.created_at));
@@ -464,7 +472,7 @@ export interface DeckDoors {
   decide: (choiceId: string, action: DecideAction) => Promise<DecideOutcome | void>;
   correct: (choiceId: string, value: Record<string, Json>, action: Placement | null) => Promise<unknown>;
   /** A brand's answer about an audience category (added when new); its category's id. */
-  audience: (row: string, name: string, action: Placement | "retract" | null, origin: "said" | "ai") => Promise<{ category_id: string }>;
+  audience: (row: string, name: string, action: Placement | "retract" | null, origin: "said" | "team") => Promise<{ category_id: string }>;
   answerFinding: (itemId: string, answer: FindingAnswer | null) => Promise<void>;
   /** The person's word rows on a candidate, as stored. */
   wordsOf: (choiceId: string) => readonly WordRow[];
@@ -472,6 +480,8 @@ export interface DeckDoors {
   textOf: (itemId: string) => string;
   /** The card's seeded parts (the curator's word check). */
   seedsOf?: (itemId: string) => readonly DeckPart[];
+  /** The signed-in person: a stance answer withdraws only THEIR earlier answer (the door refuses anyone else's). */
+  personId?: string | null;
   /** A stance card's agent row, and the person's live answer rows about it. */
   stanceOf?: (aiId: string) => { ai: ChoiceRow; answers: readonly ChoiceRow[] } | null;
   /** An audience card: its row, name and whether it is a suggestion nobody answered yet. */
@@ -492,8 +502,8 @@ const choiceIdOf = (itemId: string) => itemId.slice(CHOICE_PREFIX.length);
 
 /**
  * Every deck op, in order, through its one door:
- * - a stance answer becomes the person's own A3 row (their earlier answer is withdrawn first, which restores what it
- *   had replaced); not sure parks the agent's row;
+ * - a stance answer becomes the person's own A3 row (their OWN earlier answer is withdrawn first, which restores what
+ *   it had replaced; a colleague's answer is superseded by the new one in the database); not sure parks the agent's row;
  * - an audience answer (card or category op) goes through the audience door;
  * - a choice answer is placed (or retracted when taken back); a pick card is shortlisted, declined or parked; the pick
  *   chooses (switching it shortlists the previous pick back first); a group answered down to one "could be it" picks
@@ -528,7 +538,9 @@ export async function applyDeckOps(ops: readonly DeckOp[], doors: DeckDoors): Pr
         const aiId = op.itemId.slice(STANCE_PREFIX.length);
         const st = doors.stanceOf?.(aiId);
         if (!st) throw new Error("This stance is no longer on the brand.");
-        for (const a of st.answers) if (a.decision !== "superseded") await doors.decide(a.id, "withdraw");
+        // Only the person's OWN live answer is withdrawn (web.brand_choice_decide refuses another person's words); a
+        // colleague's answer is superseded by the new one in the database (single per offering, REVIEW3 I2).
+        for (const a of ownLiveAnswers(st.answers, doors.personId)) await doors.decide(a.id, "withdraw");
         if (op.answer === "not_sure") {
           if (st.ai.decision !== "parked") await doors.decide(aiId, "not_sure");
         } else {
@@ -542,7 +554,8 @@ export async function applyDeckOps(ops: readonly DeckOp[], doors: DeckDoors): Pr
         const a = doors.audienceOf?.(op.itemId);
         if (!a) throw new Error("This audience category is no longer on the brand.");
         if (op.answer !== null && !isPlacement(op.answer)) throw new Error(`An audience category cannot be "${op.answer}".`);
-        await doors.audience(a.row, a.name, op.answer ?? "retract", a.suggested ? "ai" : "said");
+        // The person's answer is their own words, even on a suggested category (the door refuses origin ai).
+        await doors.audience(a.row, a.name, op.answer ?? "retract", "said");
       } else if (op.itemId.startsWith(CHOICE_PREFIX)) {
         const id = choiceIdOf(op.itemId);
         const group = groupOf(op.itemId);
