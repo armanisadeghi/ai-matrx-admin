@@ -14,6 +14,8 @@ import { pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manife
 const values: SurfaceValue[] = pickBaseline("content", "context");
 
 export const defaultBasicContentDisplayManifest: SurfaceManifest = {
+  situation:
+    "{user.name|The person} is in AI Matrx, looking at content in a viewer that any page can open; the content is in your context.",
   surfaceName: "matrx-default/basic-content-display",
   client: "matrx-default",
   executor: "aidream",

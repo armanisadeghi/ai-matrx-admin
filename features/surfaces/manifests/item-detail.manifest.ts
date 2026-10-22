@@ -140,6 +140,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const itemDetailManifest: SurfaceManifest = {
+  situation:
+    "{user.name|The person} is in AI Matrx with a record open in the detail view that shows any kind of item: the {item_label} \"{item_title}\" ({record_status}). Note from whoever opened it: {item_about|none}. Its {field_count} filled-in fields are in your context as readable text.",
   surfaceName: ITEM_DETAIL_SURFACE_NAME,
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

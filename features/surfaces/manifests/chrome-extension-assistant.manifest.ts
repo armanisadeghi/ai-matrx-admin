@@ -14,6 +14,8 @@ import { pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manife
 const values: SurfaceValue[] = pickBaseline("selection", "content", "context");
 
 export const chromeExtensionAssistantManifest: SurfaceManifest = {
+  situation:
+    "{user.name|The person} is in the AI Matrx Chrome extension, using its Assistant side panel beside the web page they are browsing. Any text they have selected and the content the panel shares are in your context.",
   surfaceName: "chrome-extension/assistant",
   client: "chrome-extension",
   executor: "chrome-extension",

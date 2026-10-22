@@ -14,6 +14,8 @@ import { pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manife
 const values: SurfaceValue[] = pickBaseline("selection", "text_before", "text_after", "content");
 
 export const defaultBasicEditorManifest: SurfaceManifest = {
+  situation:
+    "{user.name|The person} is in AI Matrx, editing text in an editor that any page can open; the full text, what they have selected, and the text just before and after it are in your context.",
   surfaceName: "matrx-default/basic-editor",
   client: "matrx-default",
   executor: "aidream",
