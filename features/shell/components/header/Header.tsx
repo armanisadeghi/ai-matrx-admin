@@ -25,12 +25,11 @@ interface HeaderProps {
  */
 export default function Header({ isAuthenticated }: HeaderProps) {
   return (
-    <header className="shell-header">
+    <header className="shell-header" suppressHydrationWarning>
       <LoadMark name="Header" />
       <div className="shell-header-fade" data-shell-header-fade aria-hidden="true" />
       <HamburgerButton />
       {isAuthenticated ? <ShellChatToggle /> : <GuestBrand />}
-      <HeaderCrowdingGuard />
 
       <div className="shell-header-center" id="shell-header-center" />
 
@@ -39,6 +38,8 @@ export default function Header({ isAuthenticated }: HeaderProps) {
         {isAuthenticated ? null : <GuestSignIn />}
         <HeaderControlSet isAuthenticated={isAuthenticated} />
       </div>
+      {/* Last: its pre-paint script needs the center and the right set parsed (header-crowding.ts). */}
+      <HeaderCrowdingGuard />
     </header>
   );
 }

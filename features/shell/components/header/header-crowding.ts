@@ -35,15 +35,59 @@
  * If folding is not enough either, the header carries `data-header-overdrawn`
  * and the console says which route and by how much — never a silent overlap.
  *
+ * DECIDED BEFORE THE FIRST PAINT (CLOSE-PERF, CD-PERF-01, 2026-10-21). The guard used
+ * to start in a React effect, after hydration, so a route header too wide for its row
+ * painted first and the shell folded a second later: at 768px every /data/<table>
+ * visit moved the five controls (195px) into the ⋮ (43px) and then re-folded the
+ * route's own actions — CLS 0.0018 + 0.0011 for admin and member. Now
+ * `HEADER_CROWDING_PREPAINT` installs this same function while the HTML parses
+ * (right after the header's markup), it measures the server-rendered route header's
+ * GHOST (`ServerRenderedHeaderSlot`, laid over the center before hydration) as well
+ * as the center itself, and the ghost script asks it to decide again in the same
+ * frame it draws a ghost. The hydrated `HeaderCrowdingGuard` adopts the installed
+ * guard instead of starting a second one. Guard:
+ * `features/shell/layout-gate/header-folds-before-first-paint.spec.ts`.
+ *
  * SELF-CONTAINED ON PURPOSE: the layout gate
  * (`features/shell/layout-gate/header-never-overdraws-route-controls.spec.ts`)
  * ships this exact function into a real Chromium via `toString()`, so it may
  * reference nothing outside its own body.
  */
-export function installHeaderCrowdingGuard(header: HTMLElement): () => void {
-  const center = header.querySelector<HTMLElement>(".shell-header-center");
+export function installHeaderCrowdingGuard(
+  header: HTMLElement,
+  /** The route's slot inside `header` (the new app frame passes `#frame-header-center`). */
+  centerSelector: string = ".shell-header-center",
+): () => void {
+  // ONE GUARD PER HEADER: the pre-paint script installed it while the HTML parsed; the hydrated
+  // component adopts it (and its disposer) instead of observing everything twice.
+  type Handle = { evaluate: () => void; dispose: () => void };
+  const host = header as HTMLElement & { __matrxCrowding?: Handle };
+  if (host.__matrxCrowding) {
+    host.__matrxCrowding.evaluate();
+    return host.__matrxCrowding.dispose;
+  }
+  const center = header.querySelector<HTMLElement>(centerSelector);
   const right = header.querySelector<HTMLElement>("[data-header-right-set]");
   if (!center) return () => {};
+
+  // The server-rendered route header before hydration: body-level ghost layers laid over a slot of
+  // this header (ServerRenderedHeaderSlot). The center's ghost is the route header the person sees.
+  type Ghost = HTMLElement & { __matrxTarget?: HTMLElement };
+  const ghosts = () =>
+    [...document.querySelectorAll<Ghost>("matrx-header-ghost")].filter(
+      (g) => g.__matrxTarget != null && header.contains(g.__matrxTarget),
+    );
+  // A fold changes the slots' boxes; a ghost follows its slot in the same frame (the ghost script's
+  // own lay-out rule: a right ghost sits on the slot's vertical middle).
+  const relayGhosts = () => {
+    for (const g of ghosts()) {
+      const r = g.__matrxTarget!.getBoundingClientRect();
+      g.style.display = r.width ? "" : "none";
+      g.style.left = `${r.left}px`;
+      g.style.top = `${r.top + (g.className.indexOf("right") > -1 ? r.height / 2 : 0)}px`;
+      g.style.width = `${r.width}px`;
+    }
+  };
 
   // Below this, the route's own row cannot hold a title or a mode switch beside
   // the shell's five controls: fold them into the one ⋮.
@@ -73,14 +117,18 @@ export function installHeaderCrowdingGuard(header: HTMLElement): () => void {
         if (style.display === "none" || style.position === "absolute" || style.position === "fixed") return [];
         return [child];
       });
-    const holders = [center, ...center.querySelectorAll<HTMLElement>("*")];
+    const roots: HTMLElement[] = [
+      center,
+      ...ghosts().filter((g) => g.__matrxTarget === center && g.childElementCount > 0),
+    ];
+    const holders = roots.flatMap((root) => [root, ...root.querySelectorAll<HTMLElement>("*")]);
     for (const holder of holders) {
       // Inside a box that clips, nothing can paint over a neighbour.
       if (holder.parentElement && clipped.has(holder.parentElement)) {
         clipped.add(holder);
         continue;
       }
-      if (holder !== center && getComputedStyle(holder).overflowX !== "visible") {
+      if (!roots.includes(holder) && getComputedStyle(holder).overflowX !== "visible") {
         clipped.add(holder);
         continue;
       }
@@ -95,13 +143,27 @@ export function installHeaderCrowdingGuard(header: HTMLElement): () => void {
     return worst > 0.5 ? Math.ceil(worst) : 0;
   };
 
+  // BETWEEN TWO ROUTE HEADERS THE DECISION STANDS (CD-PERF-01): when one route header leaves and the
+  // next has not mounted yet (a skeleton's header giving way to the page's, a client navigation), the
+  // center is empty for a frame or a second. Un-folding for that gap and folding again when the page's
+  // header lands moved the five controls twice. At the same header width, an empty center keeps the
+  // decision; a new width always decides again.
+  let decidedAt = -1;
+  const centerIsEmpty = () =>
+    center.childElementCount === 0 &&
+    !ghosts().some((g) => g.__matrxTarget === center && g.childElementCount > 0);
+
   const evaluate = () => {
     frame = 0;
+    const width = Math.round(header.getBoundingClientRect().width);
+    if (width === decidedAt && centerIsEmpty()) return;
+    decidedAt = width;
     // Un-crowd first so the measurement answers "does it fit with the words?"
     // — the only way to ever give the words back after a window widens.
     header.removeAttribute("data-header-crowded");
     header.removeAttribute("data-header-overdrawn");
     header.removeAttribute("data-header-folded");
+    relayGhosts();
     // The center's width depends only on the header and the right set (the
     // center is `flex: 1; min-width: 0`), never on the route's content, so
     // this choice cannot oscillate with the route's own collapse.
@@ -109,12 +171,15 @@ export function installHeaderCrowdingGuard(header: HTMLElement): () => void {
     if (center.getBoundingClientRect().width < FOLD_BELOW_CENTER_PX) {
       header.setAttribute("data-header-folded", "");
       folded = true;
+      relayGhosts();
     }
     if (overflowOf() <= 0) return;
     header.setAttribute("data-header-crowded", "");
+    relayGhosts();
     let still = overflowOf();
     if (still > 0 && !folded) {
       header.setAttribute("data-header-folded", "");
+      relayGhosts();
       still = overflowOf();
     }
     if (still <= 0) return;
@@ -161,12 +226,23 @@ export function installHeaderCrowdingGuard(header: HTMLElement): () => void {
   observeContent();
   evaluate();
 
-  return () => {
+  const dispose = () => {
     if (frame) cancelAnimationFrame(frame);
     resize.disconnect();
     mutation.disconnect();
+    if (host.__matrxCrowding?.dispose === dispose) delete host.__matrxCrowding;
     header.removeAttribute("data-header-crowded");
     header.removeAttribute("data-header-overdrawn");
     header.removeAttribute("data-header-folded");
   };
+  host.__matrxCrowding = { evaluate, dispose };
+  return dispose;
 }
+
+/**
+ * The pre-paint install: an inline script placed right after the shell header's markup (so its
+ * center and right set exist) runs the guard above before any bundle, and before the ghost script
+ * draws the server-rendered route header. ES2020 source, no dependency (the function is
+ * self-contained).
+ */
+export const HEADER_CROWDING_PREPAINT = `(function(s){try{var h=s&&s.closest(".shell-header");if(h&&!h.__matrxCrowding)(${installHeaderCrowdingGuard.toString()})(h)}catch(e){}})(document.currentScript);`;

@@ -32,6 +32,7 @@ import type { RecordFilter } from "@ai-matrx/records";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useYieldedFallback } from "@/features/shell/components/header/useYieldedFallback";
 import { TableFavoriteStar } from "./TableFavoriteStar";
+import { DataRouteFallbackHeader } from "@/features/unified-data/page-seed/TableRouteSkeleton";
 import { TableAccessBar } from "./TableAccessBar";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TableSwitcher } from "@/features/unified-data/components/TableSwitcher";
@@ -334,17 +335,7 @@ export function UnifiedDataTablePage({ tableId }: { tableId: string }) {
       {/* THE BODY IS BOUNDED (core-route-headers): the table page fills it, so a sticky footer
           has a height to sit at the bottom of; the states before the table opens scroll. */}
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
-        {mount.mountsTheTable ? null : (
-          <RouteHeader
-            fallback
-            left={
-              <>
-                <ChevronLeftTapButton variant="transparent" href="/data" ariaLabel="Back to your tables" />
-                <span className="truncate px-1.5 text-sm font-medium text-foreground">Data</span>
-              </>
-            }
-          />
-        )}
+        {mount.mountsTheTable ? null : <DataRouteFallbackHeader />}
         {/* While the table is still being found it already sits in the table's own padding: the
             page skeleton is drawn where the table will be (STABLE-TABLES). */}
         <div className={mount.mountsTheTable || mount.object.state === "resolving" ? "h-full overflow-y-auto px-3 pb-2 pt-1" : "h-full overflow-y-auto p-4"}>
