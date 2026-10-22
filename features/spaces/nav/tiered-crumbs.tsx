@@ -13,6 +13,7 @@ import type { SpaceSummary } from "../contract";
 import { databasesOfPage, spaceHref } from "./page-databases";
 import { SpaceIcon } from "../page/SpaceIcon";
 import { useSpaces } from "../state/SpacesProvider";
+import { useCrumbPathPending } from "./crumb-path";
 
 const pageItem = (page: SpaceSummary, currentId: string): TieredItem => ({
   id: page.id,
@@ -24,6 +25,7 @@ const pageItem = (page: SpaceSummary, currentId: string): TieredItem => ({
 
 export function SpacesTieredBreadcrumb({ path, className }: { path: readonly SpaceSummary[]; className?: string }) {
   const { store, childrenOf, byId } = useSpaces();
+  const pending = useCrumbPathPending(path);
   const segments: TieredSegment[] = path.map((page) => ({
     id: page.id,
     label: page.title || "Untitled",
@@ -39,7 +41,7 @@ export function SpacesTieredBreadcrumb({ path, className }: { path: readonly Spa
   }));
   return (
     <TieredBreadcrumb
-      className={className}
+      className={pending ? `${className ?? ""} spaces-crumbs-pending` : className}
       segments={segments}
       segmentClassName="spaces-breadcrumb-item"
       separatorClassName="spaces-breadcrumb-sep"

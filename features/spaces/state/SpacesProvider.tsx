@@ -120,6 +120,9 @@ interface SpacesContextValue {
   loadChildren: (parentId: SpaceId) => Promise<void>;
   /** Load a page and its ancestors into the tree (the open page, a search hit) when it is not there yet. */
   reveal: (id: SpaceId) => void;
+  /** The page's whole path is in the tree, or its reveal has answered (or the tree could not load): a breadcrumb
+   *  draws then, never before. Absent on a read-only screen, which carries every page it shows. */
+  pathSettled?: (id: SpaceId) => boolean;
   byId: Map<SpaceId, SpaceSummary>;
   childrenOf: (parentId: SpaceId | null) => SpaceSummary[];
   pathTo: (id: SpaceId) => SpaceSummary[];
@@ -366,6 +369,11 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     return Boolean(cur);
   };
   const revealing = useRef(new Set<SpaceId>());
+  // CD-PERF-02 (CLOSE-PERF r4): the pages whose reveal has answered (rows or a refusal). A breadcrumb holds its
+  // crumbs until the page's path is known or its reveal answered, so ancestors never arrive after paint and push
+  // the trail sideways (measured 0.0004-0.0006 on a sub-page at 375/768/1600).
+  const [revealAnswered, setRevealAnswered] = useState<ReadonlySet<SpaceId>>(() => new Set());
+  const markRevealAnswered = (id: SpaceId) => setRevealAnswered((prev) => (prev.has(id) ? prev : new Set([...prev, id])));
   const reveal = (id: SpaceId) => {
     if (!ready || pathKnown(id) || revealing.current.has(id)) return;
     revealing.current.add(id);
@@ -373,13 +381,16 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       (rows) => {
         const added = rows.filter((r) => r.parentId);
         mergeRows(added, [...new Set(added.map((r) => r.parentId as string))]);
+        markRevealAnswered(id);
       },
       (err: unknown) => {
         revealing.current.delete(id);
+        markRevealAnswered(id);
         console.error("[spaces] a page's place in the tree could not be read", err);
       },
     );
   };
+  const pathSettled = (id: SpaceId) => pathKnown(id) || revealAnswered.has(id) || loadError !== null;
   const childrenOf = (parentId: SpaceId | null) => visible.filter((s) => s.parentId === parentId).sort(byPosition);
   const pathTo = (id: SpaceId) => {
     const out: SpaceSummary[] = [];
@@ -716,6 +727,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     childrenLoaded: (parentId) => loadedParents.has(parentId),
     loadChildren,
     reveal,
+    pathSettled,
     byId: visibleById,
     childrenOf,
     pathTo,
