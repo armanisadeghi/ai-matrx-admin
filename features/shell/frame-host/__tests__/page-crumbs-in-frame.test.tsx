@@ -88,16 +88,18 @@ function FrameHarness({ children }: { children: React.ReactNode }) {
   );
 }
 
-let root: Root;
+let root: Root | undefined;
 let el: HTMLElement;
 function mount(node: React.ReactNode) {
   el = document.createElement("div");
   document.body.appendChild(el);
-  root = createRoot(el);
-  act(() => root.render(<TooltipProvider>{node}</TooltipProvider>));
+  const r = createRoot(el);
+  root = r;
+  act(() => r.render(<TooltipProvider>{node}</TooltipProvider>));
 }
 afterEach(() => {
-  act(() => root.unmount());
+  if (root) act(() => root!.unmount());
+  root = undefined;
   document.body.innerHTML = "";
 });
 
@@ -138,7 +140,7 @@ describe("page-top templates in the new app frame", () => {
       return <FrameHarness>{on ? <Record /> : null}</FrameHarness>;
     }
     mount(<Toggle on />);
-    act(() => root.render(<TooltipProvider><Toggle on={false} /></TooltipProvider>));
+    act(() => root!.render(<TooltipProvider><Toggle on={false} /></TooltipProvider>));
     expect(el.querySelector("[data-frame-crumbs] h1")?.textContent).toBe("Route title");
   });
 

@@ -113,6 +113,12 @@ them would pull the app's client graph into the fast lab build; parity is proven
 - **Layer 2:** the header carries `#frame-header-center` / `#frame-header-right`, first in
   `HEADER_SLOT_TARGETS`; the derived crumbs are the center's `fallback` and hide when a page's
   own header content lands (legacy-contracts.css).
+- **Layer 1 (page crumbs):** a page-top template (`EntityModeHeader` / `RecordPageHeader`,
+  `CrumbTrailHeader`, `DerivedBreadcrumb`) declares its real trail through
+  `frame-host/framePageHeader.ts` (`useDeclareFrameCrumbs`; FrameHostImpl provides the host) and
+  draws only its status, modes and actions in the slot; the frame's crumbs become the page's
+  (product icon first, repeated levels dropped), else the route table's. No host = classic,
+  unchanged. Test `frame-host/__tests__/page-crumbs-in-frame.test.tsx`.
 - **Page contract:** the body is a `.shell-main` scroller (runway rules apply as written);
   `--shell-header-h: 0`, `--header-height` = the frame's chrome. Side chat and canvas show as
   disabled toggles ("comes … in the next step") until P3.
@@ -277,6 +283,9 @@ the canvas and the ask bar, the per-page memory and the link, the forms and canv
 ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
+
+- 2026-10-22 (Layer 1): page-top templates hand their trail to the frame (title once, real
+  crumbs); classic untouched. The star is the pin (`useFramePins`, on `usePinned`).
 
 - 2026-10-22: Sidebar. (1) A resize drag always ends: window listeners plus pointer capture, and
   pointerup, pointercancel, lostpointercapture, window blur, Escape, the handle unmounting and a new
