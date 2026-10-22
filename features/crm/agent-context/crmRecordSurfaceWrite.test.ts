@@ -4,6 +4,8 @@ import {
   parseEmployment,
   parseIdentityFields,
   parseInteraction,
+  taskAttachEdge,
+  taskAttachFailureMessage,
 } from "./crmRecordSurfaceWrite";
 
 describe("CRM record surface write validation", () => {
@@ -83,5 +85,26 @@ describe("CRM record surface write validation", () => {
     expect(() =>
       parseInteraction({ channel: "call", direction: "outbound" }),
     ).toThrow(/requires a subject or body/);
+  });
+
+  it("files a created task along the registered party -> task edge", () => {
+    expect(taskAttachEdge("party-1", "task-1", "org-1")).toEqual({
+      sourceType: "party",
+      sourceId: "party-1",
+      targetType: "task",
+      targetId: "task-1",
+      orgId: "org-1",
+    });
+  });
+
+  it("names the created task id when the attach fails", () => {
+    const message = taskAttachFailureMessage(
+      { id: "f45de2d9-2515-4369-90c0-88925140f296", title: "Call back" },
+      "Acme",
+      "association direction is wrong",
+    );
+    expect(message).toContain("f45de2d9-2515-4369-90c0-88925140f296");
+    expect(message).toMatch(/was created but could not be attached to Acme/);
+    expect(message).toContain("association direction is wrong");
   });
 });
