@@ -40,7 +40,7 @@ state and never change the loaded health totals. The canonical read-only menu us
 product; it reads current scope without another request. Four primitive agent view targets
 change the existing parent-controlled segment searches; mapping records remain read-only because
 this page has no create/edit/delete mapping action. `page_overview` is the bounded XML summary;
-full mapping arrays remain lookup values. Guide: `features/surfaces/guides/admin-sync-fleet.md`.
+full mapping arrays remain lookup values. Guide: `features/surfaces/guides/sync-fleet.md`.
 This page has no fixed AI worker. Keep readiness partial pending browser proof, header source mapping and
 independent certification.
 
