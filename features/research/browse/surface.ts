@@ -27,11 +27,18 @@ import {
   parseDeleteTopics,
   parseUpdateTopics,
   parseListView,
+  rememberTouchedTopic,
+  rowsWithTouched,
   type CreatePlan,
+  type TouchedTopics,
   type UpdatePlan,
 } from "./topicAgentWrites";
 
 type List = EntityListSurfaceController<ResearchTopicListRow>;
+
+// Topics this tab's agent writes changed (restored, archived, renamed), kept so
+// a topic that just left the visible list can still be acted on by id.
+const TOUCHED_TOPICS: TouchedTopics = new Map();
 
 // ── Read half ────────────────────────────────────────────────────────────────
 
@@ -114,7 +121,8 @@ export function createResearchTopicsWriteHandlers(list: List) {
               : undefined,
       },
       update: {
-        parse: (value: unknown) => parseUpdateTopics(value, list.rows),
+        parse: (value: unknown) =>
+          parseUpdateTopics(value, rowsWithTouched(list.rows, TOUCHED_TOPICS)),
         run: async (plan: UpdatePlan) => {
           if (plan.name !== undefined || plan.description !== undefined)
             await updateTopicMeta(plan.id, {
@@ -125,6 +133,10 @@ export function createResearchTopicsWriteHandlers(list: List) {
             await updateTopic(plan.id, { autonomy_level: plan.autonomy_level });
           if (plan.archived === true) await archiveTopic(plan.id);
           if (plan.archived === false) await restoreTopic(plan.id);
+          const before = rowsWithTouched(list.rows, TOUCHED_TOPICS).find(
+            (r) => r.id === plan.id,
+          );
+          if (before) rememberTouchedTopic(TOUCHED_TOPICS, before, plan);
           list.refresh();
           return { id: plan.id, name: plan.name ?? plan.previousName };
         },
@@ -132,11 +144,13 @@ export function createResearchTopicsWriteHandlers(list: List) {
         changedOf: (plan: UpdatePlan) => plan.changed,
       },
       delete: {
-        parse: (value: unknown) => parseDeleteTopics(value, list.rows),
+        parse: (value: unknown) =>
+          parseDeleteTopics(value, rowsWithTouched(list.rows, TOUCHED_TOPICS)),
         run: async (row: ResearchTopicListRow) => {
           // A person's records are archived, never destroyed: delete_topics
           // ARCHIVES (restorable with update_topics archived:false).
           await archiveTopic(row.id);
+          rememberTouchedTopic(TOUCHED_TOPICS, row, { archived: true });
           list.removeRow(row.id);
           return { id: row.id, name: row.name };
         },
