@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
     // Organization admission for the JWT download probe — the requester's own
     // active organization, forwarded by the admin page. Never resolved here.
     const organizationId =
-      request.headers.get(MATRX_HEADERS.organization) ??
       request.headers.get(MATRX_HEADERS.organization);
 
     const report = await runIntegrityChecks(
