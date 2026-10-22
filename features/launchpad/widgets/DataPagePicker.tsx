@@ -10,7 +10,7 @@ import { clientInOrganization } from "@ai-matrx/records/core";
 import type { DashboardSummary } from "@ai-matrx/records";
 import { isInterface, isPage } from "@ai-matrx/records-ui/helpers";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
-import { Select } from "@ai-matrx/design-system/controls";
+import { OptionCombobox, Select } from "@ai-matrx/design-system/controls";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { createDataHomeCorpus } from "@/features/unified-data/home/dataHomeCorpus";
 import type { DataHomeRow } from "@/features/unified-data/home/dataHomeRows";
@@ -66,13 +66,19 @@ export function DataTablePicker({ value, onChange }: { value: string; onChange: 
     );
   }
   const options = value && !choices.some((c) => c.value === value) ? [{ value, label: "Current table" }, ...choices] : choices;
+  const byId = new Map(options.map((o) => [o.value, o]));
+  // A person reaches hundreds of tables (1,391 for the test admin): searchable, never a scrolled menu.
   return (
-    <Select
-      aria-label="Table"
+    <OptionCombobox
+      ariaLabel="Table"
       value={value}
       disabled={!state.rows}
-      options={state.rows ? options : [{ value, label: "Loading tables" }]}
-      onValueChange={onChange}
+      options={options.map((o) => o.value)}
+      getLabel={(id) => byId.get(id)?.label ?? "Current table"}
+      getHint={(id) => byId.get(id)?.meta}
+      placeholder={state.rows ? "Choose a table" : "Loading tables"}
+      searchPlaceholder="Search tables"
+      onChange={onChange}
     />
   );
 }
