@@ -38,6 +38,7 @@ import { GuidedChecklist } from "@/lib/guided-setup/components/GuidedChecklist";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { useSendingIdentity } from "@/features/crm/sending-identities/hooks";
+import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { sendingIdentityChecklist } from "@/features/crm/sending-identities/sendingIdentityChecklist";
 import { STATUS_COPY } from "@/features/crm/sending-identities/types";
 import type {
@@ -121,7 +122,34 @@ function EventRow({ event }: { event: SendingEventRecord }) {
   );
 }
 
+/**
+ * `[CRM ▾] › Sending mailboxes ▾ › <mailbox ▾>` — the record crumb names the mailbox by its address
+ * and opens every other mailbox (record-siblings.ts `crm-sending-identity`, the list page's own read).
+ */
 export function SendingIdentityDetailPage({ identityId }: { identityId: string }) {
+  const state = useSendingIdentity(identityId);
+  return (
+    <>
+      <RecordPageHeader
+        backHref="/crm/sending-identities"
+        parents={[
+          { label: "CRM", href: "/crm" },
+          { label: "Sending mailboxes", href: "/crm/sending-identities" },
+        ]}
+        record={{ name: state.identity?.from_address ?? "Mailbox", token: "crm-sending-identity", id: identityId }}
+      />
+      <SendingIdentityDetail identityId={identityId} state={state} />
+    </>
+  );
+}
+
+function SendingIdentityDetail({
+  identityId,
+  state,
+}: {
+  identityId: string;
+  state: ReturnType<typeof useSendingIdentity>;
+}) {
   const {
     identity,
     events,
@@ -137,7 +165,7 @@ export function SendingIdentityDetailPage({ identityId }: { identityId: string }
     resume,
     refreshHealth,
     reload,
-  } = useSendingIdentity(identityId);
+  } = state;
   const dnsRef = useRef<HTMLDivElement | null>(null);
   const [showAllEvents, setShowAllEvents] = useState(false);
 

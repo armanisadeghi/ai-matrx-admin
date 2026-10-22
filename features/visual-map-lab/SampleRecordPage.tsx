@@ -75,7 +75,8 @@ export function SampleRecordPage({ sampleId }: { sampleId: string }) {
 
   return (
     <SurfaceRuntimeProvider surfaceName={VISUAL_MAP_LAB_SURFACE_NAME} getScope={scope}>
-      <RecordPageHeader record={{ name: sample?.title ?? "Sample" }} />
+      {/* The record crumb opens every other sample (record-siblings.ts `visual-map-sample`, the lab list's own read). */}
+      <RecordPageHeader record={{ name: sample?.title ?? "Sample", token: "visual-map-sample", id: sampleId }} />
       <div className="h-full overflow-x-hidden overflow-y-auto px-4 pb-6 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))] sm:px-6" data-matrx-page-scroll="" data-testid="visual-map-lab-sample">
         {loaded.state === "loading" && <span className="type-secondary text-muted-foreground">Loading</span>}
         {loaded.state === "failed" && (

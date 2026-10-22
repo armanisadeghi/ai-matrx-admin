@@ -258,7 +258,7 @@ export function ShowManageClient({ showId }: { showId: string }) {
   if (loading) {
     return (
       <>
-        <RecordPageHeader record={{ name: "Manage podcast" }} />
+        <EntityModeHeader backHref="/podcast/studio" entityLabel="Manage podcast" entityRecord={{ token: "pc_show", id: showId }} />
         <div className="mx-auto max-w-4xl px-4 py-8">
           <Skeleton className="mb-6 h-10 w-48" />
           <div className="space-y-4">
@@ -292,6 +292,8 @@ export function ShowManageClient({ showId }: { showId: string }) {
       <EntityModeHeader
         backHref="/podcast/studio"
         entityLabel={show.title}
+        // The record crumb opens every other show (record-siblings.ts `pc_show`, the studio's own list).
+        entityRecord={{ token: "pc_show", id: show.id }}
         actions={[
           {
             label: "View public page",

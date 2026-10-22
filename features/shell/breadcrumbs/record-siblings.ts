@@ -56,15 +56,42 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     const rows = await fetchOutreachLists({ userId, orgIds: [], orgNames: {} });
     return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.name || "Untitled list" }));
   },
+  "crm-sending-identity": async () => {
+    // The Sending mailboxes page's own read (every purpose the page lists).
+    const { listSendingIdentities } = await import("@/features/crm/sending-identities/service");
+    const rows = await listSendingIdentities();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.from_address || "Mailbox" }));
+  },
+  pc_show: async () => {
+    // The podcast studio's own show list (mine), newest first.
+    const { podcastService } = await import("@/features/podcasts/service");
+    const rows = await podcastService.fetchAllShows();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.title || "Untitled podcast" }));
+  },
+  "visual-map-sample": async () => {
+    // The Visual Map Lab list's own read (subjects, workflows, saved samples).
+    const { loadLabRows } = await import("@/features/visual-map-lab/service");
+    const { rows } = await loadLabRows();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.title || "Sample" }));
+  },
 };
 
 /** The address for a sibling: the current address with the record's segment swapped. */
 export function siblingHref(pathname: string, currentId: string, siblingId: string): string {
   const segs = pathname.split("/");
-  const at = segs.indexOf(currentId);
+  // An id with reserved characters (`workflow:<uuid>`) sits in the address encoded.
+  const at = segs.findIndex((seg) => seg === currentId || safeDecode(seg) === currentId);
   if (at === -1) return pathname;
-  segs[at] = siblingId;
+  segs[at] = encodeURIComponent(siblingId);
   return segs.join("/");
+}
+
+function safeDecode(segment: string): string {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
 }
 
 /** The record level's sibling loader for a declared record, or undefined when its type has none. */

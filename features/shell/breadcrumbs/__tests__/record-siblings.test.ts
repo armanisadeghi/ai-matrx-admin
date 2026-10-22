@@ -13,6 +13,16 @@ describe("record siblings", () => {
     expect(siblingHref(`/agents/${A}/build`, A, B)).toBe(`/agents/${B}/build`);
   });
 
+  it("an id with reserved characters is matched and written encoded", () => {
+    expect(siblingHref("/visual-maps/lab/workflow%3Aa", "workflow:a", "saved:b")).toBe("/visual-maps/lab/saved%3Ab");
+  });
+
+  it("CRM mailboxes, podcast shows and lab samples have sibling loaders", () => {
+    for (const token of ["crm-sending-identity", "pc_show", "visual-map-sample"]) {
+      expect(typeof RECORD_SIBLINGS[token]).toBe("function");
+    }
+  });
+
   it("agents have a sibling loader; an unknown type has none", () => {
     expect(typeof RECORD_SIBLINGS.agent).toBe("function");
     expect(recordSiblingsLoader("agent", A, `/agents/${A}/build`)).toBeInstanceOf(Function);

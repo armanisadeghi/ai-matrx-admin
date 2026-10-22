@@ -419,7 +419,6 @@
     "no-declared-trail|app/(core)/workflows/speed-test/page.tsx",
     "no-declared-trail|app/(core)/workflows/waiting/page.tsx",
     "record-without-siblings|app/(core)/applets/build/[id]/page.tsx",
-    "record-without-siblings|app/(core)/crm/sending-identities/[identityId]/page.tsx",
     "record-without-siblings|app/(core)/d/[renderId]/page.tsx",
     "record-without-siblings|app/(core)/hr/me/time-off/[policyId]/page.tsx",
     "record-without-siblings|app/(core)/hr/people/relations/[caseId]/page.tsx",
