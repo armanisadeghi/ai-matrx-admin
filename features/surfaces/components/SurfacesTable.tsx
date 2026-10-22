@@ -37,10 +37,18 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import {
   tierFor,
-  readinessBucketOf,
   type SurfaceWithStats,
 } from "@ai-matrx/chat/surfaces/services/surfaces.service";
-import { SurfaceReadinessBadge } from "@/features/surfaces/components/SurfaceReadinessBadge";
+import Link from "next/link";
+import { surfaceAdminHref } from "@ai-matrx/chat/surfaces/utils/surface-hierarchy";
+import type { SurfaceFleetMetric } from "@/features/surfaces/services/surface-fleet-metric";
+import {
+  deriveFleetReadiness,
+  FLEET_READINESS_LABEL,
+  FLEET_READINESS_RULE,
+  FLEET_READINESS_SORT,
+  type FleetReadiness,
+} from "@/features/surfaces/utils/fleet-readiness";
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import { getSurfaceDisplayLabel } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import {
@@ -56,13 +64,6 @@ import {
   type SurfacesFilterState,
 } from "@/features/surfaces/components/SurfacesFilterBar";
 import type { ReadOutcome } from "@ai-matrx/design-system";
-
-const READINESS_SORT_WEIGHT: Record<string, number> = {
-  verified: 0,
-  partial: 1,
-  stub: 2,
-  unregistered: 3,
-};
 
 export interface RegistryAction {
   key: string;
@@ -100,6 +101,8 @@ interface Props {
   registryActions?: RegistryAction[];
   /** The surfaces read these rows answer (the container owns it). */
   read?: ReadOutcome | undefined;
+  /** Fleet metric per surface name (ui.vw_surface_fleet_metric); absent = not loaded yet. */
+  fleet?: ReadonlyMap<string, SurfaceFleetMetric>;
 }
 
 function checkedBadge(row: SurfaceWithStats) {
@@ -182,9 +185,13 @@ function NameCell({
   return (
     <div className="flex min-w-0 items-center gap-1.5">
       <div className="min-w-0">
-        <div className="truncate font-medium text-foreground" title={surfaceRowTitle(row)}>
+        <Link
+          href={surfaceAdminHref(row.name)}
+          className="block truncate font-medium text-foreground hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
           {surfaceRowTitle(row)}
-        </div>
+        </Link>
         <div
           className="truncate font-mono text-xs text-muted-foreground"
           title={row.name}
@@ -208,6 +215,38 @@ function NameCell({
       )}
     </div>
   );
+}
+
+const FLEET_READINESS_CLASS: Record<FleetReadiness, string> = {
+  ready: "border-success/40 text-success",
+  partial: "border-warning/40 text-warning",
+  unproven: "bg-muted text-muted-foreground border-border",
+};
+
+function FleetReadinessBadge({
+  readiness,
+  className,
+}: {
+  readiness: FleetReadiness;
+  className?: string;
+}) {
+  return (
+    <Badge
+      variant="outline"
+      className={cn("text-xs", FLEET_READINESS_CLASS[readiness], className)}
+    >
+      {FLEET_READINESS_LABEL[readiness]}
+    </Badge>
+  );
+}
+
+/** A count that is only known once the fleet metric has loaded. */
+function countOrEmpty(n: number | null | undefined) {
+  return n === null || n === undefined ? EMPTY : n;
+}
+
+function shortDate(iso: string | null | undefined) {
+  return iso ? new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
 }
 
 function ActiveBadge({ active }: { active: boolean }) {
@@ -236,15 +275,16 @@ const PEEK_COLUMNS = {
   // Measured live on manage.aimatrx.com (header sort/filter icons make each
   // column wider than its declared width): at 1280 Checked was cut, at 1024
   // Tools was. The Peek's own tabs carry Values/Agents/Tools counts.
-  wide: new Set(["name", "readiness", "agentCount", "toolCount", "surfaceValueCount"]),
-  narrow: new Set(["name", "readiness", "agentCount"]),
+  wide: new Set(["name", "readiness", "suppliedShare", "agentCount", "toolCount"]),
+  narrow: new Set(["name", "readiness", "suppliedShare"]),
 };
 
 function surfaceColumns(
   navigatingName: string | null,
+  fleet: ReadonlyMap<string, SurfaceFleetMetric> | undefined,
   peek: "off" | "wide" | "narrow" = "off",
 ): MatrxColumnDef<SurfaceWithStats>[] {
-  const all = allSurfaceColumns(navigatingName, peek !== "off");
+  const all = allSurfaceColumns(navigatingName, fleet, peek !== "off");
   if (peek === "off") return all;
   const keep = PEEK_COLUMNS[peek];
   return all.filter((c) => keep.has(c.id ?? String(c.accessorKey)));
@@ -252,8 +292,12 @@ function surfaceColumns(
 
 function allSurfaceColumns(
   navigatingName: string | null,
+  fleet: ReadonlyMap<string, SurfaceFleetMetric> | undefined,
   peeking: boolean,
 ): MatrxColumnDef<SurfaceWithStats>[] {
+  const m = (row: SurfaceWithStats) => fleet?.get(row.name);
+  const readiness = (row: SurfaceWithStats) =>
+    fleet ? deriveFleetReadiness(m(row)) : undefined;
   return [
     {
       accessorKey: "name",
@@ -268,10 +312,121 @@ function allSurfaceColumns(
     {
       id: "readiness",
       header: "Readiness",
-      accessorFn: (row) => readinessBucketOf(row),
-      sortValue: (row) => READINESS_SORT_WEIGHT[readinessBucketOf(row)],
+      helpText: FLEET_READINESS_RULE,
+      accessorFn: (row) => {
+        const r = readiness(row);
+        return r ? FLEET_READINESS_LABEL[r] : null;
+      },
+      sortValue: (row) => {
+        const r = readiness(row);
+        return r ? FLEET_READINESS_SORT[r] : 9;
+      },
+      format: { id: "choice" },
+      width: 104,
+      cell: (row) => {
+        const r = readiness(row);
+        return r ? <FleetReadinessBadge readiness={r} /> : EMPTY;
+      },
+    },
+    {
+      id: "valuesOn",
+      header: "On values",
+      helpText: "Declared values that are switched on, including those inherited from parent surfaces.",
+      accessorFn: (row) => m(row)?.values_declared_on ?? null,
+      format: { id: "integer" },
+      align: "right",
+      width: 92,
+      cell: (row) => countOrEmpty(m(row)?.values_declared_on),
+    },
+    {
+      id: "valuesSupplied",
+      header: "Supplied",
+      helpText: "On values that a run handed to an agent in the last 30 days, or that the last probe saw.",
+      accessorFn: (row) => m(row)?.values_supplied ?? null,
+      format: { id: "integer" },
+      align: "right",
+      width: 88,
+      cell: (row) => countOrEmpty(m(row)?.values_supplied),
+    },
+    {
+      id: "suppliedShare",
+      header: "Supplied %",
+      helpText: "Supplied values as a share of on values.",
+      accessorFn: (row) => {
+        const ratio = m(row)?.supplied_ratio;
+        return ratio === null || ratio === undefined ? null : Math.round(ratio * 100);
+      },
+      format: { id: "percent", options: { precision: 0 } },
+      align: "right",
+      width: 96,
+    },
+    {
+      id: "writeTargets",
+      header: "Write targets",
+      helpText: "Places on this page an agent can write to. Not inherited from parents.",
+      accessorFn: (row) => m(row)?.write_targets ?? null,
+      format: { id: "integer" },
+      align: "right",
+      width: 104,
+      cell: (row) => countOrEmpty(m(row)?.write_targets),
+    },
+    {
+      id: "handledTargets",
+      header: "With handler",
+      helpText: "Write targets the page registers a handler for, per the code check. Unknown for applet surfaces.",
+      accessorFn: (row) => m(row)?.handled_targets ?? null,
+      format: { id: "integer" },
+      align: "right",
+      width: 104,
+      cell: (row) => countOrEmpty(m(row)?.handled_targets),
+    },
+    {
+      id: "patchableTargets",
+      header: "Patchable",
+      helpText: "Write targets that change part of a text instead of replacing all of it.",
+      accessorFn: (row) => m(row)?.patchable_targets ?? null,
+      format: { id: "integer" },
+      align: "right",
+      width: 92,
+      cell: (row) => countOrEmpty(m(row)?.patchable_targets),
+    },
+    {
+      id: "situation",
+      header: "Situation",
+      helpText: "Whether agents are told the situation on this page, set here or inherited from a parent.",
+      accessorFn: (row) => {
+        const metric = m(row);
+        if (!metric) return null;
+        return metric.situation_source === "own"
+          ? "Own"
+          : metric.situation_source === "inherited"
+            ? "Inherited"
+            : "Missing";
+      },
+      format: { id: "choice" },
+      width: 96,
+    },
+    {
+      id: "lastRun",
+      header: "Last run",
+      helpText: "The newest agent run started from this surface.",
+      accessorFn: (row) => m(row)?.last_run_at ?? null,
+      format: { id: "datetime" },
+      defaultSortDirection: "desc",
       width: 112,
-      cell: (row) => <SurfaceReadinessBadge row={row} />,
+      cell: (row) => shortDate(m(row)?.last_run_at) ?? EMPTY,
+    },
+    {
+      id: "declaredBy",
+      header: "Declared in",
+      helpText: "Code surfaces come from a page manifest; database surfaces are applets and other saved surfaces.",
+      accessorFn: (row) => {
+        const by = m(row)?.declared_by;
+        return by === "code" ? "Code" : by === "database" ? "Database" : null;
+      },
+      format: { id: "choice" },
+      width: 100,
+      hidden: true,
     },
     {
       id: "agentCount",
@@ -292,6 +447,7 @@ function allSurfaceColumns(
     {
       id: "surfaceValueCount",
       header: "Values",
+      hidden: true,
       accessorFn: (row) => declaredValueCount(row.name) ?? row.surfaceValueCount,
       align: "right",
       width: 120,
@@ -410,6 +566,7 @@ export function SurfacesTable({
   peeking = false,
   totalCount,
   registryActions = [],
+  fleet,
 }: Props) {
   const isMobile = useIsMobile();
   const roomForValues = useMediaQuery("(min-width: 1200px)");
@@ -503,6 +660,7 @@ export function SurfacesTable({
       data={rows}
       columns={[...(surfaceColumns(
         navigatingName,
+        fleet,
         !peeking || isMobile ? "off" : roomForValues ? "wide" : "narrow",
       ))]}
       rowActionDefs={rowActionDefs}
@@ -512,6 +670,7 @@ export function SurfacesTable({
       // repeated its name ("Default view" twice).
       viewTabs={false}
       getRowId={(row) => row.name}
+      getRowHref={(row) => surfaceAdminHref(row.name)}
       searchText={(row) =>
         [
           row.name,
@@ -693,7 +852,12 @@ export function SurfacesTable({
             >
               <NameCell row={row} navigating={row.name === navigatingName} />
             </button>
-            <SurfaceReadinessBadge row={row} className="mt-0.5 shrink-0" />
+            {fleet && (
+              <FleetReadinessBadge
+                readiness={deriveFleetReadiness(fleet.get(row.name))}
+                className="mt-0.5 shrink-0"
+              />
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

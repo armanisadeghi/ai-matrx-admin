@@ -530,6 +530,7 @@
     "check:hr-time-arithmetic:strict": "npx tsx scripts/check-hr-time-arithmetic.ts --strict",
     "check:surface-write-handlers": "tsx scripts/check-surface-write-handlers.ts",
     "check:surface-write-handlers:list": "tsx scripts/check-surface-write-handlers.ts --list",
+    "surface:write-handlers:emit": "tsx scripts/check-surface-write-handlers.ts --emit",
     "check:surface-write-handlers:self-test": "tsx scripts/check-surface-write-handlers.ts --self-test",
     "check:hr-custom-field-targets": "tsx scripts/check-hr-custom-field-targets.ts",
     "check:hr-custom-field-targets:self-test": "tsx scripts/check-hr-custom-field-targets.ts --self-test",
