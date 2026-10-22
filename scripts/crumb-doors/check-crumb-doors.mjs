@@ -134,7 +134,7 @@ function siblingTokens() {
   const file = join(ROOT, "features/shell/breadcrumbs/record-siblings.ts");
   const text = existsSync(file) ? readFileSync(file, "utf8") : "";
   const body = /RECORD_SIBLINGS[^=]*=\s*\{([\s\S]*?)\n\};/.exec(text)?.[1] ?? "";
-  tokens = new Set([...body.matchAll(/^\s{2}([\w-]+):\s*async/gm)].map((m) => m[1]));
+  tokens = new Set([...body.matchAll(/^\s{2}["']?([\w-]+)["']?:\s*async/gm)].map((m) => m[1]));
   return tokens;
 }
 
