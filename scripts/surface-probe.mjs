@@ -229,6 +229,36 @@ async function pointerClick(page, selector, textPrefix) {
 
 async function readProbe(page) {
   return page.evaluate(() => {
+    // The "This page" window (2026-10): rows carry data-value-key/-state and
+    // the list carries every declared key, because a person's seat lists only
+    // the values the page holds (absent ones are simply not shown).
+    const list = document.querySelector("ul[data-declared-keys]");
+    if (list) {
+      const declared = (list.getAttribute("data-declared-keys") || "").split(" ").filter(Boolean);
+      const shown = new Map(
+        Array.from(list.querySelectorAll("li[data-value-key]")).map((li) => [
+          li.getAttribute("data-value-key"),
+          li.getAttribute("data-value-state"),
+        ]),
+      );
+      const supplied = [];
+      const suppliedEmpty = [];
+      const absent = [];
+      for (const key of declared) {
+        const state = shown.get(key);
+        if (state === "supplied") supplied.push(key);
+        else if (state === "empty") suppliedEmpty.push(key);
+        else absent.push(key);
+      }
+      const undeclared = [...shown.keys()].filter((key) => !declared.includes(key));
+      return {
+        counter: `${supplied.length + suppliedEmpty.length} / ${declared.length} supplied`,
+        supplied,
+        suppliedEmpty,
+        absent,
+        undeclared,
+      };
+    }
     // A value row carries a status dot titled with its state; group rows do
     // not. (The key <code> trail is admin-only, so it cannot mark a value row
     // on a member's seat.)
@@ -690,7 +720,11 @@ try {
       ...(result.after?.undeclared ?? []),
       ...(result.afterAgent?.undeclared ?? []),
     ];
-    result.pass = Boolean(result.signedIn && result.surfaceNamed && undeclared.length === 0 && result.errors.length === 0);
+    // A read that found no value rows at all proves nothing (the window moved
+    // or never opened): never a pass (2026-10-22, the "This page" redesign).
+    const readSomething = (result.before?.supplied?.length ?? 0) + (result.before?.suppliedEmpty?.length ?? 0) + (result.before?.absent?.length ?? 0) > 0;
+    if (!readSomething) result.errors.push("read no value rows from the page's values window");
+    result.pass = Boolean(result.signedIn && result.surfaceNamed && readSomething && undeclared.length === 0 && result.errors.length === 0);
     if (!result.pass) exitCode = 1;
     results.push(result);
   }
