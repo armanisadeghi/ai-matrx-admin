@@ -36,6 +36,10 @@ import { linkAcquisitionToUser } from "@/lib/product-analytics/server/acquisitio
 import { escapeHtml } from "@ai-matrx/kit/html-escape";
 import { scheduleFoundSearchAtSignIn } from "@/features/marketing/smart-add/welcome/foundSearchAtSignIn";
 
+// The found search starts AFTER the response, in this function's lifetime (foundSearchAtSignIn.ts): an auth read, a
+// registry read, the memberships, then a start that waits up to 20 s on aidream. The platform default cap would kill it.
+export const maxDuration = 60;
+
 // The PKCE code-verifier cookie the login server action sets before sending
 // the browser to the provider. When it does not come back with the callback,
 // supabase-js fails the exchange CLIENT-SIDE (no /token request ever reaches

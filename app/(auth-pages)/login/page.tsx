@@ -37,6 +37,10 @@ interface SignInProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+// The found search starts AFTER the response, in this sign-in action's (a server action runs under its page's cap) lifetime (foundSearchAtSignIn.ts): an auth read, a
+// registry read, the memberships, then a start that waits up to 20 s on aidream. The platform default cap would kill it.
+export const maxDuration = 60;
+
 export default async function SignIn({ searchParams }: SignInProps) {
   const awaitedSearchParams = await searchParams;
 

@@ -578,6 +578,8 @@ const GUEST_OK_SINCE_DOMAIN_TREE: readonly string[] = [
   "/legal/ca-wc/pd-ratings-calculator",
   "/legal/ca-wc/utilities",
   // Marketing's layout shows a guest the full marketing landing on ANY /marketing/* URL.
+  "/marketing/calendar",
+  "/marketing/monitoring",
   "/marketing/social",
   "/marketing/tools/domain",
   "/medical",

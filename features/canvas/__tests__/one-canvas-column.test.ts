@@ -1,7 +1,7 @@
 /**
  * THERE IS ONE CANVAS. It is the @ai-matrx/canvas column, placed by
- * `ShellCanvasColumn`, mounted once per layout: the app shell, the public
- * layout and the link layout. A route never mounts, wraps or forks a canvas of
+ * `ShellCanvasColumn`, mounted once per layout stack: the app shell and the
+ * three provider stacks of the public and link layouts. A route never mounts, wraps or forks a canvas of
  * its own — it opens things INTO the one canvas.
  *
  * Static: scans every tracked app .ts/.tsx; the column implementation ships from npm.
@@ -44,9 +44,16 @@ describe("one canvas", () => {
     );
   });
 
-  it("ShellCanvasColumn is mounted only by the three layouts", () => {
+  it("ShellCanvasColumn is mounted only by the app shell and the public / link provider stacks", () => {
+    // The public and link layouts no longer mount it themselves: they render these stacks (the
+    // applet layout is the link layout's own stack for /applets/[slug]).
     expect(filesMatching(/<ShellCanvasColumn[\s/>]/).sort()).toEqual(
-      ["app/(link)/layout.tsx", "app/(public)/layout.tsx", "features/shell/components/AppShell.tsx"].sort(),
+      [
+        "app/(link)/applets/[slug]/layout.tsx",
+        "components/public-link/LinkProviders.tsx",
+        "features/public-shell/PublicFullProvidersImpl.tsx",
+        "features/shell/components/AppShell.tsx",
+      ].sort(),
     );
   });
 

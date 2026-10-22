@@ -21,6 +21,11 @@ const ALLOWED_HOSTS = new Set([
   // The board's agent-form tile (board lane, 9f582f28af/3c6a290bc1): a tile that runs one agent and
   // shows its result inside the board item - content on the board, not a page-level chat panel.
   "features/board/items/AgentFormItemBody.tsx",
+  // Agent Studio (/agents/new/studio) is a focused builder surface: the shell chat stands aside
+  // there (shellChatHostedElsewhere), so this is not a second panel beside it. It uses the hook
+  // only for the conversation lifecycle of its assistant and its run, and draws both through
+  // the ONE runner (StudioRun), never CanvasChatColumn.
+  "features/agents/studio/components/AgentStudioPage.tsx",
   // The composer's own demo pages: a composer specimen, not a page chat panel.
   "app/(dev)/demos/composer/ComposerPlayground.tsx",
   "app/(dev)/demos/composer/all/ComposerGallery.tsx",

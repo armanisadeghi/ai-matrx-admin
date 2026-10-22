@@ -18,6 +18,10 @@ import { markShellLayoutDeviceAtSignIn, shellLandingAfterSignIn } from "@/featur
 import { clearPendingSignupEmail } from "@/utils/auth/pending-signup";
 import { scheduleFoundSearchAtSignIn } from "@/features/marketing/smart-add/welcome/foundSearchAtSignIn";
 
+// The found search starts AFTER the response, in this function's lifetime (foundSearchAtSignIn.ts): an auth read, a
+// registry read, the memberships, then a start that waits up to 20 s on aidream. The platform default cap would kill it.
+export const maxDuration = 60;
+
 function isEmailOtpType(value: string | null): value is EmailOtpType {
   return (
     value === "signup" ||
