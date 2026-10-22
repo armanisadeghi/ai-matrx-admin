@@ -256,13 +256,15 @@ function CompareCandidate({
   const peek = candidatePeek(c, title, sub);
   const image = useCandidateImage(c.platform !== "website" && c.profileId ? profileAvatarDoor(c.profileId) : null, c.platform === "website" ? c.iconUrl : c.photoUrl);
   return (
-    <div className="flex min-w-0 flex-col gap-2" data-testid="smart-add-candidate" data-candidate={c.id}>
+    <div className="flex min-w-0 flex-col gap-2" data-testid="smart-add-candidate">
       <CandidateCard
         candidate={{
           id: c.id,
           name: title,
           handle: handleLine !== title ? handleLine : null,
           imageUrl: image,
+          imageFit: c.platform === "website" ? "contain" : "cover",
+          badge: c.platform !== "website" && image ? <PlatformMark platform={c.platform} size={14} /> : null,
           mark: c.platform === "website" ? <PlatformMark platform="website" size={24} /> : <span className="type-title">{avatarInitial(c.name, c.handle)}</span>,
           verified: Boolean(c.verified),
           followers: c.followers,

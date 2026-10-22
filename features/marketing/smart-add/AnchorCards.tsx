@@ -75,6 +75,8 @@ export function AnchorCard({
           name,
           handle: handle !== name ? handle : null,
           imageUrl: image,
+          imageFit: platform === "website" ? "contain" : "cover",
+          badge: platform !== "website" && image ? <PlatformMark platform={platform} size={14} /> : null,
           mark: <PlatformMark platform={platform} size={24} />,
           followers,
           detail: [platformLabel(platform), a?.location].filter(Boolean).join(" · "),
