@@ -61,6 +61,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { exitAfterDrain } from "./lib/exit-after-drain";
+import { pageValuesOnly } from "./lib/surface-page-values";
 
 const ROOT = resolve(__dirname, "..");
 
@@ -198,6 +199,8 @@ interface DbValue {
   surface_name: string;
   name: string;
   value_type: string | null;
+  /** '' = the page's own value; 'table_row' = item values on every surface. */
+  item_type: string | null;
 }
 interface DbWriteTarget {
   surface_name: string;
@@ -352,7 +355,12 @@ async function main() {
       "ui_surface",
       "id,name,is_active,parent_surface_name",
     ),
-    readAll<DbValue>(env, "ui", "ui_surface_value", "surface_name,name,value_type"),
+    readAll<DbValue>(
+      env,
+      "ui",
+      "ui_surface_value",
+      "surface_name,name,value_type,item_type",
+    ).then(pageValuesOnly),
     readAll<DbWriteTarget>(
       env,
       "ui",
