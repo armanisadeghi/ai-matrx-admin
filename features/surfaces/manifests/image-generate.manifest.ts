@@ -225,6 +225,8 @@ export const IMAGE_GENERATE_SURFACE_NAME = "matrx-user/image-generate";
 
 export const imageGenerateManifest: SurfaceManifest = {
   surfaceName: IMAGE_GENERATE_SURFACE_NAME,
+  situation:
+    "They are making images from a written prompt: {image_count} at size {image_size}, style {style|none}; {result_count} results so far, generating now: {is_generating}. The prompt is in your context; they can change the request.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

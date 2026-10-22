@@ -247,6 +247,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const galleryManifest: SurfaceManifest = {
   surfaceName: GALLERY_SURFACE_NAME,
+  situation:
+    "They are browsing the photo gallery in the {view_mode} layout: {photo_count} photos for \"{active_query|no search yet}\", {favorite_count} favorites, orientation {orientation_filter}. They can search, filter by orientation and change the layout.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

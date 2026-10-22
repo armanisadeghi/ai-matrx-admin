@@ -18,6 +18,8 @@ function value(name: string, label: string, description: string, valueType: Surf
 
 export const videoCloneManifest: SurfaceManifest = {
   surfaceName: VIDEO_CLONE_SURFACE_NAME,
+  situation:
+    "They have the video clone project \"{name|not loaded yet}\" open: the reference post, its plan, its versions (newest: version {head_version|unknown}) and its rendered videos. Loaded: {project_loaded}.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -314,6 +314,8 @@ export const IMAGES_SURFACE_NAME = "matrx-user/images";
 
 export const imagesManifest: SurfaceManifest = {
   surfaceName: IMAGES_SURFACE_NAME,
+  situation:
+    "They are in their image library in the {view_mode} view, showing {visible_image_count} of {total_image_count} images (search: {search_query|none}, recent only: {recents_only}); {selected_count} selected. They can search, switch recent-only and change the selection.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

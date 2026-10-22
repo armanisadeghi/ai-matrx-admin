@@ -156,6 +156,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const cameraManifest: SurfaceManifest = {
   surfaceName: "matrx-user/camera",
+  situation:
+    "They are on the camera page, photographing or recording something to save into their files: {capture_count} saved this visit, capture studio open: {studio_open}. The captures list shows {capture_filter} captures (list: {captures_status}); they can change that filter.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

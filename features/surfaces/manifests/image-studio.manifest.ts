@@ -502,6 +502,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const imageStudioManifest: SurfaceManifest = {
   surfaceName: IMAGE_STUDIO_SURFACE_NAME,
+  situation:
+    "They are in Image Studio, turning {source_file_count} source images into sized versions: {selected_preset_count} presets chosen, {output_format} at quality {output_quality}, {generated_variant_count} of {total_variant_count} versions made. They can describe the image, pick presets, change settings and the file name.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

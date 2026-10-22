@@ -180,6 +180,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const imageUploaderManifest: SurfaceManifest = {
   surfaceName: IMAGE_UPLOADER_SURFACE_NAME,
+  situation:
+    "They have the image upload window open for \"{uploader_title|an image}\", using the {preset} preset and saving to {target_folder|the default folder}. Upload done: {has_upload_result}; last error: {last_error|none}.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

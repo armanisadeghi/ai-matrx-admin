@@ -5,6 +5,8 @@ import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
 
 export const imagesHomeManifest: SurfaceManifest = {
   surfaceName: "matrx-user/images-home",
+  situation:
+    "They are on the Images landing page, the starting point that lists every image tool and workspace.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

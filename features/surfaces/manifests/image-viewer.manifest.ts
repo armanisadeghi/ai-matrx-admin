@@ -90,6 +90,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const imageViewerManifest: SurfaceManifest = {
   surfaceName: IMAGE_VIEWER_SURFACE_NAME,
+  situation:
+    "They have the image viewer open on one of {image_count} images, described as \"{active_image_alt|no description given}\".",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

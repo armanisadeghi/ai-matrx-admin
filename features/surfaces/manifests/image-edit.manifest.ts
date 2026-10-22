@@ -197,6 +197,8 @@ export const IMAGE_EDIT_SURFACE_NAME = "matrx-user/image-edit";
 
 export const imageEditManifest: SurfaceManifest = {
   surfaceName: IMAGE_EDIT_SURFACE_NAME,
+  situation:
+    "They are editing the image \"{image_file_name}\" (opened as a {presentation}); saves go to {save_folder}. Mask in use: {mask_active}; saving now: {is_saving}.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

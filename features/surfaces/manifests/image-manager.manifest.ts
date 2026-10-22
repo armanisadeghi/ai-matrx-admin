@@ -93,6 +93,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const imageManagerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/image-manager",
+  situation:
+    "They are in the image hub on the \"{image_hub_tab}\" tab, which leads to the image tools, branded images, profile photo, public search and the studio library. They can open any of those workspaces.",
   inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
