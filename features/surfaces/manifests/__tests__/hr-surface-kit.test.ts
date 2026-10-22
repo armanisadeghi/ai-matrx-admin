@@ -67,12 +67,13 @@ describe("hrTarget and hrPageSurface", () => {
   });
 
   it("the shell parents to the HR module unless the page names another parent", () => {
-    const base = { surfaceName: "matrx-user/x", label: "X", description: "x", readinessNote: "n", values: [] };
+    const base = { surfaceName: "matrx-user/x", label: "X", description: "x", values: [] };
     const m = hrPageSurface(base);
     expect(m.client).toBe("matrx-user");
     expect(m.executionMode).toBe("python-stream");
     expect(m.inheritsFrom).toBe(HR_MODULE_PARENT);
-    expect(m.readiness).toBe("partial");
+    // D2: readiness is earned, never typed — the shell sets none.
+    expect(m.readiness).toBeUndefined();
     expect(hrPageSurface({ ...base, inheritsFrom: "matrx-user/hr-employee" }).inheritsFrom).toBe("matrx-user/hr-employee");
   });
 });
