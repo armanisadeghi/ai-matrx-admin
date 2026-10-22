@@ -68,7 +68,8 @@ function loadShapes(): Promise<CanMakeShape[]> {
   return cached;
 }
 
-const PLACEHOLDER_WIDTHS = ["w-24", "w-20", "w-28", "w-24", "w-28", "w-24", "w-32", "w-20", "w-28", "w-20", "w-28", "w-28", "w-20", "w-24", "w-28"];
+/** One gray pill per offered shape (16 today), so the row holds the height it will have. */
+const PLACEHOLDER_WIDTHS = ["w-24", "w-20", "w-28", "w-24", "w-28", "w-24", "w-32", "w-20", "w-28", "w-20", "w-28", "w-28", "w-20", "w-24", "w-28", "w-20"];
 
 export function MeetMatrxCanMake() {
   const [shapes, setShapes] = useState<CanMakeShape[] | null>(null);
