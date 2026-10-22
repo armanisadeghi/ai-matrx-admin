@@ -1,12 +1,12 @@
 "use client";
 
-// The product's OWN sidebar (Linear / Docs style): the app grid and product
-// name on top, then only this product's menu. It sits on the app canvas with
-// no border. The top row is the header's height and offset, so the product
-// name lines up with the sheet's breadcrumbs. Every row is a real link.
+// The product's OWN sidebar (Linear / Docs style): the app grid, Go to and collapse on top (no
+// product name: the header's first crumb carries it), then only this product's menu. It sits on
+// the app canvas with no border. The top row is the header's height and offset, so it lines up
+// with the sheet's breadcrumbs. Every row is a real link.
 import { formatCount } from "@ai-matrx/kit/format";
 import type { MouseEvent, ReactNode } from "react";
-import { ExternalLink, PanelLeftClose, Star } from "lucide-react";
+import { ExternalLink, PanelLeftClose, Pencil, Plus, Star } from "lucide-react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
@@ -14,7 +14,7 @@ import { GoToSearch } from "./GoToSearch";
 import type { GoToSearchProps } from "./GoToSearch";
 import { ProductMark } from "./ProductMark";
 import type { AppGridProps } from "./AppGrid";
-import type { FrameBigItems, FrameMenuItem, FramePin, FrameProduct } from "./types";
+import type { FrameMenuItem, FramePin, FrameProduct } from "./types";
 
 export interface FrameSidebarProps {
   product: FrameProduct;
@@ -26,12 +26,15 @@ export interface FrameSidebarProps {
   /** Desktop: collapse the sidebar. Drawer: close it. */
   onHide: () => void;
   hideLabel: string;
-  /** Pinned: the person's own pages. Omit to hide the section; an empty list shows the hint. */
+  /**
+   * Pinned: the person's pins (or the starting set), a 3-per-row tile grid always visible at the
+   * foot of the sidebar; every tile opens a new tab. Omit to hide the section.
+   */
   pins?: readonly FramePin[];
-  onSelectPin?: (pin: FramePin) => void;
-  /** The big products, always visible (top or bottom). Switching a product opens a new tab. */
-  bigItems?: FrameBigItems;
-  bigProducts?: readonly FrameProduct[];
+  /** The products, for a product pin's mark and short name. */
+  pinProducts?: readonly FrameProduct[];
+  /** Pinned's edit icon and its dashed empty slot ("add"). Omit = not editable. */
+  onEditPins?: (mode: "edit" | "add") => void;
   /** The host's controls pinned under the menu (settings, organization, the person). */
   footer?: ReactNode;
   /**
@@ -62,21 +65,20 @@ export function FrameSidebar({
   hideLabel,
   footer,
   pins,
-  onSelectPin,
-  bigItems = "off",
-  bigProducts = [],
+  pinProducts = [],
+  onEditPins,
   content,
   top,
 }: FrameSidebarProps) {
-  const big = bigItems !== "off" && bigProducts.length > 0 ? (
-    <BigItems products={bigProducts} currentProductId={product.id} edge={bigItems} />
-  ) : null;
   return (
     <nav aria-label={`${product.name} menu`} className="flex h-full min-h-0 flex-col">
-      <div className="flex h-[calc(var(--matrx-frame-header-h)+var(--matrx-frame-inset))] shrink-0 items-center gap-1 px-2 pt-[var(--matrx-frame-inset)]">
+      <div
+        data-mf-region="sidebar-top-row"
+        className="flex h-[calc(var(--matrx-frame-header-h)+var(--matrx-frame-inset))] shrink-0 items-center gap-1 px-2 pt-[var(--matrx-frame-inset)]"
+      >
         <AppGrid {...grid} currentProductId={product.id} />
-        <ProductMark product={product} size="inline" />
-        <span className="type-title min-w-0 flex-1 truncate pl-1">{product.name}</span>
+        {/* No product name or mark here (owner, 2026-10-22): the product is the header's first crumb. */}
+        <span className="min-w-0 flex-1" aria-hidden />
         <GoToSearch {...goTo} />
         <Button variant="quiet" icon={<PanelLeftClose />} aria-label={hideLabel} onClick={onHide} />
       </div>
@@ -88,20 +90,12 @@ export function FrameSidebar({
       {content != null ? (
         // The product's own navigation: full-bleed, it brings its own padding and scroller.
         <div className="mf-noscrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pt-2">
-          {bigItems === "top" || pins ? (
-            <div className="shrink-0 px-2">
-              {bigItems === "top" ? big : null}
-              {pins ? <PinnedSection pins={pins} onSelectPin={onSelectPin} /> : null}
-            </div>
-          ) : null}
           <div data-mf-region="product-nav" className="flex min-h-0 flex-1 flex-col">
             {content}
           </div>
         </div>
       ) : (
       <div className="mf-noscrollbar min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-4">
-        {bigItems === "top" ? big : null}
-        {pins ? <PinnedSection pins={pins} onSelectPin={onSelectPin} /> : null}
         {product.menu.map((section) => (
           <div key={section.id} className="pb-3">
             {section.label ? (
@@ -120,7 +114,9 @@ export function FrameSidebar({
         ))}
       </div>
       )}
-      {bigItems === "bottom" ? big : null}
+      {pins ? (
+        <PinnedSection pins={pins} products={pinProducts} currentProductId={product.id} onEdit={onEditPins} />
+      ) : null}
       {footer ? (
         <div data-mf-region="sidebar-footer" className="flex shrink-0 flex-col gap-px px-2 pt-1 pb-2">
           {footer}
@@ -183,90 +179,82 @@ function MenuRow({
   );
 }
 
-/** The empty Pinned space says how to fill it (≤60 chars). */
-export const PINNED_EMPTY_HINT = "Star a page to pin it here";
+/** Pinned's edit icon (its accessible name and tooltip). */
+export const PINNED_EDIT_LABEL = "Edit pinned";
+/** The dashed empty slot (its accessible name). */
+export const PINNED_ADD_LABEL = "Add a pin";
 
+/**
+ * PINNED (Arman, 2026-10-22): one always-visible list — a compact tile grid, three per row, each a
+ * product mark (or the page's icon) over a short name, opening a new tab; the heading's pencil edits
+ * it, and the last spot is an empty dashed slot that adds one.
+ */
 function PinnedSection({
   pins,
-  onSelectPin,
-}: {
-  pins: readonly FramePin[];
-  onSelectPin?: (pin: FramePin) => void;
-}) {
-  return (
-    <div data-mf-region="pinned" className="pb-3">
-      <div className="flex h-7 items-center px-2">
-        <span className="type-label">Pinned</span>
-      </div>
-      {pins.length === 0 ? (
-        <p data-mf-pinned-empty="" className="type-meta px-2 py-1 text-muted-foreground">
-          {PINNED_EMPTY_HINT}
-        </p>
-      ) : (
-        <ul className="flex flex-col gap-px">
-          {pins.map((pin) => {
-            const Icon = pin.icon ?? Star;
-            return (
-              <li key={pin.id}>
-                <Tile asChild dense variant="quiet" className="w-full" icon={<Icon aria-hidden />} title={pin.label}>
-                  <a
-                    data-tap-target=""
-                    href={pin.href}
-                    onClick={(e) => {
-                      if (!onSelectPin || !isPlainClick(e)) return;
-                      e.preventDefault();
-                      onSelectPin(pin);
-                    }}
-                  />
-                </Tile>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-/** The big products as one-line rows. A product switch always opens a new tab (owner rule). */
-function BigItems({
   products,
   currentProductId,
-  edge,
+  onEdit,
 }: {
+  pins: readonly FramePin[];
   products: readonly FrameProduct[];
   currentProductId: string;
-  edge: "top" | "bottom";
+  onEdit?: (mode: "edit" | "add") => void;
 }) {
   return (
-    <div
-      data-mf-region="big-items"
-      data-edge={edge}
-      className={edge === "top" ? "pb-3" : "shrink-0 px-2 pt-1 pb-1"}
-    >
-      <ul className="flex flex-col gap-px">
-        {products.map((p) => {
-          const current = p.id === currentProductId;
+    <div data-mf-region="pinned" className="shrink-0 px-2 pt-1 pb-1">
+      <div className="flex h-7 items-center pl-2">
+        <span className="type-label flex-1">Pinned</span>
+        {onEdit ? (
+          <Button
+            variant="quiet"
+            icon={<Pencil />}
+            aria-label={PINNED_EDIT_LABEL}
+            title={PINNED_EDIT_LABEL}
+            data-mf-pinned-edit=""
+            onClick={() => onEdit("edit")}
+          />
+        ) : null}
+      </div>
+      <ul className="grid grid-cols-3 gap-1" data-mf-pinned-grid="">
+        {pins.map((pin) => {
+          const product = pin.productId ? products.find((p) => p.id === pin.productId) : undefined;
+          const Icon = pin.icon ?? Star;
+          const current = product?.id === currentProductId;
           return (
-            <li key={p.id}>
+            <li key={pin.id} className="min-w-0" data-mf-pin={product?.id ?? pin.id}>
               <Tile
                 asChild
                 dense
+                layout="stack"
                 variant="quiet"
                 className="w-full"
-                icon={<ProductMark product={p} size="inline" />}
-                title={p.name}
+                icon={product ? <ProductMark product={product} size="inline" /> : <Icon aria-hidden />}
+                title={product?.shortName ?? product?.name ?? pin.label}
                 selected={current || undefined}
                 selectedStyle="fill"
-                aria-current={current ? "page" : undefined}
               >
-                <OutboundLink href={p.homeHref} data-tap-target="">
+                <OutboundLink href={pin.href} data-tap-target="" title={pin.label}>
                   <span className="sr-only">(opens in a new tab)</span>
                 </OutboundLink>
               </Tile>
             </li>
           );
         })}
+        {onEdit ? (
+          <li className="min-w-0">
+            <button
+              type="button"
+              data-tap-target=""
+              data-mf-pin-slot=""
+              aria-label={PINNED_ADD_LABEL}
+              title={PINNED_ADD_LABEL}
+              className="mf-pin-slot flex h-full min-h-14 w-full items-center justify-center"
+              onClick={() => onEdit("add")}
+            >
+              <Plus aria-hidden className="size-4 text-muted-foreground" />
+            </button>
+          </li>
+        ) : null}
       </ul>
     </div>
   );

@@ -14,7 +14,8 @@ import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/
 import { INTELLIGENCE_PARTS, flowByName, flowForTile } from "@/features/shell/frame/flows";
 import { BigPicture, FlowView } from "./FlowView";
 import { HeaderToolButtons, defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
-import type { FrameBigItems, FrameCrumb, FramePin, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
+import type { FrameCrumb, FramePin, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
+import { defaultPins } from "@/features/shell/frame/products";
 import {
   CONTACTS,
   ChatThread,
@@ -31,11 +32,6 @@ type Width = "fit" | "2560" | "1920" | "1440" | "1280" | "1024" | "375";
 type Theme = "light" | "dark";
 
 const SAMPLE_IDS: readonly SampleId[] = ["chat", "crm", "docs"];
-const SAMPLE_PINS: readonly FramePin[] = [
-  { id: "pin-1", label: "Quarterly plan outline", href: "?product=chat&item=c-1" },
-  { id: "pin-2", label: "Lopez intake form", href: "?product=docs" },
-  { id: "pin-3", label: "Open tasks", href: "?product=workspace&item=projects" },
-];
 
 const DEFAULT_VARIANT: Record<SampleId, FrameVariant> = { crm: "list", docs: "record", chat: "light" };
 const DEFAULT_ITEM: Record<SampleId, string> = { crm: "people", docs: "documents", chat: "c-1" };
@@ -150,8 +146,8 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
   const [contactId, setContactId] = useState<string | null>(null);
   const [view, setView] = useState("all");
   const [starred, setStarred] = useState<FramePin[]>([]);
-  const [bigItems, setBigItems] = useState<FrameBigItems>("bottom");
-  const [pinSet, setPinSet] = useState<"sample" | "empty">("sample");
+  // Pinned: the starting set until edited here (the live frame saves through the favourites store).
+  const [savedPins, setSavedPins] = useState<FramePin[] | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   // The playground's theme switch drives the page's own dark class (portals included).
@@ -354,7 +350,7 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             ],
       ),
   };
-  const pins = pinSet === "sample" ? [...SAMPLE_PINS, ...starred] : starred;
+  const pins = [...(savedPins ?? defaultPins(LAB_PRODUCTS)), ...starred.filter((p) => !savedPins?.some((s) => s.id === p.id))];
 
   const fit = width === "fit";
   // The notes-like page (a Docs document) shows the faint ask bar; the others do not.
@@ -437,25 +433,9 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             { value: "flush", label: "Flush" },
           ]}
         />
-        <SegmentedControl<FrameBigItems>
-          aria-label="Big items"
-          value={bigItems}
-          onValueChange={setBigItems}
-          data={[
-            { value: "off", label: "Big items: Off" },
-            { value: "top", label: "Top" },
-            { value: "bottom", label: "Bottom" },
-          ]}
-        />
-        <SegmentedControl<"sample" | "empty">
-          aria-label="Pinned items"
-          value={pinSet}
-          onValueChange={setPinSet}
-          data={[
-            { value: "sample", label: "Pins: Sample" },
-            { value: "empty", label: "Empty" },
-          ]}
-        />
+        <Button variant="quiet" onClick={() => setSavedPins(null)} disabled={savedPins === null}>
+          Reset pins
+        </Button>
         <SegmentedControl<FrameSidebarColor>
           aria-label="Sidebar color"
           value={sidebarColor}
@@ -527,8 +507,11 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             crumbs={crumbs}
             favorite={favorite}
             pins={pins}
-            onSelectPin={(pin) => setStatus(`${pin.label} opened (sample)`)}
-            bigItems={bigItems}
+            onPinsChange={(next) => {
+              setSavedPins(next);
+              setStarred([]);
+              setStatus("Pins saved (sample)");
+            }}
             actions={actions}
             headerTools={<HeaderToolButtons tools={sampleTools} />}
             phoneTools={sampleTools}

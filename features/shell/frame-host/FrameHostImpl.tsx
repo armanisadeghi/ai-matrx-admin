@@ -44,12 +44,11 @@ import { useFramePins } from "./useFramePins";
 import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import { FrameSidebarSlotContext } from "./frameSidebarSlot";
 import { useFrameProductSidebar } from "./frameProductSidebar";
-import { FrameProductTop } from "./FrameProductTop";
 import { menuGoToEntries } from "./goToMenuEntries";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 import type { FrameHostProps } from "./FrameHostGate";
-import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
+import { PRODUCTS, PRODUCT_FAMILIES, defaultPins } from "@/features/shell/frame/products";
 import { FRAME_ROUTE_HOMES } from "@/features/shell/frame/route-homes.generated";
 import {
   FRAME_DEFAULT_PRODUCT_ID,
@@ -192,24 +191,18 @@ export default function FrameHostImpl({
       : undefined;
   // ONE crumb derivation: the trail the page declared, else the one derived from the address.
   const { host: pageHeaderHost, pageCrumbs, pageActions } = useFramePageHeaderHost();
-  const crumbs = frameHostCrumbs(product, pageCrumbs, useDerivedTrail({ pathname }), go);
-  const { pins, favorite } = useFramePins(pathname, crumbs[crumbs.length - 1].label);
+  const crumbs = frameHostCrumbs(product, pageCrumbs, useDerivedTrail({ pathname }), go, pathname);
+  const { pins, favorite, savePins } = useFramePins(pathname, crumbs[crumbs.length - 1].label, defaultPins(products));
 
   // THE PRODUCT'S OWN SIDEBAR (owner, 2026-10-22): the page's own sidebar, else the route
   // family's registered menu, else the route table's rows (frameProductSidebar.tsx).
   const ProductIcon = product.icon;
   const { slotHost, sidebarContent, productRows, ownsTop } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
-  // THE TOP OF EVERY PRODUCT SIDEBAR (owner, 2026-10-22): Search, chosen related places, More —
-  // unless the body draws its own (the chat menu). The product's own pages go under More when the
-  // body is a module menu or a page's sidebar that is not the whole menu.
-  const sidebarTop = ownsTop ? undefined : (
-    <FrameProductTop
-      product={product}
-      products={products}
-      ownPagesInMore={sidebarContent != null && productRows}
-      onGo={go}
-    />
-  );
+  // THE TOP OF EVERY PRODUCT SIDEBAR (owner, 2026-10-22) is wired here once the design-system
+  // release carrying ProductSidebarTop is installed (FrameProductTop.tsx); until then none.
+  void ownsTop;
+  void productRows;
+  const sidebarTop = undefined;
 
   // The page's own "…" items (declared through the page-header channel) first, then the frame's.
   const actions: FrameAction[] = [
@@ -241,7 +234,7 @@ export default function FrameHostImpl({
           favorites={favorites}
           onFavoritesChange={setFavorites}
           pins={isAuthenticated ? pins : undefined}
-          onSelectPin={(pin) => go(pin.href)}
+          onPinsChange={isAuthenticated ? savePins : undefined}
           favorite={isAuthenticated ? favorite : undefined}
           sidebarContent={sidebarContent}
           sidebarTop={sidebarTop}

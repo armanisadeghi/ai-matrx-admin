@@ -503,12 +503,12 @@ describe("zero weight: no chat code before the side chat is engaged", () => {
 describe("product marks (owner, 2026-10-20: Google's way)", () => {
   it("the glyph carries the product's color and fills its cell; nothing tints the tile", async () => {
     mount(base({ form: "desktop" }));
-    const sidebarMark = q("nav [data-mf-mark]")!;
-    expect(sidebarMark.getAttribute("style")).toContain(`--matrx-chip-${chat.color}-ink`);
     act(() => q<HTMLButtonElement>('[aria-label="All products"]')!.click());
     await nextFrame();
     const marks = [...document.querySelectorAll<HTMLElement>('[role="group"][aria-label="Products"] [data-mf-mark]')];
     expect(marks.length).toBeGreaterThan(5);
+    const chatMark = marks.find((m) => m.getAttribute("data-mf-mark") === chat.color)!;
+    expect(chatMark.getAttribute("style")).toContain(`--matrx-chip-${chat.color}-ink`);
     for (const m of marks) {
       expect(m.className).toContain("size-8");
       // Whole pixels on the SVG itself: 32px, stroke 1.75, no scaling.

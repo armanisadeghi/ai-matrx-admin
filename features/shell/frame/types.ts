@@ -34,6 +34,8 @@ export interface FrameProduct {
   /** The tile hue — one of the design-system chip hues, never a class. */
   color: ChipHue;
   homeHref: string;
+  /** A shorter label where space is tight (a Pinned tile, ~9 characters); default `name`. */
+  shortName?: string;
   /** The product's OWN sidebar menu — nothing from other products. */
   menu: readonly FrameMenuSection[];
 }
@@ -149,10 +151,9 @@ export interface FrameHeaderTool {
 export interface FramePin {
   id: string;
   label: string;
-  /** A real link; a plain click calls `onSelectPin` instead when the sidebar has one. */
+  /** A real link; a Pinned tile opens it in a new tab. */
   href: string;
   icon?: LucideIcon;
+  /** The pin IS a product (its home): the tile shows the product's mark and short name. */
+  productId?: string;
 }
-
-/** Where the big products (Chat, Memory, Intelligence …) always sit in the sidebar. Playground A/B. */
-export type FrameBigItems = "off" | "top" | "bottom";

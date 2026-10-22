@@ -39,13 +39,32 @@ export function isUnsavedPath(pathname: string): boolean {
   return pathname.split("/").includes("new");
 }
 
-export function useFramePins(pathname: string, pageLabel: string) {
-  const { favorites, isPinned, toggle } = usePinned();
+/**
+ * THE PINNED EDITOR'S SAVE, on the one favourites store: removed pins are unpinned, new ones pinned
+ * (a product or page pin is a `nav` favourite keyed by its address), then the order is saved.
+ */
+export function savePinsTo(
+  store: Pick<ReturnType<typeof usePinned>, "favorites" | "pin" | "unpin" | "reorder">,
+  next: readonly FramePin[],
+): void {
+  const keep = new Set(next.map((p) => p.id));
+  for (const f of store.favorites) if (!keep.has(f.id)) store.unpin(f.id);
+  const have = new Set(store.favorites.map((f) => f.id));
+  for (const p of next) if (!have.has(p.id)) store.pin({ id: p.id, kind: "nav", label: p.label, href: p.href });
+  store.reorder(next.map((p) => p.id));
+}
+
+export function useFramePins(pathname: string, pageLabel: string, startingPins: readonly FramePin[] = []) {
+  const store = usePinned();
+  const { favorites, isPinned, toggle } = store;
   const record = useCurrentRecord();
   // Until the saved preferences land, "not pinned" is the built-in default, not the person's answer.
   const known = useAppSelector(selectPreferencesLoadStatus) === "loaded";
-  const pins = favorites.map(pinFromFavorite);
-  if (isUnsavedPath(pathname)) return { pins, favorite: undefined };
+  // A person with no pins yet starts with the starting set (owner, 2026-10-22); saving any edit
+  // writes their own. Until the saved preferences land, the starting set is not shown as theirs.
+  const pins = favorites.length > 0 ? favorites.map(pinFromFavorite) : known ? [...startingPins] : [];
+  const savePins = (next: FramePin[]) => savePinsTo(store, next);
+  if (isUnsavedPath(pathname)) return { pins, favorite: undefined, savePins };
   const target =
     record && isFavoritableRecordKind(record.token) && record.id && isUuidShape(record.id)
       ? {
@@ -62,5 +81,5 @@ export function useFramePins(pathname: string, pageLabel: string) {
       if (known) toggle(target);
     },
   };
-  return { pins, favorite };
+  return { pins, favorite, savePins };
 }

@@ -269,3 +269,14 @@
 [data-matrx-frame] .mf-noscrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Pinned's last spot: an empty dashed slot that adds a pin (owner, 2026-10-22). The frame's own
+   chrome; the line is the border token, the corner the control radius. */
+[data-matrx-frame] .mf-pin-slot {
+  border: 1px dashed hsl(var(--border));
+  border-radius: 6px;
+  background: transparent;
+}
+[data-matrx-frame] .mf-pin-slot:hover {
+  background: hsl(var(--muted));
+}

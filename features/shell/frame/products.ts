@@ -114,7 +114,7 @@ import { INTELLIGENCE_ICON } from "@ai-matrx/icons/domain";
 // written here — `features/hr/__tests__/no-hand-built-hr-urls.test.ts` fails a
 // literal in navigation position. The other products have no such module.
 import { HR_HREF } from "@/features/hr/routes";
-import type { FrameProduct, ProductFamily } from "./types";
+import type { FramePin, FrameProduct, ProductFamily } from "./types";
 
 export const PRODUCT_FAMILIES: readonly { id: ProductFamily; label: string }[] = [
   { id: "yours", label: "Yours" },
@@ -499,6 +499,7 @@ export const PRODUCTS: readonly FrameProduct[] = [
   {
     id: "business-tools",
     name: "Business Tools",
+    shortName: "Tools",
     family: "business",
     icon: Briefcase,
     color: "slate",
@@ -581,15 +582,28 @@ export const DEFAULT_GRID_FAVORITES: readonly string[] = [
   "chat", "memory", "intelligence", "docs", "crm", "workspace", "drive", "data", "meet",
 ];
 
-/** How many of the person's grid favorites sit in the sidebar as big items (the "Big items" option). */
-export const BIG_ITEM_COUNT = 6;
-
 /**
- * The sidebar's big items: the person's own first grid favorites, in their order — changed where
- * the grid's favorites are edited (userPreferences.appGrid.favorites). No second list.
+ * WHAT A PERSON'S PINNED STARTS WITH (Arman, 2026-10-22: "start them with... Chat, Intelligence and
+ * Memory on the first row. Then, workspace and tools and the last spot empty with a dashed line").
+ * Shown until the person saves their own pins (then theirs, in their order).
  */
-export function bigItemProducts(products: readonly FrameProduct[], favorites: readonly string[]): FrameProduct[] {
-  return favorites
-    .flatMap((id) => products.filter((p) => p.id === id))
-    .slice(0, BIG_ITEM_COUNT);
+export const DEFAULT_PINNED_PRODUCTS: readonly string[] = ["chat", "intelligence", "memory", "workspace", "business-tools"];
+
+/** A product as a pin: its home, its mark. */
+export function productPin(product: FrameProduct): FramePin {
+  return { id: product.homeHref, label: product.name, href: product.homeHref, icon: product.icon, productId: product.id };
+}
+
+/** The default pins, from the (live) products. */
+export function defaultPins(products: readonly FrameProduct[]): FramePin[] {
+  return DEFAULT_PINNED_PRODUCTS.flatMap((id) => products.filter((p) => p.id === id).map(productPin));
+}
+
+/** A pin whose address is a product's home becomes that product's pin (mark, short name). */
+export function withProductMarks(pins: readonly FramePin[], products: readonly FrameProduct[]): FramePin[] {
+  return pins.map((pin) => {
+    if (pin.productId) return pin;
+    const product = products.find((p) => p.homeHref === pin.href);
+    return product ? { ...pin, productId: product.id, icon: pin.icon ?? product.icon } : pin;
+  });
 }

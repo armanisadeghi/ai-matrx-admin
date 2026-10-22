@@ -378,37 +378,13 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
   is the sidebar through the kind-B door, the current module's section tabs under it; no header
   switcher, no body tab strip, no product-rows strip (`wholeMenu`). Classic unchanged. Tests
   `features/hr/shared/__tests__/hr-menu-in-frame.test.tsx` + product-sidebar-in-frame.
-- 2026-10-22 (adversarial review of the live frame): footer History and Help draw only when the
-  host passes a handler (the live host passes none — no page-history or help target exists in
-  classic either; no shared save-status source exists, so the status slot stays empty). A loaded
-  canvas brings its own pane header (tabs, Expand, Close on the canvas store), so the frame draws
-  its canvas title row only around the lab placeholder — one close, one full screen. Pages add
-  their own "…" items through the page-header channel (`useDeclareFrameActions`; host merges them
-  before Copy link / Open in new tab): RecordPageHeader's Actions menu goes there, and on a phone
-  EntityModeHeader's other modes and actions go there instead of a second "…". Phone: a
-  product's home (or one of its sidebar rows) shows the menu button; Back only deeper
-  (`phoneCanGoBack`). The header star favorites the RECORD when the page declared one through the
-  current-record primitive (`kind:id`, the same favorite PinButton writes; no new declare
-  channel), else the page; an unsaved `/new` address has no star. Side chat uses the Chat
-  product's icon (`CHAT_PRODUCT_ICON`), never the reserved Agents glyph. The error fallback's
-  classic link keeps the query (`classicLayoutHref`). The grid's button reads "Edit grid". Kill
-  switch tested: knob `false` → classic; a read that does not answer keeps the person's choice
-  (fail-open by design); the middleware's cookie write is `rememberFrameChoice`.
-
-- 2026-10-22: Go to finds every page with a home row (`go-to-pages.generated.ts`, lazy): "timesheet"
-  finds /hr/time/timesheets. ONE crumb derivation in the frame: a page without a declared trail
-  gets the address-derived trail (`useDerivedTrail`, the same one page-top templates declare),
-  drawn through `frameHostCrumbs` → `pageTrailCrumbs`; the route table's `derivedCrumbs` is gone
-  (the route table now only picks the product and sidebar row). Classic keeps `deriveTrail`
-  unchanged — it was already the source, so nothing in classic moved. App grid fits without
-  scrolling (`gridLayout`). Big items are the person's own first six grid favorites
-  (`bigItemProducts`; `BIG_ITEM_IDS` deleted); the default order of `DEFAULT_GRID_FAVORITES` puts
-  the default big items first. `every-page-has-a-home` has its own advisory release-gate row.
-
-- 2026-10-22: HR's one menu. In the frame HR's whole module list (`resolveHrNav`, via `useHrNav`)
-  is the sidebar through the kind-B door, the current module's section tabs under it; no header
-  switcher, no body tab strip, no product-rows strip (`wholeMenu`). Classic unchanged. Tests
-  `features/hr/shared/__tests__/hr-menu-in-frame.test.tsx` + product-sidebar-in-frame.
+- 2026-10-22: Pinned starts full, edits in place (owner). Pinned is a 3-per-row tile grid at the
+  sidebar's foot (product mark + short name, `shortName` in products.ts; every tile opens a new tab),
+  the ONE always-visible list: the big-items list (`bigItems`, `bigItemProducts`, `BIG_ITEM_COUNT`)
+  is deleted. A person with no pins sees `DEFAULT_PINNED_PRODUCTS` (Chat, Intelligence, Memory /
+  Workspace, Tools); the last spot is a dashed slot. The heading's pencil and the slot open
+  `PinsEditor` (reorder, remove, add a product); `onPinsChange` saves through `usePinned` (the one
+  favourites store; `savePinsTo` in `frame-host/useFramePins.ts`). Test: `__tests__/sidebar-pinned.test.tsx`.
 - 2026-10-22: Product sidebar top. Every product sidebar opens with `ProductSidebarTop` (Search,
   chosen related places, More, Edit sidebar…) from `relatedPlaces.ts` + knob `shell.sidebar.places`;
   replaces the product-rows strip (its pages moved into More); /chat's menu owns its top.

@@ -45,13 +45,13 @@ import {
 } from "./geometry";
 import type { FrameInitialGeometry } from "./geometry";
 import { useModalPanel } from "./useModalPanel";
-import { CHAT_PRODUCT_ICON, bigItemProducts } from "./products";
+import { CHAT_PRODUCT_ICON, withProductMarks } from "./products";
+import { PinsEditor } from "./PinsEditor";
 import type {
   CanvasProps,
   CompanionProps,
   CompanionSeed,
   FrameAction,
-  FrameBigItems,
   FrameCrumb,
   FrameForm,
   FrameHeaderTool,
@@ -162,11 +162,14 @@ export interface AppFrameProps {
   onFavoritesChange: (ids: string[]) => void;
   activeMenuItemId?: string;
   onSelectMenuItem?: (item: FrameMenuItem) => void;
-  /** Pinned: the person's own pages. Omit to hide the section; `[]` shows the empty hint. */
+  /**
+   * PINNED (owner, 2026-10-22): the person's pins (the host passes its starting set while they have
+   * none), a 3-per-row tile grid always visible at the sidebar's foot; tiles open a new tab. Omit
+   * to hide the section.
+   */
   pins?: readonly FramePin[];
-  onSelectPin?: (pin: FramePin) => void;
-  /** The big products always in the sidebar: `off`, `top` or `bottom`. Default `bottom`. */
-  bigItems?: FrameBigItems;
+  /** Save edited pins (the pencil and the dashed slot open the editor). Omit = not editable. */
+  onPinsChange?: (next: FramePin[]) => void;
   /**
    * THE PRODUCT'S OWN NAVIGATION, given by the host (a module's menu, or the page's sidebar
    * through the host's slot). Rendered in the sidebar body in place of the menu rows; the top
@@ -452,14 +455,14 @@ export function AppFrame(props: AppFrameProps) {
   const companionMounted = useLatched(companionShown);
   const canvasMounted = useLatched(canvasOpen);
 
+  const [pinsEditor, setPinsEditor] = useState<"edit" | "add" | null>(null);
   const grid: AppGridProps = { products, families, favorites, onFavoritesChange, goToEntries: props.goToEntries, onGo: props.onGoTo };
   const sidebarExtras = {
-    pins: props.pins,
-    onSelectPin: props.onSelectPin,
-    bigItems: props.bigItems ?? "bottom",
+    pins: props.pins ? withProductMarks(props.pins, products) : undefined,
+    pinProducts: products,
+    onEditPins: props.onPinsChange ? (mode: "edit" | "add") => setPinsEditor(mode) : undefined,
     content: props.sidebarContent,
     top: props.sidebarTop,
-    bigProducts: bigItemProducts(products, favorites),
   };
   const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };
 
@@ -876,6 +879,16 @@ export function AppFrame(props: AppFrameProps) {
               />
             </div>
           </div>
+        ) : null}
+        {props.onPinsChange && props.pins ? (
+          <PinsEditor
+            open={pinsEditor !== null}
+            onOpenChange={(open) => !open && setPinsEditor(null)}
+            mode={pinsEditor ?? "edit"}
+            pins={withProductMarks(props.pins, products)}
+            products={products}
+            onSave={props.onPinsChange}
+          />
         ) : null}
       </PortalContainerProvider>
     </div>
