@@ -6,6 +6,7 @@ import { toast } from "@/lib/toast";
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
 import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
 import { settingDoorHref } from "../doors/settingDoorTarget";
 import { useAutoRagPreference } from "@/features/kg-suggestions/hooks/useAutoRagPreference";
@@ -96,7 +97,35 @@ export default function PrivacyTab() {
         />
       </SettingsSection>
 
-      {agentsKnobs.length > 0 && <UniversalSettingsRows knobs={agentsKnobs} hideKey />}
+      {agentsKnobs.length > 0 ? (
+        <UniversalSettingsRows knobs={agentsKnobs} hideKey />
+      ) : (
+        // Never absent: the server treats an unread setting as OFF, so the person must see why there is no switch.
+        <SettingsSection title="Your agents">
+          {settings.isLoading ? (
+            <SettingsSwitch
+              label="Share my profile with my agents"
+              description="Loading your setting."
+              checked={false}
+              onCheckedChange={() => undefined}
+              disabled
+              last
+            />
+          ) : (
+            <SettingsButton
+              label="Share my profile with my agents"
+              description={
+                settings.error
+                  ? "Could not load, so your agents see nothing."
+                  : "Not available now, so your agents see nothing."
+              }
+              actionLabel="Retry"
+              onClick={settings.refresh}
+              last
+            />
+          )}
+        </SettingsSection>
+      )}
 
       <SettingsSection title="Your data" icon={DatabaseZap}>
         <SettingsLink

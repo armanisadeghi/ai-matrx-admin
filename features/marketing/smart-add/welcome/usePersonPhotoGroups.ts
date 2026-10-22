@@ -12,9 +12,7 @@ import { useEffect, useState } from "react";
 import { postImageGroups } from "../logoGroups";
 import type { EvidenceItem } from "../evidence";
 import { candidatePhotos } from "./peopleGroups";
-
-/** The longest the cards wait for the photo groups. */
-export const PHOTO_GROUPS_WAIT_MS = 6000;
+import { readWelcomeKnob } from "./welcomeKnobs";
 
 export interface PersonPhotoGroups {
   /** Evidence key → photo group id, for the photos read. */
@@ -42,7 +40,11 @@ export function usePersonPhotoGroups(items: readonly EvidenceItem[], name: strin
       answered = true;
       setAnswer({ request, groups });
     };
-    const timer = window.setTimeout(() => done(NONE), PHOTO_GROUPS_WAIT_MS);
+    // The longest the cards wait is the `welcome.photo_groups_wait_ms` knob (welcomeKnobs.ts).
+    let timer: number | undefined;
+    void readWelcomeKnob("photoGroupsWaitMs").then((ms) => {
+      if (live && !answered) timer = window.setTimeout(() => done(NONE), ms);
+    });
     postImageGroups(JSON.parse(request))
       .then((data) => {
         const map = new Map<string, string>();

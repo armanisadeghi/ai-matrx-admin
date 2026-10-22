@@ -43,11 +43,11 @@ import { IDENTIFY_WORKFLOW_KEY, welcomeFirstRound } from "./welcomeRound";
 import { MAX_WELCOME_ROUNDS, roundSubject, welcomeSubject } from "./welcomeSession";
 import { welcomeFoundSomething, welcomeVerdict } from "./welcomeVerdict";
 import { FOUND_WINDOW_LINK, foundSearchState, type FoundSearchState } from "./foundSearchState";
+import { readWelcomeKnob } from "./welcomeKnobs";
 import { foundStateMetadata, startFoundSearchWith, type FoundSearchInfo } from "./foundSearchStart";
 
-/** How often an open app checks a running round, and for how long after it started. */
-export const FOUND_POLL_MS = 30_000;
-export const FOUND_POLL_FOR_MS = 15 * 60_000;
+// How often an open app checks a running round, and for how long after it started, are the `welcome.found_poll_ms`
+// and `welcome.found_poll_for_ms` knobs (welcomeKnobs.ts).
 const TERMINAL = ["completed", "failed", "errored", "cancelled", "stopped", "refused"];
 
 export type { FoundSearchInfo } from "./foundSearchStart";
@@ -184,17 +184,19 @@ export async function checkFoundSearch(): Promise<FoundCheck> {
 export function watchFoundSearch(startedAt: string | null): () => void {
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
-  const until = (startedAt ? Date.parse(startedAt) : Date.now()) + FOUND_POLL_FOR_MS;
   const tick = async () => {
+    if (stopped) return;
+    const [pollMs, pollForMs] = await Promise.all([readWelcomeKnob("foundPollMs"), readWelcomeKnob("foundPollForMs")]);
+    const until = (startedAt ? Date.parse(startedAt) : Date.now()) + pollForMs;
     if (stopped) return;
     try {
       const result = await checkFoundSearch();
-      if (result !== "running" || Date.now() + FOUND_POLL_MS > until) return;
+      if (result !== "running" || Date.now() + pollMs > until) return;
     } catch (error) {
       console.error("[found-search] The check failed; the next load tries again.", error);
       return;
     }
-    if (!stopped) timer = setTimeout(() => void tick(), FOUND_POLL_MS);
+    if (!stopped) timer = setTimeout(() => void tick(), pollMs);
   };
   void tick();
   return () => {

@@ -39,7 +39,6 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { Button } from "@ai-matrx/design-system";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import type { AgeBand } from "../types";
 
@@ -212,9 +211,9 @@ export function AgeDeclarationNudge({
       </div>
       {choices}
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" disabled={busy} data-testid="age-nudge-not-now" onClick={() => onOpenChange(false)}>
+        <ControlButton variant="quiet" disabled={busy} data-testid="age-nudge-not-now" onClick={() => onOpenChange(false)}>
           Not now
-        </Button>
+        </ControlButton>
       </div>
     </aside>
   );
