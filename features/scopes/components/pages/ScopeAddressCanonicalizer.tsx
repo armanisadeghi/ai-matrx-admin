@@ -8,7 +8,10 @@
  * same screen has historically answered at two addresses. This component makes
  * the slug address the only one that survives: it watches the resolved rows in
  * Redux and, the moment a UUID segment's row is known to have a slug, rewrites
- * that segment in place with `router.replace` — Back still goes where the user
+ * that segment in place with `window.history.replaceState` — the page does not
+ * render again (a `router.replace` is a navigation: the server pages below went
+ * blank for ~0.5 s and painted again, CD-PAY-01 2026-10-22; guard
+ * an-address-rewrite-never-reloads-the-page.test.ts), Back still goes where the user
  * came from, the deep path below the rewritten segment is untouched, and the
  * query string rides along (a `?tab=` or `?item=` handoff must survive).
  *
@@ -25,7 +28,7 @@
  */
 
 import { useEffect, useMemo } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
@@ -44,8 +47,6 @@ import {
 export function ScopeAddressCanonicalizer() {
   const params = useParams();
   const pathname = usePathname() ?? "";
-  const router = useRouter();
-
   const orgSlugOrId = (params.orgId as string | undefined) ?? "";
   const typeParam = params.typeId as string | undefined;
   const scopeParam = params.scopeId as string | undefined;
@@ -118,10 +119,14 @@ export function ScopeAddressCanonicalizer() {
     // into a Suspense requirement for a value only an effect ever reads.
     // Keep the query AND the #section: a link to /organizations/<uuid>/settings#teams
     // must still land on Teams after the address becomes the slug.
-    router.replace(`${target}${window.location.search}${window.location.hash}`, {
-      scroll: false,
-    });
-  }, [router, target]);
+    // Next.js syncs usePathname with history.replaceState; the params keep the
+    // address that was loaded, so `target` turns null and nothing loops.
+    window.history.replaceState(
+      null,
+      "",
+      `${target}${window.location.search}${window.location.hash}`,
+    );
+  }, [target]);
 
   return null;
 }
