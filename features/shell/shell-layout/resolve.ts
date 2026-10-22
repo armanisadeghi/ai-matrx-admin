@@ -86,6 +86,11 @@ export interface ResolvedShellLayout {
   source: ShellLayoutSource;
   sidebar: ResolvedNavItem[];
   dock: ResolvedNavItem[];
+  /**
+   * The winning body carries its own Dock. The phone dock is hidden on every route by default (shell.css
+   * §13); a person (or organization) who customized it gets it shown (`data-show-dock` on `.shell-root`).
+   */
+  customDock: boolean;
   header: ResolvedHeaderButton[];
   /** Where sign-in lands; null = the platform default. `shellLandingHref` turns it into a path. */
   landing: ShellLanding | null;
@@ -367,6 +372,7 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
     source,
     sidebar: primaryNavItems,
     dock: dockItems,
+    customDock: false,
     header: defaultHeader(),
     landing: null,
     look: null,
@@ -374,6 +380,11 @@ function defaultLayout(source: ShellLayoutSource): ResolvedShellLayout {
     whatsNew: [],
     problems: [],
   };
+}
+
+/** The winning body carries its own Dock (shown on phones only then). */
+export function bodyShowsDock(body: ShellLayoutBody | null): boolean {
+  return body?.dock !== undefined;
 }
 
 /** The look a winning body names; null = standard. */
@@ -407,6 +418,7 @@ export function resolveShellLayout({
     source,
     sidebar: body.sidebar ? resolveTopNodes(body.sidebar, "sidebar", walk, true) : primaryNavItems,
     dock: body.dock ? resolveTopNodes(body.dock, "dock", walk, false) : dockItems,
+    customDock: body.dock !== undefined,
     header: body.header ? resolveHeader(body.header, walk) : defaultHeader(),
     landing: body.landing ?? null,
     look: bodyShellLook(body),
