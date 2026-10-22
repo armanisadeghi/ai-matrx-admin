@@ -53,7 +53,10 @@ One flat entry per menu node (primary, Settings, admin rows only for admins) plu
 Tools-grid tile (`tile.*`, a window launcher, hidden by default; its icon is named back from the
 tile's Lucide component, else the window icon). `defaultVisible` is true exactly for the built-in
 Sidebar. New destinations a customized layout should hear about: bump `SHELL_CATALOG_VERSION` and
-list their ids in `CATALOG_ADDED_IN` at the new number.
+list their ids in `CATALOG_ADDED_IN` at the new number (now version 2: `account.authenticator`, `data.library`,
+`web.search-tools`). Enforced: `features/shell/__tests__/nav-ids.test.ts` fails on any menu or tile id that is in
+neither the frozen version-1 list (`nav-ids.catalog-v1.json`, never edited) nor `CATALOG_ADDED_IN`, and on a
+version left unbumped. What's new never offers what a region the body does not carry already shows by default.
 
 ## Reading a stored body
 
@@ -102,6 +105,12 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
   groups: slice unseeded = default.
 - **Late answers never win:** a write stamps `localWriteAt`; a store answer (`shellLayoutLoaded`, the sync
   engine's `fromServer` fetch) carries `requestedAt` and is dropped when it was asked before the last write.
+- **Dock visibility:** the phone dock is hidden on every route by default (`styles/shell.css` §13, `.shell-root:not([data-show-dock])`).
+  A layout whose winning body carries its own `dock` shows it: `resolved.customDock` / `heldShellShowsDock` →
+  `data-show-dock` on `.shell-root` (AppShell for the first frame, `ShellLayoutSync` after a save, preview or reset).
+  Nobody else's phone changes. Guard: `__tests__/dock-shown.test.ts`.
+- **Empty groups** resolve with href `EDIT_SIDEBAR_HREF` (`addPagesHref.ts`): their label opens their menu ("Add
+  pages…") in `NavFlyoutGroup` and the phone drawer, never a page.
 - **Renderers:** `ShellSidebarNav`, `PrimaryMobileNavigationDrawer`, `ShellDockItems`, `ShellHeaderButtons`
   (orders the five server-rendered controls + custom 44px buttons; mandate → `useOpenMandateWindow`),
   `HeaderPhoneOverflow` rows. Default = the nav-data arrays themselves (`ShellSidebarNav.test.tsx` proves the
@@ -122,6 +131,10 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 - **Live preview:** an unsaved draft goes to the slice's `previewBody`; `resolveHeldShellLayout` draws it in place of
   every stored layout, so the real Sidebar/Header/Dock show it. Cleared on save, discard and close. Never persisted.
 - **Saving** refuses a body with `problems`. History lists record versions; "Set active" = `restore` (one new version).
+  Every by-id read (history, preview, version) runs in the ROW's organization (`lib/records/clientInOrganization.ts`):
+  the store answers a row asked for under another organization with nothing. History says "No saved versions yet"
+  or why it could not be read. An archived organization's refusal is mapped to plain words (`plainLayoutRefusal`);
+  Organization settings › Layout offers no editor for an archived organization. The window title follows the tab.
   Every save goes through ONE lane per tab (`saveLane.ts`): one write at a time, each reading the version the last
   one left and building its body (`save(target, (now) => body, note)`) when its turn comes, so a person's own quick
   edits never refuse each other. `{ optimistic: true }` (Settings › Layout's Look and accent) draws the choice at once
@@ -130,14 +143,16 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
   an accent the shell's selection tokens (`--shell-pill-*`, `--shell-nav-selected-text`, styles/shell.css) and the
   glass tint (design-system `accent.css`) derive from `--primary`; with none they keep the literal built-in blue.
 - **Reset:** the section (region back to default), "Use organization's layout" (clear person), "Reset to standard"
-  (person with an org layout saves explicit default regions so they win; else clear).
+  (person with an org layout saves an EMPTY body — `standardPersonBody()`, every region the growing default — so it
+  wins without freezing her out of later additions; else clear). Org reset and the members switch confirm with a toast.
 - **Add to my menu** saves the person's layout at once. The page's record comes from the current-record primitive
   (`features/shell/current-record/currentRecord.ts`: `EntityModeHeader` / `RecordPageHeader` declare the name, and
   `token`/`id` when the caller passes `record.token`/`record.id`; `<DeclareCurrentRecord token id />` for routes like
   `/agents/[id]`).
 - **Lock:** `shell.members_may_customize` off → `personAllowed: false` (amendment in REGISTER.md); the server pick
   reads the knob only when a person layout AND the predicted organization's layout both exist; `ShellLayoutSync`
-  follows it on the client. A locked member's editor says so in one line.
+  follows it on the client. A locked member (her organization HAS a layout) sees one line saying the organization's
+  layout is in use; Save is off with the reason, no live preview, no "Reset to standard".
 - **What's new** (`WhatsNewSlot`, top of the Sidebar, only for a person with her own custom sidebar): "New: X" — Add
   (into the sidebar; the body moves to today's catalog version once nothing newer is left) / Dismiss
   (`dismissedNew`); "Your organization updated its menu" — Review / Dismiss, keyed in localStorage by the
@@ -145,6 +160,12 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 - **Landing:** every sign-in path ends in `signInDestination` (utils/auth/FEATURE.md); `/dashboard` counts as none.
 
 ## Change log
+
+- `2026-10-22` — claude (lane S, audit fixes): History reads in the row's organization (+ empty/error states, launchpad
+  history too); a customized Dock is shown on phones; catalog version 2 + the CATALOG_ADDED_IN guard; Reset to
+  standard stores an empty body; locked members get no Save; empty groups never navigate; archived orgs get no editor;
+  title follows the tab; in-app header links read "Page"; org reset/lock toasts. Guards `row-organization`,
+  `dock-shown`, `catalog-additions`, `editor-honesty` tests + `nav-ids.test.ts`.
 
 - `2026-10-20` — claude (lane R): the save lane (serialized CAS saves; optimistic Look/accent), the custom color used once per Enter+blur, the "Default" swatch, accent-derived selection states. Guards `__tests__/save-lane.test.tsx`, `__tests__/accent-selection-states.test.ts`.
 - `2026-10-20` — claude (lane Q): the accent color and the organization's brand color — `accent` field

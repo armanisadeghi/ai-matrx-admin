@@ -114,7 +114,6 @@ export interface ResolvedShellLayout {
 const LAUNCHPAD_ICON: ShellIconName = "LayoutGrid";
 const RECORD_ICON: ShellIconName = "FileText";
 
-
 /** The page a launchpad key opens. */
 export function launchpadHref(key: string): string {
   return `${USER_LAUNCHPAD_PATH}/${encodeURIComponent(key)}`;
