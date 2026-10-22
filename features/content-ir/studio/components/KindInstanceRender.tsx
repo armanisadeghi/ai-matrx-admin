@@ -23,6 +23,10 @@ import {
   requestRichContentHost,
   useRichContentHostLanded,
 } from "@ai-matrx/rich-content/host";
+import { captureError } from "@/lib/diagnostics/errorCaptureStore";
+
+/** A host that has not landed after this long is a failure, not a slow network. */
+const HOST_LANDING_ALARM_MS = 20_000;
 import { correctKindValue } from "@ai-matrx/rich-content/kinds/registry/kind-correctors";
 import { KindCorrectionsNotice } from "@/features/content-ir/react/db-component/KindCorrectionsNotice";
 import {
@@ -62,6 +66,17 @@ export default function KindInstanceRender(props: KindInstanceRenderProps) {
   useEffect(() => {
     requestRichContentHost();
   }, []);
+  // Nothing fails silently: a skeleton that never resolves is announced once.
+  useEffect(() => {
+    if (hostLanded) return;
+    const timer = setTimeout(() => {
+      captureError({
+        source: "content-ir",
+        message: `The rich-content host did not land within ${HOST_LANDING_ALARM_MS / 1000}s — kind "${props.kind}" is stuck on its skeleton.`,
+      });
+    }, HOST_LANDING_ALARM_MS);
+    return () => clearTimeout(timer);
+  }, [hostLanded, props.kind]);
   const { value, corrections } = correctKindValue(props.kind, props.value);
   if (!hostLanded) {
     return (
