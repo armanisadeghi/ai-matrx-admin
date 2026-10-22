@@ -18,7 +18,7 @@ import {
   selectNoteContentLoadStatus,
   selectSharedWithMeNotes,
 } from "../../redux/selectors";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { fetchNoteContent } from "../../redux/thunks";
 import { useNoteAccess } from "../../hooks/useNoteAccess";
 import PageHeader from "@/features/shell/components/header/PageHeader";

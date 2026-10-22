@@ -259,4 +259,5 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "executionStateDebug", label: "Agent Execution State", instance: "single" },
   { id: "shellLayoutEditorWindow", label: "Edit layout", instance: "multi", window: { windowId: "shell-layout-editor-window", mobile: "fullscreen" } },
   { id: "alchemyPrepareWindow", label: "Prepare", instance: "multi", window: { windowId: "alchemy-prepare" } },
+  { id: "packageDiffDialog", label: "Compare", instance: "multi" },
 ];

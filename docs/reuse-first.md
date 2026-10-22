@@ -110,7 +110,7 @@ this section exists to stop. Campaign: `docs/handoffs/inventory-law-sweep.md`.
 | Imperative confirm (replaces `window.confirm`) | `confirm({…})` | `components/dialogs/confirm/ConfirmDialogHost.tsx` |
 | Inline destructive confirm | `ConfirmDialog` | `components/ui/confirm-dialog.tsx` |
 | Single-string prompt (replaces `window.prompt`) | `TextInputDialog` | `@ai-matrx/design-system` |
-| A control the viewer cannot use (not allowed) — hide it and offer "Ask for access": note + context → org admins (access-request ledger + DM) or, for system-owned things, the platform team (user feedback) | `RequestAccess` / `useRequestAccess` | `features/access-gate/components/RequestAccess.tsx` |
+| A control the viewer cannot use (not allowed) — hide it and offer "Ask for access": note + context → org admins (access-request ledger + DM) or, for system-owned things, the platform team (user feedback) | `RequestAccess` / `useRequestAccess` | `@ai-matrx/sharing/access/react` |
 
 ### Components — files, media, layout
 

@@ -23,7 +23,8 @@ jest.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(mockSearch),
 }));
 
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: ({ token, id }: { token: string; id: string }) => (
     <div data-testid="access-gate">
       {token}:{id}

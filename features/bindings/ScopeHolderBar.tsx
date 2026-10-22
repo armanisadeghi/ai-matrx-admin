@@ -39,10 +39,7 @@ import {
   type AgentScope,
 } from "@/features/agent-shortcuts/constants";
 import { HolderAssignment } from "./HolderAssignment";
-import {
-  RequestAccess,
-  type RequestAccessTarget,
-} from "@/features/access-gate/components/RequestAccess";
+import { RequestAccess, type RequestAccessTarget } from "@ai-matrx/sharing/access/react";
 import { systemRungHolderIsPersonal } from "./system-rung";
 import {
   DEFAULT_HOLDER_RUNG,

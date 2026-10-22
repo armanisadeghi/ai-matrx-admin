@@ -1,6 +1,7 @@
 jest.mock("@/components/favorites/usePinned", () => ({ usePinned: () => ({}), favoriteId: () => "" }));
 jest.mock("@/components/favorites/PinButton", () => ({ PinButton: () => null }));
-jest.mock("@/features/access-gate/hooks/useAccessStates", () => ({ useAccessStates: () => ({}) }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), useAccessStates: () => ({}) }));
 jest.mock("@/features/board/tools/search-items", () => ({ searchItemsAsPerson: () => null }));
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => null }));
 import { idsNeedingAnAnswer, openableRecentAgents } from "../bodies/AgentsWidget";

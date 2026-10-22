@@ -1097,6 +1097,148 @@ def staged_parse_failures():
     return out
 
 
+STAGED_IMPORTS_CHECK = os.path.join("scripts", "check-staged-imports.mjs")
+
+
+def staged_import_findings():
+    """Findings of `scripts/check-staged-imports.mjs --json` over the staged set: a staged file that
+    imports a LOCAL file or export the index does not carry. None when the checker cannot run (it
+    says so; never stops the sync)."""
+    if not os.path.isfile(STAGED_IMPORTS_CHECK):
+        return None
+    try:
+        r = subprocess.run(["node", STAGED_IMPORTS_CHECK, "--json"], capture_output=True, text=True,
+                           timeout=300, env={**os.environ, "MATRX_RELEASE_PATH": "0"})
+        if r.returncode not in (0, 1):
+            raise RuntimeError((r.stderr or r.stdout).strip()[-400:] or "exit %d" % r.returncode)
+        findings = json.loads(r.stdout.strip().splitlines()[-1])["findings"]
+        if not isinstance(findings, list):
+            raise ValueError("malformed result")
+        return findings
+    except (OSError, ValueError, IndexError, KeyError, TypeError, RuntimeError, subprocess.TimeoutExpired) as e:
+        say("sweep partial-commit check could not run (%s); nothing held for local imports." % e)
+        return None
+
+
+def _finding_line(f):
+    if f.get("reverse"):
+        what = f.get("cause") if f.get("kind") == "missing-file" else "{ %s } of %s" % (f.get("name"), f.get("cause"))
+        return "it removes %s (%s), still used by %s:%s" % (what, f.get("why"), f.get("file"), f.get("line"))
+    if f.get("via"):
+        return 'line %s imports { %s } from "%s", which passes on %s; the locked version does not export it' % (
+            f.get("line"), f.get("name"), f.get("specifier"), f.get("via"))
+    if f.get("kind") == "missing-file":
+        return 'line %s imports "%s", a file this sweep does not carry' % (f.get("line"), f.get("specifier"))
+    return 'line %s imports { %s } from "%s"; %s as swept does not export it' % (
+        f.get("line"), f.get("name"), f.get("specifier"), f.get("target"))
+
+
+def hold_partial_imports(skipped):
+    """PARTIAL COMMIT (2026-10-22, about half of 17 failed builds): the sweep may not commit a file
+    whose local import (a file or an export) stays behind on disk, nor a deletion, rename or export
+    removal that a file it leaves alone still imports (that importer's update is the "sibling"; the
+    removal is what is held). For each finding: when the sibling
+    that satisfies it is on disk, uncommitted, and not held for another reason (`skipped`), it is
+    staged too and the pair is committed together; otherwise the importer is unstaged and stays on
+    disk ("SWEEP SKIPPED"). Repeats until the staged set closes (an unstaged file can strand the
+    next importer). Returns [(path, why)] of what it skipped."""
+    skipped = set(skipped)
+    out = []
+    for _round in range(8):
+        findings = staged_import_findings()
+        if not findings:
+            return out
+        pulled = []
+        for f in findings:
+            sib = f.get("sibling")
+            if not isinstance(sib, str) or not sib or sib in skipped or sib in pulled:
+                continue
+            if not git("status", "--porcelain", "--", ":(literal)" + sib, check=False)[1].strip():
+                continue   # committed as it is: staging it changes nothing
+            git("add", "--", ":(literal)" + sib, check=False)
+            if git("diff", "--cached", "--quiet", "--", ":(literal)" + sib, check=False)[0] == 0:
+                continue   # nothing staged (gitignored, vanished)
+            bad = staged_marker_files([sib]) or [p for p, _ in staged_parse_failures() if p == sib]
+            if bad:
+                git("restore", "--staged", "--", ":(literal)" + sib, check=False)
+                skipped.add(sib)
+                continue
+            pulled.append(sib)
+            if f.get("reverse"):
+                say("SWEEP PULLED IN %s: it still uses what %s removes, and its update was uncommitted; "
+                    "they go in one commit." % (sib, f.get("cause")))
+            else:
+                say("SWEEP PULLED IN %s: %s imports it and it was still uncommitted; they go in one commit."
+                    % (sib, f.get("file")))
+        if pulled:
+            continue
+        by_file = {}
+        for f in findings:
+            # A reverse finding holds what the sweep REMOVES (the deletion, rename or export removal),
+            # never the untouched importer; every other finding holds the importer.
+            by_file.setdefault(f.get("hold") or f.get("file"), []).append(f)
+        for path, fs in by_file.items():
+            if not isinstance(path, str) or path in skipped:
+                continue
+            git("restore", "--staged", "--", ":(literal)" + path, check=False)
+            skipped.add(path)
+            why = "; ".join(_finding_line(f) for f in fs[:3])
+            out.append((path, why))
+            if any(f.get("reverse") for f in fs):
+                say("SWEEP SKIPPED %s: %s. Committing the removal alone breaks the build; it stays "
+                    "uncommitted and the next sync commits it with the importers' update." % (path, why))
+            else:
+                say("SWEEP SKIPPED %s: %s. Committing it alone breaks the build; it stays on disk and the "
+                    "next sync commits it with what it imports." % (path, why))
+    say("sweep partial-commit check did not settle in 8 rounds; committing what is staged.")
+    return out
+
+
+IMPORTS_CHECK = os.path.join("scripts", "check-matrx-imports.mjs")
+
+
+def staged_lock_import_failures():
+    """[(path, why)] staged files that import an @ai-matrx name or subpath the version pnpm-lock.yaml
+    LOCKS does not ship (2026-10-22: 17 of 20 failed production builds; check-sweep-resolves judges the
+    INSTALLED copies, which can be newer than the lockfile). `check-matrx-imports.mjs --lock --json`
+    over the staged code files; a staged lockfile/package.json widens it to every tracked file, and a
+    finding in a file this sweep does not carry then holds the lockfile and package.json instead.
+    A checker that cannot run holds nothing and says so: it never stops the sync."""
+    if not os.path.isfile(IMPORTS_CHECK) or not os.path.isfile("pnpm-lock.yaml"):
+        return []
+    _, out, _ = git("diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z", check=False)
+    staged = [p for p in out.split("\0") if p]
+    code = [p for p in staged if re.search(r"\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$", p)]
+    lock = [p for p in staged if p in ("pnpm-lock.yaml", "package.json")]
+    wanted = []
+    for p in code:
+        try:
+            with open(p, "rb") as f:
+                if b"@ai-matrx/" in f.read():
+                    wanted.append(p)
+        except OSError:
+            pass
+    if not wanted and not lock:
+        return []
+    try:
+        r = subprocess.run(["node", IMPORTS_CHECK, "--lock", "--json", "--root", os.getcwd(), *wanted, *lock], capture_output=True,
+                           text=True, timeout=900)
+        data = json.loads((r.stdout.strip().splitlines() or ["{}"])[-1])
+        findings = data["findings"]
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, IndexError) as e:
+        say("sweep lockfile import check could not run (%s); nothing held for it." % e)
+        return []
+    out = {}
+    for f in findings:
+        need = ("; %s@%s has it" % (f["pkg"], f["installed"])) if f.get("installedHasIt") else ""
+        why = "imports %s from %s, which the locked %s@%s does not ship%s" % (
+            f.get("name"), f.get("pkg"), f.get("pkg"), f.get("version"), need)
+        target = f["file"] if f["file"] in staged else None
+        for p in ([target] if target else lock):
+            out.setdefault(p, why if target else "the staged lockfile breaks %s: %s" % (f["file"], why))
+    return list(out.items())
+
+
 def _blob_has_marker(path, sha):
     if not sha:
         return False
@@ -1157,18 +1299,20 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: a forcing-function plant (pid %d) is live in it; the next sync "
             "commits it." % (p, pid))
+    skipped_here = set()
     for p in staged_marker_files():
+        skipped_here.add(p)
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: it holds git conflict markers (<<<<<<< / ======= / >>>>>>>); a marker breaks "
             "the build. Resolve the file; the next sync commits it." % p)
-    for p, why in staged_parse_failures():
-        git("restore", "--staged", "--", ":(literal)" + p, check=False)
-        say("SWEEP SKIPPED %s: it does not parse (%s); Turbopack refuses it and every release build "
-            "fails. Fix the file; the next sync commits it." % (p, why))
+    # Arman, 2026-10-22: "never ever ever during a release". The sweep runs inside the release, so it
+    # never holds code back for a quality reason; parse / locked-import / partial-commit problems are
+    # caught when agents write and commit (edit hook, pre-commit), never here — no check runs, nothing waits.
     for p, reasons in held:
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
             "next sync retries it:\n        %s" % (p, "\n        ".join(reasons[:4])))
+    # check-staged-imports runs at commit time (pre-commit), never here: the sweep is the release path.
     rc, _, _ = git("diff", "--cached", "--quiet", check=False)
     if rc == 0:
         return 0

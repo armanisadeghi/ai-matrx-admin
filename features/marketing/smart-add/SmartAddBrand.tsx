@@ -89,7 +89,6 @@ import { useSessionKnob } from "@/lib/scoped-config/sessionKnob";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
-import { useSocialSpend } from "@/features/marketing/social/cost";
 import { BrandCard, CustomAdd, situationOf } from "./SmartAddExtras";
 import { CompareDialog } from "./compare/CompareDialog";
 import { compareSlots, isAnswered } from "./compare/compareSlots";
@@ -190,9 +189,9 @@ import type { BrandSnapshot, EnrichSeed, KnownFact } from "./enrich/known";
 import { computeEnrichDiff } from "./enrich/diff";
 import { ChangesReview } from "./enrich/ChangesReview";
 import { useEnrichWebDecisions } from "./enrich/useEnrichWebDecisions";
-import { browserImageUrl } from "@/lib/media/external-image";
+import { ShadedLogo } from "./ShadedLogo";
 import type { SmartAddAddressBinding } from "./useSmartAddAddress";
-import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress } from "./smartAddUrl";
+import { SMART_ADD_ADDRESS_DEBOUNCE_MS, type SmartAddAddress, type SmartAddVia } from "./smartAddUrl";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /** Enrich an existing brand (ENRICH.md): what we already know, the checked facts' seed, and the brand. */
@@ -303,7 +302,7 @@ export function SmartAddBrand({
   const lastMode = useRef(url?.address.mode ?? null);
   if (url?.address.mode) lastMode.current = url.address.mode;
   const person = url ? lastMode.current === "person" : personLocal;
-  const setPerson = (p: boolean) => (url ? url.setMode(p ? "person" : "company") : setPersonLocal(p));
+  const setPerson = (p: boolean, via?: SmartAddVia | null) => (url ? url.setMode(p ? "person" : "company", via) : setPersonLocal(p));
   // The compare dialog rides the address (`?view=compare`): a link opens it, Back closes it.
   const [comparingLocal, setComparingLocal] = useState(false);
   const comparing = url ? url.address.view === "compare" : comparingLocal;
@@ -1122,15 +1121,12 @@ export function SmartAddBrand({
   // Recent posts fetched per confirmed account after Create: its own setting (platform 30, org/person override).
   const postsKnob = Number(useSessionKnob("social.smart_add_posts_default"));
   const postsPerAccount = Number.isFinite(postsKnob) && postsKnob >= 0 ? postsKnob : 30;
-  const spendOrg = useAppSelector((st) => st.appContext?.organization_id ?? null);
   // Provision values stay on the server: the inputs capture, its window and "Capture again" are an admin's
   // debug view only (Arman, 2026-10-15/16).
   const canSeeProvision = useAppSelector(
     (st) => selectAdminFeature(st, "provision.open-any-snapshot") && Boolean(selectIsDebugMode(st)),
   );
-  const spend = useSocialSpend(spendOrg);
   const trackedAccounts = basics.accounts.filter((a) => a.platform);
-  const postsPoints = postsPerAccount ? spend.postsTotalText(trackedAccounts.map((a) => a.platform ?? ""), postsPerAccount) : null;
   const situation = situationOf(visible, rounds.length > 0 && !working);
   // One vocabulary for every found thing (web.brand_relation_kind) — the web step answers from it too.
   const { kinds: relationKinds } = useRelationKinds(relate);
@@ -2540,7 +2536,7 @@ export function SmartAddBrand({
         {/* Two rows: the brand, then what Create files and what it spends — each fact once, nothing cut off. */}
         <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 sm:basis-0">
           {basics.logoUrl ? (
-            <img src={browserImageUrl(basics.logoUrl)} alt="" className="size-8 shrink-0 rounded object-contain" />
+            <ShadedLogo url={basics.logoUrl} className="size-8 shrink-0 rounded" />
           ) : null}
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium">{basics.name ?? "Confirm a name to create the brand"}</span>
@@ -2551,7 +2547,6 @@ export function SmartAddBrand({
                   basics.websiteUrl ? websiteHost(basics.websiteUrl) : null,
                   basics.accounts.length ? `${basics.accounts.length} ${basics.accounts.length === 1 ? "account" : "accounts"}` : null,
                   trackedAccounts.length && !created && postsPerAccount ? `${postsPerAccount} posts each` : null,
-                  trackedAccounts.length && !created && postsPerAccount ? postsPoints : null,
                 ]
                   .filter((f): f is string => Boolean(f))
                   .map((f, n) => (

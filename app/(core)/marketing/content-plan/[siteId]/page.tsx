@@ -1,7 +1,7 @@
 // record-view: none — a redirect to the page that shows the record
 import { permanentRedirect } from "next/navigation";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { resolveLegacySiteAddress } from "@/features/marketing/lib/shim-resolve-server";
 

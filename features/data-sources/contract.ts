@@ -51,6 +51,12 @@ export interface DataSource {
   /** `entity`: one record per page (a company, a place); `items`: many (reviews, posts, jobs, listings). */
   records_are?: "entity" | "items";
   featured?: boolean;
+  /**
+   * The filters a search of this source accepts for this organization right now (the server's
+   * `search_filters`: status, home_type, price_min, price_max, beds_min, baths_min). Empty: the
+   * source takes only its own input fields. A form shows a filter only when it is listed here.
+   */
+  search_filters?: string[];
 }
 
 export interface DataLimit {
@@ -148,6 +154,11 @@ export function discoverOptionsOf(v: unknown): Record<string, string[]> {
   return out;
 }
 
+/** `search_filters` off the wire: the filter names the source's search accepts (anything else dropped). */
+export function searchFiltersOf(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((f): f is string => typeof f === "string" && f.trim().length > 0) : [];
+}
+
 /**
  * One source's own price. The server sends `points_per_record` and `usd_per_record` per source; a
  * source without its own price takes the catalog default (`usd_per_record_default` at the top, with
@@ -201,6 +212,7 @@ export function parseCatalog(raw: unknown): DataSourceCatalog {
       points_per_record: price.points,
       records_are: s.records_are === "items" ? "items" : "entity",
       featured: s.featured === true,
+      search_filters: searchFiltersOf(s.search_filters),
     });
   }
   const limits = (o.limits && typeof o.limits === "object" ? o.limits : {}) as Record<string, unknown>;
@@ -540,6 +552,13 @@ export function buildInput(
   for (const f of fields) {
     const v = values[f.name]?.trim();
     if (v) one[f.name] = v;
+  }
+  // The filters the server lists for this search ride along (blank ones dropped); nothing else does.
+  if (searching || source.input.kind === "keyword") {
+    for (const name of [...(source.search_filters ?? []), ...(source.search_filters?.includes("beds_min") ? ["beds_exact"] : [])]) {
+      const v = values[name]?.trim();
+      if (v && !(name in one)) one[name] = v;
+    }
   }
   return { input: { inputs: [one] }, missing: [] };
 }

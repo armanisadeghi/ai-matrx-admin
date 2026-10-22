@@ -32,7 +32,7 @@ import {
   invalidateNotePickerCache,
 } from "@/features/notes/components/NotePickerPopover";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
-import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ActionFeedbackButton } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 
@@ -344,7 +344,7 @@ export function CleanupContextPanel({
                     void handleSave(block.id);
                   }}
                   disabled={savingId === block.id}
-                  className="h-5 w-5 text-primary/80"
+                  className="text-primary/80"
                 />
               )}
 
@@ -354,7 +354,7 @@ export function CleanupContextPanel({
                   icon={<Unlink className="h-3 w-3" />}
                   tooltip="Unlink — keep text but stop syncing to note"
                   onClick={() => handleUnlink(block.id)}
-                  className="h-5 w-5 text-muted-foreground/60"
+                  className="text-muted-foreground/60"
                 />
               )}
 
@@ -364,7 +364,7 @@ export function CleanupContextPanel({
                   icon={<X className="h-3 w-3" />}
                   tooltip="Remove this context block"
                   onClick={() => handleRemove(block.id)}
-                  className="h-5 w-5 text-muted-foreground/60 hover:text-destructive"
+                  className="text-muted-foreground/60 hover:text-destructive"
                 />
               )}
             </div>

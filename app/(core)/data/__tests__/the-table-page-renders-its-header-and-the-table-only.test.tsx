@@ -67,7 +67,8 @@ jest.mock("@ai-matrx/agents/mandates", () => ({
   MANDATE_KEYS: { data__page_guidance: "data.page_guidance" },
 }));
 jest.mock("@ai-matrx/chat/agents/hooks/useAgentLauncher", () => ({ useAgentLauncher: () => ({ launchMandate: jest.fn() }) }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 jest.mock("@/features/sharing/components/TableTransferOffer", () => ({ TableTransferOffer: () => null }));
 jest.mock("@/features/sharing/components/RecordStoreShareSurface", () => ({ recordStoreShare: () => null }));
 jest.mock("@/features/sharing/outside/PendingTableInvitation", () => ({ PendingTableInvitation: () => null, usePendingTableInvitation: () => null }));

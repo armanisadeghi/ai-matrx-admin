@@ -221,7 +221,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: "icon-dropdown-menu",
     name: "Icon Dropdown Menu",
-    path: "components/official/IconDropdownMenu.tsx",
+    path: "@ai-matrx/design-system/controls (IconDropdownMenu)",
     description:
       "Elegant iOS-style dropdown menu with icon trigger. Perfect for sort, filter, and view selectors.",
     categories: ["selectors", "navigation", "interactive"],
@@ -272,17 +272,9 @@ export const componentList: ComponentEntry[] = [
     ],
   },
   {
-    id: "text-icon-button",
-    name: "Text Icon Button With Tooltip",
-    path: "components/official/TextIconButton.tsx",
-    description: "Button with text, icon and tooltip support",
-    categories: ["buttons", "interactive"],
-    tags: ["icon", "text", "tooltip", "action", "clickable"],
-  },
-  {
     id: "action-feedback-button",
     name: "Action Feedback Button",
-    path: "components/official/ActionFeedbackButton.tsx",
+    path: "@ai-matrx/design-system/controls (ActionFeedbackButton)",
     description:
       "Button that shows visual success feedback after action completion",
     categories: ["buttons", "feedback", "interactive"],
@@ -700,7 +692,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: "structured-section-card",
     name: "Structured Section Card",
-    path: "components/official/StructuredSectionCard.tsx",
+    path: "@ai-matrx/design-system/controls (StructuredSectionCard)",
     description:
       "A structured card layout with title, description, optional header actions, and a three-column footer",
     categories: ["containers", "layout"],
@@ -709,7 +701,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: "help-icon",
     name: "Help Icon",
-    path: "components/official/HelpIcon.tsx",
+    path: "@ai-matrx/design-system/controls (HelpIcon)",
     description:
       "Elegant informational tooltip icon for providing contextual help text with copy functionality",
     categories: ["feedback", "utilities"],
@@ -922,7 +914,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: "text-array-input",
     name: "Text Array Input",
-    path: "components/official/TextArrayInput.tsx",
+    path: "@ai-matrx/design-system/controls (TextArrayInput)",
     description:
       "Flexible tag/chip input component for managing arrays of strings. Add, remove, copy, with optional URL cleaning and duplicate prevention",
     categories: ["inputs", "interactive", "utilities"],

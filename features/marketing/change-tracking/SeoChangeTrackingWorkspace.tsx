@@ -20,7 +20,7 @@ import {
   Target,
   XCircle,
 } from "lucide-react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { CONTEXT_MENU_ENTITY_KEY } from "@ai-matrx/context-menu/engine";

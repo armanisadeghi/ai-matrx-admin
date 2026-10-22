@@ -10,7 +10,8 @@ import { copyToClipboard } from "../utils/basic-utils";
 import SaveBookmarkDialog from "./BookmarkDialog";
 import ManageBookmarksDialog from "./ManageBookmarksDialog";
 import { createPathBookmark, saveBookmarks, getValueByBookmark, exportBookmarks, loadBookmarks } from "../utils/json-path-navigation-util";
-import { TextIconButton, IconButton } from "@/components/official/TextIconButton";
+import { Button } from "@ai-matrx/design-system/controls";
+import { IconButton } from "@ai-matrx/design-system";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { extractValueByPath } from "../utils/wildcard-utils";
 
@@ -164,56 +165,21 @@ const PathManagement: React.FC<PathManagementProps> = ({ jsonStr, currentPath, o
                 <div className="flex gap-2 items-center h-full">
                     <BookmarkManagerActions jsonStr={jsonStr} configKey={configKey} />
 
-                    <TextIconButton
-                        size="sm"
-                        variant="outline"
-                        onClick={handleOpenBookmarksDialog}
-                        tooltip="View Saved Paths"
-                        icon={<IoBookmarks className="w-3 h-3" />}
-                        className="text-xs h-8"
-                    >
+                    <Button variant="outline" icon={<IoBookmarks />} title="View Saved Paths" onClick={handleOpenBookmarksDialog}>
                         Paths
-                    </TextIconButton>
+                    </Button>
 
-                    <TextIconButton
-                        size="sm"
-                        variant="outline"
-                        onClick={handleOpenBookmarkDialog}
-                        tooltip="Save Current Path"
-                        icon={<BookmarkIcon className="w-3 h-3" />}
-                        className="text-xs h-8"
-                    >
+                    <Button variant="outline" icon={<BookmarkIcon />} title="Save Current Path" onClick={handleOpenBookmarkDialog}>
                         Save
-                    </TextIconButton>
+                    </Button>
 
-                    <TextIconButton
-                        size="sm"
-                        variant="outline"
-                        icon={<CopyIcon className="w-4 h-4" />}
-                        onClick={copyAccessPath}
-                        tooltip="Copy Access Path"
-                        className="text-xs h-8"
-                    >
+                    <Button variant="outline" icon={<CopyIcon />} title="Copy Access Path" onClick={copyAccessPath}>
                         Path Details
-                    </TextIconButton>
+                    </Button>
 
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
-                        onClick={onReset}
-                        tooltip="Reset View"
-                        icon={<RefreshCw className="w-4 h-4" />}
-                        className="h-8 w-8"
-                    />
+                    <IconButton variant="ghost" onClick={onReset} tooltip="Reset View" icon={RefreshCw} />
 
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(jsonStr)}
-                        tooltip="Copy Current Data In View"
-                        icon={<FileJson className="w-4 h-4" />}
-                        className="h-8 w-8"
-                    />
+                    <IconButton variant="ghost" onClick={() => copyToClipboard(jsonStr)} tooltip="Copy Current Data In View" icon={FileJson} />
                 </div>
             </div>
 

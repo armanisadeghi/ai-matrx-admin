@@ -22,7 +22,7 @@ const EntityCustomFields = dynamic(
   () => import("@/features/unified-data/components/EntityCustomFields").then((m) => m.EntityCustomFields),
   { ssr: false },
 );
-const AccessGate = dynamic(() => import("@/features/access-gate/components/AccessGate").then((m) => m.AccessGate), {
+const AccessGate = dynamic(() => import("@ai-matrx/sharing/access/react").then((m) => m.AccessGate), {
   ssr: false,
 });
 const RichContent = dynamic(() => import("@ai-matrx/rich-content/levels/RichContent").then((m) => m.RichContent), {

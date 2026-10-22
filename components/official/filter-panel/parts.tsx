@@ -48,51 +48,6 @@ export function FilterSection({
   );
 }
 
-export function RadioSelect<T extends string>({
-  value,
-  onChange,
-  options,
-}: {
-  value: T;
-  onChange: (v: T) => void;
-  options: { value: T; label: string; hint?: string }[];
-}) {
-  return (
-    <div className="flex flex-col">
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={cn(
-            "flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors",
-            value === opt.value
-              ? "bg-primary/10 font-medium text-primary-ink"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          <span
-            className={cn(
-              "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border-2",
-              value === opt.value ? "border-primary" : "border-muted-foreground/40",
-            )}
-          >
-            {value === opt.value && (
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            )}
-          </span>
-          <span className="flex-1 truncate">{opt.label}</span>
-          {opt.hint && (
-            <span className="shrink-0 type-secondary tabular-nums text-muted-foreground">
-              {opt.hint}
-            </span>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 /**
  * Multi-select chips over server-computed facets. Selected = OR filter;
  * nothing selected = no filter.

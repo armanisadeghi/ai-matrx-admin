@@ -24,7 +24,8 @@ jest.mock("@/features/scopes/redux/selectors/tree", () => ({
   selectTreeError: (s: { scopesTree: { treeError: unknown } }) => s.scopesTree.treeError,
 }));
 jest.mock("@/features/scopes/redux/thunks/ensureScopeTree", () => ({ ensureScopeTree: () => ({ type: "noop" }) }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: ({ token }: { token: string }) => <div data-gate-token={token} />,
 }));
 

@@ -68,7 +68,7 @@ import {
   portionLabel,
   type PortionLocatorRow,
 } from "@/features/sources/portionLocator";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useFilesLibraryProvenance } from "@/features/rag/hooks/useLibraryProvenance";
 import {
   useDocumentSearch,

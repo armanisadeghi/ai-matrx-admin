@@ -37,7 +37,7 @@ import { ClientGroup } from "@/features/resizable-panels/ClientGroup";
 import { Handle } from "@/features/resizable-panels/Handle";
 import { MobilePanelShell } from "@/features/shell/components/header/templates/MobilePanelShell";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import {
   activeRoleTabDefaulted,
   selectOpenQuestionCount,

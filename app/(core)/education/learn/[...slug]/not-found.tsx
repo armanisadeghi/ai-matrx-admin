@@ -6,7 +6,7 @@
 // published, and otherwise answers the access question canonically.
 
 import { useParams } from "next/navigation";
-import { SlugAccessGate } from "@/features/access-gate/components/SlugAccessGate";
+import { SlugAccessGate } from "@ai-matrx/sharing/access/react";
 
 const TOKENS = ["learn_doc"] as const;
 

@@ -35,7 +35,7 @@ import { ArrowLeft, Bookmark, Clapperboard, ExternalLink, PanelRightClose, Refre
 import { cloneHref, isClonable } from "../video/clone-links";
 
 import { ReadFailure } from "@ai-matrx/design-system";
-import { Button, RegionSkeleton, SegmentedControl, Tabs, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Button, RegionSkeleton, SegmentedControl, Tabs, PropertyRow, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import {
   DropdownMenu,
@@ -44,7 +44,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import { cn } from "@/lib/utils";

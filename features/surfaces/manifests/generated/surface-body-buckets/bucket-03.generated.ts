@@ -21,4 +21,4 @@ export { hrTimesheetApprovalsManifest as s334 } from "../../hr-timesheet-approva
 export { commerceTriageManifest as s346 } from "../../commerce-triage.manifest";
 export { printOrderManifest as s357 } from "../../print-order.manifest";
 export { deviceConsoleManifest as s372 } from "../../device-console.manifest";
-export { adminSpendAlarmManifest as s381 } from "../../admin-spend-alarm.manifest";
+export { adminSpendAlarmManifest as s382 } from "../../admin-spend-alarm.manifest";

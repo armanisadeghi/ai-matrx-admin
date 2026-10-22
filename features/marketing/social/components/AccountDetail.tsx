@@ -25,22 +25,13 @@ import {
 import { outlierRowKindFromCard, socialProfileKind } from "../kind-models";
 import { AppWindow, ArrowLeft, ExternalLink, Plus, RefreshCw } from "lucide-react";
 
-import {
-  Badge,
-  Button,
-  RegionSkeleton,
-  SegmentedControl,
-  Select,
-  Tabs,
-  type SelectOption,
-} from "@ai-matrx/design-system/controls";
+import { Badge, Button, RegionSkeleton, SegmentedControl, Select, Tabs, type SelectOption, KpiTile } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { socialRowOpen } from "../row-open";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { toast } from "@/lib/toast";
 

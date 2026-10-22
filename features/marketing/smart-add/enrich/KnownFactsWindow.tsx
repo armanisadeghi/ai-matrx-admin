@@ -12,7 +12,7 @@ import { Button, RowGroup } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { ShadedLogo } from "../ShadedLogo";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
 import { KNOWN_GROUPS, type KnownFact } from "./known";
 
@@ -25,9 +25,8 @@ function stateOf(ids: string[], checked: ReadonlySet<string>): CheckState {
 
 function FactValue({ fact }: { fact: KnownFact }) {
   if (fact.imageUrl) {
-    // The raw logo, never tinted or wrapped.
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={fact.imageUrl} alt={fact.label} className="h-10 w-auto max-w-[160px] object-contain" />;
+    // The raw logo, never tinted; a white logo gets the dark backdrop.
+    return <ShadedLogo url={fact.imageUrl} imgClassName="h-10 w-auto max-w-[160px] object-contain" />;
   }
   return <span className="min-w-0 truncate text-sm">{fact.value}</span>;
 }
@@ -36,7 +35,6 @@ function FactValue({ fact }: { fact: KnownFact }) {
 function EnlargeImage({ fact }: { fact: KnownFact }) {
   const [open, setOpen] = useState(false);
   const raw = fact.imageUrl ?? "";
-  const src = /^https?:\/\//i.test(raw) ? proxiedExternalImageUrl(raw) : raw;
   return (
     <>
       <Button
@@ -54,8 +52,7 @@ function EnlargeImage({ fact }: { fact: KnownFact }) {
         <DialogContent className="max-w-2xl">
           <DialogTitle>{fact.label}</DialogTitle>
           <div className="flex min-h-64 items-center justify-center overflow-hidden rounded-lg border p-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={fact.label} className="h-[50dvh] w-full object-contain" />
+            <ShadedLogo url={raw} className="w-full" imgClassName="h-[50dvh] w-full object-contain" />
           </div>
         </DialogContent>
       </Dialog>

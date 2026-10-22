@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { MobileOverlayWrapper } from "@/components/official/MobileOverlayWrapper";
+import { BottomSheet, BottomSheetBody, BottomSheetHeader } from "@ai-matrx/design-system";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
@@ -280,19 +280,17 @@ export function SaveTemplateModal({
 
     if (isMobile) {
         return (
-            <MobileOverlayWrapper
-                isOpen={isOpen}
-                onClose={handleClose}
-                maxHeight="xl"
-            >
-                {/* Content flows naturally, MobileOverlayWrapper handles scrolling */}
+            <BottomSheet open={isOpen} onOpenChange={(open) => !open && handleClose()} title="Save template">
+                <BottomSheetBody>
+                {/* Content flows naturally, the sheet body handles scrolling */}
                 {formFields}
                 {contentEditor}
                 {/* Sticky buttons at bottom */}
                 <div className="sticky bottom-0 z-10">
                     {actionButtons}
                 </div>
-            </MobileOverlayWrapper>
+                </BottomSheetBody>
+            </BottomSheet>
         );
     }
 

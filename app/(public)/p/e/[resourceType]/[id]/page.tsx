@@ -1,7 +1,7 @@
 // record-view: none — a public share link addressed by resource type, not a record page
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { getShareableResource } from "@ai-matrx/sharing/core";
 import { PUBLIC_LANE_TYPES } from "@ai-matrx/sharing/core";
 import { isFullUuid } from "@/utils/supabase-search";

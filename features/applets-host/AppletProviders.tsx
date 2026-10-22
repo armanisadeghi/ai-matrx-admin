@@ -14,7 +14,8 @@
 // the data table host (`<DataPage>`), toasts, Alchemy (copy doors), tooltips, the module-header and
 // selected-images contexts (their hooks throw without them), realtime (`rows:<alias>` live), media
 // (images in kinds), audio (the writing box's mic), the guest allowance bridge, the deferred singletons
-// (overlays: the live-run window), and the confirm, clipboard and value-prompt hosts.
+// (overlays: the live-run window), the confirm, clipboard and value-prompt hosts, and the sharing host (it
+// binds the access screens the Applet's not-found page draws).
 //
 // LEFT OUT, because no Applet surface reaches them: Meet, Messaging, the sandbox lifecycle and gate,
 // request recovery, persistent components, the server-toggle/loopback/retired-API/Google-redirect
@@ -24,6 +25,7 @@
 
 import React from "react";
 import { ComingSoonClient } from "@/lib/coming-soon/ComingSoonClient";
+import { SharingHost } from "@/providers/SharingHost";
 
 import { RichContentHostProvider } from "@/providers/RichContentHostProvider";
 import StoreProvider from "@/providers/StoreProvider";
@@ -63,6 +65,9 @@ export function AppletProviders({ children }: { children: React.ReactNode }) {
               <ChatHostAdapter>
                 <ChatSurfaceRegistrations />
                 <AssociationsHost>
+                  {/* The access screens (the applet not-found page draws SlugAccessGate) throw "was not supplied" until
+                      this binds configureAccessUi; root-hosts-are-bound.test.ts pins it. */}
+                  <SharingHost />
                   <DetailHost>
                     <AgentCatalogHost>
                       <MatrxDataTableHost>

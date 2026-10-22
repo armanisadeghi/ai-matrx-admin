@@ -37,7 +37,6 @@ describe("Admin error pill", () => {
 
 describe("manage.* prefetch CORS class", () => {
   it.each([
-    "components/official/kpi/KpiTile.tsx",
     "components/official/MatrxDataTableHost.tsx",
     "components/official/cards/CardGrid.tsx",
     "components/official/card-and-grid/Card.tsx",
@@ -48,6 +47,12 @@ describe("manage.* prefetch CORS class", () => {
     "features/agents/factory/components/BuildProgress.tsx",
   ])("%s links through AppLink, never raw next/link", (file) => {
     const s = src(file);
+    expect(s).not.toMatch(/from ['"]next\/link['"]/);
+    expect(s).toMatch(/navigation\/AppLink/);
+  });
+
+  it("the link every design-system component draws through (KpiTile, tap buttons) is AppLink", () => {
+    const s = src("components/icons/tap-target-setup.ts");
     expect(s).not.toMatch(/from ['"]next\/link['"]/);
     expect(s).toMatch(/navigation\/AppLink/);
   });

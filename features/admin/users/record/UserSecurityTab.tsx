@@ -12,12 +12,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Fingerprint, History, KeyRound, LogOut, MonitorSmartphone, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
 import { ErrorNotice, readOf } from "@ai-matrx/design-system";
-import { Badge, Button, PropertyRow, RegionSkeleton, type BadgeTone } from "@ai-matrx/design-system/controls";
+import { Badge, Button, PropertyRow, RegionSkeleton, type BadgeTone, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { formatCount } from "@ai-matrx/kit/format";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import AppLink from "@/components/navigation/AppLink";
 import { createClient } from "@/utils/supabase/client";

@@ -19,7 +19,7 @@ import { EditorTitleField } from "@/components/editor-chrome/EditorTitleField";
 import { FileTitleMarks } from "@/features/file-actions/FileTitleMarks";
 import { WORKBOOK_ADAPTER } from "@/features/file-actions/adapters";
 import { useLiveFileName } from "@/features/file-actions/useLiveFileName";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 

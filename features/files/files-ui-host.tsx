@@ -58,6 +58,4 @@ export const filesUiHost: FilesUiHost = {
     import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu as unknown as ComponentType<Loose>),
   ),
   copyNotify,
-  // The manual-copy fallback is the engine's own (`openClipboardFallback`), shown by the
-  // `<ClipboardFallbackHost />` mounted in app/Providers.tsx (@ai-matrx/media consumer action).
 };

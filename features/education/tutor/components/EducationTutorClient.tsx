@@ -20,7 +20,7 @@
 
 import { logFailure } from "@/lib/errors/expectedRefusal";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { createSelector } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectAgentExecutionPayload } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";

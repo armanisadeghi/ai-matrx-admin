@@ -18,6 +18,6 @@ export { adminKindRegistryManifest as s301 } from "../../admin-kind-registry.man
 export { hrMyClockManifest as s313 } from "../../hr-my-clock.manifest";
 export { workflowReviewManifest as s337 } from "../../workflow-review.manifest";
 export { printBookletManifest as s350 } from "../../print-booklet.manifest";
-export { clientPortalManifest as s377 } from "../../client-portal.manifest";
-export { clientPortalFormManifest as s378 } from "../../client-portal.manifest";
-export { clientPortalRecordManifest as s379 } from "../../client-portal.manifest";
+export { clientPortalManifest as s378 } from "../../client-portal.manifest";
+export { clientPortalFormManifest as s379 } from "../../client-portal.manifest";
+export { clientPortalRecordManifest as s380 } from "../../client-portal.manifest";

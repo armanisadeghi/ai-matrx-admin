@@ -26,15 +26,7 @@
 import { useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Grid3x3, MapPin, Search } from "lucide-react";
-import {
-  Badge,
-  Button,
-  EmptyState,
-  Field,
-  RegionSkeleton,
-  SegmentedControl,
-  Select,
-} from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState, Field, RegionSkeleton, SegmentedControl, Select, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useToolAction } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
@@ -42,7 +34,6 @@ import type { ToolEnvelope } from "@ai-matrx/chat/action-requests/screen-run";
 import type { MapMarker } from "@/components/mardown-display/blocks/map/MapCanvas";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { CostDoor } from "@/components/cost/CostDoor";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useBusinessLocations } from "@/features/marketing/data/hooks";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

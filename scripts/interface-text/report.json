@@ -1,15 +1,15 @@
 {
   "generatedAt": "2026-10-22T02:27:24.972Z",
   "scannedFiles": 16651,
-  "findingCount": 7869,
-  "fileCount": 1899,
+  "findingCount": 7864,
+  "fileCount": 1896,
   "byRule": {
     "implementation-leak": 338,
-    "multi-sentence": 2020,
+    "multi-sentence": 2018,
     "page-description": 362,
     "asymmetric-siblings": 40,
     "native-title": 60,
-    "over-budget": 5049
+    "over-budget": 5046
   },
   "novelCount": 2391,
   "findings": [
@@ -7514,26 +7514,6 @@
       "detail": "sentence under <CardTitle>"
     },
     {
-      "file": "components/dialogs/sandbox-gate/SandboxGateHostBody.tsx",
-      "line": 54,
-      "rule": "over-budget",
-      "severity": 1,
-      "where": "<DialogDescription>",
-      "chars": 218,
-      "text": "This conversation is bound to a sandbox, but it can't be reached right now (it may be stopped, expired, or still starting). Nothing was sent. Attach or start a sandbox and retry, or send this message without a sandbox.",
-      "detail": "consequence slot: 218 chars, budget 140"
-    },
-    {
-      "file": "components/dialogs/sandbox-gate/SandboxGateHostBody.tsx",
-      "line": 54,
-      "rule": "multi-sentence",
-      "severity": 1,
-      "where": "<DialogDescription>",
-      "chars": 218,
-      "text": "This conversation is bound to a sandbox, but it can't be reached right now (it may be stopped, expired, or still starting). Nothing was sent. Attach or start a sandbox and retry, or send this message without a sandbox.",
-      "detail": "3 sentences in one consequence slot (max 2)"
-    },
-    {
       "file": "components/errors/error-alchemy.ts",
       "line": 365,
       "rule": "over-budget",
@@ -9462,36 +9442,6 @@
       "chars": 89,
       "text": "You have not been signed out. This usually clears in a few seconds — open the page again.",
       "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/access-gate/components/RequestAccessPanel.tsx",
-      "line": 149,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "<p>",
-      "chars": 87,
-      "text": "Your request is saved. Once an owner adds you to the organization, this site will open.",
-      "detail": "secondary slot: 87 chars, budget 60"
-    },
-    {
-      "file": "features/access-gate/components/RequestAccessPanel.tsx",
-      "line": 149,
-      "rule": "multi-sentence",
-      "severity": 2,
-      "where": "<p>",
-      "chars": 87,
-      "text": "Your request is saved. Once an owner adds you to the organization, this site will open.",
-      "detail": "2 sentences in one secondary slot (max 1)"
-    },
-    {
-      "file": "features/access-gate/components/SettingAccessGate.tsx",
-      "line": 105,
-      "rule": "over-budget",
-      "severity": 2,
-      "where": "<p>",
-      "chars": 82,
-      "text": "It is saved in Access requests, even if the direct message could not be delivered.",
-      "detail": "secondary slot: 82 chars, budget 60"
     },
     {
       "file": "features/access-gate/lib/governedActionError.test.ts",

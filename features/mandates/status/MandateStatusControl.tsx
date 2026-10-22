@@ -32,7 +32,7 @@ import {
   softDeleteMandate,
   updateMandateDefinition,
 } from "@/features/mandates/admin/service";
-import type { StatusBadgeSize } from "@/components/official/status-badge/StatusBadge";
+import type { StatusBadgeSize } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import type { EntityHeaderAction } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { MandateStatusBadge } from "./MandateStatusBadge";

@@ -23,18 +23,12 @@ export const OUTSIDE_RENDER: Record<string, string> = {
   "app/(admin)/administration/chat/cx-dashboard/errors/errors-content.tsx": "copy-text lambda (humanRow)",
   "app/(admin)/administration/applets/executions/page.tsx": "copy-text builder (humanExecution)",
   "features/cx-dashboard/components/cx-row-actions.tsx": "copy-text lines",
-  "features/workflow-runtime/components/run/run-copy.ts": "copy-text builder",
   "features/agent-comparison/shared/battleSnapshot.ts": "snapshot text built on click",
   "features/organizations/components/OrgPrivacyTab.tsx": "edit/save click handlers",
-  "features/crm/components/record/ContactCandidatesCard.tsx": "confirm dialog text built in a click handler",
+  "features/scheduling/components/costs/AutomationCostTable.tsx": "copy-text lambda (humanRow)",
+  "features/admin/users/record/ActivityRecordDoor.tsx": "peek record built when the peek opens (admin site)",
+  "features/agents/hooks/agentBuilderContextBundle.ts": "points sent into an agent's context, built at call time",
   "features/marketing/social/cost.ts": "confirmSocialSpendNow reads the rate after an await, in the click handler that asks for the spend",
-  "features/audio/limits.ts": "async estimate built after an await, in the spend-gate handler",
-  "features/hindsight/workspace/ReviewerChat.tsx": "toast text after an awaited call",
-  "features/hindsight/hooks/useEnrollmentActions.ts": "toast text after an awaited call",
-  "features/hindsight/components/DiscussPanel.tsx": "toast text after an awaited call",
-  "features/content-ir/kinds/generated-audio.ts": "markdown serializer for copy/export, run at call time",
-  "features/content-ir/kinds/generated-image-set.ts": "markdown serializer for copy/export, run at call time",
-  "features/content-ir/kinds/generated-video-set.ts": "markdown serializer for copy/export, run at call time",
 };
 
 const CALL = /\bcurrentPointsRate\s*\(\s*\)/;

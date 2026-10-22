@@ -58,7 +58,7 @@ import { studioLayoutFor, type StudioLayout, type StudioSavedSizes } from "../st
 import { StudioPanes } from "./StudioPanes";
 import { studioStage } from "../studio-stage";
 import { useStudioUnsavedEdits } from "../unsaved-edits";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { studioScope } from "@/features/surfaces/manifests/agent-studio.manifest";
 import { BuildProgress } from "@/features/agents/factory/components/BuildProgress";
 import { getFactoryBuild } from "@/features/agents/factory/service";

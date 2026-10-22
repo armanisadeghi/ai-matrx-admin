@@ -47,12 +47,12 @@ export function Cost({
   muted,
   unknown,
 }: CostProps) {
-  const { unit, canToggle, format, rate } = useCostDisplay();
+  const { unit, preferredUnit, canToggle, format, rate } = useCostDisplay();
   const onAdminSite = useOnAdminSurface();
   const known = typeof usd === "number" && Number.isFinite(usd);
   // A system admin who switched to dollars sees them off the admin site too — under the visible
   // "Admin only" tag (owner ruling 2026-10-22), never as a bare figure.
-  if (canToggle && unit === "usd" && !onAdminSite && known) {
+  if (canToggle && preferredUnit === "usd" && !onAdminSite && known) {
     return (
       <span className={cn("inline-flex items-center gap-1 tabular-nums", muted && "opacity-50", className)}>
         <AdminOnlyTag />

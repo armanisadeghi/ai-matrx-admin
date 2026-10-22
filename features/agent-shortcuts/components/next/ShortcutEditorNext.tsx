@@ -10,7 +10,7 @@ import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 import { useAgentShortcutCrud } from "@/features/agent-shortcuts/hooks/useAgentShortcutCrud";
 import { selectShortcutById } from "@ai-matrx/chat/agents/redux/agent-shortcuts/selectors";

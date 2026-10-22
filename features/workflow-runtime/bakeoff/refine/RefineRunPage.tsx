@@ -25,7 +25,7 @@ import { ArrowLeft, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ElapsedTime } from "@/components/official-candidate/elapsed-time/ElapsedTime";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 

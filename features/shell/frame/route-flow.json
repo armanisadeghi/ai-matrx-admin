@@ -32,15 +32,15 @@
  ],
  "stats": {
   "nodes": 1572,
-  "edges": 8235,
+  "edges": 8187,
   "edgesByKind": {
    "config": 2494,
    "push": 584,
-   "link": 3253,
+   "link": 3237,
    "admin-map": 422,
-   "layout": 584,
+   "layout": 554,
    "menu": 306,
-   "sidebar": 568,
+   "sidebar": 566,
    "tab": 24
   },
   "syntheticNodes": 153,
@@ -51258,13 +51258,6 @@
   },
   {
    "from": "/crm/outreach-lists/[listId]",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 2)"
-  },
-  {
-   "from": "/crm/outreach-lists/[listId]",
    "to": "/chat/message-templates/new",
    "kind": "link",
    "confidence": "exact",
@@ -51339,13 +51332,6 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/marketing/components/shared/RecordUnavailableNotice.tsx (depth 4)"
-  },
-  {
-   "from": "/crm/outreach-lists/[listId]",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 2)"
   },
   {
    "from": "/crm/outreach-lists/[listId]",
@@ -63963,13 +63949,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]",
    "to": "/cms/[siteId]",
    "kind": "link",
    "confidence": "pattern",
@@ -64061,13 +64040,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]",
    "to": "/research/topics",
    "kind": "config",
    "confidence": "exact",
@@ -64079,13 +64051,6 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/content-plan/setup/components/SetupAiBar.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/ai-runs",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/ai-runs",
@@ -64180,13 +64145,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/ai-runs",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/ai-runs",
    "to": "/research/topics",
    "kind": "config",
    "confidence": "exact",
@@ -64201,13 +64159,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/brief",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/brief",
    "to": "/cms/[siteId]",
    "kind": "link",
    "confidence": "pattern",
@@ -64292,13 +64243,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/brief",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/brief",
    "to": "/research/topics",
    "kind": "config",
    "confidence": "exact",
@@ -64310,13 +64254,6 @@
    "kind": "link",
    "confidence": "pattern",
    "via": "features/marketing/content-plan/setup/components/SetupAiBar.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/entities",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/entities",
@@ -64411,13 +64348,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/entities",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/entities",
    "to": "/research/topics",
    "kind": "config",
    "confidence": "exact",
@@ -64432,13 +64362,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/map",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/map",
    "to": "/cms/[siteId]",
    "kind": "link",
    "confidence": "pattern",
@@ -64527,13 +64450,6 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 3)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/map",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/map",
@@ -64551,13 +64467,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/setup",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/setup",
    "to": "/cms/[siteId]",
    "kind": "link",
    "confidence": "pattern",
@@ -64646,13 +64555,6 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 3)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/setup",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/setup",
@@ -64670,13 +64572,6 @@
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/table",
-   "to": "/c/[handle]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/table",
    "to": "/cms/[siteId]",
    "kind": "link",
    "confidence": "pattern",
@@ -64765,13 +64660,6 @@
    "kind": "link",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 3)"
-  },
-  {
-   "from": "/marketing/brands/[brandId]/content/plan/[siteId]/table",
-   "to": "/organizations/[orgId]",
-   "kind": "link",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "/marketing/brands/[brandId]/content/plan/[siteId]/table",
@@ -88498,24 +88386,10 @@
   },
   {
    "from": "layout:/@app/(kiosk)",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/@app/(kiosk)",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 2)"
-  },
-  {
-   "from": "layout:/@app/(kiosk)",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
   },
   {
    "from": "layout:/@app/(kiosk)",
@@ -88526,24 +88400,10 @@
   },
   {
    "from": "layout:/@app/(meet)",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/@app/(meet)",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 2)"
-  },
-  {
-   "from": "layout:/@app/(meet)",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
   },
   {
    "from": "layout:/@app/(meet)",
@@ -88554,24 +88414,10 @@
   },
   {
    "from": "layout:/@app/(oauth-review)",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/@app/(oauth-review)",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 2)"
-  },
-  {
-   "from": "layout:/@app/(oauth-review)",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
   },
   {
    "from": "layout:/@app/(oauth-review)",
@@ -88582,24 +88428,10 @@
   },
   {
    "from": "layout:/@app/(portal)",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/@app/(portal)",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 2)"
-  },
-  {
-   "from": "layout:/@app/(portal)",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
   },
   {
    "from": "layout:/@app/(portal)",
@@ -89422,13 +89254,6 @@
   },
   {
    "from": "layout:/applets/[slug]@app/(link)/applets/[slug]",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/applets/[slug]@app/(link)/applets/[slug]",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
@@ -89447,13 +89272,6 @@
    "kind": "layout",
    "confidence": "exact",
    "via": "features/organizations/components/OrganizationRequiredNotice.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/applets/[slug]@app/(link)/applets/[slug]",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
   },
   {
    "from": "layout:/applets/[slug]@app/(link)/applets/[slug]",
@@ -89478,34 +89296,6 @@
   },
   {
    "from": "layout:/b@app/(link)/b",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/b@app/(link)/b",
-   "to": "/dashboard",
-   "kind": "layout",
-   "confidence": "exact",
-   "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/b@app/(link)/b",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/capture@app/(link)/capture",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/capture@app/(link)/capture",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
@@ -89513,10 +89303,10 @@
   },
   {
    "from": "layout:/capture@app/(link)/capture",
-   "to": "/organizations/[orgId]",
+   "to": "/dashboard",
    "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
+   "confidence": "exact",
+   "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
   },
   {
    "from": "layout:/cms/[siteId]@app/(core)/cms/[siteId]",
@@ -90059,24 +89849,10 @@
   },
   {
    "from": "layout:/f@app/(link)/f",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/f@app/(link)/f",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/f@app/(link)/f",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "layout:/files/all/[[...path]]@app/(core)/files/all/[[...path]]",
@@ -91564,24 +91340,10 @@
   },
   {
    "from": "layout:/q@app/(link)/q",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/q@app/(link)/q",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/q@app/(link)/q",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "layout:/research/topics/[topicId]@app/(core)/research/topics/[topicId]",
@@ -91592,24 +91354,10 @@
   },
   {
    "from": "layout:/rsvp@app/(link)/rsvp",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/rsvp@app/(link)/rsvp",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/rsvp@app/(link)/rsvp",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "layout:/sandbox@app/(core)/sandbox",
@@ -92222,24 +91970,10 @@
   },
   {
    "from": "layout:/secure@app/(link)/secure",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/secure@app/(link)/secure",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/secure@app/(link)/secure",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "layout:/shapes@app/(core)/shapes/(workspace)",
@@ -92250,34 +91984,6 @@
   },
   {
    "from": "layout:/sign@app/(link)/sign",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/sign@app/(link)/sign",
-   "to": "/dashboard",
-   "kind": "layout",
-   "confidence": "exact",
-   "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/sign@app/(link)/sign",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/site@app/(link)/site",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/site@app/(link)/site",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
@@ -92285,10 +91991,10 @@
   },
   {
    "from": "layout:/site@app/(link)/site",
-   "to": "/organizations/[orgId]",
+   "to": "/dashboard",
    "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
+   "confidence": "exact",
+   "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
   },
   {
    "from": "layout:/spaces@app/(core)/spaces",
@@ -92327,24 +92033,10 @@
   },
   {
    "from": "layout:/v/[slug]@app/(link)/v/[slug]",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/v/[slug]@app/(link)/v/[slug]",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/v/[slug]@app/(link)/v/[slug]",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "layout:/war-room/[id]@app/(core)/war-room/[id]",
@@ -92551,24 +92243,10 @@
   },
   {
    "from": "layout:/x@app/(link)/x",
-   "to": "/c/[handle]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
-  },
-  {
-   "from": "layout:/x@app/(link)/x",
    "to": "/dashboard",
    "kind": "layout",
    "confidence": "exact",
    "via": "features/window-panels/detail/DetailHost.tsx (depth 3)"
-  },
-  {
-   "from": "layout:/x@app/(link)/x",
-   "to": "/organizations/[orgId]",
-   "kind": "layout",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 4)"
   },
   {
    "from": "menu:account",
@@ -96597,13 +96275,6 @@
   },
   {
    "from": "sidebar:shell",
-   "to": "/c/[handle]",
-   "kind": "sidebar",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
-  },
-  {
-   "from": "sidebar:shell",
    "to": "/camera",
    "kind": "sidebar",
    "confidence": "exact",
@@ -97868,13 +97539,6 @@
    "kind": "sidebar",
    "confidence": "exact",
    "via": "features/shell/constants/nav-data.ts"
-  },
-  {
-   "from": "sidebar:shell",
-   "to": "/organizations/[orgId]",
-   "kind": "sidebar",
-   "confidence": "pattern",
-   "via": "features/access-gate/components/UnresolvedEntityRef.tsx (depth 3)"
   },
   {
    "from": "sidebar:shell",

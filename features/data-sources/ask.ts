@@ -18,6 +18,19 @@ export type AskTask =
   | "social_posts"
   | "unknown";
 
+/** The Data Library task card each task opens (the server's `CARD_OF_TASK`; `library/tasks.ts` ids). */
+export const CARD_OF_TASK: Record<AskTask, string> = {
+  homes: "homes-for-sale",
+  local_business: "local-business",
+  jobs: "competitor-hiring",
+  products: "product-price",
+  company_research: "research-company",
+  company_reviews: "company-reviews",
+  app_reviews: "app-reviews",
+  social_posts: "creator-posts",
+  unknown: "",
+};
+
 export type AskConfidence = "clear" | "guessed" | "unclear";
 export type AskHomeType = "house" | "condo" | "townhouse" | "apartment" | "multi_family" | "land";
 export type AskStatus = "for_sale" | "for_rent" | "sold";

@@ -155,6 +155,7 @@ export { noteInfoWindowOverlay } from "./noteInfoWindow.definition";
 export { notesWindowOverlay } from "./notesWindow.definition";
 export { notificationsInboxWindowOverlay } from "./notificationsInboxWindow.definition";
 export { observationalMemoryWindowOverlay } from "./observationalMemoryWindow.definition";
+export { packageDiffDialogOverlay } from "./packageDiffDialog.definition";
 export { pageResearchWindowOverlay } from "./pageResearchWindow.definition";
 export { pdfBatchExtractDebugWindowOverlay } from "./pdfBatchExtractDebugWindow.definition";
 export { pdfExtractorWindowOverlay } from "./pdfExtractorWindow.definition";

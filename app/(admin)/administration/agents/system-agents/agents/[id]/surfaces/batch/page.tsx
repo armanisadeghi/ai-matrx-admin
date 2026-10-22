@@ -3,7 +3,7 @@ import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { SurfaceBindingsBatchEditor } from "@/features/surfaces/admin/batch/SurfaceBindingsBatchEditor";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export const metadata = { title: "Batch Surface Bindings | System Agents" };
 

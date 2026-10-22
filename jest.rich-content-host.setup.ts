@@ -38,7 +38,6 @@ configureRichContent({
   ensureRichDocumentRegistrations: () => {
     require("@/features/rich-content-host/rich-document-registrations").ensureWebRichDocumentRegistrations();
   },
-  showManualCopy: (opts) => require("@ai-matrx/kit/clipboard-fallback-opener").openClipboardFallback(opts.text, { title: opts.title, description: opts.description }),
   readSessionKnob: (knob) => require("@/lib/scoped-config/sessionKnob").getSessionKnob(knob),
   toast: late(() => require("@/lib/toast").toast),
   captureError: (report) => require("@/lib/diagnostics/errorCaptureStore").captureError(report),

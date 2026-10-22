@@ -187,7 +187,11 @@ async function main() {
       );
     const organizationId = system.rows[0].organization_id;
     if (!check) {
-      await client.query("BEGIN");
+      // READ WRITE, said out loud: on the transaction pooler (:6543) a backend can carry a
+      // session-level default_transaction_read_only = on leaked by another client, and a plain
+      // BEGIN inherits it ("cannot execute INSERT in a read-only transaction", release v0.4.3450,
+      // matrx-user/ai-work-conversations). Same remedy as apply-migration.ts beginClean.
+      await client.query("BEGIN READ WRITE");
       await client.query(
         emitSurfaceSyncSql({ surfaceNames: names, organizationId, skipArchiveTables: LIFECYCLE_TABLES }),
       );
@@ -417,7 +421,7 @@ async function runSelfTest() {
     if (childStart < 0)
       throw new Error("Self-test could not locate emitted child mirror SQL");
     const legacySql = fullSql.slice(childStart);
-    await client.query("BEGIN");
+    await client.query("BEGIN READ WRITE");
     const clientsBefore = await client.query<{ count: string }>(
       "select count(*)::text as count from ui.ui_client",
     );

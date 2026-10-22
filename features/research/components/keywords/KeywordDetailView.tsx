@@ -15,7 +15,7 @@ import {
   Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@ai-matrx/design-system";
 import { ResearchRecordContent } from "../reader/ResearchRecordContent";

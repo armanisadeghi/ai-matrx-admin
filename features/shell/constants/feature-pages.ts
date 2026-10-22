@@ -41,6 +41,7 @@ export const FEATURE_PAGES: readonly FeaturePageEntry[] = [
   { route: "/scraper", node: "web/scraper", kind: "collection" },
   // files, media, content, data
   { route: "/files", node: "files", kind: "workspace" },
+  { route: "/pdf", node: "files/pdf", kind: "tool" },
   { route: "/images", node: "media/images", kind: "workspace" },
   { route: "/transcripts", node: "audio/transcription", kind: "collection" },
   { route: "/notes", node: "content/notes", kind: "collection" },

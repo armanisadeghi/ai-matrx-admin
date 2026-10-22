@@ -14,6 +14,7 @@ import {
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
+import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import {
   CMS_SITE_MEMBER_ADD_ACTION,
   cmsAccessGateLabel,
@@ -43,6 +44,8 @@ export function ensureAccessEnv(): void {
     // The package passes an explicit organization positionally; the app's fetch takes it as an option.
     fetchWithOrganization: (input, init, organizationId) =>
       fetchWithOrganization(input, init, organizationId === undefined ? undefined : { organizationId }),
+    // The request-access hook (in @ai-matrx/sharing/access/react) files under the person's organization.
+    ensureOrgId: (organizationId) => ensureOrgId(organizationId ?? undefined),
     entityTokens: {
       isCmsAccessGateToken,
       cmsAccessGateLabel: (token) => (isCmsAccessGateToken(token) ? cmsAccessGateLabel(token) : "item"),

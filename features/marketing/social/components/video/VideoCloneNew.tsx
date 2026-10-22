@@ -11,6 +11,7 @@
  * variants grid after generating.
  */
 
+import { CostDoor } from "@/components/cost/CostDoor";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { getFile } from "@/features/files/api/files";
 import { fileIdToMediaRef } from "@/features/files/redux/converters";
@@ -37,7 +38,6 @@ import {
   analyzeReference,
   VideoStreamError,
   fetchTeleprompter,
-  points,
   runClonePlan,
   streamGenerate,
   type BriefFile,
@@ -957,8 +957,9 @@ function BriefPanel({
               {phase === "confirm" ? (
                 <>
                   <span className="type-body text-foreground">Over your confirmation setting</span>
+                  <CostDoor points={est.total_points} />
                   <Button variant="primary" className="ml-auto" onClick={() => void generate(true)}>
-                    {`Generate for ${points(est.total_points)}`}
+                    Generate
                   </Button>
                   <Button variant="quiet" onClick={() => setPhase("planned")}>
                     Not now

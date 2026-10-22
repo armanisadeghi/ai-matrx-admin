@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { PdfStudioPagesMeta } from "./PdfStudioPagesMeta";
-import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 

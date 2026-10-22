@@ -81,7 +81,7 @@ import {
 } from "@/features/flashcards/components/set-detail/DeckCardViews";
 import { MergeCardsDialog } from "@/features/flashcards/components/set-detail/MergeCardsDialog";
 import { toast } from "@/lib/toast";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import {

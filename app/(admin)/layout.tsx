@@ -22,9 +22,9 @@ import { getServerAuth } from "@/utils/supabase/getServerAuth";
 import { mapUserData } from "@/utils/userDataMapper";
 import {
   getAdminStatus,
-  checkIsUserAdmin,
   type AdminLevel,
 } from "@/utils/supabase/userSessionData";
+import { adminVerifyHref, readAdminMfaVerdict } from "@/utils/auth/adminMfa";
 import type { BaseReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import AppShell from "@/features/shell/components/AppShell";
@@ -85,8 +85,11 @@ export default async function AdminLayout({
   // higher bar self-gate with `selectAdminLevel` / the super-admin RPC family;
   // protected resources (admins table, etc.) are DB-gated regardless. The real
   // authorization always lives at the data layer, never this redirect.
-  const isAdminGate = await checkIsUserAdmin(supabase, user.id);
-  if (!isAdminGate) {
+  const adminStatus = await getAdminStatus(supabase, user.id).catch((err) => {
+    console.error("getAdminStatus failed, defaulting to non-admin:", err);
+    return { isAdmin: false, level: null as AdminLevel | null };
+  });
+  if (!adminStatus.isAdmin) {
     // A system agent is readable by every member; only its ADMIN view is
     // gated. A member who followed a system-agent link here (an old link, a
     // pasted URL) gets the same agent's ordinary page — never Welcome.
@@ -98,18 +101,36 @@ export default async function AdminLayout({
     return redirect("/dashboard");
   }
 
+  // ADMINISTRATOR MFA (READY-04): with the platform.auth / admin_mfa_required
+  // knob on, an admin on an aal1 session goes to the verify page (challenge,
+  // or enrollment when they have no authenticator) — never a dead page. Knob
+  // off answers `not_required` and nothing here changes.
   const [
     {
       data: { session },
     },
-    adminStatus,
-  ] = await Promise.all([
-    supabase.auth.getSession(),
-    getAdminStatus(supabase, user.id).catch((err) => {
-      console.error("getAdminStatus failed, defaulting to non-admin:", err);
-      return { isAdmin: false, level: null as AdminLevel | null };
-    }),
-  ]);
+    mfa,
+  ] = await Promise.all([supabase.auth.getSession(), readAdminMfaVerdict()]);
+  if (mfa.state === "challenge") {
+    const searchParams = headersList.get("x-search-params") || "";
+    return redirect(adminVerifyHref(`${pathname}${searchParams}`));
+  }
+  if (mfa.state === "unavailable") {
+    const guestUserData = mapUserData(null, undefined, false);
+    return (
+      <AppShell
+        initialReduxState={{ user: guestUserData, adminLaneOpen: true }}
+        userData={guestUserData}
+        isAuthenticated={false}
+        pathname={pathname}
+        sidebarExpanded={sidebarExpanded}
+      >
+        <div data-error-box className="p-4 text-sm text-muted-foreground">
+          Verification check unavailable — reload in a moment.
+        <ErrorAlchemyMenu /></div>
+      </AppShell>
+    );
+  }
   const { isAdmin, level: adminLevel } = adminStatus;
   const accessToken = session?.access_token;
   const userData = mapUserData(user, accessToken, isAdmin, adminLevel);

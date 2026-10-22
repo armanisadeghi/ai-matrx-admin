@@ -19,7 +19,7 @@ import {
   SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
 import { SnapshotArtifacts } from "@/features/marketing/components/pages/SnapshotArtifacts";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { RecordStamps } from "@ai-matrx/records-ui/entity-ref";

@@ -33,7 +33,10 @@ jest.mock("@ai-matrx/design-system/controls", () => {
     ),
   };
 });
-jest.mock("@/components/official/TextArrayInput", () => () => null);
+jest.mock("@ai-matrx/design-system/controls", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/controls"),
+  TextArrayInput: () => null,
+}));
 jest.mock("@/components/official/ProTextarea", () => ({ ProTextarea: () => null }));
 jest.mock("@/features/marketing/data/hooks", () => ({
   useUpdatePageDesiredValues: () => ({ mutateAsync: jest.fn(), isPending: false }),

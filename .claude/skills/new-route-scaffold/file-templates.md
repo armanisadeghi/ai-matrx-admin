@@ -190,7 +190,7 @@ function NotesEmptyState() {
 import { Suspense } from "react";
 import { getNote, getNoteListSeed, preloadNote } from "@/lib/notes/data";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { NoteListHydrator } from "@/features/notes/route/NoteListHydrator";
 import { NoteHydrator } from "@/features/notes/route/NoteHydrator";
 import { NotesShell } from "@/features/notes/components/shell/NotesShell";

@@ -60,7 +60,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { PdfDocument } from "../hooks/usePdfExtractor";
-import type { PdfPageRow } from "../hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import { usePdfClient } from "@/features/pdf/api/client";
 import { useDownloadBlob } from "@/features/pdf/hooks/useDownloadBlob";
 import { buildPdfSource } from "@/features/pdf/utils/source";

@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * components/cost/AdminOnlyTag.tsx — the visible "Admin only" tag every dollar figure outside the
  * admin site carries (owner ruling 2026-10-22: an admin sees dollars only inside an element that is
@@ -6,8 +8,13 @@
  * admin-only cost block in `<AdminOnly>`.
  */
 
+import { createContext } from "react";
 import { Badge } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
+
+/** True inside an `<AdminOnly>` block: the block carries the tag, so a system admin's dollar
+ *  figures inside it (`AdminCost`, `AdminUsd`, `useSeesDollars`) may print bare. */
+export const AdminOnlyBlockContext = createContext(false);
 
 export function AdminOnlyTag({ className }: { className?: string }) {
   return (
@@ -22,7 +29,7 @@ export function AdminOnly({ children, className }: { children: React.ReactNode; 
   return (
     <span className={cn("inline-flex flex-wrap items-center gap-1.5", className)} data-admin-only="">
       <AdminOnlyTag />
-      {children}
+      <AdminOnlyBlockContext.Provider value={true}>{children}</AdminOnlyBlockContext.Provider>
     </span>
   );
 }

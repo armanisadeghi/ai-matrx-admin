@@ -22,5 +22,5 @@ export { commerceDraftsManifest as s341 } from "../../commerce-drafts.manifest";
 export { printExamsManifest as s354 } from "../../print-exams.manifest";
 export { spacePageManifest as s362 } from "../../space-page.manifest";
 export { trashManifest as s367 } from "../../trash.manifest";
-export { adminSpendApprovalManifest as s384 } from "../../admin-spend-approval.manifest";
-export { adminWorkflowSpendApprovalsManifest as s385 } from "../../admin-spend-approval.manifest";
+export { adminSpendApprovalManifest as s385 } from "../../admin-spend-approval.manifest";
+export { adminWorkflowSpendApprovalsManifest as s386 } from "../../admin-spend-approval.manifest";

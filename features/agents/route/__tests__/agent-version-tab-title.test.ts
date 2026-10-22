@@ -11,7 +11,8 @@ jest.mock("@/utils/route-metadata", () => ({
 jest.mock("@/features/agents/components/diff/AgentVersionDiffPage", () => ({ AgentVersionDiffPage: () => null }));
 jest.mock("@/features/shell/components/header/PageHeader", () => ({ __esModule: true, default: () => null }));
 jest.mock("@ai-matrx/chat/agents/components/shared/AgentHeader", () => ({ AgentHeader: () => null }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 
 import { generateMetadata as versionMetadata } from "@/app/(core)/agents/[id]/v/[version]/page";
 import { generateMetadata as latestMetadata } from "@/app/(core)/agents/[id]/latest/layout";

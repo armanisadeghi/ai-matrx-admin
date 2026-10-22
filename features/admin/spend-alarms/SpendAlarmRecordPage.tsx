@@ -31,7 +31,7 @@ import { RecordPageHeader, type RecordPageAction } from "@/features/shell/compon
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
+import { KpiTile, Button } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
@@ -45,7 +45,6 @@ import { muteLabel } from "@/features/admin/attention/item-mute";
 import { AlarmSourcesList } from "./AlarmSourcesList";
 import { HeldRunsSection } from "@/features/admin/held-runs/HeldRunsSection";
 import { PausedAutomationSection } from "./PausedAutomationSection";
-import { Button } from "@ai-matrx/design-system/controls";
 import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";

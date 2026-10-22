@@ -14,7 +14,7 @@ import { getInitiative } from "./service";
 import { InitiativeEditorDialog } from "./InitiativeEditorDialog";
 import type { Initiative } from "./types";
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 
 export function InitiativeDetail({ id }: { id: string }) {

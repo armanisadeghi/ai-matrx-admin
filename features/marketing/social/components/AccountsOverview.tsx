@@ -10,8 +10,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
-import { KpiGrid, KpiTile, type KpiTone } from "@/components/official/kpi/KpiTile";
-import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
+import { KpiGrid, KpiTile, type KpiTone, Button, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Plus } from "lucide-react";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { cn } from "@/lib/utils";

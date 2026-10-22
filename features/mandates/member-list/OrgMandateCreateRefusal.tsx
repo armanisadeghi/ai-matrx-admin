@@ -13,7 +13,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { RequestAccess } from "@/features/access-gate/components/RequestAccess";
+import { RequestAccess } from "@ai-matrx/sharing/access/react";
 import { newSoftMandateHref, orgMandateListHref } from "./routes";
 
 export function OrgMandateCreateRefusal({

@@ -27,8 +27,7 @@ import {
 } from "@/features/marketing/data/hooks";
 import { extractErrorMessage } from "@/utils/errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
-import { useRemovalRights } from "@/features/access-gate/hooks/useHiddenByMe";
+import { GovernedActionDialog, useRemovalRights } from "@ai-matrx/sharing/access/react";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 export interface BrandArchiveFlowProps {

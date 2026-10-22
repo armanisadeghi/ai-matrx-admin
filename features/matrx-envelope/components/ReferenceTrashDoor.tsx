@@ -19,7 +19,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AccessDenied } from "@/features/access-gate/components/AccessDenied";
+import { AccessDenied } from "@ai-matrx/sharing/access/react";
 import { TRASH_HREF } from "@/features/trash/archiveCopy";
 import { invalidateReferenceLabel } from "@/features/matrx-envelope/referenceResolvers";
 

@@ -22,7 +22,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { OctagonX, Pause, Play, RotateCcw } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";

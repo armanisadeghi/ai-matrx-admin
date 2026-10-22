@@ -24,10 +24,9 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import TextArrayInput from "@/components/official/TextArrayInput";
+import { TextArrayInput, Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useMarketingSite } from "@/features/marketing/components/site/MarketingSiteContext";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

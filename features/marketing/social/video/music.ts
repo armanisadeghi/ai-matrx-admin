@@ -3,7 +3,6 @@
  * the clone brief, the format form and the project page. `brief.music` is exactly `{file}` or `{bed: {mood, tempo}}`.
  */
 
-import { formatCount } from "@ai-matrx/kit/format";
 import { MUSIC_BED_MOODS, MUSIC_BED_TEMPOS, musicBedPrompt, effectiveRequestHash, type Composition, type MusicBedMood, type MusicBedTempo } from "@ai-matrx/media/video";
 
 import type { BriefFile } from "./clone";
@@ -49,11 +48,11 @@ export function musicSound(c: MusicChoice): string | null {
   return MUSIC_BED_MOODS[c.mood].replace(/^[A-Za-z]+,\s*/, "").replace(/^(.*?)\s+with\s+(.*)$/, "$1, with $2");
 }
 
-/** The bed's line in a cost summary: "Music bed 1,600 points", "Music bed reused", or null when the video has no bed to make. */
+/** The bed's line in a cost summary: "Music bed", "Music bed reused", or null when the video has no bed to make. */
 export function musicCostLine(est: Pick<EstimateAnswer, "lines" | "cached">): string | null {
   const line = est.lines.find((l) => l.capability === "music");
   if (line) {
-    return line.points != null ? `Music bed ${formatCount(Math.round(line.points))} points` : "Music bed";
+    return "Music bed";
   }
   return est.cached.includes("music") ? "Music bed reused" : null;
 }

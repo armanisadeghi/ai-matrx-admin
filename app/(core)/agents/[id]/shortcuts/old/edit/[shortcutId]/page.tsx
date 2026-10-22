@@ -3,7 +3,7 @@ import { getAgent } from "@/lib/agents/data";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import { AgentShortcutEditor } from "@/features/agents/components/shortcuts/AgentShortcutEditor";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 
 // Legacy editor — preserved verbatim while the new editor settles in. Hop

@@ -36,7 +36,7 @@ import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { GuidedChecklist } from "@/lib/guided-setup/components/GuidedChecklist";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useSendingIdentity } from "@/features/crm/sending-identities/hooks";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { sendingIdentityChecklist } from "@/features/crm/sending-identities/sendingIdentityChecklist";

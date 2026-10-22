@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShortcuts";
 import { ShortcutForm } from "@/features/agent-shortcuts/components/ShortcutForm";
 import { useAppSelector } from "@/lib/redux/hooks";

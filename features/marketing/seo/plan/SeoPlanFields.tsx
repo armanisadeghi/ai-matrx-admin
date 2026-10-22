@@ -12,8 +12,7 @@
 import Link from "next/link";
 import { Search, Link2, X } from "lucide-react";
 
-import TextArrayInput from "@/components/official/TextArrayInput";
-import { Input } from "@ai-matrx/design-system/controls";
+import { TextArrayInput, Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
   Select,

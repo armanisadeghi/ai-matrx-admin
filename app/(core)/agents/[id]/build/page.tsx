@@ -3,7 +3,7 @@ import { getAgent } from "@/lib/agents/data";
 import { AgentBuilderPage } from "@/features/agents/components/builder/AgentBuilderPage";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 
 export default async function AgentEditPage({

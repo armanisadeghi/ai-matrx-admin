@@ -21,7 +21,6 @@
     "components/mardown-display/chat-markdown/FullScreenMarkdownEditor.tsx#AdminKV",
     "components/official/Field.tsx#Field",
     "components/official/ProFieldWidthsShowcase.tsx#Row",
-    "components/official/settings/SettingsRow.tsx#SettingsRow",
     "features/admin/dead-ends/DeadEndsConsole.tsx#Row",
     "features/admin/error-inspector/ErrorInspectorWindow.tsx#Field",
     "features/admin/system-context/FeedConfigEditor.tsx#FieldRow",

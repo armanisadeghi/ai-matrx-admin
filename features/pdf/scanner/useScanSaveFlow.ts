@@ -334,12 +334,16 @@ export function useScanSaveFlow(
         );
         const docId = result.doc_id as string;
         // Fallback only — the per-page stream normally set this already.
-        void fetchRawTextPreview(docId).then((preview) => {
-          if (preview)
-            setProcessing((p) =>
-              p && !p.rawPreview ? { ...p, rawPreview: preview } : p,
-            );
-        });
+        void fetchRawTextPreview(docId)
+          .then((preview) => {
+            if (preview)
+              setProcessing((p) =>
+                p && !p.rawPreview ? { ...p, rawPreview: preview } : p,
+              );
+          })
+          .catch((err: unknown) => {
+            console.error(`[scanner] raw-text preview read failed for doc ${docId}`, err);
+          });
       },
       onProcessing: applyProcessingEvent,
       onProcessingSettled: (status) => {

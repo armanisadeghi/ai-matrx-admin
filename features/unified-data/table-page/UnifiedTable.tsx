@@ -30,7 +30,7 @@ import type { PageView, RecordsMountProps, TablePageActionHost, ViewAddressState
 import type { RecordFilter } from "@ai-matrx/records";
 import { Button } from "@/components/ui/button";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { TableTransferOffer } from "@/features/sharing/components/TableTransferOffer";
 import {
   PendingTableInvitation,

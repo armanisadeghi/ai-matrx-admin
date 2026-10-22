@@ -22,7 +22,7 @@ import { LoadingSpinner } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { formatAbsoluteDate, formatRelativeTime } from "@/utils/datetime";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { MasterworkRunRow } from "../components/masterworks/MasterworksPage";
 import { TryMasterworkBox } from "../components/masterworks/TryMasterworkBox";
 import { AuditionProof } from "./AuditionProof";

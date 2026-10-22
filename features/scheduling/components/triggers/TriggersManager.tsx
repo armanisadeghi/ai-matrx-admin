@@ -229,7 +229,18 @@ export function TriggersManager({
   };
 
   const costCols = automationCostColumns<ManagedTrigger>((t) => t.cost, seat, orgSlug);
-  const pick = (ids: string[]) => ids.flatMap((id) => costCols.filter((c) => String(c.id) === id));
+  // Cost columns start HIDDEN (owner ruling 2026-10-22: points only when the person asks): the
+  // column picker is the door — showing a cost column is asking for usage. Sorting and filters stay.
+  const COST_MONEY_COLUMNS = new Set([
+    "cost_total", "cost_total_points", "cost_est_month", "cost_est_month_points", "cost_7d", "cost_7d_points",
+    "cost_last_run", "cost_last_run_points", "cost_avg_run", "cost_avg_run_points", "cost_max_run", "cost_max_run_points",
+  ]);
+  const pick = (ids: string[]) =>
+    ids.flatMap((id) =>
+      costCols
+        .filter((c) => String(c.id) === id)
+        .map((c) => (COST_MONEY_COLUMNS.has(String(c.id)) ? { ...c, hidden: true } : c)),
+    );
 
   const unordered: MatrxColumnDef<ManagedTrigger>[] = [
     {

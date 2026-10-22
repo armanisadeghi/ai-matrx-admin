@@ -52,6 +52,7 @@ import {
   type CostUnit,
 } from "@ai-matrx/kit/format";
 import type { RootState } from "@/lib/redux/store";
+import { AdminOnlyBlockContext } from "./AdminOnlyTag";
 import { isAdminSurfacePath, selectCanToggleCostUnit, selectCostUnit } from "./costUnit";
 import { formatAdminCost, formatSpendUsd } from "./formatAdminCost";
 import { usePointsRate } from "./pointsRate.client";
@@ -61,8 +62,14 @@ export { currentPointsRate, POINTS_RATE_KNOB } from "./pointsRate";
 export { usePointsRate } from "./pointsRate.client";
 
 export interface CostDisplay {
-  /** `"points"` for everyone; `"usd"` only for an admin who flipped the switch. */
+  /**
+   * The unit for TEXT this viewer may read here: `"points"` for everyone; `"usd"` only for a system
+   * admin who flipped the switch AND is on the admin site (plain text cannot carry the "Admin only"
+   * tag — owner ruling 2026-10-22). Pass it on to any formatter that takes a unit.
+   */
   unit: CostUnit;
+  /** The admin's switch itself, wherever they are — only `<Cost>` reads it, to draw tagged dollars. */
+  preferredUnit: CostUnit;
   /** True when the viewer may flip the switch at all (system admins). */
   canToggle: boolean;
   /**
@@ -124,12 +131,14 @@ export function useOnAdminSurface(): boolean {
  * user… unless this is some sort of an admin feature and in that case, it should make it clear to me
  * that it's admin only data"). Everywhere else every string helper (`useAdminCost`, `AdminUsd`,
  * `CostFigures`, a feature's price text) answers points alone, and dollars live only inside a
- * labelled element (`<CostDoor>`, `<AdminOnly>`, `<Cost>`'s tagged dollar mode).
+ * labelled element (`<CostDoor>`, `<AdminOnly>`, `<Cost>`'s tagged dollar mode) — inside an
+ * `<AdminOnly>` block this answers true for a system admin, because the block wears the tag.
  */
 export function useSeesDollars(): boolean {
   const admin = useCostState().canToggle;
   const onAdminSite = useOnAdminSurface();
-  return admin && onAdminSite;
+  const inLabelledBlock = useContext(AdminOnlyBlockContext);
+  return admin && (onAdminSite || inLabelledBlock);
 }
 
 export function useCostDisplay(): CostDisplay {
@@ -143,7 +152,8 @@ export function useCostDisplay(): CostDisplay {
   // (ruling 2026-10-22); `<Cost>` carries the tag and honours the dollars switch there itself.
   const textUnit: CostUnit = onAdminSite ? unit : "points";
   return {
-    unit,
+    unit: textUnit,
+    preferredUnit: unit,
     canToggle,
     rate,
     format: (usd, { price, ...options } = {}) =>

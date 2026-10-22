@@ -37,8 +37,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { ScoreRing, Skeleton } from "@ai-matrx/design-system";
-import { KpiTile } from "@/components/official/kpi/KpiTile";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { KpiTile } from "@ai-matrx/design-system/controls";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import { SessionsBrowser } from "@/features/education/study/components/SessionsBrowser";
 import {

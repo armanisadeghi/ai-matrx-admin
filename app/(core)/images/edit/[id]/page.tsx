@@ -1,6 +1,6 @@
 // record-view: none — an editor or experiment surface for a record, not the record view
 import { createClient } from "@/utils/supabase/server";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import EditByIdClient from "./EditByIdClient";
 
 /**

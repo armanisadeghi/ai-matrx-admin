@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Drawer, DrawerBody, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { AskTutorPanel } from "@/features/education/tutor/components/AskTutorButton";
 import type { TutorGroundingSeed } from "@/features/education/tutor/grounding";
 import type { Action, ClickTarget } from "@ai-matrx/alchemy/actions";

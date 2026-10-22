@@ -19,7 +19,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/utils/supabase/client";
-import type { KpiTrend } from "@/components/official/kpi/KpiTile";
+import type { KpiTrend } from "@ai-matrx/design-system/controls";
 import { getGscBreakdown, getGscTimeseries } from "@/features/marketing/search-console/data";
 import { useGscPortfolioRollup } from "@/features/marketing/search-console/components/ambassador/useGscPortfolioRollup";
 import type { GscResolvedPeriods } from "@/features/marketing/search-console/types";

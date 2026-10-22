@@ -6,7 +6,7 @@ import { ChevronDown, Save, RefreshCw, Maximize, Minimize, CheckCircle2 } from "
 import { IconButton } from "@/components/ui/icon-button";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import { cn } from "@/lib/utils";
-import ActionFeedbackButton from "@/components/official/ActionFeedbackButton";
+import { ActionFeedbackButton } from "@ai-matrx/design-system/controls";
 
 interface AdvancedCollapsibleProps {
   icon: ReactNode;
@@ -132,8 +132,6 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
           tooltip={saveTooltip}
           successTooltip="Saved!"
           onClick={handleSave}
-          variant="ghost"
-          size="sm"
         />
       )}
       
@@ -143,8 +141,6 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
           tooltip={resetTooltip}
           successTooltip="Reset!"
           onClick={handleReset}
-          variant="ghost"
-          size="sm"
         />
       )}
       
@@ -154,8 +150,6 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
         icon={<Maximize className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />}
         tooltip={fullscreenTooltip}
         onClick={toggleFullScreen}
-        variant="ghost"
-        size="sm"
       />
     </div>
   );
@@ -169,8 +163,6 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
           tooltip={saveTooltip}
           successTooltip="Saved!"
           onClick={handleSave}
-          variant="ghost"
-          size="sm"
         />
       )}
       
@@ -180,8 +172,6 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
           tooltip={resetTooltip}
           successTooltip="Reset!"
           onClick={handleReset}
-          variant="ghost"
-          size="sm"
         />
       )}
       
@@ -191,8 +181,6 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
         icon={<Minimize className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />}
         tooltip={fullscreenExitTooltip}
         onClick={toggleFullScreen}
-        variant="ghost"
-        size="sm"
       />
     </div>
   );

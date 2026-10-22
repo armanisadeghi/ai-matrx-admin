@@ -12,7 +12,7 @@ import { EntityModeHeader } from "@/features/shell/components/header/templates/E
 import { useTaskDetail } from "@/features/scheduling/hooks/useTaskDetail";
 import { useScheduledTasks } from "@/features/scheduling/hooks/useScheduledTasks";
 import { ScheduleForm } from "@/features/scheduling/components/form/ScheduleForm";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 interface Props {
   params: Promise<{ id: string }>;

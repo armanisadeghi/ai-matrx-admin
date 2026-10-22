@@ -3,7 +3,7 @@ import { getAgent } from "@/lib/agents/data";
 import { readLayoutCookie } from "@/features/resizable-panels/readLayoutCookie";
 import { SurfacesAdminShell } from "@/features/surfaces/admin/SurfacesAdminShell";
 import { SURFACES_ADMIN_COOKIE } from "@/features/surfaces/admin/surfacesAdminCookie";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default async function AgentSurfacesRoute({
   params,

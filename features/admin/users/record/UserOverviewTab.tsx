@@ -16,10 +16,9 @@ import {
 } from "lucide-react";
 import AppLink from "@/components/navigation/AppLink";
 import { EmailValue, ErrorNotice, PhoneValue } from "@ai-matrx/design-system";
-import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
+import { Badge, Button, PropertyRow, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { formatCount } from "@ai-matrx/kit/format";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { usagePersonHref } from "@/features/admin/usage-drill/usageLinks";
 import { SPEND_APPROVALS_ADMIN_PATH, approvalSubjectHref } from "@/features/admin/spend-approvals/spendApprovals";

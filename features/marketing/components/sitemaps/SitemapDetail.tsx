@@ -36,7 +36,7 @@ import {
   StatusBadge,
 } from "@/features/marketing/components/shared/MarketingUi";
 import { cn } from "@/lib/utils";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const FILTERS: Array<{ value: SitemapPagesFilter; label: string }> = [

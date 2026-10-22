@@ -21,4 +21,4 @@ export { hrMyPayManifest as s312 } from "../../hr-my-pay.manifest";
 export { hrLeavePolicyEnrollmentManifest as s326 } from "../../hr-leave-policy-enrollment.manifest";
 export { productCaptureItemManifest as s349 } from "../../product-capture-item.manifest";
 export { printZplManifest as s359 } from "../../print-zpl.manifest";
-export { exportLibraryManifest as s373 } from "../../export-library.manifest";
+export { exportLibraryManifest as s374 } from "../../export-library.manifest";

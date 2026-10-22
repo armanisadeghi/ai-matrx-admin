@@ -22,7 +22,7 @@
 
 import Link from "next/link";
 import { USAGE_LIMIT_MESSAGE, canAiClean, isDocCleaned } from "../service/cleanOutcome";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import React, {
   useCallback,
   useEffect,

@@ -1,7 +1,7 @@
 {
   "note": "Record-naming toasts not yet routed through recordToast (lib/toast.ts). This list may only SHRINK — see scripts/check-record-toasts.ts.",
   "updated": "2026-09-12",
-  "count": 262,
+  "count": 256,
   "ids": [
     "app/(admin)/administration/agents/system-agents/apps/page.tsx::`${label} updated.`",
     "app/(admin)/administration/automation/scheduling/system-jobs/page.tsx::`${t.title} queued to run now`",
@@ -41,8 +41,6 @@
     "components/markdown-studio/MarkdownStudio.tsx::`Loaded template: ${template.title}`",
     "components/markdown-studio/SampleLibrarySheet.tsx::`Deleted \"${sample.name}\"`",
     "components/official/ProTextAgentActionPopoverBody.tsx::`${title} result copied to clipboard`",
-    "features/access-gate/components/GovernedActionDialog.tsx::`Request sent to ${result.recipients[0]?.displayName ?? ownerName}.`",
-    "features/access-gate/components/RequestAccessPanel.tsx::`Request sent to ${ result.recipients[0]?.displayName ?? requestRecipientName }.`",
     "features/admin/dead-ends/DeadEndsConsole.tsx::`${label} copied`",
     "features/admin/limits/components/FeatureKnobsPanel.tsx::`${knob.label} needs a number`",
     "features/admin/lint-debt/LintDebtConsole.tsx::`${label} copied`",

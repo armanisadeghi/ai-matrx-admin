@@ -57,7 +57,8 @@ jest.mock("@/features/organizations/hooks", () => ({
 // Which organization's roster each render asked for (null = none): the offer reads it only once
 // its transfer dialog opens.
 const mockMemberReads: (string | null)[] = [];
-jest.mock("@/features/access-gate/service/accessDeniedContext", () => ({
+jest.mock("@ai-matrx/data/access", () => ({
+  ...jest.requireActual("@ai-matrx/data/access"),
   fetchAccessDeniedContext: async () => ({
     status: "denied",
     disclosure: "full",

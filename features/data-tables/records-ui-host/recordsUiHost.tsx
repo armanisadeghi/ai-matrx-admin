@@ -24,6 +24,7 @@ import { selectCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { RecordBodyEditor } from "@/features/data-tables/records-ui-host/RecordBodyEditor";
 import { RecordBodySpace } from "@/features/spaces/embed/RecordBodySpace";
+import { DeckLogicEditor } from "@/features/data-tables/records-ui-host/DeckLogicEditor";
 import { IconResolver } from "@ai-matrx/icons";
 import { useCallback, useMemo, type ReactNode } from "react";
 import { writeSyncedCell } from "@/features/unified-data/connect-database/service";
@@ -230,6 +231,8 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     chat: (ctx) => <RecordScopedChat ctx={ctx} organizationId={ports.organizationId} />,
     // A record page's body, in the platform's one rich editor (records-ui ≥0.96 `editRichText`).
     editRichText: (props) => <RecordBodyEditor {...props} />,
+    // The Swipe view's "which card shows when" editor (records-ui ≥0.116.89 `deckLogicEditor`), loaded on open.
+    deckLogicEditor: DeckLogicEditor,
     // EVERY ROW IS A PAGE: a row's body is its Space (record → document, label row_body) in the Spaces editor
     // (records-ui ≥0.101.22 `renderRecordBody`); someone who may edit a row with none starts it on open (its
     // notes, then its table's default template — features/spaces/embed/row-page.ts). Readers keep the old body.

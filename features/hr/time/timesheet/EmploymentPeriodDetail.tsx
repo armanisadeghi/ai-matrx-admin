@@ -56,7 +56,7 @@ import {
   hrTimePeriodHref,
   hrTimesheetsHref,
 } from "@/features/hr/routes";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { HrRpcError } from "../api/rpc";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 

@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ModelListDropdown, useModelCatalog } from "@ai-matrx/agents/models/react";
 import { Play, Plus, X } from "lucide-react";
-import { Badge, Button, DisclosureHeader, EmptyState, Field, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
+import { Badge, Button, DisclosureHeader, EmptyState, Field, SegmentedControl, Select, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } from "@ai-matrx/design-system/data-table";
 import { estimateTokens, estimateTokensForText, formatTokens } from "@ai-matrx/kit/tokens";
@@ -20,7 +20,6 @@ import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import { useCostDisplay, useSeesDollars } from "@/components/cost/useCostDisplay";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";

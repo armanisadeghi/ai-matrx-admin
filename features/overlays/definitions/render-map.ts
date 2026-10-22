@@ -163,6 +163,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   notesWindow: () => import("./notesWindow.render"),
   notificationsInboxWindow: () => import("./notificationsInboxWindow.render"),
   observationalMemoryWindow: () => import("./observationalMemoryWindow.render"),
+  packageDiffDialog: () => import("./packageDiffDialog.render"),
   pageResearchWindow: () => import("./pageResearchWindow.render"),
   pdfBatchExtractDebugWindow: () => import("./pdfBatchExtractDebugWindow.render"),
   pdfExtractorWindow: () => import("./pdfExtractorWindow.render"),

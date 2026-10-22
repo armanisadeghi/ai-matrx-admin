@@ -78,6 +78,7 @@ import {
   EntityCardsSelectAll,
 } from "./EntityBulkBar";
 import { useEntityListSelection } from "../useEntityListSelection";
+import { ListPageActionButton, useDeclareListPageActions, type ListPageAction } from "./ListPageActions";
 import type { MatrxDataTableSelectionConfig } from "@ai-matrx/design-system/data-table/types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { EntitySourceFailures } from "./EntitySourceFailures";
@@ -152,6 +153,13 @@ export interface EntityListPageProps<TRow> {
    * keeping a second copy.
    */
   headerActions?: ReactNode | ((list: EntityListController<TRow>) => ReactNode);
+  /**
+   * The list page's VERBS (Add, Smart Add, Import…) as data: each is a button on the header row AND
+   * an item in the frame's "…" — one list, so "…" holds every action of the page (crumb-door law,
+   * features/shell/FEATURE.md). The `primary` one is also the empty state's door when `emptyAction`
+   * is not given. Use `headerActions` only for controls that are not verbs.
+   */
+  actions?: readonly ListPageAction[];
   /**
    * Action rendered inside the empty state (usually the New button again).
    * Takes the same render-prop form as `headerActions` and for the same
@@ -249,6 +257,7 @@ export function EntityListPage<TRow>({
   config,
   notice,
   headerActions,
+  actions: pageActions,
   emptyAction,
   surface,
   scopes,
@@ -604,8 +613,16 @@ export function EntityListPage<TRow>({
     </Button>
   );
 
+  useDeclareListPageActions(pageActions);
+  const primaryAction = pageActions?.find((a) => a.primary);
   const configuredEmptyAction =
-    typeof emptyAction === "function" ? emptyAction(list) : emptyAction;
+    emptyAction === undefined
+      ? primaryAction
+        ? <ListPageActionButton action={primaryAction} />
+        : undefined
+      : typeof emptyAction === "function"
+        ? emptyAction(list)
+        : emptyAction;
 
   // "MY TEAM" SAYS WHOSE ITEMS IT SHOWS (T-29). An empty My team tab is either
   // "you are on no team here, so there is nothing to show" (the reach is empty
@@ -1338,7 +1355,7 @@ export function EntityListPage<TRow>({
               />
             </div>
           )}
-          {headerActions && (
+          {(headerActions || (pageActions && pageActions.length > 0)) && (
             // A page's actions are the 28px controls (`@ai-matrx/design-system/controls`
             // Button); the scope makes a tap button among them match. The shell never forces a
             // height onto what the page passes (THE CANONICAL-OVERRIDE LAW).
@@ -1346,6 +1363,7 @@ export function EntityListPage<TRow>({
               data-entity-list-actions=""
               className="flex shrink-0 items-center gap-1.5 @3xl/list:gap-2"
             >
+              {pageActions?.map((a) => <ListPageActionButton key={a.id} action={a} />)}
               {typeof headerActions === "function"
                 ? headerActions(list)
                 : headerActions}

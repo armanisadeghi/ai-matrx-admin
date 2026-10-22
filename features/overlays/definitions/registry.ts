@@ -253,4 +253,5 @@ export const APP_OVERLAYS = [
   d.executionStateDebugOverlay,
   d.shellLayoutEditorWindowOverlay,
   d.alchemyPrepareWindowOverlay,
+  d.packageDiffDialogOverlay,
 ] as const;

@@ -17,7 +17,7 @@ import { TextInputDialog } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { HrPageState } from "@/features/hr/shared/HrStates";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { toast } from "@/lib/toast";
 import { useOpenAccessSetupWindow } from "@/features/overlays/definitions/accessSetupWindow.overlay";

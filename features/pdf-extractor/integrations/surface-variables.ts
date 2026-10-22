@@ -11,7 +11,7 @@
  * want to use it add a mapping entry.
  */
 
-import type { PdfPageRow } from "@/features/pdf-extractor/hooks/useProcessedDocumentPages";
+import type { PdfPageRow } from "@/features/pdf/data/pdfPages";
 import { PAGE_MARKER } from "@/features/page-extraction/constants";
 import { formatPageRange } from "@/features/page-extraction/utils/chunk-preview";
 import type { SurfaceChunkVariables } from "@/features/page-extraction/types";

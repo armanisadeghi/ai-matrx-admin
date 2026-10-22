@@ -13,6 +13,7 @@
 import { supabase } from "@/utils/supabase/client";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { docprocDb } from "@/utils/supabase/docprocDb";
+import { countPdfPages, fetchFirstPdfPageText } from "@/features/pdf/data/pdfPages";
 
 export interface ProcessingStatus {
   pagesTotal: number;
@@ -34,20 +35,10 @@ export async function fetchProcessingStatus(
   docId: string,
 ): Promise<ProcessingStatus> {
   const db = docprocDb(supabase);
-  const [totalRes, cleanedRes, cleanContentRes, docRes] = await Promise.all([
-    db
-      .from("processed_document_pages")
-      .select("id", { count: "exact", head: true })
-      .eq("processed_document_id", docId),
-    // cleaned_text is NOT NULL (default '') — "is not null" counted every
-    // page as cleaned the moment the row landed, which made the clean step
-    // look instantly complete. cleaned_char_count is 0 until the LLM
-    // cleanup actually writes the page.
-    db
-      .from("processed_document_pages")
-      .select("id", { count: "exact", head: true })
-      .eq("processed_document_id", docId)
-      .gt("cleaned_char_count", 0),
+  const [pagesTotal, pagesCleaned, cleanContentRes, docRes] = await Promise.all([
+    // Page counts come from THE PDF page reader (pdf_unified_pages), never docproc pages.
+    countPdfPages({ processedDocumentId: docId }),
+    countPdfPages({ processedDocumentId: docId }, { cleanedOnly: true }),
     db
       .from("processed_documents")
       .select("id", { count: "exact", head: true })
@@ -63,8 +54,8 @@ export async function fetchProcessingStatus(
   const current = metadata.content_processing?.current;
 
   return {
-    pagesTotal: totalRes.count ?? 0,
-    pagesCleaned: cleanedRes.count ?? 0,
+    pagesTotal,
+    pagesCleaned,
     cleanContentReady: (cleanContentRes.count ?? 0) > 0,
     runStatus: current?.last_run_status ?? null,
     entities: current?.entities ?? null,
@@ -167,14 +158,8 @@ export async function fetchRecentScans(limit = 12): Promise<RecentScans> {
 export async function fetchRawTextPreview(
   docId: string,
 ): Promise<string | null> {
-  const { data } = await docprocDb(supabase)
-    .from("processed_document_pages")
-    .select("raw_text")
-    .eq("processed_document_id", docId)
-    .order("page_number", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  const text = (data?.raw_text ?? "").trim();
+  const rawText = await fetchFirstPdfPageText({ processedDocumentId: docId });
+  const text = (rawText ?? "").trim();
   return text ? text.slice(0, 220) : null;
 }
 

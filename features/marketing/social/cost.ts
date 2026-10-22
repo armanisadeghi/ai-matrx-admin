@@ -85,20 +85,10 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     toPoints: (usd: number) => toPoints(usd),
   };
 
-  /** The cost words for a CONFIRM step (null when trivial or unknown). Never for a button or label. */
-  function confirmCostText(action: SocialSpendAction, count = 1): string | null {
-    return formatPointsCost(actionUsd(costs.data, action, count), display);
-  }
-
   /** For an agent's approval card: the points, even when small; "points (price not loaded)" when unknown. */
   function agentCostText(action: SocialSpendAction, count = 1): string | null {
     if (count <= 0) return null;
     return formatPointsAlways(actionUsd(costs.data, action, count), display.toPoints) ?? "points (price not loaded yet)";
-  }
-
-  /** The points a confirm step names before work is committed, even when small; null when unpriced. */
-  function pointsText(action: SocialSpendAction, count = 1): string | null {
-    return formatPointsAlways(actionUsd(costs.data, action, count), display.toPoints);
   }
 
   async function confirmSpend(
@@ -106,13 +96,28 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     count: number,
     dialog: { title: string; confirmLabel: string; description?: string },
   ): Promise<boolean> {
-    const words = confirmCostText(action, count);
+    const words = formatPointsCost(actionUsd(costs.data, action, count), display);
     if (!words) return true;
     return confirm({
       title: dialog.title,
       description: costDescription(dialog.description, actionUsd(costs.data, action, count)),
       confirmLabel: dialog.confirmLabel,
     });
+  }
+
+  /** The price of a spend as a quiet Cost door for a confirm body (null when unpriced). `always` skips the warn-tier rule. */
+  function costNode(action: SocialSpendAction, count = 1, always = false): ReactNode {
+    const usd = actionUsd(costs.data, action, count);
+    if (usd == null) return null;
+    if (!always && formatPointsCost(usd, display) == null) return null;
+    return createElement(CostDoor, { usd, prefix: "about " });
+  }
+
+  /** The price of one fetch of `count` posts from EACH platform, as a Cost door (null when any is unpriced). */
+  function postsNode(platforms: string[], count: number): ReactNode {
+    const each = platforms.map((p) => postsUsd(costs.data, p, count));
+    if (!each.length || each.some((u) => u == null)) return null;
+    return createElement(CostDoor, { usd: each.reduce<number>((sum, u) => sum + (u ?? 0), 0), prefix: "about " });
   }
 
   /** The points one fetch of `count` posts from EACH platform uses, as one total, for a pre-commit preview; null when any is unpriced. */
@@ -133,7 +138,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return confirm({ title: dialog.title, description: costDescription(undefined, postsUsd(costs.data, platform, count)), confirmLabel: dialog.confirmLabel });
   }
 
-  return { confirmCostText, pointsText, agentCostText, confirmSpend, confirmPosts, postsTotalText };
+  return { costNode, postsNode, agentCostText, confirmSpend, confirmPosts, postsTotalText };
 }
 
 // ---------------------------------------------------------------------------

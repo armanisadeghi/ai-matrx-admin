@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectShortcutById } from "@ai-matrx/chat/agents/redux/agent-shortcuts/selectors";
 import { DuplicateShortcutModal } from "@/features/agent-shortcuts/components/DuplicateShortcutModal";

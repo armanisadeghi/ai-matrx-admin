@@ -18,7 +18,7 @@ import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import { toast } from "@/lib/toast";
 import { useAfterCreateOpenAccessSetup } from "@/features/access-setup/afterCreate";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { hrPerformanceHref } from "@/features/hr/routes";
 
 import { CalibrationTab } from "./CalibrationTab";
@@ -30,6 +30,7 @@ import {
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { HR_REVIEW_CYCLE_SURFACE, createHrReviewCycleScope } from "@/features/surfaces/manifests/hr-review-cycle.manifest";
 import { launchRefusalMessage } from "./messages";
+import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { closeCycle, getCycle, launchCycle, type LaunchPopulation } from "./service";
 import { OUTSTANDING_LABEL, formatDay, periodLabel, statusLabel, statusTone } from "./status";
 import type { CycleDetail, CycleReviewRow, LaunchRefused } from "./types";
@@ -399,8 +400,6 @@ function LaunchPanel({ cycleId, organizationId, onLaunched }: { cycleId: string;
   );
 }
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** The `start_reviews` value as the launch door's population; throws the sentence the agent reads. */
 function startReviewsPopulation(value: unknown, departments: Array<{ id: string; name: string }>): LaunchPopulation {
   const v = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
@@ -413,11 +412,11 @@ function startReviewsPopulation(value: unknown, departments: Array<{ id: string;
     return { kind: "department", departmentId: d!.id };
   }
   if (v.manager_employment_id !== undefined) {
-    if (typeof v.manager_employment_id !== "string" || !UUID_RE.test(v.manager_employment_id)) refuseSurfaceWrite("manager_employment_id must be an employment id (uuid).");
+    if (typeof v.manager_employment_id !== "string" || !isUuidShape(v.manager_employment_id)) refuseSurfaceWrite("manager_employment_id must be an employment id (uuid).");
     return { kind: "manager", managerEmploymentId: v.manager_employment_id as string };
   }
   const ids = v.employment_ids;
-  if (!Array.isArray(ids) || ids.length === 0 || !ids.every((x) => typeof x === "string" && UUID_RE.test(x)))
+  if (!Array.isArray(ids) || ids.length === 0 || !ids.every((x) => typeof x === "string" && isUuidShape(x)))
     refuseSurfaceWrite("employment_ids must be a non-empty list of employment ids (uuids).");
   return { kind: "people", employmentIds: [...new Set(ids as string[])] };
 }

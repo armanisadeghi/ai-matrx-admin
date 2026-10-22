@@ -29,7 +29,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { shapeInstancesHref } from "@/features/content-ir/studio/constants";
 import KeywordResearchReport from "@/features/marketing/seo/keyword-research/components/KeywordResearchReport";
 import {

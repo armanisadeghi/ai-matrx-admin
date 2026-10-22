@@ -29,20 +29,12 @@ import {
   Swords,
   Target,
 } from "lucide-react";
-import {
-  Badge,
-  Button,
-  EmptyState,
-  RegionSkeleton,
-  SearchField,
-  Select,
-} from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState, RegionSkeleton, SearchField, Select, KpiGrid, KpiTile } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatAbsoluteDate, formatCount, formatUsd } from "@ai-matrx/kit/format";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { listCompetitorSites } from "@/features/marketing/competitors/data";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

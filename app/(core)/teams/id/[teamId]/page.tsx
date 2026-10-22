@@ -1,7 +1,7 @@
 // record-view: none — a redirect to the page that shows the record
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { teamOrgSettingsHref } from "@/features/organizations/addressing/teamAddress";
 
 /**

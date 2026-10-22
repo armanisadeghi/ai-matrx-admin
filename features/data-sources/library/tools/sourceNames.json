@@ -19,7 +19,7 @@
   "matrxDefault": "Matrx",
   "providers": {
     "tavily": "Matrx Search", "keenable": "Matrx Search", "exa": "Matrx Search", "serper": "Matrx Search",
-    "search1api": "Matrx Search", "octen": "Matrx Search", "you": "Matrx Search",
+    "search1api": "Matrx Search", "octen": "Matrx Search", "you": "Matrx Search", "serpapi": "Matrx Search",
     "brightdata": "Matrx Fetch", "olostep": "Matrx Fetch", "tinyfish": "Matrx Fetch", "litescrape": "Matrx Fetch", "crawl4ai": "Matrx Fetch",
     "scrapecreators": "Matrx Social", "tikhub": "Matrx Social", "justoneapi": "Matrx Social", "limadata": "Matrx Social",
     "grok_x": "Matrx Social", "mastodon_public": "Matrx Social",

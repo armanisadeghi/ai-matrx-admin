@@ -3,12 +3,11 @@
 // Intelligence › System processes: the durable queue behind platform AI work nobody sees (naming a chat today).
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import { Badge, Button } from "@ai-matrx/design-system/controls";
+import { Badge, Button, KpiGrid, KpiTile, type KpiTone } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { readOf, RecordId } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
-import { KpiGrid, KpiTile, type KpiTone } from "@/components/official/kpi/KpiTile";
 import { fetchQueue, STATES, type QueueItem, type QueueState } from "./systemProcesses";
 
 const STATE_LABEL: Record<QueueState, string> = {

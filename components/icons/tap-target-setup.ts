@@ -1,7 +1,7 @@
 /**
  * components/icons/tap-target-setup.ts — HOST WIRING for @ai-matrx/design-system/tap-target.
  *
- * Side-effect module: registers `next/link` as the tap-target link component
+ * Side-effect module: registers `AppLink` (next/link, cross-deployment aware) as the tap-target link component
  * and, in development builds, turns on the package's misuse guard
  * (the package's injectable replacement for the original's hard next/link
  * import). Imported for side effect from `app/DeferredSingletonWrapper.tsx`
@@ -12,7 +12,7 @@
  * The registry lives on a globalThis Symbol.for slot inside the package, so
  * one registration reaches every module-graph copy.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   enableTapTargetGuard,
   setTapTargetLinkComponent,

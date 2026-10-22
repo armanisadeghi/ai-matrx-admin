@@ -54,7 +54,7 @@ import { ComingSoonBadge } from "@/components/coming-soon/ComingSoonBadge";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { AssetUploader, type AssetUrls } from "@/features/podcasts/components/admin/AssetUploader";
 import { podcastService } from "@/features/podcasts/service";
 import { podcastMediaRef } from "@/features/podcasts/generator/media";

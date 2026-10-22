@@ -27,7 +27,7 @@ import { Loader2, OctagonX, Pause, Play, RotateCcw } from "lucide-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import ElapsedTime from "@/components/official-candidate/elapsed-time/ElapsedTime";
 

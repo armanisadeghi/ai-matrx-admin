@@ -4,7 +4,7 @@ import React from 'react';
 import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import StructuredSectionCard from '@/components/official/StructuredSectionCard';
+import { StructuredSectionCard } from "@ai-matrx/design-system/controls";
 import { Button } from '@/components/ui/button';
 import { 
   ArrowRight, 
@@ -61,7 +61,7 @@ export default function StructuredSectionCardDisplay({ component }: ComponentDis
   if (!component) return null;
   
   // Example code with all available props and their default values
-  const code = `import StructuredSectionCard from '@/components/official/StructuredSectionCard';
+  const code = `import { StructuredSectionCard } from "@ai-matrx/design-system/controls";
 import { Button } from '@/components/ui/button';
 import { Plus, Settings } from 'lucide-react';
 

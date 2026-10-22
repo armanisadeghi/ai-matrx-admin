@@ -43,7 +43,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ProTextarea, type ProTextareaElement } from "@/components/official/ProTextarea";
 import { SlideEditContext, type SlideEditPort } from "@/components/mardown-display/blocks/presentations/slide-edit";
 import { PRESET_LIST } from "@/components/mardown-display/blocks/presentations/presets";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 import { ShareButton } from "@/features/sharing/components/ShareButton";

@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (judge agreement) inside a record's test section, not the record page
 import { Suspense } from "react";
 import { getAgent } from "@/lib/agents/data";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { JudgeAgreementPage } from "@/features/agent-tests/components/JudgeAgreementPage";
 
 // How often people agree with the test judge on this agent's results (Agent Evaluation PLAN §3).

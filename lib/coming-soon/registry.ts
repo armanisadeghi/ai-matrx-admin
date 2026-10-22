@@ -15,10 +15,13 @@ import { globalSlot } from "@ai-matrx/kit/global-slot";
 import { registerComingSoon } from "@ai-matrx/kit/coming-soon";
 import type { ComingSoonEntry } from "./types";
 import { EDITOR_MENU_COMING_SOON } from "./editor-menus";
+import { PDF_COMING_SOON } from "@ai-matrx/office/pdf-model";
 
 export const COMING_SOON: Record<string, ComingSoonEntry> = {
   // Every Google Sheets / Docs / Slides menu row the editors cannot run yet (editor-menus.ts).
   ...EDITOR_MENU_COMING_SOON,
+  // The PDF workspace's unbuilt tools and the layers panel (their rows live in @ai-matrx/office/pdf-model beside the rail).
+  ...PDF_COMING_SOON,
   // Matrx Memory (Arman, 2026-10-20: Memory replaces Knowledge; not-built parts of
   // the Memory tree get a placeholder page). Tree: common-docs/projects/app-frame/TREE.md.
   "memory.topics": {

@@ -168,7 +168,7 @@ import { ModeToggle, type BindingMode } from "./batch/ModeToggle";
 import { offeredValuesToSurfaceValues } from "./offered-adapter";
 import { useHolderInputs } from "./useHolderInputs";
 import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
-import { RequestAccess } from "@/features/access-gate/components/RequestAccess";
+import { RequestAccess } from "@ai-matrx/sharing/access/react";
 import { bindingAccessTarget } from "./access-target";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";

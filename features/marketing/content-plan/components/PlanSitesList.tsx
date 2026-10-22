@@ -49,7 +49,7 @@ import type {
   MatrxDataTableQueryState,
 } from "@ai-matrx/design-system/data-table/types";
 import { ItemMenu } from "@ai-matrx/design-system/item";
-import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
+import { GovernedActionDialog } from "@ai-matrx/sharing/access/react";
 import { isGovernedActionDenial } from "@ai-matrx/data/access";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {

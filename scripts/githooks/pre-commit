@@ -55,6 +55,23 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx|mts|ct
     (cd "$ROOT" && node scripts/check-parse.mjs --staged) || exit 1
 fi
 
+# PARTIAL COMMIT (2026-10-22, about half of 17 failed builds): a staged file may not import a LOCAL file
+# or export this commit does not carry — judged against the INDEX, never the disk where the sibling sits
+# (./framePageHeader, lineageSourcesOf); nor may a staged deletion, rename or export removal strand a
+# committed importer, nor a name pass through an `export * from "@ai-matrx/…"` shim the LOCKED
+# version lacks. ~1-3 s. MATRX_RELEASE_PATH=1 reports only (inside the script).
+# Self-test: node scripts/check-staged-imports.mjs --self-test. Temp-index commits: --index <file>.
+if [ -f "$ROOT/scripts/check-staged-imports.mjs" ] && git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'; then
+    (cd "$ROOT" && node scripts/check-staged-imports.mjs --staged)
+    SI_RC=$?
+    if [ "$SI_RC" -eq 1 ]; then
+        echo "COMMIT REFUSED: the build fails on the imports above. A missing file/export: stage it too, or remove the import." >&2
+        echo "  A removal (\"this commit removes X still used by Y\"): stage Y's update too, or keep X." >&2
+        exit 1
+    fi
+    # exit 2 = the checker could not run: it said so above; never a refusal.
+fi
+
 # --message-file: git has not written the message yet at pre-commit, so the runner's
 # receipt is what carries the exemption here (prepare-commit-msg turns it into the
 # trailer that ends up in the commit). Both are the runner's, never a lane's sentence.
@@ -88,12 +105,23 @@ if [ -n "$STAGED" ]; then
         exit 1
     fi
 fi
-# JOB 4 — a staged pnpm-lock.yaml is judged against the versions it NAMES, not the ones installed here
-# (2026-10-21, 689c27aa4d: a lockfile-only adoption installs nothing, so JOB 2 saw the old package).
-if git diff --cached --name-only -- pnpm-lock.yaml | grep -q .; then
-    if ! (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock); then
-        echo "LOCKFILE ADOPTION WARNING (the commit goes ahead; nothing blocks a release): the staged pnpm-lock.yaml adopts @ai-matrx versions that no longer ship an export this code imports (named above)." >&2
-        echo "  Fix the importer, or restore the export in the package. sync-main mails the ship lanes about it." >&2
+# JOB 4 — LOCKFILE-TRUE IMPORTS (2026-10-22): the staged code is judged against the @ai-matrx versions the
+# STAGED pnpm-lock.yaml names — what Vercel installs — not the copies installed here, which can be newer
+# (or a local build). 17 of 20 failed production builds on 2026-10-21/22 imported a name or subpath the
+# LOCKED version lacked while every installed-package check was green. A staged lockfile widens the check
+# to every tracked file (2026-10-21, 689c27aa4d: a lockfile-only adoption that dropped setDebrief).
+# The refusal names the version that has it; the fix (pnpm sync:matrx-packages + package.json and
+# pnpm-lock.yaml staged in the same commit) is in the message. MATRX_RELEASE_PATH=1 reports only.
+LOCK_PATHS=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' pnpm-lock.yaml package.json | xargs grep -l '@ai-matrx/' 2>/dev/null; git diff --cached --name-only -- pnpm-lock.yaml package.json)
+if [ -n "$LOCK_PATHS" ]; then
+    # shellcheck disable=SC2086
+    if ! (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --root "$ROOT" $(printf '%s\n' "$LOCK_PATHS" | sort -u)); then
+        if [ "${MATRX_RELEASE_PATH:-0}" = "1" ]; then
+            echo "  (MATRX_RELEASE_PATH=1: reported, not refused)" >&2
+        else
+            echo "COMMIT REFUSED: staged code imports an @ai-matrx name the LOCKED version does not ship (above) — the Vercel build fails on it." >&2
+            exit 1
+        fi
     fi
 fi
 # JOB 4b — @ai-matrx TWINS AT WRITE TIME (Arman 2026-10-21: scream when the code is written, never block the

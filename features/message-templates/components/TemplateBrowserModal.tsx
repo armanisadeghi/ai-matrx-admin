@@ -2,7 +2,7 @@
 
 import { ReadFailure } from "@ai-matrx/design-system";
 import React, { useState, useEffect, useMemo } from "react";
-import { MobileOverlayWrapper } from "@/components/official/MobileOverlayWrapper";
+import { BottomSheet, BottomSheetBody, BottomSheetHeader } from "@ai-matrx/design-system";
 import {
   Dialog,
   DialogContent,
@@ -452,19 +452,10 @@ export function TemplateBrowserModal({
 
   if (isMobile) {
     return (
-      <MobileOverlayWrapper
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Message Templates"
-        description={
-          role
-            ? `${role.charAt(0).toUpperCase() + role.slice(1)} message templates`
-            : "Select a template"
-        }
-        maxHeight="xl"
-      >
-        {content}
-      </MobileOverlayWrapper>
+      <BottomSheet open={isOpen} onOpenChange={(open) => !open && handleClose()} title="Message Templates">
+        <BottomSheetHeader title="Message Templates" />
+        <BottomSheetBody>{content}</BottomSheetBody>
+      </BottomSheet>
     );
   }
 

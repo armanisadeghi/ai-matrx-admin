@@ -37,7 +37,8 @@ export interface SmartAddAddressBinding {
   address: SmartAddAddress;
   /** True (once, after mount) when this arrival is a link that should start searching. */
   autoStart: boolean;
-  setMode: (mode: SmartAddMode) => void;
+  /** Switch the kind (a push); `via` opens that way in on the same navigation (two writes race, the push wins). */
+  setMode: (mode: SmartAddMode, via?: SmartAddVia | null) => void;
   setVia: (via: SmartAddVia | null) => void;
   /** Open (push) or close the compare view; closing an opened one goes Back. */
   setView: (view: SmartAddView | null) => void;
@@ -114,9 +115,13 @@ export function useSmartAddAddress(): SmartAddAddressBinding {
   return {
     address,
     autoStart,
-    setMode: (mode) => {
-      if (mode === address.mode) return;
-      router.push(`${smartAddPath(mode)}${window.location.search}`, { scroll: false });
+    setMode: (mode, via) => {
+      const search = via === undefined ? window.location.search.replace(/^\?/, "") : patchSmartAddSearch(window.location.search, { via }).toString();
+      if (mode === address.mode) {
+        if (search !== window.location.search.replace(/^\?/, "")) pushAddressWithoutNavigating(currentPathWithSearch(search));
+        return;
+      }
+      router.push(`${smartAddPath(mode)}${search ? `?${search}` : ""}`, { scroll: false });
     },
     setVia: (via) => {
       const next = patchSmartAddSearch(window.location.search, { via }).toString();

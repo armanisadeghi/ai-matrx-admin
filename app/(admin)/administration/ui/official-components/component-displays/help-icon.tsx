@@ -3,7 +3,7 @@
 import React from 'react';
 import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
-import HelpIcon from '@/components/official/HelpIcon';
+import { HelpIcon } from "@ai-matrx/design-system/controls";
 
 interface ComponentDisplayProps {
   component?: ComponentEntry;
@@ -13,7 +13,7 @@ export default function HelpIconDisplay({ component }: ComponentDisplayProps) {
   if (!component) return null;
   
   // Example code with all available props and their default values
-  const code = `import HelpIcon from '@/components/official/HelpIcon';
+  const code = `import { HelpIcon } from "@ai-matrx/design-system/controls";
 
 <div className="flex items-center">
   <span className="mr-1">User ID</span>

@@ -6,7 +6,7 @@
 // access answer about the episode.
 
 import { useParams } from "next/navigation";
-import { SlugAccessGate } from "@/features/access-gate/components/SlugAccessGate";
+import { SlugAccessGate } from "@ai-matrx/sharing/access/react";
 
 const TOKENS = ["pc_episode"] as const;
 

@@ -20,7 +20,7 @@ import {
   QueryError,
   StatusBadge,
 } from "@/features/marketing/components/shared/MarketingUi";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { GOOGLE_SEARCH_CONSOLE_PROVIDER } from "@/features/marketing/lib/provider-names";
 import { useState } from "react";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

@@ -12,7 +12,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import AppLink from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ExternalLink, Loader2, Pencil } from "lucide-react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

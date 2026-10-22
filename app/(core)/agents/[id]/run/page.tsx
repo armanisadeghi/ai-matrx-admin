@@ -3,7 +3,7 @@ import { getAgent } from "@/lib/agents/data";
 import { AgentRunnerPage } from "@ai-matrx/chat/agents/components/run/AgentRunnerPage";
 import { AgentRunHeader } from "@ai-matrx/chat/agents/components/run/AgentRunHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 
 export default async function AgentRunRoute({
