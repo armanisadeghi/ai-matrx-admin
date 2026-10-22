@@ -157,9 +157,17 @@ function SourceRun({
 
   // The live run names itself in the address once the server gives it an id: a reload re-attaches.
   const named = useRef<string | null>(null);
+  // The run THIS page started (its form already holds what was asked); a run it only re-attached to
+  // (a reload mid-run) refills the form from the job's own inputs.
+  const justStarted = useRef(false);
+  const [startedHere, setStartedHere] = useState<string | null>(null);
   useEffect(() => {
     if (!runJobId || named.current === runJobId) return;
     named.current = runJobId;
+    if (justStarted.current) {
+      justStarted.current = false;
+      setStartedHere(runJobId);
+    }
     if (jobId !== runJobId) onJob(runJobId, { replace: true });
   }, [runJobId, jobId, onJob]);
 
@@ -181,7 +189,7 @@ function SourceRun({
 
   // A run shown that this page did not start (a reload, a reopened past run): its question refills the form.
   const refill =
-    jobId && jobId !== runJobId && addressJob.data?.source_key === source.key
+    jobId && jobId !== startedHere && addressJob.data?.source_key === source.key
       ? refillFromInputs(source, addressJob.data.inputs)
       : null;
 
@@ -204,6 +212,7 @@ function SourceRun({
         busy={run.status === "running"}
         onFetch={(input, count) => {
           if (runState(key).status === "running") return;
+          justStarted.current = true;
           clearRun(key);
           named.current = null;
           onJob(null);

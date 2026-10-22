@@ -262,3 +262,30 @@ test("while a finished run's keys load, the skeleton holds the place, never the 
   expect(host.querySelector('[data-testid="located-table"]')).toBeNull();
   expect(host.querySelector("[data-all-rows-notice]")).toBeNull();
 });
+
+test("a reload mid-run refills the form with exactly what the run asked, not a made-up link", () => {
+  // The run is re-attached (running, in memory) AND named in the address: the form still refills.
+  search = "source=google_maps_place&job=G";
+  jobRows.G = job("G", { status: "fetching", table_id: null, inputs: [{ keyword: "dental office in Mobile AL", country: "US" }] });
+  runNow = { status: "running", progress: { label: "Working", current: null, total: null, jobId: "G" }, startedAt: Date.now() };
+  render();
+  expect(mockSourceInputValues.at(-1)).toEqual({ keyword: "dental office in Mobile AL", country: "US" });
+});
+
+test("a run whose worker lease lapsed is shown to the server so it can finish or close it", () => {
+  const { getJob } = jest.requireMock("../../server") as { getJob: jest.Mock };
+  getJob.mockReset().mockResolvedValue({});
+  search = "source=google_maps_place&job=H";
+  jobRows.H = job("H", { status: "waiting_for_provider", table_id: null, lease_until: "2000-01-01T00:00:00Z" });
+  render();
+  expect(getJob).toHaveBeenCalledWith("H", expect.objectContaining({ organizationId: "org-1" }));
+});
+
+test("a run with a live lease is left alone", () => {
+  const { getJob } = jest.requireMock("../../server") as { getJob: jest.Mock };
+  getJob.mockReset().mockResolvedValue({});
+  search = "source=google_maps_place&job=I";
+  jobRows.I = job("I", { status: "fetching", table_id: null, lease_until: new Date(Date.now() + 60_000).toISOString() });
+  render();
+  expect(getJob).not.toHaveBeenCalled();
+});
