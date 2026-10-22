@@ -286,6 +286,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const legalCaWcManifest: SurfaceManifest = {
   surfaceName: "matrx-user/legal-ca-wc",
+  situation:
+    "They are in the California workers' compensation workspace: saved cases, the disability rating calculator and helper calculators. Open calculator: {calculator_id|none}; case: {applicant_name|no applicant named} ({case_number|no case number}), {draft_mode|not open}; injuries entered: {injury_count|none}; combined rating: {final_rating|not computable yet}.",
   inheritsFrom: "matrx-default/legal",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
