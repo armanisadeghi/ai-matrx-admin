@@ -22,7 +22,7 @@
 import { InfoHint } from "@ai-matrx/design-system/controls";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";

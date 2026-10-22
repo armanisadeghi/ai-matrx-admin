@@ -3,6 +3,7 @@ import { ChatIncognitoProvider } from "@ai-matrx/chat/agents/components/chat/Cha
 import { ChatIncognitoHeaderButton } from "@ai-matrx/chat/agents/components/chat/ChatIncognitoHeaderButton";
 import { ChatRouteSeedStart } from "@ai-matrx/chat/agents/components/chat/ChatRouteSeedStart";
 import { ChatPasteOffer } from "@/features/data-sources/ChatPasteOffer";
+import { ChatFreshRoutePrefetch } from "@/components/warmup/ChatFreshRoutePrefetch";
 
 export const metadata = createRouteMetadata("/chat", {
   title: "Chat",
@@ -32,6 +33,7 @@ export default function ChatLayout({
       <ChatRouteSeedStart />
       <ChatIncognitoHeaderButton />
       <ChatPasteOffer />
+      <ChatFreshRoutePrefetch />
       {children}
     </ChatIncognitoProvider>
   );

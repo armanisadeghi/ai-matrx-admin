@@ -8,7 +8,7 @@
 // Intelligence page. No count, no door — an em dash, like every empty cell.
 
 import { InfoHint } from "@ai-matrx/design-system/controls";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertTriangle } from "lucide-react";
 import {
   Popover,

@@ -213,6 +213,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const scopeDetailManifest: SurfaceManifest = {
   surfaceName: SCOPE_DETAIL_SURFACE_NAME,
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

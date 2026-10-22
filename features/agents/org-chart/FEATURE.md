@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-18`
+**Last updated:** `2026-10-22`
 
 ---
 
@@ -70,6 +70,28 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   derives its rung from the job (`positionsService.readSeatJobs`: default Holder or a live agent
   binding): Noted / Needs an agent / Agent at work / Job off. Seat jobs re-read when the job window
   closes and on mandate-cache invalidation.
+- **A department from a description** (vision rule 5; `department/PlanDepartmentDialog.tsx`). "Plan a
+  department…" on any box's menu (or "Add to chart" → "Plan a department…" for the top of the chart):
+  the person describes it in plain words → `org_chart.department_planner` (kind `department_plan`,
+  headless JSON) proposes seats → they rename, remove, add, re-parent and edit each seat's goal /
+  inputs / output → Create makes the positions in the BOX's own organization (every box type: a
+  position's, an agent's `organizationId`, a person's or team's from the org directory; the active one
+  only at the top of the chart or for a box with none), placed under the box (and under each other per
+  `reports_to`, managers first — `department/departmentPlan.ts`, pure + tested), each with its job
+  through `seatJob.ts` `createSeatJob` (the same door as "Define the job"). A seat whose manager seat
+  has no position yet WAITS ("Waiting on <manager>") — never placed under the box in its stead — and
+  Retry places it once the manager exists. A job made but not linked throws `SeatJobNotLinkedError`
+  carrying the job; Retry only re-links (`linkSeatJob`). The batch lives in Redux
+  (`orchestras.departmentRuns`, keyed by the box; steps are thunks in
+  `department/departmentRunThunks.ts`), so its record of what it made outlives the dialog, which
+  cannot close while a step runs. Optional next steps: "Build their agents"
+  (`seatAgent.ts`: `mandates.holder_draft` → `createAgentFromBuilder` owned by the organization →
+  the job's default Holder; per-seat progress, each failure named with Retry, a made-but-unbound
+  agent is re-bound, never rebuilt) and "Put them in an Orchestra" (leader in the same organization
+  under the box, the built agents as members, prompt synced). "Undo" takes back everything the batch
+  recorded — the leader's place, the leader and every built agent (archived), every job (turned off),
+  every position (Trash; links stay) — and the toast names it ("3 positions, 3 jobs, 3 agents and the
+  leader"); Restore reverses each.
 - The drawing is the shared `components/official/org-chart/OrgChart.tsx` — THE org chart primitive for
   any hierarchy (layout adapted from Paperclip, MIT, credited in `layout.ts`). Never a second one.
   Its consumers: this chart and HR's `/hr/people/org-chart`. What it offers both: `forest.ts`
@@ -77,6 +99,29 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   order), one PNG/PDF export (`exportChart.ts`; `exportCaption`/`exportFileName` override the burned
   caption and file name, a success toast names the file), and `framing="once"` for charts redrawn
   for another date.
+
+## Published charts (share and publish)
+
+- **Publish** (toolbar; a box's menu → "Publish this branch…") opens `components/PublishChartDialog.tsx`:
+  title, address (slug), blurb (ProTextarea; **Suggest** runs the `org_chart.publish_blurb` mandate,
+  kind `org_chart_blurb`, headless JSON — an idea, never a decision), a live preview, Publish / Update /
+  Take down, Copy link (kit clipboard door).
+- Storage: `agent.org_chart_publication` (certified entity, org = the active organization). What is
+  stored is a SNAPSHOT (`publish/snapshot.ts`, pure + tested, kind `org_chart_snapshot`): names, title
+  lines, box types, link kinds, public avatars only — never emails or record ids (opaque keys `b1…`),
+  never agent descriptions. What goes on the page starts safe: only the active organization's boxes,
+  people left off (a seat's "Filled by" rides only with that person shown); the preview gives every
+  box a show/hide toggle, and a hidden box's boxes move up to its place. A failed read of the chart's
+  existing page keeps Publish off with the error and Retry (it would otherwise make a second page).
+  Publishing is the row's `published_to_web` (the anonymous lane; columns pinned in
+  `lib/security/public-exposure.ts`). Republish replaces in place; take down turns the lane off.
+- The page: `app/(link)/chart/[slug]` — `(link)` because it is a link somebody sent (no marketing
+  chrome), but indexable: metadata, canonical, OG image (shared branded renderer), JSON-LD ItemList.
+  Drawn by the ONE `OrgChart` primitive read-only (`publish/PublishedOrgChart.tsx`, motion-safe
+  animate-in). Comments: the canonical `CommentThread` on token `org_chart_publication` — any signed-in
+  person may comment on a published row of a type listed in `iam.public_rows_take_comments` (the access
+  kernel's public arm). "Message the creator": `sendDirectActionMessage` with an `open_link` back to the
+  page. Signed-out visitors get sign-in links that keep their place.
 
 ## Change log
 
@@ -127,5 +172,17 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
 
 ## Change Log
 
+- **2026-10-22** — Review fixes (lane ORG-CHART-REVIEW-FIXES): department batch writes in the box's
+  own organization for every box type; a seat waits on a missing manager; the batch lives in Redux and
+  the dialog cannot close mid-step; no duplicate job on Retry; Undo takes back everything; publishing
+  starts with the active organization's boxes, people hidden, per-box toggles, no agent descriptions,
+  and Publish is off when the existing-page read failed; the legend title is `DisclosureHeader`;
+  linking across names an existing link the other way.
+
+- **2026-10-22** — Department from a description: "Plan a department…" (planner mandate
+  `org_chart.department_planner`, kind `department_plan`), batch seats + jobs + agents + Orchestra,
+  Undo. Seat-job creation extracted to `seatJob.ts`; job fields are ProTextarea.
+- **2026-10-22** — Published charts: Publish dialog, `agent.org_chart_publication`, `/chart/[slug]`
+  with comments and "Message the creator", blurb mandate `org_chart.publish_blurb` (lane ORG-CHART-PUBLISH).
 - **2026-10-18** — Seat members in Orchestras (drop a position on a Conductor; supervisor refused at
   save time), the "Decision waiting" chip on position boxes, the seat line on the decision panel.

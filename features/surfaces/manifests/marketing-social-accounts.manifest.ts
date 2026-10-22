@@ -70,10 +70,13 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingSocialAccountsManifest: SurfaceManifest = {
   surfaceName: SOCIAL_ACCOUNTS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   label: "Social accounts",
+  situation:
+    "They are on {brand_name|the brand}'s social accounts: {account_count|no} accounts (its own, competitors and inspiration), {untracked_own_count|none} of its own not tracked yet. They can add accounts and update them.",
   description: "The brand's own and tracked social accounts, one row per account.",
   urlPattern: "/marketing/[brandId]/socials/accounts",
   briefValues: ["accounts_loaded", "brand_name", "account_count", "accounts_by_role"],

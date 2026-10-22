@@ -117,6 +117,20 @@ describe("toCrawlSnapshotReportRow", () => {
     });
     expect(row.canonicalState).toBe("self-referencing");
   });
+
+  it.each([
+    ["/about", "self-referencing"],
+    ["//example.com/about", "self-referencing"],
+    ["https://example.com/about/", "self-referencing"],
+    ["/contact", "canonicalized"],
+    ["https://other.example/about", "canonicalized"],
+  ])("resolves the canonical %s against the page before comparing", (canonical, state) => {
+    const row = toCrawlSnapshotReportRow({
+      ...SNAPSHOT,
+      head_tags: { canonical_url: canonical },
+    });
+    expect(row.canonicalState).toBe(state);
+  });
 });
 
 describe("summarizeRedirectChain", () => {
@@ -254,6 +268,35 @@ describe("evaluateCanonicalChain", () => {
     );
     expect(chain.state).toBe("canonical-to-error");
     expect(chain.targetStatus).toBe(404);
+  });
+
+  it("resolves relative canonical hrefs at every step of the walk", () => {
+    const lookup = buildCanonicalLookup([
+      canonicalRow("https://example.com/b", "/c"),
+      canonicalRow("https://example.com/c", "//example.com/c"),
+    ]);
+    const chain = evaluateCanonicalChain(
+      { url: "https://example.com/a", canonicalUrl: "/b" },
+      lookup,
+    );
+    expect(chain.state).toBe("chain");
+    expect(chain.path).toEqual([
+      "https://example.com/a",
+      "https://example.com/b",
+      "https://example.com/c",
+    ]);
+    expect(chain.targetCanonicalUrl).toBe("https://example.com/c");
+    expect(chain.targetStatus).toBe(200);
+  });
+
+  it("a relative self-canonical target is not a chain", () => {
+    const lookup = buildCanonicalLookup([canonicalRow("https://example.com/b", "/b")]);
+    const chain = evaluateCanonicalChain(
+      { url: "https://example.com/a", canonicalUrl: "/b" },
+      lookup,
+    );
+    expect(chain.state).toBe("canonicalized");
+    expect(chain.targetCanonicalUrl).toBeNull();
   });
 
   it("says target-not-crawled honestly instead of guessing", () => {

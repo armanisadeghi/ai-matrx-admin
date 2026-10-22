@@ -13,7 +13,7 @@
 
 import { FileText, Link2, Loader2, X } from "lucide-react";
 import { cn } from "@/utils/cn";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   coerceRefToStrings,
   referenceChipLabel,

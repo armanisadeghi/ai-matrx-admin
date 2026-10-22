@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, Library, Loader2 } from "lucide-react";
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { fileHandler } from "@/features/files/handler/handler";

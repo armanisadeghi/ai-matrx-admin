@@ -14,7 +14,7 @@
 // actions a user actually reaches for, and the SAME complete "…" menu the
 // table row has. Nothing is lost; everything is findable in one place.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Play,
   Pencil,

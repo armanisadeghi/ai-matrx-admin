@@ -13,7 +13,7 @@ import {
   type SmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/smart-code-editor/useOpenSmartCodeEditorWindow";
 import type { OverlayWire } from "./overlay-types";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 export {
   useOpenSmartCodeEditorWindow,

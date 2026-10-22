@@ -14,10 +14,7 @@
  * - `<AudioDevicesController />` — declarative wrapper.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "audioControlWindow" as const;
 
@@ -27,40 +24,13 @@ export interface AudioDevicesHandle {
   close: () => void;
 }
 
-/**
- * Store-bound opener — the lazy form `useLazyAppOpener("audioControlWindow", …)`
- * loads (ProTextarea's mic menu). `useOpenAudioDevices` is the same opener bound
- * to the hook's dispatch.
- */
-export function createAudioDevicesOpener(store: { dispatch: AppDispatch }) {
-  const dispatch = store.dispatch;
-  return (_opts: OpenAudioDevicesOptions = {}): AudioDevicesHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        // `nonce` forces a re-sync even if the window is already open on the
-        // other tab; the unified window reads `data.tab` to select Devices.
-        data: { tab: "devices", nonce: Date.now() },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+// `nonce` forces a re-sync even if the window is already open on the other tab; the unified window reads
+// `data.tab` to select Devices.
+const opener = appOpener<OpenAudioDevicesOptions>(OVERLAY_ID, {
+  data: () => ({ tab: "devices", nonce: Date.now() }),
+});
 
-export function useOpenAudioDevices() {
-  const dispatch = useAppDispatch();
-  return useMemo(() => createAudioDevicesOpener({ dispatch }), [dispatch]);
-}
-
-export function AudioDevicesController(
-  props: OpenAudioDevicesOptions,
-): null {
-  const open = useOpenAudioDevices();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenAudioDevices = opener.useOpen;
+/** Plain opener of the store, for boot-graph callers (ProTextarea, via useLazyAppOpener). */
+export const createAudioDevicesOpener = opener.forStore;
+export const AudioDevicesController = opener.Controller;

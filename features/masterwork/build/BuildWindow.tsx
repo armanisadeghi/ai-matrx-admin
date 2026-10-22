@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CheckCircle2, Hammer, PenLine, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

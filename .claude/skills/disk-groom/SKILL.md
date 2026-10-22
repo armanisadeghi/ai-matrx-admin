@@ -41,7 +41,14 @@ thing that filled a 4 TB disk.
 
 ## When the disk is tight
 
-`python3 /Users/armanisadeghi/code/common-docs/meta/scripts/disk-groom/groom.py daily --apply`
+`python3 /Users/armanisadeghi/code/common-docs/meta/scripts/disk-groom/groom.py temp --apply`
+then `groom.py dev-caches --apply`.
 
-Daily launchd already runs this at 04:15. Do not invent a second
-cleaner. Do not `mv` anything to `~/.Trash`.
+launchd already runs `temp` hourly and `dev-caches` daily at 04:15. Do not
+invent a second cleaner. Do not `mv` anything to `~/.Trash`.
+
+## When your script parks copies
+
+Put throwaway copies in `mktemp -d` and delete them in an EXIT trap. If they
+must outlive a reboot and live under `$HOME`, add the folder to
+`SCRATCH_RUN_ROOTS` in `groom.py` (keep newest N), never leave them unbounded.

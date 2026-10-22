@@ -15,7 +15,11 @@ import {
   parseSnapshotStructuredData,
   type SnapshotRedirectHop,
 } from "@/features/marketing/lib/snapshot-content";
-import { normalizeUrlForComparison } from "@/features/marketing/seo/audit/indexability";
+import {
+  canonicalIsSelf,
+  normalizeUrlForComparison,
+  resolveCanonicalUrl,
+} from "@/features/marketing/seo/audit/indexability";
 import { parseStoredSeoMetrics } from "@/features/marketing/seo/serp/metrics";
 
 export type CanonicalState = "self-referencing" | "canonicalized" | "missing";
@@ -213,16 +217,17 @@ export function evaluateCanonicalChain(
   row: { url: string; canonicalUrl: string },
   lookup: CanonicalLookup,
 ): CanonicalChainEvaluation {
-  const path = [row.url, row.canonicalUrl];
+  // Every canonical href is resolved against the page it was declared on
+  // (`/p`, `//host/p`) — the shared `resolveCanonicalUrl` / `canonicalIsSelf`.
+  const firstTarget = resolveCanonicalUrl(row.canonicalUrl, row.url);
+  const path = [row.url, firstTarget];
   const seen = new Set<string>([normalizeUrlForComparison(row.url)]);
-  let currentUrl = row.canonicalUrl;
-  const direct = lookup.get(normalizeUrlForComparison(row.canonicalUrl)) ?? null;
+  let currentUrl = firstTarget;
+  const direct = lookup.get(normalizeUrlForComparison(firstTarget)) ?? null;
   const targetStatus = direct?.httpStatus ?? null;
   const targetCanonicalUrl =
-    direct?.canonicalUrl &&
-    normalizeUrlForComparison(direct.canonicalUrl) !==
-      normalizeUrlForComparison(direct.url)
-      ? direct.canonicalUrl
+    direct?.canonicalUrl && canonicalIsSelf(direct.canonicalUrl, direct.url) === false
+      ? resolveCanonicalUrl(direct.canonicalUrl, direct.url)
       : null;
   let sawChain = false;
   for (let step = 0; step < CANONICAL_WALK_CAP; step += 1) {
@@ -245,11 +250,10 @@ export function evaluateCanonicalChain(
     if (entry.httpStatus !== null && entry.httpStatus >= 400) {
       return { state: "canonical-to-error", path, targetStatus, targetCanonicalUrl };
     }
-    const next = entry.canonicalUrl;
-    if (
-      !next ||
-      normalizeUrlForComparison(next) === normalizeUrlForComparison(entry.url)
-    ) {
+    const next = entry.canonicalUrl
+      ? resolveCanonicalUrl(entry.canonicalUrl, entry.url)
+      : null;
+    if (!next || canonicalIsSelf(entry.canonicalUrl, entry.url) === true) {
       return {
         state: sawChain ? "chain" : "canonicalized",
         path,
@@ -279,8 +283,7 @@ export function toCrawlSnapshotReportRow(
   const url = snapshot.page?.url ?? snapshot.final_url ?? snapshot.page_id;
   const canonicalState: CanonicalState = !head.canonicalUrl
     ? "missing"
-    : normalizeUrlForComparison(head.canonicalUrl) ===
-        normalizeUrlForComparison(url)
+    : canonicalIsSelf(head.canonicalUrl, url)
       ? "self-referencing"
       : "canonicalized";
   const metaRobots = head.metaRobots?.toLowerCase() ?? "";

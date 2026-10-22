@@ -357,6 +357,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationProgressManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-progress",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

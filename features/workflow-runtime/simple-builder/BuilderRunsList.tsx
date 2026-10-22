@@ -6,7 +6,7 @@
 // `BuilderRun` / `RunStep`; values never ride along). Used by the builder's Runs tab and by the
 // record view's "What ran on this record". The badge is the canonical `StatusBadge`.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   CheckCircle2,
   CircleSlash,

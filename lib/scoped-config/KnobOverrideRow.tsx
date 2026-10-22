@@ -34,7 +34,7 @@ import {
   hasFieldControl,
 } from "@/features/settings/universal/KnobFieldControl";
 import { knobChoices, knobIsClosedChoice } from "./choices";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   formatKnobValue,
   systemOriginSentence,

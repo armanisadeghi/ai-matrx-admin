@@ -27,7 +27,7 @@ import {
   ArrowRight,
   ShieldCheck,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { createSourceRef } from "@ai-matrx/agents/sources";
 import { youtubeId } from "@ai-matrx/rich-content/utils/youtube";
 import type { SourceTileId } from "@ai-matrx/agents/sources/runtime";

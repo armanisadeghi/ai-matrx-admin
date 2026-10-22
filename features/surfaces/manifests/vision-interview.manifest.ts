@@ -156,6 +156,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const visionInterviewManifest: SurfaceManifest = {
   surfaceName: "matrx-user/vision-interview",
+  inheritsFrom: "matrx-default/masterwork",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

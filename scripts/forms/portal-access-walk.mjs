@@ -13,6 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 import { chromium } from "playwright";
 import { walkSignIn } from "../airtable-walk/walk-signin.mjs";
 import { createFixtureUser, deleteFixtureUser, fixtureConfirmLink, testTarget } from "../lib/persona.mjs";
+import { declareTable } from "@ai-matrx/records/core";
 
 const root = path.resolve(new URL(".", import.meta.url).pathname, "../..");
 for (const f of [path.join(root, ".env.local"), path.join(root, "../aidream/.env")]) {
@@ -25,8 +26,10 @@ for (const f of [path.join(root, ".env.local"), path.join(root, "../aidream/.env
 const ORIGIN = process.env.ORIGIN ?? "http://close-page.localhost:3001";
 const SHOTS = process.env.SHOTS ?? "/tmp/cd-page-12";
 fs.mkdirSync(SHOTS, { recursive: true });
-const ORG = "20b9d1bb-ca75-42ea-827b-2500f48e82c2"; // Rincon Plumbing Co — Ventura Branch (admin@admin.com test org)
-const HOME = "43706f18-5160-448a-9758-ffedb4d425e0"; // its "Dispatch" Home
+// admin@admin.com's own Workspace (the persona is in no organization, so she is an outsider to it).
+const ORG = process.env.WALK_ORG_ID ?? "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
+process.env.WALK_ORG_ID = ORG;
+const { client: records } = await (await import("../airtable-walk/store.mjs")).store();
 const say = (...a) => console.log(...a);
 let fails = 0;
 const check = (label, ok, detail = "") => { if (!ok) fails++; say((ok ? "PASS " : "FAIL ") + label + (detail ? `  (${String(detail).slice(0, 200)})` : "")); };
@@ -41,10 +44,11 @@ async function door(fn, args) {
   return data;
 }
 const sfx = Date.now().toString(36);
-const table = (name, slug, singular, plural, title) => door("table_declare", { p_spec: {
-  name: `${name} ${sfx}`, slug: `${slug}_${sfx}`, type: "entity", label_singular: singular, label_plural: plural, title_field: title,
-  display: "page", weight: "light", ordered: false, row_order: "sorted", default_sort: [], agent_writable: true, retention_days: 365,
-  on_delete: "cascade", fields: [{ name: title }], parent_id: HOME } });
+const table = async (name, singular, plural, fields) => {
+  const r = await declareTable(records, { name: `${name} ${sfx}`, labelSingular: singular, labelPlural: plural, fields });
+  if (!r.ok) throw new Error(`table ${name}: ${JSON.stringify(r.error)}`);
+  return r.data;
+};
 const field = (t, spec) => door("field_declare", { p_table_id: t, p_spec: spec });
 const write = (t, doc) => door("record_write", { p_table_id: t, p_data: doc });
 
@@ -52,13 +56,11 @@ const target = testTarget();
 let managers = null, calls = null, portal = null, persona = null;
 const browser = await chromium.launch({ headless: true });
 try {
-  managers = await table("Property managers", "pm", "Property manager", "Property managers", "building");
-  await field(managers, { key: "building", label: "Building", plain: "text", sort: 10 });
-  await field(managers, { key: "manager_email", label: "Manager email", plain: "text", sort: 20 });
-  calls = await table("Service calls", "sc", "Service call", "Service calls", "problem");
-  await field(calls, { key: "problem", label: "What is wrong", plain: "text", sort: 10 });
-  await field(calls, { key: "unit", label: "Unit or area", plain: "text", sort: 20 });
-  await field(calls, { key: "internal_notes", label: "Office notes", plain: "text", sort: 90 });
+  managers = await table("Property managers", "Property manager", "Property managers",
+    [{ key: "building", label: "Building", type: "text", sort: 10 }, { key: "manager_email", label: "Manager email", type: "text", sort: 20 }]);
+  calls = await table("Service calls", "Service call", "Service calls",
+    [{ key: "problem", label: "What is wrong", type: "text", sort: 10 }, { key: "unit", label: "Unit or area", type: "text", sort: 20 },
+      { key: "internal_notes", label: "Office notes", type: "text", sort: 90 }]);
   await field(calls, { key: "building", label: "Building", type: "relation", relation_target: managers });
   const mesa = await write(managers, { building: "Mesa Verde Apartments", manager_email: "mesa.manager@rincon-clients.test" });
   await write(calls, { problem: "Water heater pilot out at Mesa", unit: "Unit 3B", building: mesa });
@@ -182,7 +184,7 @@ try {
 } finally {
   await browser.close();
   if (portal) say("cleanup portal:", JSON.stringify(await c.rpc("portal_archive", { p_organization_id: ORG, p_portal_id: portal, p_confirm_title: "Your service calls", p_reason: "CD-PAGE-12 walk fixture" }).then((r) => r.error?.message ?? "archived")));
-  for (const t of [calls, managers]) if (t) say("cleanup table:", JSON.stringify(await c.rpc("table_archive", { p_organization_id: ORG, p_table_id: t, p_chunk: 50, p_include_table: true }).then((r) => r.error?.message ?? "archived")));
+  for (const t of [calls, managers]) if (t) { let r; for (let i = 0; i < 10; i++) { r = await records.tableArchive({ table_id: t }); if (!r.ok || r.data?.done !== false) break; } say("cleanup table:", JSON.stringify(r).slice(0, 80)); }
   if (persona) { await deleteFixtureUser(target, persona.id).catch((e) => say("persona teardown:", e.message)); say("cleanup persona: removed"); }
   say(fails === 0 ? "RESULT PASS" : `RESULT FAIL (${fails})`);
 }

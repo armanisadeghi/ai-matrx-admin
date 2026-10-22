@@ -269,6 +269,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const feedbackManifest: SurfaceManifest = {
   surfaceName: FEEDBACK_SURFACE_NAME,
+  inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

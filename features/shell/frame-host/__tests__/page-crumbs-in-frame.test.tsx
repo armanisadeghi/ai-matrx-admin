@@ -9,6 +9,8 @@
  * frame mode and the frame's crumbs are the route table's ("Route title"), not the page's.
  */
 import React, { act } from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createRoot, type Root } from "react-dom/client";
 import { Pencil, Tag } from "lucide-react";
 import type { FrameProduct } from "@/features/shell/frame/types";
@@ -57,9 +59,11 @@ const product: FrameProduct = {
   homeHref: "/marketing",
   menu: [],
 };
-const ROUTE_TABLE_CRUMBS = [
-  { id: "product", label: "Marketing", icon: Tag, iconOnly: true, href: "/marketing" },
-  { id: "page", label: "Route title" },
+/** What the address derives when no page declared a trail (the host's `useDerivedTrail`). */
+const ADDRESS_TRAIL = [
+  { label: "Marketing", href: "/marketing" },
+  { label: "Brands", href: "/marketing/brands" },
+  { label: "Address title" },
 ];
 
 function Record() {
@@ -76,10 +80,10 @@ function Record() {
   );
 }
 
-/** What FrameHostImpl does: the page's declared trail, else the route table's crumbs. */
+/** What FrameHostImpl does: ONE derivation — the page's declared trail, else the address's. */
 function FrameHarness({ children }: { children: React.ReactNode }) {
   const { host, pageCrumbs } = page.useFramePageHeaderHost();
-  const crumbs = pageCrumbs && pageCrumbs.length > 0 ? page.pageTrailCrumbs(product, pageCrumbs, () => {}) : ROUTE_TABLE_CRUMBS;
+  const crumbs = page.frameHostCrumbs(product, pageCrumbs, ADDRESS_TRAIL, () => {});
   return (
     <page.FramePageHeaderContext value={host}>
       <SheetHeader form="desktop" crumbs={crumbs} actions={[]} hostSlots onOpenDrawer={() => {}} />
@@ -124,7 +128,7 @@ describe("page-top templates in the new app frame", () => {
     const frameCrumbs = el.querySelector("[data-frame-crumbs]") as HTMLElement;
     expect(frameCrumbs.querySelector("h1")?.textContent).toBe("Acme Coffee");
     expect(frameCrumbs.textContent).toContain("Brands");
-    expect(frameCrumbs.textContent).not.toContain("Route title");
+    expect(frameCrumbs.textContent).not.toContain("Address title");
     // The page's root level repeated the product: it is dropped, never shown twice.
     expect(frameCrumbs.querySelectorAll('a[href="/marketing"]')).toHaveLength(1);
     // The template's own row keeps its modes and actions, and no trail, name or back button.
@@ -135,13 +139,23 @@ describe("page-top templates in the new app frame", () => {
     expect(slot.querySelector('[aria-label="Rename"]')).not.toBeNull();
   });
 
-  it("frame: the crumbs fall back to the route table once the page's header is gone", () => {
+  it("frame: the crumbs fall back to the address-derived trail once the page's header is gone", () => {
     function Toggle({ on }: { on: boolean }) {
       return <FrameHarness>{on ? <Record /> : null}</FrameHarness>;
     }
     mount(<Toggle on />);
     act(() => root!.render(<TooltipProvider><Toggle on={false} /></TooltipProvider>));
-    expect(el.querySelector("[data-frame-crumbs] h1")?.textContent).toBe("Route title");
+    const frameCrumbs = el.querySelector("[data-frame-crumbs]") as HTMLElement;
+    expect(frameCrumbs.querySelector("h1")?.textContent).toBe("Address title");
+    // Same shape as a declared trail: the product root is not repeated, the middle level links.
+    expect(frameCrumbs.querySelectorAll('a[href="/marketing"]')).toHaveLength(1);
+    expect(frameCrumbs.querySelector('a[href="/marketing/brands"]')?.textContent).toContain("Brands");
+  });
+
+  it("the host has ONE crumb derivation (no route-table crumbs beside the derived trail)", () => {
+    const src = readFileSync(join(__dirname, "../FrameHostImpl.tsx"), "utf8");
+    expect(src).toMatch(/frameHostCrumbs\(product, pageCrumbs, useDerivedTrail\(/);
+    expect(src).not.toMatch(/derivedCrumbs|pageTrailCrumbs/);
   });
 
   it("classic: the template draws its own back, trail and name, as before", () => {

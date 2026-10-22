@@ -52,7 +52,7 @@ import {
   type ListScope,
   type ListScopeKind,
 } from "@/lib/list-scope/types";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useMyTeams } from "@/features/organizations/hooks/useTeams";
 import type { EntityListConfig, EntityListController } from "../config";
 import { useEntityList } from "../useEntityList";

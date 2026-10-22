@@ -570,10 +570,23 @@ export function productById(id: string): FrameProduct | undefined {
   return PRODUCTS.find((p) => p.id === id);
 }
 
-/** The favorites a person has before they ever edit the grid: the card's nine (3 x 3). */
+/**
+ * The favorites a person has before they ever edit the grid: the card's nine (3 x 3). The order is
+ * a default, not a rule: the first `BIG_ITEM_COUNT` are also the default big items.
+ */
 export const DEFAULT_GRID_FAVORITES: readonly string[] = [
-  "chat", "memory", "workspace", "docs", "drive", "data", "crm", "intelligence", "meet",
+  "chat", "memory", "intelligence", "docs", "crm", "workspace", "drive", "data", "meet",
 ];
 
-/** The big products that can sit in the sidebar all the time (the "Big items" option). */
-export const BIG_ITEM_IDS: readonly string[] = ["chat", "memory", "intelligence", "docs", "crm", "code"];
+/** How many of the person's grid favorites sit in the sidebar as big items (the "Big items" option). */
+export const BIG_ITEM_COUNT = 6;
+
+/**
+ * The sidebar's big items: the person's own first grid favorites, in their order — changed where
+ * the grid's favorites are edited (userPreferences.appGrid.favorites). No second list.
+ */
+export function bigItemProducts(products: readonly FrameProduct[], favorites: readonly string[]): FrameProduct[] {
+  return favorites
+    .flatMap((id) => products.filter((p) => p.id === id))
+    .slice(0, BIG_ITEM_COUNT);
+}

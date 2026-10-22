@@ -18,7 +18,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { usePathname } from "next/navigation";
 import { ArrowLeft, CalendarClock, Loader2 } from "lucide-react";
 import { AUTH_DEST_PARAM } from "@/utils/auth/auth-destination";

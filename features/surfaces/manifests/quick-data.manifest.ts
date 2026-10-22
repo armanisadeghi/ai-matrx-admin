@@ -115,6 +115,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const quickDataManifest: SurfaceManifest = {
   surfaceName: QUICK_DATA_SURFACE_NAME,
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

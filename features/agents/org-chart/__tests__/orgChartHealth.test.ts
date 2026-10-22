@@ -36,12 +36,13 @@ describe("org chart health", () => {
     ]),
     node("loose", {}),
     node("seat", { boxType: "position", entityId: "p1", boxId: "position:p1" }),
+    node("seat2", { boxType: "position", entityId: "p2", boxId: "position:p2" }),
   ];
   const run = (spreadWarnAt: number | null) =>
     orgChartHealth(forest, {
       activity: { w2: { state: "failed", at: "2026-10-05T00:00:00Z", running: 0 }, loose: { state: "stalled", at: "2026-10-05T00:00:00Z", running: 0 } },
       spreadWarnAt,
-      isOpenPosition: (id) => id === "p1",
+      seatGap: (id) => (id === "p1" ? "open" : id === "p2" ? "needs_agent" : null),
     });
 
   it("groups every issue with the boxes it names", () => {
@@ -52,6 +53,7 @@ describe("org chart health", () => {
       stalled: ["loose"],
       spread: ["w1"],
       open_position: ["seat"],
+      needs_agent: ["seat2"],
     });
   });
 

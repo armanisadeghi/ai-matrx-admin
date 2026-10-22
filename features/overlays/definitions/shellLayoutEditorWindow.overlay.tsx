@@ -37,6 +37,9 @@ const opener = appOpener<OpenShellLayoutEditorOptions>(OVERLAY_ID, {
 
 export const useOpenShellLayoutEditor = opener.useOpen;
 
+/** Plain opener of the store, for boot-graph callers (useLazyAppOpener keeps this module out of first load). */
+export const createShellLayoutEditorOpener = opener.forStore;
+
 export type ShellLayoutEditorWindowDefinitionData = Record<string, unknown>;
 
 declare module "@ai-matrx/summon" {

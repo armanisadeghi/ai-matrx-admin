@@ -135,8 +135,10 @@
 [data-matrx-frame] .mf-tabs-row {
   padding-inline: calc(var(--matrx-frame-gutter) - 8px);
 }
+/* The grid body may use all the room under the button (less the search row): it scrolls only on a
+   very short screen (AppGrid's gridLayout sizes the tiles so common heights never do). */
 [data-matrx-frame] .mf-grid-scroll {
-  max-height: min(70dvh, 35rem);
+  max-height: calc(var(--radix-popover-content-available-height, 85dvh) - 3rem);
 }
 
 /* Panels slide on the platform motion pair (policies/motion-standard.md). */

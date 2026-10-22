@@ -50,6 +50,7 @@ const values: SurfaceValue[] = [
 ];
 export const marketingInitiativesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-initiatives",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -59,6 +60,8 @@ export const marketingInitiativesManifest: SurfaceManifest = {
   readinessNote:
     "Manifest, route mapping, and list/detail emitters are wired; live binding verification remains.",
   label: "Marketing Initiatives",
+  situation:
+    "They are in Marketing Initiatives, on the {page_kind} view: initiatives group content, social, email, ads and outreach work under one objective, goal, timeline and budget. When one initiative is open, its details are in your context.",
   urlPattern: "/marketing/initiatives*",
   intro: `<surface_intro>You are in Marketing Initiatives: containers uniting work across content, social, email, ads, and outreach under one objective, goal, timeline, and budget. Ground answers in the open initiative and linked brand; never invent channel work or attribution.</surface_intro>`,
   groups,

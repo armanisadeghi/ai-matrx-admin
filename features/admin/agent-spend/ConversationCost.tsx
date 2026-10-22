@@ -8,7 +8,7 @@
  * (no footprint until opened); the menu mounts <ConversationCostMenuRow/>.
  * Reads ?conversationId= from the address, so it follows the runner as conversations switch.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ExternalLink, Loader2 } from "lucide-react";

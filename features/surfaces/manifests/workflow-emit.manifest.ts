@@ -85,6 +85,7 @@ const values: SurfaceValue[] = [
 
 export const workflowEmitManifest: SurfaceManifest = {
   surfaceName: "matrx-user/workflow",
+  inheritsFrom: "matrx-default/workflows",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

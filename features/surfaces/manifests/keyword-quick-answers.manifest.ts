@@ -356,6 +356,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const keywordQuickAnswersManifest: SurfaceManifest = {
   surfaceName: KEYWORD_QUICK_ANSWERS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -366,6 +367,8 @@ export const keywordQuickAnswersManifest: SurfaceManifest = {
     "Manifest, trigger-time emitter, v3 menus, Locate anchors, and write handlers are wired; DB mirror sync and isolated live Browser proof are still pending before verified.",
   overlayId: "keywordQuickAnswersWindow",
   label: "Quick Answers",
+  situation:
+    "They have the Quick Answers window open for {site_label|this website}: up to five keywords at a time and one question about them, \"{active_dimension_label|(loading)}\". {answered_this_session} answered, {remaining_unanswered|an unknown number} still unanswered. Only they press the answer buttons; you can stage a reason or suggest another question.",
   intro: `<surface_intro>
 You are in Quick Answers, the focused five-keyword classification window opened from the Keyword Value Workbench for one managed site. The active question is a governed keyword dimension; current_keywords carries the demand evidence that selected each phrase, active_dimension_choices carries the allowed answers, and question_reason explains why this question is being asked now.
 The user may answer one keyword or apply the same answer to every outstanding keyword. A reason draft is optional and rides with each explicit answer as learning evidence. answered_results and session_progress describe only confirmed writes from this mounted session; they are not proposals.

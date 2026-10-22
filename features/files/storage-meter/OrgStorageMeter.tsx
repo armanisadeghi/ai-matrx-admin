@@ -11,7 +11,7 @@
 
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertTriangle, Gauge, HardDrive, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

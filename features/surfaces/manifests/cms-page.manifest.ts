@@ -711,6 +711,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const cmsPageManifest: SurfaceManifest = {
   surfaceName: "matrx-user/cms-page",
+  inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

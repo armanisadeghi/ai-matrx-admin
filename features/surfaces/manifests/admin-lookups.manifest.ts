@@ -261,6 +261,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminLookupsManifest: SurfaceManifest = {
   surfaceName: ADMIN_LOOKUPS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

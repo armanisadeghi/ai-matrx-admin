@@ -6,7 +6,7 @@
 // /administration/** so every read carries the admin lane.
 
 import { RecordHostChrome } from "@/features/shell/host-chrome/RecordHostChrome";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { MeetingDetail } from "@/features/meet/components/manage/MeetingDetail";

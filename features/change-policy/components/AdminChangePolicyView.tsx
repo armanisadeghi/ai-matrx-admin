@@ -11,7 +11,7 @@
  */
 
 import * as React from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast";
 import { ShieldCheck, Building2 } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";

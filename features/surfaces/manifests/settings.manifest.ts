@@ -625,6 +625,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const settingsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/settings",
+  inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

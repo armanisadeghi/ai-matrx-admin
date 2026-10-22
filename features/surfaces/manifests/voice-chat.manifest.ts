@@ -6,6 +6,7 @@ export const VOICE_CHAT_SURFACE = "matrx-user/voice-chat";
 
 export const voiceChatManifest: SurfaceManifest = {
   surfaceName: VOICE_CHAT_SURFACE,
+  inheritsFrom: "matrx-default/chat",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

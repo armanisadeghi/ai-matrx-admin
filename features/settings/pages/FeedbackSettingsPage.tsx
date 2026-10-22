@@ -3,7 +3,7 @@
 import { ReadFailure } from "@ai-matrx/design-system";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import React, { useEffect, useState, useTransition, useCallback } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import {
   FEEDBACK_LIST_HREF,

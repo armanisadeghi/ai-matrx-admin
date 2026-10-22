@@ -32,7 +32,7 @@ import {
   Library,
   Maximize2,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { flashcardDeckHref } from "../routes";
 import { Button } from "@ai-matrx/design-system";
 import { MatrxMiniLoader } from "@ai-matrx/design-system";

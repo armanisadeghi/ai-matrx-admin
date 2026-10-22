@@ -19,7 +19,7 @@
 import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
   selectUser,

@@ -38,15 +38,30 @@ const isLocal = /^http:\/\/[a-z0-9-]+\.localhost:\d+$/.test(origin);
 async function signedInContext(browser) {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   if (isLocal) {
-    const out = execFileSync("pnpm", ["-s", "dev-login", "/chat/new"], {
-      cwd: new URL("../..", import.meta.url).pathname,
-      encoding: "utf8",
-    });
-    const url = out.match(/OPEN\s*:\s*(\S+)/)?.[1];
-    if (!url || !url.startsWith(origin)) throw new Error(`dev-login did not print a URL for ${origin}`);
-    const p = await ctx.newPage();
-    await p.goto(url, { waitUntil: "load", timeout: 180000 });
-    await p.close();
+    // The shared preview restarts under load (watchdog recycles): mint a fresh nonce per try.
+    let lastError = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const out = execFileSync("pnpm", ["-s", "dev-login", "/chat/new"], {
+          cwd: new URL("../..", import.meta.url).pathname,
+          encoding: "utf8",
+        });
+        const url = out.match(/OPEN\s*:\s*(\S+)/)?.[1];
+        if (!url || !url.startsWith(origin)) throw new Error(`dev-login did not print a URL for ${origin}`);
+        const p = await ctx.newPage();
+        try {
+          await p.goto(url, { waitUntil: "load", timeout: 420000 });
+        } finally {
+          await p.close();
+        }
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+        await new Promise((r) => setTimeout(r, 30000));
+      }
+    }
+    if (lastError) throw lastError;
   } else {
     const { cookies } = await mintSessionCookies();
     await ctx.addCookies(cookies);
@@ -66,7 +81,7 @@ const RECORDER = () => {
           sources: (e.sources || []).map((s) => {
             const n = s.node;
             const d = n && n.nodeType === 1 ? `${n.tagName}.${String(n.className).slice(0, 60)}` : n ? n.nodeName : "?";
-            return `${d} ${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)} h${Math.round(s.previousRect.height)}->${Math.round(s.currentRect.height)}`;
+            return `${d} x${Math.round(s.previousRect.x)}->${Math.round(s.currentRect.x)} y${Math.round(s.previousRect.y)}->${Math.round(s.currentRect.y)} h${Math.round(s.previousRect.height)}->${Math.round(s.currentRect.height)}`;
           }),
         });
       }
@@ -87,7 +102,11 @@ const RECORDER = () => {
     const ed = editableIn(dock);
     const skelBox = main && main.querySelector("[data-chat-skeleton-composer]");
     let composer = null;
-    if (ed) composer = { kind: "real", y: Math.round(boxOf(ed).getBoundingClientRect().top) };
+    if (ed) {
+      const box = boxOf(ed);
+      const text = [...box.querySelectorAll("*")].filter((n) => n.children.length === 0 && n.textContent.trim() && !n.contains(ed) && !ed.contains(n)).map((n) => n.textContent.trim().slice(0, 30)).slice(0, 5).join(" | ");
+      composer = { kind: "real", y: Math.round(box.getBoundingClientRect().top), h: Math.round(box.getBoundingClientRect().height), text };
+    }
     else if (skelBox) composer = { kind: "skeleton", y: Math.round(skelBox.getBoundingClientRect().top) };
     // The welcome splash: an editable in main painted in the upper half (the centred composer).
     let splash = false;
@@ -114,6 +133,9 @@ const RECORDER = () => {
       title: titleEl ? titleEl.textContent.trim() : "",
       pillY: pill ? Math.round(pill.getBoundingClientRect().top) : null,
       footer: footer ? `${Math.round(footer.getBoundingClientRect().top)}/${Math.round(footer.getBoundingClientRect().height)}` : null,
+      footerRows: footer ? [...footer.querySelectorAll(".shell-nav-label")].map((n) => n.textContent.trim()).join(",") : null,
+      // The route menu's bottom block (Archived) sits right above the footer.
+      archiveRow: (() => { const a = document.querySelector(".shell-sidebar-route-nav .shrink-0.border-t"); return a ? Math.round(a.getBoundingClientRect().height) : null; })(),
       scroll: scroller && scroller.scrollHeight > scroller.clientHeight
         ? Math.round(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop)
         : null,
@@ -125,9 +147,15 @@ const RECORDER = () => {
         ? [...dock.querySelectorAll("*")].filter((n) => n.children.length === 0 && n.textContent.trim() && !(ed && boxOf(ed).contains(n))).map((n) => n.textContent.trim().slice(0, 50)).slice(0, 4).join(" | ")
         : null,
     });
-    requestAnimationFrame(sample);
+    requestAnimationFrame(afterPaint);
   };
-  requestAnimationFrame(sample);
+  // Sample what was PAINTED: a rAF callback runs before the frame's layout and resize
+  // observers, so reading there sees content that grew before the scroll pin answers it.
+  // A message posted from rAF is handled after that frame is painted.
+  const channel = new MessageChannel();
+  channel.port1.onmessage = sample;
+  const afterPaint = () => channel.port2.postMessage(0);
+  requestAnimationFrame(afterPaint);
   window.__chatStabilityReset = (clickedId) => {
     S.t0 = performance.now();
     S.frames = [];
@@ -157,7 +185,11 @@ function judge(step) {
     const ys = after.filter((f) => f.composer && !f.splash).map((f) => f.composer.y);
     const final = ys[ys.length - 1];
     step.composerYs = [...new Set(ys)];
-    if (ys.length && Math.max(...ys) - Math.min(...ys) > 2) fails.push(`composer moved ${step.composerYs.join("→")} (final ${final})`);
+    if (ys.length && Math.max(...ys) - Math.min(...ys) > 2) {
+      const boxes = [];
+      for (const f of after) if (f.composer?.kind === "real" && boxes[boxes.length - 1]?.h !== f.composer.h) boxes.push({ h: f.composer.h, t: f.t, text: f.composer.text });
+      fails.push(`composer moved ${step.composerYs.join("→")} (final ${final}; box ${boxes.map((b) => `${b.h}@${b.t}ms[${b.text}]`).join(" → ")})`);
+    }
     const splashLate = after.filter((f) => f.splash && f.t > 100);
     if (splashLate.length) fails.push(`new-chat splash visible ${splashLate[0].t}-${splashLate[splashLate.length - 1].t} ms after the click`);
   }
@@ -196,7 +228,13 @@ function judge(step) {
   }
   const foots = [];
   for (const f of after) if (f.footer && foots[foots.length - 1] !== f.footer) foots.push(f.footer);
-  if (foots.length > 1) fails.push(`sidebar footer moved ${foots.join("→")}`);
+  if (foots.length > 1) {
+    const rows = [];
+    for (const f of after) if (f.footerRows != null && rows[rows.length - 1] !== f.footerRows) rows.push(f.footerRows);
+    const arch = [];
+    for (const f of after) if (arch[arch.length - 1] !== f.archiveRow) arch.push(f.archiveRow);
+    fails.push(`sidebar footer moved ${foots.join("→")} (rows ${rows.join(" ⇒ ")}; archive block ${arch.join("→")})`);
+  }
 
   // The transcript lands at the bottom in one step.
   if (targetIsConversation) {
@@ -237,7 +275,8 @@ async function sidebarIds(page) {
     for (const a of document.querySelectorAll('a[href^="/chat/"]')) {
       const m = a.getAttribute("href").match(/^\/chat\/([0-9a-f-]{36})$/);
       const r = a.getBoundingClientRect();
-      if (m && r.height > 0 && r.top > 0 && r.bottom < innerHeight && !seen.includes(m[1])) seen.push(m[1]);
+      // Any listed row (the click scrolls it into view); hidden rows (height 0) never.
+      if (m && r.height > 0 && !seen.includes(m[1])) seen.push(m[1]);
     }
     return seen;
   });
@@ -303,6 +342,9 @@ try {
     clickedId: target,
     action: () => page.locator(`a[href="/chat/${target}"]`).first().click(),
   }));
+} catch (error) {
+  // Report what was measured before the walk broke, then fail.
+  steps.push({ label: "walk", kind: "walk", fails: [`walk stopped: ${error.message.split("\n")[0]}`] });
 } finally {
   await browser.close().catch(() => {});
 }

@@ -14,7 +14,7 @@
  * LAW), drifting from the one people actually use.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AlertTriangle, Inbox, MessageCircleQuestion, PenLine } from "lucide-react";
 
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";

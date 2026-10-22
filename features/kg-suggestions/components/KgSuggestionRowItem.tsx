@@ -24,7 +24,7 @@
 
 import { useState } from "react";
 import { RichContentPreview } from "@ai-matrx/rich-content/levels/RichContentPreview";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { toast } from "@/lib/toast";
 import {
   AlertTriangle,

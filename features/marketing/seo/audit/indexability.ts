@@ -20,6 +20,8 @@ export interface IndexabilityInput {
   canonicalUrl: string | null;
   redirectChain: RedirectHopInput[];
   finalUrl: string | null;
+  /** The URL that was requested, when it differs from `finalUrl`. */
+  requestedUrl?: string | null;
 }
 
 export interface IndexabilityEvaluation {
@@ -64,6 +66,39 @@ export function normalizeUrlForComparison(url: string): string {
   return `${protocol}//${host}${port}${path}${parsed.search}`;
 }
 
+/**
+ * A canonical href resolved against the page it was declared on. Mirror of
+ * Python `resolve_canonical_url` — the ONE resolver every canonical comparison
+ * uses (`href="/p"` and `href="//host/p"` are self-canonicals on https://host/p).
+ */
+export function resolveCanonicalUrl(canonicalUrl: string, pageUrl: string | null): string {
+  const href = canonicalUrl.trim();
+  if (!pageUrl) return href;
+  try {
+    return new URL(href, pageUrl).href;
+  } catch {
+    return href;
+  }
+}
+
+/**
+ * Whether a canonical names one of the addresses this page was reached by
+ * (resolved against each, then normalized). Mirror of Python
+ * `canonical_is_self`; null = no canonical or no known address.
+ */
+export function canonicalIsSelf(
+  canonicalUrl: string | null,
+  ...pageUrls: (string | null | undefined)[]
+): boolean | null {
+  if (!canonicalUrl || !canonicalUrl.trim()) return null;
+  const known = pageUrls.filter((url): url is string => typeof url === "string" && url !== "");
+  if (known.length === 0) return null;
+  const normalized = new Set(known.map((url) => normalizeUrlForComparison(url)));
+  return known.some((base) =>
+    normalized.has(normalizeUrlForComparison(resolveCanonicalUrl(canonicalUrl, base))),
+  );
+}
+
 /** Parse a robots directive string into lowercase tokens. */
 function robotsTokens(metaRobots: string | null): string[] {
   if (!metaRobots) return [];
@@ -81,13 +116,22 @@ export function evaluateIndexability(
   const noindex = tokens.includes("noindex") || tokens.includes("none");
   const nofollow = tokens.includes("nofollow") || tokens.includes("none");
   const redirectHops = Math.max(0, input.redirectChain.length - 1);
+  // Self-canonical means the canonical names the requested URL or the final
+  // URL (the stored one, or the redirect chain's LAST hop). An intermediate
+  // hop is NOT this page: a canonical naming it points at a redirect (Python
+  // `evaluate_indexability`, same rule).
+  const lastHop = input.redirectChain[input.redirectChain.length - 1];
   const canonicalMatches =
     input.canonicalUrl && input.finalUrl
-      ? normalizeUrlForComparison(input.canonicalUrl) ===
-        normalizeUrlForComparison(input.finalUrl)
-      : input.canonicalUrl
-        ? null
-        : null;
+      ? Boolean(
+          canonicalIsSelf(
+            input.canonicalUrl,
+            input.finalUrl,
+            input.requestedUrl ?? null,
+            lastHop?.url ?? null,
+          ),
+        )
+      : null;
 
   const issues: AuditIssue[] = [];
   if (input.httpStatus !== null && input.httpStatus >= 400)

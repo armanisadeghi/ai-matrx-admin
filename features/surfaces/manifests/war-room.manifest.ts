@@ -428,6 +428,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const warRoomManifest: SurfaceManifest = {
   surfaceName: "matrx-user/war-room",
+  inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

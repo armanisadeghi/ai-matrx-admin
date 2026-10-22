@@ -1,10 +1,11 @@
-// THE "GO TO" INDEX — every product and every page the generated route table knows, as one flat
-// list the palette ranks. Pure data: built from FRAME_ROUTE_HOMES (the small generated table the
-// frame already holds), never from flows/*.json or route-flow.json. Only GoToPalette imports this
-// file, and the palette loads on first open, so none of it runs on page load. A dynamic route
-// ([id]) is not listed: the list page that leads to it is.
+// THE "GO TO" INDEX — every product and every page with a home row, as one flat list the palette
+// ranks. Pure data: built from FRAME_ROUTE_HOMES (products, sidebar rows, flow titles) plus
+// GO_TO_PAGES (every page in route-homes.tsv, titled; generated), never from flows/*.json or
+// route-flow.json. Only GoToPalette imports this file and GO_TO_PAGES, and the palette loads on
+// first open, so none of it runs on page load. A dynamic route ([id]) is not listed: the list page
+// that leads to it is.
 import type { SearchableEntry } from "./searchEngine";
-import type { FrameRouteHomes } from "./route-homes-types";
+import type { FrameRouteHomes, GoToPageRow } from "./route-homes-types";
 import type { FrameProduct, ProductFamily } from "./types";
 
 export interface GoToEntry extends SearchableEntry {
@@ -49,6 +50,7 @@ export function buildGoToIndex(
   families: readonly { id: ProductFamily; label: string }[],
   homes: FrameRouteHomes,
   extras: readonly GoToEntry[] = [],
+  pages: readonly GoToPageRow[] = [],
 ): GoToEntry[] {
   const out: GoToEntry[] = [];
   const seen = new Set<string>();
@@ -95,6 +97,23 @@ export function buildGoToIndex(
         keywords: words,
       });
     }
+  }
+  // Every other page with a home: its derived title, under its product (or the account menu).
+  const productById = new Map(products.map((p) => [p.id, p]));
+  const hrefs = new Set(out.map((e) => e.href));
+  for (const [pattern, productId, title, between] of pages) {
+    if (hrefs.has(pattern) || !isConcrete(pattern)) continue;
+    const product = productById.get(productId);
+    if (!product && productId !== MENU_GO_TO_PRODUCT_ID) continue;
+    hrefs.add(pattern);
+    push({
+      id: `page:${pattern}`,
+      productId,
+      label: title,
+      trail: [product?.name ?? "App menu", ...between],
+      href: pattern,
+      keywords: product ? [...(PRODUCT_SYNONYMS[product.id] ?? [])] : [],
+    });
   }
   // A page the frame already lists (same address and name) is not listed twice under "App menu".
   const listed = new Set(out.map((e) => `${e.href}\u0000${e.label.toLocaleLowerCase()}`));

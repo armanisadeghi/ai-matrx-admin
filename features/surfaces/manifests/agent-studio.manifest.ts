@@ -72,6 +72,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const agentStudioManifest: SurfaceManifest = {
   surfaceName: "matrx-user/agent-studio",
+  inheritsFrom: "matrx-default/agents",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

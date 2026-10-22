@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowUpRight, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import type { TriggerFire } from "../types";
 import { formatInZone } from "./RecurrenceEditor";

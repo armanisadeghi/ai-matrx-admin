@@ -326,6 +326,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationFlashcardsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-flashcards",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

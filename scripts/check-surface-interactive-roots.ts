@@ -11,13 +11,14 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { gitFiles } from "./lib/source-roots.cjs";
-import { readFileSync } from "node:fs";
+import { CHAT_PACKAGE_SRC, existingRoots, gitFiles } from "./lib/source-roots.cjs";
+import { existsSync, readFileSync } from "node:fs";
 import { basename, relative, resolve } from "node:path";
 import ts from "typescript";
 
 const ROOT = process.cwd();
-const SOURCE_ROOTS = ["app", "components", "features", "../aidream/apps/shared/chat/src"] as const;
+// The chat package root comes from the one source-roots helper (it moves; a literal here went stale).
+const SOURCE_ROOTS = ["app", "components", "features", CHAT_PACKAGE_SRC] as const;
 const TEST_FILE_RE =
   /(?:^|\/)(?:__tests__\/|[^/]+\.(?:test|spec|stories)\.tsx$)/;
 
@@ -245,11 +246,15 @@ export function analyzeInteractiveRootSource(
 }
 
 function trackedTsxFiles(): string[] {
-  const output = gitFiles(ROOT, ["ls-files", "-z", "--", ...SOURCE_ROOTS.map((root) => `${root}/**/*.tsx`)]);
+  const roots = existingRoots(ROOT, SOURCE_ROOTS);
+  const output = gitFiles(ROOT, ["ls-files", "-z", "--", ...roots.map((root) => `${root}/**/*.tsx`)]);
   return output
     .split("\0")
     .filter(Boolean)
     .filter((file) => !TEST_FILE_RE.test(file))
+    // A file still in a git index but already moved/deleted in the working tree (the sibling
+    // aidream checkout mid-move) is not source; reading it crashed the whole inventory.
+    .filter((file) => existsSync(resolve(ROOT, file)))
     .sort();
 }
 

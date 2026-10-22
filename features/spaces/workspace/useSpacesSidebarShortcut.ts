@@ -8,9 +8,11 @@
 
 import { useEffect, useEffectEvent } from "react";
 
-export function useSpacesSidebarShortcut(onToggle: () => void): void {
+export function useSpacesSidebarShortcut(onToggle: () => void, enabled = true): void {
   const toggle = useEffectEvent(onToggle);
   useEffect(() => {
+    // In the new app frame the column is the frame's: Cmd+\ stays the frame's (side chat).
+    if (!enabled) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || !(e.metaKey || e.ctrlKey) || e.key !== "\\") return;
       e.preventDefault();
@@ -18,5 +20,5 @@ export function useSpacesSidebarShortcut(onToggle: () => void): void {
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, []);
+  }, [enabled]);
 }

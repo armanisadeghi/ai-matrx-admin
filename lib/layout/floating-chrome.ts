@@ -155,11 +155,20 @@ export interface CoveredContent {
  * piece scrolls clear of it.
  * Content inside the floating chrome itself is never counted.
  */
+/**
+ * A popper layer: a menu, popover or listbox panel (the composer's "Model and overrides"). It is
+ * drawn ABOVE the floating chrome, placed by its popper with collision padding, and gone on the
+ * next click — the bottom band is a page's runway rule, so a panel's scroller is never judged by
+ * it (the assists pill beside a 360px menu panel outlined its last switch, 2026-10-21).
+ */
+export const POPPER_LAYER_SELECTOR = "[data-radix-popper-content-wrapper], [data-composer-panel], [role=menu], [role=listbox]";
+
 export function findContentUnderFloatingChrome(
   scroller: Element,
   boxes: FloatingBox[],
 ): CoveredContent | null {
   if (boxes.length === 0) return null;
+  if (scroller !== document.scrollingElement && scroller.closest(POPPER_LAYER_SELECTOR)) return null;
   const view = scroller === document.scrollingElement
     ? { top: 0, bottom: window.innerHeight }
     : scroller.getBoundingClientRect();
@@ -213,6 +222,20 @@ export function findContentUnderFloatingChrome(
 export const WINDOW_SCROLLER_RUNWAY_VAR = "--matrx-window-scroller-runway";
 export const WINDOW_SCROLLER_RUNWAY_ATTR = "data-matrx-window-runway";
 const WINDOW_SCROLLER_SELECTOR = "[data-window-panel] :is(.overflow-y-auto, .overflow-auto, [data-matrx-page-scroll])";
+/**
+ * A TABLE'S OWN SCROLLER (live walk 2026-10-22, Check findings): a full-height table scrolls its
+ * rows inside its own frame, so the page runway never reaches it and the attention pill sat over
+ * the last row at the end of the scroll. It takes the same per-scroller runway — only while it is
+ * BOUNDED (its rows overflow it, not counting the runway itself): a natural-height table grows
+ * with its rows, is the page's to clear, and a runway on it would grow it again every measure.
+ */
+const TABLE_SCROLLER_SELECTOR = "[data-matrx-table-scroll]";
+function isBoundedScroller(el: HTMLElement): boolean {
+  const runway = el.hasAttribute(WINDOW_SCROLLER_RUNWAY_ATTR)
+    ? Number.parseFloat(el.style.getPropertyValue(WINDOW_SCROLLER_RUNWAY_VAR)) || 0
+    : 0;
+  return el.scrollHeight - runway > el.clientHeight + 1;
+}
 
 /** Px a scroller must reserve at its end so its last content clears every floating box. */
 export function windowScrollerRunwayPx(scrollerRect: { top: number; bottom: number }, boxes: FloatingBox[]): number {
@@ -225,13 +248,15 @@ export function windowScrollerRunwayPx(scrollerRect: { top: number; bottom: numb
 }
 
 /**
- * Writes the runway onto every scroller inside a window; clears it everywhere else. Floating
+ * Writes the runway onto every scroller inside a window and every bounded table scroller; clears
+ * it everywhere else. Floating
  * chrome that is inside the scroller's own window (a minimized window IS the chrome) never counts.
  */
 export function syncWindowScrollerRunways(boxes: FloatingBox[], doc: Document = document): void {
   const stale = new Set(doc.querySelectorAll(`[${WINDOW_SCROLLER_RUNWAY_ATTR}]`));
-  for (const scroller of doc.querySelectorAll(WINDOW_SCROLLER_SELECTOR)) {
+  for (const scroller of doc.querySelectorAll(`${WINDOW_SCROLLER_SELECTOR}, ${TABLE_SCROLLER_SELECTOR}`)) {
     if (scroller.closest("[data-window-panel-state=minimized]")) continue;
+    if (!scroller.closest("[data-window-panel]") && !isBoundedScroller(scroller as HTMLElement)) continue;
     const rect = scroller.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) continue;
     const others = boxes.filter((b) => !scroller.contains(b.element) && !b.element.contains(scroller));

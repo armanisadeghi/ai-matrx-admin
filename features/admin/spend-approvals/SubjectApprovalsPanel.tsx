@@ -7,7 +7,7 @@
  * The approvals board itself, filtered to this subject (status dropdown, spend columns, links,
  * Copy for AI on the row), then each approval's decision history and the runs it held.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Suspense, useEffect, useState } from "react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAdminCost } from "@/components/cost/useAdminCost";

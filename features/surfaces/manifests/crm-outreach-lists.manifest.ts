@@ -129,6 +129,7 @@ const values: SurfaceValue[] = [
 
 export const crmOutreachListsManifest: SurfaceManifest = {
   surfaceName: CRM_OUTREACH_LISTS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

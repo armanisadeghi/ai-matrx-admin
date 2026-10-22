@@ -15,7 +15,7 @@
  * (`approvalRecordHref`), and on that route this same board is the page's sidebar
  * (`presentation="list"`, the layout in app/(admin)/administration/billing/approvals).
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { CalendarClock, Check, History, RefreshCw, RotateCcw, TimerReset, X } from "lucide-react";

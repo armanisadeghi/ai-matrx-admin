@@ -17,7 +17,7 @@
 
 import { useLoadMark } from "@/lib/diagnostics/loadMark";
 import { useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   selectAccessToken,

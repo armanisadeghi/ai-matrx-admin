@@ -39,6 +39,9 @@
  *      collision is a real defect), label/description present, optional mode
  *      enum, and `inputSchema` conforming to the CustomToolInputSchema wire
  *      shape `{type:"object", properties, required}`.
+ *  12. situation: every `{blank}` names a value the resolved chain declares
+ *      (or the request key `user`), and no brace pair is a non-blank that
+ *      would render literally (`scripts/lib/surface-situation-blanks.ts`).
  *
  * The DB-side drift report (orphan rows, broken mappings) lives behind
  * /api/admin/surfaces/drift-report and isn't checked here — that requires
@@ -54,6 +57,7 @@ import { resolve } from "node:path";
 
 import { isGeneratedKindSlug } from "../features/content-ir/kinds/generated/kinds.generated";
 import { exitAfterDrain } from "./lib/exit-after-drain";
+import { situationBlankFailures } from "./lib/surface-situation-blanks";
 
 
 /**
@@ -161,6 +165,7 @@ async function main() {
         `Surface "${m.surfaceName}" declares guide "${m.guide}" but the file is missing or empty. Fix: write the guide or drop the field.`,
       );
   }
+  errors.push(...situationBlankFailures(mod.ALL_MANIFESTS));
   const structuredWithoutKind = issues
     .filter((i) => i.severity === "advisory" && i.path.endsWith("/valueKind"))
     .map((i) => `${i.surfaceName}:${i.path.split("/")[1]}`);

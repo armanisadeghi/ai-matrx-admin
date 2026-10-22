@@ -22,7 +22,7 @@
  * with nothing queued — is the "Offline study & sync" card on `/education/data`.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CloudOff, RefreshCw } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

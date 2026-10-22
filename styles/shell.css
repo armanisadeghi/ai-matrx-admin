@@ -1250,6 +1250,10 @@ button.shell-nav-flyout-item {
   .shell-root[data-domain-panel] .shell-sidebar-nav > .shell-nav-chat {
     grid-column: 1;
     grid-row: 2;
+    /* The strip's own inset (the icons' main-nav pads 0.375rem): stretch inside it. */
+    justify-self: stretch;
+    width: auto;
+    min-width: 0;
     margin-left: 0.375rem;
     margin-right: 0.375rem;
   }

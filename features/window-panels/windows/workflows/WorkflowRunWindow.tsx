@@ -26,7 +26,7 @@
  * restored across reloads — the run's permalink is what survives a reload.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink } from "lucide-react";
 
 import { WindowPanel } from "@ai-matrx/summon/window";

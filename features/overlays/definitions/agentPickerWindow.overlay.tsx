@@ -24,7 +24,7 @@ import {
 } from "@/features/window-panels/windows/agents/agent-picker-callbacks";
 import type { UntypedOverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = "agentPickerWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);

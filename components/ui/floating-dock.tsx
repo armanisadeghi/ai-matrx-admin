@@ -16,7 +16,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRef, useState } from "react";
 
 export const FloatingDock = ({

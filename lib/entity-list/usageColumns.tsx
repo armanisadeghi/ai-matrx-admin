@@ -24,7 +24,7 @@
 // are both served by the RPC under the key `review`.
 
 import type { ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { formatPercentFromFraction, safeRatio } from "@ai-matrx/kit/format";
 import { Cost } from "@/components/cost/Cost";
 import {

@@ -23,11 +23,16 @@ import { BASELINE_VALUES } from "@ai-matrx/chat/surfaces/manifests/_baseline.man
 import { SURFACE_INDEX } from "@/features/surfaces/manifests/generated/surface-index.generated";
 import { loadSurfaceBodyRecord } from "@/features/surfaces/manifests/surface-body-loader";
 import { getRoutePageName, getSurfaceSection } from "@/features/surfaces/manifests/surface-section";
+// The cap comes from alchemy itself (the full registry's MAX_INHERITANCE_DEPTH aliases it): importing
+// the registry module here would pull every manifest into the first load.
+import { DEFAULT_MAX_INHERITANCE_DEPTH } from "@ai-matrx/alchemy/declare";
 
 registerSurfaceManifests(
   createIndexedSurfaceSource({
     encoded: SURFACE_INDEX,
     baselineValues: Object.values(BASELINE_VALUES),
+    // The same cap as the full registry, so the browser index and it can never disagree.
+    maxInheritanceDepth: DEFAULT_MAX_INHERITANCE_DEPTH,
     loadBody: loadSurfaceBodyRecord,
     getSurfaceSection,
     getRoutePageName,

@@ -10,7 +10,7 @@
 //   plain — after that: Undo.
 // Drawn inside sonner's toaster by `announceReversible`, so hovering or focusing it holds it.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ArrowUpRight, Undo2, X } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import type { ReversibleFoundAt, ReversibleTier } from "@ai-matrx/kit/reversible";

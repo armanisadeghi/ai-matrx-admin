@@ -272,6 +272,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const searchManifest: SurfaceManifest = {
   surfaceName: "matrx-user/search",
+  inheritsFrom: "matrx-default/platform",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

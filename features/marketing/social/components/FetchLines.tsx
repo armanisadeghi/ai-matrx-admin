@@ -3,7 +3,7 @@
 /** Short in-place lines for an account fetch: what was loaded, which limit applied, how fresh. */
 
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import { SOCIAL_LIMITS_HREF } from "../post-count";
 import type { SocialLimitApplied } from "../types";

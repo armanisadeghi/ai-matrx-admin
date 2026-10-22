@@ -15,7 +15,7 @@ import {
   type CreateProjectWindowHandle,
 } from "@/features/window-panels/windows/projects/useOpenCreateProjectWindow";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 export {
   useOpenCreateProjectWindow,

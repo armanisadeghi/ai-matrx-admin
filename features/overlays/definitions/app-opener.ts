@@ -12,7 +12,7 @@
  * a hand-copied instance-id mint, or a `multi` flag that disagrees with the definition.
  */
 
-import { createElement, useCallback, useEffect, useRef } from "react";
+import { createElement, useCallback } from "react";
 import { createOpener, type OpenedOverlay, type Opener } from "@ai-matrx/summon/opener";
 import { useAppDispatch } from "@/lib/redux/hooks";
 
@@ -86,35 +86,3 @@ export function appOpener<Options = Record<string, never>>(
   };
 }
 
-function propsSignature(props: unknown): string {
-  try {
-    return JSON.stringify(props, (_key, value) => (typeof value === "function" ? undefined : value));
-  } catch {
-    return String(Date.now());
-  }
-}
-
-/**
- * The open-on-mount Controller for an opener whose open logic is its own (callback groups, thunks,
- * computed ids): opens through `useOpen()` on mount, closes on unmount, re-opens when the serialisable
- * props change (functions never reopen). Openers built by `appOpener` use summon's Controller instead;
- * this is the one Controller for the rest, so no opener hand-writes the effect.
- */
-export function hookController<Props, OpenArg = Props>(
-  useOpen: () => ((options: OpenArg) => { close(): void }) | null,
-  toOptions?: (props: Props) => OpenArg,
-): (props: Props) => null {
-  return function OpenerController(props: Props): null {
-    const open = useOpen();
-    const latest = useRef(props);
-    latest.current = props;
-    const signature = propsSignature(props);
-    useEffect(() => {
-      if (!open) return undefined;
-      const current = latest.current;
-      const handle = open(toOptions ? toOptions(current) : (current as unknown as OpenArg));
-      return () => handle.close();
-    }, [open, signature]);
-    return null;
-  };
-}

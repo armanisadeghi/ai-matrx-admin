@@ -255,6 +255,9 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const hrEmployerManifest: SurfaceManifest = {
   surfaceName: HR_EMPLOYER_SURFACE_NAME,
+  situation:
+    "They are on the Employer page: the employer's legal identity and address, which employment laws apply and why, and the {establishment_count|no} sites it reports on (page: {employer_load_status}). Unsaved changes in the form: {has_unsaved_identity_changes|no}. You can fill the identity form, record whether a law applies, or add or change sites.",
+  inheritsFrom: "matrx-default/human-resources",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

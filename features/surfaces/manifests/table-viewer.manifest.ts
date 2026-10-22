@@ -139,6 +139,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const tableViewerManifest: SurfaceManifest = {
   surfaceName: TABLE_VIEWER_SURFACE_NAME,
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

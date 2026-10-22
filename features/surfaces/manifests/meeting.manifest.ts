@@ -403,6 +403,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const meetingManifest: SurfaceManifest = {
   surfaceName: "matrx-user/meeting",
+  inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

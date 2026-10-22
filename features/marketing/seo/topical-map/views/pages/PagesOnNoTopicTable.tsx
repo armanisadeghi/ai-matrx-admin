@@ -22,7 +22,7 @@
 // ADDRESS, not a gap, and the cell says so in its title.
 
 import { ExternalLink } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 

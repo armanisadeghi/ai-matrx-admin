@@ -13,7 +13,7 @@
 // RecordsMount — the organization the TABLE lives in, never the active one.
 
 import { useMemo, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Check, ChevronDown, LayoutGrid, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { useTables } from "@ai-matrx/records/react";

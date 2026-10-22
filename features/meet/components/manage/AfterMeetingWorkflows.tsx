@@ -11,7 +11,7 @@
 // shown back here with a door to each run.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { X } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";

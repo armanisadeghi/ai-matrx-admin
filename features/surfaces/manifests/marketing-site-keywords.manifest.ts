@@ -174,6 +174,8 @@ export const marketingSiteKeywordsManifest: SurfaceManifest = {
   description:
     "",
   label: "Organic Keyword Performance",
+  situation:
+    "They are on the organic keyword performance for {site_domain}: searches it actually earned over the last 28 days from Search Console (Bing connected: {bing_connected}), {matching_queries_total|no} matching their filters. They can add keywords to the library, set a keyword's traffic class and attach keywords to pages.",
   urlPattern: "/marketing/[brandId]/seo/[siteId]/keywords",
   inheritsFrom: "matrx-user/marketing-site",
   readiness: "verified",

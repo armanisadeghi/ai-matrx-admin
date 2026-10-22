@@ -48,10 +48,13 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const marketingSocialRollupManifest: SurfaceManifest = {
   surfaceName: SOCIAL_ROLLUP_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   label: "Social roll-up",
+  situation:
+    "They are on the social roll-up across all their brands, on the {view} table: {account_count|no} tracked accounts and {outlier_count|no} standout posts from the last 30 days. It is read-only.",
   description: "Every tracked social account and recent outlier across the person's brands.",
   urlPattern: "/marketing/social",
   briefValues: ["rollup_loaded", "view", "account_count", "outlier_count"],

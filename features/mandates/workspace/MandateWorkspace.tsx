@@ -50,7 +50,7 @@ import { MandateRunsTab } from "@/features/mandates/runs/MandateRunsTab";
 // No prose paragraphs. Sections state facts; the data does the talking.
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CrumbTrailHeader } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import { ArrowLeft, Copy, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -19,7 +19,7 @@ import type { AppStore } from "@/lib/redux/store";
 import type { OverlayWire } from "./overlay-types";
 import { workingDocumentInstanceId } from "./opener-instance-ids";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = "workingDocumentWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);

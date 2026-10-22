@@ -8,7 +8,7 @@
  */
 import { notReadyHit, useAutomationReadiness } from "@/features/scheduling/service/automationReadiness";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Badge, Button, SegmentedControl } from "@ai-matrx/design-system/controls";

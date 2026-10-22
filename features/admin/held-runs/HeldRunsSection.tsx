@@ -2,7 +2,7 @@
 
 // The alarm record page's one mount: the runs this alarm stopped, each opening its held-run view.
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { fetchHeldRunsForAlarm, heldRunHref, replayCostLine, type HeldRun } from "./heldRuns";
 import { fetchMandateLabels } from "@/features/admin/spend-alarms/spendAlarms";
 

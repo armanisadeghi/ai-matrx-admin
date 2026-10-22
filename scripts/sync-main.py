@@ -25,7 +25,9 @@ WHAT IT DOES (Arman's sequence, 2026-09-24)
      EXCEPT a file the installed @ai-matrx packages cannot build yet (SWEEP HOLD, see
      sweep_holds()): it stays uncommitted on disk, named in the output, and goes out on the first
      sync whose packages serve what it uses
-  2. git fetch + git merge origin/main          (this is `git pull --no-rebase`)
+  2. git fetch + git merge origin/main          (this is `git pull --no-rebase`), run through a
+     merge driver that never writes a conflict marker into the shared working tree
+     (merge_without_markers(); a conflicted file keeps LOCAL's bytes until it is decided)
      clean  -> go to 4
   3. for every file git stops on:
      a. FAKE conflict: one side already contains the other (an agent pushed an early copy of the
@@ -1021,6 +1023,83 @@ def repair_skill_copies():
             say(f"LAW 15 REPAIR SKIPPED ({' '.join(args)}): {exc}")
 
 
+MARKER_GREP = r"^(<<<<<<<|>>>>>>>)( |$)"
+# A lone `=======` line is a conflict marker too (half a block: `=======` ... `>>>>>>> origin/main`
+# with no opening line still breaks the build), but in prose it is a heading underline. It is judged
+# only in files where a bare `=======` line is never legitimate.
+MID_MARKER_GREP = r"^=======( |$)"
+MID_MARKER_EXTS = {".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".json", ".py",
+                   ".css", ".scss", ".sql", ".sh", ".yaml", ".yml", ".toml", ".go", ".rs"}
+
+
+def staged_marker_files(paths=None):
+    """Staged paths whose INDEX content has a git conflict-marker line: `<<<<<<< ` / `>>>>>>> `
+    anywhere, and a bare `=======` in code (MID_MARKER_EXTS). No commit sync-main makes may carry
+    one: matrx-frontend 4d1b83b210 and a6342f47b3 (2026-10-22) shipped AssessmentCreate.tsx and
+    runHistory.ts with git's markers and releases v0.4.3443 / v0.4.3444 failed to build. Held copies
+    under _conflicts/ are exempt (they are the saved LOCAL side, markers and all)."""
+    if paths is None:
+        _, out, _ = git("diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z", check=False)
+        paths = [p for p in out.split("\0") if p]
+    paths = [p for p in paths if not p.startswith(HOLD_ROOT + "/") and not p.endswith(".held")]
+    code = [p for p in paths if os.path.splitext(p)[1].lower() in MID_MARKER_EXTS]
+    bad = []
+    for pattern, group in ((MARKER_GREP, paths), (MID_MARKER_GREP, code)):
+        for i in range(0, len(group), 500):
+            _, out, _ = git("grep", "--cached", "-z", "-lIE", pattern, "--",
+                            *[":(literal)" + p for p in group[i:i + 500]], check=False)
+            bad += [p for p in out.split("\0") if p and p not in bad]
+    return bad
+
+
+def _blob_has_marker(path, sha):
+    if not sha:
+        return False
+    data = content(sha)
+    if is_binary(data):
+        return False
+    pats = [MARKER_GREP] + ([MID_MARKER_GREP] if os.path.splitext(path)[1].lower() in MID_MARKER_EXTS else [])
+    return any(re.search(pt.encode(), data, re.M) for pt in pats)
+
+
+def hold_marked_merge_files(stamp):
+    """Last check before a merge commit: no file this merge stages may carry a conflict marker it
+    did not get from a parent. Each one found is held like any conflict -- GitHub's version goes
+    live, the marked-up bytes go to _conflicts/<stamp>/<path>.held -- so the commit never carries
+    a marker. A marker that GitHub's own version already has is not ours to undo: it is announced
+    (the release build fails until someone fixes it) and left alone. Returns the held entries."""
+    _, out, _ = git("diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z", "HEAD", check=False)
+    held = []
+    for path in staged_marker_files([p for p in out.split("\0") if p]):
+        theirs = blob_at("MERGE_HEAD", path)
+        if _blob_has_marker(path, theirs) or _blob_has_marker(path, blob_at("HEAD", path)):
+            say("CONFLICT MARKERS ALREADY ON A PARENT: %s carries git conflict markers in a version "
+                "already committed; the release build fails until the file is fixed." % path)
+            continue
+        _, marked, _ = git("cat-file", "blob", ":%s" % path, raw=True)
+        dest = held_copy_path(os.path.join(HOLD_ROOT, stamp), path, ".held")
+        with open(dest, "wb") as f:
+            f.write(("%s\n\nHELD CONFLICT, written by scripts/sync-main.py\nFile:      %s\nWhy held:  "
+                     "the merge staged it with git conflict markers (a marker breaks the build)\n"
+                     "GITHUB's version is live. The marked-up version is below.\n"
+                     "---------------- MARKED-UP VERSION BELOW ----------------\n"
+                     % (HELD_MARK, path)).encode() + marked)
+        live = theirs or blob_at("HEAD", path)
+        _, staged, _ = git("ls-files", "-s", "--", path, check=False)
+        if live:
+            write_live(path, content(live), (staged.split() or ["100644"])[0])
+        else:
+            git("rm", "-q", "--cached", "--ignore-unmatch", "--", path)
+        say("MERGE HELD %s: it was staged with git conflict markers; GitHub's version is live, the "
+            "marked-up copy is %s." % (path, dest))
+        held.append((path, dest, "staged with conflict markers during the merge; the live file is "
+                                 "GitHub's version"))
+    if held:
+        update_log(stamp, [], held)
+        git("add", "--", HOLD_ROOT)
+    return held
+
+
 def commit_all():
     repair_skill_copies()
     _, common, _ = git("rev-parse", "--git-common-dir")
@@ -1033,6 +1112,10 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: a forcing-function plant (pid %d) is live in it; the next sync "
             "commits it." % (p, pid))
+    for p in staged_marker_files():
+        git("restore", "--staged", "--", ":(literal)" + p, check=False)
+        say("SWEEP SKIPPED %s: it holds git conflict markers (<<<<<<< / ======= / >>>>>>>); a marker breaks "
+            "the build. Resolve the file; the next sync commits it." % p)
     for p, reasons in held:
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
@@ -1648,6 +1731,19 @@ def superseding_side(path, ours, theirs, mb):
     return None
 
 
+def parent_side(ref, path, mode):
+    """(blob, mode) of `path` in commit `ref`, or (None, mode) when that commit lacks it. A missing
+    index stage is not proof that a side deleted the file; the side's own commit is."""
+    _, out, _ = git("ls-tree", "-z", ref, "--", path, check=False)
+    rec = out.split("\0")[0]
+    if rec and "\t" in rec:
+        meta, name = rec.split("\t", 1)
+        m, typ, sha = meta.split()
+        if typ == "blob" and name == path:
+            return sha, m
+    return None, mode
+
+
 def decide(path, ours, theirs, ours_mode, theirs_mode, stamp, mb):
     """Resolve ONE conflicted file. Returns ('fixed'|'docs'|'held', held_path_or_None, summary)."""
     def held(reason):
@@ -1699,8 +1795,22 @@ def resolve_all(stamp):
     fixed, docs, held = [], [], []
     for path in files:
         st = stages(path)
+        if not st:
+            # Listed as conflicted a moment ago, no unmerged stage now: another writer in this
+            # shared checkout (a second sync, an agent's `git add`) resolved it in between. Reading
+            # "no stage" as "deleted" committed two files both parents had as DELETED (common-docs
+            # 9e373e994a, 2026-10-22). Their resolution stands -- unless what they staged still
+            # holds conflict markers (a `git add` of git's own marked-up file): then it is decided
+            # here from the two parent commits, like any other conflict.
+            if not staged_marker_files([path]):
+                say("CONFLICT ALREADY RESOLVED by another writer, left as it is: %s" % path)
+                continue
+            say("CONFLICT STAGED WITH MARKERS by another writer, deciding it again: %s" % path)
         ours_mode, ours = st.get(2, (None, None))
         theirs_mode, theirs = st.get(3, (None, None))
+        # A side counts as deleted only when its commit really lacks the file.
+        ours, ours_mode = ours and (ours, ours_mode) or parent_side(CTX["ours"], path, ours_mode)
+        theirs, theirs_mode = theirs and (theirs, theirs_mode) or parent_side(CTX["theirs"], path, theirs_mode)
         kind, held_path, summary = decide(path, ours, theirs, ours_mode, theirs_mode, stamp, mb)
         if kind == "fixed":
             fixed.append(path)
@@ -2688,6 +2798,42 @@ ORPHAN_ALERT_EVERY_S = 3600
 ORPHAN_ALERT_TO = os.environ.get("MATRX_SYNC_ALERT_TO") or "6bda811a-6b18-5ef3-a1c1-67f81ae6b2c4"
 
 
+# THE MERGE NEVER WRITES MARKERS INTO THE SHARED TREE (2026-10-22). A plain `git merge` writes
+# `<<<<<<< HEAD` / `=======` / `>>>>>>> origin/main` into every conflicted working file and leaves
+# them there until resolve_all() reaches that file -- minutes, in this checkout (03:41:22-03:45:17
+# and 04:49-05:03 on 2026-10-22). Every other writer in the shared checkout sees those bytes as
+# "the file": an agent committing its own files in that window shipped git's markers in
+# AssessmentCreate.tsx (4d1b83b210, 03:41:44) and runHistory.ts (a6342f47b3, 04:54:28), and
+# releases v0.4.3443 / v0.4.3444 failed to build. So the merge runs with a merge driver that does
+# git's own textual 3-way merge (`git merge-file`) and, when that conflicts, puts LOCAL's bytes
+# back: the working file stays exactly what its author left, the conflict is still recorded in the
+# index (stages 1/2/3), and resolve_all() decides it from those stages as before. A clean
+# file merges exactly as git would. The attributes file lives in the git dir, never in the tree.
+MERGE_DRIVER_NAME = "sync-main-keep-local"
+# The driver's exit 1 is git's "this file conflicts" signal, never a process exit of sync-main.
+MERGE_DRIVER = ("sh -c 'cp \"$1\" \"$1.sync-main-local\" || exit 1; "  # release-path-ok: conflict
+                "if git merge-file -q \"$1\" \"$2\" \"$3\"; then rm -f \"$1.sync-main-local\"; exit 0; fi; "
+                "mv -f \"$1.sync-main-local\" \"$1\"; exit 1' sync-main-merge %A %O %B")  # release-path-ok: conflict
+
+
+def merge_without_markers(*args):
+    """`git merge <args>` that never writes a conflict marker into the working tree (see above)."""
+    _, gd, _ = git("rev-parse", "--git-dir")
+    attrs = os.path.abspath(os.path.join(gd.strip(), "sync-main-merge.attributes"))
+    want = "* merge=%s\n" % MERGE_DRIVER_NAME
+    try:
+        have = open(attrs).read()
+    except OSError:
+        have = None
+    if have != want:
+        with open(attrs, "w") as fh:
+            fh.write(want)
+    return git("-c", "core.attributesFile=" + attrs,
+               "-c", "merge.%s.name=git merge-file, LOCAL bytes kept on conflict" % MERGE_DRIVER_NAME,
+               "-c", "merge.%s.driver=%s" % (MERGE_DRIVER_NAME, MERGE_DRIVER),
+               "merge", *args, check=False)
+
+
 def mark_merging(gd):
     rc, t, _ = git("rev-parse", "%s/%s" % (REMOTE, BRANCH), check=False)
     if rc == 0:
@@ -2796,6 +2942,7 @@ def handle_orphan_merge(gd):
         _announce_orphan(gd, head, left.split() or files, age_s,
                          "finishing it left conflicts (this is a bug in sync-main)")
         return False
+    hold_marked_merge_files(time.strftime("%Y-%m-%d-%H%M%S"))
     git("commit", "--no-verify", "-q", "-m",
         "Merge %s/%s (sync-main): finished an orphaned merge, %d auto-fixed" % (REMOTE, BRANCH, len(f)))
     say("sync: finished an orphaned merge of %s (%d min old, %d auto-fixed); going on." % (head[:10], age_s // 60, len(f)))
@@ -2904,8 +3051,7 @@ def main():
         _, n, _ = git("rev-list", "--count", "HEAD..%s/%s" % (REMOTE, BRANCH))
         pulled += int(n.strip())
         mark_merging(gd)
-        rc, out, err = git("merge", "--no-edit", "--no-verify", "-q", "%s/%s" % (REMOTE, BRANCH),
-                           check=False)
+        rc, out, err = merge_without_markers("--no-edit", "--no-verify", "-q", "%s/%s" % (REMOTE, BRANCH))
         parked = []
         if (rc != 0 and not os.path.exists(os.path.join(gd, "MERGE_HEAD"))
                 and "Your local changes to the following files would be overwritten" in out + err):
@@ -2914,8 +3060,8 @@ def main():
             # UserBoard.tsx, five attempts, NOT PULLED). Set the edits aside, merge, put them back.
             parked = park_dirty_blockers(out + err)
             if parked:
-                rc, out, err = git("merge", "--no-edit", "--no-verify", "-q",
-                                   "%s/%s" % (REMOTE, BRANCH), check=False)
+                rc, out, err = merge_without_markers("--no-edit", "--no-verify", "-q",
+                                                     "%s/%s" % (REMOTE, BRANCH))
         if rc != 0:
             if not os.path.exists(os.path.join(gd, "MERGE_HEAD")):
                 if parked:
@@ -2941,6 +3087,9 @@ def main():
             if left.strip():
                 die("these files are still unresolved (this is a bug in sync-main; the merge is "
                     "left open so you can see it):\n" + left)
+            mh = hold_marked_merge_files(stamp)
+            h += mh
+            held += mh
             msg = "Merge %s/%s (sync-main): %d auto-fixed, %d docs/comments flagged, %d held" % (
                 REMOTE, BRANCH, len(f), len(d), len(h))
             git("commit", "--no-verify", "-q", "-m", msg)

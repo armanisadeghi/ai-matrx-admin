@@ -15,7 +15,7 @@
  * (`useRunAnnouncements`), so mounting it in the header costs no extra socket.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Inbox } from "lucide-react";
 
 import { useWaitingRuns } from "../useWaitingRuns";

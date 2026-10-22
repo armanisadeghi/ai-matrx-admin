@@ -11,10 +11,12 @@
 
 import { useEffect } from "react";
 import { onGuestAiAllowanceUsed } from "@/lib/guest/guest-ai-allowance";
-import { useOpenGuestAiAllowance } from "@/features/overlays/definitions/guestAiAllowance.overlay";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 export function GuestAiAllowanceBridge(): null {
-  const openReminder = useOpenGuestAiAllowance();
+  const openReminder = useLazyAppOpener("guestAiAllowance", () =>
+    import("@/features/overlays/definitions/guestAiAllowance.overlay").then((m) => m.createGuestAiAllowanceOpener),
+  );
   useEffect(
     () =>
       onGuestAiAllowanceUsed((refusal) => {

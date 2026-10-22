@@ -320,6 +320,8 @@ export const marketingBrandMessagingManifest: SurfaceManifest = {
   description:
     "The brand messaging room — mission, vision, story, voice, elevator pitches, messaging and content pillars, and hashtags.",
   label: "Brand Messaging",
+  situation:
+    "They are in the brand's Messaging room: mission, vision, values, story, personality, elevator pitches, messaging and content pillars, and hashtags, all in your context as currently edited. They can edit any of these.",
   urlPattern: "/marketing/[brandId]/identity/messaging",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

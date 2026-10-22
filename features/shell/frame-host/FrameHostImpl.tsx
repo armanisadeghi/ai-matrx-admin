@@ -4,8 +4,9 @@
 // everything here (AppFrame, the products, the chrome adapter, the route table) is one chunk that
 // classic pages never download (`check:shell-eager-graph` blocks it from every eager set).
 //
-// LAYER 0 (ROLLOUT-PLAN §2): the product, its sidebar row and the default crumbs come from the
-// pathname through the GENERATED route table (frame/route-homes.generated.ts) — no page edits.
+// LAYER 0 (ROLLOUT-PLAN §2): the product and its sidebar row come from the pathname through the
+// GENERATED route table (frame/route-homes.generated.ts) — no page edits. The default crumbs are
+// the address-derived trail (`useDerivedTrail`), the same one every page-top template declares.
 // LAYER 2: the header carries the page-header slots (`hostHeaderSlots`), so a page's own header
 // content lands in the frame and the derived crumbs yield to it.
 // The page renders inside a `.shell-main` scroller, the classic page contract (legacy-contracts.css).
@@ -36,10 +37,11 @@ import { useEarlySideChatDoors } from "./frameSideChatQueue";
 import { useGridFavorites } from "./useGridFavorites";
 import {
   FramePageHeaderContext,
-  pageTrailCrumbs,
+  frameHostCrumbs,
   useFramePageHeaderHost,
 } from "./framePageHeader";
 import { useFramePins } from "./useFramePins";
+import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
 import { FrameSidebarSlotContext } from "./frameSidebarSlot";
 import { useFrameProductSidebar } from "./frameProductSidebar";
 import { menuGoToEntries } from "./goToMenuEntries";
@@ -55,7 +57,6 @@ import {
 } from "@/features/shell/frame/routeHomeLookup";
 import type {
   FrameAction,
-  FrameCrumb,
   FrameMenuItem,
   FrameMenuSection,
   FrameProduct,
@@ -114,38 +115,6 @@ export function liveProducts(params: Record<string, string>): FrameProduct[] {
     });
     return { ...p, homeHref: home.entry, menu: sections };
   });
-}
-
-/** The default crumbs: the product (its icon), its sidebar row, then the page — never the same level twice. */
-export function derivedCrumbs(
-  product: FrameProduct,
-  item: FrameMenuItem | undefined,
-  title: string,
-  pathname: string,
-  go: (href: string) => void,
-): FrameCrumb[] {
-  const crumbs: FrameCrumb[] = [
-    {
-      id: "product",
-      label: product.name,
-      icon: product.icon,
-      iconOnly: true,
-      href: product.homeHref,
-      onSelect: () => go(product.homeHref),
-    },
-  ];
-  const onItemPage = item?.href === pathname;
-  if (item && !onItemPage)
-    crumbs.push({
-      id: "item",
-      label: item.label,
-      href: item.href,
-      onSelect: () => item.href && go(item.href),
-    });
-  const pageLabel = title || item?.label || product.name;
-  if (pageLabel !== crumbs[crumbs.length - 1].label || crumbs.length === 1)
-    crumbs.push({ id: "page", label: pageLabel });
-  return crumbs;
 }
 
 export default function FrameHostImpl({
@@ -207,12 +176,9 @@ export default function FrameHostImpl({
     home.itemIndex >= 0
       ? items.find((i) => i.id === itemId(home.itemIndex))
       : undefined;
-  // A page whose template declared its trail names its own crumbs; otherwise the route table's.
+  // ONE crumb derivation: the trail the page declared, else the one derived from the address.
   const { host: pageHeaderHost, pageCrumbs } = useFramePageHeaderHost();
-  const crumbs =
-    pageCrumbs && pageCrumbs.length > 0
-      ? pageTrailCrumbs(product, pageCrumbs, go)
-      : derivedCrumbs(product, item, home.title, pathname, go);
+  const crumbs = frameHostCrumbs(product, pageCrumbs, useDerivedTrail({ pathname }), go);
   const { pins, favorite } = useFramePins(pathname, crumbs[crumbs.length - 1].label);
 
   // THE PRODUCT'S OWN SIDEBAR (owner, 2026-10-22): the page's own sidebar, else the route

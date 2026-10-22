@@ -29,7 +29,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
 import { adminPageCapture } from "@/components/agent-copy/page-capture/pageCapture";
 import { PageCaptureButton } from "@/components/agent-copy/page-capture/PageCaptureButton";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Loader2, Pencil, Play, Power } from "lucide-react";
 import cronstrue from "cronstrue";

@@ -14,7 +14,7 @@
 // on the same row as the scope, the archive one click away under the list.
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ListChecks, Trash2 } from "lucide-react";
 import { ArchivedDisclosure, RecordsMount } from "@/features/data-tables/records-ui-host/recordsUiLazy";

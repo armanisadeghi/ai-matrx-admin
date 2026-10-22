@@ -37,7 +37,7 @@
 // the person sees what moved — they never pile up below.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { NO_WORDS_OVERTURN_MESSAGE, hasWords } from "../answerWords";
 import { Badge } from "@/components/ui/badge";

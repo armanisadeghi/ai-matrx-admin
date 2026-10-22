@@ -51,7 +51,7 @@ import { SegmentedControl, Switch, Tile } from "@ai-matrx/design-system/controls
 import { selectHoldsShellLayout, selectShellStandardView } from "@/features/shell/shell-layout/useResolvedShellLayout";
 import { shellStandardViewChanged } from "@/features/shell/shell-layout/shellLayoutSlice";
 import { setShellStandardViewCookie } from "@/features/shell/shell-layout/ShellLayoutSync";
-import { useOpenShellLayoutEditor } from "@/features/overlays/definitions/shellLayoutEditorWindow.overlay";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 // The account rail's one menu look: the account menu's own row class.
 const ROW = MENU_ITEM_CLASS;
@@ -102,7 +102,9 @@ function StandardViewRow() {
 
 /** The layout editors' doors, beside the Standard view switch (custom-experience). */
 function CustomizeRows({ onDone }: { onDone: () => void }) {
-  const openEditor = useOpenShellLayoutEditor();
+  const openEditor = useLazyAppOpener("shellLayoutEditorWindow", () =>
+    import("@/features/overlays/definitions/shellLayoutEditorWindow.overlay").then((m) => m.createShellLayoutEditorOpener),
+  );
   const open = (region: "sidebar" | "header" | "dock") => {
     onDone();
     openEditor({ region });

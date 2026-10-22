@@ -12,7 +12,7 @@
  *   · the records screens — through the web's ONE lazy edge to the records-ui root (`recordsUiLazy`).
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";

@@ -1,9 +1,11 @@
 "use client";
 
 // THE APP GRID — the 9-dot button and its popover, built tight like Google's apps popover
-// (owner, 2026-10-20 fourth round): a 320px popover, 3 columns of 80px cells (a 32px glyph
-// and a one-line name), the favorites in a rounded card on top, then every other product in
-// ONE grid in family order. No heading rows, and nothing appears twice: a favorite is not
+// (owner, 2026-10-20 fourth round): the favorites in a rounded card on top, then every other
+// product in ONE grid in family order. It never scrolls at common heights (owner, 2026-10-22:
+// scrolling the grid is "ridiculous"): a 26rem popover, 5 columns, 72px cells, and on a short
+// screen 60px cells (6 columns below 600px) — `gridLayout`; the body may use all the room under
+// the button, so only a very short screen scrolls. No heading rows, and nothing appears twice: a favorite is not
 // repeated below. A tile ALWAYS opens its product in a new tab (owner, 2026-10-17). The grid is
 // ONE Tab stop (roving tabindex); arrows move between tiles by position. Grid A is the owner's
 // pick (2026-10-21), with a search field on top: it filters the tiles as you type (names plus
@@ -30,8 +32,22 @@ export interface AppGridProps {
   currentProductId?: string;
 }
 
-/** The card holds at most this many favorites (3 × 3, as Google's does). */
+/** The card holds at most this many favorites. */
 export const GRID_FAVORITES_MAX = 9;
+
+/** Cell heights: tall screens, then short ones (under 760px). */
+export const GRID_TILE_TALL_PX = 72;
+export const GRID_TILE_SHORT_PX = 60;
+/** The body's chrome around the tiles: card padding, the gap, the "Edit favorites" row, body padding. */
+const GRID_BODY_CHROME_PX = 8 + 4 + 36 + 16;
+
+/** The grid's shape for a screen height: columns, cell height and the body's natural height. */
+export function gridLayout(viewportHeight: number, favoriteCount: number, restCount: number) {
+  const columns = viewportHeight < 600 ? 6 : 5;
+  const tile = viewportHeight < 760 ? GRID_TILE_SHORT_PX : GRID_TILE_TALL_PX;
+  const rows = Math.ceil(favoriteCount / columns) + Math.ceil(restCount / columns);
+  return { columns, tile, bodyHeight: rows * tile + GRID_BODY_CHROME_PX };
+}
 
 const TILE_SELECTOR = "[data-mf-tile]";
 
@@ -81,6 +97,8 @@ export function AppGrid({
   const [editing, setEditing] = useState(false);
   const [rovingKey, setRovingKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  // Read when the popover opens: the grid's shape follows the screen's height.
+  const [viewportHeight, setViewportHeight] = useState(900);
   const bodyRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -95,6 +113,8 @@ export function AppGrid({
   // Searching: one flat list of matches, best first (editing ignores the search).
   const searching = query.trim().length > 0 && !editing;
   const matches = searching ? matchProducts(products, families, query) : [];
+  const layout = gridLayout(viewportHeight, favoriteProducts.length, rest.length);
+  const cols = layout.columns === 6 ? "grid-cols-6" : "grid-cols-5";
 
   // Edits start from the favorites that resolve to a product, so a retired id never lingers.
   function toggleFavorite(id: string) {
@@ -153,7 +173,7 @@ export function AppGrid({
     const glyph = <ProductMark product={product} size="grid" />;
     const label = <span className="mf-grid-name w-full truncate text-center">{product.name}</span>;
     const tileClass = cn(
-      "relative flex h-20 min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-1",
+      "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1",
       "outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
     );
     if (editing) {
@@ -166,6 +186,7 @@ export function AppGrid({
           disabled={!isFavorite && full}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${product.name} ${isFavorite ? "from" : "to"} favorites`}
           className={cn(tileClass, "w-full")}
+          style={{ height: layout.tile }}
           onClick={() => toggleFavorite(product.id)}
         >
           {glyph}
@@ -214,6 +235,7 @@ export function AppGrid({
         {...keyboard}
         aria-current={product.id === currentProductId ? "page" : undefined}
         className={cn(tileClass, product.id === currentProductId && "bg-accent")}
+        style={{ height: layout.tile }}
         onClick={() => setOpen(false)}
       >
         {glyph}
@@ -228,6 +250,7 @@ export function AppGrid({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
+        if (next) setViewportHeight(window.innerHeight);
         if (!next) {
           setEditing(false);
           setQuery("");
@@ -239,7 +262,7 @@ export function AppGrid({
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        width="lg"
+        width="xl"
         padding="none"
         surface="solid"
         // First Esc clears the search; the next one (empty field) closes.
@@ -272,7 +295,7 @@ export function AppGrid({
         >
           {searching ? (
             matches.length > 0 ? (
-              <section aria-label="Matching products" className="grid grid-cols-3">
+              <section aria-label="Matching products" className={cn("grid", cols)}>
                 {matches.map((p) => renderTile(p, "hit"))}
               </section>
             ) : (
@@ -283,12 +306,12 @@ export function AppGrid({
           ) : (
             <>
               {favoriteProducts.length > 0 ? (
-                <section aria-label={editing ? "Your favorites, in order" : "Your favorites"} className="mf-grid-card grid grid-cols-3 p-1">
+                <section aria-label={editing ? "Your favorites, in order" : "Your favorites"} className={cn("mf-grid-card grid p-1", cols)}>
                   {favoriteProducts.map((p) => renderTile(p, "fav"))}
                 </section>
               ) : null}
               <section aria-label={editing ? "Add favorites" : "All products"} className="pt-1">
-                <div className="grid grid-cols-3">{rest.map((p) => renderTile(p, "all"))}</div>
+                <div className={cn("grid", cols)}>{rest.map((p) => renderTile(p, "all"))}</div>
               </section>
             </>
           )}

@@ -139,6 +139,8 @@ export const marketingBrandGuidelinesManifest: SurfaceManifest = {
   description:
     "The brand Guidelines room — the business guidelines document one website's AI runs read first, the editor, and its provenance.",
   label: "Brand Guidelines",
+  situation:
+    "They are in the brand's Guidelines room: the business guidelines every AI run for this website reads first (version {guidelines_version|never saved}), open in an editor; unsaved changes: {guidelines_has_unsaved_changes|no}. {guidelines_pending_draft_count|No} AI-proposed edits wait for their review.",
   urlPattern: "/marketing/[brandId]/identity/guidelines",
   inheritsFrom: "matrx-user/marketing-site",
   readiness: "partial",

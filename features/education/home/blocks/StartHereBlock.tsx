@@ -11,7 +11,7 @@
 // tools, and showing them all is how a first session ends in a tab close. The
 // tools become discoverable the moment the learner has anything to use them on.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   ArrowRight,
   FilePlus2,

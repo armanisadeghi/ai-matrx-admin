@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { X, CircleDashed, CheckCircle2, Flag } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { dissociateFromTask } from "@/features/tasks/redux/taskAssociationsSlice";

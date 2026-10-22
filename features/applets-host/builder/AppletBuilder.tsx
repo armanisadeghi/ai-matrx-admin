@@ -13,7 +13,7 @@
 // While the builder works its run streams in the floating LiveRunWindow (never a spinner).
 
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { readAppletCatalogue, readJobInputs } from "@ai-matrx/applets/catalogue";

@@ -12,8 +12,8 @@
 
 import { Search } from "lucide-react";
 import { SearchTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
 import { useOpenAuthGateDialog } from "@ai-matrx/chat/host/window-openers";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 const GATE = {
   featureName: "Search",
@@ -23,7 +23,9 @@ const GATE = {
 
 /** The ⌘K bar, or the auth gate for a guest — shared by every Search door. */
 export function useOpenBarOrGate(isAuthenticated: boolean) {
-  const openBar = useOpenKnowledgeCommandBar();
+  const openBar = useLazyAppOpener("knowledgeCommandBar", () =>
+    import("@/features/overlays/definitions/knowledgeCommandBar.overlay").then((m) => m.createKnowledgeCommandBarOpener),
+  );
   const openAuthGate = useOpenAuthGateDialog();
   return () => (isAuthenticated ? openBar() : openAuthGate(GATE));
 }

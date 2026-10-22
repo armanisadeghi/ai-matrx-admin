@@ -19,7 +19,7 @@
 import type { ContextField, Scope, ScopeTypeWithScopes } from "@ai-matrx/records/scopes";
 import { withArticle } from "@/lib/text/withArticle";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -23,7 +23,7 @@
  *   - the header buttons are the 28px capsule control.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect } from "react";
 import {
   Brain,

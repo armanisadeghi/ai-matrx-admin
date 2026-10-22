@@ -10,6 +10,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
+import { isRfc4122Uuid } from "@ai-matrx/kit/uuid";
 import type { NotesShellLayouts } from "./notesShellLayout";
 
 // Split at the route condition (code-splitting Method A): the workspace's code
@@ -35,7 +36,12 @@ export function NotesRouteBody({
 }) {
   const pathname = usePathname();
   const firstSegment = pathname?.split("/")[2] ?? "";
+  // A /notes/<segment> that is not a note id (e.g. /notes/history) is not a
+  // note: the [id] page answers it with the notes not-found. Mounting the
+  // workspace would open a tab for "history" and throw on the identity source.
+  const isNotANoteId = firstSegment !== "" && !isRfc4122Uuid(firstSegment);
   const isStandaloneRoute =
+    isNotANoteId ||
     STANDALONE_SEGMENTS.includes(firstSegment) ||
     STANDALONE_SUFFIXES.some((suffix) => pathname?.endsWith(suffix));
 

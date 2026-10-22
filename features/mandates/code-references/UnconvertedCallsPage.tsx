@@ -9,7 +9,7 @@
 // (/administration/intelligence/mandates/references) keeps its own conversion
 // list per repository (common-docs/systems/intelligence/mandates/OPTIONS.md §2).
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Copy, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";

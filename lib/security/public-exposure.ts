@@ -874,6 +874,18 @@ export const ANON_COLUMN_SURFACE: ReadonlyArray<AnonColumnSurface> = [
       + "These nine columns are unchanged by that declaration.",
   },
   {
+    relation: "agent.org_chart_publication",
+    columns: [
+      "id", "slug", "title", "snapshot", "blurb", "creator_name",
+      "created_at", "updated_at", "deleted_at", "visibility", "published_to_web",
+    ],
+    why:
+      "/chart/[slug] (app/(link)/chart/[slug]/page.tsx) — a published org chart a signed-out "
+      + "visitor opens: the SSR client reads title, blurb and the snapshot (names, titles, box "
+      + "types; never emails or record ids — features/agents/org-chart/publish/snapshot.ts) when "
+      + "published_to_web is on. Lane ORG-CHART-PUBLISH, 2026-10-22.",
+  },
+  {
     relation: "workbench.notes",
     columns: [
       "id", "label", "content", "tags", "position",

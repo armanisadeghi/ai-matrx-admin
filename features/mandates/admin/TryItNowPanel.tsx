@@ -6,7 +6,7 @@ import { useMandateAlchemyTabCapture } from "../workspace/MandateAlchemy";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink, FlaskConical, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";

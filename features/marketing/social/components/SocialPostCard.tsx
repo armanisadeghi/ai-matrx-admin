@@ -19,7 +19,7 @@
  * card, so there is nothing in it to reuse for a thumbnail card.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { AppWindow, Bookmark, Copy, ExternalLink, MoreHorizontal } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";

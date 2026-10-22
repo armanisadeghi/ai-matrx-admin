@@ -108,6 +108,22 @@ def serve() -> None:
     from playwright.sync_api import sync_playwright
 
     console: list[str] = []
+    # Network responses since the last `net` call (status, method, url, type), so "no failed page loads" (X2) is provable.
+    net: list[dict] = []
+    view = {"w": 1440, "h": 900}  # `viewport` changes it; page() re-applies it so a command never resets it
+
+    def keep_net(rec):
+        net.append(rec)
+        del net[:-5000]
+
+    def on_response(r):
+        try:
+            keep_net({"status": r.status, "method": r.request.method, "url": r.url[:400], "type": r.request.resource_type})
+        except Exception:
+            pass
+
+    def on_failed(rq):
+        keep_net({"status": 0, "method": rq.method, "url": rq.url[:400], "type": rq.resource_type, "failure": str(rq.failure)[:120]})
 
     def keep(line):
         console.append(line)
@@ -116,6 +132,8 @@ def serve() -> None:
     def attach(pg):
         pg.on("console", lambda m: m.type in ("error", "warning") and keep(f"[{m.type}] {m.text[:400]}"))
         pg.on("pageerror", lambda e: keep(f"[pageerror] {str(e)[:400]}"))
+        pg.on("response", on_response)
+        pg.on("requestfailed", on_failed)
 
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp(CDP, timeout=15000)
@@ -130,8 +148,8 @@ def serve() -> None:
         def page():
             pages = [pg for pg in ctx.pages if not pg.url.startswith("devtools")]
             pg = pages[0] if pages else ctx.new_page()
-            if pg.evaluate("() => [innerWidth, innerHeight]") != [1440, 900]:
-                pg.set_viewport_size({"width": 1440, "height": 900})
+            if pg.evaluate("() => [innerWidth, innerHeight]") != [view["w"], view["h"]]:
+                pg.set_viewport_size({"width": view["w"], "height": view["h"]})
             return pg
 
         with contextlib.suppress(FileNotFoundError):
@@ -160,7 +178,7 @@ def serve() -> None:
                     if req.get("cmd") == "__ping":
                         conn.sendall(b"pong")
                         continue
-                    reply = run(req, browser, ctx, page, console)
+                    reply = run(req, browser, ctx, page, console, net, view)
                     conn.sendall(json.dumps(reply).encode())
                     if req.get("cmd") == "stop":
                         break
@@ -170,11 +188,11 @@ def serve() -> None:
                 os.unlink(SOCK)
 
 
-def run(req, browser, ctx, get_page, console) -> dict:
+def run(req, browser, ctx, get_page, console, net, view) -> dict:
     out_buf, err_buf, code = io.StringIO(), io.StringIO(), 0
     with contextlib.redirect_stdout(out_buf), contextlib.redirect_stderr(err_buf):
         try:
-            handle(req, browser, ctx, get_page(), console)
+            handle(req, browser, ctx, get_page(), console, net, view)
         except SystemExit as e:
             code = e.code if isinstance(e.code, int) else 1
             if isinstance(e.code, str):
@@ -185,7 +203,7 @@ def run(req, browser, ctx, get_page, console) -> dict:
     return {"exit_code": code, "stdout": out_buf.getvalue(), "stderr": err_buf.getvalue()}
 
 
-def handle(req, browser, ctx, page, console) -> None:
+def handle(req, browser, ctx, page, console, net, view) -> None:
     cmd, args = req.get("cmd"), req.get("args") or []
     L = lambda s: page.locator(s).first  # noqa: E731
 
@@ -254,6 +272,65 @@ def handle(req, browser, ctx, page, console) -> None:
         print("[eval result] " + json.dumps(page.evaluate(" ".join(args))))
     elif cmd == "shot":
         print("[png base64] " + base64.b64encode(page.screenshot()).decode())
+    elif cmd == "viewport":
+        # viewport <width> [height] (390 = a phone) | viewport desktop (1440x900). Kept for every later command.
+        if args and args[0] == "desktop":
+            view["w"], view["h"] = 1440, 900
+        else:
+            view["w"], view["h"] = int(args[0]), int(args[1]) if len(args) > 1 else 844
+        page.set_viewport_size({"width": view["w"], "height": view["h"]})
+        page.wait_for_timeout(300)
+        out(f"viewport {view['w']}x{view['h']} (page reports {page.evaluate('() => [innerWidth, innerHeight]')})")
+    elif cmd == "select":
+        # select <locator> [text]: selects `text` (default: all of the element's text) inside the element, the way a
+        # person does (mouse down at its start, drag to its end), so the app hears real mouse and selection events.
+        # A text area or field is selected by its own range. Prints the selected string and its rectangle.
+        loc = L(args[0])
+        want = " ".join(args[1:])
+        loc.scroll_into_view_if_needed(timeout=15000)
+        rect = loc.evaluate("""(el, want) => {
+          const own = (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT');
+          if (own) { el.focus(); const t = el.value, i = want ? t.indexOf(want) : 0; if (i < 0) return {error: 'text not in the field'};
+            el.setSelectionRange(i, want ? i + want.length : t.length); const b = el.getBoundingClientRect(); return {x0: b.x + 8, x1: b.x + b.width - 8, y: b.y + b.height / 2, field: true}; }
+          const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n, acc = '', nodes = [];
+          while ((n = w.nextNode())) { nodes.push([n, acc.length]); acc += n.data; }
+          const i = want ? acc.indexOf(want) : 0; if (i < 0) return {error: 'text not found in the element'};
+          const j = want ? i + want.length : acc.length;
+          const at = (pos, end) => { for (const [nd, off] of nodes) { if (pos >= off && (pos < off + nd.data.length || (end && pos <= off + nd.data.length))) return [nd, pos - off]; } return null; };
+          const a = at(i, false), z = at(j, true); if (!a || !z) return {error: 'range not resolvable'};
+          const r = document.createRange(); r.setStart(a[0], a[1]); r.setEnd(z[0], z[1]);
+          const rs = [...r.getClientRects()].filter((q) => q.width > 0); if (!rs.length) return {error: 'selection not visible'};
+          const f = rs[0], l = rs[rs.length - 1];
+          return {x0: f.left + 1, y0: f.top + f.height / 2, x1: l.right - 1, y1: l.top + l.height / 2};
+        }""", want)
+        if rect.get("error"):
+            print(rect["error"], file=sys.stderr)
+            raise SystemExit(1)
+        if not rect.get("field"):
+            page.mouse.move(rect["x0"], rect["y0"])
+            page.mouse.down()
+            page.mouse.move(rect["x1"], rect["y1"], steps=8)
+            page.mouse.up()
+        got = page.evaluate("""() => { const a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || a.tagName === 'INPUT') && a.selectionStart !== a.selectionEnd) return a.value.slice(a.selectionStart, a.selectionEnd); return String(getSelection()); }""")
+        out({"selected": got, "ok": (want in got) if want else bool(got)})
+    elif cmd == "rclicksel":
+        # right-click in the middle of the current selection (what a person does to open its context menu)
+        pt = page.evaluate("""() => { const s = getSelection(); if (!s || !s.rangeCount || s.isCollapsed) return null; const rs = [...s.getRangeAt(0).getClientRects()].filter((q) => q.width > 0); if (!rs.length) return null; const q = rs[0]; return [q.left + q.width / 2, q.top + q.height / 2]; }""")
+        if not pt:
+            print("nothing is selected (use: select <locator> [text] first)", file=sys.stderr)
+            raise SystemExit(1)
+        page.mouse.click(pt[0], pt[1], button="right")
+        out(f"right-clicked the selection at {round(pt[0])},{round(pt[1])}")
+    elif cmd == "net":
+        # net [all]: network responses since the last `net` call. Default: a count plus every failure (status >= 400,
+        # or a request that failed) as `status METHOD url`; `all` lists every response. The list is then cleared.
+        rows = net[:]
+        net.clear()
+        bad = [r for r in rows if r["status"] == 0 or r["status"] >= 400]
+        fmt = lambda r: f"{r['status'] or 'FAILED'} {r['method']} {r['url']}" + (f" ({r['failure']})" if r.get("failure") else "")  # noqa: E731
+        print(f"{len(rows)} responses, {len(bad)} failed (status >= 400 or no response), {len([r for r in bad if r['status'] >= 500])} with 5xx")
+        for r in (rows if (args and args[0] == "all") else bad):
+            print(fmt(r))
     elif cmd == "console":
         # Every console error/warning and page error since the last call, page loads included.
         out(console[:])

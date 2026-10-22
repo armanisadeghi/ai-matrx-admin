@@ -18,7 +18,7 @@
 
 import { useState } from "react";
 import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { HouseWifi, Loader2, Trash2 } from "lucide-react";
 import { Badge, EditableLabel, Switch } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,5 @@
--- inverse of close_core_b_a_a_every_column_of_a_typed_table.sql: the body before it.
+-- chair-step: inverse of close_core_b_a_a_every_column_of_a_typed_table.sql; restores the function byte for byte (no data was written, so none is lost)
+-- based-on: custom.applicable_fields(uuid, uuid, text) add8dd4f20f2269d36f53d6f6139f6cda8f23f2b6d315dc9d87bd184e9c341d2
 
 CREATE OR REPLACE FUNCTION custom.applicable_fields(p_organization_id uuid, p_table_id uuid, p_record_type text DEFAULT NULL::text)
  RETURNS SETOF custom.record

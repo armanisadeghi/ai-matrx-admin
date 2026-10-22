@@ -67,7 +67,7 @@ import {
 import { useAgentLineageIndex } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import { AdminPoints } from "@/components/cost/AdminCost";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { modelCellOf } from "./spend";
 import { runsTabHref } from "./runs";
 

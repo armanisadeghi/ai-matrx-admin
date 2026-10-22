@@ -19,7 +19,7 @@ import {
   type ImageUploaderWindowHandle,
 } from "@/features/window-panels/windows/image/useOpenImageUploaderWindow";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 export {
   useOpenImageUploaderWindow,

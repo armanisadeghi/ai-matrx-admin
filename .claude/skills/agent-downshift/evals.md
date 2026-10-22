@@ -96,3 +96,10 @@ discoverable, not stated.
 
 **Reps:** v3 `aeed9577b7cdd1c0d`, `a2bd705cb66538c83`, `a9ca9accf7637772e` · v4 `ac49bb853ba7fc767`,
 `a05fdba1211575465`, `acdc5eaba0df86017`.
+
+## 2026-10-22 — door names checked against the live tools
+
+Following the doors table on the condenser run, `agent_catalog action=get` failed validation: the live
+action is `get_agent`. Every row of the doors table was then read against the live MCP schemas
+(`agent_catalog`, `agent_tests`, `agent_author`); only that one was wrong. Rule for future edits: a door
+row names an action the live tool accepts, checked by calling it, never from memory.

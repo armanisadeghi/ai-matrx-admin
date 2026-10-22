@@ -102,7 +102,11 @@ export function AnnotationSidecarProvider({
   onActivity?: () => void;
 }) {
   const raw = useAnnotationSidecar(source, { live });
-  const api: AnnotationSidecarApi = onActivity
+  // In a chat (a message's marks) writing a highlight, comment or link opens nothing: a staged
+  // comment rides along as a card in the composer, and the dock opens only when the person
+  // presses a card or an existing mark (Arman, 2026-10-22).
+  const writesOpenTheDock = source.token !== "message";
+  const api: AnnotationSidecarApi = onActivity && writesOpenTheDock
     ? {
         ...raw,
         addHighlight: (...args) => {
@@ -541,33 +545,32 @@ function CommentComposerPanel({
               : {
                   body: text,
                   anchor: selection.anchor,
-                  ...(stageToPage
+                  ...(stageToPage || stageInto
                     ? {
+                        // Both stagers compose: neither replaces the other.
                         onWritten: (commentId: string) => {
-                          stageRecordComment(
-                            { token: source.token, id: source.id, title: source.title || null },
-                            { id: commentId, body: text },
-                            selection.anchor.exact,
-                          );
-                        },
-                      }
-                    : {}),
-                  ...(stageInto
-                    ? {
-                        onWritten: (commentId: string) => {
-                          dispatch(
-                            stageRemark(
-                              stageInto,
-                              {
-                                kind: "comment",
-                                target: { conversationId: stageInto, messageId: source.id },
-                                commentId,
-                                quote: selection.anchor.exact,
-                                body: text,
-                              },
-                              { coalesceKey: `comment:${commentId}` },
-                            ),
-                          );
+                          if (stageToPage) {
+                            stageRecordComment(
+                              { token: source.token, id: source.id, title: source.title || null },
+                              { id: commentId, body: text },
+                              selection.anchor.exact,
+                            );
+                          }
+                          if (stageInto) {
+                            dispatch(
+                              stageRemark(
+                                stageInto,
+                                {
+                                  kind: "comment",
+                                  target: { conversationId: stageInto, messageId: source.id },
+                                  commentId,
+                                  quote: selection.anchor.exact,
+                                  body: text,
+                                },
+                                { coalesceKey: `comment:${commentId}` },
+                              ),
+                            );
+                          }
                         },
                       }
                     : {}),

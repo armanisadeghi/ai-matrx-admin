@@ -328,6 +328,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const workflowRunManifest: SurfaceManifest = {
   surfaceName: "matrx-user/workflow-run",
+  inheritsFrom: "matrx-default/workflows",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

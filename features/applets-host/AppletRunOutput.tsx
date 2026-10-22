@@ -29,7 +29,7 @@ import {
 import { Button } from "@ai-matrx/design-system/controls";
 import type { KindInstanceRenderProps } from "@ai-matrx/content-ir/react";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { RotateCcw, TriangleAlert, Wrench } from "lucide-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";

@@ -550,6 +550,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminAiModelsManifest: SurfaceManifest = {
   surfaceName: ADMIN_AI_MODELS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/ai",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

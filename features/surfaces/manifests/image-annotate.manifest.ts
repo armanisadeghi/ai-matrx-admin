@@ -156,6 +156,7 @@ export const IMAGE_ANNOTATE_SURFACE_NAME = "matrx-user/image-annotate";
 
 export const imageAnnotateManifest: SurfaceManifest = {
   surfaceName: IMAGE_ANNOTATE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

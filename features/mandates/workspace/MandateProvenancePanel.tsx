@@ -34,7 +34,7 @@ import { useMandateAlchemyTabCapture } from "./MandateAlchemy";
 // report errors reads as "nothing to see here", which is the same lie as a
 // dead control. The error is said out loud, verbatim.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink } from "lucide-react";
 import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { Section } from "./Section";

@@ -386,6 +386,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const pageResearchManifest: SurfaceManifest = {
   surfaceName: PAGE_RESEARCH_SURFACE_NAME,
+  inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

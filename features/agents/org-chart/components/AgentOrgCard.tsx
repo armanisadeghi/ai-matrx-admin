@@ -249,11 +249,12 @@ export function AgentOrgCard({
         )}
       </div>
 
-      {/* Actions: on hover, and always while selected (touch has no hover). */}
+      {/* Actions: on hover, and always while selected (touch has no hover). They sit on the
+          card's top edge, in the gap above it, so they never cover the name. */}
       <div
         data-no-pan
         className={cn(
-          "absolute right-1.5 top-1.5 flex items-center rounded-md border border-border bg-card opacity-0 shadow-sm transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100",
+          "absolute -top-3.5 right-2 z-10 flex items-center rounded-md border border-border bg-card opacity-0 shadow-sm transition-opacity group-hover/card:opacity-100 group-focus-within/card:opacity-100",
           state.selected && "opacity-100",
         )}
       >

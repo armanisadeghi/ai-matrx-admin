@@ -18,7 +18,7 @@
  * the admin lane is already open here.
  */
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Building2, Tags } from "lucide-react";

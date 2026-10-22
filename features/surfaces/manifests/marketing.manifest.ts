@@ -299,6 +299,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -308,6 +309,8 @@ export const marketingManifest: SurfaceManifest = {
   readinessNote:
     "The five hub views that own data (pillar map, brands, sites, connections, cost) are fully declared, grouped, and emitted. Other hub-level routes that still resolve here may be reserved Coming Soon placeholders rendering <MarketingComingSoon> with no data at all — for example /marketing/analytics, /marketing/content-studio, /marketing/social, and /marketing/email — so none of those warrants a surface until it grows real data. Live hub-level routes with their own data have their own surfaces: /marketing/initiatives, /marketing/reports, /marketing/keyword-research, /marketing/ranks, and /marketing/competitors. Site-scoped rank tracking has its own surface, matrx-user/marketing-ranks. /marketing/batches and matrx-user/marketing-batches were retired 2026-08-11 (D149): they read the never-populated web.batch_* spine, which no longer exists.",
   label: "Marketing Hub",
+  situation:
+    "They are on the Marketing hub, on the {hub_view|overview} view, with {brand_count|their} brands and {site_count|their} managed websites. From here they open a brand or a website, edit a site's details, check search-engine connections or review marketing spend.",
   urlPattern: "/marketing",
   intro: `<surface_intro>
 You are on the Marketing hub: the portfolio entry point where an operator scans every brand and managed website they run, checks how the workspace is connected and what it costs, and decides where to go next. No single brand or site is in focus here — everything you see is an aggregate over the portfolio the user can access.

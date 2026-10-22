@@ -192,7 +192,8 @@
   width: min(86vw, 320px);
   background: hsl(var(--popover));
 }
-.spaces-drawer .spaces-sidebar-inner {
+.spaces-drawer .spaces-sidebar-inner,
+.spaces-frame-sidebar .spaces-sidebar-inner {
   width: 100%;
 }
 

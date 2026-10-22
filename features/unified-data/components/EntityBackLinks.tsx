@@ -21,7 +21,7 @@
 // table and each opens its custom record page; more load through `next_cursor`. A missing door or a
 // refused read is said in the section, in the store's own words, with a Retry — never hidden.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Link2 } from "lucide-react";
 import { RecordsProvider } from "@ai-matrx/records/react";
 import type { EntityBackLinkItem } from "@ai-matrx/records";

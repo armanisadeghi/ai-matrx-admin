@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button, DisclosureHeader, RowGroup, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/lib/toast";

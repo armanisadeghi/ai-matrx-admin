@@ -70,17 +70,31 @@ export function ownerScopeOf(owner: AgentOwner): HolderDraftOwnerScope {
  * names. Optional values are OMITTED when the workspace has nothing honest to
  * send (never an empty string standing in for "unknown").
  */
-export function buildHolderDraftBrief(
-  input: HolderDraftBriefInput,
-): Record<string, unknown> {
-  const { data, offeredValues, holder, owner } = input;
-  const mandate = data.mandate;
+/** What a job states about itself — the part of the brief that needs no workspace. */
+export interface HolderDraftJob {
+  mandateKey: string;
+  label: string | null;
+  goal: string | null;
+  description?: string | null;
+  offeredValues: ReadonlyArray<Pick<OfferedValue, "name" | "kind" | "guaranteed" | "lazy" | "description"> & { example?: string | null }>;
+  acceptsUserInput?: boolean | null;
+  outputKind?: string | null;
+  outputConstraints?: string | null;
+  requiredOutputKeys?: readonly string[];
+}
+
+/**
+ * The brief for a job known only by what it states (a job just created, with
+ * no workspace open — the org chart's department batch). The SAME keys
+ * `buildHolderDraftBrief` sends; optional values are omitted when empty.
+ */
+export function buildHolderDraftBriefForJob(job: HolderDraftJob, owner: AgentOwner): Record<string, unknown> {
   const brief: Record<string, unknown> = {
-    mandate_key: mandate.mandate_key,
-    mandate_label: mandate.label ?? mandate.mandate_key,
-    feature: splitMandateKey(mandate.mandate_key).feature,
-    goal: mandate.goal ?? "",
-    offered_values: offeredValues.map((value) => ({
+    mandate_key: job.mandateKey,
+    mandate_label: job.label ?? job.mandateKey,
+    feature: splitMandateKey(job.mandateKey).feature,
+    goal: job.goal ?? "",
+    offered_values: job.offeredValues.map((value) => ({
       name: value.name,
       kind: value.kind,
       guaranteed: value.guaranteed,
@@ -88,17 +102,42 @@ export function buildHolderDraftBrief(
       description: value.description,
       ...(value.example ? { example: value.example } : {}),
     })),
-    accepts_user_input: String(mandate.accepts_user_input ?? true),
+    accepts_user_input: String(job.acceptsUserInput ?? true),
     owner_scope: ownerScopeOf(owner),
   };
-  const description = mandate.description?.trim();
+  const description = job.description?.trim();
   if (description) brief.description = description;
-  if (mandate.output_kind) brief.output_kind = mandate.output_kind;
-  const outputConstraints = outputConstraintsOf(mandate);
+  if (job.outputKind) brief.output_kind = job.outputKind;
+  const outputConstraints = job.outputConstraints?.trim();
   if (outputConstraints) brief.output_constraints = outputConstraints;
-  if (data.contract.requiredOutputKeys.length > 0) {
-    brief.required_output_keys = data.contract.requiredOutputKeys;
-  }
+  if (job.requiredOutputKeys && job.requiredOutputKeys.length > 0) brief.required_output_keys = [...job.requiredOutputKeys];
+  return brief;
+}
+
+/**
+ * The offered values of `mandates.holder_draft_brief`, keyed by their declared
+ * names. Optional values are OMITTED when the workspace has nothing honest to
+ * send (never an empty string standing in for "unknown").
+ */
+export function buildHolderDraftBrief(
+  input: HolderDraftBriefInput,
+): Record<string, unknown> {
+  const { data, offeredValues, holder, owner } = input;
+  const mandate = data.mandate;
+  const brief = buildHolderDraftBriefForJob(
+    {
+      mandateKey: mandate.mandate_key,
+      label: mandate.label,
+      goal: mandate.goal,
+      description: mandate.description,
+      offeredValues,
+      acceptsUserInput: mandate.accepts_user_input,
+      outputKind: mandate.output_kind,
+      outputConstraints: outputConstraintsOf(mandate),
+      requiredOutputKeys: data.contract.requiredOutputKeys,
+    },
+    owner,
+  );
   if (data.pins && Object.keys(data.pins).length > 0) brief.pins = data.pins;
 
   const currentHolder = currentHolderOf(holder, data);

@@ -10,7 +10,7 @@
 // need a tooltip to be legible are not an action bar, they are a quiz. The
 // complete "…" menu is the same config the table row uses.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Archive,
   LayoutTemplate,

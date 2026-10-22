@@ -396,6 +396,7 @@ export const crmGroups = groups;
 
 export const crmManifest: SurfaceManifest = {
   surfaceName: CRM_SURFACE_NAME,
+  inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

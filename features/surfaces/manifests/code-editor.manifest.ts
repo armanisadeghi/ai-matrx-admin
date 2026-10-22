@@ -334,6 +334,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const codeEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/code-editor",
+  inheritsFrom: "matrx-default/code",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

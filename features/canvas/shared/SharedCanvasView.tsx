@@ -4,7 +4,7 @@ import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, Eye, Heart, Trophy } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 
 import { MediumComponentLoading } from "@/components/matrx/LoadingComponents";
 import {

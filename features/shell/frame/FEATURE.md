@@ -133,12 +133,23 @@ in `frame-host/frameProductSidebar.tsx`, most specific first:
    and drops its own column chrome when `useFrameSidebarSlot()` is true (`frame-host/frameSidebarSlot.tsx`,
    tiny and eager; FrameHostImpl provides the slot around the page body only, so windows never
    claim it). In the frame the content is portalled into the column; in classic it renders in place.
-   Users: Notes (route instance, `config.frameSidebar`), Files `PageShell`, Messages, Agent connections.
+   Users: Notes (route instance, `config.frameSidebar`), Files `PageShell`, Messages, Agent connections,
+   Spaces (`SpacesWorkspace`; Cmd+\ stays the frame's), org project settings. Every such route is
+   declared ONCE in `FRAME_PAGE_SIDEBAR_ROUTES` (frameSidebarSlot.tsx, with its owner file; a test
+   holds the two in step): there the frame reserves its sidebar body with a quiet `RegionSkeleton`
+   until the page claims it, so the route rows never flash first. The reserve ends on the first claim
+   or after `PAGE_SIDEBAR_RESERVE_MS` (4 s) without one (Notes' narrow list/note switch never claims).
 2. **A Large Route's registered menu** (kind A, `constants/route-menu-registry.ts`, `defaultView`
    `"route"` only): the same component the classic sidebar flips into, through the registry's own
    loader and `ModuleSlot` (row skeleton, honest failure), always `expanded`. legacy-contracts.css
    shows its `.shell-nav-label`s.
 3. Otherwise the route table's rows.
+
+When 1 or 2 fills the body, the product's route-table rows stay as a compact strip ABOVE it
+(`data-mf-region="product-rows"`, the frame's own one-line rows, the current one selected), only
+when the product has a row beyond the current one; more than four fold to the first three plus the
+current one behind a "N more" toggle. So Chat's Voice / Talk, Agent Messenger and Imported AI chats
+stay one click away on /chat.
 
 Inventory and open list: `common-docs/projects/app-frame/SIDEBARS.md`. Test:
 `frame-host/__tests__/product-sidebar-in-frame.test.tsx`.
@@ -309,6 +320,10 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
 
 ## Change log
 
+- 2026-10-22: Product sidebars round 2. The product's other rows stay as a strip above a module
+  menu or page sidebar; declared kind-B routes reserve the body with a skeleton (no row flash);
+  Spaces and org project settings migrated; the Notes filter row is the `@container/list` its org
+  filter queries (fits 244px).
 - 2026-10-22: Product sidebars. The frame's one sidebar column shows the product's own navigation:
   `sidebarContent` slot, kind-A registered menus (Chat, Marketing, Code, Images, Your staff,
   research topic, agent runs, user settings) and the kind-B door `<FrameSidebarContent>` (Notes,

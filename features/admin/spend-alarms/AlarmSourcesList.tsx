@@ -9,7 +9,7 @@
 
 import { formatCount } from "@ai-matrx/kit/format";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Button } from "@ai-matrx/design-system/controls";
 import {
   alarmSourceHref,

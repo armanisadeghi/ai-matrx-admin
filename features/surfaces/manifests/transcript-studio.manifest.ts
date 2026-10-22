@@ -423,6 +423,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const transcriptStudioManifest: SurfaceManifest = {
   surfaceName: "matrx-user/transcript-studio",
+  inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

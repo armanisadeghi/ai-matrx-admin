@@ -26,7 +26,7 @@
 // the missing door goes to the chair (store doors are the chair's).
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Check, CircleDashed, ExternalLink, Loader2 } from "lucide-react";
 import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
 import { runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer } from "@ai-matrx/records/templates";

@@ -22,6 +22,7 @@ import { RefusalView } from "../RefusalView";
 import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
 import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, type FetchJobRow } from "./runHistory";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
 const LocatedTableViewer = dynamic(() => import("@/features/data-tables/components/LocatedTableViewer"), {
@@ -66,7 +67,7 @@ function OpenAsTable({ tableId }: { tableId: string }) {
     <Button
       variant="quiet"
       icon={<Table2 className="h-4 w-4" />}
-      onClick={() => window.open(`/data/${encodeURIComponent(tableId)}`, "_blank", "noopener")}
+      onClick={() => openOutbound(`/data/${encodeURIComponent(tableId)}`, "_blank", "noopener")}
       data-open-table=""
     >
       Open as table

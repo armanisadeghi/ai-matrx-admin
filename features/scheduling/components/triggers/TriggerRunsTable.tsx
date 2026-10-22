@@ -5,7 +5,7 @@
  * Own table (not the Costs tab's) because the run link is seat-aware: an org
  * admin gets the org-scoped run page, never the owner-only workflow-run page.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";

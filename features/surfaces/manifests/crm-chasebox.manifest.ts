@@ -172,6 +172,7 @@ const values: SurfaceValue[] = [
 
 export const crmChaseboxManifest: SurfaceManifest = {
   surfaceName: CRM_CHASEBOX_SURFACE_NAME,
+  inheritsFrom: "matrx-default/crm",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

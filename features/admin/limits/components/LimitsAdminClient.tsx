@@ -16,7 +16,7 @@
 // on two sibling surfaces, linked from the header so nobody treats this as a
 // third, disconnected place: the knowledge cost board and per-user usage.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useSearchParams } from "next/navigation";
 import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { ArrowUpRight } from "lucide-react";

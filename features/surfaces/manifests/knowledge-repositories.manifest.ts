@@ -143,6 +143,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const knowledgeRepositoriesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-repositories",
+  inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -9,8 +9,16 @@
  * character for character (a reasoning string is a user-facing expert
  * sentence; a difference means one page gets two explanations).
  *
+ * ONE HOME: the expected results live in aidream
+ * `packages/matrx-scraper/tests/__fixtures__/page-checks-parity.json`, guarded
+ * there by `tests/test_page_checks_parity_fixture.py` (red when a Python check
+ * changes without a regenerate). `__fixtures__/page-checks-parity.json` here is
+ * the VENDORED copy the generator writes alongside it, for checkouts and CI
+ * runs with no sibling aidream. When `../aidream` exists this test replays the
+ * aidream home and fails if the vendored copy differs from it.
+ *
  * If this fails, one side changed without the other. Fix BOTH in the same
- * unit of work and regenerate:
+ * unit of work and regenerate (writes both files):
  *
  *   .venv/bin/python packages/matrx-scraper/scripts/generate_page_checks_parity_fixture.py
  */
@@ -19,13 +27,26 @@ import {
   runPageChecks,
   type CheckMetaMetrics,
   type CheckOutcome,
+  type FieldMetric,
   type HeadingEvidenceItem,
   type PageEvidence,
   type PageImageItem,
   type RedirectHop,
   type Remediation,
 } from "./checks";
-import parity from "./__fixtures__/page-checks-parity.json";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import vendored from "./__fixtures__/page-checks-parity.json";
+
+/** The one home of the expected verdicts, when the sibling aidream checkout exists. */
+const AIDREAM_HOME = join(
+  __dirname,
+  "../../../../../aidream/packages/matrx-scraper/tests/__fixtures__/page-checks-parity.json",
+);
+const aidreamHome: unknown = existsSync(AIDREAM_HOME)
+  ? JSON.parse(readFileSync(AIDREAM_HOME, "utf-8"))
+  : null;
+const parity = aidreamHome ?? vendored;
 
 /** The Python `PageEvidence` dataclass, as serialized into the fixture. */
 interface PythonEvidence {
@@ -46,8 +67,15 @@ interface PythonEvidence {
   schema_types: string[] | null;
   image_count: number | null;
   images_missing_alt: number | null;
+  link_count: number | null;
+  internal_link_count: number | null;
+  app_root: boolean | null;
+  executable_script: boolean | null;
+  app_shell_words: number | null;
+  root_text_words: number | null;
   image_items: PageImageItem[];
   http_status: number | null;
+  fetch_blocked_reason: string | null;
   redirect_chain: RedirectHop[];
   mixed_content: string[];
   response_headers: Record<string, string> | null;
@@ -55,6 +83,7 @@ interface PythonEvidence {
   response_bytes: number | null;
   response_time_ms: number | null;
   ttfb_ms: number | null;
+  ttfb_measured_at: string | null;
   pagination: Record<string, unknown>;
   hreflang: Record<string, unknown>[];
   structured_data: Record<string, unknown>;
@@ -77,6 +106,9 @@ interface PythonLabPerformance {
   delivery_audits: Record<string, number>;
   cache_static_bytes: number | null;
   cache_short_ttl_resources: Record<string, unknown>[];
+  cache_static_bytes_by_host: Record<string, number>;
+  cache_list_truncated: boolean;
+  field_metrics: Record<string, FieldMetric>;
 }
 
 interface PythonOutcome {
@@ -125,8 +157,15 @@ function toPageEvidence(raw: PythonEvidence): PageEvidence {
     schemaTypes: raw.schema_types,
     imageCount: raw.image_count,
     imagesMissingAlt: raw.images_missing_alt,
+    linkCount: raw.link_count,
+    internalLinkCount: raw.internal_link_count,
+    appRoot: raw.app_root,
+    executableScript: raw.executable_script,
+    appShellWords: raw.app_shell_words,
+    rootTextWords: raw.root_text_words,
     imageItems: raw.image_items,
     httpStatus: raw.http_status,
+    fetchBlockedReason: raw.fetch_blocked_reason,
     redirectChain: raw.redirect_chain,
     mixedContent: raw.mixed_content,
     responseHeaders: raw.response_headers,
@@ -134,6 +173,7 @@ function toPageEvidence(raw: PythonEvidence): PageEvidence {
     responseBytes: raw.response_bytes,
     responseTimeMs: raw.response_time_ms,
     ttfbMs: raw.ttfb_ms,
+    ttfbMeasuredAt: raw.ttfb_measured_at,
     pagination: raw.pagination,
     hreflang: raw.hreflang,
     structuredData: raw.structured_data,
@@ -153,6 +193,9 @@ function toPageEvidence(raw: PythonEvidence): PageEvidence {
           deliveryAudits: raw.lab_performance.delivery_audits,
           cacheStaticBytes: raw.lab_performance.cache_static_bytes,
           cacheShortTtlResources: raw.lab_performance.cache_short_ttl_resources,
+          cacheStaticBytesByHost: raw.lab_performance.cache_static_bytes_by_host,
+          cacheListTruncated: raw.lab_performance.cache_list_truncated,
+          fieldMetrics: raw.lab_performance.field_metrics,
         }
       : null,
   };
@@ -191,6 +234,13 @@ const MEASURED_CHECKS = [
 ];
 
 describe("per-page SEO checks TS ↔ Python parity", () => {
+  (aidreamHome ? it : it.skip)(
+    "the vendored fixture is byte-for-byte the aidream home (regenerate if not)",
+    () => {
+      expect(vendored).toEqual(aidreamHome);
+    },
+  );
+
   it("fixture is non-trivial and covers every registered check", () => {
     expect(fixture.cases.length).toBeGreaterThanOrEqual(20);
     // Not a hard-coded count: the check set grows, and the order test below
@@ -227,8 +277,16 @@ describe("per-page SEO checks TS ↔ Python parity", () => {
         expect.stringMatching(/^(n_a|fail)$/),
       ]);
     }
-    // The two required tags are absent facts, not unmeasured ones.
-    expect(results.title_presence.status).toBe("fail");
-    expect(results.meta_description_presence.status).toBe("fail");
+    // With no <head> ever parsed, the two required tags are unknown (n_a,
+    // Python `_head_not_captured`); once a head WAS parsed, their absence is a
+    // fact and fails.
+    expect(results.title_presence.status).toBe("n_a");
+    expect(results.meta_description_presence.status).toBe("n_a");
+    const parsed = runPageChecks({
+      url: "https://example.com/nothing-known",
+      headCaptured: true,
+    });
+    expect(parsed.title_presence.status).toBe("fail");
+    expect(parsed.meta_description_presence.status).toBe("fail");
   });
 });

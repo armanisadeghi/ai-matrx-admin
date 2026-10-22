@@ -52,6 +52,7 @@ const values: SurfaceValue[] = [
 
 export const adminHardCostReconciliationManifest: SurfaceManifest = {
   surfaceName: ADMIN_HARD_COST_RECONCILIATION_SURFACE_NAME,
+  inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -76,6 +76,8 @@ export const marketingBrandSessionManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description: "The brand session — one card at a time, the person decides where each brand candidate belongs.",
   label: "Brand Session",
+  situation:
+    "They are in the brand session, deciding one card at a time where each brand candidate belongs ({session_counts.answered|0} of {session_counts.total|the} cards answered). The card in front of them is in your context; the choice is theirs, but you can offer different wording as a new card.",
   urlPattern: "/marketing/[brandId]/identity/session",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

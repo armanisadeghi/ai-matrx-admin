@@ -279,6 +279,8 @@ export const marketingBrandVoiceManifest: SurfaceManifest = {
   description:
     "The brand voice room — the measured voice, its writing samples, the owner's confirmation, and the draft voice fixer.",
   label: "Brand Voice",
+  situation:
+    "They are in the brand's Voice room (whose voice: {voice_whose|brand}); the measured voice is {voice_current.status|not measured yet}. They can pick writing samples and measure the voice, confirm the result, or paste a draft into the fixer to bring it into the voice.",
   urlPattern: "/marketing/[brandId]/identity/voice",
   inheritsFrom: "matrx-user/marketing-brand",
   readiness: "partial",

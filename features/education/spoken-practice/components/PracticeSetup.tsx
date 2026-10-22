@@ -46,6 +46,7 @@ import {
   DEFAULT_PROMPTS,
   PROMPT_COUNT_OPTIONS,
 } from "../constants";
+import { practiceDesignerModelId } from "../data/designerModel";
 import { practiceSourceFromResolved } from "../data/practiceSources";
 import {
   publishPracticeSetupSnapshot,

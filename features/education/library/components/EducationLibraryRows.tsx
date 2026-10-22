@@ -12,7 +12,7 @@
 // colored format tile and the progress bar, which is what makes the list
 // scannable by shape rather than by reading every title.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { CalendarClock, MoreHorizontal } from "lucide-react";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";

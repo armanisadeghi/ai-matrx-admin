@@ -249,6 +249,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const cmsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/cms",
+  inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

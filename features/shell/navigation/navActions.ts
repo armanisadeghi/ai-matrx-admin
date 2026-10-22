@@ -42,14 +42,12 @@ import { toast } from "@/lib/toast";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useOpenCreateProjectWindow } from "@/features/overlays/definitions/createProjectWindow.overlay";
 import { useOpenPickListManagerWindow } from "@ai-matrx/chat/host/window-openers";
-import { useOpenFavoritesManagerWindow } from "@/features/overlays/definitions/favoritesManagerWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/boot";
 import { isServiceFailure } from "@/features/data-tables/types";
 import type { ShellNavActionId } from "../constants/nav-data";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
-import { useOpenShellLayoutEditor } from "@/features/overlays/definitions/shellLayoutEditorWindow.overlay";
 
 export type ShellNavActionHandlers = Record<ShellNavActionId, () => void>;
 
@@ -59,8 +57,12 @@ export function useNavActions(): ShellNavActionHandlers {
   const router = useRouter();
   const openCreateProject = useOpenCreateProjectWindow();
   const openPickListManager = useOpenPickListManagerWindow();
-  const openFavoritesManager = useOpenFavoritesManagerWindow();
-  const openShellLayoutEditor = useOpenShellLayoutEditor();
+  const openFavoritesManager = useLazyAppOpener("favoritesManagerWindow", () =>
+    import("@/features/overlays/definitions/favoritesManagerWindow.overlay").then((m) => m.createFavoritesManagerWindowOpener),
+  );
+  const openShellLayoutEditor = useLazyAppOpener("shellLayoutEditorWindow", () =>
+    import("@/features/overlays/definitions/shellLayoutEditorWindow.overlay").then((m) => m.createShellLayoutEditorOpener),
+  );
   const openCrmCreateParty = useLazyAppOpener("crmCreatePartyWindow", () =>
     import("@/features/overlays/definitions/crmCreatePartyWindow.overlay").then((m) => m.createCrmCreatePartyWindowOpener),
   );

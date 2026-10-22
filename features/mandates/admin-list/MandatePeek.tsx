@@ -9,7 +9,7 @@
 
 import { MandateStatusControl } from "@/features/mandates/status/MandateStatusControl";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {

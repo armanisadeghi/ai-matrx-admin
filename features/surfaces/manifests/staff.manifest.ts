@@ -43,6 +43,7 @@ export const STAFF_SURFACE_NAME = "matrx-user/staff";
 
 export const staffManifest: SurfaceManifest = {
   surfaceName: STAFF_SURFACE_NAME,
+  inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   // Server-run: the Personal Staff thread (texts, calls, /staff) executes on aidream (live row, aidream migration 0977).
   executor: "aidream",

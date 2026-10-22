@@ -360,6 +360,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationPracticeOralManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-practice-oral",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

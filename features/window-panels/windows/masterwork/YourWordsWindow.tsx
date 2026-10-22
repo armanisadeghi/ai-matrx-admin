@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExpertRecordPage } from "@/features/masterwork/record/ExpertRecordPage";

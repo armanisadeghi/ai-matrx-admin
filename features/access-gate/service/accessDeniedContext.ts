@@ -141,7 +141,7 @@ function unknownContext(token: string): AccessDeniedContext {
   };
 }
 
-function parsePayload(
+export function parsePayload(
   payload: Record<string, unknown>,
   token: string,
   read: AccessReadOutcome,
@@ -168,7 +168,14 @@ function parsePayload(
     ancestor: parseAncestor(payload.ancestor),
     request: parseRequest(payload.request),
     canRequest: payload.can_request === true,
+    organizationArchived: parseArchivedOrg(payload.organization_archived),
   };
+}
+
+function parseArchivedOrg(raw: unknown): { id: string; name: string | null } | null {
+  const o = rec(raw);
+  const id = str(o?.id);
+  return o && id ? { id, name: str(o.name) } : null;
 }
 
 async function fetchCmsAccessDeniedPayload(

@@ -4,7 +4,7 @@
  * DoorLink — the Door Law affordance for a Hindsight record: open it, or open
  * it in a new tab without losing this page's state. Never a bare id.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

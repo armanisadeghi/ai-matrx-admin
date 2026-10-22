@@ -208,7 +208,8 @@ interface FormRow {
 
 function readForm(): FormRow[] {
   clickTab("Settings");
-  return [...container.querySelectorAll<HTMLElement>("[data-setting-row]")].map(
+  // THE model row is identity (the JSON's `model_id`), drawn by the panel since round 2 — not a setting.
+  return [...container.querySelectorAll<HTMLElement>("[data-setting-row]:not([data-setting-row=model])")].map(
     (row) => ({
       key: row.getAttribute("data-setting-row") ?? "",
       state: row.getAttribute("data-setting-state") ?? "",

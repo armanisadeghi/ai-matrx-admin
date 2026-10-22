@@ -27,7 +27,7 @@
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   ExternalLink,
   FileText,

@@ -180,6 +180,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingBrandManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-brand",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -187,6 +188,8 @@ export const marketingBrandManifest: SurfaceManifest = {
     "Brand cockpit — identity, editorial profile, properties, confirmed facts, assets, managed sites.",
   readiness: "verified",
   label: "Marketing Brand Cockpit",
+  situation:
+    "They are working on the brand \"{brand_name|(brand still loading)}\"; its profile and facts are in your context, and {pending_review_count|no} discovered items wait for their review. On the brand's main page they can edit its identity and profile and open its websites and social accounts.",
   urlPattern: "/marketing/[brandId]",
   intro: `<surface_intro>
 You are on the Marketing brand cockpit: one brand with its managed websites, social properties, confirmed business facts, and brand asset library — the ground-truth dossier every downstream marketing surface builds on. Read brand_context first: it is the compact XML snapshot of everything confirmed about this brand.

@@ -189,6 +189,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const dashboardManifest: SurfaceManifest = {
   surfaceName: "matrx-user/dashboard",
+  inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

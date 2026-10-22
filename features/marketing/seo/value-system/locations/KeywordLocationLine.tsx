@@ -20,7 +20,7 @@
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useQuery } from "@tanstack/react-query";
 import { Building2, MapPinOff } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { getKeywordLocations, keywordLocationsQueryKey } from "./data";
 import { explainDecidedBy } from "./types";

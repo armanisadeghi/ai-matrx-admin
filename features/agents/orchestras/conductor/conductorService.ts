@@ -183,8 +183,8 @@ export function buildAvailableAgentsBlock(
 
 export const conductorService = {
   /** Copy the "Agent Conductor" template into a new agent owned by the caller. */
-  async createFromTemplate(): Promise<RecordsResult<{ agentId: string }>> {
-    const made = await createAgentFromTemplate(CONDUCTOR_TEMPLATE_ID);
+  async createFromTemplate(organizationId?: string | null): Promise<RecordsResult<{ agentId: string }>> {
+    const made = await createAgentFromTemplate(CONDUCTOR_TEMPLATE_ID, organizationId);
     if ("cancelled" in made) return err("internal", "No organization chosen for the new leader.");
     return "error" in made ? err("internal", made.error) : ok({ agentId: made.agentId });
   },

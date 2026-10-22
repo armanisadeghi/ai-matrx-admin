@@ -16,7 +16,7 @@
 // list checkbox. Subtask-ness shows as a "Parent task" field, like every other
 // labeled field, never as floating text.
 
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import {
   Calendar,
   CheckCircle2,

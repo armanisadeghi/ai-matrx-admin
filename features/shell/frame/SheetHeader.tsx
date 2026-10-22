@@ -110,7 +110,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
         {plain.map((a) => {
           const Icon = a.icon;
           return (
-            <DropdownMenuItem key={a.id} onSelect={a.onSelect} size="sm">
+            <DropdownMenuItem key={a.id} onSelect={a.onSelect} disabled={a.disabled} size="sm">
               {Icon ? <Icon aria-hidden /> : null}
               {a.label}
             </DropdownMenuItem>
@@ -120,7 +120,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
         {destructive.map((a) => {
           const Icon = a.icon;
           return (
-            <DropdownMenuItem key={a.id} onSelect={a.onSelect} tone="danger" size="sm">
+            <DropdownMenuItem key={a.id} onSelect={a.onSelect} disabled={a.disabled} tone="danger" size="sm">
               {Icon ? <Icon aria-hidden /> : null}
               {a.label}
             </DropdownMenuItem>

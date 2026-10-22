@@ -68,7 +68,7 @@ import {
 import { isOrganizationRequiredError } from "@ai-matrx/auth/organizations";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
-const PdfPreview = lazy(() => import("./PdfPreview"));
+const PdfPreview = lazy(() => import("@/features/pdf/components/viewer/PdfPreview"));
 
 const KIND_LABEL: Record<string, string> = {
   docx: "Word document",

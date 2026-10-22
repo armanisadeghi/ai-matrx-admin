@@ -2,6 +2,8 @@
 
 // The sheet's footer bar — desktop only, thin, identical in every variant.
 // Left: the save/sync status slot (the page's). Right: Properties, history, help (the frame's).
+// History and Help draw ONLY when the host gives them somewhere to go: a button that does nothing is
+// banned (adversarial review, 2026-10-22 — the live host has no page-history or help target yet).
 import type { ReactNode } from "react";
 import { CircleHelp, History, PanelRight } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -43,8 +45,8 @@ export function SheetFooter({
           Properties
         </Button>
       ) : null}
-      <Button variant="quiet" icon={<History />} aria-label="History" onClick={onHistory} />
-      <Button variant="quiet" icon={<CircleHelp />} aria-label="Help" onClick={onHelp} />
+      {onHistory ? <Button variant="quiet" icon={<History />} aria-label="History" onClick={onHistory} /> : null}
+      {onHelp ? <Button variant="quiet" icon={<CircleHelp />} aria-label="Help" onClick={onHelp} /> : null}
     </footer>
   );
 }

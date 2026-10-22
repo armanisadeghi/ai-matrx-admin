@@ -24,7 +24,7 @@ import {
   Play,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { Badge, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger, Switch, Tooltip, TooltipContent, TooltipTrigger } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 

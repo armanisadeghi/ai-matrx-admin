@@ -130,6 +130,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const assistsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/assists",
+  inheritsFrom: "matrx-default/platform",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

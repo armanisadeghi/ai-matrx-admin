@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1582,
+  "routeCount": 1584,
   "routes": [
     {
       "pattern": "/",
@@ -2262,6 +2262,11 @@
       "pattern": "/capture/needs-you",
       "status": "live",
       "source": "app/(core)/capture/needs-you/page.tsx"
+    },
+    {
+      "pattern": "/chart/[slug]",
+      "status": "live",
+      "source": "app/(link)/chart/[slug]/page.tsx"
     },
     {
       "pattern": "/chat",
@@ -5723,6 +5728,11 @@
       "pattern": "/marketing/social",
       "status": "live",
       "source": "app/(core)/marketing/social/page.tsx"
+    },
+    {
+      "pattern": "/marketing/social/videos",
+      "status": "live",
+      "source": "app/(core)/marketing/social/videos/page.tsx"
     },
     {
       "pattern": "/marketing/speed-test",

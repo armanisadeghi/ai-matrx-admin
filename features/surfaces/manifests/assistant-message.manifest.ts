@@ -183,6 +183,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const assistantMessageManifest: SurfaceManifest = {
   surfaceName: "matrx-user/assistant-message",
+  inheritsFrom: "matrx-default/chat",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

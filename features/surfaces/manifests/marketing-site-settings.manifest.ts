@@ -195,6 +195,8 @@ export const marketingSiteSettingsManifest: SurfaceManifest = {
     "Settings page of one managed website: identity, lifecycle, default crawl policy, and the health of every data source feeding the site.",
   readiness: "verified",
   label: "Marketing Site Settings",
+  situation:
+    "They are on the website's settings: status {site_status}, visibility {site_visibility}, default crawl rules, and the health of every data source ({data_sources_needing_attention|no} need attention). Unsaved changes: {unsaved_changes}. They can change crawl scope, budget and behavior, and pause or resume the website.",
   urlPattern: "/marketing/[brandId]/websites/[siteId]/settings",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>

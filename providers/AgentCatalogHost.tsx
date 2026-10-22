@@ -26,7 +26,7 @@
 
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useRouter } from "next/navigation";
 import { AgentCatalogProvider } from "@ai-matrx/agents/catalog/react";
 import { renderCatalogModelRef } from "@/providers/catalogModelRef";

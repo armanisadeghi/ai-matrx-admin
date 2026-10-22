@@ -12,7 +12,7 @@
  * applied version; that message is shown verbatim, never rephrased.
  */
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useMutation } from "@tanstack/react-query";
 import { Undo2 } from "lucide-react";
 import { toast } from "@/lib/toast";

@@ -9,7 +9,7 @@
  * same RPC the agent version-diff page uses (`agx_get_version_history`) —
  * never through Python.
  */
-import Link from "next/link";
+import Link from "@/components/navigation/AppLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GitCommitVertical, History, Play } from "lucide-react";
 

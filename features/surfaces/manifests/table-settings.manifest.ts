@@ -159,6 +159,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const tableSettingsManifest: SurfaceManifest = {
   surfaceName: TABLE_SETTINGS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

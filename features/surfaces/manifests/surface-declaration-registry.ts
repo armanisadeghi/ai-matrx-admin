@@ -8,13 +8,23 @@
  * so a body resolved from its parent chain alone equals the full registry's
  * (`pnpm check:surface-index` proves it surface by surface).
  */
-import { createDeclarationRegistry, TABLE_ROW_ITEM_TYPE } from "@ai-matrx/alchemy/declare";
+import {
+  createDeclarationRegistry,
+  DEFAULT_MAX_INHERITANCE_DEPTH,
+  TABLE_ROW_ITEM_TYPE,
+} from "@ai-matrx/alchemy/declare";
 import type { SurfaceManifest } from "@ai-matrx/chat/surfaces/types";
 import type { SurfaceBody, SurfaceBodyRecord } from "@ai-matrx/chat/surfaces/runtime/registry";
 import { agentRolesExtension } from "@ai-matrx/chat/surfaces/declare/surface-declare";
 import { BASELINE_VALUES } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 
-export const MAX_INHERITANCE_DEPTH = 3;
+/**
+ * Most ANCESTORS a surface may have (5): AI Matrx › module › feature › sub-feature, plus the
+ * database root `matrx-default/default` (surface declarations D5, Arman 2026-10-22). Equals
+ * alchemy's `DEFAULT_MAX_INHERITANCE_DEPTH` (one number, never a second literal); the browser
+ * index (`providers/chat-surface-manifests.ts`) is built with that same constant.
+ */
+export const MAX_INHERITANCE_DEPTH: number = DEFAULT_MAX_INHERITANCE_DEPTH;
 
 export function createSurfaceDeclarationRegistry() {
   const registry = createDeclarationRegistry<SurfaceManifest>({
