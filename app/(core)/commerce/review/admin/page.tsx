@@ -55,7 +55,7 @@ const COMMERCE_REVIEW_ADMIN_MAP: FeatureAdminMap = {
       url: "/commerce/stores/connect",
       label: "Onboarding + store connect",
       description:
-        "The connect flow's UI shell; the Connect button is the registered Coming-Soon promise commerce.store-connect-oauth until W6's OAuth routes land.",
+        "Onboarding steps; Connect sends the seller to eBay consent via aidream /ebay/oauth/connect and returns with ?status=.",
       filePath: "app/(core)/commerce/stores/connect/page.tsx",
       status: "Live",
     },

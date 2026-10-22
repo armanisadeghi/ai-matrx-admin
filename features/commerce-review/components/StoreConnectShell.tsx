@@ -1,24 +1,33 @@
 "use client";
 
 /**
- * StoreConnectShell — the onboarding + store-connect UI shell
- * (/commerce/stores/connect). W6 owns the OAuth routes that will fill the
- * Connect step; until they land the button announces the registered
- * Coming-Soon promise (`commerce.store-connect-oauth`) — a tracked promise,
- * never a dead click or a silent failure.
+ * StoreConnectShell — onboarding + store connect (/commerce/stores/connect).
+ * Connect asks aidream `GET /ebay/oauth/connect` for the eBay consent URL and
+ * sends the browser there; eBay returns through `/ebay/oauth/callback`, which
+ * redirects back here with `?status=connected|declined|expired|error`.
  */
 
-import React from "react";
-import { CheckCircle2, Circle, Store } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { CheckCircle2, Circle, Loader2, Store } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { callApi } from "@/lib/api/call-api";
+import { toast } from "@/lib/toast";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+
+const RETURN_MESSAGES: Record<string, { ok: boolean; text: string }> = {
+  connected: { ok: true, text: "eBay store connected" },
+  declined: { ok: false, text: "eBay authorization was declined" },
+  expired: { ok: false, text: "The eBay sign-in expired — connect again" },
+  error: { ok: false, text: "eBay could not finish connecting — try again" },
+};
 
 const buildSteps = (
   organizationId: string | null,
+  storeConnected: boolean,
 ): {
   title: string;
   detail: string;
@@ -44,7 +53,7 @@ const buildSteps = (
     title: "Connect your eBay store",
     detail:
       "Authorize the store so listings, orders and inventory sync both ways.",
-    done: false,
+    done: storeConnected,
   },
   {
     title: "Capture your first items",
@@ -59,7 +68,33 @@ export function StoreConnectShell() {
   // personal-org fallback, so the configuration step pointed at the PERSONAL
   // workspace's settings while the page talked about "your organization".
   const organizationId = useAppSelector(selectOrganizationId);
-  const steps = buildSteps(organizationId);
+  const dispatch = useAppDispatch();
+  const returnStatus = useSearchParams().get("status");
+  const [connecting, setConnecting] = useState(false);
+  const steps = buildSteps(organizationId, returnStatus === "connected");
+
+  useEffect(() => {
+    const message = returnStatus ? RETURN_MESSAGES[returnStatus] : undefined;
+    if (!message) return;
+    if (message.ok) toast.success(message.text);
+    else toast.error(message.text);
+  }, [returnStatus]);
+
+  const connectEbay = async () => {
+    if (connecting) return;
+    setConnecting(true);
+    const result = await dispatch(
+      callApi({ path: "/ebay/oauth/connect", method: "GET" }),
+    );
+    const url = (result.data as { authorization_url?: string } | undefined)
+      ?.authorization_url;
+    if (result.error || !url) {
+      setConnecting(false);
+      toast.error(result.error?.message ?? "eBay connect is unavailable");
+      return;
+    }
+    window.location.assign(url);
+  };
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4">
       <div className="rounded-lg border border-border bg-card p-4">
@@ -88,9 +123,13 @@ export function StoreConnectShell() {
                   <Button
                     variant="primary"
                     className="mt-1.5"
-                    onClick={() => void announceComingSoon("commerce.store-connect-oauth")}
+                    disabled={connecting}
+                    onClick={() => void connectEbay()}
                   >
-                    Connect eBay store
+                    {connecting ? (
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                    ) : null}
+                    {step.done ? "Connect another store" : "Connect eBay store"}
                   </Button>
                 )}
               </div>
