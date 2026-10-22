@@ -5,8 +5,9 @@
 // no border. The top row is the header's height and offset, so the product
 // name lines up with the sheet's breadcrumbs. Every row is a real link.
 import { formatCount } from "@ai-matrx/kit/format";
+import { useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
-import { ExternalLink, PanelLeftClose, Star } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink, PanelLeftClose, Star } from "lucide-react";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { Button, Tile } from "@ai-matrx/design-system/controls";
 import { AppGrid } from "./AppGrid";
@@ -82,6 +83,7 @@ export function FrameSidebar({
               {pins ? <PinnedSection pins={pins} onSelectPin={onSelectPin} /> : null}
             </div>
           ) : null}
+          <ProductRows product={product} activeItemId={activeItemId} onSelectItem={onSelectItem} />
           <div data-mf-region="product-nav" className="flex min-h-0 flex-1 flex-col">
             {content}
           </div>
@@ -98,52 +100,11 @@ export function FrameSidebar({
               </div>
             ) : null}
             <ul className="flex flex-col gap-px">
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const active = item.id === activeItemId;
-                const href = item.href ?? `${product.homeHref}/${item.id}`;
-                return (
-                  <li key={item.id}>
-                    <Tile
-                      asChild
-                      dense
-                      variant="quiet"
-                      className="w-full"
-                      icon={<Icon aria-hidden />}
-                      title={item.label}
-                      selected={active || undefined}
-                      selectedStyle="fill"
-                      aria-current={active ? "page" : undefined}
-                      end={
-                        item.external ? (
-                          <>
-                            <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
-                            <span className="sr-only">(opens in a new tab)</span>
-                          </>
-                        ) : item.count != null ? (
-                          <span className="type-meta text-muted-foreground">
-                            {formatCount(item.count)}
-                          </span>
-                        ) : undefined
-                      }
-                    >
-                      <a
-                        // Opts the row into the 44px touch floor inside a matrx-touch-targets subtree (the drawer).
-                        data-tap-target=""
-                        href={href}
-                        title={item.hint}
-                        target={item.external ? "_blank" : undefined}
-                        rel={item.external ? "noopener noreferrer" : undefined}
-                        onClick={(e) => {
-                          if (item.external || !onSelectItem || !isPlainClick(e)) return;
-                          e.preventDefault();
-                          onSelectItem(item);
-                        }}
-                      />
-                    </Tile>
-                  </li>
-                );
-              })}
+              {section.items.map((item) => (
+                <li key={item.id}>
+                  <MenuRow product={product} item={item} active={item.id === activeItemId} onSelectItem={onSelectItem} />
+                </li>
+              ))}
             </ul>
           </div>
         ))}
@@ -156,6 +117,118 @@ export function FrameSidebar({
         </div>
       ) : null}
     </nav>
+  );
+}
+
+/** One route-table row (the frame's own row style): a real link, the host's handler on a plain click. */
+function MenuRow({
+  product,
+  item,
+  active,
+  onSelectItem,
+}: {
+  product: FrameProduct;
+  item: FrameMenuItem;
+  active: boolean;
+  onSelectItem?: (item: FrameMenuItem) => void;
+}) {
+  const Icon = item.icon;
+  const href = item.href ?? `${product.homeHref}/${item.id}`;
+  return (
+    <Tile
+      asChild
+      dense
+      variant="quiet"
+      className="w-full"
+      icon={<Icon aria-hidden />}
+      title={item.label}
+      selected={active || undefined}
+      selectedStyle="fill"
+      aria-current={active ? "page" : undefined}
+      end={
+        item.external ? (
+          <>
+            <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden />
+            <span className="sr-only">(opens in a new tab)</span>
+          </>
+        ) : item.count != null ? (
+          <span className="type-meta text-muted-foreground">{formatCount(item.count)}</span>
+        ) : undefined
+      }
+    >
+      <a
+        // Opts the row into the 44px touch floor inside a matrx-touch-targets subtree (the drawer).
+        data-tap-target=""
+        href={href}
+        title={item.hint}
+        target={item.external ? "_blank" : undefined}
+        rel={item.external ? "noopener noreferrer" : undefined}
+        onClick={(e) => {
+          if (item.external || !onSelectItem || !isPlainClick(e)) return;
+          e.preventDefault();
+          onSelectItem(item);
+        }}
+      />
+    </Tile>
+  );
+}
+
+/** Above this many rows the strip folds to its first rows plus the current one. */
+export const PRODUCT_ROWS_FOLD_AT = 4;
+const PRODUCT_ROWS_FOLDED = 3;
+
+/**
+ * THE PRODUCT'S OTHER PAGES ABOVE ITS OWN NAVIGATION (owner-session, 2026-10-22). When a module
+ * menu or a page's sidebar fills the body, the route table's rows (Chat's Voice / Talk, Agent
+ * Messenger…) stay reachable as a compact strip above it, one line each, the current one selected.
+ * Only when the product has a row beyond the current module; more than four fold behind a toggle.
+ */
+function ProductRows({
+  product,
+  activeItemId,
+  onSelectItem,
+}: {
+  product: FrameProduct;
+  activeItemId?: string;
+  onSelectItem?: (item: FrameMenuItem) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const items = product.menu.flatMap((s) => s.items);
+  if (!items.some((i) => i.id !== activeItemId)) return null;
+  const folds = items.length > PRODUCT_ROWS_FOLD_AT;
+  const shown =
+    folds && !open
+      ? items.filter((i, n) => n < PRODUCT_ROWS_FOLDED || i.id === activeItemId)
+      : items;
+  const hidden = items.length - shown.length;
+  return (
+    <div data-mf-region="product-rows" className="shrink-0 border-b border-border px-2 pb-2">
+      <ul className="flex flex-col gap-px">
+        {shown.map((item) => (
+          <li key={item.id}>
+            <MenuRow product={product} item={item} active={item.id === activeItemId} onSelectItem={onSelectItem} />
+          </li>
+        ))}
+      </ul>
+      {folds ? (
+        <Tile
+          asChild
+          dense
+          variant="quiet"
+          className="w-full"
+          icon={open ? <ChevronUp aria-hidden /> : <ChevronDown aria-hidden />}
+          title={open ? "Show less" : `${hidden} more`}
+        >
+          <button
+            type="button"
+            data-tap-target=""
+            data-mf-product-rows-toggle=""
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          />
+        </Tile>
+      ) : null}
+    </div>
   );
 }
 
