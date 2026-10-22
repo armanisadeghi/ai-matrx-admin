@@ -63,8 +63,11 @@ const copiesLine = (copies: InstalledCopy[]) => {
 
 /** The copies to offer: the live ones when there are any ("Open it"), else the ones in Trash ("Restore it"). */
 export const offeredCopies = (copies: InstalledCopy[]) => {
-  const live = copies.filter((c) => !c.trashed);
-  return live.length ? live : copies;
+  const live = copies.filter((c) => !c.trashed && !c.resuming);
+  if (live.length) return live;
+  // A removal that stopped part way is offered before a finished one: "Finish removing", never stranded.
+  const resuming = copies.filter((c) => c.resuming);
+  return resuming.length ? resuming : copies;
 };
 
 export function UseTemplateFromWeb() {
@@ -72,7 +75,7 @@ export function UseTemplateFromWeb() {
   const catalogueId = params?.get("template") ?? "";
   const attemptId = params?.get("attempt") ?? "";
   const router = useRouter();
-  const { packs, ready, retryLoad, restoreSpace } = useSpaces();
+  const { packs, ready, retryLoad, restoreSpace, archiveSpace } = useSpaces();
   // The copy this attempt already made (a refresh after it finished, or a run that just answered).
   const [madeRoot, setMadeRoot] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
@@ -182,6 +185,14 @@ export function UseTemplateFromWeb() {
     try {
       // The root the copy recorded (template-copy.ts), never a title guess: a renamed root opens the same.
       const newest = found.copies[0];
+      // A removal that stopped part way continues the same door from where it stopped (same progress toast), then the
+      // screen reads the copies again: the finished removal is offered as "Restore it".
+      if (newest.resuming) {
+        await archiveSpace(newest.root);
+        const again = await copiesHere(catalogueId);
+        setExisting(again.copies.length ? { ...again, copies: offeredCopies(again.copies) } : null);
+        return;
+      }
       // A removed copy comes back whole first: its tables, views and assistant, and its pages out of Trash.
       if (newest.trashed) await restoreSpace(newest.root);
       setMadeRoot(newest.root);
@@ -221,12 +232,18 @@ export function UseTemplateFromWeb() {
       <div className="pt-16" data-use-template={catalogueId} data-use-template-existing="">
         <EmptyState
           icon={<LayoutTemplate size={20} />}
-          title={existing.copies[0]?.trashed ? `${template?.title ?? "This template"} is in your Trash` : `You already have ${template?.title ?? "this template"}`}
+          title={
+            existing.copies[0]?.resuming
+              ? `Removing ${template?.title ?? "this template"} did not finish`
+              : existing.copies[0]?.trashed
+                ? `${template?.title ?? "This template"} is in your Trash`
+                : `You already have ${template?.title ?? "this template"}`
+          }
           line={error ?? copiesLine(existing.copies)}
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button variant="primary" autoFocus disabled={opening} onClick={() => void openExisting(existing)} data-testid="use-template-open-existing">
-                {existing.copies[0]?.trashed ? (opening ? "Restoring…" : "Restore it") : opening ? "Opening…" : "Open it"}
+                {existing.copies[0]?.resuming ? (opening ? "Finishing…" : "Finish removing") : existing.copies[0]?.trashed ? (opening ? "Restoring…" : "Restore it") : opening ? "Opening…" : "Open it"}
               </Button>
               <Button variant="outline" disabled={opening} onClick={() => setExisting(null)} data-testid="use-template-make-another">
                 Make another copy

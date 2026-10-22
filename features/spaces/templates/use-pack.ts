@@ -24,7 +24,7 @@ import type { PaintedSize } from "../editor/database-host";
 import { runHostSteps, upgradeCountsText } from "../data/install-host";
 import { registerSampleWorld } from "../data/sources";
 import { saveOnCurrent } from "../store/save-on-current";
-import { copyIsLive, templateDoorSentence } from "./template-copy";
+import { copyIsLive, copyIsResumable, templateDoorSentence } from "./template-copy";
 
 /**
  * WHERE "USE TEMPLATE" SPENDS ITS TIME: each phase is a `performance.measure` named `spaces:use-template:<phase>`
@@ -413,12 +413,15 @@ export interface InstalledCopy {
   root: SpaceId;
   /** True when the copy was removed (Move to Trash on its root): offered as "Restore it", never "Open it". */
   trashed: boolean;
+  /** True when a removal stopped part way (install `uninstalling`): offered as "Finish removing", never stranded. */
+  resuming: boolean;
 }
 
 /**
  * The organization's copies of a catalog id that can be opened or restored, newest first (ADVERSARIAL-6 F2):
  * - live: the install is installed AND its recorded root page is live → "Open it";
- * - trashed: the install was removed AND its root page is in Trash → "Restore it".
+ * - trashed: the install was removed AND its root page is in Trash → "Restore it";
+ * - resuming: the install is `uninstalling` (a removal stopped part way), root in Trash or not → "Finish removing".
  * A copy whose root page is gone, was never recorded, or disagrees with its install (live tables, trashed page) is not
  * offered: the default press must never end in "its pages were not found".
  */
@@ -438,9 +441,10 @@ export async function installedCopies(organizationId: string, catalogueId: strin
   for (const i of candidates) {
     const root = i.root_page_id ? roots.get(i.root_page_id) : undefined;
     if (!root) continue;
+    const resuming = copyIsResumable(i.state);
     const live = copyIsLive(i.state);
-    if (live === root.trashed) continue;
-    out.push({ installId: i.install_id, title: i.title, version: i.version, newerVersion: i.newer_version, startedAt: i.started_at, finishedAt: i.finished_at, root: root.id, trashed: !live });
+    if (!resuming && live === root.trashed) continue;
+    out.push({ installId: i.install_id, title: i.title, version: i.version, newerVersion: i.newer_version, startedAt: i.started_at, finishedAt: i.finished_at, root: root.id, trashed: !live && !resuming, resuming });
   }
   return out.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
 }

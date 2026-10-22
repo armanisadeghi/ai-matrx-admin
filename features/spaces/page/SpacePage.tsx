@@ -48,7 +48,7 @@ import { Cover, CoverPicker } from "./Cover";
 import { IconPicker } from "./IconPicker";
 import { AddPropertyMenu, PageProperties } from "./PageProperties";
 import { PageMenu } from "./PageMenu";
-import { copyIsLive, templateCopyOfPageCached } from "../templates/template-copy";
+import { copyIsLive, copyIsResumable, templateCopyOfPageCached } from "../templates/template-copy";
 import { SpaceIcon, isImageMedia } from "./SpaceIcon";
 import { TocRail } from "./TocRail";
 import { CommentMargin } from "../collab/CommentMargin";
@@ -445,13 +445,15 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
   };
   const [sourcePicker, pickSource] = useSourcePicker(spaceId);
   // ADVERSARIAL-6 F1: whether this page is the root of a live template copy (null = not asked yet; asked when the ••• menu opens).
-  const [copyRootOf, setCopyRootOf] = useState<{ id: string; live: boolean } | null>(null);
+  const [copyRootOf, setCopyRootOf] = useState<{ id: string; live: boolean; resuming: boolean } | null>(null);
   const isCopyRoot = copyRootOf?.id === spaceId ? copyRootOf.live : null;
+  /** A removal of this copy stopped part way (uninstalling): offered as "Finish removing", never stranded. */
+  const isResuming = copyRootOf?.id === spaceId && copyRootOf.resuming;
   // ADVERSARIAL-7 F7: asked when the page OPENS (kept per page), so the menu knows by the time it is opened.
   useEffect(() => {
     let current = true;
     void templateCopyOfPageCached(spaceId).then(
-      (copy) => current && setCopyRootOf({ id: spaceId, live: !!copy && copyIsLive(copy.state) }),
+      (copy) => current && setCopyRootOf({ id: spaceId, live: !!copy && copyIsLive(copy.state), resuming: !!copy && copyIsResumable(copy.state) }),
       (e: unknown) => console.warn("[spaces] could not read whether this page is a template copy", e),
     );
     return () => {
@@ -464,7 +466,12 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
       await flush();
       const done = await spaces.archiveSpace(spaceId, options);
       if (done === "kept") return;
+      // The copy's state changed (removed, or finished): ask again so the menu and notice follow it, never stuck "checking".
       setCopyRootOf(null);
+      void templateCopyOfPageCached(spaceId).then(
+        (copy) => setCopyRootOf({ id: spaceId, live: !!copy && copyIsLive(copy.state), resuming: !!copy && copyIsResumable(copy.state) }),
+        (e: unknown) => console.warn("[spaces] could not read whether this page is a template copy", e),
+      );
       const latest = await store.get(spaceId);
       if (latest) adopt(latest);
       else setDoc((d) => (d ? { ...d, isArchived: true } : d));
@@ -975,6 +982,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
           onDelete={() => trashPage()}
           onRemoveCopy={isCopyRoot ? () => trashPage({ removeCopy: true }) : undefined}
           removeCopyPending={isCopyRoot === null}
+          onFinishRemoving={isResuming ? () => trashPage() : undefined}
           onUndo={() => editorRef.current?.undo()}
           onHistory={() => setHistoryOpen(true)}
           onExport={() => setExportOpen(true)}
@@ -998,6 +1006,14 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
       <div className="spaces-body">
       <div className="spaces-scroll" data-matrx-page-scroll="" ref={scrollRef}>
         <TocRail blocks={doc.blocks} scrollerRef={scrollRef} anchorRef={headerRef} />
+        {isResuming ? (
+          <div className="spaces-trash-banner" data-testid="finish-removing-notice">
+            <span>Removing this template copy did not finish.</span>
+            <button type="button" className="spaces-trash-banner-button" onClick={() => trashPage()}>
+              Finish removing
+            </button>
+          </div>
+        ) : null}
         {inTrash ? (
           <div className="spaces-trash-banner">
             <span>This page is in Trash.</span>
