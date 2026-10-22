@@ -560,9 +560,6 @@ importers:
       '@univerjs/presets':
         specifier: 1.0.4
         version: 1.0.4(react@19.3.1)(rxjs@7.8.2)
-      '@univerjs/sheets':
-        specifier: 1.0.4
-        version: 1.0.4(react@19.3.1)(rxjs@7.8.2)
       '@univerjs/themes':
         specifier: 1.0.4
         version: 1.0.4
