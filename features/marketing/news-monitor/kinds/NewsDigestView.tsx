@@ -25,6 +25,7 @@ import {
   setAsideListOf,
   str,
   strings,
+  plainSafetyDetail,
   watchListCount,
   type OpenTarget,
 } from "../run-document";
@@ -265,8 +266,8 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
                         </span>
                         {storyActions?.(str(w.story_key))}
                       </div>
-                      {str(w.detail) ? (
-                        <p className="text-xs text-muted-foreground">{str(w.detail)}</p>
+                      {plainSafetyDetail(str(w.detail)) ? (
+                        <p className="text-xs text-muted-foreground">{plainSafetyDetail(str(w.detail))}</p>
                       ) : null}
                     </li>
                   ))}
