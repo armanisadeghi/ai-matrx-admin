@@ -1,8 +1,9 @@
 /**
  * taskUserStateService — the ONE client for projects.task_user_state, the
  * per-user notification/triage state on tasks (seen / acknowledged / snoozed /
- * dismissed / pinned). Rows are RLS-scoped to the current user; every write
- * is an upsert keyed on (task_id, user_id).
+ * dismissed / pinned). Rows are RLS-scoped to the current user (created_by);
+ * every write is an upsert keyed on (task_id, created_by) and carries the
+ * task's own organization_id.
  *
  * Snooze semantics: a snoozed task disappears from every attention view
  * (Today, Overdue, Upcoming, Inbox) until `snoozed_until`, but stays in
@@ -13,8 +14,10 @@ import { projectsDb } from "@/utils/supabase/projectsDb";
 import { requireUserId } from "@/utils/auth/getUserId";
 
 export interface TaskUserState {
+  id: string;
   task_id: string;
-  user_id: string;
+  created_by: string;
+  organization_id: string;
   seen_at: string | null;
   acknowledged_at: string | null;
   snoozed_until: string | null;
@@ -49,16 +52,30 @@ async function upsertState(
   >,
 ): Promise<TaskUserState | null> {
   const userId = requireUserId();
+  // The row belongs to its task's organization — the record's own org, read from the task.
+  const { data: task, error: taskError } = await projectsDb(supabase)
+    .from("tasks")
+    .select("organization_id")
+    .eq("id", taskId)
+    .single();
+  if (taskError || !task?.organization_id) {
+    console.error(
+      "task_user_state upsert failed: task organization unreadable:",
+      taskError?.message ?? "no organization_id",
+    );
+    return null;
+  }
   const { data, error } = await projectsDb(supabase)
     .from("task_user_state")
     .upsert(
       {
         task_id: taskId,
-        user_id: userId,
+        created_by: userId,
+        organization_id: task.organization_id,
         ...patch,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "task_id,user_id" },
+      { onConflict: "task_id,created_by" },
     )
     .select()
     .single();
