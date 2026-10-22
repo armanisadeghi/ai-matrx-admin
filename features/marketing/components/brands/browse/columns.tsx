@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { Globe2, Images, Inbox, MapPin, Share2 } from "lucide-react";
 import { Badge } from "@ai-matrx/design-system/controls";
+import { formatCount } from "@ai-matrx/kit/format";
 import { DATE_SORT_WORDS, Muted, timeCell, type EntityColumnSpec } from "@/lib/entity-list/columns";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { StatusBadge } from "@/features/marketing/components/shared/MarketingUi";
@@ -16,11 +17,11 @@ import type { BrandBrowseRow } from "./service";
 function CountPill({ icon: Icon, count, label }: { icon: typeof Images; count: number; label: string }) {
   return (
     <span
-      title={`${count.toLocaleString()} ${label}`}
+      title={`${formatCount(count)} ${label}`}
       className={cn("inline-flex items-center gap-1 font-mono text-xs tabular-nums", count ? "text-foreground" : "text-disabled-foreground")}
     >
       <Icon className="h-3.5 w-3.5" />
-      {count.toLocaleString()}
+      {formatCount(count)}
     </span>
   );
 }
@@ -132,12 +133,12 @@ export const BRAND_COLUMNS: EntityColumnSpec<BrandBrowseRow>[] = [
         row.pending_discovered ? (
           <Link
             href={marketingRoutes.brandDiscovery(row.id)}
-            aria-label={`${row.pending_discovered.toLocaleString()} to review for ${row.name}`}
-            title={`${row.pending_discovered.toLocaleString()} to review`}
+            aria-label={`${formatCount(row.pending_discovered)} to review for ${row.name}`}
+            title={`${formatCount(row.pending_discovered)} to review`}
             onClick={(event) => event.stopPropagation()}
           >
             <Badge tone="warning" icon={<Inbox className="h-3 w-3" />}>
-              {row.pending_discovered.toLocaleString()}
+              {formatCount(row.pending_discovered)}
             </Badge>
           </Link>
         ) : (

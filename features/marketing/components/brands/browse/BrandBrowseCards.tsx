@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Globe2, Images, Inbox, MapPin, MoreVertical, Share2 } from "lucide-react";
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { Badge } from "@ai-matrx/design-system/controls";
+import { formatCount } from "@ai-matrx/kit/format";
 import { Card } from "@/components/ui/card";
 import { formatCompactDate, StatusBadge } from "@/features/marketing/components/shared/MarketingUi";
 import { SiteIdentityMark } from "@/features/marketing/components/shared/SiteConnectionChips";
@@ -18,7 +19,7 @@ function CardDimension({ icon: Icon, value, label }: { icon: typeof Images; valu
   return (
     <div className="flex min-w-0 items-center justify-center gap-1 px-1 text-xs text-muted-foreground">
       <Icon className="h-3 w-3 shrink-0" />
-      <span className="font-semibold tabular-nums text-foreground">{value.toLocaleString()}</span>
+      <span className="font-semibold tabular-nums text-foreground">{formatCount(value)}</span>
       <span className="truncate">{label}</span>
     </div>
   );
@@ -76,11 +77,11 @@ export function BrandBrowseCards({ rows, actions }: EntityAltViewProps<BrandBrow
                 {row.pending_discovered ? (
                   <Link
                     href={marketingRoutes.brandDiscovery(row.id)}
-                    aria-label={`${row.pending_discovered.toLocaleString()} to review for ${row.name}`}
-                    title={`${row.pending_discovered.toLocaleString()} to review`}
+                    aria-label={`${formatCount(row.pending_discovered)} to review for ${row.name}`}
+                    title={`${formatCount(row.pending_discovered)} to review`}
                   >
                     <Badge tone="warning" icon={<Inbox className="h-3 w-3" />}>
-                      {row.pending_discovered.toLocaleString()}
+                      {formatCount(row.pending_discovered)}
                     </Badge>
                   </Link>
                 ) : null}
