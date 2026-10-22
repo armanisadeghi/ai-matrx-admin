@@ -136,6 +136,9 @@ describe("guard 3: nothing is swallowed in features/agents/studio/**", () => {
     /,\s*\(\s*\)\s*=>\s*undefined\s*,?\s*\)/,
     /catch\s*(\([^)]*\))?\s*\{\s*(\/\/[^\n]*\n\s*|\/\*[\s\S]*?\*\/\s*)*\}/,
     /\.catch\(\s*\(\s*\)\s*=>\s*\{\s*(\/\/[^\n]*\n\s*|\/\*[\s\S]*?\*\/\s*)*\}\s*\)/,
+    // A bare `catch { return null | [] | undefined }`: the failure becomes "nothing there" with no
+    // message (review F-5A-2, 2026-10-21). A catch that binds the error and says it is not matched.
+    /catch\s*\{\s*(\/\/[^\n]*\n\s*|\/\*[\s\S]*?\*\/\s*)*return\s*(null|undefined|\[\s*\]|\{\s*\}|false)?\s*;?\s*\}/,
   ];
   const files: string[] = [];
   const walk = (dir: string) => {
