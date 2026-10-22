@@ -284,7 +284,7 @@ function CaptureTile({
 
         {/* Always visible on touch (there is no hover to reveal it); hover-
             revealed from sm: up so desktop tiles stay clean. */}
-        <div className="absolute right-1 top-1 transition-opacity focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+        <div className="absolute right-1 top-1 transition-opacity focus-within:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100">
           <CaptureItemActions
             fileId={file.id}
             fileName={file.fileName}
@@ -295,7 +295,7 @@ function CaptureTile({
 
         {/* The filename caption is the only identity a tile carries — on touch
             it must not be hidden behind a hover that can never happen. */}
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1 bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3 text-xs text-white transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1 bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3 text-xs text-white transition-opacity sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100">
           {kind === "video" && <Video className="h-3 w-3 shrink-0" />}
           {kind === "audio" && <FileAudio className="h-3 w-3 shrink-0" />}
           <span className="truncate">{file.fileName}</span>
