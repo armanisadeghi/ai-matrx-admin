@@ -9,7 +9,8 @@
  * calls (`callApi` through the Redux store), the active organization, entity routes, the
  * search-engine-indexed server actions, and the web's UI parts (toasts, copy buttons, page
  * capture, Alchemy menu, entity refs from records-ui, people search, vault identity).
- * It also injects `@ai-matrx/data/access` (configureAccess) through the access-gate's own boot.
+ * It also injects `@ai-matrx/data/access` (configureAccess) and the access screens'
+ * `@ai-matrx/sharing/access/react` (configureAccessUi) through the access-gate's own boot.
  *
  * `<SharingHost />` renders nothing; mounting it in app/Providers.tsx keeps this module in the
  * bundle (the app's package.json declares `"sideEffects": false`).
@@ -49,6 +50,7 @@ import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { webVaultIdentity } from "@/features/secrets/webVaultIdentity";
 import { humanLines } from "@/features/marketing/lib/copy-payloads";
 import { ensureAccessEnv } from "@/features/access-gate/accessEnv";
+import { ensureAccessUiEnv } from "@/features/access-gate/accessUiEnv";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- the sheet's slots take loose props by design */
 type Slot = ComponentType<any>;
@@ -59,6 +61,7 @@ export function ensureSharingHost(): void {
   if (configured) return;
   configured = true;
   ensureAccessEnv();
+  ensureAccessUiEnv();
   configureSharing({
     client: () => createClient(),
     callServer: (call: ShareServerCall) => {
