@@ -381,14 +381,21 @@ export interface FoldInput {
    * an undone earlier "Ours" never came back (2026-10-22, pxdocs.com on brand e641a6d5).
    */
   reopened?: ReadonlySet<string>;
+  /**
+   * Keys of the brand's OWN accounts / websites no person confirmed yet (unconfirmed.ts): asked although the brand
+   * "knows" them, because knowing is not confirming. Without this there was no place to confirm them (2026-10-22,
+   * 70 of 71 Smart Add brands).
+   */
+  unconfirmed?: ReadonlySet<string>;
 }
 
 /** The stage's queue: known findings dropped, one card per real thing, sets gathered, stage order. */
-export function foldQueue({ queue, known, later, reopened }: FoldInput): FocusItem[] {
+export function foldQueue({ queue, known, later, reopened, unconfirmed }: FoldInput): FocusItem[] {
   const knownSet = knownKeys(known);
   const ownHosts = new Set(known.hosts.map((h) => domainHost(/^https?:\/\//i.test(h) ? h : `https://${h}`)).filter(Boolean));
   const items = queue.map(reclassify).filter((item) => {
     if (reopened && [item.key, ...item.twins].some((k) => reopened.has(k))) return true;
+    if (unconfirmed?.has(item.key)) return true;
     const ids = identities(item);
     if (ids.some((k) => knownSet.has(k))) return false;
     // A page on the brand's own website (its blog, its booking page) is the website, already known.
