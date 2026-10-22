@@ -230,8 +230,26 @@ the CRM party at sign-up never blocks the sign-up (`crm._provision_signed_up_use
 `signup_crm_party_failed` instead). Test only to the loopback handsets; codes land in
 `communication.test_handset_inbox`.
 
+## Administrator MFA — admin power needs aal2 when the knob is on (READY-04, 2026-10-22)
+
+The verdict is the database's `platform.admin_session_state()`, asked as the request's own session
+(`utils/auth/adminMfa.ts` → `readAdminMfaVerdict`, never the service key). Knob
+`platform.auth / admin_mfa_required` off = `not_required` = nothing changes. On: every Next admin gate
+(`(admin)/layout.tsx`, `requireSuperAdmin`/`requireAdmin`, `checkIsSuperAdmin`/`checkIsUserAdmin`,
+`hasAdminPower`/`hasAdminFeature`) refuses an aal1 session; the layout sends the admin to
+`/auth/admin-verify?redirectTo=…` (served on every host via the `/auth` prefix), API routes throw
+`Forbidden: verify with your authenticator…` (403). Non-admins never read the verdict; an unreadable verdict
+refuses power. The verify page is `AuthenticatorSection` in challenge mode (code, saved recovery code, or
+enrollment when there is no factor) and returns to `adminVerifyDestination` (relative, `*.aimatrx.com`, or
+the admin dashboard origin). The SQL helpers already route through `platform.admin_lane_open()`, which asks
+the same verdict; the admin dashboard SPA (aidream `apps/dashboard/src/lib/admin-mfa.ts`) and the aidream
+server (`current_session.resolve_current_admission`) consume it too. Flip/rollback: the private setter
+`platform._set_admin_mfa_required(...)`, as the database operator only. Tests:
+`utils/auth/__tests__/admin-mfa-gates.test.ts`, `app/(admin)/__tests__/layout.admin-mfa.test.tsx`.
+
 ## Change Log
 
+- 2026-10-22 — Administrator MFA gates + `/auth/admin-verify` (section above).
 - 2026-10-22 — Phone sign-up/sign-in with a texted code (section above); Supabase phone provider repointed from a Verify SID to our Twilio messaging service.
 - 2026-10-14 — Google One Tap for signed-out visitors (section above); knob `auth.one_tap_auto_select` seeded live.
 - 2026-10-09 (lane F12): `/sign-up` and `/login` show "Your N records come with you." to a guest (`lib/guest/guest-record-count.ts`, `AuthPageContainer note`); the primary button of a `HardRedirectForm` says "Getting ready…" and stays disabled until the page's script has loaded (`SubmitButton needsScript`) — an early press was a silent no-op.
