@@ -381,9 +381,10 @@ export function lockAudit(root, { ref = "", fetch = fetchFromNpm, only = null, d
   if (lockText == null) throw new Error(`no pnpm-lock.yaml in ${ref || "the index"}`);
   const locked = lockedDirectVersions(lockText);
   // `only` narrows to these repo-relative files (the commit hook, the sweep, the edit hook); a staged
-  // package.json / pnpm-lock.yaml changes what EVERY import resolves to, so it widens to the tree.
+  // pnpm-lock.yaml changes what EVERY import resolves to, so it widens to the tree.
   // `disk` reads those files from the working tree (the edit hook: the file was just written).
-  const widen = !only || only.some((o) => /(^|\/)(package\.json|pnpm-lock\.yaml)$/.test(o));
+  // (package.json alone resolves nothing: the lockfile decides the versions, so only it widens.)
+  const widen = !only || only.some((o) => /(^|\/)pnpm-lock\.yaml$/.test(o));
   const rels = widen
     ? (ref ? gitLines(root, ["ls-tree", "-r", "-z", "--name-only", ref]) : gitLines(root, ["ls-files", "-z", "--cached"])).filter((f) => SOURCE_EXT.test(f))
     : only.filter((f) => SOURCE_EXT.test(f));
