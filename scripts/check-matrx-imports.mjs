@@ -374,7 +374,7 @@ export function fetchFromNpm(name, version) {
  * version is fetched (`fetch(name, version)` -> extracted dir). The tree is rebuilt in a scratch dir so
  * the checkout's node_modules is never touched. A finding names file, package, version and the export.
  */
-export function lockAudit(root, { ref = "", fetch = fetchFromNpm, only = null, disk = false } = {}) {
+export function lockAudit(root, { ref = "", fetch = fetchFromNpm, only = null, disk = false, extra = null } = {}) {
   root = resolve(root);
   const prefix = ref ? `${ref}:` : ":";
   const lockText = indexBlobs(root, ["pnpm-lock.yaml"], prefix).get("pnpm-lock.yaml");
@@ -391,6 +391,9 @@ export function lockAudit(root, { ref = "", fetch = fetchFromNpm, only = null, d
   const blobs = disk && !widen
     ? new Map(rels.map((r) => { try { return [r, readFileSync(join(root, r), "utf8")]; } catch { return [r, null]; } }))
     : indexBlobs(root, rels, prefix);
+  // `extra`: rel -> text judged as if it were in the index (check-staged-imports.mjs asks whether a
+  // name a local `export * from "@ai-matrx/…"` shim passes on exists at the LOCKED version).
+  if (extra) for (const [rel, text] of extra) blobs.set(rel, text);
   const t0 = Date.now();
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), "matrx-lock-audit-")));
   try {
