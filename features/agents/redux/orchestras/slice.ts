@@ -17,6 +17,7 @@ import type {
 } from "@/features/agents/orchestras/types";
 import type { ManualOrgEdge } from "@/features/agents/org-chart/buildAgentOrgForest";
 import type { OrgPosition, SeatJob } from "@/features/agents/org-chart/positionsService";
+import type { DepartmentRun, SeatRun } from "@/features/agents/org-chart/department/departmentPlan";
 
 export type LoadStatus = "idle" | "loading" | "ready" | "error";
 
@@ -62,6 +63,12 @@ export interface OrchestrasState {
   listError: string | null;
   byId: Record<string, OrchestraDetailEntry>;
   manualOrgChart: ManualOrgChartState;
+  /**
+   * "Plan a department" batches, by the box they go under (`departmentRunKey`).
+   * Here, not in the dialog, so a batch's created ids — what Retry resumes and
+   * Undo takes back — outlive the dialog (features/agents/org-chart/department).
+   */
+  departmentRuns: Record<string, DepartmentRun>;
 }
 
 const initialState: OrchestrasState = {
@@ -70,6 +77,7 @@ const initialState: OrchestrasState = {
   listError: null,
   byId: {},
   manualOrgChart: { edges: [], queried: [], status: "idle", error: null, positions: [], positionsStatus: "idle", writeSeq: 0, writtenAt: {}, seatJobs: {}, seatJobsError: null },
+  departmentRuns: {},
 };
 
 function ensureEntry(state: OrchestrasState, orchId: string): OrchestraDetailEntry {
@@ -280,6 +288,20 @@ const slice = createSlice({
     },
     positionRemoved(state, action: PayloadAction<string>) {
       state.manualOrgChart.positions = state.manualOrgChart.positions.filter((p) => p.id !== action.payload);
+    },
+    departmentRunPatched(state, action: PayloadAction<{ runKey: string; patch: Partial<DepartmentRun> }>) {
+      const cur = state.departmentRuns[action.payload.runKey];
+      if (cur) Object.assign(cur, action.payload.patch);
+    },
+    departmentRunStarted(state, action: PayloadAction<{ runKey: string; run: DepartmentRun }>) {
+      state.departmentRuns[action.payload.runKey] = action.payload.run;
+    },
+    departmentSeatPatched(state, action: PayloadAction<{ runKey: string; seatKey: string; patch: Partial<SeatRun> }>) {
+      const cur = state.departmentRuns[action.payload.runKey];
+      if (cur) cur.runs[action.payload.seatKey] = { ...cur.runs[action.payload.seatKey], ...action.payload.patch };
+    },
+    departmentRunCleared(state, action: PayloadAction<string>) {
+      delete state.departmentRuns[action.payload];
     },
     manualOrgEdgeRemoved(state, action: PayloadAction<{ managerId: string; reportId: string }>) {
       const { managerId, reportId } = action.payload;

@@ -30,7 +30,7 @@ export interface SeatJobInput {
   output?: string;
 }
 
-/** Create the seat's job and link it. Throws with the server's words. */
+/** Create the seat's job and link it. Throws with the server's words; a made-but-unlinked job throws `SeatJobNotLinkedError`. */
 export async function createSeatJob(
   dispatch: AppDispatch,
   position: Pick<OrgPosition, "id" | "name" | "description" | "organizationId">,
@@ -57,10 +57,30 @@ export async function createSeatJob(
       attempt += 1;
     }
   }
-  const linked = await dispatch(updateOrgPosition(position.id, { mandateId: made.mandateId }));
-  if (!linked.ok) throw new Error(`The job was created, but the position could not be linked to it: ${linked.error}`);
-  await dispatch(loadSeatJobs([made.mandateId]));
-  return { mandateKey: made.mandateKey, mandateId: made.mandateId };
+  const defined: DefinedSeatJob = { mandateKey: made.mandateKey, mandateId: made.mandateId };
+  try {
+    await linkSeatJob(dispatch, position.id, defined);
+  } catch (e) {
+    throw new SeatJobNotLinkedError(e instanceof Error ? e.message : "The position could not be linked to its job.", defined);
+  }
+  return defined;
+}
+
+/** The job exists but the seat does not point at it: a retry passes `job` to `linkSeatJob`, never makes a second job. */
+export class SeatJobNotLinkedError extends Error {
+  constructor(
+    reason: string,
+    readonly job: DefinedSeatJob,
+  ) {
+    super(`The job was created, but the position could not be linked to it: ${reason}`);
+  }
+}
+
+/** Point a seat at a job that already exists. Throws with the server's words. */
+export async function linkSeatJob(dispatch: AppDispatch, positionId: string, job: DefinedSeatJob): Promise<void> {
+  const linked = await dispatch(updateOrgPosition(positionId, { mandateId: job.mandateId }));
+  if (!linked.ok) throw new Error(linked.error);
+  await dispatch(loadSeatJobs([job.mandateId]));
 }
 
 /** The writing boxes of a seat's job (Define the job, the department plan) carry this surface. */

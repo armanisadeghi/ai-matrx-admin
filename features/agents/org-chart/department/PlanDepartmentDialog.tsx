@@ -11,17 +11,20 @@
 //   · jobs     — `createSeatJob` (../seatJob.ts, the same door as "Define the job");
 //   · agents   — `buildSeatAgent` (../seatAgent.ts: mandates.holder_draft → agent → Holder);
 //   · Orchestra — `useCreateConductor` + `addAgentToOrchestra` + `syncConductorPrompt`.
-// Every write names the department's organization. "Undo" archives the
-// positions this batch created (their links stay, Trash restores them).
+// Every write names the department's organization — the chosen box's own.
+// The batch lives in Redux (`orchestras.departmentRuns`, ./departmentRunThunks.ts),
+// so it keeps its record of what it made while the dialog is closed; the
+// dialog cannot close while a step runs. "Undo" takes back everything the batch
+// made (leader, agents, jobs turned off, positions to Trash); toast Restore.
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClipboardList, ListChecks, Network, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
-import { MANDATE_KEYS, type AnyMandateKey } from "@ai-matrx/agents/mandates";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { Badge, Button, Select } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -29,29 +32,32 @@ import { ProInput } from "@/components/official/ProInput";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId, selectOrganizationName } from "@/lib/redux/slices/appContextSlice";
-import {
-  createOrgPosition,
-  removeOrgPosition,
-  restoreOrgPosition,
-  setManualManager,
-} from "@/features/agents/redux/orchestras/orgChartThunks";
-import { addAgentToOrchestra } from "@/features/agents/redux/orchestras/thunks";
+import { orchestrasActions } from "@/features/agents/redux/orchestras/slice";
 import { useCreateConductor } from "@/features/agents/orchestras/conductor/useCreateConductor";
-import { syncConductorPrompt } from "@/features/agents/orchestras/conductor/thunks";
 import { DEFAULT_ORCHESTRA_ACCENT } from "@/features/agents/orchestras/constants";
-import { toast } from "@/lib/toast";
 import { boxId } from "../constants";
-import type { OrgPosition } from "../positionsService";
-import { createSeatJob, SEAT_JOB_SURFACE, seatJobScope } from "../seatJob";
-import { buildSeatAgent, HOLDER_DRAFT_MANDATE_KEY, SeatAgentNotBoundError } from "../seatAgent";
+import { SEAT_JOB_SURFACE, seatJobScope } from "../seatJob";
+import { HOLDER_DRAFT_MANDATE_KEY } from "../seatAgent";
 import {
+  batchInventory,
   coerceDepartmentPlan,
   creationOrder,
+  departmentRunKey,
   removeSeat,
+  seatNextStep,
   seatProblems,
   type DepartmentPlan,
+  type DepartmentRun,
   type PlannedSeat,
+  type SeatRun,
 } from "./departmentPlan";
+import {
+  buildDepartmentAgents,
+  createDepartmentSeats,
+  makeDepartmentOrchestra,
+  selectDepartmentRun,
+  undoDepartmentRun,
+} from "./departmentRunThunks";
 
 const PLANNER = MANDATE_KEYS.org_chart__department_planner;
 const DISCLOSURE = [
@@ -66,8 +72,9 @@ export interface PlanDepartmentRequest {
   underBoxId: string | null;
   /** "Head of Marketing (Position)". */
   underLabel: string | null;
-  /** The box's own organization when known (a position's); else the active one is used. */
+  /** The box's own organization (every box type); null = the top of the chart or a box with none → the active one. */
   organizationId: string | null;
+  organizationName: string | null;
   /** Names already under that box. */
   existingTeam: string[];
 }
@@ -82,37 +89,28 @@ export function PlanDepartmentDialog({
   /** Show a box on the chart (the new leader). */
   onFocus?: (boxId: string) => void;
 }) {
+  const runKey = departmentRunKey(request?.underBoxId ?? null);
+  const working = useAppSelector((s) => (request ? (selectDepartmentRun(s, runKey)?.working ?? null) : null));
   return (
-    <Dialog open={request !== null} onOpenChange={(open) => !open && onClose()}>
+    // A step that is still writing keeps the dialog open: closing mid-batch used to lose Retry and Undo.
+    <Dialog open={request !== null} onOpenChange={(open) => !open && !working && onClose()}>
       <DialogContent className="max-w-2xl">
-        {request && <Body request={request} onClose={onClose} onFocus={onFocus} />}
+        {request && <Body key={runKey} runKey={runKey} request={request} onClose={onClose} onFocus={onFocus} />}
       </DialogContent>
     </Dialog>
   );
-}
-
-type Step = "describe" | "review" | "made";
-
-interface SeatRun {
-  positionId?: string;
-  mandateId?: string;
-  mandateKey?: AnyMandateKey;
-  placed?: boolean;
-  agentId?: string;
-  /** The agent exists but has not taken the job yet. */
-  unboundAgentId?: string;
-  busy?: string | null;
-  error?: string | null;
 }
 
 let seatSeq = 0;
 const newKey = () => `seat-new-${++seatSeq}`;
 
 function Body({
+  runKey,
   request,
   onClose,
   onFocus,
 }: {
+  runKey: string;
   request: PlanDepartmentRequest;
   onClose: () => void;
   onFocus?: (boxId: string) => void;
@@ -122,218 +120,42 @@ function Body({
   const builder = useHeadlessAgentJson();
   const { create: createConductor, error: conductorError } = useCreateConductor();
   useDeclaredSurfaceMandates(DISCLOSURE);
+  // A write, not a list read: the box's own organization, else (top of the chart, a box with none) the active one.
   const activeOrgId = useAppSelector(selectOrganizationId);
   const activeOrgName = useAppSelector(selectOrganizationName);
   const organizationId = request.organizationId ?? activeOrgId ?? null;
+  const organizationName = request.organizationId ? request.organizationName : activeOrgName;
+  const stored = useAppSelector((s) => selectDepartmentRun(s, runKey));
+  /** The seat whose job is open for editing (view state only). */
+  const [open, setOpenSeat] = useState<string | null>(null);
 
-  const [step, setStep] = useState<Step>("describe");
-  const [description, setDescription] = useState("");
-  const [plan, setPlan] = useState<DepartmentPlan | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [runs, setRuns] = useState<Record<string, SeatRun>>({});
-  const [working, setWorking] = useState<string | null>(null);
-  const [leaderName, setLeaderName] = useState("");
-  const [orchestra, setOrchestra] = useState<{ conductorId: string; warnings: string[] } | null>(null);
-  const [undone, setUndone] = useState(false);
-
-  const patchRun = (key: string, patch: Partial<SeatRun>) =>
-    setRuns((cur) => ({ ...cur, [key]: { ...cur[key], ...patch } }));
-  const patchSeat = (key: string, patch: Partial<PlannedSeat>) =>
-    setPlan((p) => (p ? { ...p, seats: p.seats.map((s) => (s.key === key ? { ...s, ...patch } : s)) } : p));
-
-  // ── 1. plan it ───────────────────────────────────────────────────────────
-  const planIt = async () => {
-    setError(null);
-    try {
-      const value = await planner.run<unknown>({
-        mandateKey: PLANNER,
-        surfaceKey: `mandate:${PLANNER}`,
-        sourceFeature: "agent-builder",
-        expect: "json",
-        initiation: "user",
-        surfaceName: null,
-        ...(organizationId ? { organizationId } : {}),
-        variables: {
-          department_description: description.trim(),
-          ...(request.underLabel ? { parent: request.underLabel } : {}),
-          ...(organizationId === activeOrgId && activeOrgName ? { organization_context: activeOrgName } : {}),
-          ...(request.existingTeam.length ? { existing_team: request.existingTeam.join("\n") } : {}),
-        },
-      });
-      const planned = coerceDepartmentPlan(value, () => newKey());
-      setPlan(planned);
-      if (!leaderName) setLeaderName(`${planned.department || "Department"} lead`);
-      setStep("review");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No plan came back.");
-    }
-  };
-
-  // ── 2. create the seats and their jobs ─────────────────────────────────
-  const seats = plan?.seats ?? [];
-  const order = creationOrder(seats);
-  const problems = seatProblems(seats);
-
-  /** One seat, resumed from whatever step it reached: position → placed → job. */
-  const createOne = async (seat: PlannedSeat, positionIds: Map<string, string>): Promise<boolean> => {
-    if (!organizationId) return false;
-    let run = { ...runs[seat.key] };
-    patchRun(seat.key, { busy: "Creating…", error: null });
-    try {
-      if (!run.positionId) {
-        const made = await dispatch(
-          createOrgPosition({ organizationId, name: seat.name, description: seat.description || null }),
-        );
-        if ("error" in made) throw new Error(made.error);
-        run = { ...run, positionId: made.id };
-        patchRun(seat.key, { positionId: made.id });
-      }
-      positionIds.set(seat.key, run.positionId as string);
-      if (!run.placed) {
-        const managerPositionId = seat.reportsTo ? positionIds.get(seat.reportsTo) : undefined;
-        const managerBox = managerPositionId ? boxId("position", managerPositionId) : request.underBoxId;
-        if (managerBox) {
-          const placed = await dispatch(setManualManager(managerBox, boxId("position", run.positionId as string)));
-          if (!placed.ok) throw new Error(`Created, but not placed on the chart: ${placed.error}`);
-        }
-        run = { ...run, placed: true };
-        patchRun(seat.key, { placed: true });
-      }
-      if (!run.mandateId) {
-        const job = await createSeatJob(
-          dispatch,
-          { id: run.positionId as string, name: seat.name, description: seat.description || null, organizationId },
-          { goal: seat.goal, output: seat.output, inputs: seat.inputs },
-        );
-        patchRun(seat.key, { mandateId: job.mandateId, mandateKey: job.mandateKey });
-      }
-      patchRun(seat.key, { busy: null });
-      return true;
-    } catch (e) {
-      patchRun(seat.key, { busy: null, error: e instanceof Error ? e.message : "It could not be created." });
-      return false;
-    }
-  };
-
-  const createAll = async () => {
-    setWorking("seats");
-    setStep("made");
-    const positionIds = new Map<string, string>();
-    for (const [k, r] of Object.entries(runs)) if (r.positionId) positionIds.set(k, r.positionId);
-    for (const seat of order) await createOne(seat, positionIds);
-    setWorking(null);
-  };
-
-  // ── 3. build their agents ───────────────────────────────────────────────
-  const buildOne = async (seat: PlannedSeat) => {
-    const run = runs[seat.key];
-    if (!run?.mandateId || !run.mandateKey || !organizationId || run.agentId) return;
-    patchRun(seat.key, { busy: "Building its agent…", error: null });
-    try {
-      const agentId = await buildSeatAgent(
-        dispatch,
-        builder.run,
-        {
-          mandateKey: run.mandateKey,
-          mandateId: run.mandateId,
+  // The batch is created once per box, in the box's organization, and kept until finished.
+  useEffect(() => {
+    if (stored || !organizationId) return;
+    dispatch(
+      orchestrasActions.departmentRunStarted({
+        runKey,
+        run: {
+          step: "describe",
           organizationId,
-          seatName: seat.name,
-          description: seat.description,
-          goal: seat.goal,
-          output: seat.output,
-          inputs: seat.inputs,
+          description: "",
+          plan: null,
+          runs: {},
+          working: null,
+          leaderName: "",
+          leader: null,
+          leaderFailed: false,
+          undone: false,
+          error: null,
         },
-        run.unboundAgentId,
-      );
-      patchRun(seat.key, { busy: null, agentId, unboundAgentId: undefined });
-    } catch (e) {
-      patchRun(seat.key, {
-        busy: null,
-        error: e instanceof Error ? e.message : "The agent could not be built.",
-        ...(e instanceof SeatAgentNotBoundError ? { unboundAgentId: e.agentId } : {}),
-      });
-    }
-  };
-  const buildAll = async () => {
-    setWorking("agents");
-    for (const seat of order) await buildOne(seat);
-    setWorking(null);
-  };
+      }),
+    );
+  }, [stored, organizationId, runKey, dispatch]);
 
-  // ── 4. put them in an Orchestra ─────────────────────────────────────────
-  const makeOrchestra = async () => {
-    const memberIds = order.map((s) => runs[s.key]?.agentId).filter((x): x is string => Boolean(x));
-    if (!memberIds.length) return;
-    setWorking("orchestra");
-    setError(null);
-    const conductorId = await createConductor({
-      name: leaderName.trim() || `${plan?.department ?? "Department"} lead`,
-      accent: DEFAULT_ORCHESTRA_ACCENT,
-      organizationId,
-    });
-    if (!conductorId) {
-      setWorking(null);
-      setError(`The leader could not be created.${conductorError ? ` ${conductorError}` : ""}`);
-      return;
-    }
-    const warnings: string[] = [];
-    for (const agentId of memberIds) {
-      const res = await dispatch(addAgentToOrchestra({ conductorId, agentId }));
-      if (!res.ok) warnings.push(res.error ?? "An agent could not be added.");
-    }
-    if (request.underBoxId) {
-      const placed = await dispatch(setManualManager(request.underBoxId, boxId("agent", conductorId)));
-      if (!placed.ok) warnings.push(placed.error ?? "The leader could not be placed on the chart.");
-    }
-    const sync = await dispatch(syncConductorPrompt({ initiation: "user", conductorId, memberIds }));
-    if (!sync.ok) warnings.push(`Its prompt still needs its team: ${sync.error ?? "sync failed"}.`);
-    setOrchestra({ conductorId, warnings });
-    setWorking(null);
-  };
-
-  // ── undo ────────────────────────────────────────────────────────────────
-  const created = order
-    .map((s) => ({ seat: s, run: runs[s.key] }))
-    .filter((x): x is { seat: PlannedSeat; run: SeatRun & { positionId: string } } => Boolean(x.run?.positionId));
-  const asPosition = (x: (typeof created)[number]): OrgPosition => ({
-    id: x.run.positionId,
-    organizationId: organizationId ?? "",
-    name: x.seat.name,
-    description: x.seat.description || null,
-    filledByUserId: null,
-    hrJobTitleId: null,
-    mandateId: x.run.mandateId ?? null,
-  });
-  const undo = async () => {
-    setWorking("undo");
-    const failed: string[] = [];
-    for (const x of created) {
-      const res = await dispatch(removeOrgPosition(asPosition(x)));
-      if (!res.ok) failed.push(`${x.seat.name}: ${res.error}`);
-    }
-    setWorking(null);
-    if (failed.length) setError(`Some positions could not be archived. ${failed.join(" ")}`);
-    else {
-      setUndone(true);
-      toast.success(`${created.length} positions archived.`, {
-        action: {
-          label: "Restore",
-          onClick: () => {
-            void (async () => {
-              for (const x of created) await dispatch(restoreOrgPosition(asPosition(x)));
-              setUndone(false);
-            })();
-          },
-        },
-      });
-    }
-  };
-
-  // ── render ──────────────────────────────────────────────────────────────
-  const whereLine = `${request.underLabel ? `Under ${request.underLabel}` : "At the top of the chart"}${
-    organizationId === activeOrgId && activeOrgName ? ` · ${activeOrgName}` : ""
-  }`;
+  const patch = (p: Partial<DepartmentRun>) => dispatch(orchestrasActions.departmentRunPatched({ runKey, patch: p }));
+  const setPlan = (fn: (p: DepartmentPlan) => DepartmentPlan) => stored?.plan && patch({ plan: fn(stored.plan) });
+  const patchSeat = (key: string, p: Partial<PlannedSeat>) =>
+    setPlan((plan) => ({ ...plan, seats: plan.seats.map((s) => (s.key === key ? { ...s, ...p } : s)) }));
 
   if (!organizationId) {
     return (
@@ -350,6 +172,69 @@ function Body({
       </>
     );
   }
+  if (!stored) return null;
+  const { step, description, plan, runs, working, leaderName, leader, undone, error } = stored;
+
+  // ── 1. plan it ───────────────────────────────────────────────────────────
+  const planIt = async () => {
+    patch({ error: null });
+    try {
+      const value = await planner.run<unknown>({
+        mandateKey: PLANNER,
+        surfaceKey: `mandate:${PLANNER}`,
+        sourceFeature: "agent-builder",
+        expect: "json",
+        initiation: "user",
+        surfaceName: null,
+        organizationId,
+        variables: {
+          department_description: description.trim(),
+          ...(request.underLabel ? { parent: request.underLabel } : {}),
+          ...(organizationName ? { organization_context: organizationName } : {}),
+          ...(request.existingTeam.length ? { existing_team: request.existingTeam.join("\n") } : {}),
+        },
+      });
+      const planned = coerceDepartmentPlan(value, () => newKey());
+      patch({
+        plan: planned,
+        step: "review",
+        ...(leaderName ? {} : { leaderName: `${planned.department || "Department"} lead` }),
+      });
+    } catch (e) {
+      patch({ error: e instanceof Error ? e.message : "No plan came back." });
+    }
+  };
+
+  const seats = plan?.seats ?? [];
+  const order = creationOrder(seats);
+  const problems = seatProblems(seats);
+  const nameOfSeat = (key: string) => seats.find((s) => s.key === key)?.name || "its manager";
+
+  const createAll = () => void dispatch(createDepartmentSeats(runKey, request.underBoxId));
+  const buildAll = () => void dispatch(buildDepartmentAgents(runKey, builder.run));
+  const makeOrchestra = () =>
+    void dispatch(
+      makeDepartmentOrchestra(runKey, request.underBoxId, (args) =>
+        createConductor({ ...args, accent: DEFAULT_ORCHESTRA_ACCENT }),
+      ),
+    );
+  const retry = (seat: PlannedSeat) => {
+    if (seatNextStep(runs[seat.key]) !== "done") void dispatch(createDepartmentSeats(runKey, request.underBoxId, "retry"));
+    else void dispatch(buildDepartmentAgents(runKey, builder.run, seat.key));
+  };
+  const finish = () => {
+    // A finished batch is forgotten so the next plan here starts fresh; an unfinished one stays for Retry.
+    if (!working) dispatch(orchestrasActions.departmentRunCleared(runKey));
+    onClose();
+  };
+
+  const inventory = batchInventory(order, runs, leader);
+  const anyMade = inventory.positions.length > 0 || Boolean(inventory.leaderId);
+
+  // ── render ──────────────────────────────────────────────────────────────
+  const whereLine = `${request.underLabel ? `Under ${request.underLabel}` : "At the top of the chart"}${
+    organizationName ? ` · ${organizationName}` : ""
+  }`;
 
   if (step === "describe") {
     return (
@@ -361,7 +246,7 @@ function Body({
         <div className="flex flex-col gap-4">
           <ProTextarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => patch({ description: e.target.value })}
             placeholder="e.g. 5 roles: a lead, a writer, … — or “a dental front desk”"
             rows={5}
             autoGrow
@@ -399,8 +284,8 @@ function Body({
     ...seats.filter((s) => s.key !== seat.key).map((s) => ({ value: s.key, label: `Under ${s.name || "unnamed"}` })),
   ];
   const builtCount = order.filter((s) => runs[s.key]?.agentId).length;
-  const jobCount = order.filter((s) => runs[s.key]?.mandateId).length;
-  const failedCount = order.filter((s) => runs[s.key]?.error).length;
+  const jobCount = order.filter((s) => runs[s.key]?.mandateId && runs[s.key]?.jobLinked).length;
+  const stuckCount = order.filter((s) => runs[s.key]?.error || runs[s.key]?.waitingOn).length;
 
   return (
     <>
@@ -414,7 +299,7 @@ function Body({
             <span className="type-secondary font-medium text-foreground">Department</span>
             <ProInput
               value={plan?.department ?? ""}
-              onChange={(e) => setPlan((p) => (p ? { ...p, department: e.target.value } : p))}
+              onChange={(e) => setPlan((p) => ({ ...p, department: e.target.value }))}
             />
           </label>
         )}
@@ -445,34 +330,25 @@ function Body({
                         variant="quiet"
                         icon={<ClipboardList />}
                         aria-label={`Edit the job of ${seat.name || `position ${i + 1}`}`}
-                        onClick={() => setOpen(expanded ? null : seat.key)}
+                        onClick={() => setOpenSeat(expanded ? null : seat.key)}
                       />
                       <Button
                         variant="quiet"
                         icon={<X />}
                         aria-label={`Remove ${seat.name || `position ${i + 1}`}`}
-                        onClick={() => setPlan((p) => (p ? { ...p, seats: removeSeat(p.seats, seat.key) } : p))}
+                        onClick={() => setPlan((p) => ({ ...p, seats: removeSeat(p.seats, seat.key) }))}
                       />
                     </>
                   ) : (
                     <>
                       <span className="flex-1 truncate type-body font-medium text-foreground">{seat.name}</span>
-                      <SeatStatus run={run} />
-                      {run.error && !run.busy && working === null && (
+                      <SeatStatus run={run} waitingOnName={run.waitingOn ? nameOfSeat(run.waitingOn) : null} />
+                      {(run.error || run.waitingOn) && !run.busy && working === null && !undone && (
                         <Button
                           variant="outline"
                           icon={<RotateCcw />}
-                          onClick={() =>
-                            void (async () => {
-                              setWorking("retry");
-                              if (!run.mandateId) {
-                                const ids = new Map<string, string>();
-                                for (const [k, r] of Object.entries(runs)) if (r.positionId) ids.set(k, r.positionId);
-                                await createOne(seat, ids);
-                              } else await buildOne(seat);
-                              setWorking(null);
-                            })()
-                          }
+                          disabled={Boolean(run.waitingOn && !runs[run.waitingOn]?.positionId)}
+                          onClick={() => retry(seat)}
                         >
                           Retry
                         </Button>
@@ -491,7 +367,7 @@ function Body({
                     <ErrorAlchemyMenu error={run.error} />
                   </p>
                 )}
-                {expanded && <SeatJobEditor seat={seat} onChange={(patch) => patchSeat(seat.key, patch)} />}
+                {expanded && <SeatJobEditor seat={seat} onChange={(p) => patchSeat(seat.key, p)} />}
               </li>
             );
           })}
@@ -504,18 +380,11 @@ function Body({
               icon={<Plus />}
               onClick={() => {
                 const key = newKey();
-                setPlan((p) =>
-                  p
-                    ? {
-                        ...p,
-                        seats: [
-                          ...p.seats,
-                          { key, name: "", description: "", goal: "", inputs: [], output: "", reportsTo: null },
-                        ],
-                      }
-                    : p,
-                );
-                setOpen(key);
+                setPlan((p) => ({
+                  ...p,
+                  seats: [...p.seats, { key, name: "", description: "", goal: "", inputs: [], output: "", reportsTo: null }],
+                }));
+                setOpenSeat(key);
               }}
             >
               Add a position
@@ -539,27 +408,33 @@ function Body({
             <span className="type-secondary font-medium text-foreground">Leader</span>
             <ProInput
               value={leaderName}
-              onChange={(e) => setLeaderName(e.target.value)}
+              onChange={(e) => patch({ leaderName: e.target.value })}
               aria-label="Leader's name"
-              disabled={Boolean(orchestra) || working !== null}
+              disabled={Boolean(leader) || working !== null}
             />
-            {orchestra && (
+            {leader && (
               <div className="flex items-center gap-2">
-                <Badge tone={orchestra.warnings.length ? "warning" : "success"} icon={<Network />}>
-                  {orchestra.warnings.length ? "Made, with problems" : "Orchestra made"}
+                <Badge tone={leader.warnings.length ? "warning" : "success"} icon={<Network />}>
+                  {leader.warnings.length ? "Made, with problems" : "Orchestra made"}
                 </Badge>
                 {onFocus && (
-                  <Button variant="quiet" onClick={() => onFocus(boxId("agent", orchestra.conductorId))}>
+                  <Button variant="quiet" onClick={() => onFocus(boxId("agent", leader.conductorId))}>
                     Show on chart
                   </Button>
                 )}
               </div>
             )}
-            {orchestra?.warnings.map((w, i) => (
+            {leader?.warnings.map((w, i) => (
               <p key={i} className="type-secondary text-destructive">
                 {w}
               </p>
             ))}
+            {stored.leaderFailed && working === null && (
+              <p className="type-secondary text-destructive">
+                {`The leader could not be created.${conductorError ? ` ${conductorError}` : ""}`}
+                <ErrorAlchemyMenu error={conductorError ?? "The leader could not be created."} />
+              </p>
+            )}
           </div>
         )}
 
@@ -572,46 +447,48 @@ function Body({
         {step === "review" && problems.length > 0 && (
           <p className="type-secondary text-muted-foreground">{problems[0]}</p>
         )}
+        {working && <p className="type-secondary text-muted-foreground">Still working — this closes when it finishes.</p>}
       </div>
 
       <div className="flex flex-wrap justify-end gap-2">
         {step === "review" ? (
           <>
-            <Button variant="outline" onClick={() => setStep("describe")}>
+            <Button variant="outline" onClick={() => patch({ step: "describe" })}>
               Back
             </Button>
-            <Button
-              variant="primary"
-              disabled={!seats.length || problems.length > 0}
-              onClick={() => void createAll()}
-            >
+            <Button variant="primary" disabled={!seats.length || problems.length > 0} onClick={createAll}>
               {`Create ${seats.length} ${seats.length === 1 ? "position" : "positions"}`}
             </Button>
           </>
         ) : (
           <>
-            {created.length > 0 && !undone && (
-              <Button variant="danger" icon={<Trash2 />} disabled={working !== null} onClick={() => void undo()}>
+            {anyMade && !undone && (
+              <Button
+                variant="danger"
+                icon={<Trash2 />}
+                disabled={working !== null}
+                onClick={() => void dispatch(undoDepartmentRun(runKey))}
+              >
                 Undo
               </Button>
             )}
             {!undone && jobCount > 0 && builtCount < jobCount && (
-              <Button variant="outline" icon={<AGENT_ICON />} disabled={working !== null} onClick={() => void buildAll()}>
+              <Button variant="outline" icon={<AGENT_ICON />} disabled={working !== null} onClick={buildAll}>
                 {working === "agents" ? "Building agents…" : "Build their agents"}
               </Button>
             )}
-            {!undone && builtCount > 0 && !orchestra && (
+            {!undone && builtCount > 0 && !leader && (
               <Button
                 variant="outline"
                 icon={<Network />}
                 disabled={working !== null || !leaderName.trim()}
-                onClick={() => void makeOrchestra()}
+                onClick={makeOrchestra}
               >
                 {working === "orchestra" ? "Making the Orchestra…" : "Put them in an Orchestra"}
               </Button>
             )}
-            <Button variant="primary" disabled={working !== null} onClick={onClose}>
-              {working === "seats" ? "Creating…" : failedCount ? "Close" : "Done"}
+            <Button variant="primary" disabled={working !== null} onClick={stuckCount && !undone ? onClose : finish}>
+              {working === "seats" ? "Creating…" : stuckCount && !undone ? "Close" : "Done"}
             </Button>
           </>
         )}
@@ -620,11 +497,12 @@ function Body({
   );
 }
 
-function SeatStatus({ run }: { run: SeatRun }) {
+function SeatStatus({ run, waitingOnName }: { run: SeatRun; waitingOnName: string | null }) {
   if (run.busy) return <Badge tone="info">{run.busy}</Badge>;
   if (run.error) return <Badge tone="destructive">Stopped</Badge>;
+  if (waitingOnName) return <Badge tone="warning">{`Waiting on ${waitingOnName}`}</Badge>;
   if (run.agentId) return <Badge tone="success">Agent at work</Badge>;
-  if (run.mandateId) return <Badge tone="primary">Needs an agent</Badge>;
+  if (run.mandateId && run.jobLinked) return <Badge tone="primary">Needs an agent</Badge>;
   if (run.positionId) return <Badge>Noted</Badge>;
   return <Badge>Waiting</Badge>;
 }

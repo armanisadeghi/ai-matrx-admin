@@ -194,14 +194,36 @@ export function AgentOrgChartView({
     };
   };
   /** Vision rule 5: a department planned from a description, under this box (null = the top). */
-  const planDepartmentUnder = (b: string | null) => {
+  const planDepartmentUnder = async (b: string | null) => {
     const key = b ? firstKeyOf.get(b) : undefined;
     const node = key ? byKey.get(key) : undefined;
     const t = b ? parseBoxId(b) : null;
+    // Everything the department makes lands in the BOX's organization, whatever kind of box it is.
+    let org: { id: string; name: string | null } | null = null;
+    if (t?.type === "position") {
+      const id = positionById.get(t.id)?.organizationId;
+      org = id ? { id, name: null } : null;
+    } else if (t?.type === "agent") {
+      const a = agents[t.id];
+      org = a?.organizationId ? { id: a.organizationId, name: a.organizationName ?? null } : null;
+    } else if (t?.type === "membership" || t?.type === "team") {
+      const dir = await loadOrgDirectory();
+      const id = t.type === "membership" ? dir.members.get(t.id)?.organizationId : dir.teams.get(t.id)?.organizationId;
+      if (!id) {
+        fail(`${nameOf(b as string)}'s organization could not be read${dir.failed.length ? `: could not load ${dir.failed.join(", ")}` : ""}.`);
+        return;
+      }
+      org = { id, name: null };
+    }
+    if (org && !org.name) {
+      const dir = await loadOrgDirectory();
+      org.name = [...dir.members.values()].find((m) => m.organizationId === org?.id)?.organizationName ?? null;
+    }
     setPlanning({
       underBoxId: b,
       underLabel: b && t ? `${nameOf(b)} (${ORG_BOX_LABEL[t.type]})` : null,
-      organizationId: t?.type === "position" ? (positionById.get(t.id)?.organizationId ?? null) : null,
+      organizationId: org?.id ?? null,
+      organizationName: org?.name ?? null,
       existingTeam: (node?.children ?? []).map((c) => nameOf(c.data.boxId)),
     });
   };
@@ -465,6 +487,16 @@ export function AgentOrgChartView({
         title: `Replace “${ORG_LINK_KIND_META[existing.kind].label}” with “${ORG_LINK_KIND_META[link].label}”?`,
         description: "Two boxes keep one link between them, so the current one goes.",
         confirmLabel: "Replace",
+      });
+      if (!ok) return;
+    }
+    // The other direction is its own record: it stays, and both arrows are drawn.
+    const reverse = manualEdges.find((e) => e.managerId === toId && e.reportId === fromId && !e.edgeId.startsWith("pending:"));
+    if (!existing && reverse) {
+      const ok = await confirm({
+        title: `${await nameNow(toId)} already ${ORG_LINK_KIND_META[reverse.kind].verb} ${await nameNow(fromId)}`,
+        description: `That link stays. This adds a second one the other way.`,
+        confirmLabel: "Add it too",
       });
       if (!ok) return;
     }
@@ -818,7 +850,7 @@ export function AgentOrgChartView({
           <LinkIcon className="mr-2 h-4 w-4" />
           Copy link to this box
         </Item>
-        <Item onSelect={() => planDepartmentUnder(d.boxId)}>
+        <Item onSelect={() => void planDepartmentUnder(d.boxId)}>
           <Users className="mr-2 h-4 w-4" />
           Plan a department…
         </Item>
@@ -1251,7 +1283,7 @@ export function AgentOrgChartView({
                 icon={<Users />}
                 onClick={() => {
                   setPick(null);
-                  planDepartmentUnder(null);
+                  void planDepartmentUnder(null);
                 }}
               >
                 Plan a department…

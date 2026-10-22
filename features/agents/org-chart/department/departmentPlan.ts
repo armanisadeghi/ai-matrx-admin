@@ -9,6 +9,8 @@
 // seat's manager by NAME; the editor keys every seat so a rename never breaks
 // who sits under whom.
 
+import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
+
 export interface PlannedInput {
   name: string;
   description: string;
@@ -125,3 +127,117 @@ export function seatProblems(seats: PlannedSeat[]): string[] {
   });
   return problems;
 }
+
+// ── the batch run: what each seat reached, what comes next, what Undo takes back ──
+
+/** What one seat of a batch has reached. Every id it records is what Retry resumes from and Undo takes back. */
+export interface SeatRun {
+  positionId?: string;
+  /** Placed under its manager (or the chosen box). Never set while its manager does not exist yet. */
+  placed?: boolean;
+  mandateId?: string;
+  mandateKey?: AnyMandateKey;
+  /** The job is linked to the position. A job made but not linked is re-linked by Retry, never made again. */
+  jobLinked?: boolean;
+  agentId?: string;
+  /** The agent exists but has not taken the job yet. */
+  unboundAgentId?: string;
+  /** Key of the seat it sits under, while that seat has no position yet. */
+  waitingOn?: string | null;
+  busy?: string | null;
+  error?: string | null;
+}
+
+export type SeatStep = "position" | "place" | "job" | "link-job" | "done";
+
+/** The next write a seat needs to finish its part of "Create" (agents are a later, separate step). */
+export function seatNextStep(run: SeatRun | undefined): SeatStep {
+  if (!run?.positionId) return "position";
+  if (!run.placed) return "place";
+  if (!run.mandateId) return "job";
+  if (!run.jobLinked) return "link-job";
+  return "done";
+}
+
+/**
+ * Where a seat goes on the chart. A seat whose manager seat has no position
+ * yet WAITS — it is never dropped under the chosen box in its place.
+ */
+export function placementFor(
+  seat: Pick<PlannedSeat, "reportsTo">,
+  runs: Record<string, SeatRun>,
+): { kind: "under-seat"; positionId: string } | { kind: "under-box" } | { kind: "waiting"; managerKey: string } {
+  if (!seat.reportsTo) return { kind: "under-box" };
+  const managerPosition = runs[seat.reportsTo]?.positionId;
+  return managerPosition ? { kind: "under-seat", positionId: managerPosition } : { kind: "waiting", managerKey: seat.reportsTo };
+}
+
+/** Seats of the batch whose "Create" part is not finished, managers first. */
+export function unfinishedSeats(order: PlannedSeat[], runs: Record<string, SeatRun>): PlannedSeat[] {
+  return order.filter((s) => seatNextStep(runs[s.key]) !== "done");
+}
+
+/** What a batch made, by kind — everything Undo takes back. */
+export interface BatchInventory {
+  positions: { seatKey: string; positionId: string; name: string; mandateId: string | null; description: string | null }[];
+  jobs: string[];
+  agents: string[];
+  leaderId: string | null;
+  /** The leader's placement under the chosen box, when it was made. */
+  leaderPlacedUnder: string | null;
+}
+
+export function batchInventory(
+  order: PlannedSeat[],
+  runs: Record<string, SeatRun>,
+  leader: { conductorId: string; placedUnder: string | null } | null,
+): BatchInventory {
+  const inv: BatchInventory = { positions: [], jobs: [], agents: [], leaderId: leader?.conductorId ?? null, leaderPlacedUnder: leader?.placedUnder ?? null };
+  for (const s of order) {
+    const r = runs[s.key];
+    if (!r) continue;
+    if (r.positionId)
+      inv.positions.push({ seatKey: s.key, positionId: r.positionId, name: s.name, mandateId: r.mandateId ?? null, description: s.description || null });
+    if (r.mandateId) inv.jobs.push(r.mandateId);
+    const agent = r.agentId ?? r.unboundAgentId;
+    if (agent) inv.agents.push(agent);
+  }
+  return inv;
+}
+
+const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/** "3 positions, 3 jobs, 2 agents and the leader" — what Undo took back, in words. */
+export function inventoryWords(inv: BatchInventory): string {
+  const parts = [
+    inv.positions.length ? count(inv.positions.length, "position", "positions") : null,
+    inv.jobs.length ? count(inv.jobs.length, "job", "jobs") : null,
+    inv.agents.length ? count(inv.agents.length, "agent", "agents") : null,
+    inv.leaderId ? "the leader" : null,
+  ].filter((x): x is string => Boolean(x));
+  if (parts.length <= 1) return parts[0] ?? "nothing";
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
+export type DepartmentStep = "describe" | "review" | "made";
+
+/** One "Plan a department" batch, kept in Redux (`orchestras.departmentRuns`) so it outlives the dialog. */
+export interface DepartmentRun {
+  step: DepartmentStep;
+  /** Every write of the batch names this organization: the chosen box's own. */
+  organizationId: string;
+  description: string;
+  plan: DepartmentPlan | null;
+  runs: Record<string, SeatRun>;
+  /** What is running now ("seats", "agents", "orchestra", "undo", "retry"); null = nothing. */
+  working: string | null;
+  leaderName: string;
+  leader: { conductorId: string; placedUnder: string | null; warnings: string[] } | null;
+  /** The leader's creation failed (its reason is read from the creator, after the request). */
+  leaderFailed: boolean;
+  undone: boolean;
+  error: string | null;
+}
+
+/** The box a batch goes under keys its run; one batch per box at a time. */
+export const departmentRunKey = (underBoxId: string | null) => underBoxId ?? "top";
