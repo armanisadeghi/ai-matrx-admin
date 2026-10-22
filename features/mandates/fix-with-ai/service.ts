@@ -7,7 +7,7 @@
 //   POST /mandates/fix-with-ai/approve  the approved draft becomes the agent's new version
 // Not in the generated api-types yet, so the path is cast here (as features/mandates/runs does).
 
-import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
+import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { JsonObject } from "@/types/json";
 import { fetchRuns } from "@/features/mandates/run-history/service";
@@ -63,7 +63,7 @@ async function post<T>(dispatch: AppDispatch, path: string, body: JsonObject): P
     connectTimeoutMs: FIX_WAIT_MS,
     totalTimeoutMs: FIX_WAIT_MS,
     expectedErrorStatuses: [400, 401, 403, 404, 409, 422],
-  } as unknown as ApiCallConfig<"/ai/mandates/{mandate_key}", "POST">;
+  } as unknown as Parameters<typeof callApi>[0];
   const res = await dispatch(callApi(config));
   if (res.error) throw new Error(res.error.message || "Fix with AI did not answer.");
   return res.data as unknown as T;
