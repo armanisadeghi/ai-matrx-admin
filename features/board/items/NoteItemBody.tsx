@@ -43,6 +43,7 @@ import type { ItemBodyProps, TitleFieldProps } from "./types";
 import { useBoardOrganizationId } from "./board-organization";
 import { useTileAutoHeight } from "../components/BoardTile";
 import { NotePageCard } from "./NotePageCard";
+import { withEmbeddedMarker } from "@/features/notes/service/embeddedNotes";
 import {
   isEntity,
   noteDraftSource,
@@ -111,6 +112,7 @@ export function NoteItemBody({ tileId, source, title, onSource, interacting }: I
           content: plan.seed,
           tags: [],
           organization_id: organizationId,
+          metadata: withEmbeddedMarker(null, "board") as never,
         });
         onSource(noteSource(source, note.id), label);
         break;

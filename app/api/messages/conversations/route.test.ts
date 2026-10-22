@@ -33,7 +33,7 @@ it("uses only the organization-aware atomic RPC for direct conversations", async
     data: args.p_organization_id === firstOrg ? firstConversation : secondConversation,
     error: null,
   }));
-  jest.mocked(createClient).mockResolvedValue({ rpc } as never);
+  jest.mocked(createClient).mockResolvedValue({ rpc, schema: () => ({ rpc }) } as never);
   jest.mocked(getClaimsUser).mockResolvedValue({
     data: { user: { id: adminId } }, error: null,
   } as never);

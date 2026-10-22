@@ -1,7 +1,7 @@
 /**
  * Surface manifest — the brand session (`matrx-user/marketing-brand-session`).
  *
- * Drives `/marketing/[brandId]/identity/session` — `BrandSessionPage`: the full-screen swipe deck where the
+ * Drives `/marketing/brands/[brandId]/identity/session` — `BrandSessionPage`: the full-screen swipe deck where the
  * person decides where each brand candidate belongs (lead / ours, not the face / not us / not sure) and confirms
  * the findings waiting on the brand. Values are the deck as it is on screen. The page shows no agent chrome; an
  * agent opened from the shell can explain or reword the card in focus on request.
@@ -78,7 +78,7 @@ export const marketingBrandSessionManifest: SurfaceManifest = {
   label: "Brand Session",
   situation:
     "They are in the brand session, deciding one card at a time where each brand candidate belongs ({session_counts.answered|0} of {session_counts.total|the} cards answered). The card in front of them is in your context; the choice is theirs, but you can offer different wording as a new card.",
-  urlPattern: "/marketing/[brandId]/identity/session",
+  urlPattern: "/marketing/brands/[brandId]/identity/session",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's session screen: the person swipes one card at a time. A choice card asks where a candidate belongs: lead with it (the face), ours but not the face (its own place), not us, or not sure. A finding card asks whether a found fact is theirs.

@@ -25,7 +25,7 @@ function isPermissionDenied(error: unknown): boolean {
 }
 
 /**
- * Server-side dual-mode resolvers for the `/marketing/[brandId]` tree.
+ * Server-side dual-mode resolvers for the `/marketing/brands/[brandId]` tree.
  *
  * Every dynamic marketing segment accepts a UUID or a key. Layouts call these
  * once per request (React `cache()` dedupes) and 308 a UUID address to the key

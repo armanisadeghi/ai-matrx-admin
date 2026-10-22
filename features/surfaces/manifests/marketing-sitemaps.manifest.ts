@@ -182,7 +182,7 @@ export const marketingSitemapsManifest: SurfaceManifest = {
   label: "Marketing Sitemaps",
   situation:
     "They are on the website's sitemaps: {sitemap_pages_total|no} pages appear in a sitemap and {sitemap_never_crawled|none} of those were never crawled; last synced {sitemaps_last_synced_at|never}. The open sitemap is {open_sitemap.url|none, they are on the list}. The page is read-only.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/sitemaps",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/sitemaps",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on the sitemaps workspace of a managed website: every sitemap document the site publishes (indexes and URL sets, with HTTP status, URL counts, fetch errors, and freshness) and the rollup of how those listed URLs flow into the canonical page registry. The user comes here to check sitemap health, run a sync, and spot listed-but-never-crawled pages.

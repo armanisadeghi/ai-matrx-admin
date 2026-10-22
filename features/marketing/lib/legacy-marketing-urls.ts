@@ -4,7 +4,7 @@
  * Two legacy shapes still land here from bookmarks, stored rows, agent-held
  * URLs and every link built before the agency-model tree:
  *
- *   /marketing/brands/[brandId]/…            (brand-first tree)
+ *   /marketing/brands/[brandId]/{sites,assets,discovery,local}/…  (brand-first tree)
  *   /marketing/sites/[siteId]/…              (flat site door)
  *
  * Their shims resolve the brand (and site) server-side and then call the two
@@ -18,6 +18,7 @@
  * family, the value→identity moves, and the brand-level sections.
  */
 
+import { MARKETING_BRANDS_PATH } from "@/features/marketing/lib/keys";
 import {
   MARKETING_SITE_SECTION_HOMES,
   marketingSiteSettingsHref,
@@ -106,8 +107,8 @@ export function mapLegacySiteRest(
   rest: readonly string[],
   query: URLSearchParams,
 ): string {
-  const websiteBase = `/marketing/${brandSeg}/websites/${siteSeg}`;
-  const seoBase = `/marketing/${brandSeg}/seo/${siteSeg}`;
+  const websiteBase = `${MARKETING_BRANDS_PATH}/${brandSeg}/websites/${siteSeg}`;
+  const seoBase = `${MARKETING_BRANDS_PATH}/${brandSeg}/seo/${siteSeg}`;
   const section = rest[0] ?? "";
   const sub = rest.slice(1);
   const view = readView(query);
@@ -117,7 +118,7 @@ export function mapLegacySiteRest(
     const params = withoutView(query);
     params.set("site", siteSeg);
     return withQuery(
-      `/marketing/${brandSeg}/identity/${VALUE_TO_IDENTITY[sub[0]]}`,
+      `${MARKETING_BRANDS_PATH}/${brandSeg}/identity/${VALUE_TO_IDENTITY[sub[0]]}`,
       params,
     );
   }
@@ -154,11 +155,11 @@ export function mapLegacySiteRest(
 
   // Sections that left the site entirely.
   if (section === "discovery") {
-    return withQuery(`/marketing/${brandSeg}/inbox`, query);
+    return withQuery(`${MARKETING_BRANDS_PATH}/${brandSeg}/inbox`, query);
   }
   if (section === "reputation") {
     return withQuery(
-      `/marketing/${brandSeg}/intelligence/reputation/${siteSeg}`,
+      `${MARKETING_BRANDS_PATH}/${brandSeg}/intelligence/reputation/${siteSeg}`,
       query,
     );
   }
@@ -185,13 +186,25 @@ export function mapLegacySiteRest(
  * One old `/marketing/brands/[brandId]/<rest>` BRAND section → its new address.
  * Returns null for the `sites/<siteId>/…` family, which the caller must resolve
  * first and then hand to `mapLegacySiteRest`.
+ *
+ * Since 2026-10-22 the brand workspace itself lives at `/marketing/brands/<brand>`,
+ * so only the sections that no longer exist there reach this function
+ * ({@link LEGACY_BRAND_SECTIONS}); every other section is a live route.
  */
+/** Old brand-tree sections with no live route of the same name under `/marketing/brands/<brand>`. */
+export const LEGACY_BRAND_SECTIONS: ReadonlySet<string> = new Set([
+  "sites",
+  "assets",
+  "discovery",
+  "local",
+]);
+
 export function mapLegacyBrandRest(
   brandSeg: string,
   rest: readonly string[],
   query: URLSearchParams,
 ): string | null {
-  const brandBase = `/marketing/${brandSeg}`;
+  const brandBase = `${MARKETING_BRANDS_PATH}/${brandSeg}`;
   const section = rest[0] ?? "";
   const sub = rest.slice(1);
   if (section === "sites") return null;

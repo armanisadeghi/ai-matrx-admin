@@ -78,11 +78,11 @@ export const marketingSocialAccountsManifest: SurfaceManifest = {
   situation:
     "They are on {brand_name|the brand}'s social accounts: {account_count|no} accounts (its own, competitors and inspiration), {untracked_own_count|none} of its own not tracked yet. They can add accounts and update them.",
   description: "The brand's own and tracked social accounts, one row per account.",
-  urlPattern: "/marketing/[brandId]/socials/accounts",
+  urlPattern: "/marketing/brands/[brandId]/socials/accounts",
   briefValues: ["accounts_loaded", "brand_name", "account_count", "accounts_by_role"],
   intro: `<surface_intro>
 You are on the brand's Social accounts list: its own accounts and the competitor and inspiration accounts it tracks. Check accounts_loaded first.
-account_list is the condensed rows (read it first); accounts holds every row. A row with has_page true opens an account page at /marketing/<brand>/socials/<platform>/<profile_id>; has_page false means the account is not tracked yet, so no numbers exist. Followers or growth null mean not measured, never zero.
+account_list is the condensed rows (read it first); accounts holds every row. A row with has_page true opens an account page at /marketing/brands/<brand>/socials/<platform>/<profile_id>; has_page false means the account is not tracked yet, so no numbers exist. Followers or growth null mean not measured, never zero.
 create_accounts tracks accounts from a handle or profile link . update_accounts changes a tracked account's role, stops tracking it, tracks an untracked own account, or refreshes its numbers. The person approves each on a card.
 </surface_intro>`,
   groups,

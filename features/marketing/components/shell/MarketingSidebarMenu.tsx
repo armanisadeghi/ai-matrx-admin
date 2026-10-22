@@ -293,7 +293,7 @@ function BrandMenu({
   // access-errors: ok — navigation enrichment only; a failed read keeps every
   // row reachable and the owning workspace surfaces its own read error.
   const brand = useBrandBySegment(brandSeg);
-  const brandPath = `/marketing/${brandSeg}`;
+  const brandPath = marketingRoutes.brand(brandSeg);
   const kind = brandKindOf(brand.data);
   // A person brand answers "do they have a website" from its sites; the read is
   // cheap and cached, and only a person brand waits on it.
@@ -373,7 +373,7 @@ function WebsiteMenu({
   // access-errors: ok — navigation enrichment only (labels); rows stay reachable.
   const brand = useBrandBySegment(brandSeg);
   const site = useSiteBySegment(brand.data?.id, siteSeg);
-  const basePath = `/marketing/${brandSeg}/websites/${siteSeg}`;
+  const basePath = marketingRoutes.brandSection(brandSeg, `websites/${siteSeg}`);
   const groups = listMarketingWebsiteModeGroups(basePath);
   const active = resolveActiveRouteMode(
     groups.flatMap((group) => group.modes),
@@ -383,7 +383,7 @@ function WebsiteMenu({
   const siteLabel = site.data?.name ?? site.data?.domain ?? siteSeg;
   // A website HAS its SEO (Arman, 2026-10-21): the main SEO rooms sit right in
   // the website's menu; the full SEO menu is one click in ("All SEO").
-  const seoPath = `/marketing/${brandSeg}/seo/${siteSeg}`;
+  const seoPath = marketingRoutes.brandSection(brandSeg, `seo/${siteSeg}`);
   const seoRows = [
     ...WEBSITE_MENU_SEO_SLUGS.flatMap((slug) => {
       const section = getMarketingSeoSection(slug);
@@ -407,7 +407,7 @@ function WebsiteMenu({
       Icon: Search,
     },
   ];
-  const brandPath = `/marketing/${brandSeg}`;
+  const brandPath = marketingRoutes.brand(brandSeg);
   const siteWorkRows = [
     {
       href: `${brandPath}/content/plan/${siteSeg}`,
@@ -473,7 +473,7 @@ function WebsiteMenu({
   return (
     <>
       <BackRow
-        href={`/marketing/${brandSeg}/websites`}
+        href={marketingRoutes.brandSection(brandSeg, "websites")}
         label={brand.data?.name ?? "All websites"}
       />
       {renderGroups(inventoryGroups)}
@@ -540,7 +540,7 @@ function SeoMenu({
   // access-errors: ok — navigation enrichment only (labels); rows stay reachable.
   const brand = useBrandBySegment(brandSeg);
   const site = useSiteBySegment(brand.data?.id, siteSeg);
-  const basePath = `/marketing/${brandSeg}/seo/${siteSeg}`;
+  const basePath = marketingRoutes.brandSection(brandSeg, `seo/${siteSeg}`);
   const groups = listMarketingSeoModeGroups(basePath);
   const active = resolveActiveRouteMode(
     groups.flatMap((group) => group.modes),
@@ -553,7 +553,7 @@ function SeoMenu({
     <>
       {/* SEO lives inside its website (Arman, 2026-10-21): back goes to the site. */}
       <BackRow
-        href={`/marketing/${brandSeg}/websites/${siteSeg}`}
+        href={marketingRoutes.brandSection(brandSeg, `websites/${siteSeg}`)}
         label={siteLabel}
       />
       <NavRow

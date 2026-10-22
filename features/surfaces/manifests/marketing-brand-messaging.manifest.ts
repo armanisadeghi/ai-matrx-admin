@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand messaging room (`matrx-user/marketing-brand-messaging`).
  *
- * Drives `/marketing/[brandId]/identity/messaging` — `BrandMessagingPage`:
+ * Drives `/marketing/brands/[brandId]/identity/messaging` — `BrandMessagingPage`:
  * mission, vision, values, story, names and personality, promise, imagery,
  * vocabulary, the 10/30/60-second pitches, messaging pillars, content pillars
  * and hashtags. Every value here is the page AS IT IS ON SCREEN (unsaved edits
@@ -322,7 +322,7 @@ export const marketingBrandMessagingManifest: SurfaceManifest = {
   label: "Brand Messaging",
   situation:
     "They are in the brand's Messaging room: mission, vision, values, story, personality, elevator pitches, messaging and content pillars, and hashtags, all in your context as currently edited. They can edit any of these.",
-  urlPattern: "/marketing/[brandId]/identity/messaging",
+  urlPattern: "/marketing/brands/[brandId]/identity/messaging",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's Messaging room, where the owner writes what the brand stands for and how it says it. Read brand_context first, then the messaging_* values, which are the page exactly as it is on screen, unsaved edits included.

@@ -20,7 +20,7 @@
  * arithmetic.
  *
  * 🚨 BRAND SCOPE (2026-08-30). This door is also mounted inside one brand's
- * workspace at `/marketing/<brand>/pr/outreach`, where the brand is the tenant
+ * workspace at `/marketing/brands/<brand>/pr/outreach`, where the brand is the tenant
  * and one brand must never be shown another brand's rows. Two kinds of
  * number live on this page and they get two different treatments:
  *

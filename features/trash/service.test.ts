@@ -1,6 +1,6 @@
 const rpc = jest.fn();
 
-jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc, schema: () => ({ rpc }) } }));
 
 import {
   isVaultOwnedTrashToken,

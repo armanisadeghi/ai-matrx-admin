@@ -4,8 +4,8 @@
  * URL-backed workspace state for one site's Content Plan.
  *
  * Canonical home (agency restructure, 2026-08-29):
- *   /marketing/[brandId]/content/plan/[siteId]           → tree (the index)
- *   /marketing/[brandId]/content/plan/[siteId]/<view>    → table|map|entities|setup|ai-runs
+ *   /marketing/brands/[brandId]/content/plan/[siteId]           → tree (the index)
+ *   /marketing/brands/[brandId]/content/plan/[siteId]/<view>    → table|map|entities|setup|ai-runs
  *
  * A view is a ROUTE now, not `?view=` — every screen a user can be ON is a
  * route. The legacy flat address (/marketing/content-plan/[siteId]?view=…) is
@@ -19,6 +19,7 @@
  * write through this ONE hook, so the header can live in the PageHeader center
  * zone (core-route doctrine: no in-body toolbar) while the body stays in sync.
  */
+import { parseMarketingBrandPath } from "@/features/marketing/lib/keys";
 import { useCallback } from "react";
 import {
   useParams,
@@ -54,18 +55,14 @@ export const PLAN_VIEWS: readonly PlanView[] = [
 
 /**
  * The active view read from the path when we are on the brand-tree address
- * (`/marketing/<brand>/content/plan/<site>[/<view>]`), otherwise null. Pure and
+ * (`/marketing/brands/<brand>/content/plan/<site>[/<view>]`), otherwise null. Pure and
  * exported so the mapping is testable without a router.
  */
 export function planViewFromPath(pathname: string): PlanView | "tree" | null {
-  const segments = pathname.split("/").filter(Boolean);
-  const onBrandTree =
-    segments[0] === "marketing" &&
-    segments[2] === "content" &&
-    segments[3] === "plan" &&
-    Boolean(segments[4]);
+  const rest = parseMarketingBrandPath(pathname)?.rest ?? [];
+  const onBrandTree = rest[0] === "content" && rest[1] === "plan" && Boolean(rest[2]);
   if (!onBrandTree) return null;
-  const segment = segments[5];
+  const segment = rest[3];
   if (!segment) return "tree";
   return PLAN_VIEWS.includes(segment as PlanView)
     ? (segment as PlanView)

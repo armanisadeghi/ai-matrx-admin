@@ -155,7 +155,7 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
   "google.internal-review": {
     level: "super_admin",
     allows: "Run the Google internal-test controls (contacts import, agenda, directory review, read-only sweep) and Google Ads, Analytics and YouTube campaign access.",
-    where: "/google-read-only-review, connections, /marketing/[brandId]/ads and /analytics",
+    where: "/google-read-only-review, connections, /marketing/brands/[brandId]/ads and /analytics",
     doors: ["aidream google_integrations (ctx.admin_level)"],
     ruling: "Arman, 2026-10-06: features \"explicitly actions in the normal ui that were for admins\" keep working; admin status must not widen what an admin SEES on a user page.",
   },

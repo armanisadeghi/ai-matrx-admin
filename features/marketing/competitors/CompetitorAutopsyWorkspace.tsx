@@ -149,7 +149,7 @@ function competitorView(raw: string | null): CompetitorView {
 /**
  * 🚨 A TAB MUST STAY ON THE ROUTE IT WAS CLICKED FROM (2026-08-30). These
  * hrefs were hardcoded to the FLAT `/marketing/competitors` route, so inside a
- * brand (`/marketing/<brand>/intelligence/competitors`) five of the six tabs —
+ * brand (`/marketing/brands/<brand>/intelligence/competitors`) five of the six tabs —
  * Review, Opportunities, Competitors, Evidence, History — navigated off the
  * brand entirely, and the flat route bounced the user to the brands list with
  * every bit of context lost. Only the default Run tab appeared to work. The

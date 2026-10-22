@@ -1,7 +1,7 @@
 // features/marketing/content-plan/components/ContentPlanRouteBody.tsx
 //
 // The Content Plan workspace as a ROUTE BODY — server component, shared by
-// every view route under /marketing/<brand>/content/plan/<site>/… .
+// every view route under /marketing/brands/<brand>/content/plan/<site>/… .
 //
 // The views are routes now (tree is the index; table, map, entities, setup and
 // ai-runs are segments), and every one of them renders exactly this: the same

@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabase/client";
+import { NOT_EMBEDDED_FILTER } from "@/features/notes/service/embeddedNotes";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 
 export const CONTENT_SEARCH_MIN_CHARS = 3;
@@ -72,6 +73,7 @@ export function useNoteContentSearch(query: string): NoteContentSearch {
           .select("id")
           .is("deleted_at", null)
           .ilike("content", `%${escapeIlike(trimmed)}%`)
+          .or(NOT_EMBEDDED_FILTER)
           .limit(CONTENT_SEARCH_MAX_ROWS);
         if (cancelled) return;
         if (error) {

@@ -13,8 +13,8 @@
  *
  * ## Why here
  *
- * `/marketing/[brandId]/websites/[siteId]` is the site's home: both legacy
- * addresses (`/marketing/sites/[siteId]` and `/marketing/[brandId]/seo/[siteId]`)
+ * `/marketing/brands/[brandId]/websites/[siteId]` is the site's home: both legacy
+ * addresses (`/marketing/sites/[siteId]` and `/marketing/brands/[brandId]/seo/[siteId]`)
  * permanently redirect into this branch, and this page is the one a person
  * lands on from the brand's website list. The SEO sub-routes are workbenches
  * for one practice; the outputs a machine produced about the site belong on

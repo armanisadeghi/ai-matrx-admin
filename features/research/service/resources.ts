@@ -58,7 +58,7 @@ export async function getResourceManifest(
   // (edges + parties) and only for what a topic actually promoted, so the
   // manifest keeps its "one payload, no bodies" character.
   const [manifest, expertsRead, entitiesRead] = await Promise.all([
-    supabase.rpc("research_topic_resource_manifest", { p_topic_id: topicId }),
+    supabase.schema("research").rpc("research_topic_resource_manifest", { p_topic_id: topicId }),
     loadTopicExperts(topicId),
     loadTopicPageEntities(topicId),
   ]);

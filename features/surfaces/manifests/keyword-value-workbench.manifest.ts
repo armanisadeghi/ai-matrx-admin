@@ -239,7 +239,7 @@ export const keywordValueWorkbenchManifest: SurfaceManifest = {
   label: "Keyword Value Workbench",
   situation:
     "They are on the website's Keyword Value workbench: what each keyword is worth and the level it lands on. {matching_keywords_total|No} keywords match their filters (level: {active_level_filter|any}); a person has pinned the level on {expert_ruling_count|no} keywords. They can search, filter and tick keywords to rule on several at once.",
-  urlPattern: "/marketing/[brandId]/seo/[siteId]/keywords/value",
+  urlPattern: "/marketing/brands/[brandId]/seo/[siteId]/keywords/value",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 Read brand_context and site_context first — they say whose site this is and what it sells.

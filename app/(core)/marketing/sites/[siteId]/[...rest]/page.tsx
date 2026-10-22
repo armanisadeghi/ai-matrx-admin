@@ -24,8 +24,8 @@ function withQuery(path: string, params: URLSearchParams): string {
 
 /**
  * LEGACY URL shim. The canonical site URL is brand-first and split by job:
- * `/marketing/[brandKey]/websites/[siteKey]/…` for what the site IS, and
- * `/marketing/[brandKey]/seo/[siteKey]/…` for the practice on it. This route
+ * `/marketing/brands/[brandKey]/websites/[siteKey]/…` for what the site IS, and
+ * `/marketing/brands/[brandKey]/seo/[siteKey]/…` for the practice on it. This route
  * resolves the owning brand server-side and 308s to the real address, so old
  * bookmarks and cross-links built from rows that only know `site_id` keep
  * working forever.

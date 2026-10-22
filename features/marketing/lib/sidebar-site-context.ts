@@ -1,20 +1,20 @@
-import { MARKETING_RESERVED_SEGMENTS } from "@/features/marketing/lib/keys";
+import { parseMarketingBrandPath } from "@/features/marketing/lib/keys";
 
 /**
  * Resolve which of Marketing's FOUR sidebar menus the current URL belongs to.
  *
- * The agency-model tree makes this structural (2026-08-28): the first segment
- * after `/marketing` is either a reserved agency-plane word or a brand key,
+ * The agency-model tree makes this structural (2026-08-28): a brand lives at
+ * `/marketing/brands/<brandSeg>` (2026-10-22) and everything else is the agency plane,
  * and inside a brand the `websites/[siteId]` and `seo/[siteId]` branches carry
  * their own menus. One declaration; the sidebar never guesses from menus'
  * point of view which URL shape carries the context.
  *
- *   agency  — /marketing, /marketing/brands, /marketing/operations/…
- *   brand   — /marketing/[brandSeg]/… (any brand-workspace section)
- *   website — /marketing/[brandSeg]/websites/[siteSeg]/…, plus that site's
+ *   agency  — /marketing, /marketing/brands(/all|/new|…), /marketing/operations/…
+ *   brand   — /marketing/brands/[brandSeg]/… (any brand-workspace section)
+ *   website — /marketing/brands/[brandSeg]/websites/[siteSeg]/…, plus that site's
  *             content plan (content/plan/[siteSeg]) and reputation
  *             (intelligence/reputation/[siteSeg])
- *   seo     — /marketing/[brandSeg]/seo/[siteSeg]/…
+ *   seo     — /marketing/brands/[brandSeg]/seo/[siteSeg]/…
  */
 
 export type MarketingSidebarContext =
@@ -26,14 +26,11 @@ export type MarketingSidebarContext =
 export function resolveMarketingSidebarContext(
   pathname: string,
 ): MarketingSidebarContext {
-  const match = /^\/marketing(?:\/(.*))?$/.exec(pathname);
-  if (!match) return { kind: "agency" };
-  const segments = (match[1] ?? "").split("/").filter(Boolean);
-  const first = segments[0];
-  if (!first || MARKETING_RESERVED_SEGMENTS.has(first)) {
-    return { kind: "agency" };
-  }
-  const brandSeg = first;
+  const brandPath = parseMarketingBrandPath(pathname);
+  if (!brandPath) return { kind: "agency" };
+  const { brandSeg } = brandPath;
+  // Read as `[<brand>, …section]` so the branch checks below keep their shape.
+  const segments = [brandSeg, ...brandPath.rest];
   if (segments[1] === "websites" && segments[2]) {
     return { kind: "website", brandSeg, siteSeg: segments[2] };
   }

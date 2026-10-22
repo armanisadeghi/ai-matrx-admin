@@ -3,7 +3,7 @@
 /**
  * Client-side dual-mode resolvers for marketing URL keys.
  *
- * The `/marketing/[brandId]` tree's segments carry a slug OR a UUID
+ * The `/marketing/brands/[brandId]` tree's segments carry a slug OR a UUID
  * (lib/keys.ts). Server layouts resolve and canonicalize; these hooks are for
  * CLIENT surfaces that only have the raw segment (the shell sidebar, crumbs)
  * and need the row without waiting on a server pass. Same query shape as the
@@ -109,7 +109,7 @@ async function fetchSiteBySegment(
   return alias.data ?? null;
 }
 
-/** Resolve a `/marketing/[brandId]` segment (slug or UUID) to the brand row. */
+/** Resolve a `/marketing/brands/[brandId]` segment (slug or UUID) to the brand row. */
 export function useBrandBySegment(segment: string | null) {
   return useQuery({
     queryKey: ["marketing", "brand-segment", segment] as const,

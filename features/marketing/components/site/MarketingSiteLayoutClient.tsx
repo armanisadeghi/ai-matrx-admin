@@ -18,6 +18,7 @@ import {
   LoadingSurface,
   QueryError,
 } from "@/features/marketing/components/shared/MarketingUi";
+import { parseMarketingBrandPath } from "@/features/marketing/lib/keys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { MarketingSiteSurfaceProvider } from "@/features/marketing/lib/scopes/site-surface-base";
 import { MarketingSiteWriteTargets } from "@/features/marketing/components/site/MarketingSiteWriteTargets";
@@ -116,7 +117,7 @@ export function MarketingSiteLayoutClient({
   // URL; other mounts pass `branch` explicitly.
   const branchKind: MarketingSiteShellBranch =
     branch ??
-    (pathname.split("/").filter(Boolean)[2] === "seo" ? "seo" : "websites");
+    (parseMarketingBrandPath(pathname)?.rest[0] === "seo" ? "seo" : "websites");
   const isSeoBranch = branchKind === "seo";
   const site = useSite(siteId);
   // The URL names the brand, and every agent surface under this layout builds

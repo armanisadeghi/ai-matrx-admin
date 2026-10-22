@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand guidelines room (`matrx-user/marketing-brand-guidelines`).
  *
- * Drives `/marketing/[brandId]/identity/guidelines` — `GuidelinesWorkbench` →
+ * Drives `/marketing/brands/[brandId]/identity/guidelines` — `GuidelinesWorkbench` →
  * `KwGuidelinesPanel` for ONE website of the brand (`?site=` picks it): the
  * plain-text business guidelines every AI classification and valuation run for
  * that site reads first. The saved document, the unsaved text in the editor,
@@ -144,7 +144,7 @@ export const marketingBrandGuidelinesManifest: SurfaceManifest = {
   label: "Brand Guidelines",
   situation:
     "They are in the brand's Guidelines room: the business guidelines every AI run for this website reads first (version {guidelines_version|never saved}), open in an editor; unsaved changes: {guidelines_has_unsaved_changes|no}. {guidelines_pending_draft_count|No} AI-proposed edits wait for their review.",
-  urlPattern: "/marketing/[brandId]/identity/guidelines",
+  urlPattern: "/marketing/brands/[brandId]/identity/guidelines",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on a brand's Guidelines room: the plain-text business guidelines for one of its websites (site_name, site_root_url and brand_context arrive from the parent). Every AI classification and valuation run for that site reads this document first, so a sentence here changes what the AI decides.

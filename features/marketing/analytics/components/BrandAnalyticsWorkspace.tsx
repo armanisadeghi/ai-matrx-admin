@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The brand's Analytics screen (`/marketing/[brandId]/analytics`) — the list of
+ * The brand's Analytics screen (`/marketing/brands/[brandId]/analytics`) — the list of
  * this brand's websites with each site's headline Google Analytics numbers, and
  * the door into the full panel for any one of them.
  *

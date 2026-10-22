@@ -59,7 +59,7 @@ function useCanonicalSegment(param: string, expected: string): void {
   }, [pathname, param, expected]);
 }
 
-/** Canonicalizes `/marketing/[brandId]` to the brand's key address. */
+/** Canonicalizes `/marketing/brands/[brandId]` to the brand's key address. */
 export function CanonicalBrandSegment({
   param,
   expected,

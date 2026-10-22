@@ -82,7 +82,7 @@ export const marketingCompetitorDirectoryManifest: SurfaceManifest = {
   situation:
     "They are on {brand_name|the brand}'s competitor list: {competitor_count|no} competitors with their websites and social accounts, {without_accounts_count|none} with no tracked social account yet. They can add competitors and update them.",
   description: "A brand's competitors with their websites and tracked social accounts.",
-  urlPattern: "/marketing/[brandId]/intelligence/competitors",
+  urlPattern: "/marketing/brands/[brandId]/intelligence/competitors",
   briefValues: ["competitors_loaded", "brand_name", "competitor_count", "with_accounts_count"],
   intro: `<surface_intro>
 You are on a brand's competitor directory: one row per competitor with its website and tracked social accounts. Check competitors_loaded first; when false, load_error says why.

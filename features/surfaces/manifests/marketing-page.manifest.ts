@@ -990,7 +990,7 @@ export const marketingPageManifest: SurfaceManifest = {
   label: "Marketing Page Workspace",
   situation:
     "They have one page open: {page_path} (status {page_status|unknown}). Target keyword: {target_keyword|none set}; page score {page_score|not computed}; {open_findings|no} open findings. They can set the target keyword, desired title and description, draft the content, and plan its links, images, headings and share card.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 The inherited brand_context and site_context values give you the brand and website this page belongs to — read them for framing before working on the page itself.

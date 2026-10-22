@@ -351,7 +351,7 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     surfaces: ["/marketing/monitoring route"],
   },
   // The Google Analytics HALF shipped 2026-09-17 (google-native PLAN §4.9):
-  // `/marketing/[brandId]/analytics` now renders real GA4 evidence through
+  // `/marketing/brands/[brandId]/analytics` now renders real GA4 evidence through
   // `features/marketing/analytics/components/SiteAnalyticsPanel.tsx`. What is
   // still promised is the CROSS-CHANNEL join, printed under that live panel.
   "marketing.analytics.cross-channel": {
@@ -361,7 +361,7 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
     promise:
       "Ads, email, social and PR joined to the Google Analytics traffic already on this screen, so one view answers which channel earned a conversion instead of four screens each claiming it.",
     stage: "planned",
-    surfaces: ["/marketing/[brandId]/analytics — printed under the live Google Analytics panel"],
+    surfaces: ["/marketing/brands/[brandId]/analytics — printed under the live Google Analytics panel"],
   },
   // "marketing.automations" FULFILLED 2026-08-25: `/marketing/automations`
   // now mounts the run console (KI-049) at the organization tier — the same

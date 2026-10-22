@@ -51,7 +51,7 @@ describe("marketing route section registries (agency-model tree)", () => {
   it("registers every website-inventory route that exists on disk", () => {
     const routeDirectory = resolve(
       process.cwd(),
-      "app/(core)/marketing/[brandId]/websites/[siteId]",
+      "app/(core)/marketing/brands/[brandId]/websites/[siteId]",
     );
     const registered = MARKETING_WEBSITE_SECTIONS.filter(
       (section) => section.slug,
@@ -64,7 +64,7 @@ describe("marketing route section registries (agency-model tree)", () => {
   it("registers every seo-practice route that exists on disk", () => {
     const routeDirectory = resolve(
       process.cwd(),
-      "app/(core)/marketing/[brandId]/seo/[siteId]",
+      "app/(core)/marketing/brands/[brandId]/seo/[siteId]",
     );
     const registered = MARKETING_SEO_SECTIONS.map((section) => section.slug)
       .sort();
@@ -72,7 +72,7 @@ describe("marketing route section registries (agency-model tree)", () => {
   });
 
   it("registers every brand-workspace segment that exists on disk", () => {
-    const routeDirectory = resolve(process.cwd(), "app/(core)/marketing/[brandId]");
+    const routeDirectory = resolve(process.cwd(), "app/(core)/marketing/brands/[brandId]");
     const onDisk = readdirSync(routeDirectory, { withFileTypes: true })
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
@@ -83,7 +83,7 @@ describe("marketing route section registries (agency-model tree)", () => {
   it("registers every crawl route that exists on disk", () => {
     const routeDirectory = resolve(
       process.cwd(),
-      "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
+      "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]",
     );
     const registered = MARKETING_CRAWL_SECTIONS.filter((section) => section.slug)
       .map((section) => section.slug)

@@ -1,4 +1,5 @@
 import type { MyCostBucket, MyCostGroup, MyCostRecord } from "./myCostService";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 /** The three ways the cost table can be read. */
 export type MyCostTab = "feature" | "organization" | "day";
@@ -81,8 +82,8 @@ export function chargeHref(r: Pick<MyCostRecord, "feature" | "linkKind" | "linkI
 /** The exact account or post a social charge was for, or null when the row did not record one. */
 function subjectHref(r: Partial<Pick<MyCostRecord, "subjectKind" | "subjectPlatform" | "subjectId" | "subjectBrandId">>): string | null {
   if (!r.subjectKind || !r.subjectId || !r.subjectBrandId) return null;
-  if (r.subjectKind === "post") return `/marketing/${r.subjectBrandId}/socials/post/${r.subjectId}`;
-  return r.subjectPlatform ? `/marketing/${r.subjectBrandId}/socials/${r.subjectPlatform}/${r.subjectId}` : null;
+  if (r.subjectKind === "post") return marketingRoutes.brandSection(r.subjectBrandId, `socials/post/${r.subjectId}`);
+  return r.subjectPlatform ? marketingRoutes.brandSection(r.subjectBrandId, `socials/${r.subjectPlatform}/${r.subjectId}`) : null;
 }
 
 /** The door a charge row shows: the exact record, else its activity's home, said plainly. */

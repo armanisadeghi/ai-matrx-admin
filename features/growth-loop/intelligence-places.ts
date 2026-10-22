@@ -12,7 +12,7 @@ import type { FeaturePlaces } from "@/features/mandates/feature-intelligence/typ
 
 const K = MANDATE_KEYS;
 const WORKSPACE = "features/growth-loop/run/components/SiteGrowthLoopWorkspace.tsx";
-const LOOP_URL = "/marketing/[brandId]/seo/[siteId]/growth-loop";
+const LOOP_URL = "/marketing/brands/[brandId]/seo/[siteId]/growth-loop";
 
 export const GROWTH_LOOP_PLACES: FeaturePlaces = {
   feature: "growth_loop",

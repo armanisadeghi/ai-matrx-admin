@@ -23,7 +23,7 @@ import { createClient } from "@/utils/supabase/server";
  */
 
 export interface LegacySiteAddress {
-  /** Brand segment for `/marketing/<brandSeg>/…` — slug when the brand has one. */
+  /** Brand segment for `/marketing/brands/<brandSeg>/…` — slug when the brand has one. */
   brandSeg: string;
   /** Site segment for `…/websites/<siteSeg>` or `…/seo/<siteSeg>`. */
   siteSeg: string;

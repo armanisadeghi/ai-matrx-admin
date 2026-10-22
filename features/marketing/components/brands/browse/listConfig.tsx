@@ -10,6 +10,7 @@ import { BrandBrowseCards } from "./BrandBrowseCards";
 import { BRAND_COLUMNS } from "./columns";
 import { BRAND_LIST_SCOPES, createBrandListService, type BrandBrowseRow } from "./service";
 import { BRAND_BULK_ACTIONS, useBrandRowActions } from "./useBrandRowActions";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 export const brandListConfig: EntityListConfig<BrandBrowseRow> = {
   surfaceKey: "marketing-brands-browse",
@@ -26,7 +27,7 @@ export const brandListConfig: EntityListConfig<BrandBrowseRow> = {
   getRowId: (row) => row.id,
   getRowName: (row) => row.name,
   getRowEntity: (row) => ({ type: "web_brand", id: row.id, title: row.name }),
-  door: { hrefFor: (row) => `/marketing/${row.id}` },
+  door: { hrefFor: (row) => marketingRoutes.brand(row.id) },
   useRowActions: useBrandRowActions,
   supportsArchived: true,
   // Archive goes through BrandArchiveFlow (it names the shared items an archive takes with it); the generic

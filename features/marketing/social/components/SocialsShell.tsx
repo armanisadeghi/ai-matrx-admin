@@ -91,7 +91,7 @@ export function SocialsShell({ children }: { children: ReactNode }) {
       {fullBleed || ownHeader ? null : <RecordPageHeader
         parents={[
           { label: "Marketing", href: marketingRoutes.home() },
-          { label: brand.name, href: `/marketing/${brand.seg}` },
+          { label: brand.name, href: marketingRoutes.brand(brand.seg) },
         ]}
         // Phone: the header row is back + name, so the name carries the PAGE ("Socials · Outliers") and
         // is the compact switcher between the tabs; desktop keeps the tab strip in the center.

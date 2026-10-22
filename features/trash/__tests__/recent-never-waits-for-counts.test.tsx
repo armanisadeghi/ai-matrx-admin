@@ -8,7 +8,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 const rpc = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc, schema: () => ({ rpc }) } }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: jest.fn() }));
 
 import { TrashList } from "../components/TrashList";

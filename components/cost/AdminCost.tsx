@@ -50,7 +50,10 @@ export function AdminUsd({ usd }: { usd: number | null | undefined }) {
   return sees ? <>{formatAdminUsd(usd)}</> : null;
 }
 
-/** Children (a dollar label or tile) rendered for a system admin only; users see points alone. */
+/**
+ * Children (a dollar label or tile) rendered for a system admin on the admin site only; users see
+ * points alone. Off the admin site, wrap an admin-only dollar block in `<AdminOnly>` (AdminOnlyTag.tsx).
+ */
 export function UsdOnly({ children }: { children: React.ReactNode }) {
   return useSeesDollars() ? <>{children}</> : null;
 }

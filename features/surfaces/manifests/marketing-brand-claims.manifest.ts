@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand claims room (`matrx-user/marketing-brand-claims`).
  *
- * Drives `/marketing/[brandId]/identity/claims` — `BrandClaimsPage`: approved
+ * Drives `/marketing/brands/[brandId]/identity/claims` — `BrandClaimsPage`: approved
  * claims, forbidden claims and disclaimers. Every value is the page AS IT IS
  * ON SCREEN (unsaved edits included). The room runs no AI job today.
  *
@@ -137,7 +137,7 @@ export const marketingBrandClaimsManifest: SurfaceManifest = {
   label: "Brand Claims",
   situation:
     "They are in the brand's Claims room: statements the brand may make word for word, statements it must never make, and required disclaimers. They can add, change or remove items in any of the three lists.",
-  urlPattern: "/marketing/[brandId]/identity/claims",
+  urlPattern: "/marketing/brands/[brandId]/identity/claims",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's Claims room, where the owner lists what the brand may say as written, what it must never say, and the legal wording to attach. Read brand_context first, then the claims_* values, which are the page exactly as it is on screen, unsaved edits included.

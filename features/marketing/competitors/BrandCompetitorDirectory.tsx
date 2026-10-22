@@ -77,6 +77,7 @@ import { compactCount as compact, PLATFORM_LABEL, rowsToSearch } from "./competi
 import { foundKey, useCompetitorSocialActions, useFoundSocials, type FoundSocials } from "./useCompetitorSocials";
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 /** A name that is just the website (www/scheme/case aside) is shown once. */
 function sameAsName(name: string, domain: string | null | undefined): boolean {
@@ -363,7 +364,7 @@ export function BrandCompetitorDirectory() {
                   return (
                     <Link
                       key={a.trackedAccountId}
-                      href={`/marketing/${brand.seg}/socials/${a.platform}/${a.profileId}`}
+                      href={marketingRoutes.brandSection(brand.seg, `socials/${a.platform}/${a.profileId}`)}
                       className="matrx-tap-area inline-flex items-center gap-1 whitespace-nowrap hover:underline"
                       title={`${PLATFORM_LABEL[a.platform] ?? a.platform} ${handle}`}
                       aria-label={`${PLATFORM_LABEL[a.platform] ?? a.platform} ${handle}, ${compact(a.followers)} followers`}
@@ -395,7 +396,7 @@ export function BrandCompetitorDirectory() {
           if (!best) return <span className="text-muted-foreground">—</span>;
           return (
             <Link
-              href={`/marketing/${brand.seg}/socials/${best.account.platform}/${best.account.profileId}`}
+              href={marketingRoutes.brandSection(brand.seg, `socials/${best.account.platform}/${best.account.profileId}`)}
               className="whitespace-nowrap hover:underline"
             >
               {best.score.toFixed(1)}×
@@ -587,7 +588,7 @@ export function BrandCompetitorDirectory() {
                 {row.accounts.length ? (
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs" onClick={(e) => e.stopPropagation()}>
                     {row.accounts.map((a) => (
-                      <Link key={a.trackedAccountId} href={`/marketing/${brand.seg}/socials/${a.platform}/${a.profileId}`} className="matrx-tap-area hover:underline">
+                      <Link key={a.trackedAccountId} href={marketingRoutes.brandSection(brand.seg, `socials/${a.platform}/${a.profileId}`)} className="matrx-tap-area hover:underline">
                         {PLATFORM_LABEL[a.platform] ?? a.platform}{" "}
                         <span className="text-muted-foreground">{formatSocialHandle({ platform: a.platform, handle: a.handle, url: a.profileUrl })}</span>{" "}
                         {compact(a.followers)}

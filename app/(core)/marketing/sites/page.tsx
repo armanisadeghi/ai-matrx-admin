@@ -5,7 +5,7 @@ import { permanentRedirect } from "next/navigation";
  *
  * The cross-brand plane has no site list of its own any more — a website belongs to
  * a brand, so the list is the door and each brand carries its own Websites
- * section (`/marketing/[brandKey]/websites`).
+ * section (`/marketing/brands/[brandKey]/websites`).
  */
 export default function LegacyMarketingSitesRedirect() {
   permanentRedirect("/marketing/brands");

@@ -269,7 +269,7 @@ export const marketingIntegrationsManifest: SurfaceManifest = {
   label: "Marketing Site Integrations",
   situation:
     "They are in the website's integrations settings: binding Google Search Console, GA4, PageSpeed and a CMS, and setting up how URL changes are reported to search engines. Unsaved changes: {unsaved_changes}. They choose which accounts and properties to bind, then save.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/settings/integrations",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/settings/integrations",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on the integrations workspace of a managed website: where the user binds Google Search Console, GA4, PageSpeed, a CMS, and custom providers to this site so evidence can start flowing. The user comes here to complete setup, fix a broken binding, or trigger a sync.

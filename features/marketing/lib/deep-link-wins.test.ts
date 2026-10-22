@@ -32,7 +32,7 @@ describe("deep link wins", () => {
 
   it("the signed-out bounce carries the full requested path, not the brand root", () => {
     const layout = readFileSync(
-      join(process.cwd(), "app/(core)/marketing/[brandId]/layout.tsx"),
+      join(process.cwd(), "app/(core)/marketing/brands/[brandId]/layout.tsx"),
       "utf8",
     );
     expect(layout).toContain("currentRequestLoginHref");

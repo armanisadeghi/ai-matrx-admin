@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand voice room (`matrx-user/marketing-brand-voice`).
  *
- * Drives `/marketing/[brandId]/identity/voice` — `VoicePage` in brand scope:
+ * Drives `/marketing/brands/[brandId]/identity/voice` — `VoicePage` in brand scope:
  * how the brand writes, measured from real samples, confirmed by the owner,
  * and enforced on every draft. The page picks 5-20 samples, measures a voice
  * fingerprint, asks the owner to confirm the high-risk fields, and offers
@@ -283,7 +283,7 @@ export const marketingBrandVoiceManifest: SurfaceManifest = {
   label: "Brand Voice",
   situation:
     "They are in the brand's Voice room (whose voice: {voice_whose|brand}); the measured voice is {voice_current.status|not measured yet}. They can pick writing samples and measure the voice, confirm the result, or paste a draft into the fixer to bring it into the voice.",
-  urlPattern: "/marketing/[brandId]/identity/voice",
+  urlPattern: "/marketing/brands/[brandId]/identity/voice",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's Voice room: how the brand writes, measured from its real writing and confirmed by its owner. Read brand_context first, then voice_current.

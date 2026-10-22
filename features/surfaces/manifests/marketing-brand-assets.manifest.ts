@@ -180,7 +180,7 @@ export const marketingBrandAssetsManifest: SurfaceManifest = {
   label: "Brand Asset Desk",
   situation:
     "They are in the brand's asset desk on the {assets_view} view: the brand's own image library, research images, stock sources and AI image generation, with the brand's image standards in your context. They can stage an AI image order.",
-  urlPattern: "/marketing/[brandId]/identity/media",
+  urlPattern: "/marketing/brands/[brandId]/identity/media",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 Read brand_context first — it tells you whose brand this is and what it sells.

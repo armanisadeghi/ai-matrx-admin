@@ -77,7 +77,7 @@ function parseArgs(): Opts {
 /**
  * FIXTURE MAP — route segment → the admin test account's record that fills it.
  * Each query takes $1 = the admin's user id and returns the newest live row it
- * created. `[siteId]` under `/marketing/[brandId]` takes $2 = the brand found.
+ * created. `[siteId]` under `/marketing/brands/[brandId]` takes $2 = the brand found.
  * A dynamic route whose every segment is not covered here is skipped.
  */
 const FIXTURES: { route: RegExp; segment: string; sql: string }[] = [

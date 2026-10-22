@@ -8,9 +8,10 @@
  */
 
 import { useMemo, useState } from "react";
-import { Sparkles, TriangleAlert } from "lucide-react";
+import { MessageSquarePlus } from "lucide-react";
 import VisualMap from "@ai-matrx/rich-content/visual-map/VisualMap";
-import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
+import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 import { WORKFLOWS_APP_URL } from "@/features/shell/constants/nav-data";
@@ -40,12 +41,12 @@ export function WorkflowOverviewView({
   }
   if (state.status === "error") {
     return (
-      <div className="mx-auto w-full max-w-[1500px] px-3 py-10 sm:px-5" role="alert">
-        <EmptyState
-          icon={<TriangleAlert />}
+      <div className="mx-auto w-full max-w-[1500px] px-3 py-10 sm:px-5">
+        <ErrorNotice
           title="Couldn’t load the overview"
-          line={state.message}
-          action={<Button onClick={retry}>Try again</Button>}
+          message={state.message}
+          operation="read the workflow overview"
+          onRetry={retry}
         />
       </div>
     );
@@ -65,7 +66,11 @@ export function WorkflowOverviewView({
     <div className="mx-auto grid w-full max-w-[1500px] gap-4 px-3 py-4 sm:px-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="min-w-0" data-testid="workflow-overview-map">
         <VisualMap
-          value={{ type: "workflow", spec: overview.spec }}
+          value={{
+            type: "workflow",
+            spec: overview.spec,
+            ...(overview.verified === null ? {} : { verified: overview.verified, issues: overview.issues ?? 0 }),
+          }}
           openOnCanvas={false}
           selectedNodeId={pickedId}
           onNodePick={(node) => setPickedId(node?.id ?? null)}
@@ -78,7 +83,7 @@ export function WorkflowOverviewView({
           </span>
           {pickedId ? (
             <Button onClick={askToChange} disabled={behind.length === 0}>
-              <Sparkles aria-hidden="true" />
+              <MessageSquarePlus aria-hidden="true" />
               Ask to change this
             </Button>
           ) : null}

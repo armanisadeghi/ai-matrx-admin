@@ -1,3 +1,5 @@
+import { marketingBrandPath, parseMarketingBrandPath } from "@/features/marketing/lib/keys";
+
 /**
  * Same-route brand switching (Arman's rule, 2026-08-30): changing the brand
  * in the crumb keeps you on EXACTLY the same route for the new brand — as long
@@ -29,8 +31,8 @@ const DEGRADE_RULES: readonly { prefix: string[]; keep: number }[] = [
 ];
 
 /**
- * The same address on another brand. `pathnameWithinBrand` is everything after
- * `/marketing/<brandSeg>` (no leading slash needed), `search` the current query
+ * The same address on another brand. `pathname` is the current brand address
+ * (`/marketing/brands/<brandSeg>/…`), `search` the current query
  * string ("" or "?x=y").
  */
 export function brandSwitchHref(
@@ -38,8 +40,7 @@ export function brandSwitchHref(
   pathname: string,
   search = "",
 ): string {
-  const match = /^\/marketing\/[^/]+(?:\/(.*))?$/.exec(pathname);
-  const segments = (match?.[1] ?? "").split("/").filter(Boolean);
+  const segments = parseMarketingBrandPath(pathname)?.rest ?? [];
 
   let kept = segments;
   for (const rule of DEGRADE_RULES) {
@@ -56,6 +57,6 @@ export function brandSwitchHref(
   for (const key of ENTITY_QUERY_PARAMS) params.delete(key);
   const query = params.toString();
 
-  const base = `/marketing/${targetSeg}${kept.length ? `/${kept.join("/")}` : ""}`;
+  const base = marketingBrandPath(targetSeg, kept.join("/"));
   return query ? `${base}?${query}` : base;
 }

@@ -10,6 +10,7 @@ import { SocialConnectionsPanel } from "@/features/social-connections/SocialConn
 import { CustomerAccountsPanel } from "@/features/social-connections/CustomerAccountsPanel";
 import { TikTokConnectionsPanel } from "@/features/tiktok-connections/TikTokConnectionsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 const HUB_PROVIDERS = ["pinterest", "facebook", "instagram", "threads", "linkedin", "snapchat", "reddit"] as const;
 
@@ -31,7 +32,7 @@ export function ManageConnectionsDialog({
   brandSeg: string;
   onChanged: () => void;
 }) {
-  const returnUrl = `/marketing/${brandSeg}/socials/accounts`;
+  const returnUrl = marketingRoutes.brandSection(brandSeg, "socials/accounts");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85dvh] max-w-4xl overflow-y-auto">

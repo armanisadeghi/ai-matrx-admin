@@ -768,7 +768,7 @@ function BenchmarkTable({
       columns={columns}
       getRowId={(r) => r.rowId}
       {...socialRowOpen<BenchmarkRow>((r) => {
-        if (r.profileId) router.push(`/marketing/${brandSeg}/socials/${r.platform}/${r.profileId}`);
+        if (r.profileId) router.push(marketingRoutes.brandSection(brandSeg, `socials/${r.platform}/${r.profileId}`));
       })}
       toolbar={{ searchPlaceholder: "Search accounts…" }}
       emptyState={{ title: "No accounts yet", description: "Track accounts to compare" }}

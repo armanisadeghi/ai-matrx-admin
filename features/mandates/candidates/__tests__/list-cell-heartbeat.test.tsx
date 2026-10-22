@@ -16,7 +16,7 @@ import { createRoot, type Root } from "react-dom/client";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const rpc = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: (...a: unknown[]) => rpc(...a) } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: (...a: unknown[]) => rpc(...a), schema: () => ({ rpc: (...a: unknown[]) => rpc(...a) }) } }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => "user-1" }));
 jest.mock("@/lib/scoped-config/effectiveKnobs", () => ({
   peekEffectiveKnob: () => 10,

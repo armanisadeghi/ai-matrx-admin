@@ -13,7 +13,10 @@
 
 jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: jest.fn(), schema: jest.fn() } }));
 jest.mock("@/features/scopes/host/associationsStore", () => ({
-  associationsDataSource: { rpc: jest.fn() },
+  associationsDataSource: (() => {
+    const rpc = jest.fn();
+    return { rpc, schema: jest.fn(() => ({ rpc: (...a: unknown[]) => rpc(...a) })) };
+  })(),
   getAssociationsStore: jest.fn(),
 }));
 jest.mock("@/features/scopes/service/associationsService", () => ({ associationsService: { add: jest.fn() } }));

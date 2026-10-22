@@ -19,7 +19,7 @@ import { createRoot, type Root } from "react-dom/client";
 
 const rpc = jest.fn();
 const toast = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc, schema: () => ({ rpc }) } }));
 jest.mock("@/components/ui/use-toast", () => ({ toast: (...a: unknown[]) => toast(...a) }));
 
 import { TrashList } from "../components/TrashList";

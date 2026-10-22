@@ -38,7 +38,10 @@ const rpc = jest.fn((name: string, args: Record<string, string>) => {
 });
 
 jest.mock("@/utils/supabase/client", () => ({
-  createClient: () => ({ rpc: (...a: unknown[]) => rpc(...(a as [string, Record<string, string>])) }),
+  createClient: () => {
+    const call = (...a: unknown[]) => rpc(...(a as [string, Record<string, string>]));
+    return { rpc: call, schema: () => ({ rpc: call }) };
+  },
 }));
 const ME = { id: "u-me" };
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => ME }));

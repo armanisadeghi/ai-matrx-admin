@@ -130,7 +130,6 @@ import { SetupSection } from "./SetupSection";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 type BridgeAction =
@@ -240,7 +239,6 @@ export function SetupBridgeSection({
 }) {
   const dispatch = useAppDispatch();
   const queryClient = useQueryClient();
-  const { format: formatCostDisplay } = useCostDisplay();
 
   const linked = Boolean(cms?.link.linked && cms.link.cmsSiteId);
 
@@ -663,9 +661,6 @@ export function SetupBridgeSection({
       for (const line of started.skipped) toast.info(line);
       toast.success(
         `Building ${started.estimate.pages} page(s) — ${started.estimate.calls} AI step(s)` +
-          (started.estimate.usd != null
-            ? `, about ${formatCostDisplay(started.estimate.usd)}`
-            : "") +
           "…",
       );
       setFillStatus(await bridgeFillStatus(dispatch, site.id));

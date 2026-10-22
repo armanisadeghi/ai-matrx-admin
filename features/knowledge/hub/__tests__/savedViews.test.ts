@@ -12,7 +12,7 @@
  */
 
 const rpc = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: (...a: unknown[]) => rpc(...a) } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc: (...a: unknown[]) => rpc(...a), schema: () => ({ rpc: (...a: unknown[]) => rpc(...a) }) } }));
 const setPinned = jest.fn();
 jest.mock("@/features/scopes/service/favoritesService", () => ({
   favoritesService: { setPinned: (...a: unknown[]) => setPinned(...a) },

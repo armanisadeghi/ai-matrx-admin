@@ -57,11 +57,6 @@ export const filesUiHost: FilesUiHost = {
   ErrorAlchemyMenu: lazyPiece<Loose>(() =>
     import("@/components/errors/ErrorAlchemyMenu").then((m) => m.ErrorAlchemyMenu as unknown as ComponentType<Loose>),
   ),
-  AccessSummaryPanel: lazyPiece<{ entityType: string; entityId: string } & Loose>(() =>
-    import("@ai-matrx/sharing/react").then(
-      (m) => m.AccessSummaryPanel as unknown as ComponentType<{ entityType: string; entityId: string } & Loose>,
-    ),
-  ),
   copyNotify,
   showManualCopy: (options) => {
     void import("@/components/dialogs/clipboard-fallback/manualCopyOpener").then((m) => m.showManualCopy(options));

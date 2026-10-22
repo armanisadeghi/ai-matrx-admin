@@ -337,7 +337,7 @@ export const marketingFindingsManifest: SurfaceManifest = {
   label: "Marketing Findings Register",
   situation:
     "They are in the website's findings: {findings_total|an unknown number of} findings match their filters, and the open finding is \"{finding_item.label|none, they are on the list}\" on {finding_page.path|no single page}. They can suppress a finding or change its status.",
-  urlPattern: "/marketing/[brandId]/seo/[siteId]/findings",
+  urlPattern: "/marketing/brands/[brandId]/seo/[siteId]/findings",
   inheritsFrom: "matrx-user/marketing-site",
   groups,
   intro: `<surface_intro>

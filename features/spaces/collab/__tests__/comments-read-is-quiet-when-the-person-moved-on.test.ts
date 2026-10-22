@@ -5,7 +5,7 @@
  * once more; a real refusal is still reported.
  */
 const rpc = jest.fn();
-jest.mock("@/features/scopes/host/associationsStore", () => ({ associationsDataSource: { rpc: (...a: unknown[]) => rpc(...a) } }));
+jest.mock("@/features/scopes/host/associationsStore", () => ({ associationsDataSource: { rpc: (...a: unknown[]) => rpc(...a), schema: () => ({ rpc: (...a: unknown[]) => rpc(...a) }) } }));
 jest.mock("@/utils/auth/getUserId", () => ({ getUserId: () => "me" }));
 jest.mock("@/features/rich-document/annotations/service", () => ({ deleteComment: jest.fn(), editComment: jest.fn(), notifyMentions: jest.fn(), resolveComment: jest.fn() }));
 

@@ -43,6 +43,7 @@ import {
   type TrackedRole,
 } from "../types";
 import { rememberedMaxPosts } from "../post-count";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 const ROLE_OPTIONS: SelectOption<TrackedRole>[] = TRACKED_ROLES.map((r) => ({
   value: r,
@@ -114,7 +115,7 @@ export function TrackAccountDialog({
         await invalidate();
         toast.success("Post saved");
         onOpenChange(false);
-        router.push(`/marketing/${brandSeg}/socials/post/${result.post_id}`);
+        router.push(marketingRoutes.brandSection(brandSeg, `socials/post/${result.post_id}`));
       } else {
         // Leaving the field to press Track starts the paid lookup: wait for it and track what it fetched.
         const fetched = await input.fetchedAccount();

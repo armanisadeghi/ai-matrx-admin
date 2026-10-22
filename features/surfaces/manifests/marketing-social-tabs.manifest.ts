@@ -62,7 +62,7 @@ function build(args: {
     label: args.label,
     description: args.description,
     situation: args.situation,
-    urlPattern: `/marketing/[brandId]/socials/${args.local.replace("marketing-social-", "")}`,
+    urlPattern: `/marketing/brands/[brandId]/socials/${args.local.replace("marketing-social-", "")}`,
     briefValues: args.briefValues,
     intro: args.intro,
     groups: [BRAND_GROUP, ...args.groups],

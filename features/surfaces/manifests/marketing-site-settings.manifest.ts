@@ -196,7 +196,7 @@ export const marketingSiteSettingsManifest: SurfaceManifest = {
   label: "Marketing Site Settings",
   situation:
     "They are on the website's settings: status {site_status}, visibility {site_visibility}, default crawl rules, and the health of every data source ({data_sources_needing_attention|no} need attention). Unsaved changes: {unsaved_changes}. They can change crawl scope, budget and behavior, and pause or resume the website.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/settings",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/settings",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on the settings page of a managed website: its identity and lifecycle, the default crawl policy every crawl inherits, and the health of every data source feeding it. Read brand_context and site_context first for the brand and site framing.

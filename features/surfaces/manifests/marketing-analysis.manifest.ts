@@ -172,7 +172,7 @@ export const marketingAnalysisManifest: SurfaceManifest = {
   label: "Marketing Analysis Queue",
   situation:
     "They are on the website's priority queue of open issues to fix: {queue_total|no} items match, sorted by {queue_sort|the default order}. They can search, filter and sort the queue.",
-  urlPattern: "/marketing/[brandId]/seo/[siteId]/analysis",
+  urlPattern: "/marketing/brands/[brandId]/seo/[siteId]/analysis",
   inheritsFrom: "matrx-user/marketing-site",
   groups,
   intro: `<surface_intro>

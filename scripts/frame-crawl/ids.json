@@ -190,7 +190,7 @@
     "from": "/maps/36d52ba4-3265-468b-a3c4-536049efe22c",
     "ownership": "no-lane-list"
   },
-  "/marketing/[brandId]": {
+  "/marketing/brands/[brandId]": {
     "value": "1c71e366-143c-4692-8e9a-1b59bdfe114a",
     "from": "/marketing/1c71e366-143c-4692-8e9a-1b59bdfe114a",
     "ownership": "no-lane-list"
@@ -409,7 +409,7 @@
   "/education/classes/[classId]/tests/[testId]": {
     "skipped": "parent list answered 404"
   },
-  "/marketing/[brandId]/socials/post/[postId]": {
+  "/marketing/brands/[brandId]/socials/post/[postId]": {
     "skipped": "parent list answered 404"
   },
   "/organizations/[orgId]/admin/automations/[kind]": {
@@ -653,7 +653,7 @@
   "/hr/time/timesheets/[employmentId]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/locations/[locationId]": {
+  "/marketing/brands/[brandId]/locations/[locationId]": {
     "value": "5c07d83f-ff16-4dbb-89c6-27802e916229",
     "from": "/marketing/1c71e366-143c-4692-8e9a-1b59bdfe114a/locations/5c07d83f-ff16-4dbb-89c6-27802e916229/grid",
     "ownership": "no-lane-list"
@@ -664,16 +664,16 @@
   "/marketing/brands/[brandId]/[[...rest]]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]": {
+  "/marketing/brands/[brandId]/websites/[siteId]": {
     "skipped": "mixed-ownership list and Mine lane did not apply"
   },
   "/marketing/sites/[siteId]/[...rest]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/seo/[siteId]": {
+  "/marketing/brands/[brandId]/seo/[siteId]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/socials/[platform]": {
+  "/marketing/brands/[brandId]/socials/[platform]": {
     "skipped": "list shows no records"
   },
   "/marketing/content-plan/nodes/[nodeId]": {
@@ -697,28 +697,28 @@
   "/hr/people/[employeeId]/c/[tabKey]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/intelligence/reputation/[siteId]": {
+  "/marketing/brands/[brandId]/intelligence/reputation/[siteId]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/planning/initiatives/[id]": {
+  "/marketing/brands/[brandId]/planning/initiatives/[id]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/seo/[siteId]/[...rest]": {
+  "/marketing/brands/[brandId]/seo/[siteId]/[...rest]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/socials/[platform]/[accountId]": {
+  "/marketing/brands/[brandId]/socials/[platform]/[accountId]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]/[...rest]": {
+  "/marketing/brands/[brandId]/websites/[siteId]/[...rest]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/content/map/[mapId]": {
+  "/marketing/brands/[brandId]/content/map/[mapId]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/content/plan/[siteId]": {
+  "/marketing/brands/[brandId]/content/plan/[siteId]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/socials/videos/[projectId]": {
+  "/marketing/brands/[brandId]/socials/videos/[projectId]": {
     "skipped": "list shows no records"
   },
   "/organizations/[orgId]/scopes/[typeId]/[scopeId]": {
@@ -739,19 +739,19 @@
   "/research/topics/[topicId]/tags/[tagId]": {
     "skipped": "list shows no records"
   },
-  "/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]": {
+  "/marketing/brands/[brandId]/seo/[siteId]/ai-visibility/[view]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/seo/[siteId]/findings/[findingId]": {
+  "/marketing/brands/[brandId]/seo/[siteId]/findings/[findingId]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]": {
+  "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]/pages/[pageId]": {
+  "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]": {
+  "/marketing/brands/[brandId]/websites/[siteId]/sitemaps/[sitemapId]": {
     "skipped": "parent record unresolved"
   },
   "/organizations/[orgId]/admin/automations/[kind]/[id]": {
@@ -772,10 +772,10 @@
   "/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]": {
+  "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]": {
     "skipped": "parent record unresolved"
   },
-  "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]": {
+  "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]": {
     "skipped": "parent record unresolved"
   }
 }

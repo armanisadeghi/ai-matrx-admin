@@ -1,0 +1,17 @@
+// record-view: none — a redirect to the page that shows the record
+// app/(core)/marketing/brands/[brandId]/intelligence/competitors/all/page.tsx
+//
+// "All" is the bare Competitors route now; this URL only forwards to it.
+
+import { permanentRedirect } from "next/navigation";
+
+import { marketingRoutes } from "@/features/marketing/lib/routes";
+
+export default async function BrandCompetitorsAllPage({
+  params,
+}: {
+  params: Promise<{ brandId: string }>;
+}) {
+  const { brandId } = await params;
+  permanentRedirect(marketingRoutes.brandCompetitors(brandId));
+}

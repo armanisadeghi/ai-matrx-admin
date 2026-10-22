@@ -38,9 +38,12 @@ read. If you cannot find 3, stop and report which input is missing and where it 
 
 Each example carries at least one of the agent's variables and shares no distinctive 6-word run with
 your goal text (a proof case's own text in the description is caught as a leak and refused).
-Send them in `sample_inputs` as a JSON string:
-`[{"listing_text": "<real value>"}, {"listing_text": "<real value>"}, {"listing_text": "<real value>"}]`
-(a conversational agent: a JSON array of 3 real typed requests as strings).
+Every example has ONE shape, the same in `sample_inputs` (as a JSON string) and in the workflow's `examples`
+(as a list): `{"variables": {"listing_text": "<real value>"}, "user_input": "<real typed text>"}`. Either half
+may be left out, never both; add `"reference_output"` only when a real accepted answer exists. A conversational
+agent's example may be a plain string (one real typed request). An example that carries no input, such as a
+bare `{"listing_text": "..."}` without `"variables"`, is refused at intake before anything is spent
+(aidream `services/agent_build/intake.py` `example_refusal`).
 
 ## 3. Start the build through the workflow MCP
 
@@ -53,7 +56,7 @@ Coding agents build through the `workflow` MCP tool, never a script or a build r
   the returned `run_id` and the subject.
 - `inputs` are exactly `agent_build_v1.RUN_INPUTS`: `source_kind` `build`, `source_ref` your uuid,
   `request_text`, `door` (`coding_agent`), `mode` `build`, `mandate_key` (or null), `agent_id` null,
-  `unproven_requested` false, `examples` (your real inputs from step 2), and `spec` (name, goals,
+  `unproven_requested` false, `examples` (your real inputs from step 2, each in the one shape above), and `spec` (name, goals,
   variables with help text, `output_format` / `output_schema`).
 - Improve or rebuild an existing agent: `subject=agent:<agent_id>` with `source_kind` `agent`.
 - Never call `agent_author update` on the agent while its run is going.

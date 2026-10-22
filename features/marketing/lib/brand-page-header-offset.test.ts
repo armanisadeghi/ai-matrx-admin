@@ -21,7 +21,7 @@ import { aliasTarget } from "@/scripts/lib/source-roots.cjs";
 
 const BRAND_ROUTE_DIR = resolve(
   process.cwd(),
-  "app/(core)/marketing/[brandId]",
+  "app/(core)/marketing/brands/[brandId]",
 );
 
 const HEADER_OFFSET_MARKERS = ["<PageHeader", "shell-header-h"] as const;
@@ -109,7 +109,7 @@ describe("marketing [brandId] pages clear the shell header band", () => {
     expect(segments.length).toBeGreaterThan(5);
   });
 
-  it.each(segments)("/marketing/[brandId]/%s reserves the header offset", (segment) => {
+  it.each(segments)("/marketing/brands/[brandId]/%s reserves the header offset", (segment) => {
     expect(pageClearsHeader(segment)).toBe(true);
   });
 });

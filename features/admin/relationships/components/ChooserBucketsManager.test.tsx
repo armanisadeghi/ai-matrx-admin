@@ -41,7 +41,7 @@ jest.mock("@/components/ui/button", () => ({
 }));
 
 jest.mock("@/utils/supabase/client", () => ({
-  createClient: () => ({ rpc }),
+  createClient: () => ({ rpc, schema: () => ({ rpc }) }),
 }));
 
 jest.mock("@/lib/toast", () => ({

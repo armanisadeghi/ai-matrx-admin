@@ -127,7 +127,7 @@ export const marketingSitePagesManifest: SurfaceManifest = {
   label: "Marketing Pages Registry",
   situation:
     "They are on the website's page list, filtered to {coverage_filter|all pages}, with {visible_page_count|no} pages on screen; each row shows the page's health and Search Console numbers. They can search, filter and open a page.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/pages",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/pages",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on the canonical page registry of a managed website: one row per canonical URL, with observed snapshot evidence (title, word count), deterministic health verdicts (SERP metadata, social card, indexability), sitemap membership, and 28-day Google Search Console performance. The user comes here to triage which pages need work and to jump into a single page's workspace.

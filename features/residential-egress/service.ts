@@ -93,7 +93,7 @@ export async function setHomeConnectionEnabled(
   deviceId: string,
   enabled: boolean,
 ): Promise<void> {
-  const { error } = await supabase.rpc("egress_device_set", {
+  const { error } = await supabase.schema("ops").rpc("egress_device_set", {
     p_device_id: deviceId,
     p_enabled: enabled,
   });
@@ -105,7 +105,7 @@ export async function renameHomeConnection(
   deviceId: string,
   displayName: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("egress_device_set", {
+  const { error } = await supabase.schema("ops").rpc("egress_device_set", {
     p_device_id: deviceId,
     p_display_name: displayName,
   });

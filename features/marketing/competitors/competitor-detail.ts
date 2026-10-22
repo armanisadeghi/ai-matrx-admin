@@ -7,6 +7,7 @@
 import { formatSocialHandle } from "@/features/marketing/lib/social-handle";
 import type { BrandCompetitor } from "./brand-competitors";
 import type { FoundSocialLink } from "./social-links";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 export const PLATFORM_LABEL: Record<string, string> = {
   instagram: "Instagram",
@@ -60,7 +61,7 @@ export interface CompetitorDetailModel {
 }
 
 export function competitorDetailModel(row: BrandCompetitor, brandSeg: string): CompetitorDetailModel {
-  const route = (platform: string, id: string) => `/marketing/${brandSeg}/socials/${platform}/${id}`;
+  const route = (platform: string, id: string) => marketingRoutes.brandSection(brandSeg, `socials/${platform}/${id}`);
   const accounts = row.accounts.map((a): DetailAccount => ({
     trackedAccountId: a.trackedAccountId,
     platformLabel: platformLabel(a.platform),

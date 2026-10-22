@@ -76,7 +76,7 @@ export function useCompetitorAutopsy(
   siteId: string | null,
   /**
    * 🚨 BRAND SCOPE IS LOAD-BEARING (2026-08-30). The brand route
-   * `/marketing/<brand>/intelligence/competitors` carries no `?siteId`, and
+   * `/marketing/brands/<brand>/intelligence/competitors` carries no `?siteId`, and
    * this hook used to fall back to `sites.data[0]` — the first site on the
    * PLATFORM. So every brand's competitors page silently rendered a different
    * brand's competitors and verdict (All Green, with 12 competitors, showed

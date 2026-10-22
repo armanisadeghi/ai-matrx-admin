@@ -178,7 +178,7 @@ export function PlanSitesList({
   brandId,
 }: {
   /**
-   * 🚨 BRAND SCOPE (2026-08-30). `/marketing/<brand>/content/plan` mounted
+   * 🚨 BRAND SCOPE (2026-08-30). `/marketing/brands/<brand>/content/plan` mounted
    * this list with nothing, so it showed every site the viewer can plan
    * across every org and every brand — one brand's workspace listing
    * another brand's websites and their plan coverage. The dropdown is

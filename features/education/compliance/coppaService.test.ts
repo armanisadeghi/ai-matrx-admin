@@ -19,6 +19,7 @@ jest.mock("@/utils/supabase/client", () => ({
       getSession: (...args: unknown[]) => getSession(...args),
     },
     rpc: (...args: unknown[]) => rpc(...args),
+    schema: () => ({ rpc: (...args: unknown[]) => rpc(...args) }),
   },
 }));
 

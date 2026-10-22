@@ -74,6 +74,7 @@ import {
 } from "@/features/marketing/data/hooks";
 import { brandSwitchHref } from "@/features/marketing/lib/brand-switch";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
+import { parseMarketingBrandPath } from "@/features/marketing/lib/keys";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
 
@@ -273,8 +274,9 @@ export function MarketingBrandCrumb() {
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
 
-  const segments = pathname.split("/").filter(Boolean);
-  // ["marketing", "<brandSeg>", "<sectionSeg>", "<sub>", …]
+  // ["marketing", "<brandSeg>", "<sectionSeg>", "<sub>", …] — read from
+  // `/marketing/brands/<brandSeg>/…` through the ONE brand-path parser.
+  const segments = ["marketing", brand.seg, ...(parseMarketingBrandPath(pathname)?.rest ?? [])];
   const sectionSeg = segments[2] ?? "";
   const branch =
     sectionSeg === "websites" || sectionSeg === "seo" ? sectionSeg : null;

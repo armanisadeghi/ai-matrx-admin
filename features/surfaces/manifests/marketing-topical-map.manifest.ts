@@ -2,7 +2,7 @@
  * Surface manifest — Topical Map (`matrx-user/marketing-topical-map`).
  *
  * The Content section's home and one map's workspace:
- * `/marketing/[brandId]/content`, `/content/map`, and
+ * `/marketing/brands/[brandId]/content`, `/content/map`, and
  * `/content/map/[mapId]` with its six screens (outline, table, graph, text,
  * pages, history). The map decides WHICH pages a brand should have and WHERE
  * they live; the content plan beside it — its own surfaces,
@@ -223,7 +223,7 @@ export const marketingTopicalMapManifest: SurfaceManifest = {
   label: "Topical Map",
   situation:
     "They are in a brand's topical map \"{map_name|(still loading)}\" on the {map_screen|outline} screen: the tree of subjects the brand should cover ({topic_total|an unknown number of} topics), which decides which pages should exist and where. Selected topic: {selected_topic_slug|none}.",
-  urlPattern: "/marketing/[brandId]/content/map/[mapId]",
+  urlPattern: "/marketing/brands/[brandId]/content/map/[mapId]",
   intro: `<surface_intro>
 You are in a brand's TOPICAL MAP: the tree of subjects this brand should cover, and the plan for getting its website there. The map decides WHICH pages should exist and WHERE they live; the content plan, a separate surface, decides what one page says.
 Topics are addressed by SLUG, never by id. visible_topics is what the person can actually see right now — filters applied, collapsed branches excluded — while map_outline is the whole map. A count that is absent was not loaded; it never means zero.

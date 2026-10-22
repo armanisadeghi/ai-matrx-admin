@@ -1,6 +1,6 @@
 import React from "react";
-import MarketingBrandLayout from "@/app/(core)/marketing/[brandId]/layout";
-import MarketingWebsiteLayout from "@/app/(core)/marketing/[brandId]/websites/[siteId]/layout";
+import MarketingBrandLayout from "@/app/(core)/marketing/brands/[brandId]/layout";
+import MarketingWebsiteLayout from "@/app/(core)/marketing/brands/[brandId]/websites/[siteId]/layout";
 
 jest.mock("server-only", () => ({}));
 jest.mock("next/navigation", () => ({

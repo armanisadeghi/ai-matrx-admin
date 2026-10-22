@@ -8,6 +8,7 @@ import { OrgResourceLayout } from "../OrgResourceLayout";
 import { OrgResourceList } from "@/features/organizations/components/OrgResourceList";
 import { supabase } from "@/utils/supabase/client";
 import { useResolvedOrganization } from "@/features/organizations/hooks";
+import { NOT_EMBEDDED_FILTER } from "@/features/notes/service/embeddedNotes";
 import { ReadFailure } from "@ai-matrx/design-system";
 
 const SELECT_COLS = "id, label, updated_at, organization_id, created_by, tags";
@@ -17,6 +18,7 @@ const fetchOwned = async (orgId: string) => {
     .schema("workbench").from("notes")
     .select(SELECT_COLS)
     .is("deleted_at", null)
+    .or(NOT_EMBEDDED_FILTER)
     .eq("organization_id", orgId)
     .order("updated_at", { ascending: false });
   return (res.data ?? []) as Array<Record<string, unknown>>;

@@ -4,7 +4,7 @@
  * A post panel opened inside a brand's section carries that brand's route segment (`brandSeg`). It lives in the
  * overlay store and in `?panels=` (`social_post:<postId>:o-<org>_b-<brand>`), so without a rule it follows the
  * person into another brand's Studio or onto /board and reopens over the wrong brand's data. The rule: a panel
- * with a brand belongs to that brand's pages (`/marketing/<brandSeg>/...`); when the route is anywhere else it
+ * with a brand belongs to that brand's pages (`/marketing/brands/<brandSeg>/...`); when the route is anywhere else it
  * closes, and a link restored on another page does not open it. A panel with no brand (opened outside a brand,
  * e.g. from a board) belongs to no page in particular and stays.
  */

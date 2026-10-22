@@ -17,7 +17,7 @@ jest.mock("@ai-matrx/chat/surfaces/runtime/surface-writeback", () => ({
 // the network edge (the Supabase client) is stubbed.
 const rpc = jest.fn();
 jest.mock("@/utils/supabase/client", () => ({
-  supabase: { rpc: (...args: unknown[]) => rpc(...args) },
+  supabase: { rpc: (...args: unknown[]) => rpc(...args), schema: () => ({ rpc: (...args: unknown[]) => rpc(...args) }) },
 }));
 
 const vocab = { subtype: ["quiz", "flashcards"], status: ["ready"], visibility: ["private"] };

@@ -177,6 +177,8 @@ export interface BoardToolHost<T extends BoardTileBase & { title: string }> {
     surface?: string | null;
     /** Its content publishes a surface once it loads (a Page tile), even while `surface` is not known yet. */
     loadsSurface?: boolean;
+    /** The custom Table the tile shows (id + a template's table token), named in `board_items` asleep or awake. */
+    table?: { id: string; token?: string };
   };
   /**
    * Each tile's own surface capture (`item-surfaces.ts`), live or dormant —

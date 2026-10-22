@@ -3,7 +3,7 @@
 /**
  * The brand door into COMPETITORS.
  *
- * 🚨 WHY THIS EXISTS (2026-08-30). `/marketing/<brand>/intelligence/competitors`
+ * 🚨 WHY THIS EXISTS (2026-08-30). `/marketing/brands/<brand>/intelligence/competitors`
  * mounted `CompetitorAutopsyWorkspace` with NO scope at all. The workspace
  * takes its site from `?siteId`, and the brand route never sets one, so it fell
  * back to `sites.data[0]` — the first site on the PLATFORM. Every brand's

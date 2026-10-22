@@ -82,7 +82,7 @@ import "../question-desk.css";
 /**
  * WHERE THE INTERVIEW IS ANSWERED. The desk is one shared answer bar with more
  * than one seat: the admin Question Desk (decisions an agent filed) and member
- * routes such as a brand owner's story sitting (`/marketing/<brand>/identity/story`).
+ * routes such as a brand owner's story sitting (`/marketing/brands/<brand>/identity/story`).
  * The database decides who may answer (the respondent's grant, or the person
  * who opened the interview); the seat only decides where "back" goes and which
  * ways of answering the questions take.

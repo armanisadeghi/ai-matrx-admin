@@ -87,8 +87,8 @@ export const PAGELESS_LEVELS: PagelessTable = {
     "/l",
     "/mandates/id",
     "/mandates/record-preview",
-    "/marketing/[brandId]/socials/[platform]",
-    "/marketing/[brandId]/socials/post",
+    "/marketing/brands/[brandId]/socials/[platform]",
+    "/marketing/brands/[brandId]/socials/post",
     "/marketing/ai-visibility/runs",
     "/marketing/brands/smart-add/enrich",
     "/marketing/brands/smart-add/validate",
@@ -260,7 +260,7 @@ export const PAGELESS_LEVELS: PagelessTable = {
       "tools",
       "topical-maps"
     ],
-    "/marketing/[brandId]/socials": [
+    "/marketing/brands/[brandId]/socials": [
       "accounts",
       "ads",
       "kpis",

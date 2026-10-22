@@ -2,7 +2,7 @@
 //
 // The agency plane's news monitors: every tracker the person administers
 // across brands, with what its relevance check receives and what it cost.
-// A brand's own Monitoring page stays at /marketing/[brandId]/intelligence/monitoring.
+// A brand's own Monitoring page stays at /marketing/brands/[brandId]/intelligence/monitoring.
 
 
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";

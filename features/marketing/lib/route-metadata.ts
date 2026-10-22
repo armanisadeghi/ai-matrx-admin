@@ -5,7 +5,7 @@ import {
   isCrawlReportKey,
 } from "@/features/marketing/lib/crawl-reports";
 import { BRAND_KIND_COPY, brandKindOf, type BrandKind } from "@/features/marketing/lib/brand-kind";
-import { MARKETING_RESERVED_SEGMENTS } from "@/features/marketing/lib/keys";
+import { parseMarketingBrandPath } from "@/features/marketing/lib/keys";
 import { MARKETING_BRAND_SECTIONS } from "@/features/marketing/lib/brand-sections";
 import {
   getMarketingCrawlSection,
@@ -16,7 +16,7 @@ import {
 /**
  * Title/description/favicon-badge identity for every Marketing route in the
  * agency-model tree. Static agency-plane routes are declared; everything under
- * `/marketing/[brandSeg]/…` derives from the SAME section registries the
+ * `/marketing/brands/[brandSeg]/…` derives from the SAME section registries the
  * sidebar renders, so a screen can never carry a different name in the tab
  * than in the menu.
  */
@@ -248,7 +248,12 @@ export function getMarketingRouteMetadata(
     return createMarketingMetadata(normalizedPath, staticIdentity);
   }
 
-  const segments = normalizedPath.split("/").filter(Boolean);
+  // A brand workspace (`/marketing/brands/<brand>/…`) is read in the brand
+  // branch below as `[marketing, <brand>, …section]`.
+  const brandPath = parseMarketingBrandPath(normalizedPath);
+  const segments = brandPath
+    ? ["marketing", brandPath.brandSeg, ...brandPath.rest]
+    : normalizedPath.split("/").filter(Boolean);
   const first = segments[1];
   if (!first) return createMarketingMetadata(normalizedPath, MARKETING_ROOT);
 
@@ -282,11 +287,11 @@ export function getMarketingRouteMetadata(
   }
 
   // Legacy shapes still resolve to a redirect page; give them honest identity.
-  if (MARKETING_RESERVED_SEGMENTS.has(first)) {
+  if (!brandPath) {
     return createMarketingMetadata(normalizedPath, OPENING);
   }
 
-  // ── The brand workspace: /marketing/[brandSeg]/… ──────────────────────
+  // ── The brand workspace: /marketing/brands/[brandSeg]/… ───────────────
   const section = segments[2];
   if (!section) {
     return createMarketingMetadata(normalizedPath, {

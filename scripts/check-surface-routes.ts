@@ -446,7 +446,7 @@ function selfTest(): void {
       why: "the retired brand-first page workspace (only a redirector lives there now)",
     },
     {
-      pattern: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+      pattern: "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]",
       shouldBeAlive: true,
       why: "the live page workspace",
     },

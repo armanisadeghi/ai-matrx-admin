@@ -62,6 +62,18 @@ export function entityTableOf(source: NodeSource): { token: string; filter?: Ent
 }
 
 /**
+ * The custom Table a table tile shows — its id and, for a template's table, the pack token stamped at install
+ * ("color", "type_style"…) — or null for any other tile. What `board_items` names so an agent can reach the
+ * table's rows through the records tool by id, whether or not the tile is awake.
+ */
+export function customTableOf(source: NodeSource): { id: string; token?: string } | null {
+  if (source.kind !== "entity" || source.entity !== TABLE_ENTITY || !source.id) return null;
+  // Boards made 2026-10-19 carry the pack token as `meta.token` beside the id.
+  const token = source.meta?.[TABLE_META_PACK_TOKEN] ?? source.meta?.[TABLE_META_TOKEN];
+  return { id: source.id, ...(token ? { token } : {}) };
+}
+
+/**
  * A table tile over a registered entity token, optionally pinned to one parent and drawn as a section.
  * `readOnly`: shows the rows and never writes; always a section (records-ui's `SectionCard` is the card with a
  * read-only option), whatever `layout` says.

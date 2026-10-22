@@ -133,7 +133,7 @@ export function buildMarketingSubNav(
   }
   // A site's screens live in two registries — the website INVENTORY and the
   // SEO PRACTICE — and the base path says which branch is being navigated
-  // (`/marketing/<brand>/{websites|seo}/<site>`), so the header never offers a
+  // (`/marketing/brands/<brand>/{websites|seo}/<site>`), so the header never offers a
   // section that does not exist on the branch the user is on.
   const modes: (MarketingWebsiteMode | MarketingSeoMode)[] =
     sitePath.split("/").filter(Boolean)[2] === "seo"

@@ -12,7 +12,7 @@ jest.mock("@/features/marketing/components/shared/MarketingUi", () => ({
   LoadingSurface: () => null,
 }));
 
-import SiteReportsRoute from "@/app/(core)/marketing/[brandId]/seo/[siteId]/reports/page";
+import SiteReportsRoute from "@/app/(core)/marketing/brands/[brandId]/seo/[siteId]/reports/page";
 import { MARKETING_SEO_SECTIONS } from "@/features/marketing/lib/route-sections";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 

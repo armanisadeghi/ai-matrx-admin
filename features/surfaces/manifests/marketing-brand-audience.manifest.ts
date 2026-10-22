@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand audience room (`matrx-user/marketing-brand-audience`).
  *
- * Drives `/marketing/[brandId]/identity/audience` — `BrandAudiencePage`: the
+ * Drives `/marketing/brands/[brandId]/identity/audience` — `BrandAudiencePage`: the
  * named personas (`web.brand_persona`) every brief and agent writes for — each
  * with its summary, demographics, goals, pain points, objections and channels,
  * and which one is primary.
@@ -140,7 +140,7 @@ export const marketingBrandAudienceManifest: SurfaceManifest = {
   label: "Brand Audience",
   situation:
     "They are in the brand's Audience room: {audience_persona_count|the} named personas the brand sells to, each with goals, pain points, objections and channels. They can add or edit a persona in the editor.",
-  urlPattern: "/marketing/[brandId]/identity/audience",
+  urlPattern: "/marketing/brands/[brandId]/identity/audience",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's Audience room: the named personas every brief and agent writes for. Read brand_context first, then audience_personas.

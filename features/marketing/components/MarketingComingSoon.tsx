@@ -97,7 +97,7 @@ export function MarketingComingSoon({
   }
 
   // MARKETING_PILLARS is the AGENCY plane's nav (2026-08-28 restructure); the
-  // brand workspace's reserved sections (`/marketing/[brandId]/socials`,
+  // brand workspace's reserved sections (`/marketing/brands/[brandId]/socials`,
   // `…/identity/audience`, …) live in MARKETING_BRAND_SECTIONS instead and
   // carry no pillar entry. Their promise still renders — with no pillar label
   // and no sibling list, because neither exists at this level.

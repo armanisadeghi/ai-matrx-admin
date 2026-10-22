@@ -79,7 +79,7 @@ export function useContentPlanSites() {
 
 export function ContentPlanHeader() {
   // `viewHref`/`listHref` are brand-scoped when this workspace renders inside
-  // /marketing/[brandId]/content/plan/… and fall back to the agency-level
+  // /marketing/brands/[brandId]/content/plan/… and fall back to the agency-level
   // resolver door otherwise — one builder, never a hand-built path here.
   const { siteId, view, viewHref, listHref } = usePlanWorkspaceParams();
   const { sites, orgSites } = useContentPlanSites();

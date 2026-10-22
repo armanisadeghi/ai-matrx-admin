@@ -10,7 +10,7 @@ import { createClient } from "@/utils/supabase/server";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 /**
  * `/marketing/calendar` lands on the PR calendar. The calendar belongs to one brand
- * (`/marketing/<brand>/planning/calendar`), so with exactly one brand it goes straight
+ * (`/marketing/brands/<brand>/planning/calendar`), so with exactly one brand it goes straight
  * there, and with several it asks which — it never guesses a brand.
  *
  * It used to `permanentRedirect` to the Google read-only sweep, which was never a

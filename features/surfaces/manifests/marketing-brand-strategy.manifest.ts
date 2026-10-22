@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand strategy room (`matrx-user/marketing-brand-strategy`).
  *
- * Drives `/marketing/[brandId]/identity/strategy` — `StrategyBriefWorkspace`
+ * Drives `/marketing/brands/[brandId]/identity/strategy` — `StrategyBriefWorkspace`
  * in brand scope: the staged-confidence brand strategy (`seo.landscape_brief`
  * rows, scope = brand) — the brief, the facts the AI established, the service
  * lines with their footprints, what the AI was unsure about, the owner's
@@ -206,7 +206,7 @@ export const marketingBrandStrategyManifest: SurfaceManifest = {
   label: "Brand Strategy",
   situation:
     "They are in the brand's Strategy room: the brief, the facts the AI established, service lines and open questions (version {strategy_version_no|none yet}, {strategy_status|no strategy yet}). They can write corrections, which outrank everything the AI concluded.",
-  urlPattern: "/marketing/[brandId]/identity/strategy",
+  urlPattern: "/marketing/brands/[brandId]/identity/strategy",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's Strategy room: the business facts every website of this brand reads. Read brand_context first, then strategy_brief_markdown.

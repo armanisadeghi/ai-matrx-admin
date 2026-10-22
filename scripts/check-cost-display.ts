@@ -242,16 +242,14 @@ export const PLACEMENT_POLICY = "common-docs/policies/points-and-money-in-the-ui
  *  with one of these, followed by ": " and what the person is deciding or
  *  looking up there. */
 export const PLACEMENT_CASES = [
-  "battle",
-  "model picker",
-  "option picker",
-  "info/details",
-  "history table",
-  "bulk/repeating confirm",
-  "schedule setup",
+  // Owner ruling 2026-10-22: points only where the surface's PURPOSE is cost, or after the person
+  // clicked to ask. Pickers, info cards, history tables, confirm footers and schedule setup are no
+  // longer cases of their own: their price moves behind a <CostDoor>.
   "billing/usage/pricing/budget",
-  "out of points",
+  "battle",
   "admin-gated",
+  "out of points",
+  "usage door",
 ] as const;
 
 /**
@@ -446,6 +444,35 @@ export const ALLOWED_PLACES: Record<string, string> = {
     "info/details: a library job's own page with its promised cost, and the cancel confirm",
 };
 
+/** P2 — the components/cost helpers that hand back a BARE dollar string (no "Admin only" tag can ride a
+ *  string). Off the admin site they must sit inside a door element, or not be called at all: a system
+ *  admin reads dollars there only inside a labelled element (owner ruling 2026-10-22). */
+export const DOLLAR_TEXT_NAMES = new Set([
+  "formatSpendUsd",
+  "formatAdminUsd",
+  "formatAdminCost",
+  "formatAdminUsdAxisTick",
+  "formatViewerCost",
+]);
+/** The admin site: manage.aimatrx.com and the dev site, where the whole site is the admin label. */
+export const ADMIN_SITE = ["app/(admin)/**", "app/(dev)/**", "features/admin/**", "features/administration/**"];
+
+/** P2 — lines using a bare-dollar helper outside a door element. Pure. */
+export function bareDollarSites(source: string): number[] {
+  const locals = importedLocalsWhere(
+    source,
+    (spec, name) => /(^|\/)components\/cost\/\w+$/.test(spec) && DOLLAR_TEXT_NAMES.has(name),
+  );
+  if (locals.length === 0) return [];
+  const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\s*\\(`));
+  const behindDoor = doorLines(source);
+  const hits: number[] = [];
+  codeLines(source).forEach((code, i) => {
+    if (!behindDoor.has(i + 1) && code && uses.some((re) => re.test(code))) hits.push(i + 1);
+  });
+  return hits;
+}
+
 /** Exports of `components/cost/*` that put a price on screen. The rest of that
  *  folder (the unit switch, the rate, the cost tier, spend flags) carries no
  *  amount and may be imported anywhere. */
@@ -488,6 +515,9 @@ const LITERAL_ALWAYS: RegExp[] = [
   // "Free trial", "free text", "free-form" do not fire
   /(?:["'`]|>)\s*Free\s*(?:["'`<]|[,.·—–:;!](?!\w))/,
   /^\s*Free\s*$/,
+  // a free allowance counted out ("3 free comparisons", `${n} free runs left`) — telling a person about
+  // points and spend (owner ruling 2026-10-22)
+  /(?:\d[\d,.]*|\})\s+free\s+(?:comparisons?|runs?|searches|search|checks?|lookups?|records?|uses?|tries|credits?|points?)\b/i,
 ];
 /** "N points" is a price only beside a money word ("12 data points", a score's "+5 points" are not). */
 const LITERAL_POINTS = /(?:\d[\d,.]*|\})\s*(?:AI\s+)?points?\b(?!\s*[.(\[=:?])(?!\s+(?:at|to)\b)/;
@@ -577,6 +607,45 @@ function codeLines(source: string): string[] {
   return out;
 }
 
+/** The JSX elements whose insides are BEHIND THE DOOR (owner ruling 2026-10-22): a `<CostDoor>`
+ *  reveals its figures only when clicked; an `<AdminOnly>` block carries the visible admin tag. */
+export const DOOR_ELEMENTS = ["CostDoor", "AdminOnly"] as const;
+
+/** Line numbers (1-based) covered by a `<CostDoor …/>` / `<CostDoor>…</CostDoor>` / `<AdminOnly>…</AdminOnly>`
+ *  element, props included. Pure. */
+export function doorLines(source: string): Set<number> {
+  const covered = new Set<number>();
+  const lineOf = (i: number) => source.slice(0, i).split("\n").length;
+  const open = new RegExp(`<(${DOOR_ELEMENTS.join("|")})\\b`, "g");
+  let m: RegExpExecArray | null;
+  while ((m = open.exec(source))) {
+    const name = m[1];
+    let depth = 0;
+    let end = -1;
+    let selfClosing = false;
+    for (let j = m.index + m[0].length; j < source.length; j++) {
+      const ch = source[j];
+      if (ch === "{") depth++;
+      else if (ch === "}") depth--;
+      else if (depth === 0 && ch === "/" && source[j + 1] === ">") {
+        end = j + 1;
+        selfClosing = true;
+        break;
+      } else if (depth === 0 && ch === ">") {
+        end = j;
+        break;
+      }
+    }
+    if (end === -1) continue;
+    if (!selfClosing) {
+      const close = source.indexOf(`</${name}>`, end);
+      if (close !== -1) end = close;
+    }
+    for (let l = lineOf(m.index); l <= lineOf(end); l++) covered.add(l);
+  }
+  return covered;
+}
+
 /** P1 — lines where a file puts a price on screen: a use of a cost-rendering
  *  export of `components/cost/*`, a kit points call, a PRICE_HELPERS name or a
  *  derived price helper, or a literal price string. Comments and import lines
@@ -591,8 +660,10 @@ export function costRenderSites(source: string, file = "", isProducer?: Producer
       (isProducer?.(spec, name, file) ?? false),
   );
   const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\b(?!\\s*:)`));
+  const behindDoor = doorLines(source);
   const hits: number[] = [];
   codeLines(source).forEach((code, i) => {
+    if (behindDoor.has(i + 1)) return;
     if (code && (uses.some((re) => re.test(code)) || literalPriceOn(code))) hits.push(i + 1);
   });
   return hits;
@@ -699,6 +770,8 @@ type Counts = Record<string, number>;
 interface Baseline {
   dollars: Counts;
   placement: Counts;
+  /** P2 — bare dollar strings off the admin site (shrink-only). */
+  bareDollars: Counts;
 }
 
 /** The sibling aidream checkout's shared packages, keyed from this repo's root. */
@@ -744,6 +817,7 @@ export const NOT_A_PRICE: Record<string, string> = {
   "providers/chatUiRegistration.ts": "host wiring: hands the cost formatter to the shared chat package, whose own files P1 scans",
   "providers/chatUiRegistrationImpl.ts": "host wiring: hands the cost formatter to the shared chat package, whose own files P1 scans",
   "features/agents/hooks/agentBuilderContextBundle.ts": "points sent into an agent's context, never drawn",
+  "features/shell/frame/go-to-pages.generated.ts": "\"Free\" is the /free tools section's crumb in the generated go-to list",
 };
 
 const NOT_A_PRICE_MATCHERS = Object.keys(NOT_A_PRICE).map((p) => ({ pattern: p, test: placeMatcher(p) }));
@@ -756,7 +830,12 @@ function scanTree(): {
   switchIgnored: string[];
   literalRates: string[];
   sharedNote: string;
+  census: { file: string; sites: number; place: string | null }[];
+  bareDollars: Counts;
 } {
+  const bareDollars: Counts = {};
+  const adminSite = ADMIN_SITE.map(placeMatcher);
+  const census: { file: string; sites: number; place: string | null }[] = [];
   const listed = gitFiles(ROOT, ["*.ts", "*.tsx"]);
   const counts: Counts = {};
   const placement: Counts = {};
@@ -772,6 +851,10 @@ function scanTree(): {
     const source = readFileSync(abs, "utf8");
     for (const line of switchIgnoredSites(source)) switchIgnored.push(`${file}:${line}`);
     for (const line of literalRateSites(source)) literalRates.push(`${file}:${line}`);
+    if (!adminSite.some((t) => t(file))) {
+      const bare = bareDollarSites(source).length;
+      if (bare > 0) bareDollars[file] = bare;
+    }
     const n = countCostSites(source);
     if (file in DOMAIN_MONEY) {
       if (n === 0) staleDomain.push(file);
@@ -807,6 +890,7 @@ function scanTree(): {
     }
     if (shown === 0) continue;
     const place = allowedPlaceFor(file);
+    census.push({ file, sites: shown, place });
     if (place) usedPlaces.add(place);
     else placement[file] = shown;
   }
@@ -819,7 +903,7 @@ function scanTree(): {
     ...Object.keys(ALLOWED_PLACES).filter((p) => !p.includes("*") && !usedPlaces.has(p)),
     ...Object.keys(NOT_A_PRICE).filter((f) => !f.includes("*") && !usedExemptions.has(f)),
   ];
-  return { counts, placement, unusedPlaces, staleDomain: staleDomain.sort(), switchIgnored, literalRates, sharedNote };
+  return { counts, placement, unusedPlaces, staleDomain: staleDomain.sort(), switchIgnored, literalRates, sharedNote, census, bareDollars };
 }
 
 export interface Verdict {
@@ -842,14 +926,18 @@ export function judge(current: Counts, baseline: Counts): Verdict {
 function readBaseline(): Baseline | null {
   if (!existsSync(BASELINE_FILE)) return null;
   const raw = JSON.parse(readFileSync(BASELINE_FILE, "utf8")) as Partial<Baseline>;
-  return { dollars: raw.dollars ?? {}, placement: raw.placement ?? {} };
+  return { dollars: raw.dollars ?? {}, placement: raw.placement ?? {}, bareDollars: raw.bareDollars ?? {} };
 }
 
 const sortCounts = (counts: Counts): Counts =>
   Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
 
 function writeBaseline(baseline: Baseline): void {
-  const out = { dollars: sortCounts(baseline.dollars), placement: sortCounts(baseline.placement) };
+  const out = {
+    dollars: sortCounts(baseline.dollars),
+    placement: sortCounts(baseline.placement),
+    bareDollars: sortCounts(baseline.bareDollars),
+  };
   writeFileSync(BASELINE_FILE, `${JSON.stringify(out, null, 2)}\n`);
 }
 
@@ -1010,6 +1098,49 @@ function selfTest(): number {
     console.log(`${got === 0 ? "PASS" : "FAIL"}  P1 not a price: ${text}`);
   }
 
+  // Owner ruling 2026-10-22 — a price inside <CostDoor> / <AdminOnly> is behind the door; the same price
+  // printed on the page fires. A bare dollar helper off the admin site fires P2 unless it sits in a door.
+  const doorProbes: { name: string; source: string; want: number }[] = [
+    {
+      name: "points in a footer",
+      source: `import { Cost } from "@/components/cost/Cost";\nexport const F = () => <div>10 records · <Cost usd={0.02} /></div>;`,
+      want: 1,
+    },
+    {
+      name: "the same price behind a CostDoor (self-closing, multi-line props)",
+      source: `import { CostDoor } from "@/components/cost/CostDoor";\nexport const F = ({ p }: { p: number }) => (\n  <CostDoor\n    rows={[{ label: "Total", text: \`\${p} points\` }]}\n  />\n);`,
+      want: 0,
+    },
+    {
+      name: "a <Cost> child inside <AdminOnly>",
+      source: `import { Cost } from "@/components/cost/Cost";\nimport { AdminOnly } from "@/components/cost/AdminOnlyTag";\nexport const F = () => (\n  <AdminOnly>\n    <Cost usd={1} />\n  </AdminOnly>\n);`,
+      want: 0,
+    },
+    { name: "a free allowance", source: "const s = `${n} free comparisons a day`;", want: 1 },
+  ];
+  for (const p of doorProbes) {
+    const got = costRenderSites(p.source).length;
+    if (got !== p.want) failed++;
+    console.log(`${got === p.want ? "PASS" : "FAIL"}  P1 door probe ${p.name}: got ${got}, want ${p.want}`);
+  }
+  const bareProbes: { name: string; source: string; want: number }[] = [
+    {
+      name: "a bare dollar string",
+      source: `import { formatAdminUsd } from "@/components/cost/formatAdminCost";\nexport const t = (u: number) => \`\${formatAdminUsd(u)}\`;`,
+      want: 1,
+    },
+    {
+      name: "the dollar string inside <AdminOnly>",
+      source: `import { formatAdminUsd } from "@/components/cost/formatAdminCost";\nimport { AdminOnly } from "@/components/cost/AdminOnlyTag";\nexport const F = ({ u }: { u: number }) => <AdminOnly>{formatAdminUsd(u)}</AdminOnly>;`,
+      want: 0,
+    },
+  ];
+  for (const p of bareProbes) {
+    const got = bareDollarSites(p.source).length;
+    if (got !== p.want) failed++;
+    console.log(`${got === p.want ? "PASS" : "FAIL"}  P2 ${p.name}: got ${got}, want ${p.want}`);
+  }
+
   // P1 derived helpers: an exported price-named helper whose body shows a price
   // carries P1 to every importer, through a helper of a helper; a price-named
   // export with no price in it does not.
@@ -1087,22 +1218,33 @@ function main(): number {
     return 0;
   }
 
-  const { counts: current, placement, unusedPlaces, staleDomain, switchIgnored, literalRates, sharedNote } = scanTree();
+  const { counts: current, placement, unusedPlaces, staleDomain, switchIgnored, literalRates, sharedNote, census, bareDollars } = scanTree();
+  if (args.has("--census")) {
+    // Every file that puts a price on screen, with the ALLOWED_PLACES entry it rides (or none).
+    for (const c of census.sort((a, b) => a.file.localeCompare(b.file))) {
+      console.log(`${c.file}\t${c.sites}\t${c.place ? `${c.place} — ${ALLOWED_PLACES[c.place]}` : "NOT ALLOWED"}`);
+    }
+    return 0;
+  }
   console.log(sharedNote);
   const baseline = readBaseline();
   if (args.has("--counts")) {
-    console.log(JSON.stringify({ dollars: sortCounts(current), placement: sortCounts(placement) }, null, 2));
+    console.log(JSON.stringify({ dollars: sortCounts(current), placement: sortCounts(placement), bareDollars: sortCounts(bareDollars) }, null, 2));
     return 0;
   }
   if (args.has("--write")) {
     if (!baseline) {
-      writeBaseline({ dollars: current, placement });
+      writeBaseline({ dollars: current, placement, bareDollars });
       console.log(
         `Seeded ${BASELINE_FILE}: ${Object.keys(current).length} dollar files, ${Object.keys(placement).length} placement files.`,
       );
       return 0;
     }
-    const next = { dollars: ratchetDown(baseline.dollars, current), placement: ratchetDown(baseline.placement, placement) };
+    const next = {
+      dollars: ratchetDown(baseline.dollars, current),
+      placement: ratchetDown(baseline.placement, placement),
+      bareDollars: ratchetDown(baseline.bareDollars, bareDollars),
+    };
     writeBaseline(next);
     console.log(
       `Ratcheted baseline to ${Object.keys(next.dollars).length} dollar files, ${Object.keys(next.placement).length} placement files.`,
@@ -1112,7 +1254,17 @@ function main(): number {
 
   const verdict = judge(current, baseline?.dollars ?? {});
   const placed = judge(placement, baseline?.placement ?? {});
+  const bare = judge(bareDollars, baseline?.bareDollars ?? {});
   let code = 0;
+  if (bare.newSites.length > 0) {
+    console.log(
+      `FAIL: a bare dollar figure off the admin site. Dollars are never shown to a user; an admin sees them only inside a visibly labelled element — wrap it in <AdminOnly> (components/cost/AdminOnlyTag.tsx) or put the figure in a <CostDoor usd={…}/> (${PLACEMENT_POLICY}):`,
+    );
+    for (const site of bare.newSites) {
+      console.log(`  BARE$  ${site.file}  (${site.count} line${site.count === 1 ? "" : "s"}, baseline ${site.baseline})`);
+    }
+    code = 1;
+  }
   const noCase = placesWithoutACase();
   if (noCase.length > 0) {
     console.log(

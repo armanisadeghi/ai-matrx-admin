@@ -261,7 +261,7 @@ export const marketingCoverageManifest: SurfaceManifest = {
   label: "Marketing Coverage Matrix",
   situation:
     "They are on the website's coverage matrix, where the crawl, the sitemaps and Search Console disagree about which pages exist: {total_pages|an unknown number of} crawled pages, {never_crawled|no} never crawled, {sitemap_not_crawled|no} in a sitemap but not crawled. Each tile opens the matching page list.",
-  urlPattern: "/marketing/[brandId]/seo/[siteId]/coverage",
+  urlPattern: "/marketing/brands/[brandId]/seo/[siteId]/coverage",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on the coverage matrix of a managed website: where the evidence sources — sitemaps, crawls, first-source provenance, and Google Search Console — agree and disagree about the canonical page registry. The brand_context and site_context values give you the brand and website framing; read them first.

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Brand context for the `/marketing/[brandId]` brand workspace.
+ * Brand context for the `/marketing/brands/[brandId]` brand workspace.
  *
  * The server layout resolves the dual-mode route param (key or UUID) ONCE and
  * provides the resolved identity here, so brand pages/components consume real
@@ -57,12 +57,12 @@ export function MarketingSiteProvider({
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;
 }
 
-/** The resolved brand for the current `/marketing/[brandId]` subtree. */
+/** The resolved brand for the current `/marketing/brands/[brandId]` subtree. */
 export function useMarketingBrand(): MarketingBrandContextValue {
   const value = useContext(BrandContext);
   if (!value) {
     throw new Error(
-      "useMarketingBrand must render inside /marketing/[brandId] (MarketingBrandProvider)",
+      "useMarketingBrand must render inside /marketing/brands/[brandId] (MarketingBrandProvider)",
     );
   }
   return value;

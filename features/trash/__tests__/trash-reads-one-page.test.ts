@@ -4,7 +4,7 @@
  * p_limit 200 per kind and honoured any larger limit a caller passed.
  */
 const rpc = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc } }));
+jest.mock("@/utils/supabase/client", () => ({ supabase: { rpc, schema: () => ({ rpc }) } }));
 
 import { listTrash, TRASH_DEFAULT_PAGE } from "../service";
 

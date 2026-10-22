@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand knowledge room (`matrx-user/marketing-brand-knowledge`).
  *
- * Drives `/marketing/[brandId]/identity/knowledge` — the Business Discovery
+ * Drives `/marketing/brands/[brandId]/identity/knowledge` — the Business Discovery
  * Ladder (`DiscoveryPage` → `DiscoveryLadder`) for ONE website of the brand
  * (`?site=` picks it). AI reads the site cold and proposes, rung by rung:
  * business model, ideal customer, money map, offerings, offering values, the
@@ -226,7 +226,7 @@ export const marketingBrandKnowledgeManifest: SurfaceManifest = {
   label: "Brand Knowledge",
   situation:
     "They are in the brand's Knowledge room for this website: a ladder of discovery steps from business model and ideal customer to offerings, their worth and guidelines. Next step to run: {discovery_next_step|none left}; running now: {discovery_running_step|nothing}. They can accept or reject its {discovery_proposal_counts.total|no} waiting proposals.",
-  urlPattern: "/marketing/[brandId]/identity/knowledge",
+  urlPattern: "/marketing/brands/[brandId]/identity/knowledge",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are on a brand's Knowledge room: the Business Discovery Ladder for one of its websites (site_name, site_root_url and brand_context arrive from the parent). AI reads the site's own crawled pages cold and proposes, rung by rung: business model, ideal customer, money map, offerings, offering values, proposed setup, then a business guidelines draft.

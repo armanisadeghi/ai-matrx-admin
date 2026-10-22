@@ -40,7 +40,7 @@ export function safeXReturn(value: string | null): string {
   // Only the two product mounts can receive an OAuth return.
   const path = value.split(/[?#]/, 1)[0];
   return path === "/user-settings/integrations" ||
-    /^\/marketing\/[^/]+\/socials\/accounts$/.test(path)
+    /^\/marketing\/(?:brands\/)?[^/]+\/socials\/accounts$/.test(path)
     ? value
     : X_SETTINGS_RETURN;
 }

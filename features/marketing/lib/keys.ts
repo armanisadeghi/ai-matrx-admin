@@ -1,6 +1,7 @@
 /**
  * Marketing URL keys — the human-readable address system for the agency-model
- * tree (`/marketing/[brandKey]/…`).
+ * tree (`/marketing/brands/[brandKey]/…`; until 2026-10-22 `/marketing/[brandKey]/…`,
+ * which next.config.js now 308s here — `utils/next-config/marketingBrandRedirects.js`).
  *
  * Rules (Arman-ratified, 2026-08-28 — see docs/handoffs/marketing-agency-restructure.md):
  *   • Brand keys are GLOBALLY unique (the URL carries no org segment) —
@@ -8,9 +9,12 @@
  *   • Site keys are unique PER BRAND (the brand is in the path).
  *   • Every dynamic segment is dual-mode: UUID or key both resolve; the server
  *     layout 308s a UUID address to the key address so ONE canonical URL exists.
- *   • A brand key may never equal a static `/marketing` segment — the reserved
- *     list below MUST stay in lockstep with the array in
- *     `migrations/marketing_brand_site_url_slugs.sql`.
+ *   • A brand key may never equal a static `/marketing/brands` child (all, new,
+ *     new-website, offerings, smart-add) — the brand would be shadowed by the
+ *     static route. It also never equals a static `/marketing` segment, so every
+ *     pre-2026-10-22 `/marketing/<key>` link still forwards unambiguously.
+ *     The database carries no reserved check (only the format check); the
+ *     writers are this file and aidream `services/web_slugs.py` (lockstep twin).
  *
  * Slug format/generation reuses the scope system's primitives — never a second
  * slugifier (`@ai-matrx/records/scopes`).
@@ -24,13 +28,54 @@ function isValidSlug(s: string): boolean {
   return isScopeSlug(s) && !s.includes("_");
 }
 
+/** Where every brand workspace lives: `/marketing/brands/<brandKey>/…` (Arman, 2026-10-22). */
+export const MARKETING_BRANDS_PATH = "/marketing/brands";
+
 /**
- * Static `/marketing/*` segments (current + planned agency plane + legacy
- * shims). A brand key equal to any of these would be shadowed by the static
- * route. Lockstep twin: the `reserved` array in
- * `migrations/marketing_brand_site_url_slugs.sql`.
+ * Static children of `/marketing/brands` — never a brand address. A brand key
+ * equal to one would be shadowed by the static route, so each is reserved below.
+ */
+export const MARKETING_BRANDS_STATIC_SEGMENTS: ReadonlySet<string> = new Set([
+  "all",
+  "new",
+  "new-website",
+  "offerings",
+  "smart-add",
+]);
+
+/** One brand's workspace address (`seg` = key or UUID), with an optional `/rest`. */
+export function marketingBrandPath(brandSeg: string, rest = ""): string {
+  const tail = rest && !rest.startsWith("/") && !rest.startsWith("?") ? `/${rest}` : rest;
+  return `${MARKETING_BRANDS_PATH}/${brandSeg}${tail}`;
+}
+
+/**
+ * THE parser for a brand workspace pathname: `/marketing/brands/<seg>/a/b` →
+ * `{ brandSeg: "<seg>", rest: ["a", "b"] }`; null for anything else (the
+ * agency plane, the brands list and its static children). Every reader of the
+ * brand segment goes through this — never a hand-written regex over the path.
+ */
+export function parseMarketingBrandPath(
+  pathname: string,
+): { brandSeg: string; rest: string[] } | null {
+  const path = pathname.split(/[?#]/)[0] ?? "";
+  if (!path.startsWith(`${MARKETING_BRANDS_PATH}/`)) return null;
+  const [brandSeg, ...rest] = path
+    .slice(MARKETING_BRANDS_PATH.length + 1)
+    .split("/")
+    .filter(Boolean);
+  if (!brandSeg || MARKETING_BRANDS_STATIC_SEGMENTS.has(brandSeg)) return null;
+  return { brandSeg, rest };
+}
+
+/**
+ * Words a brand key may never be: the static `/marketing/brands` children (the
+ * live collision) plus every static `/marketing/*` segment (the pre-2026-10-22
+ * address shape, kept so old `/marketing/<key>` links forward unambiguously).
+ * Lockstep twin: `RESERVED_MARKETING_SEGMENTS` in aidream `services/web_slugs.py`.
  */
 export const MARKETING_RESERVED_SEGMENTS: ReadonlySet<string> = new Set([
+  ...MARKETING_BRANDS_STATIC_SEGMENTS,
   "brands",
   "reports",
   "operations",
@@ -161,15 +206,16 @@ export function marketingSeg(entity: {
 /**
  * The current pathname with ONE address segment swapped — how a rename keeps
  * the user exactly where they are instead of bouncing them to a root. The
- * segment is matched by value from `searchFrom` onward (index 2 is the brand,
- * a site sits deeper under `websites`/`seo`), so nothing else in the path moves.
+ * segment is matched by value from `searchFrom` onward (index 3 is the brand in
+ * `/marketing/brands/<brand>`, a site sits deeper under `websites`/`seo`), so
+ * nothing else in the path moves.
  * Returns the pathname unchanged when the segment isn't there.
  */
 export function pathWithMarketingSegment(
   pathname: string,
   currentSeg: string,
   nextSeg: string,
-  searchFrom = 2,
+  searchFrom = 3,
 ): string {
   const parts = pathname.split("/");
   const index = parts.findIndex(

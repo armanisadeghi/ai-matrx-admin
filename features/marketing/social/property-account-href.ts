@@ -1,4 +1,5 @@
 import { accountHref } from "./account-href";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 /**
  * The route of one of a brand's social accounts. A tracked account opens its profile page
@@ -12,5 +13,5 @@ export function brandAccountHref(
 ): string | null {
   const tracked = accountHref(brandSeg, row);
   if (tracked) return tracked;
-  return row.propertyId ? `/marketing/${brandSeg}/socials/${row.platform}/${row.propertyId}` : null;
+  return row.propertyId ? marketingRoutes.brandSection(brandSeg, `socials/${row.platform}/${row.propertyId}`) : null;
 }

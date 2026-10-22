@@ -20,7 +20,7 @@ export function patternScore(pattern: string, pathname: string): number {
   return pat.length === path.length ? score : -1;
 }
 
-/** The named params a pattern binds from a pathname (`/marketing/[brandId]` + `/marketing/abc` → brandId=abc). */
+/** The named params a pattern binds from a pathname (`/marketing/brands/[brandId]` + `/marketing/abc` → brandId=abc). */
 export function patternParams(pattern: string, pathname: string): Record<string, string> {
   const out: Record<string, string> = {};
   const pat = pattern.split("/").filter(Boolean);

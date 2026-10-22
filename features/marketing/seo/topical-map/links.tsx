@@ -5,7 +5,7 @@
  *
  * WHY A CONTEXT AND NOT A HOOK ON THE BRAND: the body renders in five hosts
  * (page, window, drawer, canvas, peek) and only one of them stands inside
- * `/marketing/[brandId]`. `useMarketingBrand()` THROWS outside that subtree, so
+ * `/marketing/brands/[brandId]`. `useMarketingBrand()` THROWS outside that subtree, so
  * a view that called it would work on the route and crash in a window. The
  * route adapter is the only thing that knows the brand; it puts it here, and
  * every view below asks `useMapLinks()` — which never throws and, with no

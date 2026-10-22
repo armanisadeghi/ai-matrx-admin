@@ -11,7 +11,7 @@ const getSession = jest.fn().mockResolvedValue({
 });
 
 jest.mock("@/utils/supabase/client", () => ({
-  supabase: { rpc, auth: { getSession } },
+  supabase: { rpc, schema: () => ({ rpc }), auth: { getSession } },
 }));
 
 jest.mock("@/utils/auth/getUserId", () => ({

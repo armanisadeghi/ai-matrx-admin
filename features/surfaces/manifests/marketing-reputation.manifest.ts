@@ -214,7 +214,7 @@ export const marketingReputationManifest: SurfaceManifest = {
   label: "Digital PR & Reputation",
   situation:
     "They are on the website's Digital PR and Reputation page: reputation cases, publications likely to cover them, recurring narratives and the latest brief, with the evidence on hand counted in your context. They can triage cases.",
-  urlPattern: "/marketing/[brandId]/intelligence/reputation/[siteId]",
+  urlPattern: "/marketing/brands/[brandId]/intelligence/reputation/[siteId]",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are in the Digital PR & Reputation command center for one managed site. Read brand_context and site_context first, then use the evidence brief and durable cases.

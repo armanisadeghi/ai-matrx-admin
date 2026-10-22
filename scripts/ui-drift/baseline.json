@@ -2668,7 +2668,7 @@
     "primitive-visual-class|app/(core)/invitations/share/accept/[token]/page.tsx": 1,
     "primitive-visual-class|app/(core)/invitations/table/accept/[token]/page.tsx": 1,
     "primitive-visual-class|app/(core)/launchpad/loading.tsx": 4,
-    "primitive-visual-class|app/(core)/marketing/[brandId]/identity/page.tsx": 1,
+    "primitive-visual-class|app/(core)/marketing/brands/[brandId]/identity/page.tsx": 1,
     "primitive-visual-class|app/(core)/organizations/[orgId]/OrgResourceLayout.tsx": 1,
     "primitive-visual-class|app/(core)/organizations/[orgId]/hr/page.tsx": 3,
     "primitive-visual-class|app/(core)/organizations/[orgId]/projects/[projectId]/settings/OrgProjectSettingsLayoutClient.tsx": 1,

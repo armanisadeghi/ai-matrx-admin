@@ -100,6 +100,7 @@ import {
   createSocialPostScope,
 } from "@/features/surfaces/manifests/social-tiles.manifest";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 export { guessAspect };
 
@@ -453,7 +454,7 @@ function PostAgentSurface({
     organizationId,
     hasTranscript: Boolean(transcript.data?.text),
     openDetail: () => {
-      if (host !== "page") router.push(`/marketing/${brandSeg}/socials/post/${postId}`);
+      if (host !== "page") router.push(marketingRoutes.brandSection(brandSeg, `socials/post/${postId}`));
     },
   });
   const values = createSocialPostScope(postScopeValues(kind));
@@ -686,7 +687,7 @@ export function PostDetailBody({
             {profile ? (
               <Link
                 className="inline-flex min-w-0 items-center gap-1.5 text-sm font-medium text-foreground underline-offset-2 hover:underline"
-                href={`/marketing/${brandSeg}/socials/${profile.platform}/${profile.id}`}
+                href={marketingRoutes.brandSection(brandSeg, `socials/${profile.platform}/${profile.id}`)}
               >
                 <PlatformMark platform={profile.platform} size={16} />
                 <span className="truncate">

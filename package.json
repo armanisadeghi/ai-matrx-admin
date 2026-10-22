@@ -1109,6 +1109,7 @@
     "@ai-matrx/content-ir": "latest",
     "@ai-matrx/context-menu": "latest",
     "@ai-matrx/data": "latest",
+    "@ai-matrx/diagrams": "latest",
     "@ai-matrx/design-system": "latest",
     "@ai-matrx/desktop-protocol": "latest",
     "@ai-matrx/detail": "latest",

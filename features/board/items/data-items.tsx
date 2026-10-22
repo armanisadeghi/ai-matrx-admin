@@ -38,7 +38,7 @@ import { CustomDataRecordsScope } from "@/features/agents/components/variables-m
 import { recordsUiHostFor, useAppRecordsConfig, useRecordsUiPorts } from "@/features/data-tables/records-ui-host/recordsUiHost";
 import { NO_ADDRESS, UnifiedTableBody, useUnifiedTable } from "@/features/unified-data/table-page/UnifiedTable";
 import { RecordStoreRecordSurface } from "@/features/unified-data/grid-agent-context/RecordStoreRecordSurface";
-import { DATA_TABLES_SURFACE } from "@/features/unified-data/grid-agent-context/RecordStoreTableSurface";
+import { DATA_TABLES_SURFACE, RecordStoreTableSurface } from "@/features/unified-data/grid-agent-context/RecordStoreTableSurface";
 
 import type { DataHomeTableRow } from "@/features/unified-data/hub/doors";
 import type { NodeSource } from "../board/document";
@@ -318,10 +318,24 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
             <AdoptTableLook tableId={id} source={source} onSource={onSource} />
           </>
         }
+        // A section or a card is still this table: it mounts the table's surface too (the table page mounts it
+        // inside `UnifiedTableBody`), so board_open_item reads its id, name and columns whatever the layout.
         {...(section
-          ? { content: <SectionWithBoardTokens tableId={id} title={title} /> }
+          ? {
+              content: (
+                <RecordStoreTableSurface channel={mount.gridContext} tableId={id}>
+                  <SectionWithBoardTokens tableId={id} title={title} />
+                </RecordStoreTableSurface>
+              ),
+            }
           : card
-            ? { content: <RecordsTableCard source={{ kind: "table", id }} openRowInCard editable /> }
+            ? {
+                content: (
+                  <RecordStoreTableSurface channel={mount.gridContext} tableId={id}>
+                    <RecordsTableCard source={{ kind: "table", id }} openRowInCard editable />
+                  </RecordStoreTableSurface>
+                ),
+              }
             : {})}
       />
     </div>

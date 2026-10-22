@@ -52,8 +52,8 @@ function mockDoors(
 ) {
   const from = jest.fn();
   for (const query of reads) from.mockReturnValueOnce(query);
-  const schema = jest.fn().mockReturnValue({ from });
   const rpc = jest.fn().mockResolvedValue(start);
+  const schema = jest.fn().mockReturnValue({ from, rpc });
   createClient.mockReturnValue({ schema, rpc });
   return { schema, from, rpc };
 }

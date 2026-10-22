@@ -5,7 +5,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
   name: "Marketing",
   slug: "marketing",
   description:
-    "The Marketing module in its agency-model shape (2026-08-28): a small AGENCY plane (brands list, cross-brand reports, operations, generic tools) plus everything else nested inside one brand at /marketing/[brandId] — identity, websites (crawler, canonical page registry, immutable snapshots), the SEO practice per site, content, channels, intelligence, planning. Structure is declared ONCE in features/marketing/lib/{routes.ts,brand-sections.ts,route-sections.ts,marketing-nav.ts}. Persisted data is read directly from Supabase by the browser.",
+    "The Marketing module in its agency-model shape (2026-08-28): a small AGENCY plane (brands list, cross-brand reports, operations, generic tools) plus everything else nested inside one brand at /marketing/brands/[brandId] — identity, websites (crawler, canonical page registry, immutable snapshots), the SEO practice per site, content, channels, intelligence, planning. Structure is declared ONCE in features/marketing/lib/{routes.ts,brand-sections.ts,route-sections.ts,marketing-nav.ts}. Persisted data is read directly from Supabase by the browser.",
   docs: [
     { label: "Marketing FEATURE.md", href: "/features/marketing/FEATURE.md" },
     {
@@ -243,800 +243,800 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       status: "Live",
     },
 
-    // ── The brand workspace: /marketing/[brandId] ────────────────────────
+    // ── The brand workspace: /marketing/brands/[brandId] ────────────────────────
     {
-      url: "/marketing/[brandId]",
+      url: "/marketing/brands/[brandId]",
       label: "Brand overview",
       description:
         "BrandWorkspace — this brand at a glance: properties, health, activity. The dual-mode segment accepts a brand key or UUID.",
-      filePath: "app/(core)/marketing/[brandId]/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity",
+      url: "/marketing/brands/[brandId]/identity",
       label: "Brand Identity",
       description:
         "Index of the brand-truth rooms — media, knowledge, offerings, guidelines, audience — each a real route.",
-      filePath: "app/(core)/marketing/[brandId]/identity/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/media",
+      url: "/marketing/brands/[brandId]/identity/media",
       label: "Brand media — Library",
       description:
         "BrandAssetsWorkspace (view=library) — the brand's asset desk index.",
-      filePath: "app/(core)/marketing/[brandId]/identity/media/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/media/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/media/research",
+      url: "/marketing/brands/[brandId]/identity/media/research",
       label: "Brand media — Research",
       description: "BrandAssetsWorkspace (view=research) — researched imagery.",
       filePath:
-        "app/(core)/marketing/[brandId]/identity/media/research/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/identity/media/research/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/media/sources",
+      url: "/marketing/brands/[brandId]/identity/media/sources",
       label: "Brand media — Sources",
       description: "BrandAssetsWorkspace (view=sources) — stock media sources.",
-      filePath: "app/(core)/marketing/[brandId]/identity/media/sources/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/media/sources/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/media/generate",
+      url: "/marketing/brands/[brandId]/identity/media/generate",
       label: "Brand media — Generate",
       description:
         "BrandAssetsWorkspace (view=generate) — the brand image generator.",
       filePath:
-        "app/(core)/marketing/[brandId]/identity/media/generate/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/identity/media/generate/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/knowledge",
+      url: "/marketing/brands/[brandId]/identity/knowledge",
       label: "Brand knowledge",
       description:
         "DiscoveryPage in BrandIdentitySiteSurface — the Business Discovery Ladder; `?site=` picks which website is read.",
-      filePath: "app/(core)/marketing/[brandId]/identity/knowledge/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/knowledge/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/offerings",
+      url: "/marketing/brands/[brandId]/identity/offerings",
       label: "Offerings",
       description:
         "OfferingsWorkbench — the brand's offerings (web.brand_offering) with the selected site's explicit availability, worth in points, and Add offering through platform suggestions.",
-      filePath: "app/(core)/marketing/[brandId]/identity/offerings/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/offerings/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/guidelines",
+      url: "/marketing/brands/[brandId]/identity/guidelines",
       label: "Business guidelines",
       description:
         "GuidelinesWorkbench — how this brand must be written about; every agent inherits these rules.",
-      filePath: "app/(core)/marketing/[brandId]/identity/guidelines/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/guidelines/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/audience",
+      url: "/marketing/brands/[brandId]/identity/audience",
       label: "Audience & Personas",
       description:
         "BrandAudiencePage — named personas (web.brand_persona): goals, pain points, objections, channels.",
-      filePath: "app/(core)/marketing/[brandId]/identity/audience/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/audience/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/messaging",
+      url: "/marketing/brands/[brandId]/identity/messaging",
       label: "Messaging",
       description: "Mission, vision, values, story, elevator pitches, messaging and content pillars, hashtags.",
-      filePath: "app/(core)/marketing/[brandId]/identity/messaging/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/messaging/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/identity/claims",
+      url: "/marketing/brands/[brandId]/identity/claims",
       label: "Claims & compliance",
       description: "Approved and forbidden claims and disclaimers, inherited by every agent.",
-      filePath: "app/(core)/marketing/[brandId]/identity/claims/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/identity/claims/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites",
+      url: "/marketing/brands/[brandId]/websites",
       label: "Websites",
       description:
         "SitesPortfolio — the brand's Properties door (still reads the whole readable portfolio; brand scoping tracked in the restructure handoff).",
-      filePath: "app/(core)/marketing/[brandId]/websites/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/websites/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]",
       label: "Site overview",
       description:
         "SiteOverview — site identity, current rollups, integration status, and crawl baseline.",
-      filePath: "app/(core)/marketing/[brandId]/websites/[siteId]/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/websites/[siteId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/[...rest]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/[...rest]",
       label: "Website-branch section mapper",
       description:
         "Cross-branch safety net: an SEO section composed on the websites base (or a renamed section) 308s to its one real home; a self-mapping path is a genuine 404.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/[...rest]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/[...rest]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/pages",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/pages",
       label: "Canonical pages",
       description:
         "PagesTable — the stable URL registry, separate from every crawl's encountered URLs.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/pages/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/pages/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]",
       label: "Page workspace",
       description:
         "PageWorkspace — user-owned SEO intent plus the latest accepted observed snapshot.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]/snapshots",
       label: "Page capture timeline",
       description:
         "SnapshotsTable — paginated immutable captures for one canonical page.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]",
       label: "Page capture detail",
       description:
         "SnapshotDetail — captured metadata, extraction, links, images, and durable body reference.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/structure",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/structure",
       label: "Site structure",
       description:
         "StructureWorkspace — the routing tree over the canonical page registry with per-level totals and route gaps.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/structure/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/structure/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/sitemaps",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/sitemaps",
       label: "Sitemaps",
       description:
         "SitemapsWorkspace — discovered sitemap documents and their sync state.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/sitemaps/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/sitemaps/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/sitemaps/[sitemapId]",
       label: "Sitemap detail",
       description: "SitemapDetail — one sitemap document and its page membership.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/sitemaps/[sitemapId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/media",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/media",
       label: "Site media",
       description:
         "SiteMediaWorkspace — crawled images, videos, and media standards; the brand-asset `?view=` values 308 to the brand asset desk.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/media/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/media/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls",
       label: "Crawls",
       description:
         "CrawlsTable — frozen crawl events with status, scope, timing, and rollup stats.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/new",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/new",
       label: "New crawl",
       description:
         "NewCrawlWorkspace — configure and launch a crawl for this site.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/new/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/new/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]",
       label: "Crawl summary",
       description:
         "CrawlSummary — coverage and reconciliation summary for one session.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/urls",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/urls",
       label: "Crawl URL ledger",
       description:
         "CrawlUrlsTable — every encountered URL and its run-specific classification and outcome.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/urls/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/urls/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/reports",
       label: "Crawl report catalog",
       description:
         "CrawlReportsIndex — the bulk technical-SEO report index for one crawl.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]",
       label: "Crawl report",
       description:
         "CrawlReportWorkspace — response, metadata, heading, canonical, directive, image, content, structured-data, and performance reports.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots",
       label: "Crawl page captures",
       description:
         "CrawlSnapshotsInspectionTable — immutable captures produced by one crawl.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/links",
       label: "Crawl link edges",
       description:
         "LinksInspectionTable scoped to one crawl — run-specific link graph evidence.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/links/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/logs",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/logs",
       label: "Crawl events",
       description:
         "CrawlLogsTable — the durable ordered event history, separate from the transient live stream.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/logs/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]/logs/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/settings",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/settings",
       label: "Site settings",
       description:
         "SiteConfigurationWorkspace (view=site) — identity and crawl defaults; the other views are sibling routes.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/settings/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/settings/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/settings/integrations",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/settings/integrations",
       label: "Site integrations",
       description:
         "SiteConfigurationWorkspace (view=integrations) — provider bindings for this site.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/settings/integrations/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/settings/integrations/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/settings/access",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/settings/access",
       label: "Site access",
       description:
         "SiteConfigurationWorkspace access views — `?view=users|organizations|public` selects the audience list.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/settings/access/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/settings/access/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/websites/[siteId]/settings/intake",
+      url: "/marketing/brands/[brandId]/websites/[siteId]/settings/intake",
       label: "Site intake",
       description:
         "SiteConfigurationWorkspace (view=intake) — the site's intake configuration.",
       filePath:
-        "app/(core)/marketing/[brandId]/websites/[siteId]/settings/intake/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/websites/[siteId]/settings/intake/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo",
+      url: "/marketing/brands/[brandId]/seo",
       label: "SEO section",
       description:
         "The brand's website list, each row opening the SEO practice on that site (entry-list doctrine, never a forced workspace).",
-      filePath: "app/(core)/marketing/[brandId]/seo/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]",
+      url: "/marketing/brands/[brandId]/seo/[siteId]",
       label: "SEO branch root",
       description:
         "A door, not a screen: 308s to this site's Keywords screen from the resolved brand/site rows.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/[...rest]",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/[...rest]",
       label: "SEO-branch section mapper",
       description:
         "Twin of the websites mapper: an inventory section or old section name composed on the SEO base 308s to its real home.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/[...rest]/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/[...rest]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords",
       label: "Keywords front door",
       description:
         "SiteKeywordsView — the map of every screen that gives keywords meaning; old `?view=` links still land on the screen they name.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/performance",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/performance",
       label: "Keyword performance",
       description:
         "SiteKeywordsView (view=performance) — what people searched, what they clicked, where the site ranks.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/performance/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/performance/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/workbench",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/workbench",
       label: "Keyword workbench",
       description:
         "SiteKeywordsView (view=workbench) — the assignment surface: set a keyword's class or dimension with the reason that teaches the system.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/workbench/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/workbench/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/research",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/research",
       label: "Keyword research",
       description:
         "KeywordResearchWorkbench — AI keyword relationship mapping plus live market data (was /marketing/keyword-research).",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/research/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/research/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/value",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/value",
       label: "Keyword Value workbench",
       description:
         "ValueWorkbench — what this site's keywords are worth and why; business-knowledge screens moved to the brand's Identity section.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/value/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/value/dimensions",
       label: "Keyword dimensions",
       description:
         "DimensionManager — where a site authors the questions its keywords are sorted by (D37).",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/value/dimensions/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/value/rules",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/value/rules",
       label: "Value rulebook",
       description:
         "MeaningRulesWorkbench — what earns points and how much: matchers, worth, and levels.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/rules/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/value/rules/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/value/packs",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/value/packs",
       label: "Industry starter packs",
       description:
         "StarterPackCatalog — a ready set of keyword meaning to adopt and then edit.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/packs/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/value/packs/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/keywords/value/settings",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/keywords/value/settings",
       label: "Site value settings",
       description:
         "ValueSettingsEditor + AutonomyModesEditor + copy-from-site tools at the SITE rung of the ladder (KI-046).",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/settings/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/keywords/value/settings/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/rankings",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/rankings",
       label: "Rank tracking",
       description:
         "RanksWorkspace — keyword positions and movement for this site (was `…/sites/[siteId]/ranks`).",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/rankings/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/rankings/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/search-console",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/search-console",
       label: "Search Console",
       description:
         "SearchConsoleGate — the full GSC dataset for this site; the route stamps `?site=<uuid>` and leaves the workspace's own query state alone.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/search-console/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/search-console/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/audit",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/audit",
       label: "Site audit",
       description:
         "AuditWorkspace — deterministic site-wide rollup over stored per-snapshot metrics: verdicts, pass rates, worst pages.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/audit/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/audit/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/findings",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/findings",
       label: "Findings",
       description:
         "FindingsTable — the durable finding lifecycle register with direct filters.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/findings/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/findings/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/findings/[findingId]",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/findings/[findingId]",
       label: "Finding detail",
       description:
         "FindingDetail — finding state, catalog item, and immutable evidence.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/findings/[findingId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/findings/[findingId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/analysis",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/analysis",
       label: "Site analysis",
       description:
         "SiteAnalysisTable — the ranked open-finding priority queue for one site.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/analysis/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/analysis/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/coverage",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/coverage",
       label: "Coverage matrix",
       description:
         "CoverageWorkspace — the source-disagreement matrix over the canonical page registry with one-click filtered page lists.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/coverage/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/coverage/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/performance",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/performance",
       label: "Site performance",
       description:
         "SitePerformanceWorkspace — PageSpeed coverage, score distribution, percentiles, and traffic-qualified fix priorities.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/performance/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/performance/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/changes",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/changes",
       label: "SEO changes",
       description:
         "SeoChangeTrackingWorkspace — interventions, implementation evidence, and measured outcomes; `?change=` selects a row.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/changes/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/changes/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/backlinks",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/backlinks",
       label: "Backlink intelligence",
       description:
         "BacklinksGate — provider evidence enriched with referring-page content, relevance, controllability, and first-party domain opinions.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/backlinks/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/links",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/links",
       label: "Link graph",
       description:
         "LinksInspectionTable — the current accepted link graph inspection workspace.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/links/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/links/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/authority",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/authority",
       label: "Authority router",
       description:
         "AuthorityRouterWorkspace — route backlink and internal authority toward priority pages with evidence-grounded link recommendations.",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/authority/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/authority/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/valuation",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/valuation",
       label: "Backlink valuation",
       description:
         "LinkValuationWorkspace — score a candidate backlink on quality, relevance, and placement, and price what it is worth (was /marketing/backlink-valuation).",
-      filePath: "app/(core)/marketing/[brandId]/seo/[siteId]/valuation/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/seo/[siteId]/valuation/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/ai-visibility",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/ai-visibility",
       label: "AI visibility",
       description:
         "SiteAiVisibilityWorkspace — where AI assistants cite this site, which competitors answer instead, and the captured evidence.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/ai-visibility/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/ai-visibility/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/ai-visibility/[view]",
       label: "AI visibility evidence",
       description:
         "Full-page claims, sources, decision signals, or provider history; the panels view renders SiteAiVisibilityPanels instead.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/ai-visibility/[view]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/growth-loop",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/growth-loop",
       label: "Growth loop",
       description:
         "SiteGrowthLoopWorkspace — run this site end to end and act on whatever the loop is waiting on.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/growth-loop/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/growth-loop/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/automations",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/automations",
       label: "Site automations",
       description:
         "SiteRunConsoleMount — the run console at the SITE tier, with the schedule that overrides organization and system defaults (KI-049).",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/automations/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/automations/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/seo/[siteId]/capabilities",
+      url: "/marketing/brands/[brandId]/seo/[siteId]/capabilities",
       label: "SEO capabilities",
       description:
         "SeoCapabilitiesWorkspace bound to this site — what's measured and switched on, and each capability's evidence.",
       filePath:
-        "app/(core)/marketing/[brandId]/seo/[siteId]/capabilities/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/seo/[siteId]/capabilities/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content",
+      url: "/marketing/brands/[brandId]/content",
       label: "Content section",
       description:
         "Front door with no screen of its own — 308s to the Content Plan list.",
-      filePath: "app/(core)/marketing/[brandId]/content/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/content/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan",
+      url: "/marketing/brands/[brandId]/content/plan",
       label: "Content Plan list",
       description:
         "BrandScopedPlanSitesList → PlanSitesList — this brand's websites and their plan coverage (the site dropdown inside stays cross-org on purpose).",
-      filePath: "app/(core)/marketing/[brandId]/content/plan/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/content/plan/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan/[siteId]",
+      url: "/marketing/brands/[brandId]/content/plan/[siteId]",
       label: "Content Plan — Tree",
       description:
         "ContentPlanRouteBody, tree view (the workspace index); `?node=` carries row selection.",
-      filePath: "app/(core)/marketing/[brandId]/content/plan/[siteId]/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/content/plan/[siteId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan/[siteId]/table",
+      url: "/marketing/brands/[brandId]/content/plan/[siteId]/table",
       label: "Content Plan — Table",
       description: "ContentPlanRouteBody, table view of the same plan workspace.",
       filePath:
-        "app/(core)/marketing/[brandId]/content/plan/[siteId]/table/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/content/plan/[siteId]/table/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan/[siteId]/map",
+      url: "/marketing/brands/[brandId]/content/plan/[siteId]/map",
       label: "Content Plan — Pillar map",
       description: "ContentPlanRouteBody, pillar-map view.",
       filePath:
-        "app/(core)/marketing/[brandId]/content/plan/[siteId]/map/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/content/plan/[siteId]/map/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan/[siteId]/entities",
+      url: "/marketing/brands/[brandId]/content/plan/[siteId]/entities",
       label: "Content Plan — Entities",
       description: "ContentPlanRouteBody, entities view.",
       filePath:
-        "app/(core)/marketing/[brandId]/content/plan/[siteId]/entities/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/content/plan/[siteId]/entities/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan/[siteId]/setup",
+      url: "/marketing/brands/[brandId]/content/plan/[siteId]/setup",
       label: "Content Plan — Setup",
       description: "ContentPlanRouteBody, setup view.",
       filePath:
-        "app/(core)/marketing/[brandId]/content/plan/[siteId]/setup/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/content/plan/[siteId]/setup/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/plan/[siteId]/ai-runs",
+      url: "/marketing/brands/[brandId]/content/plan/[siteId]/ai-runs",
       label: "Content Plan — AI runs",
       description:
         "ContentPlanRouteBody, AI-runs view (the sixth PLAN_VIEWS entry the workspace header links).",
       filePath:
-        "app/(core)/marketing/[brandId]/content/plan/[siteId]/ai-runs/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/content/plan/[siteId]/ai-runs/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/content/studio",
+      url: "/marketing/brands/[brandId]/content/studio",
       label: "Content Studio",
       description:
         "RESERVED — renders <MarketingComingSoon comingSoonId=\"marketing.content-studio\">; the URL is permanent.",
-      filePath: "app/(core)/marketing/[brandId]/content/studio/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/content/studio/page.tsx",
       status: "Coming soon",
     },
     {
-      url: "/marketing/[brandId]/locations",
+      url: "/marketing/brands/[brandId]/locations",
       label: "Locations & Listings",
       description:
         "LocalListingsWorkspace for the brand — business locations, listings, and reviews.",
-      filePath: "app/(core)/marketing/[brandId]/locations/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/locations/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/locations/[locationId]",
+      url: "/marketing/brands/[brandId]/locations/[locationId]",
       label: "Location workspace",
       description:
         "LocalListingsWorkspace for one canonical location — publisher listings matrix and citation coverage.",
       filePath:
-        "app/(core)/marketing/[brandId]/locations/[locationId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/locations/[locationId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/socials",
+      url: "/marketing/brands/[brandId]/socials",
       label: "Social accounts",
       description:
         "Social Intelligence shell — tabs Accounts · Studio · Outliers · Swipe file · Ads · KPIs; Accounts is live, the rest are registered coming-soon tabs.",
-      filePath: "app/(core)/marketing/[brandId]/socials/layout.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/socials/layout.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/email",
+      url: "/marketing/brands/[brandId]/email",
       label: "Email",
       description:
         "BrandScopedEmail → EmailFrontDoor — the mailbox, templates, and sequences outreach sends from. Mailboxes are counted in the brand's organization; templates/campaigns have no brand link and say so on the page.",
-      filePath: "app/(core)/marketing/[brandId]/email/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/email/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/pr",
+      url: "/marketing/brands/[brandId]/pr",
       label: "Press Room",
       description:
         "PressRoomWorkspace — what is newsworthy, the proof, the journalists to pitch (still self-selects a brand from `?brand=`).",
-      filePath: "app/(core)/marketing/[brandId]/pr/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/pr/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/pr/outreach",
+      url: "/marketing/brands/[brandId]/pr/outreach",
       label: "Outreach",
       description:
         "BrandScopedOutreach → OutreachFrontDoor — prospecting scoped to this brand's websites and its organization's mailboxes; the CRM doors (campaigns, Chasebox, replies, wins) have no brand link and are labeled as counting across your brands.",
-      filePath: "app/(core)/marketing/[brandId]/pr/outreach/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/pr/outreach/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/ads",
+      url: "/marketing/brands/[brandId]/ads",
       label: "Advertising",
       description:
         "GoogleAdsWorkspace inside LazyGoogleAPIProvider — the ad center's first room; the wider center is the `marketing.ads` promise.",
-      filePath: "app/(core)/marketing/[brandId]/ads/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/ads/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/intelligence",
+      url: "/marketing/brands/[brandId]/intelligence",
       label: "Intelligence section",
       description:
         "Front door with no screen of its own — 308s to Competitors.",
-      filePath: "app/(core)/marketing/[brandId]/intelligence/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/intelligence/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/intelligence/competitors",
+      url: "/marketing/brands/[brandId]/intelligence/competitors",
       label: "Competitors",
       description:
         "CompetitorAutopsyWorkspace — overlapping rivals, the pages earning their rankings, and ranked opportunities.",
       filePath:
-        "app/(core)/marketing/[brandId]/intelligence/competitors/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/intelligence/competitors/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/intelligence/monitoring",
+      url: "/marketing/brands/[brandId]/intelligence/monitoring",
       label: "Monitoring",
       description:
         "MonitoringFrontDoor — scopes to a site and opens coverage, link changes, AI visibility, and reputation (site picker still org-wide).",
       filePath:
-        "app/(core)/marketing/[brandId]/intelligence/monitoring/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/intelligence/monitoring/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/intelligence/reputation",
+      url: "/marketing/brands/[brandId]/intelligence/reputation",
       label: "Reputation chooser",
       description:
         "BrandReputationSites — reputation is answered per website, so the brand level is a chooser over this brand's sites.",
       filePath:
-        "app/(core)/marketing/[brandId]/intelligence/reputation/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/intelligence/reputation/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/intelligence/reputation/[siteId]",
+      url: "/marketing/brands/[brandId]/intelligence/reputation/[siteId]",
       label: "Site reputation",
       description:
         "ReputationGate — evidence-backed publication opportunities and reputation handling decisions for one site.",
       filePath:
-        "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/intelligence/reputation/[siteId]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/analytics",
+      url: "/marketing/brands/[brandId]/analytics",
       label: "Analytics",
       description:
         "BrandAnalyticsWorkspace — this brand's websites with their 28-day Google Analytics headline numbers, each opening the canonical SiteAnalyticsPanel in the siteAnalyticsWindow. Reads seo.web_analytics_daily directly, deduped to the newest collection run per day. The unbuilt cross-channel join is printed under the live panel (coming-soon id marketing.analytics.cross-channel). The brand's own YouTube channel sits below it: BrandChannelPanel (U-M3), the other channel this section's promise already named.",
-      filePath: "app/(core)/marketing/[brandId]/analytics/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/analytics/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/planning",
+      url: "/marketing/brands/[brandId]/planning",
       label: "Planning section",
       description:
         "Front door with no screen of its own — 308s to Initiatives.",
-      filePath: "app/(core)/marketing/[brandId]/planning/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/planning/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/planning/initiatives",
+      url: "/marketing/brands/[brandId]/planning/initiatives",
       label: "Initiatives",
       description:
         "InitiativesListPage — the container above channels (still organization-scoped rather than brand-scoped).",
       filePath:
-        "app/(core)/marketing/[brandId]/planning/initiatives/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/planning/initiatives/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/planning/initiatives/[id]",
+      url: "/marketing/brands/[brandId]/planning/initiatives/[id]",
       label: "Initiative detail",
       description:
         "InitiativeDetail — timeline, goal, budget, and version-guarded editing for one initiative UUID.",
       filePath:
-        "app/(core)/marketing/[brandId]/planning/initiatives/[id]/page.tsx",
+        "app/(core)/marketing/brands/[brandId]/planning/initiatives/[id]/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/planning/calendar",
+      url: "/marketing/brands/[brandId]/planning/calendar",
       label: "PR calendar",
       description:
         "The brand PR calendar: seo.pr_moment + the stored pr_calendar_plan on a month grid, refreshed by POST /pr-calendar/brands/{id}/run. The wider cross-channel timeline is still the marketing.calendar promise, shown on the page.",
-      filePath: "app/(core)/marketing/[brandId]/planning/calendar/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/planning/calendar/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/inbox",
+      url: "/marketing/brands/[brandId]/inbox",
       label: "Discovery inbox",
       description:
         "DiscoveryInbox — review machine-found assets, properties, and facts before they join the brand.",
-      filePath: "app/(core)/marketing/[brandId]/inbox/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/inbox/page.tsx",
       status: "Live",
     },
     {
-      url: "/marketing/[brandId]/settings",
+      url: "/marketing/brands/[brandId]/settings",
       label: "Brand settings",
       description:
         "ValueSettingsEditor + AutonomyModesEditor at the BRAND rung of the ladder; sites inherit unless they override.",
-      filePath: "app/(core)/marketing/[brandId]/settings/page.tsx",
+      filePath: "app/(core)/marketing/brands/[brandId]/settings/page.tsx",
       status: "Live",
     },
 
@@ -1045,7 +1045,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/brands/[brandId]",
       label: "Legacy brand tree",
       description:
-        "ONE catch-all for the whole pre-restructure `/marketing/brands/[brandId]/**` tree — 308s each old brand or site path to its home under /marketing/[brandId].",
+        "ONE catch-all for the whole pre-restructure `/marketing/brands/[brandId]/**` tree — 308s each old brand or site path to its home under /marketing/brands/[brandId].",
       filePath: "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx",
       status: "Deprecated",
     },
@@ -1251,7 +1251,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/social",
       label: "Social roll-up",
       description:
-        "Agency-plane roll-up: every brand's tracked accounts and recent outliers. A brand's own social work is at /marketing/[brandId]/socials.",
+        "Agency-plane roll-up: every brand's tracked accounts and recent outliers. A brand's own social work is at /marketing/brands/[brandId]/socials.",
       filePath: "app/(core)/marketing/social/page.tsx",
       status: "Live",
     },
@@ -1267,7 +1267,7 @@ const MARKETING_ADMIN_MAP: FeatureAdminMap = {
       url: "/marketing/calendar",
       label: "PR calendar door",
       description:
-        "Lands on the brand PR calendar (/marketing/<brand>/planning/calendar): straight there with one brand, a brand chooser with several.",
+        "Lands on the brand PR calendar (/marketing/brands/<brand>/planning/calendar): straight there with one brand, a brand chooser with several.",
       filePath: "app/(core)/marketing/calendar/page.tsx",
       status: "Live",
     },

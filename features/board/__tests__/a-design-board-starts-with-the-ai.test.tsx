@@ -100,4 +100,16 @@ describe("a new design system board starts with the AI", () => {
     expect(next.querySelector("[data-shimmer]")!.textContent).toBe("Starting the design agent…");
     expect(Array.from(next.querySelectorAll("li")).map((li) => li.dataset.state)).toEqual(["done", "current"]);
   });
+
+  it("a double press on Create starts ONE board: the second click in the same tick does nothing", async () => {
+    const onStart = jest.fn();
+    const host = await mount(onStart);
+    const create = buttons(host).find((b) => b.textContent === "Create")!;
+    await act(async () => {
+      create.click();
+      create.click();
+    });
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(create.disabled).toBe(true);
+  });
 });

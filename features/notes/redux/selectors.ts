@@ -7,6 +7,7 @@
 
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/store";
+import { isEmbeddedNote } from "../service/embeddedNotes";
 import type {
   NoteRecord,
   NoteFetchStatus,
@@ -171,7 +172,9 @@ export const selectAllNotesList = createSelector(
     const rows: NoteRecord[] = [];
     for (const id of projection.orderedIds) {
       const note = notes[id];
-      if (note) rows.push(note as NoteRecord);
+      // A row a feature keeps inside itself (board tile, sticky) is loaded by id for its tile but is
+      // never part of the person's list, Recent or find.
+      if (note && !isEmbeddedNote(note)) rows.push(note as NoteRecord);
     }
     return rows;
   },

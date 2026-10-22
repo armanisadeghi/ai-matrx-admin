@@ -148,7 +148,7 @@ export const marketingSiteMediaManifest: SurfaceManifest = {
   label: "Site Media Workspace",
   situation:
     "They are on the website's media workspace on the {media_view} view: images found by crawling, the brand library, research images, AI image orders and the website's image standards. They can edit the image standards' slots and notes.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/media",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/media",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 Read brand_context and site_context first — they tell you whose site this is and what it sells.

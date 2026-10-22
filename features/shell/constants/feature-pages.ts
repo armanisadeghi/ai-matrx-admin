@@ -50,6 +50,7 @@ export const FEATURE_PAGES: readonly FeaturePageEntry[] = [
   { route: "/spaces", node: "content/spaces", kind: "collection" },
   { route: "/esign", node: "content/esign", kind: "collection" },
   { route: "/maps", node: "content/visual-maps", kind: "collection" },
+  { route: "/visual-maps/lab", node: "content/visual-maps", kind: "workspace" },
   { route: "/markdown-studio", node: "content/content-utilities", kind: "tool" },
   { route: "/data", node: "data/data-tables", kind: "collection" },
   { route: "/pick-lists", node: "data/data-tables", kind: "collection" },

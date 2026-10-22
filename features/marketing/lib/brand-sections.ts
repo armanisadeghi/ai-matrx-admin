@@ -1,7 +1,7 @@
 import type { ShellIconName } from "@/features/shell/shellIconMap";
 
 /**
- * The Brand WORKSPACE's sections — everything under `/marketing/[brandId]`.
+ * The Brand WORKSPACE's sections — everything under `/marketing/brands/[brandId]`.
  *
  * A person or team works on one or more brands - usually their own. Every section here
  * is about ONE brand, grouped as Arman laid Marketing out (2026-10-21):
@@ -37,7 +37,7 @@ export type MarketingBrandSectionGroup =
   (typeof MARKETING_BRAND_SECTION_GROUPS)[number];
 
 export interface MarketingBrandSection {
-  /** First path segment under `/marketing/[brandId]` ("" = the dashboard). */
+  /** First path segment under `/marketing/brands/[brandId]` ("" = the dashboard). */
   slug: string;
   name: string;
   titlePrefix: string;
@@ -257,7 +257,7 @@ export const MARKETING_BRAND_SECTIONS = [
     letter: "Tm",
     iconName: "Network",
     group: "Content",
-    // ⚠️ `/marketing/<brand>/content` answered with `permanentRedirect` (HTTP
+    // ⚠️ `/marketing/brands/<brand>/content` answered with `permanentRedirect` (HTTP
     // 308) into the content plan until the map took that slot on 2026-09-16,
     // and browsers cache a 308 indefinitely. Pointing this row at the
     // `content/map` address means the sidebar never exercises anyone's cached
@@ -440,7 +440,7 @@ export const MARKETING_BRAND_SUBROUTE_PROMISES: readonly {
 ];
 
 /**
- * Segments under `/marketing/[brandId]` that only forward to a section's home
+ * Segments under `/marketing/brands/[brandId]` that only forward to a section's home
  * (an old address kept working). Never a menu row.
  */
 export const MARKETING_BRAND_FORWARD_SEGMENTS = [
@@ -448,7 +448,7 @@ export const MARKETING_BRAND_FORWARD_SEGMENTS = [
   "offerings",
 ] as const;
 
-/** The unique filesystem segments under `/marketing/[brandId]` (drift test). */
+/** The unique filesystem segments under `/marketing/brands/[brandId]` (drift test). */
 export function listMarketingBrandSegments(): string[] {
   return [
     ...new Set([

@@ -3774,7 +3774,7 @@
       "detail": "secondary slot: 148 chars, budget 60"
     },
     {
-      "file": "app/(core)/marketing/[brandId]/layout.tsx",
+      "file": "app/(core)/marketing/brands/[brandId]/layout.tsx",
       "line": 45,
       "rule": "over-budget",
       "severity": 2,
@@ -3784,7 +3784,7 @@
       "detail": "secondary slot: 128 chars, budget 60"
     },
     {
-      "file": "app/(core)/marketing/[brandId]/layout.tsx",
+      "file": "app/(core)/marketing/brands/[brandId]/layout.tsx",
       "line": 45,
       "rule": "multi-sentence",
       "severity": 2,
@@ -3794,7 +3794,7 @@
       "detail": "2 sentences in one secondary slot (max 1)"
     },
     {
-      "file": "app/(core)/marketing/[brandId]/seo/page.tsx",
+      "file": "app/(core)/marketing/brands/[brandId]/seo/page.tsx",
       "line": 41,
       "rule": "over-budget",
       "severity": 2,
@@ -3804,7 +3804,7 @@
       "detail": "secondary slot: 104 chars, budget 60"
     },
     {
-      "file": "app/(core)/marketing/[brandId]/settings/page.tsx",
+      "file": "app/(core)/marketing/brands/[brandId]/settings/page.tsx",
       "line": 32,
       "rule": "over-budget",
       "severity": 2,
@@ -3814,7 +3814,7 @@
       "detail": "secondary slot: 75 chars, budget 60"
     },
     {
-      "file": "app/(core)/marketing/[brandId]/settings/page.tsx",
+      "file": "app/(core)/marketing/brands/[brandId]/settings/page.tsx",
       "line": 32,
       "rule": "multi-sentence",
       "severity": 2,

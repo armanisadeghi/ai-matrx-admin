@@ -61,7 +61,7 @@ export interface MarketingSeoRouteSection extends MarketingRouteSection {
   group: MarketingSeoSectionGroup;
 }
 
-/** Every visible mode under `/marketing/[brandId]/websites/[siteId]`. */
+/** Every visible mode under `/marketing/brands/[brandId]/websites/[siteId]`. */
 export const MARKETING_WEBSITE_SECTIONS = [
   {
     slug: "",
@@ -126,7 +126,7 @@ export const MARKETING_WEBSITE_SECTIONS = [
 ] as const satisfies readonly MarketingWebsiteRouteSection[];
 
 /**
- * Every visible mode under `/marketing/[brandId]/seo/[siteId]`.
+ * Every visible mode under `/marketing/brands/[brandId]/seo/[siteId]`.
  * The branch root redirects to `keywords` — the "start here" screen.
  */
 export const MARKETING_SEO_SECTIONS = [

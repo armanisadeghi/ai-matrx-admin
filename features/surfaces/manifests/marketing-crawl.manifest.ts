@@ -256,7 +256,7 @@ export const marketingCrawlManifest: SurfaceManifest = {
   label: "Marketing Crawl",
   situation:
     "They have one crawl session open ({crawl_status|status loading}), started {crawl_started_at|at a time not loaded yet} and lasting {crawl_duration|an unknown time}; they are on its {crawl_view} tab. They can read its summary, URLs, logs, snapshots, links and technical reports.",
-  urlPattern: "/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]",
+  urlPattern: "/marketing/brands/[brandId]/websites/[siteId]/crawls/[crawlId]",
   inheritsFrom: "matrx-user/marketing-site",
   intro: `<surface_intro>
 You are inside one frozen crawl session of a managed website: its timing, frozen scope, run stats, error state, URL ledger, event log, and the ten technical SEO reports built from the run's URL outcomes and immutable snapshots. Read the inherited brand_context and site_context first for the brand and site framing; crawl_stats and crawl_scope tell you what this run did and what it was allowed to do.

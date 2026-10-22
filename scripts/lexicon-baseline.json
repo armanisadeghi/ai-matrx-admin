@@ -15,7 +15,7 @@
   "app/(core)/knowledge/admin/page.tsx|processed document": 2,
   "app/(core)/knowledge/admin/page.tsx|search lab": 2,
   "app/(core)/knowledge/search/page.tsx|search lab": 1,
-  "app/(core)/marketing/[brandId]/websites/[siteId]/pages/page.tsx|canonical page": 1,
+  "app/(core)/marketing/brands/[brandId]/websites/[siteId]/pages/page.tsx|canonical page": 1,
   "app/(core)/marketing/admin/page.tsx|canonical page": 6,
   "app/(core)/pick-lists/layout.tsx|option set": 1,
   "app/(core)/rag/admin/page.tsx|processed document": 2,

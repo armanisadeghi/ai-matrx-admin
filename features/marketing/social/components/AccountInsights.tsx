@@ -22,6 +22,7 @@ import { useConnectionStates } from "../useConnectionStates";
 import { platformLabel } from "./PlatformMark";
 import { useStartConnection } from "./ConnectAccountMenu";
 import { TopOwnPosts } from "./TopOwnPosts";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 const HEADLINE = new Set(["followers", "impressions", "reach", "engagements"]);
 
@@ -29,7 +30,7 @@ export function AccountInsights({ trackedAccountId, platform }: { trackedAccount
   const brand = useMarketingBrand();
   const router = useRouter();
   const connections = useConnectionStates(brand.organizationId);
-  const start = useStartConnection(brand.organizationId, brand.seg, () => router.push(`/marketing/${brand.seg}/socials/accounts`));
+  const start = useStartConnection(brand.organizationId, brand.seg, () => router.push(marketingRoutes.brandSection(brand.seg, "socials/accounts")));
   const insights = useOwnInsights([trackedAccountId]);
   const summary = insights.summaries.get(trackedAccountId);
   const connection = connections.of(platform);

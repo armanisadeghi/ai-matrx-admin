@@ -40,7 +40,7 @@ export interface FrontDoorSiteState {
 export function useFrontDoorSite(
   /**
    * 🚨 BRAND SCOPE (2026-08-30). A front door mounted inside
-   * `/marketing/<brand>/...` used to pick `options[0]` — the first site on the
+   * `/marketing/brands/<brand>/...` used to pick `options[0]` — the first site on the
    * PLATFORM — so All Green Recycling's Monitoring page opened on AI Matrx's
    * website, and every door beneath it (Coverage, Link changes, AI visibility,
    * Reputation) linked into that other brand's workspace. Choosing the site

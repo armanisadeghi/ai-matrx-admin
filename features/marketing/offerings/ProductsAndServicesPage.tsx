@@ -2,7 +2,7 @@
 
 /**
  * Identity › Products & services — the ONE home of what a brand sells (Arman, 2026-10-21: the product tree moves
- * into Identity; `/marketing/<brand>/offerings` forwards here).
+ * into Identity; `/marketing/brands/<brand>/offerings` forwards here).
  *
  * Two views of the same subject under one tab row:
  * - Found (default): the offering tree Smart Add found — Yes / No / Other per row, quotes, Refresh, the live run

@@ -6,7 +6,7 @@
  * AI_ADMIN_USERNAME / AI_ADMIN_PASSWORD (environment or .env.local) and are never printed.
  *
  *   node scripts/ai-visibility-panels-walk.mjs --base http://localhost:3001 \
- *     --panels-route /marketing/<brand>/seo/<site>/ai-visibility/panels --out <dir> [--start-design]
+ *     --panels-route /marketing/brands/<brand>/seo/<site>/ai-visibility/panels --out <dir> [--start-design]
  */
 import fs from "node:fs";
 import path from "node:path";

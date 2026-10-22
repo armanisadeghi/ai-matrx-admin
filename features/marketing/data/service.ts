@@ -349,7 +349,7 @@ export async function listSites(
     .select(SITE_COLUMNS, { count: "exact" })
     .is("deleted_at", null);
 
-  // 🚨 BRAND SCOPE (2026-08-30). `/marketing/<brand>/websites` mounted this
+  // 🚨 BRAND SCOPE (2026-08-30). `/marketing/brands/<brand>/websites` mounted this
   // portfolio unscoped, so a brand's own workspace listed EVERY brand's
   // websites — 15 sites across 14 brands inside All Green Recycling's shell.
   // The page carried a comment acknowledging the gap ("no brand-scoped list

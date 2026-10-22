@@ -44,7 +44,7 @@ describe("executeSqlQuery authorization boundary", () => {
       data: [{ one: 1 }],
       error: null,
     });
-    requireSuperAdminDatabaseClient.mockResolvedValue({ rpc });
+    requireSuperAdminDatabaseClient.mockResolvedValue({ rpc, schema: () => ({ rpc }) });
 
     await expect(executeSqlQuery("SELECT 1 AS one")).resolves.toEqual({
       data: [{ one: 1 }],

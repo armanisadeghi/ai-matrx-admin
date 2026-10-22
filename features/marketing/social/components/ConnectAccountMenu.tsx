@@ -30,6 +30,7 @@ import { useConnectionStates } from "../useConnectionStates";
 import { PlatformMark, platformLabel } from "./PlatformMark";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { marketingRoutes } from "@/features/marketing/lib/routes";
 /** The networks a brand can connect, in the order the menu lists them. */
 const CONNECT_NETWORKS = ["facebook", "instagram", "threads", "linkedin", "pinterest", "x", "youtube", "tiktok"] as const;
 
@@ -38,7 +39,7 @@ export function useStartConnection(organizationId: string, brandSeg: string, onM
   const userId = useAppSelector(selectUserId);
   const backendOrigin = useAppSelector(selectResolvedBaseUrl);
   const openGoogleConnect = useOpenGoogleConnectWindow();
-  const returnUrl = `/marketing/${brandSeg}/socials/accounts`;
+  const returnUrl = marketingRoutes.brandSection(brandSeg, "socials/accounts");
 
   return async function start(c: PlatformConnection) {
     if (c.state === "connected") {

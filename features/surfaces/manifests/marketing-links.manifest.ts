@@ -245,7 +245,7 @@ export const marketingLinksManifest: SurfaceManifest = {
   label: "Marketing Site Links",
   situation:
     "They are on the website's link map in the {view_mode} view: {edge_total|an unknown number of} links recorded; in what is loaded, {broken_link_count|no} are broken and {external_domain_count|no} outside domains are linked to. The view is read-only.",
-  urlPattern: "/marketing/[brandId]/seo/[siteId]/links",
+  urlPattern: "/marketing/brands/[brandId]/seo/[siteId]/links",
   inheritsFrom: "matrx-user/marketing-site",
   groups,
   intro: `<surface_intro>

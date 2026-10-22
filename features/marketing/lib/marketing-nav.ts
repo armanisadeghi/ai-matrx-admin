@@ -5,7 +5,7 @@
  * agency-model restructure — docs/handoffs/marketing-agency-restructure.md).
  * These pillars are ONLY what concerns no single brand: the roster,
  * cross-brand roll-ups, operations, and generic tools. Everything else lives
- * in the brand workspace (`/marketing/[brandId]/…`, declared in
+ * in the brand workspace (`/marketing/brands/[brandId]/…`, declared in
  * `lib/brand-sections.ts`). Anything that renders a map of Marketing (the
  * `/marketing` hub, `/marketing/tools`, the shell nav) reads this file so a
  * new surface can never be added to one menu and missed by the others.

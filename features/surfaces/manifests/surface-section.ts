@@ -1,5 +1,5 @@
 /**
- * The app section a surface's page sits in ("/marketing/[brandId]" →
+ * The app section a surface's page sits in ("/marketing/brands/[brandId]" →
  * "Marketing") — the navigation's own owner for the page's route, the same
  * one the sidebar and header light up, never a second map. Handed to
  * `@ai-matrx/chat` through the manifest seam (`getSurfaceSection`).

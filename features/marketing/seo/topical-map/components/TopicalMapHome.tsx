@@ -22,7 +22,7 @@
  * map this session, coming back to the home is a choice, and bouncing them
  * again would make the header's "back" link a trap.
  *
- * `/marketing/<brand>/content` was a `permanentRedirect` into the content plan
+ * `/marketing/brands/<brand>/content` was a `permanentRedirect` into the content plan
  * until this screen shipped (placement decision 2026-09-16). The plan keeps
  * every address it had and is linked from here as what a topic's page is
  * written in.

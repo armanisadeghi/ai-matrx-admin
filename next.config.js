@@ -10,6 +10,7 @@ const {
 const {
   legacySettingsRedirects,
 } = require("./utils/next-config/legacySettingsRedirects");
+const { marketingBrandRedirects } = require("./utils/next-config/marketingBrandRedirects");
 // const { remotePatterns } = require("./utils/next-config/imageConfig");
 const { configureWebpack } = require("./utils/next-config/webpackConfig");
 const copyFiles = require("./utils/next-config/copyFiles");
@@ -485,6 +486,22 @@ const nextConfig = {
       // behind an isNode check; in the browser graph they resolve to an empty module.
       fs: { browser: "./lib/turbopack/empty-node-builtin.js" },
       https: { browser: "./lib/turbopack/empty-node-builtin.js" },
+    },
+    // SHEETS FORMULAS FOLLOW ROW/COLUMN INSERT, DELETE AND MOVE ONLY WITH THIS (2026-10-22).
+    // Turbopack's production minifier deletes `(/* @__PURE__ */ new Set(...)).forEach(cb)` statements, and
+    // @univerjs/sheets-formula (and docs-ui) are written that way: the live bundle shipped the ref-range
+    // function with its loops gone, so =F13*10 never became =F14*10 and =SUM(F11:F15) never widened.
+    // Dev and tests (unminified) were fine, which is why headless runs could not reproduce it.
+    // The loader drops the annotation on those two packages. Guard: features/workbooks/__tests__/univer-pure-set-loop-survives-production-build.test.ts
+    rules: {
+      "**/@univerjs/sheets-formula/lib/es/index.js": {
+        loaders: [require.resolve("./scripts/turbopack-univer-pure-set-loader.cjs")],
+        as: "*.js",
+      },
+      "**/@univerjs/docs-ui/lib/es/index.js": {
+        loaders: [require.resolve("./scripts/turbopack-univer-pure-set-loader.cjs")],
+        as: "*.js",
+      },
     },
   },
   serverExternalPackages: [
@@ -1057,6 +1074,12 @@ const nextConfig = {
         permanent: false,
       },
       { source: "/demos/public", destination: "/demos", permanent: false },
+      // 2026-10-22: the brand workspace moved from /marketing/<brand>/… to
+      // /marketing/brands/<brand>/… (URLs follow the hierarchy). Every old link 308s.
+      // LAST on purpose: Next applies the first match, and this rule matches any
+      // non-static /marketing/<x>, so every explicit /marketing redirect above
+      // (e.g. /marketing/campaigns) must be decided first.
+      ...marketingBrandRedirects(),
     ];
   },
   async rewrites() {

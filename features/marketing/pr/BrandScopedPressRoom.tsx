@@ -5,7 +5,7 @@
  * which brand it is standing in, with the PR Director beside it.
  *
  * Without the scoping the workspace defaulted to the first brand alphabetically
- * across the entire platform, so `/marketing/<brand>/pr` showed a different
+ * across the entire platform, so `/marketing/brands/<brand>/pr` showed a different
  * brand's stories, journalists and pitches under the requested brand's name.
  *
  * The brand comes from `MarketingBrandProvider` (a real UUID), never from the

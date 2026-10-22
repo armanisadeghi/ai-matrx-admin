@@ -58,7 +58,10 @@ const rpc = jest.fn(async (name: string, args: Record<string, string>) => {
 });
 
 jest.mock("@/utils/supabase/client", () => ({
-  createClient: () => ({ rpc: (...a: unknown[]) => rpc(...(a as [string, Record<string, string>])) }),
+  createClient: () => {
+    const call = (...a: unknown[]) => rpc(...(a as [string, Record<string, string>]));
+    return { rpc: call, schema: () => ({ rpc: call }) };
+  },
 }));
 
 // Stable references keep this suite about scope. The hook no longer re-fetches when the inbox

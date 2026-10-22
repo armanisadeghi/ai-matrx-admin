@@ -42,6 +42,7 @@ import {
 } from "@/lib/list-scope";
 import { readAllRows } from "@ai-matrx/data/db";
 import { escapeIlike } from "../hooks/useNoteContentSearch";
+import { excludeEmbeddedNotes } from "./embeddedNotes";
 
 /**
  * Fetch the notes this screen should open on (excluding deleted).
@@ -64,7 +65,7 @@ export async function fetchNotes(scope?: ListScopeWord): Promise<Note[]> {
     .from("notes")
     .select("*")
     .is("deleted_at", null);
-  query = listScope.apply(query);
+  query = excludeEmbeddedNotes(listScope.apply(query));
   const { data, error } = await query.order("updated_at", { ascending: false });
 
   if (error) {
@@ -93,7 +94,7 @@ export async function fetchNoteListItems(
       "id, created_by, label, home_scope_id, tags, updated_at, position, organization_id, shown_to, published_to_web, version",
     )
     .is("deleted_at", null);
-  query = listScope.apply(query);
+  query = excludeEmbeddedNotes(listScope.apply(query));
   const { data, error } = await query.order("updated_at", { ascending: false });
 
   if (error) {
@@ -132,7 +133,7 @@ export async function fetchRecentNotePickerRows(
     .from("notes")
     .select(NOTE_PICKER_COLUMNS)
     .is("deleted_at", null);
-  query = listScope.apply(query);
+  query = excludeEmbeddedNotes(listScope.apply(query));
   const { data, error } = await query
     .order("updated_at", { ascending: false })
     .order("id", { ascending: true })
@@ -157,7 +158,7 @@ export async function fetchAllNotePickerRows(
         .from("notes")
         .select(NOTE_PICKER_COLUMNS, { count: "exact" })
         .is("deleted_at", null);
-      q = listScope.apply(q);
+      q = excludeEmbeddedNotes(listScope.apply(q));
       return q
         .order("updated_at", { ascending: false })
         .order("id", { ascending: true })
@@ -191,7 +192,7 @@ export async function searchNotePickerRows(
     .or(
       `label.ilike.${pattern},content.ilike.${pattern}`,
     );
-  q = listScope.apply(q);
+  q = excludeEmbeddedNotes(listScope.apply(q));
   const { data, error } = await q
     .order("updated_at", { ascending: false })
     .order("id", { ascending: true })

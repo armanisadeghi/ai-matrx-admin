@@ -45,7 +45,7 @@ export function safeSocialReturn(value: string | null): string {
     return SOCIAL_SETTINGS_RETURN;
   }
   const path = value.split(/[?#]/, 1)[0];
-  return path === SOCIAL_SETTINGS_RETURN || /^\/marketing\/[^/]+\/socials\/accounts$/.test(path)
+  return path === SOCIAL_SETTINGS_RETURN || /^\/marketing\/(?:brands\/)?[^/]+\/socials\/accounts$/.test(path)
     ? value
     : SOCIAL_SETTINGS_RETURN;
 }

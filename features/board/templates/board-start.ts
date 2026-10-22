@@ -10,7 +10,10 @@
 import { useEffect, useRef } from "react";
 
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { useInPlaceChatHost } from "@ai-matrx/chat/agents/components/chat/in-place-chat-host";
+import { selectInstanceStatus } from "@ai-matrx/chat/agents/redux/execution-system/conversations/conversations.selectors";
 import { startShellChatJob } from "@ai-matrx/chat/canvas/workspace/shell-chat-page-context";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { toast } from "@/lib/toast";
 
 const DESIGN_SYSTEM_BUILD = MANDATE_KEYS.design_system__build;
@@ -20,6 +23,21 @@ export function startDesignBuild(): boolean {
   if (startShellChatJob(DESIGN_SYSTEM_BUILD, { run: true })) return true;
   toast.error("The chat could not open here. Use the Agents menu.");
   return false;
+}
+
+/**
+ * Whether the design-system job is running right now in the side chat beside this board — read from the chat's own
+ * records (the conversation on screen, its mandate, its run status), never a parallel store. An empty cover says
+ * "building" only while this is true; otherwise it is honest and offers the job again.
+ */
+export function useDesignBuildRunning(): boolean {
+  const conversationId = useInPlaceChatHost()?.activeConversationId ?? null;
+  return useAppSelector((state) => {
+    if (!conversationId) return false;
+    if (state.conversations.byConversationId[conversationId]?.mandateKey !== DESIGN_SYSTEM_BUILD) return false;
+    const status = selectInstanceStatus(conversationId)(state);
+    return status === "running" || status === "streaming";
+  });
 }
 
 /** How a new design board was started: by the AI (the default) or from a style. */

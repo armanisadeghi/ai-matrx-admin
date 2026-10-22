@@ -1,7 +1,7 @@
 /**
  * Surface manifest — Brand offerings room (`matrx-user/marketing-brand-offerings`).
  *
- * Drives `/marketing/[brandId]/identity/offerings` — `BrandOfferingsPage`:
+ * Drives `/marketing/brands/[brandId]/identity/offerings` — `BrandOfferingsPage`:
  * what the brand sells and what it charges. The catalog is BRAND-owned
  * (`web.brand_offering`, a parent/child tree). With no website the page is the
  * brand-only editor; once the brand has a website the same route shows the
@@ -222,7 +222,7 @@ export const marketingBrandOfferingsManifest: SurfaceManifest = {
   label: "Brand Offerings",
   situation:
     "They are in the brand's Offerings room: the tree of what the brand sells ({offerings_count|an unknown number of} offerings), shown for the website {offerings_site.domain|none chosen}. They can add, edit, move or stop an offering, set what it is worth and whether this website offers it.",
-  urlPattern: "/marketing/[brandId]/identity/offerings",
+  urlPattern: "/marketing/brands/[brandId]/identity/offerings",
   inheritsFrom: "matrx-user/marketing-brand",
   intro: `<surface_intro>
 You are on a brand's Offerings room: the tree of what the brand sells and what it charges. Read brand_context first, then offerings_outline for the shape and offerings_catalog for ids and prices.

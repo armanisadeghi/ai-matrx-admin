@@ -421,6 +421,7 @@ import { acquisitionConsoleManifest } from "./acquisition-console.manifest";
 import { clientPortalManifest, clientPortalFormManifest, clientPortalRecordManifest } from "./client-portal.manifest";
 import { adminToolAlertManifest } from "./admin-tool-alert.manifest";
 import { adminSpendAlarmManifest } from "./admin-spend-alarm.manifest";
+import { visualMapLabManifest } from "./visual-map-lab.manifest";
 import { adminHeldRunManifest } from "./admin-held-run.manifest";
 import { adminSpendApprovalManifest, adminWorkflowSpendApprovalsManifest } from "./admin-spend-approval.manifest";
 import { adminAgentFactoryBuildManifest } from "./admin-agent-factory-build.manifest";
@@ -842,6 +843,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   clientPortalRecordManifest,
   adminToolAlertManifest,
   adminSpendAlarmManifest,
+  visualMapLabManifest,
   adminHeldRunManifest,
   adminSpendApprovalManifest,
   adminWorkflowSpendApprovalsManifest,
