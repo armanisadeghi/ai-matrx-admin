@@ -127,6 +127,7 @@ const DELIBERATELY_UNMAPPED: readonly {
   { prefix: "/rag/visualization", exact: true, reason: "redirect only" },
   { prefix: "/memory/embeddings", exact: true, reason: "admin test-bench door page (lab)" },
   { prefix: "/memory/lab", exact: true, reason: "admin test-bench door page (lab)" },
+  { prefix: "/hr/people/[employeeId]", exact: true, reason: "redirect only: EmployeeProfileRedirect replaces to the default tab (W2)" },
   { prefix: "/acquisition/speed-test", exact: true, reason: "perf harness page (SpeedTestPage), not a product screen" },
   { prefix: "/approvals/speed-test", exact: true, reason: "perf harness page (SpeedTestPage), not a product screen" },
   { prefix: "/board/all", exact: true, reason: "redirect only" },
