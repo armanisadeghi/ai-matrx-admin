@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/styles/themes/utils'; // Import cn utility
+import { X } from 'lucide-react';
+import { IconButton } from '@ai-matrx/design-system';
 import AnimatedForm from './FormComponent';
 import { AnimatedFormModalProps, FormField, FormState } from "@/types/AnimatedFormTypes";
 
@@ -86,22 +88,16 @@ const AnimatedFormModal: React.FC<AnimatedFormModalProps & { className?: string 
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                             className={cn(
-                                "bg-background p-6 rounded-lg shadow-xl max-w-md w-full relative z-10 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary",
+                                "bg-background p-6 rounded-lg shadow-xl max-w-md w-full relative z-10 flex flex-col overflow-hidden scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary",
                                 className
                             )} // Added overflow-y-auto and scrollbar styles for scrollable content
                             style={{ maxHeight: "90dvh" }} // Set max height to 90% of the viewport height to ensure modal is contained within the viewport
                             {...props}
                         >
-                            <div className="flex items-center justify-end gap-2 pb-2">
-                                <button
-                                    onClick={closeModal}
-                                    aria-label="Close"
-                                    className="shrink-0 text-foreground hover:text-primary"
-                                >
-                                    &times;
-                                </button>
+                            <div className="flex shrink-0 items-center justify-end gap-2 pb-2">
+                                <IconButton icon={X} tooltip="Close" onClick={closeModal} />
                             </div>
-                            <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary max-h-[70dvh]"> {/* Ensure form content can scroll */}
+                            <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-primary min-h-0 flex-1"> {/* Ensure form content can scroll */}
                                 <AnimatedForm
                                     fields={fields}
                                     formState={internalFormState}

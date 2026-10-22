@@ -150,7 +150,7 @@ export default function SystemAnnouncementBanner({
             type="button"
             onClick={dismiss}
             aria-label="Dismiss announcement"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground sm:right-4 sm:top-4"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background/70 hover:text-foreground"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>

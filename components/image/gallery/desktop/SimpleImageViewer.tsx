@@ -203,7 +203,7 @@ export function SimpleImageViewer({
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
       >
-        <div className="flex shrink-0 items-center justify-end gap-2 bg-black/40 p-1">
+        <div className="flex h-12 shrink-0 items-center justify-end gap-2 bg-black/40 px-2">
           <Button
             variant="quiet"
             icon={isFullScreen ? <Minimize2 /> : <Maximize2 />}
@@ -216,10 +216,10 @@ export function SimpleImageViewer({
             onClick={onClose}
           />
         </div>
-        <div className="relative flex-grow overflow-hidden bg-black/20">
+        <div className="relative min-h-0 flex-1 overflow-hidden bg-black/20">
           {/* Fixed height container to prevent layout shifts */}
           <div
-            className={`${isFullScreen ? "h-[calc(100dvh-3rem)]" : "h-[60dvh]"} w-full relative`}
+            className={`${isFullScreen ? "h-full" : "h-[60dvh]"} w-full relative`}
           >
             <AnimatePresence initial={false} custom={direction}>
               <motion.div
