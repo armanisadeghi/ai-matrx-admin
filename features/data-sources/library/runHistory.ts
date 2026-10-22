@@ -15,11 +15,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RecordFilter } from "@ai-matrx/records";
 
 import { createClient } from "@/utils/supabase/client";
-<<<<<<< HEAD
 import { getJob, getJobRowKeys } from "../server";
-=======
-import { getJobRowKeys } from "../server";
->>>>>>> origin/main
 import { useLibraryOrganizationId } from "./hooks";
 
 export const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"] as const;
@@ -44,19 +40,12 @@ export interface FetchJobRow {
   key_column: string | null;
   /** The store's field KEY of that column ("place_id"), the short word the server wrote beside the run's keys. */
   row_key_field: string | null;
-<<<<<<< HEAD
   /** The worker's lease on an open run; lapsed = nobody is advancing it. */
   lease_until: string | null;
 }
 
 export const JOB_COLUMNS =
   "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, lease_until, row_key_field:metadata->>row_key_field";
-=======
-}
-
-export const JOB_COLUMNS =
-  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, row_key_field:metadata->>row_key_field";
->>>>>>> origin/main
 
 const POLL_OPEN_MS = 3000;
 
@@ -144,7 +133,6 @@ export function runScope(
   if (isOpenStatus(job?.status) && (job?.key_column || job?.row_key_field)) return "coming";
   return "all-rows";
 }
-<<<<<<< HEAD
 
 /** How long past its lease an open run waits before the page asks the server to look at it. */
 export const STALLED_AFTER_MS = 15_000;
@@ -179,8 +167,6 @@ export function useResumeStalledRun(job: Pick<FetchJobRow, "id" | "status" | "le
     return () => clearInterval(timer);
   }, [jobId, stalled, organizationId, queryClient]);
 }
-=======
->>>>>>> origin/main
 
 /** The newest open fetch of this source (read under RLS), for reconnect after a reload. */
 export function useOpenJob(sourceKey: string) {
