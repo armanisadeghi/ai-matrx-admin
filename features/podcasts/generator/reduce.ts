@@ -282,6 +282,12 @@ export function reduce(
       };
     }
 
+    case "podcast_sources":
+      return {
+        ...state,
+        sourcesNotice: { truncated: data.truncated, unlinked: data.unlinked ?? [] },
+      };
+
     case "podcast_complete": {
       // A run is only a TOP-LEVEL failure when the critical path produced
       // nothing usable — no audio AND no episode. Per-asset failures (a

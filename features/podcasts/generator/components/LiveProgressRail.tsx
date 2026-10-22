@@ -113,6 +113,23 @@ export function LiveProgressRail({ state, startedAt }: LiveProgressRailProps) {
           </div>
         </div>
 
+        {/* What happened to the picked Sources — short states, shown when there is one. */}
+        {state.sourcesNotice &&
+          (state.sourcesNotice.truncated || state.sourcesNotice.unlinked.length > 0) && (
+            <div className="flex flex-wrap gap-1.5" role="status">
+              {state.sourcesNotice.truncated && (
+                <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs text-amber-700 dark:text-amber-300">
+                  Source cut to its chosen size
+                </span>
+              )}
+              {state.sourcesNotice.unlinked.length > 0 && (
+                <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs text-amber-700 dark:text-amber-300">
+                  Not linked: {state.sourcesNotice.unlinked.join(", ")}
+                </span>
+              )}
+            </div>
+          )}
+
         {/* Progress bar */}
         {!failed && (
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
