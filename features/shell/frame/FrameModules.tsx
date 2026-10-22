@@ -6,7 +6,7 @@
 // engagement only, renders it through React.lazy inside Suspense, and shows a quiet
 // skeleton (never a spinner) while the chunk arrives. Also here: the side chat's resize
 // handle and the page's featherweight ask bar.
-import { Component, Suspense, createElement, lazy, useMemo, useState } from "react";
+import { Component, Suspense, createElement, lazy, useEffect, useMemo, useRef, useState } from "react";
 import type { ComponentType, KeyboardEvent, LazyExoticComponent, PointerEvent, ReactNode } from "react";
 import { ArrowUp, Mic, Shapes, Webhook, X } from "lucide-react";
 import { holdDragCursor } from "@ai-matrx/design-system";
@@ -170,11 +170,23 @@ export function PanelResizeHandle({
 }) {
   const clamp = (w: number) => Math.round(Math.min(max, Math.max(min, w)));
 
+  // THE ONE LIVE DRAG. Its `stop` is the only way out and it is idempotent: pointerup,
+  // pointercancel, lostpointercapture, window blur, Escape, the handle leaving the page and a
+  // new pointerdown all call it, so the cursor hold, the frame's dragging state and the
+  // listeners are never left behind (owner, 2026-10-22: the cursor stuck in resize mode).
+  const live = useRef<((how: "commit" | "cancel") => void) | null>(null);
+  useEffect(() => () => live.current?.("commit"), []);
+
   function onPointerDown(e: PointerEvent<HTMLDivElement>) {
     if (e.button !== 0) return;
     e.preventDefault();
+    live.current?.("commit");
     const handle = e.currentTarget;
-    handle.setPointerCapture(e.pointerId);
+    try {
+      handle.setPointerCapture(e.pointerId);
+    } catch {
+      // The pointer is already gone; the window listeners below still end the drag.
+    }
     const startX = e.clientX;
     const startW = width;
     let last = startW;
@@ -182,27 +194,48 @@ export function PanelResizeHandle({
     const release = holdDragCursor("col-resize");
     onDragChange(true);
     const move = (ev: globalThis.PointerEvent) => {
-      // The handle sits on the panel's LEFT edge: moving left widens the panel.
       // On a LEFT edge moving left widens the panel; on a RIGHT edge moving right does.
       raw = startW + (edge === "left" ? startX - ev.clientX : ev.clientX - startX);
       last = clamp(raw);
       onResize(last);
     };
-    const end = () => {
-      handle.removeEventListener("pointermove", move);
-      handle.removeEventListener("pointerup", end);
-      handle.removeEventListener("pointercancel", end);
+    const end = () => stop("commit");
+    const key = (ev: globalThis.KeyboardEvent) => {
+      if (ev.key === "Escape") stop("cancel");
+    };
+    function stop(how: "commit" | "cancel") {
+      if (live.current !== stop) return;
+      live.current = null;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      window.removeEventListener("blur", end);
+      window.removeEventListener("keydown", key);
+      handle.removeEventListener("lostpointercapture", end);
+      try {
+        handle.releasePointerCapture(e.pointerId);
+      } catch {
+        // Already released.
+      }
       release();
       onDragChange(false);
+      if (how === "cancel") {
+        onResize(startW);
+        return;
+      }
       if (raw < snapBelow) {
         // Snapped shut: the remembered width stays what it was before this drag.
         onResize(startW);
         onSnapClose();
       } else onCommit(last);
-    };
-    handle.addEventListener("pointermove", move);
-    handle.addEventListener("pointerup", end);
-    handle.addEventListener("pointercancel", end);
+    }
+    live.current = stop;
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    window.addEventListener("blur", end);
+    window.addEventListener("keydown", key);
+    handle.addEventListener("lostpointercapture", end);
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
