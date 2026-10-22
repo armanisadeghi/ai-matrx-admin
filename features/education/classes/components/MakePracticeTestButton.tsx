@@ -14,7 +14,7 @@
 
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { ClampedNumberInput } from "@/components/official/ClampedNumberInput";
+import { ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/spinner";

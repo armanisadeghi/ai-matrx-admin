@@ -14,7 +14,6 @@ import { SlotLoadingBlock, SlotLoadingInline, SlotLoadingPanel } from "@/provide
 import type { ToolResultCanvasOpener as ToolResultCanvasOpenerType } from "@/features/canvas/tool-results/ToolResultCanvasOpener";
 import type { CloudBrowserHandoffCanvasOpener as CloudBrowserHandoffCanvasOpenerType } from "@/features/cloud-browser/components/CloudBrowserHandoffCanvasOpener";
 import { SimpleTerminal } from "@/features/code/terminal/SimpleTerminal";
-import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { ServerNotes } from "@/components/official/ServerNotes";
 import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
 import { MandateNotesPanel } from "@/features/mandates/components/MandateNotesPanel";
@@ -83,7 +82,6 @@ export const fullSlotImpls = {
   ToolResultCanvasOpener,
   CloudBrowserHandoffCanvasOpener,
   SimpleTerminal,
-  EntityDoorControls,
   ServerNotes,
   ReferenceCopyButton,
   MandateNotesPanel,

@@ -9,7 +9,7 @@
 //   · AppLink, ErrorBoundaryWithCapture, WorkspaceGate, OrganizationContextNotice, AccessGate —
 //     SSR / first paint of /chat/new and the (core) shell.
 //   · MatrxFloatingFrame — the shell chat dock's floating mode.
-//   · KindValueFrontDoor, StructuredValueView, TextWithDoors, CitationChip — kind-value doors
+//   · KindValueFrontDoor, StructuredValueView, CitationChip — kind-value doors
 //     drawn synchronously inside kind trees (static markup / SSR); modeled saving ~0.
 //   · JsonInspector — ResultJson draws it inside kind results rendered as static markup; kept
 //     static though lazy would save ~0.86 MB (ambiguous SSR use — the owner decides).
@@ -32,7 +32,6 @@ import {
 // markup) and are reached statically elsewhere anyway — lazy here saves ~0 (modeled 0.01 MB).
 import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
-import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { CitationChip } from "@ai-matrx/design-system/controls";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { NotesAPI } from "@/features/notes/service/notesApi";
@@ -63,7 +62,6 @@ const NoteEditorCore = lazySlot("NoteEditorCore", SlotLoadingPanel);
 const ToolResultCanvasOpener = lazySlot("ToolResultCanvasOpener");
 const CloudBrowserHandoffCanvasOpener = lazySlot("CloudBrowserHandoffCanvasOpener");
 const SimpleTerminal = lazySlot("SimpleTerminal", SlotLoadingPanel);
-const EntityDoorControls = lazySlot("EntityDoorControls", SlotLoadingGlyph);
 const ServerNotes = lazySlot("ServerNotes");
 const ReferenceCopyButton = lazySlot("ReferenceCopyButton", SlotLoadingGlyph);
 const MandateNotesPanel = lazySlot("MandateNotesPanel", SlotLoadingBlock);
@@ -217,11 +215,9 @@ registerChatUi({
 });
 
 registerChatUi({
-  TextWithDoors: TextWithDoors,
 });
 
 registerChatUi({
-  EntityDoorControls: EntityDoorControls,
 });
 
 registerChatUi({
@@ -407,15 +403,6 @@ registerChatUi({
 
 
 
-import { isUuidValue as Host_isUuidValue } from "@ai-matrx/records-ui/entity-doors";
-registerChatUi({
-  isUuidValue: Host_isUuidValue,
-});
-
-import { toastDoor as Host_toastDoor } from "@ai-matrx/records-ui/entity-ref";
-registerChatUi({
-  toastDoor: Host_toastDoor,
-});
 
 // Agent builder contributions drawn into chat (AGENT-CORE-PLAN B1).
 import { CreatorRunPanelLazy as Host_CreatorRunPanel } from "@/features/agents/components/run-controls/CreatorRunPanelLazy";
