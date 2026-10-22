@@ -1112,6 +1112,8 @@ if $STRICT; then
         # Google's chat tool names (bundle:list_google, google_workspace, google_email_send) still exist
         # in the live registry; a server rename would silently turn off the Google switch in chat (2026-10-20).
         "Google chat tool names (a renamed server tool silently disables Google in chat)|pnpm check:google-chat-tools"
+        # ONE model-settings UI (2026-10-21): a hand-built settings row anywhere fails here.
+        "One model-settings row (a hand-built copy of the shared settings panel)|pnpm check:one-settings-row"
         # ONE REQUEST PIPELINE TO THE PYTHON SERVER (P9c, 2026-10-02). Every
         # server call rides @ai-matrx/api through the host doors
         # (lib/python-client, callApi, matrx-transport, stream-parser); a file
@@ -1937,6 +1939,8 @@ else
         # Google's chat tool names (bundle:list_google, google_workspace, google_email_send) still exist
         # in the live registry; a server rename would silently turn off the Google switch in chat (2026-10-20).
         "Google chat tool names (a renamed server tool silently disables Google in chat)|pnpm check:google-chat-tools"
+        # ONE model-settings UI (2026-10-21): a hand-built settings row anywhere fails here.
+        "One model-settings row (a hand-built copy of the shared settings panel)|pnpm check:one-settings-row"
         # ONE REQUEST PIPELINE TO THE PYTHON SERVER (P9c, 2026-10-02). Every
         # server call rides @ai-matrx/api through the host doors
         # (lib/python-client, callApi, matrx-transport, stream-parser); a file
