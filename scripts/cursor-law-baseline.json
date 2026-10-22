@@ -20,7 +20,6 @@
   "features/notes/components/FindReplaceBar.tsx": 1,
   "features/notes/components/NoteSidebar.tsx": 1,
   "features/pdf/components/PdfSurfaceSwitcher.tsx": 1,
-  "features/pdf/components/viewer/PdfDocumentRenderer.tsx": 2,
   "features/research/components/analysis/AnalysisCard.tsx": 2,
   "features/research/components/iteration/IterationControls.tsx": 1,
   "features/research/components/keywords/KeywordDetailView.tsx": 1,
