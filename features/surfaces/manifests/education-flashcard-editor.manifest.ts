@@ -271,6 +271,8 @@ export const flashcardDeckWriteTargets: SurfaceWriteTarget[] = [
 
 export const educationFlashcardEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-flashcard-editor",
+  situation:
+    "They are editing the flashcard deck \"{set_name|(not loaded yet)}\" (topic: {set_topic|none set}), which has {card_count|an unknown number of} cards, each with a front and back editor. They can rename the deck, change its topic and description, rewrite or add cards, or archive a card.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -330,6 +330,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationKitsManifest: SurfaceManifest = {
   surfaceName: EDUCATION_KITS_SURFACE_NAME,
+  situation:
+    "They are in Study Kits, on the {view} view. They have {kit_count|an unknown number of} kits; the open kit is \"{kit_title|none}\" ({kit_status|not open}), and its study aids and practice progress are in your context. They can create kits, add or remove aids, make a new aid in a kit, or rename or delete kits.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

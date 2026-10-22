@@ -43,6 +43,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationQuickMathAuthoringManifest: SurfaceManifest = {
   surfaceName: EDUCATION_QUICK_MATH_AUTHORING_SURFACE_NAME,
+  situation:
+    "They are on the staff page for the Quick Math problem catalog, which has {problem_count} problems (in your context). They can create, change or delete problems; publishing stays with a person.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

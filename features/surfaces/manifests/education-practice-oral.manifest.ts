@@ -360,6 +360,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationPracticeOralManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-practice-oral",
+  situation:
+    "They are in Spoken Practice: an AI examiner, interviewer, debate opponent or language coach asks questions, they answer out loud, and each answer is graded. Practice type: {selected_mode|not chosen yet}; stage: {runner_phase}. You can pick the practice type or fill in its setup for them.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

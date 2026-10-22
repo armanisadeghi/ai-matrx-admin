@@ -450,6 +450,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationAudioStudyManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-audio-study",
+  situation:
+    "They are in Audio Study, which turns decks or topics into narrated audio (an overview, a debate or a panel) and runs live spoken reviews; they are on the {view} view. They have {audio_count|an unknown number of} audio studies; the open one is \"{audio_title|none}\" ({audio_status|no status}). They can rename or delete studies.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

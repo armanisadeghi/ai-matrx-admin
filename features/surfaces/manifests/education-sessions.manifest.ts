@@ -105,6 +105,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationSessionsManifest: SurfaceManifest = {
   surfaceName: EDUCATION_SESSIONS_SURFACE_NAME,
+  situation:
+    "They are on their study session history: {session_count|an unknown number of} completed, active or abandoned study runs, listed in your context. They can delete a session's history; card mastery stays as it is.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

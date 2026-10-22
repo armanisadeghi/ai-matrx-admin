@@ -261,6 +261,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationSummariesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-summaries",
+  situation:
+    "They are in Study Summaries, on the {view} view. They have {summary_count|an unknown number of} summaries; the open one is \"{summary_title|none}\", written from {summary_source_title|its source}, and its text and key points are in your context. They can create, change or delete summaries.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

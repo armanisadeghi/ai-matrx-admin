@@ -68,6 +68,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationStudyGuidesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-study-guides",
+  situation:
+    "They are in the study guide library, choosing a guide to open; their guides are in your context. They can create guides, change one, or move guides to Trash.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -10,6 +10,8 @@ import { buildAssessmentListManifest, createAssessmentListScope } from "./_asses
 
 export const educationQuizzesManifest: SurfaceManifest = buildAssessmentListManifest({
   surfaceName: "matrx-user/education-quizzes",
+  situation:
+    "They are on their list of quizzes, the {visibility_filter} lane (search: {search_query|none}), showing {assessment_count|an unknown number of} quizzes. They can open or take a quiz, generate a new one with AI (uses their plan), create empty ones, and change or archive their own.",
   label: "Quizzes",
   noun: "quiz",
   plural: "quizzes",

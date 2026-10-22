@@ -277,6 +277,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationGameManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-game",
+  situation:
+    "They are in Study Games, on the {view} screen (home, host, join or a live room). Room: {room_phase|none open}, with {room_player_count|no} players; deck chosen for hosting: \"{host_source_set_name|none}\". They can open a waiting room to host a game, or cancel the one they opened.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

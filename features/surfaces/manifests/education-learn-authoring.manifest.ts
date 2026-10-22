@@ -429,6 +429,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationLearnAuthoringManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-learn-authoring",
+  situation:
+    "They are on the staff page for writing the public study guides: {doc_count} guides, {published_count} published. Editor open: {editor_open}; the guide in it is \"{draft_title|none}\" ({editor_doc_status|not saved}). They can start a draft, set its title and details, write or add sections, set its links, or delete guides.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

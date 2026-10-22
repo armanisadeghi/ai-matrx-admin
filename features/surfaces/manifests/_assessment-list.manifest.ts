@@ -40,6 +40,7 @@ export interface AssessmentListWords {
   defaultCount: number;
   countMax: number;
   timed: boolean;
+  situation: string; // the moment in words, per list
 }
 
 export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceManifest {
@@ -263,6 +264,7 @@ export function buildAssessmentListManifest(w: AssessmentListWords): SurfaceMani
     readinessNote: `page-pass 2026-09-27 moved the list onto EntityListPage over education.assessment_list_scoped with the assessment_list bundle and create/generate/update/delete_${w.targetPlural}; page-pass 2026-10-22 added list_view. Unproven: a live surface:probe --agent run (create two, update one, archive one, one refused).`,
     label: w.label,
     urlPattern: w.urlPattern,
+    situation: w.situation,
     intro: `<surface_intro>
 You are on ${w.label} at ${w.urlPattern} — the person's LIST of ${w.plural}, not a ${w.noun} being taken. Lanes (Mine, My Orgs, Shared, Public), a search box, sort and filter on every column and an archive filter decide what is on screen; each row opens the ${w.noun}, Take starts it.
 Read assessment_list first: it is the page on screen, with ids. While assessments_loaded is false the list is loading (or load_error explains a real failure) — never say the person has none. If a lane, search, filter or the archive filter narrows the list (visibility_filter, search_query, list_filters, archive_filter), say so rather than concluding a ${w.noun} does not exist.

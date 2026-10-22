@@ -102,6 +102,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationCreatorManifest: SurfaceManifest = {
   surfaceName: EDUCATION_CREATOR_SURFACE_NAME,
+  situation:
+    "They are on their creator profile, where they claim a public creator handle and keep up the identity shown on their public page. Handle: {creator_profile.handle|not claimed yet}; page public: {creator_profile.is_public|no}. They can claim a handle, change their profile text and links, or publish or unpublish the page.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

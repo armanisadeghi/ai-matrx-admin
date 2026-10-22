@@ -250,6 +250,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationStudyGuideManifest: SurfaceManifest = {
   surfaceName: EDUCATION_STUDY_GUIDE_SURFACE_NAME,
+  situation:
+    "They have the study guide \"{guide_title|(not loaded yet)}\" open in {reader_mode} mode, with the {active_details_tab} side panel showing. Its text, outline, their private highlights and notes, comments and key terms are in your context. They can edit the guide, add highlights and notes, or comment.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

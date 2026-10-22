@@ -368,6 +368,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationClassManifest: SurfaceManifest = {
   surfaceName: EDUCATION_CLASS_SURFACE_NAME,
+  situation:
+    "They are on the class \"{class_name|not loaded yet}\" (their role: {view}), with {member_count|no} members, {pending_count|no} pending requests and {study_content_count|no} pieces of study content. An owner can edit the class, tag study content and assign decks or quizzes to every student; a member can only look.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

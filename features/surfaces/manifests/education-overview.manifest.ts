@@ -326,6 +326,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationOverviewManifest: SurfaceManifest = {
   surfaceName: EDUCATION_OVERVIEW_SURFACE_NAME,
+  situation:
+    "They are on their Study Hub home, a read-only dashboard ({dashboard_state}). Study streak in days: {study_streak_days|unknown}; {total_due|no} items due and {total_weak|no} weak spots; rest day: {is_rest_day|no}; suggested study today: {next_actions_total_minutes|no} minutes. Every button opens another study page.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

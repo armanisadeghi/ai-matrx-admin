@@ -106,6 +106,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationNotesManifest: SurfaceManifest = {
   surfaceName: EDUCATION_NOTES_SURFACE_NAME,
+  situation:
+    "They are in Smart Notes, the collection of their Education study notes, which are in your context. They can create notes, change or trash the ones they own, or open one to edit its full text.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

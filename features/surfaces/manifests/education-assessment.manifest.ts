@@ -598,6 +598,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationAssessmentManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-assessment",
+  situation:
+    "They have one {assessment_kind} open in the {view} view: \"{assessment_title|not created yet}\", with {item_count|no} questions and {result_count|no} results so far. In create they set the topic, difficulty and question mix; on a saved one they can rename it and add, change or remove questions.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

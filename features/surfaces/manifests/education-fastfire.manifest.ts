@@ -323,6 +323,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationFastfireManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-fastfire",
+  situation:
+    "They are in FastFire, a spoken rapid drill: they answer each card out loud against a {seconds_per_card}-second clock. Deck: \"{set_name|not chosen yet}\" ({card_count} cards); stage: {drill_phase}; card on screen: \"{current_card.front|(none)}\"; {graded_count} answers graded so far. Before starting they can change the drill's pace.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

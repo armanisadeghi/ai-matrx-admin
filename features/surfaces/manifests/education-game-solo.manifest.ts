@@ -283,6 +283,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationGameSoloManifest: SurfaceManifest = {
   surfaceName: EDUCATION_GAME_SOLO_SURFACE_NAME,
+  situation:
+    "They are playing a Solo Arcade round ({phase}) on {source_title|their due cards}. Question {question_number|(none)} of {question_total|(none)} on screen: \"{question_prompt|(none)}\". Score: {score|none yet}; streak: {streak|none}; misses so far: {misses_count|none}. The questions and their recent misses are in your context.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

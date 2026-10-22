@@ -527,6 +527,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationMindMapsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-mind-maps",
+  situation:
+    "They are in Mind Maps, on the {view} view (library, create form or one map open). They have {mind_map_count|an unknown number of} maps; the open map is \"{mind_map_title|none}\" with {node_count|no} ideas. They can generate a map from a deck or topic, or create, change or delete maps.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

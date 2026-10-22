@@ -124,6 +124,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationLibrarySuggestionsManifest: SurfaceManifest = {
   surfaceName: EDUCATION_LIBRARY_SUGGESTIONS_SURFACE_NAME,
+  situation:
+    "They are in their deck suggestions inbox: improvements other people suggested for their public decks. {suggestion_count|No} suggestions, {open_suggestion_count|none} still open (inbox: {inbox_state}). They can accept or decline open suggestions; that records the answer and leaves the deck unchanged.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

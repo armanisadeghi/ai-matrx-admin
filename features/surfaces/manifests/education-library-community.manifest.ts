@@ -173,6 +173,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationLibraryCommunityManifest: SurfaceManifest = {
   surfaceName: EDUCATION_LIBRARY_COMMUNITY_SURFACE_NAME,
+  situation:
+    "They are in the Community Library of free public flashcard decks made by other people: {public_deck_count} decks shown; search: {search_query|none}; certified only: {certified_only}. They can copy decks into their own library or send a deck's owner a suggested edit.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

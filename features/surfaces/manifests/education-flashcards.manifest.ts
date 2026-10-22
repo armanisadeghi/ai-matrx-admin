@@ -326,6 +326,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationFlashcardsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-flashcards",
+  situation:
+    "They are in Flashcard Studio, their library of flashcard decks, on the {visibility_filter} lane (search: {search_query|none}), where {set_count|an unknown number of} decks match. Study streak in days: {study_streak_days|none yet}. They can open, study or drill a deck, and create, change, copy or archive their own decks.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

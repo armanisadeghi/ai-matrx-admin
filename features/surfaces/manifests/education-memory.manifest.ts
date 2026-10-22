@@ -403,6 +403,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationMemoryManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-memory",
+  situation:
+    "They are in Memory Aids (mnemonics, analogies and memory palaces), on the {view} view. They have {aid_count|an unknown number of} saved aid sets; the open one is \"{aid_title|none}\". They can generate aids from a deck or topic, create, change or delete sets, or change one mnemonic in an open set.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

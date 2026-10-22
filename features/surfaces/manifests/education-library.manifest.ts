@@ -226,6 +226,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationLibraryManifest: SurfaceManifest = {
   surfaceName: EDUCATION_LIBRARY_SURFACE_NAME,
+  situation:
+    "They are in the Education Library (their decks, quizzes, practice tests, study media and notes), on the {active_tab} tab, with {library_total|an unknown number of} items matching (list: {library_state}; search: {search_query|none}). They can change the tab, search, filters and sort.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

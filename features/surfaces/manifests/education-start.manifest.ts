@@ -199,6 +199,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationStartManifest: SurfaceManifest = {
   surfaceName: EDUCATION_START_SURFACE_NAME,
+  situation:
+    "They are creating a study kit: they pick their material and what to make from it (flashcards, a summary, a quiz and more), then the page builds it. Build stage: {kit_phase}; Build button enabled: {can_build}. You can fill in the form for them; they press Build.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

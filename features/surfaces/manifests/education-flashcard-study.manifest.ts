@@ -38,7 +38,6 @@ export const EDUCATION_FLASHCARD_STUDY_SURFACE = "matrx-user/education-flashcard
  */
 export const EDUCATION_FLASHCARD_STUDY_SITUATION =
   "{user.name|The person} is studying flashcards in {study_mode} mode. " +
-  "They opened the deck \"{set_details.name}\" on the topic {set_details.topic|(no topic set)}, which has {card_count} cards. " +
   "They are on card {card_number} of {cards_in_round}, a {card_kind} card, looking at the {side_shown}. " +
   "The front says: \"{card_front}\". The back says: \"{card_back}\" — {back_status}. " +
   "{card_history} They have been on this page for {time_on_page}. Score this session: {score}.";

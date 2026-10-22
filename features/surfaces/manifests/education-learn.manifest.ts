@@ -211,6 +211,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationLearnManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-learn",
+  situation:
+    "They are in the public study guide library: free articles that explain topics and point readers to the study tools. It has {guide_count|an unknown number of} published guides; the guide open is \"{article_title|none}\".",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

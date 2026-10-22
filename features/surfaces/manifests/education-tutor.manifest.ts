@@ -463,6 +463,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationTutorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-tutor",
+  situation:
+    "They are in a session with the AI Tutor ({message_count} messages so far), which teaches in {teaching_mode|its default} style with a {personality_style|default} tone. What the tutor knows about them and their study material is in your context. They can write to the tutor, change how it teaches, or rename, archive or delete the conversation.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

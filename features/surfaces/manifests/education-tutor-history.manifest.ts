@@ -76,6 +76,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationTutorHistoryManifest: SurfaceManifest = {
   surfaceName: EDUCATION_TUTOR_HISTORY_SURFACE_NAME,
+  situation:
+    "They are on the list of their AI Tutor conversations, which are in your context. They can open one, rename it, archive or restore it, or move it to Trash.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

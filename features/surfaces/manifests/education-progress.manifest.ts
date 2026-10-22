@@ -357,6 +357,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationProgressManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-progress",
+  situation:
+    "They are on Progress, their read-only study analytics, on the {view} view: {session_count|an unknown number of} sessions, {total_minutes|an unknown number of} minutes studied, a {current_streak|unknown}-day streak. Headline: {narrative_headline|none yet}. Their mastery, accuracy and weak topics are in your context.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

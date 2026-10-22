@@ -220,6 +220,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationGradeWorkManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-grade-work",
+  situation:
+    "They are in Grade Work: they type a problem they solved on paper, photograph their work and get it graded step by step. Status: {grading_status}; problem: \"{problem_text|not typed yet}\"; photo attached: {photo_attached}; verdict: {grade_result|none yet}. You can fill in the problem and the model answer for them.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

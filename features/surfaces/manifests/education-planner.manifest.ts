@@ -349,6 +349,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationPlannerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-planner",
+  situation:
+    "They are in the Study Planner, on the {active_tab} view. They have {study_goal_count} study goals; their active plan is \"{active_plan.title|no plan yet}\", with {plan_days_until_exam|an unknown number of} days until the exam. They can add, edit or close goals, change the plan's schedule, or fill in the form to generate a plan.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

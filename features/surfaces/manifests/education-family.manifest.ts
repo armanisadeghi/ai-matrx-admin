@@ -39,6 +39,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationFamilyManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-family",
+  situation:
+    "They are on the Family page, in the {view} view: guardians and learners link accounts here so a guardian can follow a learner's progress. Learner whose progress is open: {linked_student_label|none}. They can request, grant, accept, decline or remove guardian links; the current links are in your context.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

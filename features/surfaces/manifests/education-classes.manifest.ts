@@ -229,6 +229,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationClassesManifest: SurfaceManifest = {
   surfaceName: EDUCATION_CLASSES_SURFACE_NAME,
+  situation:
+    "They are on My Classes: {owned_class_count|no} classes of their own, {archived_class_count|no} archived, plus the classes they joined. New class dialog open: {class_dialog_open}. They can create, change, archive or delete their classes.",
   inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

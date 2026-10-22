@@ -10,6 +10,8 @@ import { buildAssessmentListManifest, createAssessmentListScope } from "./_asses
 
 export const educationPracticeTestsManifest: SurfaceManifest = buildAssessmentListManifest({
   surfaceName: "matrx-user/education-practice-tests",
+  situation:
+    "They are on their list of practice tests, the {visibility_filter} lane (search: {search_query|none}), showing {assessment_count|an unknown number of} practice tests. They can open or take one, generate a new one with AI (uses their plan), create empty ones, and change or archive their own.",
   label: "Practice Tests",
   noun: "practice test",
   plural: "practice tests",
