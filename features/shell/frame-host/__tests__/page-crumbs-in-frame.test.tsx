@@ -293,4 +293,38 @@ describe("pages add their own \"…\" items in the frame (adversarial review, 20
     const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
     expect(slot.textContent).toContain("Actions");
   });
+
+  // A menu-placed action (placement: "menu") is in the ONE action list, never a `right=` control.
+  function WithMenuPlaced() {
+    return (
+      <RecordPageHeader
+        backHref="/marketing/brands"
+        record={{ name: "Acme Coffee" }}
+        actions={[
+          { label: "Rename", icon: Pencil, onPress: () => {} },
+          { label: "Archive", icon: Archive, onPress: archive, placement: "menu" },
+        ]}
+      />
+    );
+  }
+
+  it("classic: a menu-placed action is in the line's one Actions menu, not a button", () => {
+    mount(<WithMenuPlaced />);
+    const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+    expect(slot.querySelector('[aria-label="Rename"]')).not.toBeNull();
+    expect(slot.querySelector('[aria-label="Archive"]')).toBeNull();
+    expect(slot.querySelector('[aria-label="More actions"]')).not.toBeNull();
+  });
+
+  it("frame: a menu-placed action is a \"…\" item and no menu is drawn on the line", () => {
+    mount(
+      <ActionsHarness>
+        <WithMenuPlaced />
+      </ActionsHarness>,
+    );
+    expect(menuLabels()).toContain("Archive");
+    const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+    expect(slot.querySelector('[aria-label="More actions"]')).toBeNull();
+    expect(slot.querySelector('[aria-label="Archive"]')).toBeNull();
+  });
 });

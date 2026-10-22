@@ -19,7 +19,10 @@
 
 import { Fragment, useRef, type ReactNode } from "react";
 import type { ContentTransferController } from "@ai-matrx/alchemy/react/workspace";
-import { Loader2, Play } from "lucide-react";
+import { icons, Loader2, Play } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useDeclareFrameActions, useInFrame } from "@/features/shell/frame-host/framePageHeader";
+import { useDeclareCurrentRecord } from "@/features/shell/current-record/currentRecord";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import LucideIcon from "@/features/shell/components/header/variants/shared/LucideIcon";
 import type { HeaderAction } from "@/features/shell/components/header/variants/types";
@@ -101,6 +104,28 @@ export function BattleHeader({
     ? "Blind comparison"
     : (battleName ?? fallbackTitle);
 
+  // EVERY CRUMB IS A DOOR: a saved battle (/agents/battle/<mode>/<setId>) is the trail's record —
+  // named here, so the crumb reads the battle, never its id (the runtime declares the trail).
+  const setId = (useParams() as { setId?: string } | null)?.setId ?? null;
+  useDeclareCurrentRecord(setId ? { label: title, id: setId, token: null } : null);
+  // "…" HOLDS EVERY ACTION OF ITS LEVEL: in the frame the action bar's ONE list is also the "…"
+  // items (Run first). The bar keeps drawing them; one list, two renderings.
+  const inFrame = useInFrame();
+  useDeclareFrameActions(
+    inFrame
+      ? [
+          ...(onSubmit ? [{ id: "battle:run", label: submitTitle, icon: Play, onSelect: onSubmit, disabled: submitting || !canSubmit }] : []),
+          ...actions.map((a) => ({
+            id: `battle:${a.label}`,
+            label: a.label,
+            icon: icons[a.icon as keyof typeof icons],
+            onSelect: a.onPress,
+            destructive: a.destructive,
+          })),
+        ]
+      : null,
+  );
+
   const grouped = GROUP_ORDER.map((group) =>
     actions.filter((a) => (ICON_DEFAULTS[a.icon]?.group ?? "view") === group),
   ).filter((list) => list.length > 0);
@@ -110,8 +135,9 @@ export function BattleHeader({
       <RouteHeader
         // On a phone RouteHeader moves the mode switcher into the ⋮ sheet and
         // gives the title the row (platform rule, 2026-09-27).
+        // In the frame the crumb row names the battle; the line keeps the mode switcher and copy menu.
         left={
-          <span
+          inFrame ? null : <span
             className="text-sm font-medium truncate"
             title={title}
             data-testid="battle-header-title"

@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { createRouteMetadata } from "@/utils/route-metadata";
+import { DerivedCrumbTrailHeader } from "@/features/shell/breadcrumbs/DerivedBreadcrumb";
 
 export const metadata = createRouteMetadata("/agents/new", {
   title: "Create New Agent",
@@ -7,5 +8,12 @@ export const metadata = createRouteMetadata("/agents/new", {
 });
 
 export default function NewAgentLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  // EVERY CRUMB IS A DOOR: every create path names its levels (Agents › New › <path ▾>); a page with
+  // its own header (the studio) wins — this one yields (`fallback`).
+  return (
+    <>
+      <DerivedCrumbTrailHeader fallback />
+      {children}
+    </>
+  );
 }

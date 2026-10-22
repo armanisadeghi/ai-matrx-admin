@@ -25,6 +25,8 @@ import {
   useModelBattleSurfaceScope,
 } from "../model-surface-scope";
 import { isBattleOwnConversation } from "@/features/agent-comparison/shared/activeBattleColumns";
+import { useBattleTrail } from "@/features/agent-comparison/shared/BattleSurfaceRuntime";
+import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 
 export function createModelBattleWriteHandlers({
   getState,
@@ -111,6 +113,8 @@ export function ModelBattleSurfaceRuntime({
 }) {
   const dispatch = useAppDispatch();
   const store = useAppStore();
+  // The battle's trail (every battle runtime declares it — useBattleTrail).
+  useDeclareFrameCrumbs(useBattleTrail());
   const getScope = useModelBattleSurfaceScope();
 
   const getWriteHandlers = () =>

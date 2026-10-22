@@ -21,6 +21,17 @@ import type { RootState } from "@/lib/redux/store";
 import { battleMarkdown, buildBattleSnapshot } from "./battleSnapshot";
 import { RESPONSE_FEEDBACK_METRICS } from "@/features/agents/run-review/feedbackMetrics";
 import { isBattleOwnConversation } from "./activeBattleColumns";
+import { useDerivedTrail } from "@/features/shell/breadcrumbs/useDerivedTrail";
+import { frameCrumbOf, useDeclareFrameCrumbs, type FramePageCrumb } from "@/features/shell/frame-host/framePageHeader";
+
+/**
+ * EVERY CRUMB IS A DOOR: the battle's trail — Agents › Battle › <mode ▾> › <saved battle> — from the
+ * address (the mode level opens the other modes; a saved battle is named by `BattleHeader`'s declared
+ * record). Every battle runtime declares it, so every battle page names its levels.
+ */
+export function useBattleTrail(): FramePageCrumb[] {
+  return useDerivedTrail().map(frameCrumbOf);
+}
 
 export const AGENT_BATTLE_SURFACE_NAME = "matrx-user/agent-battle";
 
@@ -56,6 +67,7 @@ export function buildAgentBattleScope(state: RootState): SurfaceScopePayload {
 
 export function BattleSurfaceRuntime({ children }: { children: ReactNode }) {
   const store = useAppStore();
+  useDeclareFrameCrumbs(useBattleTrail());
   const getScope = () => buildAgentBattleScope(store.getState());
 
   return (
