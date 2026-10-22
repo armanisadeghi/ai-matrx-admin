@@ -25,4 +25,4 @@ export { adminAppletsManifest as s283 } from "../../admin-applets.manifest";
 export { hrPunchRegisterManifest as s333 } from "../../hr-punch-register.manifest";
 export { printFlashcardsManifest as s355 } from "../../print-flashcards.manifest";
 export { messengerManifest as s365 } from "../../messenger.manifest";
-export { acquisitionConsoleManifest as s376 } from "../../acquisition-console.manifest";
+export { acquisitionConsoleManifest as s377 } from "../../acquisition-console.manifest";

@@ -14,4 +14,4 @@ export { markdownEditorManifest as s222 } from "../../markdown-editor.manifest";
 export { podcastStudioManifest as s239 } from "../../podcast-studio.manifest";
 export { scopesManifest as s241 } from "../../scopes.manifest";
 export { printLabelsManifest as s356 } from "../../print-labels.manifest";
-export { visualMapLabManifest as s382 } from "../../visual-map-lab.manifest";
+export { visualMapLabManifest as s383 } from "../../visual-map-lab.manifest";
