@@ -101,6 +101,8 @@ const RENDERERS: Record<string, ArtifactRendererComponent> = {
   code: lazy(() => import("./renderers/CodeArtifact")),
   image: ImageArtifact,
   kind_value: KindValueArtifact,
+  // heavy engine (the diagram engine loads on first use inside VisualMap)
+  visual_map: lazy(() => import("./renderers/VisualMapArtifact")),
 };
 
 export function hasArtifactRenderer(

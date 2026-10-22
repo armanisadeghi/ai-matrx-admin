@@ -303,6 +303,14 @@ export const ARTIFACT_TYPE_DEFS: ArtifactTypeDef[] = [
   // front door, so it draws exactly as in a chat or a note. Every `table:<uuid>` kind resolves
   // here by prefix (`resolveArtifactDefByKind`). Not materializable: a record of a Table lives
   // in its Table; a chat answer naming one never mints a library artifact.
+  // A VISUAL MAP: the engine-checked diagram kind (`visual_map`), drawn by rich-content's one VisualMap.
+  {
+    canvasType: "visual_map",
+    aliases: ["visual_map"],
+    standaloneAliases: [],
+    materializable: true,
+    kinds: ["visual_map"],
+  },
   {
     canvasType: "kind_value",
     aliases: ["kind_value"],
