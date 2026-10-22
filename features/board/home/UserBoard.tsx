@@ -57,6 +57,7 @@ import { BOARD_SURFACE_NAME } from "@/features/surfaces/manifests/board.manifest
 import { useBoardStartRun } from "../templates/board-start";
 import { DesignBoardBrandChip } from "../design-brand/DesignBoardBrandChip";
 import { useDesignBoardBrand } from "../design-brand/design-board-brand";
+import { withBrandAssets } from "../design-brand/brand-assets-tile";
 import { BoardViewport } from "../components/BoardViewport";
 import { BoardTile, TileLayersContext } from "../components/BoardTile";
 import { BoardFrameView } from "../components/BoardFrameView";
@@ -1023,7 +1024,7 @@ export function UserBoard({
               <>
                 <CreationLayer onCreate={onCreate} />
                 <SelectionToolbar sections={toolbarSections} />
-                <ToolBar tools={preset?.toolbar} leading={<AddMenu types={addableTypes} more={moreTypes} onStartNew={startNew} onBringIn={bringIn} onCanvasText={addCanvasText} />} />
+                <ToolBar tools={preset?.toolbar} leading={<AddMenu types={withBrandAssets(addableTypes, designBrand.brandId)} more={withBrandAssets(moreTypes, designBrand.brandId)} onStartNew={startNew} onBringIn={bringIn} onCanvasText={addCanvasText} />} />
                 <div
                   data-board-chrome
                   className="absolute right-4 top-4 z-30 flex items-center gap-0.5 rounded-lg border border-border bg-card/95 p-1 shadow-md backdrop-blur"
