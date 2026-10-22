@@ -1,0 +1,86 @@
+{
+  "_comment": "THE fixture for the best-address rule (D223). aidream test_outreach_members.py and matrx-frontend features/crm/outreach-lists/best-contact-point.test.ts both run every case here; edit cases only here.",
+  "today": "2026-10-22",
+  "cases": [
+    {
+      "name": "email list takes the primary email, then falls back to phone",
+      "list_kind": "media",
+      "points": [
+        {"id": "a-phone", "party_id": "a", "channel": "phone", "is_primary": true},
+        {"id": "a-email-2", "party_id": "a", "channel": "email", "is_primary": false},
+        {"id": "a-email-1", "party_id": "a", "channel": "email", "is_primary": true},
+        {"id": "b-phone", "party_id": "b", "channel": "phone", "is_primary": false},
+        {"id": "c-x", "party_id": "c", "channel": "linkedin", "is_primary": true}
+      ],
+      "expected": {"a": "a-email-1", "b": "b-phone"}
+    },
+    {
+      "name": "call list takes the phone",
+      "list_kind": "call",
+      "points": [
+        {"id": "a-phone", "party_id": "a", "channel": "phone", "is_primary": true},
+        {"id": "a-email-1", "party_id": "a", "channel": "email", "is_primary": true}
+      ],
+      "expected": {"a": "a-phone"}
+    },
+    {
+      "name": "an opted-out address is never picked, even when primary",
+      "list_kind": "email",
+      "points": [
+        {"id": "a-opted", "party_id": "a", "channel": "email", "is_primary": true, "opt_out_at": "2026-01-01T00:00:00Z"},
+        {"id": "a-ok", "party_id": "a", "channel": "email", "is_primary": false},
+        {"id": "b-opted", "party_id": "b", "channel": "email", "is_primary": true, "opt_out_at": "2026-01-01T00:00:00Z"}
+      ],
+      "expected": {"a": "a-ok"}
+    },
+    {
+      "name": "an expired address is never picked; one valid through today still is",
+      "list_kind": "email",
+      "points": [
+        {"id": "a-expired", "party_id": "a", "channel": "email", "is_primary": true, "valid_to": "2026-10-21"},
+        {"id": "a-old-phone", "party_id": "a", "channel": "phone", "is_primary": true, "valid_to": "2025-01-01"},
+        {"id": "a-phone", "party_id": "a", "channel": "phone", "is_primary": false},
+        {"id": "b-today", "party_id": "b", "channel": "email", "is_primary": true, "valid_to": "2026-10-22"},
+        {"id": "b-later", "party_id": "b", "channel": "email", "is_primary": false, "valid_to": "2027-01-01"}
+      ],
+      "expected": {"a": "a-phone", "b": "b-today"}
+    },
+    {
+      "name": "ties break by higher confidence, then lower sort_order, then id - never by row order",
+      "list_kind": "email",
+      "points": [
+        {"id": "a-low", "party_id": "a", "channel": "email", "is_primary": true, "confidence": 40, "sort_order": 0},
+        {"id": "a-high", "party_id": "a", "channel": "email", "is_primary": true, "confidence": 90, "sort_order": 5},
+        {"id": "a-none", "party_id": "a", "channel": "email", "is_primary": true},
+        {"id": "b-second", "party_id": "b", "channel": "email", "is_primary": false, "confidence": 70, "sort_order": 2},
+        {"id": "b-first", "party_id": "b", "channel": "email", "is_primary": false, "confidence": 70, "sort_order": 1},
+        {"id": "c-unsorted", "party_id": "c", "channel": "email", "is_primary": true, "confidence": 50},
+        {"id": "c-sorted", "party_id": "c", "channel": "email", "is_primary": true, "confidence": 50, "sort_order": 9},
+        {"id": "d-z", "party_id": "d", "channel": "email", "is_primary": true},
+        {"id": "d-m", "party_id": "d", "channel": "email", "is_primary": true}
+      ],
+      "expected": {"a": "a-high", "b": "b-first", "c": "c-sorted", "d": "d-m"}
+    },
+    {
+      "name": "channel and primary still outrank confidence",
+      "list_kind": "email",
+      "points": [
+        {"id": "a-phone", "party_id": "a", "channel": "phone", "is_primary": true, "confidence": 100},
+        {"id": "a-secondary", "party_id": "a", "channel": "email", "is_primary": false, "confidence": 99},
+        {"id": "a-primary", "party_id": "a", "channel": "email", "is_primary": true, "confidence": 1}
+      ],
+      "expected": {"a": "a-primary"}
+    },
+    {
+      "name": "an unscored address ranks above a known-bad confidence 0, below any positive score",
+      "list_kind": "email",
+      "points": [
+        {"id": "a-zero", "party_id": "a", "channel": "email", "is_primary": false, "confidence": 0},
+        {"id": "a-unscored", "party_id": "a", "channel": "email", "is_primary": false},
+        {"id": "b-unscored", "party_id": "b", "channel": "email", "is_primary": false},
+        {"id": "b-low", "party_id": "b", "channel": "email", "is_primary": false, "confidence": 1}
+      ],
+      "expected": {"a": "a-unscored", "b": "b-low"}
+    }
+  ]
+}
