@@ -249,6 +249,31 @@ export async function createVariantMatrix(projectId: string, variants: ParamSet[
   return (await postJson<{ variants: Array<{ id?: string; reused?: boolean }> }>(`/video-variants/${projectId}/matrix`, { variants }, o)).data;
 }
 
+/** What a batch would cost and how it would run, asked before anyone presses Render (nothing is generated, rendered or recorded). */
+export interface BatchEstimate {
+  variants: number;
+  /** Variants whose overrides no longer apply: they would fail, so they are named before the run. */
+  unrenderable: Array<{ variant_id: string; label: string | null; stage: string | null; error: string | null }>;
+  /** Distinct generations the batch needs; a request shared by many variants counts once. */
+  unique_requests: number;
+  /** Of those, still to be made (the rest are reused for nothing). */
+  to_generate: number;
+  cache_hits: number;
+  estimate_usd: number;
+  estimate_points: number;
+  /** The price if every variant paid for its own copy of a shared generation. */
+  without_sharing_usd: number;
+  confirm_over_points: number;
+  will_ask: boolean;
+  /** How many videos render at the same time; the rest wait. */
+  render_cap: number;
+  render_charged: boolean;
+}
+
+export async function estimateBatch(projectId: string, body: { variant_ids: string[]; head?: boolean }, o: CallOptions): Promise<BatchEstimate> {
+  return (await postJson<BatchEstimate>(`/video-variants/${projectId}/estimate`, body, o)).data;
+}
+
 /** Item id of the project's own head inside a batch (`head: true`). */
 export const HEAD_ITEM = "head";
 

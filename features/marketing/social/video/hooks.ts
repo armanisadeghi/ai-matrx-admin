@@ -9,7 +9,7 @@ import { fetchOperationsByLink } from "@/lib/runtime-operations/operationsByLink
 
 import { useSocials } from "../components/SocialsContext";
 import { getVideoProject, listVariants } from "./server";
-import { readAllVideoProjects, readBrandVideoProjects, readReferencePost, readVideoStructure } from "./service";
+import { readActiveBatch, readAllVideoProjects, readBrandVideoProjects, readReferencePost, readVideoStructure } from "./service";
 
 export const videoKeys = {
   all: ["marketing", "social", "video"] as const,
@@ -93,4 +93,18 @@ export function useRunningAnalysis(postId: string | null, enabled: boolean): boo
     wasRunning.current = running;
   }, [running, postId, queryClient]);
   return running;
+}
+
+/**
+ * The batch the server holds for these variants (running, finished or stopped). Asks again every 4 s while it is running so
+ * a reloaded page, or a second tab, follows it to the end; stops asking once it is over.
+ */
+export function useActiveBatch(variantIds: readonly string[], enabled: boolean) {
+  const key = variantIds.join(",");
+  return useQuery({
+    queryKey: ["video", "active-batch", key],
+    queryFn: () => readActiveBatch(variantIds),
+    enabled: enabled && variantIds.length > 0,
+    refetchInterval: (q) => (q.state.data?.status === "processing" ? 4000 : false),
+  });
 }

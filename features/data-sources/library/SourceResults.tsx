@@ -21,7 +21,7 @@ import { FetchProgress } from "../FetchProgress";
 import { RefusalView } from "../RefusalView";
 import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
-import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, type FetchJobRow } from "./runHistory";
+import { isOpenStatus, runRowFilter, runScope, runStatusLabel, useDataFetchJob, useResumeStalledRun, useRunRowKeys, useTypicalRunMs, type FetchJobRow } from "./runHistory";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
@@ -135,6 +135,7 @@ export function LiveRunResults({
   const liveJobId = run.status === "running" ? (run.progress?.jobId ?? null) : null;
   const liveJob = useDataFetchJob(liveJobId);
   useResumeStalledRun(liveJob.data);
+  const typical = useTypicalRunMs(liveJob.data?.source_key);
   if (run.status === "failed") {
     return (
       <div className="flex py-6">
@@ -154,7 +155,7 @@ export function LiveRunResults({
     const startedAt = row ? Math.min(run.startedAt, Date.parse(row.created_at) || run.startedAt) : run.startedAt;
     return (
       <div className="flex flex-col gap-3" data-results-live="">
-        <FetchProgress label={label} progress={progress} startedAt={startedAt} layout="row" />
+        <FetchProgress label={label} progress={progress} startedAt={startedAt} layout="row" typicalMs={typical.data ?? null} />
         {tableId ? <InlineResultsTable tableId={tableId} job={row} /> : <RowsComing />}
       </div>
     );
@@ -184,6 +185,7 @@ function DoneRunResults({ result: done }: { result: DataFetchResult }) {
 export function SavedRunResults({ jobId }: { jobId: string }) {
   const job = useDataFetchJob(jobId);
   useResumeStalledRun(job.data);
+  const typical = useTypicalRunMs(job.data?.source_key);
   if (job.isLoading) return <RowsComing />;
   const row: FetchJobRow | null = job.data ?? null;
   if (!row) {
@@ -192,7 +194,7 @@ export function SavedRunResults({ jobId }: { jobId: string }) {
   if (isOpenStatus(row.status)) {
     return (
       <div className="flex flex-col gap-3" data-results-live="">
-        <FetchProgress label={runStatusLabel(row.status)} progress={{ label: runStatusLabel(row.status), current: null, total: null, jobId }} startedAt={Date.parse(row.created_at)} layout="row" />
+        <FetchProgress label={runStatusLabel(row.status)} progress={{ label: runStatusLabel(row.status), current: null, total: null, jobId }} startedAt={Date.parse(row.created_at)} layout="row" typicalMs={typical.data ?? null} />
         {row.table_id ? <InlineResultsTable tableId={row.table_id} job={row} /> : <RowsComing />}
       </div>
     );

@@ -105,6 +105,9 @@ describe("the one Education note selector", () => {
 const REPO = path.resolve(__dirname, "../../../..");
 const EDUCATION_ROOTS = ["features/education", "app/(core)/education", "app/api/education"];
 const SELECTOR_FILE = "features/education/notes/education-notes.ts";
+// Reads the bodies of notes already chosen BY ID as kit Sources (`.in("id", ids)`):
+// a fetch of named records, not a list of the person's notes.
+const BY_ID_NOTE_BODY_READS = new Set(["features/education/kits/outline/outlineService.ts"]);
 // Every way the codebase lists notes. A single-record read (getById) or a
 // create is not a list and is allowed.
 const NOTE_LIST_READS = [
@@ -130,7 +133,7 @@ describe("every Education surface lists notes through the one selector", () => {
     for (const root of EDUCATION_ROOTS) {
       for (const file of walk(path.join(REPO, root))) {
         const rel = path.relative(REPO, file);
-        if (rel === SELECTOR_FILE) continue;
+        if (rel === SELECTOR_FILE || BY_ID_NOTE_BODY_READS.has(rel)) continue;
         const src = readFileSync(file, "utf8");
         if (NOTE_LIST_READS.some((re) => re.test(src))) offenders.push(rel);
       }

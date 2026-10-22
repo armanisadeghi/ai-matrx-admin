@@ -15,7 +15,7 @@ import { resolveComposition } from "@ai-matrx/media/video";
 import { CAPTION_PRESETS, CAPTION_PRESET_IDS, loadVideoFonts, programInputFromComposition } from "@ai-matrx/media/video/engine";
 import { VideoPlayer } from "@ai-matrx/media/video/react";
 import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
-import { downloadUrl } from "@ai-matrx/kit/download";
+import { downloadFile, downloadUrl } from "@ai-matrx/kit/download";
 import { useMediaClient } from "@ai-matrx/media/core";
 
 import { toast } from "@/lib/toast";
@@ -25,6 +25,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
 import { points } from "../../video/clone";
+import { zipEntryNames } from "../../video/variants";
 import { plainFailureText } from "../../video/render-errors";
 import { isSessionExpired, useExpiredSessionGuard } from "../../video/session";
 import { useFileUrls } from "../../video/studio-hooks";
@@ -347,6 +348,48 @@ export function OutputDownload({ fileId, label, fileName }: { fileId: string; la
         {busy ? "Downloading…" : "Download"}
       </Button>
     </div>
+  );
+}
+
+/**
+ * One zip of many finished videos ("download all"): 25 variants are 25 clicks otherwise. Each video comes through the media
+ * door as a blob and is stored (mp4 is already compressed) in a zip written in the browser; the zip.js library loads only when
+ * pressed. Entries keep distinct names; one video that cannot be read is named in the message and the rest are still zipped.
+ */
+export function ZipAllButton({ items, zipName }: { items: ReadonlyArray<{ fileId: string; fileName: string }>; zipName: string }) {
+  const client = useMediaClient();
+  const [state, setState] = useState<null | { done: number }>(null);
+  const run = async () => {
+    setState({ done: 0 });
+    const names = zipEntryNames(items.map((i) => i.fileName));
+    const missed: string[] = [];
+    try {
+      const { BlobReader, BlobWriter, ZipWriter } = await import("@zip.js/zip.js");
+      const zip = new ZipWriter(new BlobWriter("application/zip"), { level: 0 });
+      for (const [i, item] of items.entries()) {
+        try {
+          const handle = await client.getBlob({ file_id: item.fileId, mime_type: "video/mp4" });
+          const blob = await (await fetch(handle.url)).blob();
+          await zip.add(names[i] ?? item.fileName, new BlobReader(blob));
+        } catch {
+          missed.push(names[i] ?? item.fileName);
+        }
+        setState({ done: i + 1 });
+      }
+      const out = await zip.close();
+      if (missed.length === items.length) throw new Error("None of the videos could be read");
+      downloadFile(zipName, out, "application/zip");
+      if (missed.length) toast.error(`${missed.length} video${missed.length === 1 ? "" : "s"} could not be added: ${missed.slice(0, 3).join(", ")}${missed.length > 3 ? "…" : ""}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't make the zip");
+    } finally {
+      setState(null);
+    }
+  };
+  return (
+    <Button variant="outline" icon={<Download />} disabled={state !== null} onClick={() => void run()}>
+      {state ? `Zipping ${state.done} of ${items.length}…` : `Download all ${items.length} as zip`}
+    </Button>
   );
 }
 
