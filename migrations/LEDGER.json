@@ -12217,6 +12217,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/closeview_a_a_built_in_source_filter_nests_all_any_none_groups.sql": {
+      "source": "matrx-frontend",
+      "filename": "closeview_a_a_built_in_source_filter_nests_all_any_none_groups.sql",
+      "checksum": "fb3faced994c8b298b6f81eff6a955c4a2bca16a115908aa7fda00eb7917ef3c",
+      "applied_at": "2026-10-22 18:06:11.143228+00"
     }
   }
 }
