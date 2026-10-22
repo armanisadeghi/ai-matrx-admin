@@ -487,35 +487,6 @@ const nextConfig = {
       fs: { browser: "./lib/turbopack/empty-node-builtin.js" },
       https: { browser: "./lib/turbopack/empty-node-builtin.js" },
     },
-    // PURE-ANNOTATED CHAINED STATEMENTS SURVIVE THE PRODUCTION BUILD ONLY WITH THIS (2026-10-22).
-    // Turbopack's production minifier deletes `(/* @__PURE__ */ new X(...)).forEach(cb)` statements: the
-    // annotation makes the whole call look side-effect-free. @univerjs/sheets-formula is written that way, and
-    // the live bundle shipped the ref-range function with its loops gone (=F13*10 never became =F14*10).
-    // Dev and tests (unminified) were fine. The loader drops the annotation from such statements in every
-    // package listed here. Guard (scans every production dependency, fails naming package + line):
-    // __tests__/turbopack-pure-chained-statements.test.ts. A new hit there means: add the rule below.
-    rules: {
-      "**/@univerjs/sheets-formula/lib/es/index.js": {
-        loaders: [require.resolve("./scripts/turbopack-pure-loop-loader.cjs")],
-        as: "*.js",
-      },
-      "**/@univerjs/sheets-formula/lib/index.js": {
-        loaders: [require.resolve("./scripts/turbopack-pure-loop-loader.cjs")],
-        as: "*.js",
-      },
-      "**/@univerjs/docs-ui/lib/es/index.js": {
-        loaders: [require.resolve("./scripts/turbopack-pure-loop-loader.cjs")],
-        as: "*.js",
-      },
-      "**/@univerjs/docs-ui/lib/index.js": {
-        loaders: [require.resolve("./scripts/turbopack-pure-loop-loader.cjs")],
-        as: "*.js",
-      },
-      "**/@tiptap/react/dist/menus/index.js": {
-        loaders: [require.resolve("./scripts/turbopack-pure-loop-loader.cjs")],
-        as: "*.js",
-      },
-    },
   },
   serverExternalPackages: [
     // Cartesia uses ws on the SSR pass. Bundling ws pulls node-gyp-build
