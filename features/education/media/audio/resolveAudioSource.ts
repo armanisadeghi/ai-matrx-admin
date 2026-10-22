@@ -46,6 +46,26 @@ async function computeWeakAreaNote(
   return weakFronts.join("; ");
 }
 
+/**
+ * The "spend extra time on these" note for decks already read through the Source
+ * input (their text came from the server, so no card text is re-serialized here).
+ * Null when the listener has no weak items in them.
+ */
+export async function weakAreaNoteForDecks(deckIds: readonly string[]): Promise<string | null> {
+  const notes: string[] = [];
+  for (const id of deckIds) {
+    const res = await fcService.getDeckWithCards(id);
+    if (res.error || !res.data) continue;
+    const { cards } = res.data;
+    const note = await computeWeakAreaNote(
+      cards.map((c) => c.id),
+      new Map(cards.map((c) => [c.id, c.front])),
+    );
+    if (note) notes.push(note);
+  }
+  return notes.length ? notes.join("; ") : null;
+}
+
 export async function resolveDeckAudioSource(
   setId: string,
   opts: { adaptive: boolean },

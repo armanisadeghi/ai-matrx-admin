@@ -10,9 +10,6 @@
     "features/education/classes/components/AssignResourceSheet.tsx": [
       "local-association-picker-for-sources"
     ],
-    "features/education/media/mindmap/components/MindMapNew.tsx": [
-      "known-local-copy"
-    ],
     "features/marketing/seo/topical-map/start/StartMapScreen.tsx": [
       "known-local-copy"
     ],
