@@ -26,10 +26,11 @@ const OUTER =
   "flex items-center justify-center w-11 h-11 min-w-11 shrink-0 p-0 cursor-pointer " +
   "bg-transparent! border-none! shadow-none! [-webkit-tap-highlight-color:transparent]";
 
-// 30×30 glass pill. overflow-hidden clips the backdrop-filter to the pill edge.
+// 30×30 glass box, 6px corners (THE CONTROL SHAPE, Arman 2026-10-21). overflow-hidden clips the
+// backdrop-filter to the box edge.
 const GLASS =
   "flex items-center justify-center w-[1.875rem] h-[1.875rem] min-w-[1.875rem] max-w-[1.875rem] " +
-  "rounded-full overflow-hidden shrink-0";
+  "rounded-md overflow-hidden shrink-0";
 
 // 16×16 icon area; the svg fills it.
 const ICON =
@@ -53,6 +54,8 @@ interface IconButtonProps {
   className?: string;
   /** Extra classes on the glass pill */
   glassClassName?: string;
+  /** `transparent` for a page/solid surface (glass only floats). Default `glass`. */
+  variant?: "glass" | "transparent";
   disabled?: boolean;
 }
 
@@ -65,11 +68,13 @@ export default function IconButton({
   active,
   className,
   glassClassName,
+  variant = "glass",
   disabled,
 }: IconButtonProps) {
   const glassClass = cn(
     GLASS,
-    "matrx-glass-thin-border shell-tactile",
+    "shell-tactile",
+    variant === "glass" && "matrx-glass-thin-border",
     active && "bg-[var(--matrx-glass-bg-active)]!",
     glassClassName,
   );
