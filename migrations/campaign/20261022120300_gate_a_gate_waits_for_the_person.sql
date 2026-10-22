@@ -1,3 +1,5 @@
+-- based-on: mandate.shortcut_treatment_config(jsonb) 6476634930c64001596faa571f3c606250d7c98b7b65994e049b5415dd339d81
+-- based-on: public.create_shortcut_from_agent_surface(uuid, uuid, uuid, uuid, uuid, uuid, jsonb) 6212143e8cf122efe9ec26dbbc61e7de63acd10df45d7e5af0c14d6e2dbc4390
 -- GATE (UI net Q-10-a, 2026-10-22): a shortcut's pre-execution gate pressed Send for the person three seconds
 -- after it opened. A positive bypass_gate_seconds is an auto-send countdown, and the number 3 was the blank-form
 -- default everywhere: the view's COALESCE, the treatment writer, the create-from-surface writer, and 226 stored
