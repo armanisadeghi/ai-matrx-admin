@@ -21,6 +21,7 @@ import {
 
 import { toast } from "@/components/ui/use-toast";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
+import { notSharedNotice } from "@/lib/collab/seat-notices";
 
 /** What a co-editing notice says, in plain words (our toast). */
 export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
@@ -47,7 +48,7 @@ export function showWorkbookCollabNotice(n: SheetsOtNotice): void {
       toast({ title: "This workbook stopped syncing", description: "Reload the page to keep editing.", variant: "destructive" });
       return;
     case "not_shared":
-      toast({ title: "That change was undone", description: "It can't be shared with other editors yet." });
+      toast(notSharedNotice(n.mutationId));
       return;
     case "not_live":
       toast({ title: "Reconnecting", description: "Your last change was made while reconnecting and was not kept." });
