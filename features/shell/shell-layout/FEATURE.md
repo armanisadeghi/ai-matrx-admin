@@ -53,10 +53,11 @@ One flat entry per menu node (primary, Settings, admin rows only for admins) plu
 Tools-grid tile (`tile.*`, a window launcher, hidden by default; its icon is named back from the
 tile's Lucide component, else the window icon). `defaultVisible` is true exactly for the built-in
 Sidebar. New destinations a customized layout should hear about: bump `SHELL_CATALOG_VERSION` and
-list their ids in `CATALOG_ADDED_IN` at the new number (now version 2: `account.authenticator`, `data.library`,
-`web.search-tools`). Enforced: `features/shell/__tests__/nav-ids.test.ts` fails on any menu or tile id that is in
-neither the frozen version-1 list (`nav-ids.catalog-v1.json`, never edited) nor `CATALOG_ADDED_IN`, and on a
-version left unbumped. What's new never offers what a region the body does not carry already shows by default.
+list their ids in `CATALOG_ADDED_IN` at the new number (now version 3: version 2 added `account.authenticator`,
+`data.library`, `web.search-tools`; version 3 the Memory menu and five marketing rows). Enforced:
+`features/shell/__tests__/nav-ids.test.ts` fails on any menu or tile id that is in neither the frozen version-1
+list (`nav-ids.catalog-v1.json`, never edited) nor `CATALOG_ADDED_IN`, and on a version left unbumped; its
+failure prints the exact rows to paste. It runs in CI (`hr-guards` job) and in `scripts/run-release-gates.sh`. What's new never offers what a region the body does not carry already shows by default.
 
 ## Reading a stored body
 
@@ -161,6 +162,8 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 
 ## Change log
 
+- `2026-10-22` — claude (lane Y, audit round 2): catalog version 3 (Memory menu + marketing rows); the nav-id guard
+  prints the rows to add and runs in CI (`hr-guards`) and the release gates.
 - `2026-10-22` — claude (lane S, audit fixes): History reads in the row's organization (+ empty/error states, launchpad
   history too); a customized Dock is shown on phones; catalog version 2 + the CATALOG_ADDED_IN guard; Reset to
   standard stores an empty body; locked members get no Save; empty groups never navigate; archived orgs get no editor;

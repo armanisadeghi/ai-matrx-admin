@@ -98,7 +98,11 @@ describe("every nav node has a permanent id", () => {
 
   it("every menu id is in the known list (run with NAV_IDS_WRITE=1 after adding a node)", () => {
     const known = new Set(readKnown());
-    expect([...menuIds].filter((id) => !known.has(id))).toEqual([]);
+    expect(
+      [...menuIds]
+        .filter((id) => !known.has(id))
+        .map((id) => `${id}  // run NAV_IDS_WRITE=1 pnpm jest features/shell/__tests__/nav-ids.test.ts to record it`),
+    ).toEqual([]);
   });
 
   it("a retired id is out of the menu and its successor is in it", () => {
@@ -131,7 +135,13 @@ describe("a destination added after the catalog froze is offered in What's new",
 
   it("every menu or tile id newer than version 1 has a CATALOG_ADDED_IN row", () => {
     const missing = [...menuIds, ...tileIds].filter((id) => !v1.has(id) && !Object.hasOwn(CATALOG_ADDED_IN, id));
-    expect(missing).toEqual([]);
+    // The fix, spelled out for whoever added the node: paste these rows into CATALOG_ADDED_IN in
+    // features/shell/shell-layout/catalog.ts and set SHELL_CATALOG_VERSION to the same number (if this
+    // change has not bumped it yet, use SHELL_CATALOG_VERSION + 1).
+    const next = SHELL_CATALOG_VERSION + 1;
+    expect(
+      missing.map((id) => `"${id}": ${next},  // add to CATALOG_ADDED_IN (shell-layout/catalog.ts) and set SHELL_CATALOG_VERSION = ${next}`),
+    ).toEqual([]);
   });
 
   it("every CATALOG_ADDED_IN row names a live id at a version above 1 and no higher than SHELL_CATALOG_VERSION", () => {

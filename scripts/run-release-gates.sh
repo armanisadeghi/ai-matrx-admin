@@ -678,6 +678,11 @@ if $STRICT; then
         "No orphan surface rows|pnpm check:surface-orphans"
         "…and the orphan check can still fail|pnpm check:surface-orphans:self-test"
         "…and its archive/revive planner can still fail|npx jest scripts/lib/__tests__/surface-sync-check.test.ts --silent"
+        # EVERY NAV ID IS PERMANENT AND EVERY NEW DESTINATION REACHES WHAT'S NEW (custom
+        # experience, 2026-10-22). A menu node added without a CATALOG_ADDED_IN row never
+        # reaches anyone with a customized sidebar; it went red on main within hours of
+        # shipping (31 ids) because nothing ran it. The failure prints the exact rows to add.
+        "Shell nav ids are permanent and new destinations reach What's new|npx jest features/shell/__tests__/nav-ids.test.ts --silent"
         # Blast radius of the surface VALUE vocabulary: orphan agent bindings /
         # shortcut mappings / write twins, values a sync would delete out from
         # under a consumer, and children shadowing a parent's value. Advisory —
@@ -1549,6 +1554,11 @@ else
         # removed). The jest row proves the archive/revive planner can still fail.
         "Surface mirror matches the code (values, roles, write targets, tools)|pnpm exec tsx scripts/sync-surface-manifests-direct.ts --check"
         "…and its archive/revive planner can still fail|npx jest scripts/lib/__tests__/surface-sync-check.test.ts --silent"
+        # EVERY NAV ID IS PERMANENT AND EVERY NEW DESTINATION REACHES WHAT'S NEW (custom
+        # experience, 2026-10-22). A menu node added without a CATALOG_ADDED_IN row never
+        # reaches anyone with a customized sidebar; it went red on main within hours of
+        # shipping (31 ids) because nothing ran it. The failure prints the exact rows to add.
+        "Shell nav ids are permanent and new destinations reach What's new|npx jest features/shell/__tests__/nav-ids.test.ts --silent"
         # Blast radius of the surface VALUE vocabulary: orphan agent bindings /
         # shortcut mappings / write twins, values a sync would delete out from
         # under a consumer, and children shadowing a parent's value. Advisory —
