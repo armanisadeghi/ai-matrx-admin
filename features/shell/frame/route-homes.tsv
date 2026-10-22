@@ -36,6 +36,7 @@ route	tree node	how found today	note
 /agents/[id]/surfaces	BUILD › Intelligence › Agents	opened from a record link	
 /agents/[id]/surfaces/batch	BUILD › Intelligence › Agents	opened from a record link	
 /agents/[id]/test	BUILD › Intelligence › Agents	opened from a record link	
+/agents/[id]/test/agreement	BUILD › Intelligence › Agents	opened from a record link	
 /agents/[id]/v/[version]	BUILD › Intelligence › Agents	opened from a record link	
 /agents/[id]/widgets	BUILD › Intelligence › Agents	opened from a record link	
 /agents/admin	BUILD › Intelligence › Agents	no menu; linked in-app (2 places)	
@@ -131,6 +132,7 @@ route	tree node	how found today	note
 /chat/message-templates/edit/[id]	BUSINESS › Messages	unreachable: nothing links to it (owner's cleanup list, KILL)	message templates
 /chat/message-templates/new	BUSINESS › Messages	in-page link under menu: Communications › Message Templates	message templates
 /chat/new	YOURS › Chat › Chats	menu: Chat	
+/chat/on-device	YOURS › Chat › Chats	opened from the chat composer (Your computers)	
 /chat/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /chat/talk	YOURS › Chat › Voice / Talk	unreachable: old address that redirects (owner's cleanup list)	redirects to /chat/talk/a/<agentId> (or /chat/new when unseeded)
 /chat/talk/[conversationId]	YOURS › Chat › Voice / Talk	opened from a list (under menu: Chat › Talk)	
