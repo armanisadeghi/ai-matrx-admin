@@ -150,6 +150,18 @@ async function main() {
     const builders = Object.entries(mod)
       .filter(([k, v]) => typeof v === "function" && /^create[A-Za-z0-9]*Scope$/.test(k))
       .map(([k]) => k);
+    // A builder shared by sibling surfaces lives in a `_<name>.manifest.ts`
+    // the manifest imports (run console, assessment list): it is this
+    // surface's builder too.
+    if (!rel.startsWith("@")) {
+      const text = readFileSync(rel, "utf8");
+      for (const imp of text.matchAll(/from\s+["'](\.\/_[\w.-]+\.manifest)["']/g)) {
+        const shared = requireModule(path.resolve(path.dirname(rel), `${imp[1]}.ts`)) as Record<string, unknown>;
+        for (const [k, v] of Object.entries(shared)) {
+          if (typeof v === "function" && /^create[A-Za-z0-9]*Scope$/.test(k) && !builders.includes(k)) builders.push(k);
+        }
+      }
+    }
     for (const value of Object.values(mod)) {
       if (value && typeof value === "object" && typeof (value as { surfaceName?: unknown }).surfaceName === "string") {
         const name = (value as { surfaceName: string }).surfaceName;
