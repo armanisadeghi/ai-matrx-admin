@@ -166,9 +166,11 @@ function StatusCards({
                     <Icon className="h-4 w-4" />
                   </span>
                 ) : null}
-                <h3 className="font-semibold text-base truncate">{card.title}</h3>
+                {/* Two lines, never a one-line ellipsis: the title is the
+                    card's identity and a truncated one cannot be read on touch. */}
+                <h3 className="font-semibold text-base line-clamp-2">{card.title}</h3>
               </div>
-              <StatusPill status={card.status} />
+              {card.status ? <StatusPill status={card.status} /> : null}
             </div>
             {card.description ? (
               <p className="text-sm text-muted-foreground leading-relaxed mb-3">
