@@ -223,7 +223,6 @@
   "features/notes/components/mobile/NoteEditorDock.tsx": 2,
   "features/notes/components/mobile/NotesFilterSheet.tsx": 1,
   "features/notes/components/TagInput.tsx": 1,
-  "features/pdf/components/viewer/PdfDocumentRenderer.tsx": 2,
   "features/pdf/scanner/components/CaptureView.tsx": 1,
   "features/pdf/scanner/components/QuadEditor.tsx": 1,
   "features/podcasts/components/player/PodcastAudioPlayer.tsx": 4,

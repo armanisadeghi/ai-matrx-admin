@@ -5937,34 +5937,6 @@
       "name": "DEBOUNCE_MS"
     },
     {
-      "file": "matrx-frontend/features/pdf/components/viewer/annotation-layer/PdfAnnotationLayer.tsx",
-      "name": "MIN_EDIT_PX"
-    },
-    {
-      "file": "matrx-frontend/features/pdf/components/viewer/page-swipe.ts",
-      "name": "MAX_DURATION_MS"
-    },
-    {
-      "file": "matrx-frontend/features/pdf/components/viewer/page-swipe.ts",
-      "name": "MIN_DISTANCE_PX"
-    },
-    {
-      "file": "matrx-frontend/features/pdf/components/viewer/PdfDocumentRenderer.tsx",
-      "name": "MAX_SCALE"
-    },
-    {
-      "file": "matrx-frontend/features/pdf/components/viewer/PdfDocumentRenderer.tsx",
-      "name": "MIN_SCALE"
-    },
-    {
-      "file": "matrx-frontend/features/pdf/components/viewer/PdfDocumentRenderer.tsx",
-      "name": "WHEEL_FLIP_THRESHOLD"
-    },
-    {
-      "file": "matrx-frontend/features/pdf/components/viewer/PdfDocumentRenderer.tsx",
-      "name": "WHEEL_GESTURE_IDLE_MS"
-    },
-    {
       "file": "matrx-frontend/features/pdf/hooks/usePdfSurfaceLinks.ts",
       "name": "TTL_MS"
     },
