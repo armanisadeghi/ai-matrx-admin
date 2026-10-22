@@ -22,7 +22,7 @@ const ActionsContext = createContext<readonly HeaderAction[]>([]);
 /** Wraps the organization layout (header + page) so a page's actions reach the header. */
 export function OrgHeaderActionsProvider({ children }: { children: ReactNode }) {
   const [actions, setActions] = useState<readonly HeaderAction[]>([]);
-  const [declare] = useState<Declare>(() => (next) => {
+  const [declare] = useState<Declare>(() => (next: readonly HeaderAction[]) => {
     setActions(next);
     return () => setActions((now) => (now === next ? [] : now));
   });

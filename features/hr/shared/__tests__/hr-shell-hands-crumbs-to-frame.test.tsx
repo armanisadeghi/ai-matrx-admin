@@ -53,7 +53,7 @@ function mount(node: React.ReactNode) {
 it("in the frame: declares HR's trail and draws no body breadcrumb", () => {
   const declared: (readonly FramePageCrumb[])[] = [];
   mount(
-    <FramePageHeaderContext.Provider value={{ declareCrumbs: (c) => (declared.push(c), () => {}) }}>
+    <FramePageHeaderContext.Provider value={{ declareCrumbs: (c) => (declared.push(c), () => {}), declareActions: () => () => {} }}>
       <HrShell title="Timesheets">x</HrShell>
     </FramePageHeaderContext.Provider>,
   );
