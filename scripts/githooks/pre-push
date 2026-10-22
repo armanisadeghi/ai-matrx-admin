@@ -6,7 +6,9 @@
 # the lockfile alone; nothing was installed, so every installed-package check passed, and 0.8.307 had dropped
 # `setDebrief`: two Vercel releases failed. The commit hook cannot see a commit made with --no-verify or by a
 # sweep; this one runs on what is about to LEAVE the machine. It reads the pushed commit, never the working tree.
-# REPORT-ONLY (Arman, 2026-10-21: nothing blocks a release): it prints the missing export loudly and never refuses.
+# An ordinary agent push is REFUSED (write time); on the release path (MATRX_RELEASE_PATH=1) it screams and the
+# push lands (Arman, 2026-10-21: nothing blocks a release). 2026-10-22: a sweep turned this into a plain echo and
+# v0.4.3436 failed on Vercel ("Export conversationRenameDialogOverlay doesn't exist") with nothing screaming.
 # Remedy: fix the importer (or restore the export in the package). Never pin.
 set -u
 HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
@@ -61,8 +63,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     (cd "$ROOT" && node scripts/check-matrx-imports.mjs --lock --ref "$local_sha")
     RC=$?
     if [ "$RC" -ne 0 ]; then
-        echo "LOCKFILE ADOPTION WARNING (push goes ahead): pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC)." >&2
-        echo "  Fix the importer, or restore the export in the package. Never pin." >&2
+        refuse "lockfile adoption" "pnpm-lock.yaml in $local_sha adopts @ai-matrx versions the code cannot build against (named above; exit $RC). Fix the importer, or restore the export in the package. Never pin." "$local_sha"
     fi
 done <"$REFS"
 exit 0
