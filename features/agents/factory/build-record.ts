@@ -35,3 +35,15 @@ export function buildRecordOf(metadata: unknown): AgentBuildRecordView | null {
         : { text: needed ? `Waiting for ${needed} runs` : "Waiting", tone: "warning" as const };
   return { outcome, outcomeTone: unproven ? "warning" : "success", buildId, firstRuns };
 }
+
+/** The person's own page for one build (`app/(core)/agents/builds/[buildId]`). */
+export const PERSON_BUILD_PATH = "/agents/builds";
+
+/**
+ * Where a build id opens: the person's own build page for everyone, the admin page (`adminBase`/{id}) only inside
+ * the admin section. The Studio's Versions tab is a member's page, so it must never link the admin page
+ * (review F-5: a member's link opened a page their account cannot read).
+ */
+export function buildPageHref(buildId: string, isAdmin: boolean, adminBase: string): string {
+  return `${isAdmin ? adminBase : PERSON_BUILD_PATH}/${buildId}`;
+}
