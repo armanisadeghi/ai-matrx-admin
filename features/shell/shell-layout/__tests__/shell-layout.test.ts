@@ -242,8 +242,9 @@ describe("resolver", () => {
   });
 
   it("offers newer catalog entries in What's new, never in the tree", () => {
-    const out = asPerson(body({ basedOnCatalogVersion: 0 as number, sidebar: [{ kind: "nav", id: "c", ref: "chat" }] }));
-    // Every entry is version 1, so a body reviewed against version 0 is offered all but what it placed and dismissed.
+    // `dock: []`: a region the body does not carry shows its default, and what a default shows is never offered.
+    const out = asPerson(body({ basedOnCatalogVersion: 0 as number, sidebar: [{ kind: "nav", id: "c", ref: "chat" }], dock: [] }));
+    // A body reviewed against version 0 is offered every entry but what it shows and dismissed.
     expect(out.whatsNew.some((e) => e.id === "chat")).toBe(false);
     expect(out.whatsNew.some((e) => e.id === "data")).toBe(true);
     expect(out.sidebar.map((s) => s.id)).toEqual(["c"]);

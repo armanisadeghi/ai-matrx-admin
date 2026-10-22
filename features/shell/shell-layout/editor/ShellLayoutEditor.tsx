@@ -35,8 +35,8 @@ import { selectIsAdmin, selectUserId } from "@/lib/redux/selectors/userSelectors
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { setKnobOverride } from "@/lib/scoped-config/service";
 import { useLaunchpads } from "@/features/launchpad/useLaunchpads";
-import { buildShellCatalog, defaultDockTree, defaultHeaderButtons, defaultSidebarTree } from "../catalog";
-import { SHELL_LAYOUT_SCHEMA_VERSION, type ShellLayoutBody, type ShellNode, type StoredShellLayout } from "../contract";
+import { buildShellCatalog } from "../catalog";
+import type { ShellLayoutBody, ShellNode, StoredShellLayout } from "../contract";
 import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "../knob";
 import { shellLayoutPreviewChanged } from "../shellLayoutSlice";
 import { useShellLayoutStore } from "../useShellLayoutStore";
@@ -46,7 +46,7 @@ import { AddRecordRow, recordKey, type PickedRecord } from "./AddRecordRow";
 import { ArrangeTree } from "./ArrangeTree";
 import { CatalogChecklist } from "./CatalogChecklist";
 import { HeaderPane } from "./HeaderPane";
-import { accentOf, dockOf, headerOf, lookOf, sidebarOf, startingBody, withAccent, withLook, type EditorRegion } from "./regions";
+import { accentOf, dockOf, headerOf, lookOf, sidebarOf, standardPersonBody, startingBody, withAccent, withLook, type EditorRegion } from "./regions";
 import { AccentPane, DEFAULT_SWATCH_LABEL } from "./AccentPane";
 import { LookPane } from "./LookPane";
 import { addRow, buildCatalogTree, placedRefs, removeNode, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
@@ -189,14 +189,12 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
       variant: "destructive",
     });
     if (!ok) return;
-    // A person whose organization has a layout keeps a layout of her own — the standard one — so it wins.
+    // A person whose organization has a layout keeps a layout of her own so it wins — an EMPTY one: every
+    // region it does not carry is the built-in default, which keeps growing with the catalog. (Until
+    // 2026-10-22 it wrote the default trees out, freezing her out of every later addition.)
     const answer =
       target === "person" && store.organization
-        ? await store.save(
-            "person",
-            { schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: body.basedOnCatalogVersion, sidebar: defaultSidebarTree(), header: defaultHeaderButtons(), dock: defaultDockTree() },
-            "Reset to standard",
-          )
+        ? await store.save("person", standardPersonBody(), "Reset to standard")
         : await store.clear(target);
     if (answer.ok) setDraft(null);
     else toast.error(answer.error);

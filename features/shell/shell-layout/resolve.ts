@@ -34,7 +34,9 @@ import type {
 } from "./contract";
 import {
   buildShellCatalog,
+  defaultDockTree,
   defaultHeaderButtons,
+  defaultSidebarTree,
   getCatalogEntry,
   getCatalogNavNode,
   type ShellCatalogEntry,
@@ -353,10 +355,12 @@ function collectRefs(nodes: readonly ShellNode[] | undefined, into: Set<string>)
 
 function whatsNewFor(body: ShellLayoutBody, isAdmin: boolean): ShellCatalogEntry[] {
   const dismissed = new Set(body.dismissedNew ?? []);
+  // "Placed" = what the person SEES: a region the body does not carry shows its default (which grows
+  // with the catalog on its own), so nothing already showing there is offered as new.
   const placed = new Set<string>();
-  collectRefs(body.sidebar, placed);
-  collectRefs(body.dock, placed);
-  for (const button of body.header ?? []) if (button.kind === "nav") placed.add(button.ref);
+  collectRefs(body.sidebar ?? defaultSidebarTree(), placed);
+  collectRefs(body.dock ?? defaultDockTree(), placed);
+  for (const button of body.header ?? defaultHeaderButtons()) if (button.kind === "nav") placed.add(button.ref);
   return buildShellCatalog({ isAdmin }).filter(
     (entry) =>
       (entry.addedIn ?? 1) > body.basedOnCatalogVersion && !dismissed.has(entry.id) && !placed.has(entry.id),
