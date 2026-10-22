@@ -20,8 +20,9 @@
  *                        `alchemy.transfer.default_recipe` knob resolved WITHOUT
  *                        the person (organization → platform), from the one
  *                        knob snapshot
- *   window       PP-01a  `AlchemyWindowHost.tsx` — real WindowPanels, several
- *                        at once, each holding a live preparation session
+ *   window       PP-01a  `alchemyWindowPort.ts` — the summon overlay
+ *                        `alchemyPrepareWindow`, several at once, each holding
+ *                        a live preparation session (a handle in its open data)
  *   door         ALC-17  THE one write door (`alchemy-door.ts`): every write to
  *                        a declared target returns a receipt; the
  *                        destinations' headless handlers are registered on it

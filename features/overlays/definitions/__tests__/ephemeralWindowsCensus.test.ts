@@ -47,6 +47,7 @@ const EPHEMERAL: Record<string, Reason> = {
   userSearchWindow: "picker",
   aiWatchWindow: "watch",
   workflowRunWindow: "watch",
+  alchemyPrepareWindow: "callback",
 };
 
 const DIR = join(__dirname, "..");
