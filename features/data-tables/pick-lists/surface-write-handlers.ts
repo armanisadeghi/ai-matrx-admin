@@ -32,7 +32,7 @@
  */
 
 import type { SurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { addChoices, updateChoice, updateList } from "./service";
+import { addChoices, archiveChoice, updateChoice, updateList } from "./service";
 import { LIST_WRITE_TARGET_NAMES } from "./surface-write-targets";
 
 export interface ListSurfaceWriteOptions {
@@ -42,6 +42,17 @@ export interface ListSurfaceWriteOptions {
    * Must read through a ref — see the caller contract above.
    */
   resolveListId: (targetName: string) => string;
+  /**
+   * The choice ids the list holds right now (from the mount's last read), so an archive of an id
+   * that is not there is refused before anything is written. `null` = not known (loading, failed,
+   * no list open): an archive is then REFUSED, never let through unchecked.
+   */
+  knownItemIds: () => readonly string[] | null;
+  /**
+   * Whether the signed-in person may edit this list (the scope's `list_is_owner`). `false` or
+   * `null` (not known yet) refuses an archive in validate, before the approval card.
+   */
+  canEditList: () => boolean | null;
   /**
    * Refresh the read twins after a successful write, so the values the agent
    * sees on its next turn already reflect what it just wrote.
@@ -79,7 +90,58 @@ function requirePlainString(
 export function buildListSurfaceWriteHandlers(
   options: ListSurfaceWriteOptions,
 ): SurfaceWriteHandlers {
-  const { resolveListId, afterWrite } = options;
+  const { resolveListId, afterWrite, knownItemIds, canEditList } = options;
+
+  /** The archive list, checked whole: every problem at once, nothing archived on any. */
+  const parseArchiveIds = (value: unknown): string[] => {
+    const target = LIST_WRITE_TARGET_NAMES.deleteListItems;
+    if (!Array.isArray(value) || value.length === 0) {
+      throw new Error(
+        `${target} expects a non-empty ARRAY of choice ids from all_items ` +
+          `(or { id } objects) — not ${Array.isArray(value) ? "an empty array" : typeof value}.`,
+      );
+    }
+    const problems: string[] = [];
+    const canEdit = canEditList();
+    if (canEdit !== true) {
+      problems.push(
+        canEdit === false
+          ? "you can read this list but not edit it — only its owner can archive its choices."
+          : "whether you may edit this list is not known yet (it has not finished loading).",
+      );
+    }
+    const ids = (value as unknown[]).map((entry, index) => {
+      const raw =
+        typeof entry === "object" && entry !== null && !Array.isArray(entry)
+          ? (entry as Record<string, unknown>).id
+          : entry;
+      if (typeof raw !== "string" || !raw.trim()) {
+        problems.push(`item ${index + 1} is not a choice id (a string from all_items).`);
+        return "";
+      }
+      return raw.trim();
+    });
+    const seen = new Set<string>();
+    ids.forEach((id, index) => {
+      if (!id) return;
+      if (seen.has(id)) problems.push(`item ${index + 1} repeats id ${id}.`);
+      seen.add(id);
+    });
+    // Membership is ALWAYS checked: an id that is not one of this list's choices could be any record.
+    const known = knownItemIds();
+    if (!known) {
+      problems.push("this list's choices are not loaded, so no id can be checked against them — wait for all_items and try again.");
+    } else {
+      const have = new Set(known);
+      ids.forEach((id, index) => {
+        if (id && !have.has(id)) problems.push(`item ${index + 1} (${id}) is not a choice of this list — read all_items.`);
+      });
+    }
+    if (problems.length > 0) {
+      throw new Error(`${target} was refused: ${problems.join(" ")} Nothing was archived.`);
+    }
+    return ids;
+  };
 
   return {
     [LIST_WRITE_TARGET_NAMES.activeListName]: async (value: unknown) => {
@@ -225,6 +287,36 @@ export function buildListSurfaceWriteHandlers(
         groupName,
       });
       await afterWrite(listId);
+    },
+
+    // validate runs before the approval card, so a bad list never reaches the person.
+    [LIST_WRITE_TARGET_NAMES.deleteListItems]: {
+      validate: (value: unknown) => {
+        parseArchiveIds(value);
+      },
+      apply: async (value: unknown) => {
+        const target = LIST_WRITE_TARGET_NAMES.deleteListItems;
+        const ids = parseArchiveIds(value);
+        const listId = resolveListId(target);
+        const done: string[] = [];
+        let failure: unknown = null;
+        for (const id of ids) {
+          try {
+            await archiveChoice(listId, id);
+            done.push(id);
+          } catch (e) {
+            failure = e;
+            break;
+          }
+        }
+        if (done.length > 0) await afterWrite(listId);
+        if (failure) {
+          const reason = failure instanceof Error ? failure.message : String(failure);
+          throw new Error(
+            `${target} archived ${done.length} of ${ids.length} (${done.join(", ") || "none"}), then stopped: ${reason}. The rest were not attempted.`,
+          );
+        }
+      },
     },
   };
 }

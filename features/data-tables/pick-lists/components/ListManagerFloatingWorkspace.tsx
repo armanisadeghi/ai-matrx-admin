@@ -15,6 +15,8 @@ import {
   type ListManagerItemEntry,
 } from "@/features/surfaces/manifests/list-manager.manifest";
 import { buildListSurfaceWriteHandlers } from "../surface-write-handlers";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 
 export function ListManagerFloatingWorkspace() {
   const [lists, setLists] = useState<UserList[]>([]);
@@ -28,6 +30,7 @@ export function ListManagerFloatingWorkspace() {
   const [detailError, setDetailError] = useState<unknown>(null);
   const [detailAttempt, setDetailAttempt] = useState(0);
   const router = useRouter();
+  const userId = useAppSelector(selectUserId);
 
   const fetchLists = useCallback(async () => {
     try {
@@ -146,6 +149,18 @@ export function ListManagerFloatingWorkspace() {
   useEffect(() => {
     activeListIdRef.current = activeListId;
   }, [activeListId]);
+  // The archive check reads the open list's own choices, and whether this person owns it, through
+  // refs too — `null` while it is loading, failed, or belongs to another list, so an archive is refused.
+  const activeListDataRef = useRef<UserListWithItems | null>(activeListData);
+  const userIdRef = useRef<string | null>(userId);
+  useEffect(() => {
+    activeListDataRef.current = activeListData;
+    userIdRef.current = userId;
+  }, [activeListData, userId]);
+  const openListRead = (): UserListWithItems | null => {
+    const data = activeListDataRef.current;
+    return data && data.list_id === activeListIdRef.current ? data : null;
+  };
 
   const listWriteHandlers = useMemo(
     () =>
@@ -157,6 +172,14 @@ export function ListManagerFloatingWorkspace() {
               `${target} needs a list open in the detail pane — no list is active. Ask the user which list to work on.`,
             );
           return listId;
+        },
+        knownItemIds: () => {
+          const data = openListRead();
+          return data ? Object.values(data.items_grouped ?? {}).flatMap((items) => items.map((i) => i.id)) : null;
+        },
+        canEditList: () => {
+          const data = openListRead();
+          return data ? userIdRef.current != null && data.user_id === userIdRef.current : null;
         },
         afterWrite: async (listId) => {
           const [detail] = await Promise.all([

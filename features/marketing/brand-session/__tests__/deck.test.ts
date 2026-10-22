@@ -24,6 +24,7 @@ import {
   type DeckDoors,
   type ElementRow,
   type WordRow,
+  ownLiveAnswers,
 } from "../deck";
 import type { FocusItem } from "@/features/marketing/smart-add/validate/queue";
 
@@ -203,10 +204,11 @@ describe("brand session deck", () => {
 
   it("a stance answer is the person's own row; answering again withdraws it first; not sure parks the agent's row", async () => {
     const ai = row({ id: "s1", element_id: "e-a3", value: { offering: "Drop-off" } });
-    const mine = row({ id: "m1", origin: "said", decision: "chosen", placement: "support", value: { stance: "sustain_or_accept", offering: "Drop-off", answer_to: "s1" } });
+    const mine = row({ id: "m1", origin: "said", decision: "chosen", placement: "support", created_by: "me", value: { stance: "sustain_or_accept", offering: "Drop-off", answer_to: "s1" } });
     expect(answerOfStance(ai, [mine])).toBe("sustain_or_accept");
     expect(answerOfStance({ ...ai, decision: "parked" }, [])).toBe("not_sure");
     const { calls, doors } = fakeDoors();
+    doors.personId = "me";
     doors.stanceOf = () => ({ ai, answers: [mine] });
     await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: "grow" }], doors);
     expect(calls).toEqual(["decide m1 withdraw", 'correct s1 "undefined" undefined-undefined lead']);
@@ -218,6 +220,29 @@ describe("brand session deck", () => {
     doors.stanceOf = () => ({ ai: { ...ai, decision: "parked" }, answers: [] });
     await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: null }], doors);
     expect(calls).toEqual(["decide s1 retract"]);
+  });
+
+  it("a second editor answers a stance a colleague answered: only their OWN answer is withdrawn, the colleague's is left to the database to supersede", async () => {
+    // REVIEW3 I2: the door refuses to withdraw another person's words (42501), so withdrawing every live answer made
+    // person B's answer fail on a shared brand.
+    const ai = row({ id: "s1", element_id: "e-a3", value: { offering: "Drop-off" } });
+    const theirs = row({ id: "t1", origin: "said", decision: "chosen", placement: "lead", created_by: "colleague", value: { stance: "grow", offering: "Drop-off", answer_to: "s1" } });
+    const mineOld = row({ id: "m0", origin: "said", decision: "superseded", placement: "support", created_by: "me", value: { stance: "sunset_or_refuse", offering: "Drop-off", answer_to: "s1" } });
+    const { calls, doors } = fakeDoors();
+    doors.decide = async (id, action) => {
+      if (action === "withdraw" && id !== "m0" && id !== "m1") throw new Error("brand_choice_decide: only your own words (origin said) can be withdrawn");
+      calls.push(`decide ${id} ${action}`);
+    };
+    doors.personId = "me";
+    doors.stanceOf = () => ({ ai, answers: [theirs, mineOld] });
+    await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: "sustain_or_accept" }], doors);
+    expect(calls).toEqual(['correct s1 "undefined" undefined-undefined support']);
+    // Clearing withdraws nothing of the colleague's either.
+    calls.length = 0;
+    await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: null }], doors);
+    expect(calls).toEqual([]);
+    // Unknown person: withdraw nothing rather than someone else's words.
+    expect(ownLiveAnswers([theirs], null)).toEqual([]);
   });
 
   it("taglines are a pick: could be it shortlists, the pick chooses, switching shortlists the old pick back first", async () => {
@@ -277,8 +302,8 @@ describe("brand session deck", () => {
       doors,
     );
     expect(calls).toEqual([
-      "audience who households not_us ai",
-      "audience who households retract ai",
+      "audience who households not_us said",
+      "audience who households retract said",
       "audience cares_about audit trail lead said",
       "audience who IT directors support said",
       "audience who audit trail retract said",

@@ -86,7 +86,23 @@ Two things live here, one feature:
   sizes `defaultW/defaultH/minW/minH/maxW?/maxH?`, default config, fields, `describe`, optional `href`,
   `publishes` and `accepts` — its page-bus ports, below) + one body in `widgets/registry.tsx` taking
   `{ config, editing, capacity }`. The registry test fails without both. A new field picker goes in
-  `LaunchpadPanels.tsx`.
+  `LaunchpadPanels.tsx`. **Nobody types an id**: every `*Id` field names a `picker` (registry test). A
+  dashboard widget's `dashboardId` is the `tableDashboard` picker (`TableDashboardPicker`: the table's own
+  `dashboards` read in the table's organization; Pages and Interfaces excluded; empty = the table's first);
+  choosing another table clears it.
+- **One registry for every placeable thing (lane U)**: records-ui pages (`page`) and dashboards
+  (`records_dashboard`, the table's own `DashboardCanvas`), Applets (`applet`), any app page (`app_page`) and
+  EVERY Board item type (`board_item`: config `{ itemType, id, title }`, the reference a board tile holds; the
+  body is that type's own `Body`, the picker is that type's own bring-in picker; the board catalog loads only
+  when used). The Board is a free canvas, not a grid; its item catalog is the source `board_item` reads.
+  Lane W added **any kind** (`kind`, "Shape": a saved kind instance picked shape → instance through
+  `listAllKinds` + `listKindInstances`, or a page value of kind `shape` — any JSON carrying `__kind`, kept whole;
+  an Applet offers one as `out_shape`; drawn by `KindInstanceRender`, the ONE kind pipeline, behind one dynamic
+  edge) and a **Space page** (`space_page`: the Spaces editor through the fence door
+  `features/spaces/embed/SpaceWidget.tsx`, read-only while the launchpad is in Edit mode).
+  Guard: `__tests__/one-grid-one-registry.census.test.ts` fails on a second grid engine or a second widget
+  registry anywhere in app/, features/, components/, lib/ (three collection-reorder sortables are named
+  exceptions); `widgets/__tests__/boardItemWidget.test.tsx`.
 - **No late shift on a phone**: a phone box grows to its content (the grid canvas's phone CSS). A body whose
   height is its own content (the counts tiles) declares `phoneBodyPx(config)` on its catalog entry; the frame
   reserves that height in the first HTML under the canvas's own phone container test, so the body landing at
@@ -171,6 +187,14 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-22` — Lane W: `kind` (Shape) and `space_page` widgets; page-bus value kind `shape`; Applet `out_shape`.
+- `2026-10-22` — Lane W: the dashboard widget picks its dashboard from the chosen table's dashboards (no raw id
+  field); registry guard: no `*Id` field without a picker.
+
+- `2026-10-22` — Lane U (one grid engine, one widget registry): `records_dashboard` and `board_item` widgets
+  (records-ui dashboards and every Board item type placeable on a launchpad); the census guard
+  `one-grid-one-registry.census.test.ts`. records-ui's own grid was deleted in the package (its blocks now ride
+  GridCanvas line mode).
 - `2026-10-22` — Lane T (custom-experience audit fixes): any launchpad saves as a template (the person's own, or
   the organization's) and the gallery lists them beside the role templates; an owner or admin creates, edits and
   shares organization launchpads (members read them and copy them; set as landing works through the existing

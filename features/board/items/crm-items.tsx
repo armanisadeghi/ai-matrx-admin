@@ -129,7 +129,6 @@ export const CRM_ITEMS: readonly BoardItemType[] = [
     // The thread the record's own Notes card shows.
     comments: entityComments("party"),
     label: "Person or company",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "person or company",
     icon: Contact,
     group: "work",

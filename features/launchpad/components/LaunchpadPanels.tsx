@@ -17,8 +17,12 @@ import { appPagePath } from "@/features/board/items/page-items";
 import { listPlaceableApplets, type AppletCardInfo } from "@/features/applets/embed/appletsPort";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LAUNCHPAD_WIDGET_CATALOG } from "../widgets/catalog";
-import { DataPagePicker, DataTablePicker } from "../widgets/DataPagePicker";
+import { DataPagePicker, DataTablePicker, TableDashboardPicker } from "../widgets/DataPagePicker";
 import { configText, type LaunchpadWidgetSpec } from "../widgets/types";
+import { KindInstancePicker } from "../widgets/KindInstancePicker";
+import { SpacePagePicker } from "@/features/spaces/embed/SpaceWidget";
+import { loadBoardItemCatalog } from "../widgets/bodies/BoardItemWidget";
+import type { BoardItemType } from "@/features/board/items/types";
 
 function PanelShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
@@ -143,7 +147,21 @@ export function ConfigureWidgetPanel({
               {field.picker === "metricKeys" ? (
                 <MetricKeysPicker value={value} onChange={set} />
               ) : field.picker === "dataTable" ? (
-                <DataTablePicker value={value} onChange={set} />
+                <DataTablePicker
+                  value={value}
+                  // A dashboard chosen for the old table is not one of the new table's.
+                  onChange={(v) => onConfigure(spec.fields.some((f) => f.picker === "tableDashboard") ? { [field.key]: v, dashboardId: "" } : { [field.key]: v })}
+                />
+              ) : field.picker === "spacePage" ? (
+                <SpacePagePicker value={value} onChange={(spaceId, title) => onConfigure({ spaceId, title })} />
+              ) : field.picker === "kindInstance" ? (
+                <KindInstancePicker
+                  kindDefinitionId={configText(widget.config, "kindDefinitionId")}
+                  value={value}
+                  onChange={(c) => onConfigure({ ...c })}
+                />
+              ) : field.picker === "tableDashboard" ? (
+                <TableDashboardPicker tableId={configText(widget.config, "tableId")} value={value} onChange={set} />
               ) : field.picker === "dataPage" ? (
                 <DataPagePicker value={value} onChange={set} />
               ) : field.picker === "launchpad" ? (
@@ -155,6 +173,11 @@ export function ConfigureWidgetPanel({
                 />
               ) : field.picker === "applet" ? (
                 <AppletPicker value={value} onChange={(appId, name) => onConfigure({ appId, name })} />
+              ) : field.picker === "boardItem" ? (
+                <BoardItemPicker
+                  value={value}
+                  onChange={(itemType, id, title) => onConfigure({ itemType, id, title })}
+                />
               ) : field.picker === "appPage" ? (
                 <AppPagePicker value={value} onChange={set} />
               ) : field.options ? (
@@ -342,5 +365,50 @@ function MetricKeysPicker({ value, onChange }: { value: string; onChange: (keys:
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * Any Board item type, then that type's OWN bring-in picker (the one the board's "Bring in" uses), so a launchpad
+ * places exactly what a board can (lane U: one widget registry).
+ */
+function BoardItemPicker({ value, onChange }: { value: string; onChange: (itemType: string, id: string, title: string) => void }) {
+  const [types, setTypes] = useState<readonly BoardItemType[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [picking, setPicking] = useState<string>(value);
+  useEffect(() => {
+    let live = true;
+    loadBoardItemCatalog().then(
+      (c) => live && setTypes(c.types.filter((t) => t.bringIn)),
+      (e: unknown) => live && setError(e instanceof Error ? e.message : "The board items could not load."),
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (error) return <p className="text-xs text-destructive">{error}</p>;
+  if (!types) return <p className="text-xs text-muted-foreground">Loading items…</p>;
+  const type = types.find((t) => t.key === picking);
+  const Picker = type?.bringIn?.Picker;
+  return (
+    <div className="flex flex-col gap-2">
+      <Select
+        aria-label="Item type"
+        value={picking}
+        options={types.map((t) => ({ value: t.key, label: t.label }))}
+        onValueChange={setPicking}
+      />
+      {Picker ? (
+        <div className="max-h-80 overflow-auto rounded border border-border" data-launchpad-board-picker={picking}>
+          <Picker
+            onPick={(items) => {
+              const first = items[0];
+              if (first && first.source.kind === "entity" && first.source.id) onChange(first.source.entity, first.source.id, first.title);
+            }}
+            onCancel={() => setPicking(value)}
+          />
+        </div>
+      ) : null}
+    </div>
   );
 }

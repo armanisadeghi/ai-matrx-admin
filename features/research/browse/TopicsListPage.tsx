@@ -19,7 +19,7 @@ import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink"
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import type { EntityListController } from "@/lib/entity-list/config";
 import { RESEARCH_TOPIC_LIST_CONFIG } from "./listConfig";
-import { RESEARCH_TOPICS_SURFACE } from "./surface";
+import { useResearchTopicsSurface } from "./surface";
 import type { ResearchTopicListRow } from "./types";
 
 function newTopicHref(name?: string): string {
@@ -41,13 +41,14 @@ function NewTopicButton({ name }: { name?: string }) {
 }
 
 export function TopicsListPage() {
+  const surface = useResearchTopicsSurface();
   return (
     <>
       <RecordPageHeader record={{ name: "Research topics" }} />
       <MandateDoorLink feature="research" label="Research agents" />
       <EntityListPage
         config={RESEARCH_TOPIC_LIST_CONFIG}
-        surface={RESEARCH_TOPICS_SURFACE}
+        surface={surface}
         headerActions={<NewTopicButton />}
         emptyAction={(list: EntityListController<ResearchTopicListRow>) => (
           // A search that found nothing offers to start that topic.

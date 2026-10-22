@@ -69,7 +69,10 @@ export interface EduStep {
 export interface EduStatusCard {
   title: string;
   description?: string;
-  status: EduStatus;
+  /** Omit when every card on the grid shares one status — a pill that never
+   *  varies is noise (the /education/learn index lists only published guides).
+   *  Authored sections still require it (`publishing/validate.ts`). */
+  status?: EduStatus;
   href?: string;
   bullets?: string[];
   icon?: LucideIcon;

@@ -5,6 +5,9 @@
 // never fetches) and the create / update / delete handlers, built with the
 // shared collection helper so they save through the page's own paths.
 
+import { useEffect, useState } from "react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import type {
   EntityListSurface,
   EntityListSurfaceController,
@@ -36,9 +39,10 @@ import {
 
 type List = EntityListSurfaceController<ResearchTopicListRow>;
 
-// Topics this tab's agent writes changed (restored, archived, renamed), kept so
-// a topic that just left the visible list can still be acted on by id.
-const TOUCHED_TOPICS: TouchedTopics = new Map();
+// Topics this page's agent writes changed (restored, archived, renamed), kept so
+// a topic that just left the visible list can still be acted on by id. The map
+// is owned by the MOUNTED page (useResearchTopicsSurface) and passed in — never
+// module state, which would outlive a route change or a sign-out/in.
 
 // ── Read half ────────────────────────────────────────────────────────────────
 
@@ -96,7 +100,7 @@ export function createResearchTopicsSurfaceScope(list: List) {
 
 // ── Write half ───────────────────────────────────────────────────────────────
 
-export function createResearchTopicsWriteHandlers(list: List) {
+export function createResearchTopicsWriteHandlers(list: List, touched: TouchedTopics) {
   const handlers = collectionWriteHandlers(
     {
       plural: "topics",
@@ -122,7 +126,7 @@ export function createResearchTopicsWriteHandlers(list: List) {
       },
       update: {
         parse: (value: unknown) =>
-          parseUpdateTopics(value, rowsWithTouched(list.rows, TOUCHED_TOPICS)),
+          parseUpdateTopics(value, rowsWithTouched(list.rows, touched)),
         run: async (plan: UpdatePlan) => {
           if (plan.name !== undefined || plan.description !== undefined)
             await updateTopicMeta(plan.id, {
@@ -133,10 +137,10 @@ export function createResearchTopicsWriteHandlers(list: List) {
             await updateTopic(plan.id, { autonomy_level: plan.autonomy_level });
           if (plan.archived === true) await archiveTopic(plan.id);
           if (plan.archived === false) await restoreTopic(plan.id);
-          const before = rowsWithTouched(list.rows, TOUCHED_TOPICS).find(
+          const before = rowsWithTouched(list.rows, touched).find(
             (r) => r.id === plan.id,
           );
-          if (before) rememberTouchedTopic(TOUCHED_TOPICS, before, plan);
+          if (before) rememberTouchedTopic(touched, before, plan);
           list.refresh();
           return { id: plan.id, name: plan.name ?? plan.previousName };
         },
@@ -145,12 +149,12 @@ export function createResearchTopicsWriteHandlers(list: List) {
       },
       delete: {
         parse: (value: unknown) =>
-          parseDeleteTopics(value, rowsWithTouched(list.rows, TOUCHED_TOPICS)),
+          parseDeleteTopics(value, rowsWithTouched(list.rows, touched)),
         run: async (row: ResearchTopicListRow) => {
           // A person's records are archived, never destroyed: delete_topics
           // ARCHIVES (restorable with update_topics archived:false).
           await archiveTopic(row.id);
-          rememberTouchedTopic(TOUCHED_TOPICS, row, { archived: true });
+          rememberTouchedTopic(touched, row, { archived: true });
           list.removeRow(row.id);
           return { id: row.id, name: row.name };
         },
@@ -187,8 +191,25 @@ export function createResearchTopicsWriteHandlers(list: List) {
   };
 }
 
-export const RESEARCH_TOPICS_SURFACE: EntityListSurface<ResearchTopicListRow> = {
-  surfaceName: RESEARCH_TOPICS_SURFACE_NAME,
-  getScope: createResearchTopicsSurfaceScope,
-  getWriteHandlers: createResearchTopicsWriteHandlers,
-};
+/** The surface over one page's own touched-topics map. */
+export function createResearchTopicsSurface(
+  touched: TouchedTopics,
+): EntityListSurface<ResearchTopicListRow> {
+  return {
+    surfaceName: RESEARCH_TOPICS_SURFACE_NAME,
+    getScope: createResearchTopicsSurfaceScope,
+    getWriteHandlers: (list: List) => createResearchTopicsWriteHandlers(list, touched),
+  };
+}
+
+/**
+ * The topic list page's surface. The touched-topics map lives as long as the
+ * mounted page and is cleared when it unmounts or the signed-in person changes.
+ */
+export function useResearchTopicsSurface(): EntityListSurface<ResearchTopicListRow> {
+  const userId = useAppSelector(selectUserId);
+  const [touched] = useState<TouchedTopics>(() => new Map());
+  const [surface] = useState(() => createResearchTopicsSurface(touched));
+  useEffect(() => () => touched.clear(), [touched, userId]);
+  return surface;
+}

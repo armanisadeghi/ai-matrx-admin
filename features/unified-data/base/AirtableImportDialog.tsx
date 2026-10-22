@@ -9,7 +9,7 @@
 import { Button, Field } from "@ai-matrx/design-system/controls";
 import { useCallback, useEffect, useState } from "react";
 
-import { countedKind } from "@/features/spaces/io/countedKind";
+import { countedKind } from "@/features/spaces/embed/pureDoors";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { createVaultItem } from "@/features/secrets/vault-service";

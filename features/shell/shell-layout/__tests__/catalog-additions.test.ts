@@ -11,8 +11,10 @@ import { defaultSidebarTree, SHELL_CATALOG_VERSION } from "../catalog";
 import { resolveShellLayout } from "../resolve";
 import { standardPersonBody } from "../editor/regions";
 import { primaryNavItems } from "../../constants/nav-data";
+import { RETIRED_NAV_IDS } from "../retired-nav-ids";
 
-const ADDED = ["account.authenticator", "data.library", "web.search-tools"];
+// Ids added since version 1 that are still in the menu ("web.search-tools" was added, then retired into "web.search").
+const ADDED = ["account.authenticator", "data.library", "web.search-tools"].filter((id) => !(id in RETIRED_NAV_IDS));
 const asPerson = (person: ShellLayoutBody, organization: ShellLayoutBody | null = null) =>
   resolveShellLayout({ person, organization, standardView: false, isAdmin: false, isGuest: false });
 
@@ -22,7 +24,7 @@ it("a layout reviewed against version 1, with its own sidebar, is offered the id
       .filter((n) => n.kind !== "nav" || !ADDED.includes(n.ref))
       .map((n) => ((n.kind === "nav" || n.kind === "group") && n.children ? { ...n, children: strip(n.children) } : n));
   const sidebar = strip(defaultSidebarTree());
-  expect(JSON.stringify(sidebar)).not.toMatch(/authenticator|data\.library|web\.search-tools/);
+  expect(JSON.stringify(sidebar)).not.toMatch(/authenticator|data\.library/);
   const offered = asPerson({ schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION, basedOnCatalogVersion: 1, sidebar, dock: [], header: [] }).whatsNew.map((e) => e.id);
   expect(offered.filter((id) => ADDED.includes(id)).sort()).toEqual([...ADDED].sort());
 });

@@ -16,7 +16,7 @@ import { readAllRows } from "@ai-matrx/data/db";
 
 import type { Json } from "@/types/database.types";
 import { supabase } from "@/utils/supabase/client";
-import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { authenticatedWebDb, signedInPersonId } from "@/utils/supabase/webDb";
 import { listBrandRelationKinds, type BrandRelationKind } from "@/features/marketing/data/service";
 import type { MarketingBrand } from "@/features/marketing/types";
 import { suggestContext } from "@/features/marketing/smart-add/relations";
@@ -26,7 +26,7 @@ import { EMPTY_KNOWN, foldQueue } from "@/features/marketing/smart-add/validate/
 import { partOf, type ChoiceRow, type DecideAction, type ElementRow, type Placement, type WordRow } from "./deck";
 
 const CHOICE_COLUMNS =
-  "id, brand_id, element_id, value, origin, recommended_placement, opinion_reason, word_signals, decision, placement, decided_by, decided_at, decision_reason, organization_id, created_at";
+  "id, brand_id, element_id, value, origin, recommended_placement, opinion_reason, word_signals, decision, placement, decided_by, decided_at, decision_reason, organization_id, created_at, created_by";
 
 export const SESSION_VIA = "brand_session";
 
@@ -45,15 +45,22 @@ export interface SessionData {
 }
 
 async function loadElements(): Promise<ElementRow[]> {
-  const { data, error } = await supabase
-    .schema("platform")
-    .from("categories")
-    .select("id, name, slug, position, metadata")
-    .eq("dimension", "brand_element")
-    .is("deleted_at", null)
-    .limit(500);
-  if (error) throw new Error(`The brand elements could not be read: ${error.message}`);
-  return (data ?? []).map((c) => {
+  // Read COMPLETE: a card whose element is missing from this list loses its name and cardinality.
+  const data = await readAllRows<{ id: string; name: string; slug: string | null; position: number | null; metadata: Json }>(
+    ({ from, to }) =>
+      supabase
+        .schema("platform")
+        .from("categories")
+        .select("id, name, slug, position, metadata", { count: "exact" })
+        .eq("dimension", "brand_element")
+        .is("deleted_at", null)
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "platform.categories (brand_element)" },
+  ).catch((e: unknown) => {
+    throw new Error(`The brand elements could not be read: ${e instanceof Error ? e.message : String(e)}`);
+  });
+  return data.map((c) => {
     const meta = c.metadata && typeof c.metadata === "object" && !Array.isArray(c.metadata) ? (c.metadata as Record<string, Json>) : {};
     return { id: c.id, name: c.name, slug: c.slug ?? "", position: c.position, cardinality: typeof meta.cardinality === "string" ? meta.cardinality : "many" };
   });
@@ -74,17 +81,24 @@ export interface AudienceCategory {
 }
 
 async function loadAudience(organizationId: string): Promise<{ rows: AudienceRow[]; categories: AudienceCategory[] }> {
-  const { data, error } = await supabase
-    .schema("platform")
-    .from("categories")
-    .select("id, name, slug, parent_id, position, organization_id, is_system")
-    .eq("dimension", "brand_audience")
-    .is("deleted_at", null)
-    .order("position", { ascending: true, nullsFirst: false })
-    .order("name", { ascending: true })
-    .limit(1000);
-  if (error) throw new Error(`The audience categories could not be read: ${error.message}`);
-  const all = data ?? [];
+  // Read COMPLETE: every organization adds its own categories, so the dimension grows past any fixed cap.
+  type CategoryRow = { id: string; name: string; slug: string | null; parent_id: string | null; position: number | null; organization_id: string | null; is_system: boolean | null };
+  const all = await readAllRows<CategoryRow>(
+    ({ from, to }) =>
+      supabase
+        .schema("platform")
+        .from("categories")
+        .select("id, name, slug, parent_id, position, organization_id, is_system", { count: "exact" })
+        .eq("dimension", "brand_audience")
+        .is("deleted_at", null)
+        .order("position", { ascending: true, nullsFirst: false })
+        .order("name", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "platform.categories (brand_audience)" },
+  ).catch((e: unknown) => {
+    throw new Error(`The audience categories could not be read: ${e instanceof Error ? e.message : String(e)}`);
+  });
   const rows = all.filter((c) => !c.parent_id && c.slug).map((c) => ({ id: c.id, slug: c.slug ?? "", name: c.name }));
   const slugOf = new Map(rows.map((r) => [r.id, r.slug]));
   const categories = all
@@ -107,6 +121,11 @@ async function loadChoices(brandId: string): Promise<ChoiceRow[]> {
         .range(from, to),
     { label: "web.brand_choice" },
   ) as Promise<ChoiceRow[]>;
+}
+
+/** The signed-in person (a stance answer withdraws only their own earlier answer). */
+export async function sessionPersonId(): Promise<string> {
+  return signedInPersonId(supabase);
 }
 
 const PLACEMENT_OF: Record<string, Placement> = { declined: "not_us", parked: "not_sure" };
@@ -188,7 +207,7 @@ export async function answerAudience(
   row: string,
   name: string,
   action: Placement | "retract" | null,
-  origin: "said" | "ai",
+  origin: "said" | "team",
 ): Promise<{ category_id: string; choice_id: string }> {
   const db = await authenticatedWebDb(supabase);
   const { data, error } = await db.rpc("brand_audience_answer", {

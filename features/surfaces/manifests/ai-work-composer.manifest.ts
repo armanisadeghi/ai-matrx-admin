@@ -67,11 +67,33 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "request_text",
     label: "Request text",
     description:
-      "The prose the user wrote describing what they want done — the text sent as the run's user input. Empty until they type something; the Run button is disabled while it is empty.",
+      "The prose the user wrote describing what they want done — the text sent as the run's user input. Always supplied; an empty string until they type something (Run stays disabled while it is empty).",
     valueType: "string",
-    alwaysAvailable: false,
+    alwaysAvailable: true,
     typicalCharCount: 900,
     sortOrder: 100,
+    group: "the_request",
+  },
+  {
+    name: "can_run",
+    label: "Can run",
+    description:
+      "True when the Run button is enabled: the request has text and the chosen destination can take it right now. Always supplied.",
+    valueType: "boolean",
+    alwaysAvailable: true,
+    typicalCharCount: 5,
+    sortOrder: 105,
+    group: "the_request",
+  },
+  {
+    name: "run_status",
+    label: "Run status",
+    description:
+      "What Run is doing right now, in the words the page shows (a start can take tens of seconds). Absent when nothing is starting.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 60,
+    sortOrder: 106,
     group: "the_request",
   },
   {
@@ -102,7 +124,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "destination_id",
     label: "Destination",
     description:
-      'Where the run will execute: "ai-matrx" (the platform) or "claude-code" (the user\'s own Claude Code on their Mac, via Matrx Local). Always populated — defaults to "ai-matrx".',
+      'Where the run will execute: "ai-matrx" (the platform), "claude-code" (the user\'s own Claude Code on their Mac), "claude-code-hosted" / "codex-hosted" (a hosted sandbox), or "computer:<name>" when it runs on one of the person\'s Matrx 2 computers. Always populated — defaults to "ai-matrx".',
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 12,
@@ -184,7 +206,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "home_targets",
     label: "Home targets",
     description:
-      "Where the finished conversation will be filed, one entry per pick as { token, id } (task, project, war_room, …). Always populated — empty array when the user chose no home. Applied as canonical association edges once the conversation row exists.",
+      "Where the finished conversation will be filed, one entry per pick as { token, id, label } (task, project, war_room, …). Always populated — empty array when the user chose no home. Applied as canonical association edges once the conversation row exists.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 200,
@@ -204,16 +226,18 @@ const surfaceSpecific: SurfaceValue[] = [
   },
 ];
 
+export const AI_WORK_COMPOSER_SURFACE_NAME = "matrx-user/ai-work-composer";
+
 export const aiWorkComposerManifest: SurfaceManifest = {
-  surfaceName: "matrx-user/ai-work-composer",
+  surfaceName: AI_WORK_COMPOSER_SURFACE_NAME,
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
     "The eight-step composer at /work/new that assembles and launches one run.",
-  readiness: "stub",
+  readiness: "partial",
   readinessNote:
-    "Vocabulary declared 2026-08-17 to close an agent-LAUNCHING page that had no surface declaration at all. Not yet audited step-by-step against the eight composer steps, and the emitter is not wired — AiWorkComposer still launches with an ad-hoc surfaceKey instead of runtime.surfaceName.",
+    "page-pass 2026-10-22: AiWorkComposer emits every value through compose/composerSurface.ts and declares its own run (ownConversationId). No write targets yet (the request box is a chat-package composer); not yet probed live.",
   label: "AI Work Composer",
   urlPattern: "/work/new",
   intro: `<surface_intro>
@@ -229,6 +253,7 @@ The user may also save this as a reusable request rather than run it — saved_r
 export interface AiWorkHomeTargetEntry {
   token: string;
   id: string;
+  label: string;
 }
 
 /** Type-safe payload helper — required keys mirror `alwaysAvailable: true`. */
@@ -238,9 +263,11 @@ export function createAiWorkComposerScope(values: {
   agent_id: string;
   skill_ids: string[];
   home_targets: AiWorkHomeTargetEntry[];
+  request_text: string;
+  can_run: boolean;
+  run_status?: string;
   selection?: string;
   context?: Record<string, unknown>;
-  request_text?: string;
   saved_request_label?: string;
   saved_request_id?: string;
   local_folder?: string;

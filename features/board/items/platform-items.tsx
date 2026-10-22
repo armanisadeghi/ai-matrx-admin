@@ -370,7 +370,6 @@ export const PLATFORM_ITEMS: readonly BoardItemType[] = [
     surface: { name: "matrx-user/schedules" },
     comments: entityComments("sch_task"),
     label: "Schedule",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "schedule",
     icon: CalendarClock,
     group: "work",
@@ -474,7 +473,6 @@ export const PLATFORM_ITEMS: readonly BoardItemType[] = [
     // A report is a view over the person's records, not a record with a thread: its door posts on the board.
     comments: null,
     label: "Report",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "report",
     icon: ChartColumn,
     group: "features",

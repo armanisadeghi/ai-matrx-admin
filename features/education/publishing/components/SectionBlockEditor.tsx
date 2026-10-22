@@ -414,7 +414,7 @@ function StatusCardItems({
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">Status</Label>
               <Select
-                value={card.status}
+                value={card.status ?? "live"}
                 onValueChange={(status) =>
                   replace(index, { status: educationStatus(status) })
                 }

@@ -180,7 +180,6 @@ export const OFFICE_ITEMS: readonly BoardItemType[] = [
     surface: { name: "matrx-user/workbooks" },
     comments: entityComments("workbook"),
     label: "Workbook",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "workbook",
     icon: Sheet,
     group: "work",
@@ -214,7 +213,6 @@ export const OFFICE_ITEMS: readonly BoardItemType[] = [
     surface: { name: "matrx-user/presentation" },
     comments: entityComments("presentation"),
     label: "Presentation",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "presentation",
     icon: Presentation,
     group: "work",

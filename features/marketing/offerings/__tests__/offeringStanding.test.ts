@@ -18,7 +18,8 @@ function chain(table: string) {
     select: () => q,
     eq: () => q,
     is: () => q,
-    limit: () => Promise.resolve(done),
+    order: () => q,
+    range: () => Promise.resolve({ ...done, count: 0 }),
     insert: (payload: unknown) => {
       calls.push({ table, op: "insert", payload });
       return Object.assign(Promise.resolve({ data: null, error: null }), {

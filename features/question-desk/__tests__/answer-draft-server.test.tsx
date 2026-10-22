@@ -12,6 +12,7 @@ import { createRoot, type Root } from "react-dom/client";
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const store = new Map<string, { state: unknown; deleted: boolean; org: string }>();
+const mockGate: { wait: Promise<void> | null } = { wait: null };
 const id = (k: { userId: string; feature: string; surfaceKey: string }) => `${k.userId}|${k.feature}|${k.surfaceKey}`;
 
 jest.mock("@/lib/surface-state/userSurfaceState", () => ({
@@ -20,6 +21,7 @@ jest.mock("@/lib/surface-state/userSurfaceState", () => ({
     return row && !row.deleted ? { state: row.state } : null;
   },
   writeSurfaceState: async (k: { userId: string; feature: string; surfaceKey: string; organizationId: string; state: unknown }) => {
+    if (mockGate.wait) await mockGate.wait; // a slow network: the upsert is still in flight
     store.set(id(k), { state: k.state, deleted: false, org: k.organizationId });
     return null;
   },
@@ -89,6 +91,35 @@ describe("answer drafts live on the server", () => {
     act(() => latest!.clear());
     await settle();
     expect(store.get(KEY)?.deleted).toBe(true);
+  });
+
+  it("a Save is never undone by a draft write still in flight (REVIEW3: the draft could come back after Save)", async () => {
+    act(() => root.render(<Harness interviewId="sit-1" questionId="q-1" />));
+    await settle();
+    let release: () => void = () => {};
+    mockGate.wait = new Promise<void>((r) => {
+      release = r;
+    });
+    act(() => latest!.setText("Dana, every time."));
+    await act(async () => {
+      jest.advanceTimersByTime(ANSWER_DRAFT_DEBOUNCE_MS); // the upsert starts and waits on the network
+    });
+    await settle();
+    act(() => latest!.clear()); // the person saved the answer
+    await settle();
+    release();
+    mockGate.wait = null;
+    await settle();
+    await settle();
+    expect(store.get(KEY)?.deleted ?? true).toBe(true);
+    // A debounced write that had not fired yet is dropped too.
+    act(() => latest!.setText("typed after"));
+    act(() => latest!.clear());
+    await act(async () => {
+      jest.advanceTimersByTime(ANSWER_DRAFT_DEBOUNCE_MS);
+    });
+    await settle();
+    expect(store.get(KEY)?.deleted ?? true).toBe(true);
   });
 
   it("flushes pending words when the page is hidden, and never wipes a saved draft on load", async () => {

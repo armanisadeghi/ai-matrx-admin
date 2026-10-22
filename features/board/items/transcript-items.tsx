@@ -111,7 +111,6 @@ export const TRANSCRIPT_ITEMS: readonly BoardItemType[] = [
     surface: { name: "matrx-user/transcripts" },
     comments: entityComments("transcript"),
     label: "Transcript",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "transcript",
     icon: FileAudio,
     group: "work",

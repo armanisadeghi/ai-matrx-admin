@@ -74,7 +74,6 @@ export const AGENT_ITEMS: readonly BoardItemType[] = [
     surface: { name: "matrx-user/agent-record" },
     comments: entityComments("agent"),
     label: "Agent",
-    sleeps: true, // LOCAL-SLEEP-TEST
     kindLabel: "agent",
     icon: AGENT_ICON,
     group: "features",
