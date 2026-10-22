@@ -1,5 +1,5 @@
 import { icsContent } from "@/lib/calendar/eventLinks";
-import { parseContactSelection, looksLikeContact } from "@/features/crm/agent-context/parseContactSelection";
+import { parseContactSelection, looksLikeContact } from "@ai-matrx/chat/window-panels/windows/crm/contact-selection";
 import { eventToCalendar } from "../event-calendar";
 import { contactText } from "../answer-kind-blocks";
 

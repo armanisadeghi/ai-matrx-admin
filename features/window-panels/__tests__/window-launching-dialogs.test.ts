@@ -9,7 +9,6 @@ const coexistenceHosts = [
   "features/agents/components/builder/message-builders/system-instructions/SystemPromptOptimizer.tsx",
   "../aidream/apps/shared/chat/src/agents/components/messages-display/message-options/EditHistoryDialog.tsx",
   "features/cms/components/CmsPageAiActionDialog.tsx",
-  "features/crm/components/SaveContactFromSelectionDialog.tsx",
   "features/marketing/change-tracking/SeoChangeTrackingWorkspace.tsx",
   "features/marketing/components/pages/CaptureObservations.tsx",
   "features/marketing/seo/value-system/dimensions/MatcherEditor.tsx",

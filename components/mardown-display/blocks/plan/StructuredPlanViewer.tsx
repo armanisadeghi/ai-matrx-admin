@@ -1,6 +1,6 @@
 // StructuredPlanViewer.tsx
 import { useBlockMakeReal } from "@/features/rich-content-host/block-make-real";
-import { looksLikeContact } from "@/features/crm/agent-context/parseContactSelection";
+import { looksLikeContact } from "@ai-matrx/chat/window-panels/windows/crm/contact-selection";
 import { NotebookPen, Contact } from "lucide-react";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
