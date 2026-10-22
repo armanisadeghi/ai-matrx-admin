@@ -388,8 +388,9 @@ function VersionHistory({ target, disabled, onRestored }: { target: ShellLayoutT
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 p-1">
-        {error ? <p className="type-secondary p-2 text-destructive">{error}</p> : null}
+        {error ? <p className="type-secondary p-2 text-destructive">History could not be read: {error}</p> : null}
         {!entries && !error ? <RegionSkeleton /> : null}
+        {entries && entries.length === 0 ? <p className="type-secondary p-2 text-muted-foreground">No saved versions yet</p> : null}
         <ul className="max-h-80 overflow-y-auto">
           {(entries ?? []).map((entry, i) => (
             <li key={entry.version} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-accent">

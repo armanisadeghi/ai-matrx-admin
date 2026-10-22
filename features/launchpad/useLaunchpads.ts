@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import { listAppRows, removeAppRow, upsertAppRow, useRecordsClient, useTypedTable, type RecordHistoryEntry } from "@ai-matrx/records/react";
 import { readVersionNow } from "@ai-matrx/records/versions";
+import { clientInOrganization } from "@/lib/records/clientInOrganization";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";
@@ -193,8 +194,14 @@ export async function setActiveVersion(
 }
 
 /** One launchpad's versions: list, preview in place, and "Set active". */
-export function useLaunchpadHistory(recordId: string | null, open: boolean, save: (doc: LaunchpadDoc, note: string) => Promise<SaveResult>) {
-  const client = useRecordsClient();
+export function useLaunchpadHistory(
+  row: { recordId: string; organizationId: string } | null,
+  open: boolean,
+  save: (doc: LaunchpadDoc, note: string) => Promise<SaveResult>,
+) {
+  // By-id reads go through the ROW's organization: under another one the store answers an empty history.
+  const client = clientInOrganization(useRecordsClient(), row?.organizationId);
+  const recordId = row?.recordId ?? null;
   const [entries, setEntries] = useState<RecordHistoryEntry[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [revision, setRevision] = useState(0);

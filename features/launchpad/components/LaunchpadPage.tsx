@@ -110,7 +110,7 @@ function LaunchpadBody({
   const [lastTouched, setLastTouched] = useState<string | null>(null);
   const save = (doc: LaunchpadDoc, note: string, opts: { byAgent?: boolean } = {}) =>
     pads.save({ key: launchpadKey, title, doc, ...(entry ? { owner: entry.owner } : {}) }, note, opts);
-  const history = useLaunchpadHistory(entry?.recordId ?? null, panel?.kind === "history", (doc, note) => save(doc, note));
+  const history = useLaunchpadHistory(entry ? { recordId: entry.recordId, organizationId: entry.organizationId } : null, panel?.kind === "history", (doc, note) => save(doc, note));
   const openRun = useOpenAgentRunWindow();
   const editing = draft !== null;
   const agent = useLaunchpadAgentTools(LAUNCHPAD_SURFACE_NAME, {
