@@ -62,6 +62,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 import { pageValuesOnly } from "./lib/surface-page-values";
+import { surfaceOwner } from "./lib/surface-ownership";
 
 const ROOT = resolve(__dirname, "..");
 
@@ -194,6 +195,7 @@ interface DbSurface {
   name: string;
   is_active: boolean;
   parent_surface_name: string | null;
+  declared_by: string | null;
 }
 interface DbValue {
   surface_name: string;
@@ -353,7 +355,7 @@ async function main() {
       env,
       "ui",
       "ui_surface",
-      "id,name,is_active,parent_surface_name",
+      "id,name,is_active,parent_surface_name,declared_by",
     ),
     readAll<DbValue>(
       env,
@@ -754,10 +756,12 @@ async function main() {
   }
 
   // 5) surfaces alive in the DB with no declaring owner (CONTRACT §2.1a):
-  //    no manifest here AND no server-side JSON declaration in aidream.
+  //    no manifest here, no server-side JSON declaration in aidream, and not
+  //    database-declared (plan D1: an applet/person/org surface is owned by its
+  //    DB authoring path, ui.save_applet_surface / save_surface_extension).
   const serverDeclared = loadServerDeclarationNames();
   for (const s of surfaces) {
-    if (!s.is_active || codeBySurface.has(s.name) || serverDeclared.has(s.name)) continue;
+    if (!s.is_active || surfaceOwner(s, codeBySurface, serverDeclared) !== null) continue;
     const boundHere = assocs.filter((a) => a.target_id === s.id).length;
     const valueCount = dbValuesBySurface.get(s.name)?.size ?? 0;
     if (boundHere > 0 || valueCount > 0) {
