@@ -45,16 +45,19 @@ import {
 } from "./geometry";
 import type { FrameInitialGeometry } from "./geometry";
 import { useModalPanel } from "./useModalPanel";
+import { BIG_ITEM_IDS } from "./products";
 import type {
   CanvasProps,
   CompanionProps,
   CompanionSeed,
   FrameAction,
+  FrameBigItems,
   FrameCrumb,
   FrameForm,
   FrameHeaderTool,
   FrameMenuItem,
   FrameModuleLoader,
+  FramePin,
   FrameProduct,
   FrameTab,
   FrameVariant,
@@ -159,6 +162,11 @@ export interface AppFrameProps {
   onFavoritesChange: (ids: string[]) => void;
   activeMenuItemId?: string;
   onSelectMenuItem?: (item: FrameMenuItem) => void;
+  /** Pinned: the person's own pages. Omit to hide the section; `[]` shows the empty hint. */
+  pins?: readonly FramePin[];
+  onSelectPin?: (pin: FramePin) => void;
+  /** The big products always in the sidebar: `off`, `top` or `bottom`. Default `bottom`. */
+  bigItems?: FrameBigItems;
   // ── the header ──
   crumbs: readonly FrameCrumb[];
   /** Only when the item can be favorited. */
@@ -433,6 +441,12 @@ export function AppFrame(props: AppFrameProps) {
   const canvasMounted = useLatched(canvasOpen);
 
   const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
+  const sidebarExtras = {
+    pins: props.pins,
+    onSelectPin: props.onSelectPin,
+    bigItems: props.bigItems ?? "bottom",
+    bigProducts: BIG_ITEM_IDS.flatMap((id) => products.filter((p) => p.id === id)),
+  };
   const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };
 
   const drawer = useModalPanel({
@@ -614,6 +628,7 @@ export function AppFrame(props: AppFrameProps) {
                   onHide={() => setSidebarOpen(false)}
                   hideLabel="Hide sidebar"
                   footer={sidebarFooter}
+                  {...sidebarExtras}
                 />
               </div>
             </div>
@@ -839,6 +854,7 @@ export function AppFrame(props: AppFrameProps) {
                 onHide={closeDrawer}
                 hideLabel="Close menu"
                 footer={sidebarFooter}
+                {...sidebarExtras}
               />
             </div>
           </div>
