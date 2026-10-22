@@ -6,7 +6,12 @@
  * writes through.
  */
 
-export const SURFACE_PROBE_VERSION = "surface-probe@2026-10-22.w0d";
+export const SURFACE_PROBE_VERSION = "surface-probe@2026-10-22.w5b";
+/**
+ * Longest value text kept in `last_check.values`. The page shows each value as one preview
+ * line (already ≤140 chars); the cap keeps a stray long read from bloating the system row.
+ */
+export const PROBE_VALUE_MAX_CHARS = 300;
 /** The sanctioned test identity. A probe signed in as anyone else is never recorded. */
 export const PROBE_IDENTITY = "admin@admin.com";
 
@@ -19,6 +24,8 @@ export interface ProbeRecordInput {
   suppliedEmpty: string[];
   /** A deployment without keyed rows: label + preview line per row ("Not available" = absent). */
   byLabel?: { label: string; line: string }[];
+  /** The page's preview line per supplied key, as the values window showed it. */
+  values?: Record<string, string>;
   surfaceNamed: boolean;
   signedIn: boolean;
   probedAs: { email: string | null; userId: string | null; role: string };
@@ -51,6 +58,12 @@ export interface LastCheckProbe {
   conditional: string[];
   suppliedValues: string[];
   suppliedEmpty: string[];
+  /**
+   * What the page showed for each supplied value (admin test account only — the recorder
+   * refuses any other identity), each cut to PROBE_VALUE_MAX_CHARS. The admin page fills
+   * the rendered situation's blanks from these.
+   */
+  values: Record<string, string>;
   readMode: "keys" | "labels";
   unmappedLabels: string[];
   missing: string[];
@@ -77,6 +90,7 @@ export function judgeProbe(input: ProbeRecordInput, allValues: ChainValue[], at:
   const fromLabels: string[] = [];
   const emptyFromLabels: string[] = [];
   const unmappedLabels: string[] = [];
+  const labelValues: Record<string, string> = {};
   const byLabel = input.byLabel ?? [];
   if (byLabel.length) {
     const nameByLabel = new Map<string, string>();
@@ -89,7 +103,10 @@ export function judgeProbe(input: ProbeRecordInput, allValues: ChainValue[], at:
       const name = nameByLabel.get(row.label.trim().toLowerCase());
       if (!name) unmappedLabels.push(row.label);
       else if (row.line === "Empty") emptyFromLabels.push(name);
-      else fromLabels.push(name);
+      else {
+        fromLabels.push(name);
+        labelValues[name] = row.line;
+      }
     }
   }
   const emptyAll = [...input.suppliedEmpty, ...emptyFromLabels];
@@ -97,6 +114,13 @@ export function judgeProbe(input: ProbeRecordInput, allValues: ChainValue[], at:
     ? [...new Set([...input.supplied, ...fromLabels, ...emptyAll])]
     : [];
   const supplied = new Set(suppliedRaw);
+  const values: Record<string, string> = {};
+  if (input.surfaceNamed) {
+    for (const [name, text] of Object.entries({ ...labelValues, ...(input.values ?? {}) })) {
+      if (!supplied.has(name) || typeof text !== "string" || !text) continue;
+      values[name] = text.length > PROBE_VALUE_MAX_CHARS ? `${text.slice(0, PROBE_VALUE_MAX_CHARS - 1)}…` : text;
+    }
+  }
   const missing = required.filter((n) => !supplied.has(n));
   const conditionalMissing = conditional.filter((n) => !supplied.has(n));
   if (missing.length) reasons.push(`${missing.length} always-available value(s) not supplied`);
@@ -112,6 +136,7 @@ export function judgeProbe(input: ProbeRecordInput, allValues: ChainValue[], at:
     conditional,
     suppliedValues: suppliedRaw.sort(),
     suppliedEmpty: input.surfaceNamed ? [...new Set(emptyAll)].sort() : [],
+    values,
     readMode: byLabel.length ? "labels" : "keys",
     unmappedLabels,
     missing,

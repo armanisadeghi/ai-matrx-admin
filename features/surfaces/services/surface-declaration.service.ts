@@ -8,6 +8,7 @@
  */
 import { createClient } from "@/utils/supabase/client";
 import { readAllRows } from "@ai-matrx/data/db";
+import type { Database } from "@/types/database.types";
 import type { SurfaceFleetMetric, SurfaceFleetMetricRow } from "@/features/surfaces/services/surface-fleet-metric";
 import { handledTargetCount } from "@/features/surfaces/services/surface-fleet-metric";
 
@@ -84,20 +85,6 @@ export interface DeclaredItemType {
   entity_type: string | null;
 }
 
-export interface SurfaceBindingRow {
-  id: string | null;
-  agent_id: string | null;
-  agent_name: string | null;
-  agent_is_active: boolean | null;
-  surface_name: string | null;
-  user_id: string | null;
-  organization_id: string | null;
-  project_id: string | null;
-  task_id: string | null;
-  auto_run: boolean | null;
-  value_mappings: unknown;
-}
-
 export interface SurfaceRoleRow {
   surface_name: string;
   name: string;
@@ -116,26 +103,39 @@ export interface RunSupplyRow {
   refreshed_at: string | null;
 }
 
-/** Root-first ancestors, then the surface itself last. Stops on a cycle or the depth cap. */
+/**
+ * Root-first ancestors, then the surface itself last.
+ *
+ * Two reads, whatever the depth: the precomputed chain (`ui.mv_surface_chain`, W4 —
+ * re-rolled by triggers whenever a name, parent or deleted state changes) names the
+ * ancestors, then one `ui_surface` read fetches them all. The old walk sent one request
+ * per level in sequence, so a single PostgREST stall on any level held the whole page
+ * past the 12-second read deadline.
+ */
 export async function loadSurfaceChain(surfaceName: string): Promise<ChainSurface[]> {
-  // `situation_override` is newer than the generated Database types.
-  const ui = createClient().schema("ui") as unknown as UntypedSingle<ChainSurface>;
+  const ui = createClient().schema("ui");
+  const { data: links, error: chainError } = await ui
+    .from("mv_surface_chain")
+    .select("ancestor_name, depth")
+    .eq("surface_name", surfaceName)
+    .order("depth", { ascending: true })
+    .limit(MAX_CHAIN);
+  if (chainError) throw new Error(`ui.mv_surface_chain ${surfaceName}: ${chainError.message}`);
+  const names = (links ?? []).map((l) => l.ancestor_name).filter((n): n is string => Boolean(n));
+  if (!names.includes(surfaceName)) names.unshift(surfaceName);
+  const { data: rows, error } = await ui
+    .from("ui_surface")
+    .select(
+      "name, label, parent_surface_name, declared_by, intro, intro_override, situation, situation_override",
+    )
+    .in("name", names);
+  if (error) throw new Error(`ui.ui_surface chain of ${surfaceName}: ${error.message}`);
+  const byName = new Map((rows ?? []).map((r) => [r.name, r]));
+  // depth 0 is the surface itself; root-first means deepest ancestor first.
   const chain: ChainSurface[] = [];
-  const seen = new Set<string>();
-  let next: string | null = surfaceName;
-  while (next && !seen.has(next) && chain.length < MAX_CHAIN) {
-    seen.add(next);
-    const { data, error }: { data: ChainSurface | null; error: { message: string } | null } = await ui
-      .from("ui_surface")
-      .select(
-        "name, label, parent_surface_name, declared_by, intro, intro_override, situation, situation_override",
-      )
-      .eq("name", next)
-      .maybeSingle();
-    if (error) throw new Error(`ui.ui_surface ${next}: ${error.message}`);
-    if (!data) break;
-    chain.unshift(data);
-    next = data.parent_surface_name;
+  for (const n of names) {
+    const row = byName.get(n);
+    if (row) chain.unshift(row);
   }
   return chain;
 }
@@ -221,46 +221,43 @@ export async function loadDeclaration(surfaceNames: string[]): Promise<SurfaceDe
   return { values, writeTargets, clientTools, actions, itemTypes };
 }
 
+export type IntelligenceRow = Database["ui"]["Functions"]["surface_intelligence"]["Returns"][number];
+
 /**
- * Agent bindings on the surface and its ancestors (the `agent.menu_surface` view over
- * `platform.associations`) plus the fixed jobs (agent roles). The W4 resolved-binding view
- * does not exist yet; this is the direct read over the same chain.
+ * Everything bound to the surface or any ancestor — agent bindings (`agent.menu_surface`) and
+ * mandate shortcuts (`mandate.vw_shortcut`) — through the W4 read `ui.surface_intelligence`,
+ * which runs as the caller and tags each row with `group_level` (page / module / ai_matrx)
+ * and `scope` (person / organization / system). One read; ordered page→module→ai_matrx,
+ * then person→organization→system.
  */
-export async function loadChainBindings(
-  surfaceNames: string[],
-): Promise<{ bindings: SurfaceBindingRow[]; roles: SurfaceRoleRow[] }> {
+export async function loadSurfaceIntelligence(surfaceName: string): Promise<IntelligenceRow[]> {
+  const { data, error } = await createClient()
+    .schema("ui")
+    .rpc("surface_intelligence", { p_surface_name: surfaceName });
+  if (error) throw new Error(`ui.surface_intelligence: ${error.message}`);
+  return data ?? [];
+}
+
+/**
+ * The fixed jobs (agent roles) declared on the surface and its ancestors. Role slots are not
+ * menu bindings (W4 census), so they stay a direct read over the chain.
+ */
+export async function loadChainRoles(surfaceNames: string[]): Promise<SurfaceRoleRow[]> {
   const supabase = createClient();
-  const [b, r] = await Promise.all([
-    readAllRows<SurfaceBindingRow>(
-      ({ from, to }) =>
-        supabase
-          .schema("agent")
-          .from("menu_surface")
-          .select(
-            "id, agent_id, agent_name, agent_is_active, surface_name, user_id, organization_id, project_id, task_id, auto_run, value_mappings",
-            { count: "exact" },
-          )
-          .in("surface_name", surfaceNames)
-          .order("created_at", { ascending: true })
-          .range(from, to),
-      { label: "agent.menu_surface" },
-    ),
-    readAllRows<SurfaceRoleRow>(
-      ({ from, to }) =>
-        supabase
-          .schema("ui")
-          .from("ui_surface_agent_role")
-          .select("surface_name, name, label, kind, mandate_key, default_agent_id, auto_run", {
-            count: "exact",
-          })
-          .in("surface_name", surfaceNames)
-          .is("deleted_at", null)
-          .order("sort_order", { ascending: true })
-          .range(from, to),
-      { label: "ui.ui_surface_agent_role" },
-    ),
-  ]);
-  return { bindings: b, roles: r };
+  return readAllRows<SurfaceRoleRow>(
+    ({ from, to }) =>
+      supabase
+        .schema("ui")
+        .from("ui_surface_agent_role")
+        .select("surface_name, name, label, kind, mandate_key, default_agent_id, auto_run", {
+          count: "exact",
+        })
+        .in("surface_name", surfaceNames)
+        .is("deleted_at", null)
+        .order("sort_order", { ascending: true })
+        .range(from, to),
+    { label: "ui.ui_surface_agent_role" },
+  );
 }
 
 // The view and rollup are newer than the generated Database types.

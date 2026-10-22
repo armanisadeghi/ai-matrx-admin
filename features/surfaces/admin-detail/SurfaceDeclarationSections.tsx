@@ -11,9 +11,9 @@
  *   blanks filled from the latest probe (the editors stay in AgentIntroSection);
  * - the latest probe record (`last_check`) and the derived readiness with its rule;
  * - 30-day run supply (`ui.mv_surface_run_supply`);
- * - bindings and fixed jobs on the surface and every ancestor. The W4 resolved-binding view
- *   does not exist yet, so this reads `agent.menu_surface` + `ui.ui_surface_agent_role`
- *   directly over the same chain.
+ * - everything bound over the chain through the W4 read `ui.surface_intelligence` (agent
+ *   bindings + mandate shortcuts, grouped by level and scope), plus the fixed jobs
+ *   (`ui.ui_surface_agent_role`, role slots — not menu bindings) read directly.
  *
  * No key is rendered: every value, target, tool and surface shows its label
  * (`pnpm check:surface-chrome-labels` scans this file).
@@ -23,7 +23,7 @@ import React, { useEffect, useState } from "react";
 import { ChevronRight, ExternalLink, Loader2 } from "lucide-react";
 import AppLink from "@/components/navigation/AppLink";
 import { Badge } from "@/components/ui/badge";
-import { InfoHint, PropertyRow } from "@ai-matrx/design-system/controls";
+import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { RecordId } from "@ai-matrx/design-system";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
@@ -32,18 +32,19 @@ import { labelFromName } from "@ai-matrx/chat/surfaces/utils/surface-display";
 import { surfaceAdminHref } from "@ai-matrx/chat/surfaces/utils/surface-hierarchy";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import {
-  loadChainBindings,
+  loadChainRoles,
   loadDeclaration,
   loadRunSupply,
   loadSurfaceChain,
   loadSurfaceFleetMetric,
+  loadSurfaceIntelligence,
   type ChainSurface,
   type DeclaredAction,
   type DeclaredClientTool,
   type DeclaredValue,
   type DeclaredWriteTarget,
+  type IntelligenceRow,
   type RunSupplyRow,
-  type SurfaceBindingRow,
   type SurfaceDeclarationData,
   type SurfaceRoleRow,
 } from "@/features/surfaces/services/surface-declaration.service";
@@ -59,6 +60,7 @@ import {
 } from "@/features/surfaces/utils/fleet-readiness";
 import { parseProbeRecord, probeUrl, type SurfaceProbeRecord } from "@/features/surfaces/utils/probe-record";
 import { probePreviewValues, renderSituation } from "@/features/surfaces/utils/situation-render";
+import { splitRunSupplyKeys } from "@/features/surfaces/utils/run-supply-keys";
 
 const ROOT_SURFACE = "matrx-default/default";
 
@@ -95,7 +97,7 @@ function effective(override: string | null, code: string | null): string | null 
 interface Loaded {
   chain: ChainSurface[];
   declaration: SurfaceDeclarationData;
-  bindings: SurfaceBindingRow[];
+  intelligence: IntelligenceRow[];
   roles: SurfaceRoleRow[];
   metric: SurfaceFleetMetric | null;
   supply: RunSupplyRow | null;
@@ -112,13 +114,14 @@ function useSurfaceDeclaration(surfaceName: string, reloadKey: unknown) {
       try {
         const chain = await loadSurfaceChain(surfaceName);
         const names = chain.map((c) => c.name);
-        const [declaration, b, metric, supply] = await Promise.all([
+        const [declaration, intelligence, roles, metric, supply] = await Promise.all([
           loadDeclaration(names),
-          loadChainBindings(names),
+          loadSurfaceIntelligence(surfaceName),
+          loadChainRoles(names),
           loadSurfaceFleetMetric(surfaceName),
           loadRunSupply(surfaceName),
         ]);
-        if (alive) setData({ chain, declaration, bindings: b.bindings, roles: b.roles, metric, supply });
+        if (alive) setData({ chain, declaration, intelligence, roles, metric, supply });
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : "Surface declaration not loaded");
       }
@@ -235,9 +238,9 @@ export function SurfaceDeclarationSections({
       <SituationChainSection chain={chain} self={surface.name} probe={probe} labels={labels} />
       {editors}
       <ProbeSection probe={probe} metric={data.metric} labels={labels} />
-      <RunSupplySection supply={data.supply} metric={data.metric} labels={labels} />
+      <RunSupplySection supply={data.supply} metric={data.metric} labels={labels} chain={chain} />
       <DeclarationSection surface={surface} chain={chain} declaration={data.declaration} labels={labels} />
-      <BindingsSection chain={chain} self={surface.name} bindings={data.bindings} roles={data.roles} />
+      <BindingsSection chain={chain} self={surface.name} intelligence={data.intelligence} roles={data.roles} />
     </div>
   );
 }
@@ -432,11 +435,17 @@ function RunSupplySection({
   supply,
   metric,
   labels,
+  chain,
 }: {
   supply: RunSupplyRow | null;
   metric: SurfaceFleetMetric | null;
   labels: Record<string, string>;
+  chain: ChainSurface[];
 }) {
+  // Qualified keys from screens open beside this one are not this surface's values.
+  const { own, others } = splitRunSupplyKeys(supply?.supplied_keys ?? [], chain.map((c) => c.name));
+  const otherLabel = (o: { surface: string | null; name: string }) =>
+    o.surface ? `${labelFromName(o.surface)}: ${humanizeIdentifier(o.name)}` : `Window: ${o.name}`;
   return (
     <section className="space-y-2" data-testid="surface-run-supply">
       <Heading title="Run supply, last 30 days" />
@@ -451,11 +460,20 @@ function RunSupplySection({
           />
           <Prop label="Rolled up" value={when(supply?.refreshed_at ?? metric?.supply_refreshed_at)} none="Never" />
         </div>
-        <Prop
-          label={`Values seen (${supply?.supplied_keys.length ?? 0})`}
-          value={supply?.supplied_keys.length ? labelList(supply.supplied_keys, labels) : null}
-          none="None"
-        />
+        <div className="space-y-3">
+          <Prop
+            label={`Values seen (${own.length})`}
+            value={own.length ? labelList(own.map((o) => o.name), labels) : null}
+            none="None"
+          />
+          {others.length > 0 && (
+            <Prop
+              label={`From other open screens (${others.length})`}
+              help="Values from screens open beside this one during a run"
+              value={others.map(otherLabel).join(", ")}
+            />
+          )}
+        </div>
       </div>
     </section>
   );
@@ -649,60 +667,84 @@ function DeclarationSection({
 
 // ─── Bindings ───────────────────────────────────────────────────────────────
 
-function scopeOf(b: SurfaceBindingRow): string {
-  if (b.task_id) return "Task";
-  if (b.project_id) return "Project";
-  if (b.user_id) return "Person";
-  if (b.organization_id) return "Organization";
-  return "Everyone";
-}
+const LEVEL_LABEL: Record<string, string> = { page: "This page", module: "Module", ai_matrx: "AI Matrx" };
+const SCOPE_LABEL: Record<string, string> = { person: "Person", organization: "Organization", system: "System" };
 
 function BindingsSection({
   chain,
   self,
-  bindings,
+  intelligence,
   roles,
 }: {
   chain: ChainSurface[];
   self: string;
-  bindings: SurfaceBindingRow[];
+  intelligence: IntelligenceRow[];
   roles: SurfaceRoleRow[];
 }) {
   const byName = new Map(chain.map((c) => [c.name, c]));
   const onLabel = (n: string | null) =>
-    !n ? "—" : n === self ? "This page" : surfaceLabel(byName.get(n) ?? { name: n, label: null });
+    !n ? "—" : n === self ? "This page" : n === "*" ? "Every page" : surfaceLabel(byName.get(n) ?? { name: n, label: null });
 
-  const bindingCols: MatrxColumnDef<SurfaceBindingRow>[] = [
+  const bindingCols: MatrxColumnDef<IntelligenceRow>[] = [
     {
-      id: "agent",
-      header: "Agent",
-      accessorFn: (b) => b.agent_name ?? "Unnamed agent",
+      id: "level",
+      header: "Level",
+      accessorFn: (b) => LEVEL_LABEL[b.group_level] ?? humanizeIdentifier(b.group_level),
+      filter: "select",
+      width: 110,
+    },
+    {
+      id: "scope",
+      header: "Scope",
+      accessorFn: (b) => SCOPE_LABEL[b.scope] ?? humanizeIdentifier(b.scope),
+      filter: "select",
+      width: 120,
+    },
+    {
+      id: "name",
+      header: "Name",
+      accessorFn: (b) => b.label || "Unnamed",
       width: 240,
       cell: (b) =>
-        b.agent_id ? (
+        b.source === "agent_binding" && b.agent_id ? (
           <AppLink
-            href={`/agents/go/${b.agent_id}/surfaces?surface=${encodeURIComponent(b.surface_name ?? self)}`}
+            href={`/agents/go/${b.agent_id}/surfaces?surface=${encodeURIComponent(b.bound_surface ?? self)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-foreground hover:text-primary hover:underline"
           >
-            <span className="truncate">{b.agent_name ?? "Unnamed agent"}</span>
+            <span className="truncate">{b.label || "Unnamed agent"}</span>
             <ExternalLink className="h-3 w-3 shrink-0" />
           </AppLink>
+        ) : b.mandate_id ? (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="truncate">{b.label || "Unnamed shortcut"}</span>
+            <RecordId value={b.mandate_id} label="Mandate" token="mandate" />
+          </span>
         ) : (
-          <span>{b.agent_name ?? "Unnamed agent"}</span>
+          <span>{b.label || "Unnamed"}</span>
         ),
     },
-    { id: "scope", header: "Scope", accessorFn: scopeOf, filter: "select", width: 120 },
-    { id: "autoRun", header: "Auto-run", accessorFn: (b) => yesNo(b.auto_run), filter: "select", width: 100 },
-    { id: "active", header: "Agent active", accessorFn: (b) => yesNo(b.agent_is_active), filter: "select", width: 110 },
     {
-      id: "declaredOn",
+      id: "kind",
+      header: "Kind",
+      accessorFn: (b) => (b.source === "agent_binding" ? "Agent" : "Shortcut"),
+      filter: "select",
+      width: 100,
+    },
+    { id: "autoRun", header: "Auto-run", accessorFn: (b) => yesNo(b.auto_run), filter: "select", width: 100 },
+    {
+      id: "boundOn",
       header: "Bound on",
-      accessorFn: (b) => onLabel(b.surface_name),
+      accessorFn: (b) => onLabel(b.bound_surface),
       filter: "select",
       width: 160,
-      cell: (b) => (b.surface_name ? <DeclaredOn surfaceName={b.surface_name} chain={chain} self={self} /> : "—"),
+      cell: (b) =>
+        b.bound_surface && byName.has(b.bound_surface) ? (
+          <DeclaredOn surfaceName={b.bound_surface} chain={chain} self={self} />
+        ) : (
+          onLabel(b.bound_surface)
+        ),
     },
   ];
 
@@ -730,20 +772,19 @@ function BindingsSection({
 
   return (
     <section className="space-y-3" data-testid="surface-bindings">
-      <Heading title="Bindings">
-        <InfoHint text="Direct reads over the chain; the resolved binding view is not built yet." label="About bindings" />
-      </Heading>
+      <Heading title="Bindings" />
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-          Agents bound
-          <Badge variant="outline" className="text-[10px] tabular-nums">{bindings.length}</Badge>
+          Intelligence on this page
+          <Badge variant="outline" className="text-[10px] tabular-nums">{intelligence.length}</Badge>
         </div>
-        <MatrxDataTable<SurfaceBindingRow>
-          tableId="surface-admin-chain-bindings"
-          data={bindings}
+        <MatrxDataTable<IntelligenceRow>
+          tableId="surface-admin-chain-intelligence"
+          data={intelligence}
           columns={bindingCols}
-          getRowId={(b) => b.id ?? `${b.agent_id}|${b.surface_name}|${scopeOf(b)}`}
-          emptyState={{ title: "No agents bound here or above" }}
+          getRowId={(b) => `${b.source}|${b.binding_id}`}
+          grouping={{ columnId: "level", thenColumnIds: ["scope"], order: "first-seen", rowNoun: "binding" }}
+          emptyState={{ title: "Nothing bound here or above" }}
           detail={{ enabled: false }}
         />
       </div>

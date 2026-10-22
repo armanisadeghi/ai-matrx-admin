@@ -262,6 +262,13 @@ async function readProbe(page) {
           li.getAttribute("data-value-state"),
         ]),
       );
+      // The row's preview line (its title holds the whole line) is the value as shown.
+      const values = {};
+      for (const li of list.querySelectorAll('li[data-value-state="supplied"]')) {
+        const line = li.querySelector("span[title]");
+        const text = (line?.getAttribute("title") || line?.textContent || "").trim();
+        if (text) values[li.getAttribute("data-value-key")] = text;
+      }
       const supplied = [];
       const suppliedEmpty = [];
       const absent = [];
@@ -278,6 +285,7 @@ async function readProbe(page) {
         suppliedEmpty,
         absent,
         undeclared,
+        values,
       };
     }
     // A deployment built before the keyed list (data-declared-keys landed
@@ -822,6 +830,7 @@ if (opts.record && results[0]) {
     supplied: read.supplied ?? [],
     suppliedEmpty: read.suppliedEmpty ?? [],
     byLabel: read.byLabel ?? [],
+    values: read.values ?? {},
     surfaceNamed: Boolean(first.surfaceNamed),
     signedIn: Boolean(first.signedIn),
     probedAs: { email: probedAs?.email ?? null, userId: probedAs?.user_id ?? null, role: "admin" },
