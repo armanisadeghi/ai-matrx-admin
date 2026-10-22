@@ -448,12 +448,10 @@ export function buildAssessmentListConfig(input: {
     prefsDefaults: { sort: "updated", direction: "desc" },
     getRowId: (row) => row.id,
     getRowName: (row) => row.title,
-    // Twins on screen (same title) are told apart by what differs most
-    // visibly — their question count — beside the shell's creation date. The
-    // note appears only when two visible rows share a name.
-    lookalike: {
-      detail: (row) => `${row.question_count} ${row.question_count === 1 ? "question" : "questions"}`,
-    },
+    // Twins on screen (same title) are told apart by their creation moment
+    // (the shell escalates to the minute when it must). No `detail`: the
+    // question count it used to add is already the Questions column and the
+    // phone card's facts line (one fact, once — page-pass 2026-10-22).
     getRowEntity: (row) => ({
       type: "assessment",
       id: row.id,

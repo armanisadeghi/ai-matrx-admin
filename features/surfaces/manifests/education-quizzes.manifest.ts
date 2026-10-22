@@ -6,7 +6,7 @@
  */
 
 import type { SurfaceManifest } from "@ai-matrx/chat/surfaces/types";
-import { buildAssessmentListManifest } from "./_assessment-list.manifest";
+import { buildAssessmentListManifest, createAssessmentListScope } from "./_assessment-list.manifest";
 
 export const educationQuizzesManifest: SurfaceManifest = buildAssessmentListManifest({
   surfaceName: "matrx-user/education-quizzes",
@@ -19,3 +19,7 @@ export const educationQuizzesManifest: SurfaceManifest = buildAssessmentListMani
   timed: false,
   urlPattern: "/education/quizzes",
 });
+
+/** This page's scope builder — the shared list payload, named per surface so
+ * `pnpm surface:census` sees which page emits it (assessmentListSurface.ts). */
+export const createEducationQuizzesScope = createAssessmentListScope;

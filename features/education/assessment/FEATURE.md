@@ -34,3 +34,7 @@ Data (`migrations/edu_assessment_tables.sql`, RLS via `iam.apply_rls`): `educati
 ## Open
 
 - Rubric-aware written-response grading (rubric is the expected answer today); live streaming question preview during generation; spoken-answer capture on questions (reuse `gradeSpoken`).
+
+## Change Log
+
+- page-pass 2026-10-22: type list, posture dense after Linear, fixed the twin-row note repeating the question count (already the Questions column and the phone facts line) and each list now emits through its own surface builder (`createEducationQuizzesScope` / `createEducationPracticeTestsScope`), so `surface:census` sees both pages emitting.
