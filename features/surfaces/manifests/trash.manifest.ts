@@ -80,7 +80,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: TRASH_SURFACE_NAME,
   situation:
     "They are in their Trash with {trash_total|nothing} deleted items. You can restore items; nothing here deletes anything for good.",
@@ -95,9 +97,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const trashManifest = declared as SurfaceManifest;
+export const trashManifest = declared;
 
 export function createTrashScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

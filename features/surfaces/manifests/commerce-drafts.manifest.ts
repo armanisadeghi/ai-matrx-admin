@@ -133,7 +133,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_DRAFTS_SURFACE_NAME,
   situation:
     "They are reviewing AI listing drafts (page: {queue_load_status}): draft {queue_position|—} of {queue_count|0}, titled \"{draft_title|untitled}\". Unsaved edits: {has_unsaved_edits|no}. You can edit its fields or description, then approve, revise or reject it.",
@@ -149,9 +151,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const commerceDraftsManifest = declared as SurfaceManifest;
+export const commerceDraftsManifest = declared;
 
 export function createCommerceDraftsScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

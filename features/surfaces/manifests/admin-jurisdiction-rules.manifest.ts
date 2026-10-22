@@ -75,7 +75,9 @@ const ruleWriteTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const ruleDeclared: Omit<SurfaceManifest, "readiness"> = {
+const ruleDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_JURISDICTION_RULE_SURFACE_NAME,
   situation:
     "As an admin they are looking at one jurisdiction rule in the HR rule library ({rule_load_status|loading}). You can open a status change, with a sign-off note, for them to confirm.",
@@ -92,8 +94,7 @@ const ruleDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-/** No typed `readiness` (D2: earned, never typed); the installed type still requires the key. */
-export const adminJurisdictionRuleManifest = ruleDeclared as SurfaceManifest;
+export const adminJurisdictionRuleManifest = ruleDeclared;
 
 // ── The verification board ─────────────────────────────────────────────────
 
@@ -121,7 +122,9 @@ const boardValues: SurfaceValue[] = [
   ),
 ];
 
-const boardDeclared: Omit<SurfaceManifest, "readiness"> = {
+const boardDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_JURISDICTION_VERIFICATION_SURFACE_NAME,
   situation:
     "As an admin they are on the jurisdiction rule verification board ({board_load_status|loading}): the JUR-SEED tasks and the rules past their verification date. Rules are verified on their own pages.",
@@ -137,4 +140,4 @@ const boardDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-export const adminJurisdictionVerificationManifest = boardDeclared as SurfaceManifest;
+export const adminJurisdictionVerificationManifest = boardDeclared;

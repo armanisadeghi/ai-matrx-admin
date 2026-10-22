@@ -81,7 +81,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_TRIAGE_SURFACE_NAME,
   situation:
     "They are triaging captured assets in the warehouse (page: {queue_load_status}): asset {queue_position|—} of {queue_count|0}, which the AI put in the {ai_bucket|no} bucket. You can decide its value bucket.",
@@ -97,9 +99,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const commerceTriageManifest = declared as SurfaceManifest;
+export const commerceTriageManifest = declared;
 
 export function createCommerceTriageScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

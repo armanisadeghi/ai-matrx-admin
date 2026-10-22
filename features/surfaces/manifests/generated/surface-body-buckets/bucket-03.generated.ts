@@ -17,3 +17,8 @@ export { adminAiUsageManifest as s276 } from "../../admin-ai-usage.manifest";
 export { adminKnowledgeManifest as s299 } from "../../admin-knowledge.manifest";
 export { adminUtilitiesManifest as s305 } from "../../admin-utilities.manifest";
 export { quickDataManifest as s307 } from "../../quick-data.manifest";
+export { hrTimesheetApprovalsManifest as s333 } from "../../hr-timesheet-approvals.manifest";
+export { commerceTriageManifest as s345 } from "../../commerce-triage.manifest";
+export { printOrderManifest as s356 } from "../../print-order.manifest";
+export { deviceConsoleManifest as s371 } from "../../device-console.manifest";
+export { adminSpendAlarmManifest as s380 } from "../../admin-spend-alarm.manifest";

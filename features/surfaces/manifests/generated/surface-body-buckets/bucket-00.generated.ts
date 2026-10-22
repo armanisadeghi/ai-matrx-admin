@@ -19,3 +19,6 @@ export { voiceChatManifest as s257 } from "../../voice-chat.manifest";
 export { adminServerLogsManifest as s274 } from "../../admin-server-logs.manifest";
 export { adminBundlesManifest as s283 } from "../../admin-bundles.manifest";
 export { adminMcpServersManifest as s286 } from "../../admin-mcp-servers.manifest";
+export { hrVerificationsManifest as s318 } from "../../hr-verifications.manifest";
+export { hrReview360Manifest as s319 } from "../../hr-review-360.manifest";
+export { hrGoalsManifest as s322 } from "../../hr-goals.manifest";

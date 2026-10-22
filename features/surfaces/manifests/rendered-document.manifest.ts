@@ -52,7 +52,9 @@ const surfaceSpecific: SurfaceValue[] = [
   v("document_organization_name", "Organization", "string", 170, "The organization it was made in.", { autoContext: true }),
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: RENDERED_DOCUMENT_SURFACE_NAME,
   situation:
     "They are reading a document made {rendered_at|at some point} in {document_organization_name|its organization}; its words are frozen and cannot be changed.",
@@ -66,9 +68,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   values: mergeBaselineValues(pickBaseline("selection"), surfaceSpecific),
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const renderedDocumentManifest = declared as SurfaceManifest;
+export const renderedDocumentManifest = declared;
 
 export function createRenderedDocumentScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

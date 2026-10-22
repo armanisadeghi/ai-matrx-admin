@@ -79,7 +79,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: NOTIFICATIONS_SURFACE_NAME,
   situation:
     "They are in their notifications inbox, {inbox_view|inbox} view, {unread_total|no} unread, {listed_count|nothing} listed. You can mark notices read, done or snoozed.",
@@ -94,9 +96,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const notificationsManifest = declared as SurfaceManifest;
+export const notificationsManifest = declared;
 
 export function createNotificationsScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

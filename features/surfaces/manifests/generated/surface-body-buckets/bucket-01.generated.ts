@@ -17,3 +17,8 @@ export { adminSyncFleetManifest as s284 } from "../../admin-sync-fleet.manifest"
 export { crmManifest as s292 } from "../../crm.manifest";
 export { crmChaseboxManifest as s297 } from "../../crm-chasebox.manifest";
 export { adminReportingManifest as s304 } from "../../admin-reporting.manifest";
+export { hrMyPayManifest as s311 } from "../../hr-my-pay.manifest";
+export { hrLeavePolicyEnrollmentManifest as s325 } from "../../hr-leave-policy-enrollment.manifest";
+export { productCaptureItemManifest as s348 } from "../../product-capture-item.manifest";
+export { printZplManifest as s358 } from "../../print-zpl.manifest";
+export { exportLibraryManifest as s372 } from "../../export-library.manifest";

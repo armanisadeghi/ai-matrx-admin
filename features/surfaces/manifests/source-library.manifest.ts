@@ -54,7 +54,9 @@ const surfaceSpecific: SurfaceValue[] = [
   v("source_library_job_count", "Jobs", "number", 180, "How many jobs this library has started (transcribe and other Actions).", { typicalCharCount: 3 }),
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: SOURCE_LIBRARY_SURFACE_NAME,
   situation: "They are looking at the source library {source_library_name|they opened} ({source_library_source|an outside source}).",
   inheritsFrom: "matrx-default/media",
@@ -67,9 +69,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   values: mergeBaselineValues(pickBaseline("selection"), surfaceSpecific),
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const sourceLibraryManifest = declared as SurfaceManifest;
+export const sourceLibraryManifest = declared;
 
 export function createSourceLibraryScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

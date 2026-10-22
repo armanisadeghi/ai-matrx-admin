@@ -18,3 +18,7 @@ export { adminEmailManifest as s269 } from "../../admin-email.manifest";
 export { adminAgentReviewItemManifest as s271 } from "../../admin-agent-review-item.manifest";
 export { crmManagerManifest as s293 } from "../../crm-manager.manifest";
 export { crmRecordManifest as s295 } from "../../crm-record.manifest";
+export { printBrandedQrManifest as s350 } from "../../print-branded-qr.manifest";
+export { myMemoryManifest as s360 } from "../../my-memory.manifest";
+export { termListsManifest as s374 } from "../../term-lists.manifest";
+export { adminQuestionDeskInterviewManifest as s387 } from "../../admin-question-desk-interview.manifest";

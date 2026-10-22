@@ -155,6 +155,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     applyPolicy: "ask",
     updatesValue: "page_body",
     patchable: true,
+    approvalComparison: "text-replacement",
     group: "space_page",
     sortOrder: 300,
   },
@@ -168,12 +169,15 @@ const writeTargets: SurfaceWriteTarget[] = [
     applyPolicy: "ask",
     updatesValue: "page_title",
     patchable: true,
+    approvalComparison: "text-replacement",
     group: "space_page",
     sortOrder: 310,
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: SPACE_PAGE_SURFACE_NAME,
   situation:
     "They have the Space page {page_title|this page} open (page: {page_load_status}); editable by them: {page_can_edit|unknown}. You can edit its content or rename it.",
@@ -189,9 +193,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const spacePageManifest = declared as SurfaceManifest;
+export const spacePageManifest = declared;
 
 export function createSpacePageScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

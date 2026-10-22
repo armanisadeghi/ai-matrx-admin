@@ -22,3 +22,7 @@ export { socialOutlierFeedManifest as s251 } from "../../social-tiles.manifest";
 export { socialAdManifest as s252 } from "../../social-tiles.manifest";
 export { socialSwipeCollectionManifest as s253 } from "../../social-tiles.manifest";
 export { adminAppletsManifest as s282 } from "../../admin-applets.manifest";
+export { hrPunchRegisterManifest as s332 } from "../../hr-punch-register.manifest";
+export { printFlashcardsManifest as s354 } from "../../print-flashcards.manifest";
+export { messengerManifest as s364 } from "../../messenger.manifest";
+export { acquisitionConsoleManifest as s375 } from "../../acquisition-console.manifest";

@@ -21,3 +21,8 @@ export { adminAgentReviewManifest as s270 } from "../../admin-agent-review.manif
 export { adminOfficialComponentsManifest as s279 } from "../../admin-official-components.manifest";
 export { shapesManifest as s291 } from "../../shapes.manifest";
 export { crmCreatePartyManifest as s294 } from "../../crm-create-party.manifest";
+export { hrLeaveQueueManifest as s308 } from "../../hr-leave-queue.manifest";
+export { hrReviewCycleManifest as s321 } from "../../hr-review-cycle.manifest";
+export { workflowRunViewDesignManifest as s335 } from "../../workflow-run-view-design.manifest";
+export { commerceIntakeManifest as s341 } from "../../commerce-intake.manifest";
+export { printCertificatesManifest as s351 } from "../../print-certificates.manifest";

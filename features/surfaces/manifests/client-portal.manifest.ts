@@ -91,7 +91,9 @@ const homeValues: SurfaceValue[] = [
   v("search_match_count", "Matches", "number", homeGroup.key, 240, "How many of her records match the search."),
 ];
 
-const homeDeclared: Omit<SurfaceManifest, "readiness"> = {
+const homeDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: CLIENT_PORTAL_SURFACE_NAME,
   situation:
     "They are a client of {business_name|a business} on its portal {portal_title|for clients} (access: {portal_access|loading}), seeing only their own records as {client_name|a visitor}. Nothing is changed from this page.",
@@ -107,8 +109,7 @@ const homeDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-/** No typed `readiness` (D2: earned, never typed); the installed type still requires the key. */
-export const clientPortalManifest = homeDeclared as SurfaceManifest;
+export const clientPortalManifest = homeDeclared;
 
 // ── /portal/c/[slug]/f/[formId] ────────────────────────────────────────────
 
@@ -140,7 +141,9 @@ const formValues: SurfaceValue[] = [
   ),
 ];
 
-const formDeclared: Omit<SurfaceManifest, "readiness"> = {
+const formDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: CLIENT_PORTAL_FORM_SURFACE_NAME,
   situation:
     "They are filling in the form {form_title|a form} on {business_name|a business}'s client portal (form: {form_state|loading}). Sending it is their own press; help them answer its questions.",
@@ -156,7 +159,7 @@ const formDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-export const clientPortalFormManifest = formDeclared as SurfaceManifest;
+export const clientPortalFormManifest = formDeclared;
 
 // ── /portal/c/[slug]/r/[recordId] ──────────────────────────────────────────
 
@@ -227,7 +230,9 @@ const recordWriteTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const recordDeclared: Omit<SurfaceManifest, "readiness"> = {
+const recordDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: CLIENT_PORTAL_RECORD_SURFACE_NAME,
   situation:
     "They are looking at {record_headline|one of their records} in {table_name|a list} on {business_name|a business}'s client portal (stage: {record_stage|none shown}). You can change the fields the portal lets them change and send the business a message; paying stays their button.",
@@ -244,4 +249,4 @@ const recordDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-export const clientPortalRecordManifest = recordDeclared as SurfaceManifest;
+export const clientPortalRecordManifest = recordDeclared;

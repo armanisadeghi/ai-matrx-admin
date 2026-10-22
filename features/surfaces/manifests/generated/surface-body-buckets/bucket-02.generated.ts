@@ -21,3 +21,12 @@ export { adminApplicationsManifest as s280 } from "../../admin-applications.mani
 export { adminLookupsManifest as s287 } from "../../admin-lookups.manifest";
 export { mandatesManifest as s288 } from "../../mandates.manifest";
 export { crmInboxManifest as s298 } from "../../crm-inbox.manifest";
+export { hrEmployeeManifest as s314 } from "../../hr-employee.manifest";
+export { hrMeManifest as s315 } from "../../hr-employee.manifest";
+export { hrRelationsCaseManifest as s317 } from "../../hr-relations-case.manifest";
+export { hrReviewWorkspaceManifest as s323 } from "../../hr-review-workspace.manifest";
+export { hrTaskInboxManifest as s326 } from "../../hr-task-inbox.manifest";
+export { workflowTriggersManifest as s338 } from "../../workflow-triggers.manifest";
+export { printQrManifest as s357 } from "../../print-qr.manifest";
+export { adminJurisdictionRuleManifest as s385 } from "../../admin-jurisdiction-rules.manifest";
+export { adminJurisdictionVerificationManifest as s386 } from "../../admin-jurisdiction-rules.manifest";

@@ -104,6 +104,7 @@ const textTarget = (
   applyPolicy: "ask",
   updatesValue: name,
   patchable: true,
+  approvalComparison: "text-replacement",
   group: "esign_envelope",
   sortOrder,
 });
@@ -150,7 +151,9 @@ export const ESIGN_WRITE_TARGETS: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ESIGN_ENVELOPE_SURFACE_NAME,
   situation:
     "They have the e-signature envelope {envelope_title|a new envelope} open ({envelope_status|draft}). On a draft you can fill in its title, subject and message and add or change recipients; only the person sends it.",
@@ -166,9 +169,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets: ESIGN_WRITE_TARGETS,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const esignEnvelopeManifest = declared as SurfaceManifest;
+export const esignEnvelopeManifest = declared;
 
 export function createEsignEnvelopeScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

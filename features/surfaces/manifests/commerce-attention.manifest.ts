@@ -77,7 +77,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_ATTENTION_SURFACE_NAME,
   situation:
     "They are on the Commerce attention queue (page: {queue_load_status}): {attention_count|no} items need a person, such as AI calls a skeptic disagreed with and high-value open questions. You can record who was right on the recall rows.",
@@ -93,9 +95,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const commerceAttentionManifest = declared as SurfaceManifest;
+export const commerceAttentionManifest = declared;
 
 export function createCommerceAttentionScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

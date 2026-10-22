@@ -54,7 +54,9 @@ const surfaceSpecific: SurfaceValue[] = [
   v("export_filter_description", "Filter", "string", 170, "The filter on the item list, in the server's words; empty when unfiltered.", { typicalCharCount: 80 }),
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: EXPORT_LIBRARY_SURFACE_NAME,
   situation: "They are looking at the export {export_name|they brought in} from {export_source|an outside service} (indexing: {export_index_phase|unknown}).",
   inheritsFrom: "matrx-default/knowledge",
@@ -67,9 +69,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   values: mergeBaselineValues(pickBaseline("selection"), surfaceSpecific),
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const exportLibraryManifest = declared as SurfaceManifest;
+export const exportLibraryManifest = declared;
 
 export function createExportLibraryScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

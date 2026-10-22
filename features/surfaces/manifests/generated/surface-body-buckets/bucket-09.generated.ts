@@ -15,3 +15,9 @@ export { transcriptScribeLiveManifest as s258 } from "../../transcript-scribe-li
 export { adminBillingSpendManifest as s275 } from "../../admin-billing-spend.manifest";
 export { crmOutreachListsManifest as s296 } from "../../crm-outreach-lists.manifest";
 export { adminKindRegistryManifest as s300 } from "../../admin-kind-registry.manifest";
+export { hrMyClockManifest as s312 } from "../../hr-my-clock.manifest";
+export { workflowReviewManifest as s336 } from "../../workflow-review.manifest";
+export { printBookletManifest as s349 } from "../../print-booklet.manifest";
+export { clientPortalManifest as s376 } from "../../client-portal.manifest";
+export { clientPortalFormManifest as s377 } from "../../client-portal.manifest";
+export { clientPortalRecordManifest as s378 } from "../../client-portal.manifest";

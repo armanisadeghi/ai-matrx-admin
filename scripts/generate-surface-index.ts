@@ -184,8 +184,12 @@ export async function compareBodies(load: ChainLoader): Promise<string[]> {
   }
   return problems;
 }
-/** The first-load budget for the index module, gzip bytes. */
-const INDEX_BUDGET_GZIP = 50 * 1024;
+/**
+ * The first-load budget for the index module, gzip bytes. Raised 50 -> 64 KiB on 2026-10-22: surface
+ * declarations W2 added ~80 page surfaces (308 -> ~390), which put the index at ~57 KiB gzip.
+ * Shrinking the encoding is the next step if it nears this line again.
+ */
+const INDEX_BUDGET_GZIP = 64 * 1024;
 
 function render(encoded: readonly EncodedSurface[]): string {
   return (

@@ -24,3 +24,6 @@ export { adminUiSurfacesManifest as s272 } from "../../package-surfaces-under-mo
 export { adminCxDashboardManifest as s273 } from "../../admin-cx-dashboard.manifest";
 export { adminSkillsManifest as s301 } from "../../admin-skills.manifest";
 export { adminDocumentationManifest as s306 } from "../../admin-documentation.manifest";
+export { hrNewEmployeeManifest as s316 } from "../../hr-new-employee.manifest";
+export { commerceAttentionManifest as s339 } from "../../commerce-attention.manifest";
+export { printEducationManifest as s352 } from "../../print-education.manifest";

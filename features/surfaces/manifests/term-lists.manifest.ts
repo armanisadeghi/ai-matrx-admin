@@ -102,11 +102,14 @@ const writeTargets: SurfaceWriteTarget[] = [
     applyPolicy: "ask",
     updatesValue: "term_list_notes",
     patchable: true,
+    approvalComparison: "text-replacement",
     sortOrder: 310,
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: TERM_LISTS_SURFACE_NAME,
   situation:
     "They are managing their organization's term lists for agents; {open_term_list_id|no list} is open. You can add terms or write the notes of the open list; they save it.",
@@ -121,9 +124,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const termListsManifest = declared as SurfaceManifest;
+export const termListsManifest = declared;
 
 export function createTermListsScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

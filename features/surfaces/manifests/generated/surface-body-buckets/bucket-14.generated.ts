@@ -13,3 +13,4 @@ export { appletsManifest as s192 } from "../../applets.manifest";
 export { markdownEditorManifest as s221 } from "../../markdown-editor.manifest";
 export { podcastStudioManifest as s238 } from "../../podcast-studio.manifest";
 export { scopesManifest as s240 } from "../../scopes.manifest";
+export { printLabelsManifest as s355 } from "../../print-labels.manifest";

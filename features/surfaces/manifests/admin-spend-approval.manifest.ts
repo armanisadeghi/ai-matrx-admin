@@ -67,7 +67,9 @@ const recordWriteTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const recordDeclared: Omit<SurfaceManifest, "readiness"> = {
+const recordDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_SPEND_APPROVAL_SURFACE_NAME,
   situation:
     "As an admin they are looking at the spend approval for one {subject_kind|subject} ({approval_load_status|loading}): whether its automated runs may spend. You can open a decision for them to confirm.",
@@ -84,8 +86,7 @@ const recordDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-/** No typed `readiness` (D2: earned, never typed); the installed type still requires the key. */
-export const adminSpendApprovalManifest = recordDeclared as SurfaceManifest;
+export const adminSpendApprovalManifest = recordDeclared;
 
 // ── A workflow's approvals ─────────────────────────────────────────────────
 
@@ -95,7 +96,9 @@ const panelValues: SurfaceValue[] = [
   v("approvals", "Approvals", "array", 120, `Every spend approval that covers this workflow, its own first: [${ROW_SHAPE}].`, { typicalCharCount: 2500 }),
 ];
 
-const panelDeclared: Omit<SurfaceManifest, "readiness"> = {
+const panelDeclared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_WORKFLOW_SPEND_APPROVALS_SURFACE_NAME,
   situation:
     "As an admin they are looking at the spend approvals that cover one workflow ({approvals_load_status|loading}). Deciding one is their press, on its own page.",
@@ -111,4 +114,4 @@ const panelDeclared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-export const adminWorkflowSpendApprovalsManifest = panelDeclared as SurfaceManifest;
+export const adminWorkflowSpendApprovalsManifest = panelDeclared;

@@ -169,16 +169,17 @@ export function printFieldTargets(
 }
 
 /**
- * The manifest, without the typed `readiness` (D2: earned, never typed). The
- * installed `@ai-matrx/chat` type still requires the key until the D2 package
- * change ships, hence the one cast.
+ * The manifest. `readiness: "partial"` only because the published alchemy still requires the
+ * typed field; the W1-E strip removes it fleet-wide once D2 publishes.
  */
 export function buildPrintToolManifest(spec: PrintToolSpec): SurfaceManifest {
   const groups: SurfaceValueGroup[] = [
     { key: PRINT_FORM_GROUP, label: spec.formLabel, sortOrder: 100, description: "What the person has set on the form." },
     { key: PRINT_RESULT_GROUP, label: "What it makes", sortOrder: 200, description: "The preview and its checks." },
   ];
-  const declared: Omit<SurfaceManifest, "readiness"> = {
+  const declared: SurfaceManifest = {
+    readiness: "partial",
+    readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
     surfaceName: spec.surfaceName,
     situation: spec.situation,
     inheritsFrom: "matrx-default/publish",
@@ -192,5 +193,5 @@ export function buildPrintToolManifest(spec: PrintToolSpec): SurfaceManifest {
     values: mergeBaselineValues(pickBaseline("selection"), [...printFieldValues(spec.fields), ...spec.shown]),
     writeTargets: [...printFieldTargets(spec.fields, spec.formTarget), ...(spec.extraTargets ?? [])],
   };
-  return declared as SurfaceManifest;
+  return declared;
 }

@@ -48,3 +48,9 @@ export { marketingSocialSwipeManifest as s247 } from "../../marketing-social-tab
 export { marketingSocialAdsManifest as s248 } from "../../marketing-social-tabs.manifest";
 export { adminDatabaseManifest as s260 } from "../../admin-database.manifest";
 export { adminHardCostReconciliationManifest as s277 } from "../../admin-hard-cost-reconciliation.manifest";
+export { hrReview360MeetingManifest as s320 } from "../../hr-review-360-meeting.manifest";
+export { hrDeskClockManifest as s328 } from "../../hr-desk-clock.manifest";
+export { commercePrinterCertifyManifest as s344 } from "../../commerce-printer-certify.manifest";
+export { compareManifest as s359 } from "../../compare.manifest";
+export { esignTemplateManifest as s363 } from "../../esign-template.manifest";
+export { sourceLibraryManifest as s373 } from "../../source-library.manifest";

@@ -99,7 +99,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: WORKFLOW_REVIEW_SURFACE_NAME,
   situation:
     "They are on the review list of the workflow {workflow_name|this workflow} (page: {review_load_status}): {issue_count|no} issues its runs raised, {open_issue_count|none} still open. You can mark issues seen, fixed or ignored, or reopen them.",
@@ -115,9 +117,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const workflowReviewManifest = declared as SurfaceManifest;
+export const workflowReviewManifest = declared;
 
 export function createWorkflowReviewScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

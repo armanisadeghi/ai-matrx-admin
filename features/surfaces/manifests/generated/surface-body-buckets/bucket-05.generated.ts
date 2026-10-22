@@ -18,3 +18,8 @@ export { adminSystemAgentsManifest as s259 } from "../../admin-system-agents.man
 export { mandateWorkspaceManifest as s289 } from "../../mandate-workspace.manifest";
 export { knowledgeManifest as s290 } from "../../knowledge.manifest";
 export { adminHindsightManifest as s303 } from "../../admin-hindsight.manifest";
+export { hrEmployeeTimesheetManifest as s334 } from "../../hr-employee-timesheet.manifest";
+export { productCaptureManifest as s346 } from "../../product-capture.manifest";
+export { notificationsManifest as s365 } from "../../notifications.manifest";
+export { approvalsManifest as s367 } from "../../approvals.manifest";
+export { captureNeedsYouManifest as s369 } from "../../capture-needs-you.manifest";

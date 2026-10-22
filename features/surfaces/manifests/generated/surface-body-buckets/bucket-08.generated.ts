@@ -16,3 +16,7 @@ export { filePreviewManifest as s204 } from "../../file-preview.manifest";
 export { workflowEmitManifest as s208 } from "../../workflow-emit.manifest";
 export { itemDetailManifest as s218 } from "../../item-detail.manifest";
 export { transcriptStudioManifest as s227 } from "../../transcript-studio.manifest";
+export { hrMyTimeOffManifest as s310 } from "../../hr-my-time-off.manifest";
+export { commerceIntakeAnswerManifest as s342 } from "../../commerce-intake-answer.manifest";
+export { commerceIntakeAssetManifest as s343 } from "../../commerce-intake-asset.manifest";
+export { adminToolAlertManifest as s379 } from "../../admin-tool-alert.manifest";

@@ -14,3 +14,13 @@ export { keywordResearchWindowManifest as s197 } from "../../keyword-research-wi
 export { listManagerManifest as s222 } from "../../list-manager.manifest";
 export { staffManifest as s256 } from "../../staff.manifest";
 export { adminGrowthLoopManifest as s302 } from "../../admin-growth-loop.manifest";
+export { hrLeaveLedgerManifest as s309 } from "../../hr-leave-ledger.manifest";
+export { hrMyTimesheetManifest as s313 } from "../../hr-my-timesheet.manifest";
+export { hrOvertimeRequestManifest as s330 } from "../../hr-overtime-request.manifest";
+export { workflowReviewIssueManifest as s337 } from "../../workflow-review-issue.manifest";
+export { commerceDraftsManifest as s340 } from "../../commerce-drafts.manifest";
+export { printExamsManifest as s353 } from "../../print-exams.manifest";
+export { spacePageManifest as s361 } from "../../space-page.manifest";
+export { trashManifest as s366 } from "../../trash.manifest";
+export { adminSpendApprovalManifest as s382 } from "../../admin-spend-approval.manifest";
+export { adminWorkflowSpendApprovalsManifest as s383 } from "../../admin-spend-approval.manifest";

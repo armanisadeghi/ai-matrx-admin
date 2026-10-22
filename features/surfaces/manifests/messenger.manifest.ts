@@ -46,11 +46,14 @@ const writeTargets: SurfaceWriteTarget[] = [
     applyPolicy: "ask",
     updatesValue: "composer_text",
     patchable: true,
+    approvalComparison: "text-replacement",
     sortOrder: 500,
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: MESSENGER_SURFACE_NAME,
   situation: "They are in Messenger. You can write a message into the open conversation's box; they send it.",
   inheritsFrom: "matrx-user/messages",
@@ -64,9 +67,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const messengerManifest = declared as SurfaceManifest;
+export const messengerManifest = declared;
 
 export function createMessengerScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

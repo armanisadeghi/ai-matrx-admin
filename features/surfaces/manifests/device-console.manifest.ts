@@ -54,7 +54,9 @@ const surfaceSpecific: SurfaceValue[] = [
   v("selected_session", "Selected session", "string", 230, "The coding session selected in Sessions, or null.", { autoContext: false }),
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: DEVICE_CONSOLE_SURFACE_NAME,
   situation:
     "They are on the console of their computer {device_name|this computer} ({device_status|status unknown}), in the {console_view|terminal} view. Only they type into it.",
@@ -68,9 +70,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   values: mergeBaselineValues(pickBaseline("selection"), surfaceSpecific),
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const deviceConsoleManifest = declared as SurfaceManifest;
+export const deviceConsoleManifest = declared;
 
 export function createDeviceConsoleScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

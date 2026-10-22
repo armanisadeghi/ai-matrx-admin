@@ -63,7 +63,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: APPROVALS_SURFACE_NAME,
   situation:
     "They are looking at what is waiting on their approval: {approvals_waiting_count|nothing} waiting. You can explain or recommend; only they approve or reject.",
@@ -77,9 +79,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   values: mergeBaselineValues(pickBaseline("selection"), surfaceSpecific),
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const approvalsManifest = declared as SurfaceManifest;
+export const approvalsManifest = declared;
 
 export function createApprovalsScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

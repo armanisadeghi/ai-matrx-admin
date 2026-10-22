@@ -136,7 +136,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: WORKFLOW_RUN_VIEW_DESIGN_SURFACE_NAME,
   situation:
     "They are designing the page people see while {workflow_name|this workflow} runs (page: {design_load_status}). Saved view: {view_saved|no}; unsaved changes: {has_unsaved_changes|no}. You can rename the view, set its audience and detail, or retitle its panels; the person saves.",
@@ -152,9 +154,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const workflowRunViewDesignManifest = declared as SurfaceManifest;
+export const workflowRunViewDesignManifest = declared;
 
 export function createWorkflowRunViewDesignScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

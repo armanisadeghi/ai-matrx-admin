@@ -121,7 +121,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMMERCE_INTAKE_SURFACE_NAME,
   situation:
     "They are capturing items with the intake camera ({capture_lane} lane, {capture_mode|serialized} mode). On screen: {item_label|a new item} with {photo_count|no} photos and {voice_note_count|no} voice notes; {uploading_count|nothing} still uploading. You can write the item's notes or add a serial or asset tag.",
@@ -137,9 +139,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const commerceIntakeManifest = declared as SurfaceManifest;
+export const commerceIntakeManifest = declared;
 
 export function createCommerceIntakeScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

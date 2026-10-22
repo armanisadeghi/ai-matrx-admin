@@ -108,7 +108,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: WORKFLOW_TRIGGERS_SURFACE_NAME,
   situation:
     "They are setting how the workflow {workflow_name|this workflow} runs without them (page: {triggers_load_status}): {trigger_count|no} triggers, {active_trigger_count|none} switched on. You can add schedules or switch triggers on and off.",
@@ -124,9 +126,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const workflowTriggersManifest = declared as SurfaceManifest;
+export const workflowTriggersManifest = declared;
 
 export function createWorkflowTriggersScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

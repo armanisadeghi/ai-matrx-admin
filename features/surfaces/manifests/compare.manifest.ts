@@ -140,7 +140,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: COMPARE_SURFACE_NAME,
   situation:
     "They are comparing {compare_kind_label|things} side by side (stage: {phase|build}); the ask is \"{ask_text|empty}\".",
@@ -156,9 +158,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const compareManifest = declared as SurfaceManifest;
+export const compareManifest = declared;
 
 export function createCompareScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

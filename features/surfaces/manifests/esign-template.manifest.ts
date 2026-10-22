@@ -40,7 +40,9 @@ const surfaceSpecific: SurfaceValue[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ESIGN_TEMPLATE_SURFACE_NAME,
   situation:
     "They are editing the e-signature template {template_name|a new template}. You can fill in its title, subject and message and its recipient roles; the person saves it.",
@@ -56,9 +58,7 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   writeTargets: ESIGN_WRITE_TARGETS,
 };
 
-/** No typed `readiness` (D2: earned, never typed). The installed `@ai-matrx/chat` type still
- * requires the key until the D2 package change ships, hence the one cast. */
-export const esignTemplateManifest = declared as SurfaceManifest;
+export const esignTemplateManifest = declared;
 
 export function createEsignTemplateScope(values: Record<string, unknown>): SurfaceScopePayload {
   return values as SurfaceScopePayload;

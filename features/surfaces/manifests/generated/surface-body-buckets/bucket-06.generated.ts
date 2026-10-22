@@ -14,3 +14,7 @@ export { settingsManifest as s191 } from "../../settings.manifest";
 export { meetingManifest as s210 } from "../../meeting.manifest";
 export { marketingSocialRollupManifest as s243 } from "../../marketing-social-rollup.manifest";
 export { commerceLabelBatchManifest as s267 } from "../../commerce-label-batch.manifest";
+export { hrTimeExceptionsManifest as s329 } from "../../hr-time-exceptions.manifest";
+export { esignEnvelopeManifest as s362 } from "../../esign-envelope.manifest";
+export { decisionReviewManifest as s370 } from "../../decision-review.manifest";
+export { adminAgentFactoryBuildManifest as s384 } from "../../admin-agent-factory-build.manifest";

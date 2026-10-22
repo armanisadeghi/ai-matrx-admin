@@ -78,7 +78,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_TOOL_ALERT_SURFACE_NAME,
   situation:
     "As an admin they are looking at the Tool alert {alert_title|loading} ({alert_load_status|loading}): {alert_sentence|no account yet}. You can open its decision for them to confirm.",
@@ -95,5 +97,4 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-/** No typed `readiness` (D2: earned, never typed); the installed type still requires the key. */
-export const adminToolAlertManifest = declared as SurfaceManifest;
+export const adminToolAlertManifest = declared;

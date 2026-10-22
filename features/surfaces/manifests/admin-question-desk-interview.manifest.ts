@@ -87,7 +87,9 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 
-const declared: Omit<SurfaceManifest, "readiness"> = {
+const declared: SurfaceManifest = {
+  readiness: "partial",
+  readinessNote: "Declared and emitted (W2); not yet probed live on its route.",
   surfaceName: ADMIN_QUESTION_DESK_INTERVIEW_SURFACE_NAME,
   situation:
     "They are answering the Question Desk interview {interview_title|loading} ({answered_count|0} of {question_count|its} questions answered). You can draft an answer into the box for the open question; the answer is theirs to save.",
@@ -104,5 +106,4 @@ const declared: Omit<SurfaceManifest, "readiness"> = {
   skipBaselineValues: true,
 };
 
-/** No typed `readiness` (D2: earned, never typed); the installed type still requires the key. */
-export const adminQuestionDeskInterviewManifest = declared as SurfaceManifest;
+export const adminQuestionDeskInterviewManifest = declared;
