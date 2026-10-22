@@ -269,7 +269,7 @@ function Section({
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="type-meta font-semibold uppercase tracking-wide text-muted-foreground">
           {title}
         </h3>
         {end && (

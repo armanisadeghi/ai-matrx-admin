@@ -29,6 +29,8 @@ import {
   ChevronRight,
   FolderKanban,
   Eye,
+  Bot,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -71,9 +73,9 @@ import { PrimaryEntityProvider } from "@ai-matrx/associations/react";
 import { useContainerLinks } from "@/features/scopes/hooks/useContainerLinks";
 import { curatedTokens } from "@/features/scopes/registry/entityRegistry";
 import { ProjectTaskList } from "./ProjectTaskList";
-import { ProjectCopyForAiButton } from "./ProjectCopyForAiButton";
+import { copyProjectForAi } from "./ProjectCopyForAiButton";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
+import { copyReferenceWithToast } from "@/features/matrx-envelope/components/ReferenceCopyMenuItem";
 
 // Tasks + projects have their own surfaces; don't double-count them as "resources".
 const EXCLUDE_FROM_RESOURCES = new Set(["task", "project"]);
@@ -339,25 +341,18 @@ export function ProjectRecordWorkspace({
             icon: Network,
             href: kgHref,
           },
+          {
+            label: "Copy reference",
+            icon: Bookmark,
+            onPress: () =>
+              void copyReferenceWithToast({ referenceType: "project", id: project.id, label: project.name, toastLabel: project.name }),
+          },
+          {
+            label: "Copy for AI",
+            icon: Bot,
+            onPress: () => void copyProjectForAi(project.id, project.name, "Projects — project workspace"),
+          },
         ]}
-        right={
-          <>
-            <ReferenceCopyButton
-              referenceType="project"
-              id={project.id}
-              label={project.name}
-              toastLabel={project.name}
-              size="md"
-              className="h-8 w-8"
-            />
-            <ProjectCopyForAiButton
-              projectId={project.id}
-              projectName={project.name}
-              location="Projects — project workspace"
-              size="icon"
-            />
-          </>
-        }
       />
       ) : null}
       <div

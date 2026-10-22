@@ -90,6 +90,10 @@ export function claimsFromUser(user: Record<string, unknown>): Record<string, un
 
 export function withClaims<T extends FakeAuth>(auth: T) {
   return {
+    // The claims cache (`createClaimsCache` in @ai-matrx/auth) subscribes with
+    // `auth.onAuthStateChange` on first use; a fake without it died with
+    // `onAuthStateChange is not a function`. A no-op listener unless the suite sets its own.
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
     ...auth,
     getClaims: async (_jwt?: string) => {
       // `getUser` wins when a fake has both (it is the narrower, verified

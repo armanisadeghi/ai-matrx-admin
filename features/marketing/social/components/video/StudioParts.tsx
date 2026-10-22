@@ -12,9 +12,9 @@ import { Check, CircleAlert, Download, Film } from "lucide-react";
 
 import type { Composition } from "@ai-matrx/media/video";
 import { resolveComposition } from "@ai-matrx/media/video";
-import { CAPTION_PRESETS, CAPTION_PRESET_IDS, loadVideoFonts, programInputFromComposition } from "@ai-matrx/media/video/engine";
+import { CAPTION_PRESETS, CAPTION_PRESET_IDS, CAPTION_SAMPLE_CANVAS, CAPTION_SAMPLE_LOOP_FRAMES, captionSampleHtml, loadVideoFonts, programInputFromComposition } from "@ai-matrx/media/video/engine";
 import { VideoPlayer } from "@ai-matrx/media/video/react";
-import { Badge, Button, EmptyState } from "@ai-matrx/design-system/controls";
+import { Badge, Button, EmptyState, Switch } from "@ai-matrx/design-system/controls";
 import { downloadFile, downloadUrl } from "@ai-matrx/kit/download";
 import { useMediaClient } from "@ai-matrx/media/core";
 
@@ -195,21 +195,94 @@ function CaptionSample({ presetId }: { presetId: string }) {
   );
 }
 
+/**
+ * One caption look drawn live by the engine's own renderer (`captionSampleHtml`) on its 1080x480 canvas, scaled to the
+ * tile. It shows the static sample until the tile first comes near the screen, then animates only while the tile is
+ * in view (and stands still for people who ask for reduced motion), so 16 tiles never run 16 loops at once.
+ */
+const SAMPLE_FPS = 15;
+function LiveCaptionSample({ presetId }: { presetId: string }) {
+  const box = useRef<HTMLSpanElement | null>(null);
+  const [seen, setSeen] = useState(false);
+  const [frame, setFrame] = useState(0);
+  const [scale, setScale] = useState(0);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setScale(el.clientWidth / CAPTION_SAMPLE_CANVAS.width));
+    ro.observe(el);
+    setScale(el.clientWidth / CAPTION_SAMPLE_CANVAS.width);
+    const io = new IntersectionObserver((entries) => {
+      const on = entries.some((e) => e.isIntersecting);
+      setInView(on);
+      if (on) setSeen(true);
+    }, { rootMargin: "120px" });
+    io.observe(el);
+    return () => {
+      ro.disconnect();
+      io.disconnect();
+    };
+  }, []);
+  useEffect(() => {
+    if (!inView || typeof window === "undefined") return;
+    // Reduced motion: hold one telling frame instead of looping.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setFrame(Math.floor(CAPTION_SAMPLE_LOOP_FRAMES / 2));
+      return;
+    }
+    const started = performance.now();
+    const timer = window.setInterval(() => {
+      setFrame(Math.floor(((performance.now() - started) * 30) / 1000) % CAPTION_SAMPLE_LOOP_FRAMES);
+    }, 1000 / SAMPLE_FPS);
+    return () => window.clearInterval(timer);
+  }, [inView]);
+  const html = seen && scale > 0 ? captionSampleHtml(presetId, frame) : "";
+  return (
+    <span ref={box} className="relative block w-full overflow-hidden" style={{ aspectRatio: `${CAPTION_SAMPLE_CANVAS.width} / ${CAPTION_SAMPLE_CANVAS.height}`, background: VIDEO_FRAME_BG }}>
+      {html ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-0 top-0 block origin-top-left"
+          style={{ width: CAPTION_SAMPLE_CANVAS.width, height: CAPTION_SAMPLE_CANVAS.height, transform: `scale(${scale})` }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <CaptionSample presetId={presetId} />
+        </span>
+      )}
+    </span>
+  );
+}
+
 export function CaptionLookPicker({
   value,
   onChange,
   disabled,
   extra,
+  follow,
+  onFollowChange,
 }: {
   value: string;
   onChange: (id: string) => void;
   disabled?: boolean;
   /** Leading choices that are not presets (e.g. "Match the reference", "No captions"). */
   extra?: ReadonlyArray<{ id: string; label: string }>;
+  /** Captions sit by the speaking person's head (any look); shown only when `onFollowChange` is given. */
+  follow?: boolean;
+  onFollowChange?: (on: boolean) => void;
 }) {
   useVideoFonts();
   return (
-    <div role="radiogroup" aria-label="Caption look" className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-4">
+    <div className="flex flex-col gap-2">
+    {onFollowChange ? (
+      <label className="flex items-center gap-2">
+        <Switch checked={!!follow} disabled={disabled} onCheckedChange={onFollowChange} aria-label="Follow the speaker" />
+        <span className="type-label text-foreground">Follow the speaker</span>
+      </label>
+    ) : null}
+    <div role="radiogroup" aria-label="Caption look" className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
       {(extra ?? []).map((x) => (
         <button
           key={x.id}
@@ -237,17 +310,16 @@ export function CaptionLookPicker({
           onClick={() => onChange(id)}
           data-clickable
           className={cn(
-            "flex h-20 flex-col overflow-hidden rounded-lg border",
+            "flex min-w-0 flex-col overflow-hidden rounded-lg border",
             value === id ? "border-primary ring-1 ring-primary" : "border-border",
           )}
         >
           {/* A video frame stand-in: captions are drawn over footage, so the tile is a fixed dark frame in both themes. */}
-          <span className="flex flex-1 items-center justify-center" style={{ background: VIDEO_FRAME_BG }}>
-            <CaptionSample presetId={id} />
-          </span>
+          <LiveCaptionSample presetId={id} />
           <span className="type-meta truncate bg-card px-1 py-0.5 text-foreground">{CAPTION_PRESETS[id]?.label ?? id}</span>
         </button>
       ))}
+    </div>
     </div>
   );
 }

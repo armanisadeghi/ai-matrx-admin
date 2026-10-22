@@ -31,6 +31,7 @@ import {
   ScrollText,
   Network,
   Pencil,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
@@ -60,7 +61,7 @@ import { SshAccessPanel } from "@/components/sandbox/ssh-access-panel";
 import { SandboxConsole } from "@/components/sandbox/SandboxConsole";
 import type { SandboxConsoleEntry } from "@/components/sandbox/SandboxConsole";
 import { SandboxDiagnosticsPanel } from "@/features/code/views/sandboxes/SandboxDiagnosticsPanel";
-import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import { buildAgentPayload } from "@ai-matrx/alchemy/core";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createSandboxesScope } from "@/features/surfaces/manifests/sandboxes.manifest";
@@ -498,6 +499,29 @@ export function SandboxRecord({
           },
         ]
       : []),
+    // "…" HOLDS EVERY ACTION (crumb-doors law): the two copies are actions in the one list, not a
+    // header control beside it.
+    {
+      label: "Copy",
+      icon: Copy,
+      onPress: () => void copyText(sandboxInstanceSummary(instance), "Copied"),
+    },
+    {
+      label: "Copy for AI",
+      icon: Bot,
+      onPress: () =>
+        void copyText(
+          buildAgentPayload({
+            kind: "sandbox-instance",
+            location: "AI Matrx — Sandbox detail",
+            description: "The sandbox currently open on the detail page.",
+            data: instance,
+            summary: sandboxInstanceSummary(instance),
+            attributes: { id: instance.id, "sandbox-id": instance.sandbox_id, status: effectiveStatus },
+          }),
+          "Copied for AI",
+        ),
+    },
     {
       label: "Rename",
       icon: Pencil,
@@ -633,29 +657,7 @@ export function SandboxRecord({
         label={displayName}
         recordId={id}
         actions={detailActions}
-        right={
-          <div className="flex items-center gap-2">
-            <Badge variant={statusVariant}>{statusLabel}</Badge>
-            <CopyButtons
-              size="icon"
-              label={`Sandbox ${displayName}`}
-              human={() => sandboxInstanceSummary(instance)}
-              agent={() => ({
-                kind: "sandbox-instance",
-                location: "AI Matrx — Sandbox detail",
-                description:
-                  "The sandbox currently open on the detail page.",
-                data: instance,
-                summary: sandboxInstanceSummary(instance),
-                attributes: {
-                  id: instance.id,
-                  "sandbox-id": instance.sandbox_id,
-                  status: effectiveStatus,
-                },
-              })}
-            />
-          </div>
-        }
+        status={<Badge variant={statusVariant}>{statusLabel}</Badge>}
       />
 
       <div className={embedded ? "min-h-0 flex-1 flex flex-col overflow-hidden bg-textured" : "h-full flex flex-col overflow-hidden bg-textured"}>
@@ -1179,16 +1181,17 @@ function SandboxHeader({
   label,
   recordId,
   actions,
-  right,
+  status,
 }: {
   embedded: boolean;
   label: string;
   /** The sandbox row id: the host chrome drops the name when its host holds this sandbox. */
   recordId: string;
   actions?: EntityHeaderAction[];
-  right?: ReactNode;
+  /** The sandbox's state — a status beside the name, never a control. */
+  status?: ReactNode;
 }) {
-  if (!embedded) return <EntityModeHeader backHref="/sandbox" entityLabel={label} actions={actions} right={right} />;
+  if (!embedded) return <EntityModeHeader backHref="/sandbox" entityLabel={label} entityStatus={status} actions={actions} />;
   const all = actions ?? [];
   const visible = all.filter((a) => a.placement === "bar");
   const overflow = all.filter((a) => !visible.includes(a));
@@ -1223,7 +1226,7 @@ function SandboxHeader({
         </>
       }
     >
-      <span className="contents" data-sandbox-bar="">{right}</span>
+      <span className="contents" data-sandbox-bar="">{status}</span>
     </HostedRecordBar>
   );
 }

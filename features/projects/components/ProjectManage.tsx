@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Eye,
   Settings as SettingsIcon,
+  Bot,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/utils/supabase/client";
@@ -46,7 +47,7 @@ import { ProjectReferencesPanel } from "./ProjectReferencesPanel";
 import { MemberManagement } from "./MemberManagement";
 import { InvitationManager } from "./InvitationManager";
 import { DangerZone } from "./DangerZone";
-import { ProjectCopyForAiButton } from "./ProjectCopyForAiButton";
+import { copyProjectForAi } from "./ProjectCopyForAiButton";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
@@ -202,15 +203,12 @@ export function ProjectManage() {
             icon: ExternalLink,
             href: `/projects/${project.id}`,
           },
+          {
+            label: "Copy for AI",
+            icon: Bot,
+            onPress: () => void copyProjectForAi(project.id, project.name, "Projects — project settings"),
+          },
         ]}
-        right={
-          <ProjectCopyForAiButton
-            projectId={project.id}
-            projectName={project.name}
-            location="Projects — project settings"
-            size="icon"
-          />
-        }
       />
       <div className="h-full overflow-x-hidden overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <div className="mx-auto min-w-0 max-w-5xl space-y-5 p-4 md:p-6">

@@ -23,7 +23,7 @@
 // appears (the BI norm: Stripe, Looker and Amplitude round each cell independently and never
 // redistribute remainders).
 
-import { formatAbsoluteDate, formatCount, formatMoney, formatDurationMs, formatPercentFromFraction } from "@ai-matrx/kit/format";
+import { formatAbsoluteDate, formatCost, formatCount, formatDurationMs, formatPercentFromFraction } from "@ai-matrx/kit/format";
 
 import { formatAdminPoints } from "@/components/cost/formatAdminCost";
 
@@ -34,7 +34,7 @@ export type DrillMoneyUnit = "points" | "usd";
 export function drillUnitFormatter(unit: string | undefined, money: DrillMoneyUnit, rate: number | null): (value: number | null) => string {
   switch (unit) {
     case "usd":
-      return (v) => (v === null ? "—" : money === "usd" ? formatMoney(v, { currency: "USD", unit: "major", digits: 2 }) : formatAdminPoints(v, rate));
+      return (v) => (v === null ? "—" : money === "usd" ? formatCost(v, { unit: "usd", rate }) : formatAdminPoints(v, rate));
     case "tokens":
       return (v) => (v === null ? "—" : formatCount(v, { style: "compact" }));
     case "ms":

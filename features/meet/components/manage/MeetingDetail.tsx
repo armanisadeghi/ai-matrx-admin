@@ -412,20 +412,12 @@ export function MeetingDetail({
       onPress: () => (onJoin ? onJoin(meeting) : void run("join", meeting)),
     });
   }
+  // ONE action list ("…" holds every action): the secondary verbs are menu-placed — the line's one
+  // Actions menu on a desktop, the frame's "…", the ⋮ sheet on a phone — never a control in `right`.
+  const menuPlaced = moreActions.map((a) => ({ ...a, placement: a.placement ?? ("menu" as const) }));
   const headerActions = isMobile
-    ? [...moreActions, ...primaryActions]
-    : primaryActions;
-  const moreMenu =
-    !isMobile && moreActions.length > 0 ? (
-      <RecordActionsMenu
-        actions={moreActions.map((a) => ({
-          label: a.label,
-          icon: a.icon,
-          onPress: a.onPress,
-          destructive: a.barTone === "danger",
-        }))}
-      />
-    ) : null;
+    ? [...menuPlaced, ...primaryActions]
+    : [...primaryActions, ...menuPlaced];
 
   return (
     <MeetingSurfaceHost
@@ -455,7 +447,6 @@ export function MeetingDetail({
           }))}
           activeModeHref={hrefFor(section)}
           actions={headerActions}
-          right={moreMenu}
         />
       )}
       <div

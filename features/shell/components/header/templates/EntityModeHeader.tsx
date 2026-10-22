@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { CrumbNode, CrumbOptions, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { RecordActionsMenu } from "@/components/official/RecordActionsMenu";
 import {
   RouteModeNav,
   type RouteNavItem,
@@ -98,6 +99,8 @@ export interface EntityHeaderAction {
   /**
    * In a HOST's one-row bar (a Board tile — `HostedRecordBar`): `bar` = a labelled button on the row,
    * anything else = the bar's "…" menu. Chosen by the action list, never by matching the label text.
+   * On a PAGE, `menu` = not a button on the line: the line's one Actions menu (classic desktop), the
+   * frame's "…" (new frame) and the ⋮ sheet (phone) — one action list, never a control in `right`.
    */
   placement?: "bar" | "menu";
   /** In a host bar's labelled button: `danger` draws it as the danger button (Stop, End…). */
@@ -362,6 +365,7 @@ export function EntityModeHeader({
     else router.push(a.href);
   };
   const frameTakesMenu = inFrame && isPhone && hasSheet;
+  const menuActions = (actions ?? []).filter((a) => a.placement === "menu" && !a.phoneOnly);
   // "…" HOLDS EVERY ACTION OF ITS LEVEL (Arman, 2026-10-22): in the frame the page's ONE action list
   // (`actions`) is also the frame's "…" items — on desktop beside the buttons it draws, on a phone
   // with the other modes, where this header draws no "…" of its own. One list, two renderings.
@@ -531,7 +535,7 @@ export function EntityModeHeader({
                 </span>
               ) : null}
               {actions
-                ?.filter((a) => !a.phoneOnly)
+                ?.filter((a) => !a.phoneOnly && a.placement !== "menu")
                 .map((a) => (
                   <DesktopAction key={a.label} action={a} />
                 ))}
@@ -539,6 +543,18 @@ export function EntityModeHeader({
                 <span data-header-extra className="flex min-w-0 items-center">
                   {rightEnd}
                 </span>
+              ) : null}
+              {/* Menu-placed actions (classic): the line's ONE Actions menu; in the frame they are "…". */}
+              {!inFrame && menuActions.length ? (
+                <RecordActionsMenu
+                  actions={menuActions.map((a) => ({
+                    label: a.label,
+                    icon: a.icon,
+                    onPress: () => runAction(a),
+                    destructive: a.destructive || a.barTone === "danger",
+                    disabled: a.disabled,
+                  }))}
+                />
               ) : null}
             </div>
             {/* Mobile: one trigger, everything in the drawer (in the frame: the frame's "…") */}

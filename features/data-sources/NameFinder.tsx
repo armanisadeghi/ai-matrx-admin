@@ -106,19 +106,19 @@ export function NameFinder({
         <div className="flex flex-col gap-1" data-is-this-them="">
           <span className="text-xs font-medium text-muted-foreground">Is this them?</span>
           {answer.candidates.map((c) => (
-            <button
+            <Button
               key={c.page}
               type="button"
-              data-clickable=""
+              variant="outline"
+              className="justify-start"
               onClick={() => {
                 setAnswer({ status: "found", match: c.match, page: c.page });
                 onPage(c.page);
               }}
-              className="flex min-w-0 items-center gap-2 rounded-md border border-border px-2 py-1.5 text-left text-sm hover:bg-muted"
             >
-              <span className="truncate font-medium text-foreground">{c.match.name}</span>
-              <span className="truncate text-xs text-muted-foreground">{hostOf(c.page)}</span>
-            </button>
+              <span className="truncate font-medium">{c.match.name}</span>
+              <span className="truncate text-muted-foreground">{hostOf(c.page)}</span>
+            </Button>
           ))}
         </div>
       )}
