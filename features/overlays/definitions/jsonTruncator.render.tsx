@@ -11,11 +11,12 @@ export default function OverlayRender({ data: overlayData, instanceId, close }: 
         return (
           <JsonTruncatorDialog
             isOpen
+            overlayId="jsonTruncator"
             onClose={() =>
               close()
             }
             title={typeof data?.title === "string" ? data.title : undefined}
-            id={typeof data?.id === "string" ? data.id : undefined}
+            id={typeof data?.id === "string" ? data.id : "json-truncator"}
             defaultTab={data?.defaultTab as JsonTruncatorTab | undefined}
           />
         );
