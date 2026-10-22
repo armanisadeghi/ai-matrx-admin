@@ -23,6 +23,7 @@ import { associationsDataSource } from "@/features/scopes/host/associationsStore
 import { associationsService } from "@/features/scopes/service/associationsService";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { getUserId } from "@/utils/auth/getUserId";
+import { hasBrowserSession } from "@/lib/supabase/hasBrowserSession";
 import { restoreFromTrash } from "@/features/trash/service";
 import { guardedUpdate } from "@ai-matrx/data/db";
 import {
@@ -129,6 +130,8 @@ export interface CommentThreads {
 
 /** Every thread on the source, oldest first, replies nested (cmt_list: viewer on the source). */
 export async function listCommentThreads(source: AnnotationSource): Promise<CommentThreads> {
+  // Signed out: no session, so the database would answer 401. A visitor has no threads to read.
+  if (!(await hasBrowserSession())) return { items: [], collaborationDoors: true };
   const data = await rpc<unknown>(
     "cmt_list",
     { p_entity_type: source.token, p_entity_id: source.id },
@@ -534,6 +537,7 @@ export async function listEdgeItems(
   source: AnnotationSource,
   titleFor: (token: string, ids: string[]) => Promise<Map<string, string>>,
 ): Promise<EdgeItems> {
+  if (!(await hasBrowserSession())) return { highlights: [], links: [] };
   // A direct, live-only read of the edges INTO this source (RLS is the ceiling; tombstones
   // excluded). It does not go through the package's token guard, so a source type the installed
   // vocabulary does not list yet still shows its highlights and links.
@@ -666,6 +670,7 @@ export async function unlinkRecord(source: AnnotationSource, token: string, id: 
  * `public.association_link_sources`. The picker offers only these, so no choice is dead.
  */
 export async function linkableKinds(targetToken: string): Promise<string[]> {
+  if (!(await hasBrowserSession())) return [];
   const { data, error } = await supabase.rpc("association_link_sources", { p_target_type: targetToken, p_label: ANCHORED_TO_ROLE });
   if (error) throw sentence("finding what can be linked here", error);
   return (data ?? []).map((r: { source_type: string }) => r.source_type);
@@ -682,6 +687,12 @@ export function annotationPairs(token: string): Promise<{ highlights: boolean; l
   let pending = pairsByToken.get(token);
   if (!pending) {
     pending = (async () => {
+      // Signed out: nothing can be filed or linked, and the database would answer 401. Not kept, so a
+      // later signed-in read asks for real.
+      if (!(await hasBrowserSession())) {
+        pairsByToken.delete(token);
+        return { highlights: false, links: false };
+      }
       const [annotates, anchored] = await Promise.all([
         supabase.rpc("association_link_sources", { p_target_type: token, p_label: ANNOTATES_ROLE }),
         supabase.rpc("association_link_sources", { p_target_type: token, p_label: ANCHORED_TO_ROLE }),
