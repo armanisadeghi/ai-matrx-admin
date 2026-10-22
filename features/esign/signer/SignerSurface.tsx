@@ -54,7 +54,7 @@ import {
 import { ControlInput } from "./parts/ControlInput";
 import { AssignDialog, DeclineDialog, FinishDialog, HelpDialog, HistoryDialog, type RecordedRow } from "./parts/Dialogs";
 import { DocumentStack, PageThumbnails, type StackDoc } from "./parts/DocumentStack";
-import { useStackZoom } from "@/features/pdf/components/viewer/toolbar/stack-hooks";
+import { useStackZoom } from "@ai-matrx/media/viewers";
 import { ConsentPanel, EndScreen, PhoneDrawer, type EndKind, type LandingFacts } from "./parts/Panels";
 import { PaperField } from "./parts/PaperField";
 import { TopBar, type GuideMode } from "./parts/TopBar";
@@ -68,7 +68,7 @@ const SignatureCreatorDialog = dynamic(
 
 // The shared PDF toolbar row loads with the viewer, never with the page; the placeholder holds its height.
 const PdfStackToolbar = dynamic(
-  () => import("@/features/pdf/components/viewer/toolbar/PdfStackToolbar").then((m) => m.PdfStackToolbar),
+  () => import("@ai-matrx/media/viewers/pdf").then((m) => m.PdfStackToolbar),
   { ssr: false, loading: () => <div className="h-10 shrink-0 border-b border-border/60" aria-hidden /> },
 );
 
