@@ -42,7 +42,7 @@ import { replaceAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigati
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
-import { useRunViewPreference } from "../board/useRunViewPreference";
+import { useRunViewPreference, type RunView } from "../board/useRunViewPreference";
 import { fetchOpenIssueCount } from "../../review/service";
 import { workflowReviewHref } from "../../review/hrefs";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
@@ -53,6 +53,15 @@ import {
   workflowsListHref,
   workflowTriggersHref,
 } from "@/features/workflow-runtime/browse/workflowActionRegistry";
+
+/** The Overview view — the workflow as a plain-words map (legible-diagrams L6); fetched only when picked. */
+const WorkflowOverviewView = dynamic(
+  () => import("../../overview/WorkflowOverviewView"),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 animate-pulse bg-muted/30" />,
+  },
+);
 
 /**
  * The Board view — one `ssr:false` edge, fetched only when a viewer picks it
@@ -133,6 +142,9 @@ export function WorkflowRunPage({
     !failure && workflow !== null && runId !== null && !showForm;
   const [runView, setRunView] = useRunViewPreference(showingRun);
   const boardMode = showingRun && runView === "board";
+  // The map needs only the workflow, so it works on the start form and on a run alike.
+  const overviewMode = runView === "overview" && !failure && workflow !== null;
+  const shownView: RunView = overviewMode ? "overview" : boardMode ? "board" : "page";
 
   // A run permalink knows its definition — that is how a `?run=` deep link and
   // a mid-run refresh restore the workflow they were started from.
@@ -261,16 +273,19 @@ export function WorkflowRunPage({
             mandateKeys={[MANDATE_KEYS.workflow__step_intelligence]}
             label="AI steps of this workflow"
           />
-          {showingRun ? (
-            <SegmentedControl aria-label="Run view"
+          {workflow && !failure ? (
+            <SegmentedControl aria-label="Workflow view"
               className="mr-1"
-              value={runView}
+              value={shownView}
               onValueChange={(next) =>
-                setRunView(next === "board" ? "board" : "page")
+                setRunView(
+                  next === "board" ? "board" : next === "overview" ? "overview" : "page",
+                )
               }
               data={[
                 { value: "page", label: "Page" },
-                { value: "board", label: "Board" },
+                ...(showingRun ? [{ value: "board", label: "Board" }] : []),
+                { value: "overview", label: "Overview" },
               ]}
             />
           ) : null}
@@ -331,6 +346,13 @@ export function WorkflowRunPage({
     );
   } else if (!workflow) {
     body = <LoadingBody />;
+  } else if (overviewMode) {
+    body = (
+      <WorkflowOverviewView
+        definitionId={workflow.id}
+        definition={workflow.definition}
+      />
+    );
   } else if (runId && !showForm && boardMode) {
     body = (
       <WorkflowRunBoardView

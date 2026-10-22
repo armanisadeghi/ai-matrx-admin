@@ -12,7 +12,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Check,
@@ -44,6 +44,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { createShapesScope } from "@/features/surfaces/manifests/shapes.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
+import ShapeInspectPanel from "@/features/content-ir/studio/inspection/ShapeInspectPanel";
 
 interface ShapeTestTabProps {
   kind: string;
@@ -102,6 +103,8 @@ export default function ShapeTestTab({
   });
   const [instance, setInstance] = useState<unknown>(null);
   const [renderKey, setRenderKey] = useState(0);
+  // The wrapper around the rendered shape — what Inspect measures and captures.
+  const renderedRef = useRef<HTMLDivElement>(null);
   const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
   // The EXPLICIT active org. With none, `saveKindInstance` refuses and the
   // catch below shows that sentence — never a personal-workspace default.
@@ -387,10 +390,20 @@ export default function ShapeTestTab({
             </div>
           ) : (
             <div className="space-y-3">
-              <KindInstanceRender
-                key={renderKey}
+              <div ref={renderedRef} data-testid="shape-rendered">
+                <KindInstanceRender
+                  key={renderKey}
+                  kind={kind}
+                  value={instance}
+                />
+              </div>
+              <ShapeInspectPanel
                 kind={kind}
-                value={instance}
+                label={label}
+                kindDefinitionId={kindDefinitionId}
+                targetRef={renderedRef}
+                payload={instance}
+                location={`/shapes/${kind}/test`}
               />
               <details className="rounded-md border border-border bg-card">
                 <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground">

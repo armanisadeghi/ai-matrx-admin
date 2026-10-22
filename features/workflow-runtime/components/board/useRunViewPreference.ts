@@ -7,6 +7,8 @@
  * one, the viewer's last choice (per browser, localStorage — a per-viewer
  * convenience, never shared state); without that, "page". Choosing writes
  * both, and the address is updated in place — no navigation, no refetch.
+ * "overview" (the plain-words map of the workflow) lives in the address only:
+ * remembering it would open every other workflow on a map.
  */
 
 import { useEffect, useSyncExternalStore } from "react";
@@ -17,7 +19,7 @@ import {
   replaceAddressWithoutNavigating,
 } from "@/lib/url-state/addressWithoutNavigating";
 
-export type RunView = "page" | "board";
+export type RunView = "page" | "board" | "overview";
 
 const STORAGE_KEY = "matrx:workflow-run-view";
 const listeners = new Set<() => void>();
@@ -40,8 +42,8 @@ function subscribe(listener: () => void) {
 
 function writeAddress(view: RunView) {
   const params = new URLSearchParams(window.location.search);
-  if (view === "board") {
-    params.set("view", "board");
+  if (view !== "page") {
+    params.set("view", view);
     replaceAddressWithoutNavigating(currentPathWithSearch(params));
     return;
   }
@@ -59,7 +61,9 @@ export function useRunViewPreference(
   const fromUrl = searchParams.get("view");
   const stored = useSyncExternalStore(subscribe, readStored, () => null);
   const view: RunView =
-    fromUrl === "board" || fromUrl === "page" ? fromUrl : (stored ?? "page");
+    fromUrl === "board" || fromUrl === "page" || fromUrl === "overview"
+      ? fromUrl
+      : (stored ?? "page");
 
   // Reflect a remembered board in the address, so what is on screen is a link.
   useEffect(() => {
@@ -68,7 +72,7 @@ export function useRunViewPreference(
 
   const setView = (next: RunView) => {
     try {
-      window.localStorage.setItem(STORAGE_KEY, next);
+      if (next !== "overview") window.localStorage.setItem(STORAGE_KEY, next);
     } catch {
       // Private window / blocked storage: the address still carries it.
     }

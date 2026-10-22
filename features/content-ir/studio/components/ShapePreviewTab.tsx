@@ -3,12 +3,13 @@
 // Preview tab body — the shape's canonical examples rendered through the REAL
 // production kind route (shared engine, same one the admin page uses).
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { FlaskConical } from "lucide-react";
 import Link from "next/link";
 import KindExamplePreview from "@/features/content-ir/studio/components/KindExamplePreview";
 import ShapeOwnerEditor from "@/features/content-ir/studio/components/ShapeOwnerEditor";
 import ShapeRenderStatusStrip from "@/features/content-ir/studio/components/ShapeRenderStatusStrip";
+import ShapeInspectPanel from "@/features/content-ir/studio/inspection/ShapeInspectPanel";
 import ShapeOpenSightings from "@/features/content-ir/render-paths/ShapeOpenSightings";
 import { useKindExamples } from "@/features/content-ir/studio/kind-examples";
 import { shapeTestHref } from "@/features/content-ir/studio/constants";
@@ -54,6 +55,12 @@ export default function ShapePreviewTab({
 }: ShapePreviewTabProps) {
   const [examplesRevision, setExamplesRevision] = useState(0);
   const examples = useKindExamples(kindDefinitionId, examplesRevision);
+  // The wrapper around the rendered examples — what Inspect measures and captures.
+  const renderedRef = useRef<HTMLDivElement>(null);
+  const sample =
+    examples.status === "ready"
+      ? (examples.rows.find((row) => row.isCanonical) ?? examples.rows[0])
+      : undefined;
   // The dual-gate verdict is fetched ONCE, inside ShapeActivationControl
   // (owner-only). It publishes here so the Shape Studio surface can emit it
   // without a second RPC; stays null for non-owners, which is honest — the
@@ -137,7 +144,10 @@ export default function ShapePreviewTab({
           emittedJsonSchema={emittedJsonSchema}
           sampleValue={
             examples.status === "ready"
-              ? ((examples.rows.find((row) => row.isCanonical) ?? examples.rows[0])?.data ?? null)
+              ? ((
+                  examples.rows.find((row) => row.isCanonical) ??
+                  examples.rows[0]
+                )?.data ?? null)
               : null
           }
         />
@@ -159,33 +169,52 @@ export default function ShapePreviewTab({
           onActivationVerdict={setActivationVerdict}
         />
       )}
-      <KindExamplePreview
-        kind={kind}
-        examples={examples}
-        read={readOf(
-          { status: examples.status, error: examples.status === "error" ? examples.message : null },
-          { what: "the saved examples", onRetry: () => setExamplesRevision((revision) => revision + 1) },
-        )}
-        emptyState={
-          <div className="rounded-md border border-dashed border-border bg-card/50 px-4 py-8 text-center">
-            <p className="text-sm font-medium text-foreground">
-              No saved examples for this shape yet.
-            </p>
-            <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
-              {isOwnedByViewer
-                ? "Add the first canonical sample above, or try the Shape live."
-                : "Try it live — fill the form and see how it renders."}
-            </p>
-            <Link
-              href={shapeTestHref(kind)}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              <FlaskConical className="h-3.5 w-3.5" />
-              Open the Test tab
-            </Link>
-          </div>
-        }
-      />
+      {sample ? (
+        <ShapeInspectPanel
+          className="mb-3"
+          kind={kind}
+          label={label}
+          kindDefinitionId={kindDefinitionId}
+          targetRef={renderedRef}
+          payload={sample.data}
+          location={`/shapes/${kind}`}
+        />
+      ) : null}
+      <div ref={renderedRef} data-testid="shape-rendered">
+        <KindExamplePreview
+          kind={kind}
+          examples={examples}
+          read={readOf(
+            {
+              status: examples.status,
+              error: examples.status === "error" ? examples.message : null,
+            },
+            {
+              what: "the saved examples",
+              onRetry: () => setExamplesRevision((revision) => revision + 1),
+            },
+          )}
+          emptyState={
+            <div className="rounded-md border border-dashed border-border bg-card/50 px-4 py-8 text-center">
+              <p className="text-sm font-medium text-foreground">
+                No saved examples for this shape yet.
+              </p>
+              <p className="mx-auto mt-1 max-w-sm text-xs text-muted-foreground">
+                {isOwnedByViewer
+                  ? "Add the first canonical sample above, or try the Shape live."
+                  : "Try it live — fill the form and see how it renders."}
+              </p>
+              <Link
+                href={shapeTestHref(kind)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                <FlaskConical className="h-3.5 w-3.5" />
+                Open the Test tab
+              </Link>
+            </div>
+          }
+        />
+      </div>
     </SurfaceRuntimeProvider>
   );
 }
