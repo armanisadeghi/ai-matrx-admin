@@ -14,8 +14,9 @@
  *     substring of the source from `<tag>` through `</tag>`;
  *   - a fence: an opener line (```lang / ~~~lang), the body, then a closer of the same fence;
  *   - a markerless block (GFM table, tree, bare JSON object): the body itself.
- * A block that is not found exactly, or is not closed, returns null and the caller leaves it as
- * written — a block is never saved from bytes it cannot place.
+ * A tag the reply never closed is a span to the end of its text block. A block that is not found
+ * exactly returns null and the caller leaves it as written — a block is never saved from bytes
+ * it cannot place.
  */
 
 export interface BlockSourceSpan {
@@ -42,12 +43,17 @@ const CLOSE_TAG = /<\/[A-Za-z][\w:.-]*>$/;
 /** The inner text of a whole `<tag …>…</tag>` source, without the one line break on each edge. */
 function tagSpan(text: string, from: number, source: string): BlockSourceSpan | null {
   const trimmed = source.trimEnd();
-  if (!trimmed.startsWith("<") || !CLOSE_TAG.test(trimmed)) return null;
+  if (!trimmed.startsWith("<")) return null;
   const at = text.indexOf(trimmed, from);
   if (at < 0) return null;
   const openEnd = trimmed.indexOf(">") + 1;
-  const closeStart = trimmed.lastIndexOf("</");
-  if (openEnd <= 0 || closeStart < openEnd) return null;
+  if (openEnd <= 0) return null;
+  // A tag the reply never closed (it hit its limit mid-block) runs to the end of its text block:
+  // its body is everything after the opener, and nothing after it is part of the block.
+  const closed = CLOSE_TAG.test(trimmed);
+  if (!closed && text.slice(at + trimmed.length).trim()) return null;
+  const closeStart = closed ? trimmed.lastIndexOf("</") : trimmed.length;
+  if (closeStart < openEnd) return null;
   let inner = trimmed.slice(openEnd, closeStart);
   if (inner.startsWith("\r\n")) inner = inner.slice(2);
   else if (inner.startsWith("\n")) inner = inner.slice(1);
@@ -107,8 +113,7 @@ export function locateBlockSource(
   block: LocatableBlock,
 ): BlockSourceSpan | null {
   const meta = block.metadata ?? {};
-  // A tag block names its own source; an unclosed tag (a reply cut off mid-block) is not a
-  // finished block and is never saved as one.
+  // A tag block names its own source (an unclosed one, a reply cut off mid-block, too).
   const tagSource =
     typeof meta.xmlSource === "string"
       ? meta.xmlSource

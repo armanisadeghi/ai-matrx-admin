@@ -137,13 +137,16 @@ describe("materialization keeps every byte of the answer", () => {
     expect(textOf(planMaterialization(stored).rewrittenBlocks as CxContentBlock[])).toBe(textOf(stored));
   });
 
-  it("a block the reply never closed is left exactly as written", async () => {
-    // The e38df89b shape: the reply hit its token limit inside <progress_tracker>.
+  it("a block the reply never closed is saved with every byte it has, and nothing after it moves", async () => {
+    // The e38df89b shape: the reply hit its token limit inside <progress_tracker>, so the stored
+    // answer never held "- [ ] Ship" — the model stopped before writing it.
     const cut = "```chart\n{\"type\":\"pie\",\"data\":[{\"label\":\"Web\",\"value\":6}]}\n```\n\n<progress_tracker>\n### Launch\n- [x] Plan\n";
     const stored = await save([text(cut), text("\n\nMy reply ran out of room.")]);
     const saved = (stored[0] as { text: string }).text;
-    expect(saved.match(STORED_TAG)).toHaveLength(1);
-    expect(saved.endsWith("\n\n<progress_tracker>\n### Launch\n- [x] Plan\n")).toBe(true);
+    expect(saved.match(STORED_TAG)).toHaveLength(2);
+    expect(markStored(saved)).toBe(
+      "\u0000{\"type\":\"pie\",\"data\":[{\"label\":\"Web\",\"value\":6}]}\u0001\n\n\u0000### Launch\n- [x] Plan\u0001\n",
+    );
     expect((stored[1] as { text: string }).text).toBe("\n\nMy reply ran out of room.");
   });
 });

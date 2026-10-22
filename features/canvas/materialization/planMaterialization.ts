@@ -336,12 +336,12 @@ export function planMaterialization(
         (!canvasType || canvasType === structuredHit.def.canvasType);
       if (!structuredFits && !canvasType) continue; // not an artifact — stays as written
 
-      // A block whose exact bytes cannot be placed (or that never closed — a reply cut off
-      // mid-block) is left as written: it is never saved from bytes the answer does not hold.
+      // A block whose exact bytes cannot be placed is left as written: it is never saved from
+      // bytes the answer does not hold.
       const span = locateBlockSource(text, cursor, sb);
       if (!span) {
         console.warn(
-          `[materialize] a ${sb.type} block was left as written: its exact source was not found or it is not closed`,
+          `[materialize] a ${sb.type} block was left as written: its exact source was not found`,
         );
         continue;
       }
