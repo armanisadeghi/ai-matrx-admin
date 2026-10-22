@@ -632,6 +632,26 @@
         {
           "file": "features/file-actions/home/__tests__/recent.test.ts",
           "reason": "PROVABLY NOT THE MONEY FORMATTER: the matched line is the test oracle for `sheetCellText`, which renders a spreadsheet cell through the cell's OWN number-format code (`$#,##0.00`); the expectation must mirror that spreadsheet format, not kit's formatUsd voice."
+        },
+        {
+          "file": "app/(core)/organizations/[orgId]/settings/payments/page.tsx",
+          "reason": "NOT A DISPLAYED MONEY STRING. `(amount_cents / 100).toFixed(2)` seeds the editable amount field's initial text (\"12.50\"); it is form input state with no symbol and no grouping, which a formatted \"$12.50\" would break."
+        },
+        {
+          "file": "components/cost/costColumn.test.ts",
+          "reason": "NOT PRODUCT CODE. A test fixture's stub `format` function standing in for the unit formatter the test injects."
+        },
+        {
+          "file": "features/data-sources/library/tools/__tests__/tool-result-and-card.test.tsx",
+          "reason": "NOT PRODUCT CODE. A jest.mock stub of formatAdminUsd for the test run."
+        },
+        {
+          "file": "features/content-ir/studio/playground/demos/reader-locale.ts",
+          "reason": "NOT A TWIN. The matched text is component SOURCE stored as a string for the content-ir playground demo that exists to show Intl formatting in the READER's locale and currency code; it is demo content, not a platform formatter."
+        },
+        {
+          "file": "scripts/route-flow/extract.ts",
+          "reason": "NOT MONEY. The `\"$\"` in a RegExp end anchor (`\"^\" + ... + \"$\"`) in a route-matching script."
         }
       ],
       "shapeCensus": [
@@ -746,6 +766,30 @@
         {
           "file": "scripts/applets-templates/shared-source.mjs",
           "why": "IS the money capability, but as SOURCE TEXT: SHARED_HELPERS is written verbatim into every template Applet's own shared.tsx (Applets own their files), so the formatter runs inside the Applet, not in this repo. Collapsing needs proof that the Applet runtime resolves @ai-matrx/kit/format and a regeneration of the shipped templates; until then the helper stays in the template. Its voice (whole dollars, no cents) is also the whole-dollar price voice formatUsd lacks. (2026-10-07 formatter-drain lane)"
+        },
+        {
+          "file": "features/admin/attention/sources/tool-health.ts",
+          "why": "kit output differs: the admin consequence sentence prints the price-book proposal's raw values verbatim (`$0.000004 to $0.000005 per unit`, strings of unknown type); formatUsd would regroup or round them."
+        },
+        {
+          "file": "features/admin/tool-control/ToolAlertRecord.tsx",
+          "why": "kit output differs: the alert record prints the vendor's proposal values verbatim as `$` + text (strings of unknown type); formatUsd would regroup, round or turn an unreadable value into an em-dash."
+        },
+        {
+          "file": "features/admin/users/record/ActivityRecordDoor.tsx",
+          "why": "kit output differs: `$${Number(total_cost ?? 0).toFixed(4)}` shows an unmeasured (null) cost as \"$0.0000\"; formatUsd(cost, {digits:4}) shows \"—\" and groups thousands. Admin-only screen."
+        },
+        {
+          "file": "features/marketing/seo/domain-research/summaries.ts",
+          "why": "kit output differs: the stat-tile `$` voice abbreviates \"$12K\" / \"$1.2M\" (K from 10,000, whole K); kit's compact voice reads \"12k\" / \"1.2M\" in lowercase with different tiers. Same body is censused under formatCount."
+        },
+        {
+          "file": "features/payments/server.ts",
+          "why": "kit output differs: the refusal sentence prints the limit as \"5000.00\" with no currency symbol or grouping; formatUsd reads \"$5,000\"."
+        },
+        {
+          "file": "features/tool-battle/derive.ts",
+          "why": "kit output differs: the cost-per-success lane prints a bare six-decimal number (\"0.001234\") under a column header that names the unit; formatUsd would add `$` and adapt the digits."
         }
       ]
     },
