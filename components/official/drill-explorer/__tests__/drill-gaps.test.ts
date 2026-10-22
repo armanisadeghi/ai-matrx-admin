@@ -25,7 +25,7 @@ describe("every unit the contract carries is formatted by the screen", () => {
   it("a share of 1 reads as a percent, a multiplier with ×, tokens compact, a count whole", () => {
     expect(drillUnitFormatter("share", "points", 20_000)(0.1234)).toBe("12.3%");
     expect(drillUnitFormatter("times", "points", 20_000)(5.99475984)).toBe("6.0×");
-    expect(drillUnitFormatter("tokens", "points", 20_000)(12_400_000)).toBe("12M");
+    expect(drillUnitFormatter("tokens", "points", 20_000)(12_400_000)).toBe("12.4M");
     expect(drillUnitFormatter("count", "points", 20_000)(1204)).toBe("1,204");
     expect(drillUnitFormatter(undefined, "points", 20_000)(0.000434)).toBe("0.000434");
     expect(drillUnitFormatter("ms", "points", 20_000)(null)).toBe("—");
