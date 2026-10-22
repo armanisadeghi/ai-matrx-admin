@@ -96,6 +96,7 @@ import { BOARD_ITEM_TYPES, itemTypeByKey, itemTypeFor } from "../items/catalog";
 import { coverOf, coverSource } from "../items/cover-source";
 import { BoardTokenTablesContext, boardTokenTableIds } from "../items/board-token-tables";
 import { BoardTokensMount } from "../items/data-items";
+import { customTableOf } from "../items/table-tile";
 import { startNewEntries, type BoardItemType, type ItemBasicValues, type PickerProps, type PlacedItem, type StartNewEntry } from "../items/types";
 import { filesToBoardItems } from "../items/file-drop";
 import { noteSeedEdit } from "../items/work-sources";
@@ -135,14 +136,15 @@ export interface UserBoardTile {
 function describeItem(
   source: NodeSource,
   captured?: string | null,
-): { kind: string; surface: string | null; loadsSurface?: true } {
+): { kind: string; surface: string | null; loadsSurface?: true; table?: { id: string; token?: string } } {
   const type = itemTypeFor(source);
   const kind = type?.kindLabel ?? type?.key ?? "item";
   if (!type || "none" in type.surface) return { kind, surface: null };
   if ("published" in type.surface) {
     return { kind, surface: captured ?? type.surface.published(source), loadsSurface: true };
   }
-  return { kind, surface: type.surface.name };
+  const table = customTableOf(source);
+  return { kind, surface: type.surface.name, ...(table ? { table } : {}) };
 }
 
 /** Down only takes a tile off this board — what it shows lives on. */

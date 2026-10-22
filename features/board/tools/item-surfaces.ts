@@ -180,6 +180,8 @@ export interface BoardItemRow {
   stored_basics?: StoredBasics | null;
   /** Joined to the asking chat tile by a line: carries its full values, live or not (`CONNECTED_FULL_TOTAL_CHARS`). */
   connected?: boolean;
+  /** The custom Table the item shows (id + a template's table token): its rows are reached by id, awake or asleep. */
+  table?: { id: string; token?: string } | null;
 }
 
 /**
@@ -206,6 +208,10 @@ export interface BoardItemsOverview {
     kind: string;
     surface: string | null;
     live: boolean;
+    /** A table item's own table id: the records tool reads and writes its rows by it, with no tile awake. */
+    table_id?: string;
+    /** A template table's pack token ("color", "type_style", "spacing"…), stamped at install. */
+    table_token?: string;
     selected?: true;
     parked?: true;
     removed?: true;
@@ -378,6 +384,7 @@ function buildOverview(
       kind: row.kind,
       surface: row.surface,
       live: row.live,
+      ...(row.table ? { table_id: row.table.id, ...(row.table.token ? { table_token: row.table.token } : {}) } : {}),
       ...(row.selected ? { selected: true as const } : {}),
       ...(row.parked ? { parked: true as const } : {}),
       ...(row.removed ? { removed: true as const } : {}),
@@ -433,7 +440,9 @@ function buildOverview(
     live_item_ids: rows.filter((row) => row.live).map((row) => row.id),
     item_count: rows.length,
     omitted_count: Math.max(0, rows.length - listed.length - tail.length),
-    read_in_full: "board_open_item(id) reads any item in full: every value, its write targets and tools.",
+    read_in_full:
+      "board_open_item(id) reads any item in full: every value, its write targets and tools. A table item's table_id " +
+      "is its table in the records tool: read and write its rows by that id, with no tile open.",
     items,
     ...(tail.length > 0 ? { more_items: tail.map((row) => ({ id: row.id, title: row.title })) } : {}),
     limits: {

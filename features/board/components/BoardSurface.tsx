@@ -58,6 +58,7 @@ export function BoardSurface<T extends BoardTileBase & { title: string }>({
             surface: described.surface ?? null,
             live: t.id === liveId,
             stored_basics: host.storedBasics?.(t) ?? null,
+            ...(described.table ? { table: described.table } : {}),
             ...(selection.has(t.id) ? { selected: true } : {}),
             ...(parked.has(t.id) ? { parked: true } : {}),
             ...(removed.has(t.id) ? { removed: true } : {}),
