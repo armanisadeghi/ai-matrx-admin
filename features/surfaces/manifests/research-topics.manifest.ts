@@ -230,6 +230,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const researchTopicsManifest: SurfaceManifest = {
   surfaceName: RESEARCH_TOPICS_SURFACE_NAME,
+  situation:
+    "They are on their list of research topics, showing {total_count|an unknown number of} topics; the topics on screen are in your context. They can open a topic, search or narrow the list, show archived topics, and create, rename or delete topics.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

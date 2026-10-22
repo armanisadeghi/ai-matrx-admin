@@ -750,6 +750,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const knowledgeManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge",
+  situation:
+    "They are in the knowledge system, which turns documents into extractions, a graph of things and their links, and suggestions to review. Extraction in view: {extraction_job_name|none}. Graph in view: {graph_node_count|no} entities. Suggestions waiting: {suggestions_pending_count|none shown}. They can correct extractions and filter what they see.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

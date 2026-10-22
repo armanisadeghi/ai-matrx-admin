@@ -143,6 +143,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const knowledgeRepositoriesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-repositories",
+  situation:
+    "They are on the list of code repositories indexed for knowledge search: {source_scoped_repository_count} repositories, plus {unattached_file_count} code files not in any repository. Indexing right now: {indexing_state}. They can select a repository and index it.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

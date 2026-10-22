@@ -414,6 +414,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const ragDataStoresManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-data-stores",
+  situation:
+    "They are on their knowledge data stores, the named sets of sources that decide what an agent can search. They can reach {store_count} stores and have {store_name|none of them} open, holding {member_count|no} sources. They can create a store and rename or re-describe the open one.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

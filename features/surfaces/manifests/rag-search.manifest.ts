@@ -486,6 +486,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const ragSearchManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-search",
+  situation:
+    "They are in the knowledge search lab. The last search was {executed_query|not run yet}, over {data_store_name|all their content}, and returned {result_count|no} results (best score {top_score|none}). They can change the query, pick a data store or kinds of source, and tune how the search ranks results.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

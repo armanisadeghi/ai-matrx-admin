@@ -719,6 +719,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const researchManifest: SurfaceManifest = {
   surfaceName: "matrx-user/research",
+  situation:
+    "They have a research topic open: {topic_name|name not loaded yet}, on its {active_view|overview} view, status {topic_status|unknown}, with {keyword_count|no} keywords, {source_count|no} sources and {analysis_count|no} analyses. They can rename it, rewrite its research question, add keywords or change how much it runs on its own.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -511,6 +511,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const ragViewerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-viewer",
+  situation:
+    "They are reading a processed document, {document_name|still loading}, on page {active_page_number} of {total_pages|an unknown number}, in the {page_text_view|cleaned} text; that page's text is in your context. They can move between pages, switch to the raw text and search inside the document.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

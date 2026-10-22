@@ -492,6 +492,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminKnowledgeManifest: SurfaceManifest = {
   surfaceName: ADMIN_KNOWLEDGE_SURFACE_NAME,
+  situation:
+    "As a platform admin they are in the knowledge admin tools, on the {knowledge_section} section (website agents, graph cost, graph inspector, podcasts or the research system). These are platform-wide records, not one organization's. Nothing here is changed through you; read and explain what is on screen.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,

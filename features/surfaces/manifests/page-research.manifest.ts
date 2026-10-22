@@ -386,6 +386,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const pageResearchManifest: SurfaceManifest = {
   surfaceName: PAGE_RESEARCH_SURFACE_NAME,
+  situation:
+    "They have the page research window open for the planned page \"{page_label}\" (target search \"{primary_keyword}\"). The draft topic is {topic_name|not named yet} with keywords {clean_keywords|none yet}, and the run is at the {research_phase} step. They can change the topic name and keywords before they start it.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

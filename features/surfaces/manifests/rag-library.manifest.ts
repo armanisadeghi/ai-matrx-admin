@@ -599,6 +599,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const ragLibraryManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-library",
+  situation:
+    "They are in their knowledge library ({library_view} view): {documents_total|an unknown number of} processed documents, {documents_ready|none} ready to search and {documents_pending|none} still waiting, with {active_job_count|no} jobs running. They can search and filter the list, open a document, or browse the shared library catalog.",
   inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
