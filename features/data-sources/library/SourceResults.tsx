@@ -117,10 +117,18 @@ export function LiveRunResults({
     );
   }
   if (run.status === "running") {
-    const tableId = liveJob.data?.table_id ?? null;
+    const row = liveJob.data ?? null;
+    const tableId = row?.table_id ?? null;
+    // A run re-attached after a reload reads only "Working" from the server: the job row's own
+    // status says more, and its start time keeps the clock honest across the reload.
+    const progress =
+      row && run.progress && (run.progress.label === "Working" || run.progress.label === "Starting")
+        ? { ...run.progress, label: runStatusLabel(row.status) }
+        : run.progress;
+    const startedAt = row ? Math.min(run.startedAt, Date.parse(row.created_at) || run.startedAt) : run.startedAt;
     return (
       <div className="flex flex-col gap-3" data-results-live="">
-        <FetchProgress label={label} progress={run.progress} startedAt={run.startedAt} layout="row" />
+        <FetchProgress label={label} progress={progress} startedAt={startedAt} layout="row" />
         {tableId ? <InlineResultsTable tableId={tableId} /> : <RowsComing />}
       </div>
     );

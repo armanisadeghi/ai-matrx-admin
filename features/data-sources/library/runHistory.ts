@@ -122,6 +122,8 @@ export function runStatusLabel(status: string): string {
   if (status === "done") return "Done";
   if (status === "failed" || status === "error" || status === "refused") return "Failed";
   if (status === "cancelled") return "Stopped";
+  if (status === "queued") return "Queued";
+  if (status === "fetching") return "Fetching";
   if (status === "waiting_for_provider") return "Waiting";
   if (status === "storing") return "Saving";
   if (isOpenStatus(status)) return "Running";
