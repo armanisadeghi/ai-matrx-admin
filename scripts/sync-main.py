@@ -3203,12 +3203,14 @@ def main():
         rc, _, err = git("push", "-q", REMOTE, "HEAD:%s" % BRANCH, check=False)
         if rc == 0:
             break
-        if attempt == MAX_ATTEMPTS or not re.search(r"non-fast-forward|fetch first|rejected", err):
+        if not re.search(r"non-fast-forward|fetch first|rejected", err):
             die("git push failed:\n" + err)
         pushed, why = fast_catch_up_push()
         if pushed:
             say("GitHub moved while syncing; merged its new commits and pushed (fast catch-up).")
             break
+        if attempt == MAX_ATTEMPTS:
+            die("git push failed (fast catch-up: %s):\n%s" % (why, err))
         say("GitHub moved while syncing; fast catch-up not possible (%s); going again (attempt %d)."
             % (why, attempt + 1))
     else:
