@@ -56,13 +56,14 @@ function flip(
         ],
         defaultValue: "on",
       },
+      reason: { placeholder: "Reason (recorded with each change)" },
     }),
     runOne: async (_id, row, input) => {
       if (!row) throw new Error("Not loaded");
       const on = input.value !== "off";
       if (current(row) === on) throw new Error(on ? "Already on" : "Already off");
-      const verb = on ? options.on : options.off;
-      await runReasonDoor(id, row, `Bulk update from the Accounts list: ${verb}`, { on });
+      if (!input.reason) throw new Error("A reason is required.");
+      await runReasonDoor(id, row, input.reason, { on });
       personChanged(row.id);
     },
   };

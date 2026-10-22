@@ -544,6 +544,7 @@ export function OrganizationsAdminClient() {
           options: ROLE_OPTIONS.map((role) => ({ value: role, label: role.charAt(0).toUpperCase() + role.slice(1) })),
           defaultValue: "admin",
         },
+        reason: { placeholder: "Reason (recorded in the admin history)" },
       }),
       run: (sel, input) =>
         runPerRow(
@@ -552,13 +553,14 @@ export function OrganizationsAdminClient() {
             if (!selectedOrganization || !member) throw new Error("No organization selected");
             const role = ROLE_OPTIONS.find((r) => r === input?.value);
             if (!role) throw new Error("Pick a role");
+            if (!input?.reason) throw new Error("A reason is required.");
             if (member.role === role) throw new Error(`Already ${role}`);
             await mutateMembership("PATCH", {
               organizationId: selectedOrganization.id,
               userId: member.user_id,
               role,
-              // The bulk dialog asks one value (the role); the audit note says what was done.
-              reason: `Bulk role change from the organizations admin page: set to ${role}`,
+              // The dialog asked one value (the role) and one reason; the audit records the person's words.
+              reason: input?.reason ?? "",
             });
           },
           {
