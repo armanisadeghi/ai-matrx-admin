@@ -12,6 +12,9 @@ export interface WorkflowOverview {
   spec: Record<string, unknown>;
   /** `{overview box id: [real node ids]}`. */
   nodeMap: Record<string, string[]>;
+  /** The server's layout check; `null` when it has not run (VisualMap then says "Layout not checked"). */
+  verified: boolean | null;
+  issues: number | null;
 }
 
 /** Reads the endpoint's answer; null when it is not a drawable overview. */
@@ -31,6 +34,8 @@ export function parseWorkflowOverview(data: unknown): WorkflowOverview | null {
     definitionId: typeof d.definition_id === "string" ? d.definition_id : "",
     spec: spec as Record<string, unknown>,
     nodeMap,
+    verified: typeof d.verified === "boolean" ? d.verified : null,
+    issues: typeof d.issues === "number" && Number.isFinite(d.issues) ? d.issues : null,
   };
 }
 
