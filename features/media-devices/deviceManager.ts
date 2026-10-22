@@ -49,6 +49,7 @@ import {
   releaseMicStream,
   setPreferredInputDeviceId,
   notifyMicPermissionRevoked,
+  listMediaDevices,
 } from "@ai-matrx/browser-audio/core";
 import { setPreferredOutputDeviceId } from "@ai-matrx/media/speech";
 
@@ -179,27 +180,6 @@ function setCameraPermissionState(next: MediaPermissionState): void {
   emit();
 }
 
-function mapDevices(devices: MediaDeviceInfo[]): {
-  inputs: MediaDeviceDescriptor[];
-  outputs: MediaDeviceDescriptor[];
-  cameras: MediaDeviceDescriptor[];
-} {
-  const inputs: MediaDeviceDescriptor[] = [];
-  const outputs: MediaDeviceDescriptor[] = [];
-  const cameras: MediaDeviceDescriptor[] = [];
-  for (const d of devices) {
-    const info: MediaDeviceDescriptor = {
-      deviceId: d.deviceId,
-      label: d.label,
-      groupId: d.groupId,
-    };
-    if (d.kind === "audioinput") inputs.push(info);
-    else if (d.kind === "audiooutput") outputs.push(info);
-    else if (d.kind === "videoinput") cameras.push(info);
-  }
-  return { inputs, outputs, cameras };
-}
-
 /**
  * Enumerate media devices and update the cached lists. Labels are only present
  * once permission is granted — calling this before a grant yields entries with
@@ -216,11 +196,16 @@ async function enumerateDevicesNow(): Promise<MediaDeviceEnumeration> {
     };
   }
   try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const { inputs, outputs, cameras } = mapDevices(devices);
-    m.inputs = inputs;
-    m.outputs = outputs;
-    m.cameras = cameras;
+    // The package's one device listing (kinds sorted, shared with meet + capture).
+    const list = await listMediaDevices();
+    const describe = (d: { deviceId: string; label: string; groupId: string }) => ({
+      deviceId: d.deviceId,
+      label: d.label,
+      groupId: d.groupId,
+    });
+    m.inputs = list.audioInputs.map(describe);
+    m.outputs = list.audioOutputs.map(describe);
+    m.cameras = list.videoInputs.map(describe);
     deviceEnumerationGeneration += 1;
     emit();
     return {

@@ -59,7 +59,19 @@ import type {
   StudioSession,
   UpdateSessionInput,
 } from "../types";
-import { audioSafetyStore } from "@/features/audio/services/audioSafetyStore";
+import {
+  getSharedAudioSafetyStore,
+  migrateLegacyAudioSafetyStore,
+  safetyRecordAudio,
+} from "@ai-matrx/browser-audio/core";
+import { LEGACY_AUDIO_SAFETY_DB_NAME } from "@/features/audio/constants";
+
+/** The stored audio for a recording's crash-safe id, or null. Drains the old app database first. */
+async function readSafetyAudio(safetyId: string): Promise<Blob | null> {
+  await migrateLegacyAudioSafetyStore({ databaseName: LEGACY_AUDIO_SAFETY_DB_NAME });
+  const record = await getSharedAudioSafetyStore().get(safetyId);
+  return record ? safetyRecordAudio(record) : null;
+}
 import {
   assembleJournaledAudio,
   discardChunkJournal,
@@ -658,7 +670,7 @@ export const uploadRecordingAudioThunk = createAsyncThunk<
     try {
       let blob: Blob | null = audioBlob ?? null;
       if ((!blob || blob.size === 0) && safetyId) {
-        blob = await audioSafetyStore.getAudioBlob(safetyId);
+        blob = await readSafetyAudio(safetyId);
       }
       if (!blob || blob.size === 0) return;
       const userId = getUserId();
@@ -891,7 +903,7 @@ export const reconcileStuckRecordingsThunk = createAsyncThunk<
       const seg = byId[id];
       if (!seg || seg.audioPath || !seg.safetyId) continue;
       try {
-        let blob = await audioSafetyStore.getAudioBlob(seg.safetyId);
+        let blob = await readSafetyAudio(seg.safetyId);
         let via = "IndexedDB (same device)";
         if (!blob || blob.size === 0) {
           // Not on this device — try the cross-device chunk journal.

@@ -9,9 +9,15 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { toast } from "@/lib/toast";
-import { audioSafetyStore, SafetyRecord } from "../services/audioSafetyStore";
 import { discardChunkJournal } from "../services/audioChunkJournal";
-import { getSharedDirtyRecordingMarker } from "@ai-matrx/browser-audio/core";
+import { LEGACY_AUDIO_SAFETY_DB_NAME } from "../constants";
+import {
+  getSharedAudioSafetyStore,
+  getSharedDirtyRecordingMarker,
+  migrateLegacyAudioSafetyStore,
+  safetyRecordAudio,
+  type SafetyRecord,
+} from "@ai-matrx/browser-audio/core";
 
 interface AudioRecoveryContextValue {
   hasRecoveredData: boolean;
@@ -55,7 +61,13 @@ export function AudioRecoveryProvider({
   const checkForOrphans = useCallback(async () => {
     try {
       if (typeof window === "undefined" || !window.indexedDB) return;
-      const orphans = await audioSafetyStore.getOrphaned();
+      // One-time, idempotent: recordings the old app-owned database still holds
+      // move into the package store (copy, verify, then delete the old DB). A
+      // failed copy keeps the old data and is logged loudly by the package.
+      await migrateLegacyAudioSafetyStore({
+        databaseName: LEGACY_AUDIO_SAFETY_DB_NAME,
+      });
+      const orphans = await getSharedAudioSafetyStore().listRecoverable();
       setRecoveredItems(orphans);
       setRecoveryError(null);
       // Clean scan — nothing to recover, so the dirty-recording boot marker
@@ -75,7 +87,7 @@ export function AudioRecoveryProvider({
 
   const dismissItem = useCallback(async (id: string) => {
     try {
-      await audioSafetyStore.deleteEntry(id);
+      await getSharedAudioSafetyStore().delete(id);
       // User explicitly discarded the recording — drop its eager chunk
       // journal (cross-device staging) too. Best-effort.
       void discardChunkJournal(id);
@@ -94,7 +106,7 @@ export function AudioRecoveryProvider({
   const dismissAll = useCallback(async () => {
     try {
       for (const item of recoveredItems) {
-        await audioSafetyStore.deleteEntry(item.id);
+        await getSharedAudioSafetyStore().delete(item.id);
         void discardChunkJournal(item.id);
       }
       setRecoveredItems([]);
@@ -110,7 +122,8 @@ export function AudioRecoveryProvider({
 
   const getAudioBlob = useCallback(async (id: string): Promise<Blob | null> => {
     try {
-      return await audioSafetyStore.getAudioBlob(id);
+      const record = await getSharedAudioSafetyStore().get(id);
+      return record ? safetyRecordAudio(record) : null;
     } catch {
       return null;
     }
