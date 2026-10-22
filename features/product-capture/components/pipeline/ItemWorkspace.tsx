@@ -34,6 +34,7 @@ import { ResearchPanel } from "./ResearchPanel";
 import { QuestionsPanel } from "./QuestionsPanel";
 import { GradingPanel } from "./GradingPanel";
 import { ListingPanel } from "./ListingPanel";
+import { ProductsPanel } from "./ProductsPanel";
 import { FeaturedImageStrip } from "./FeaturedImageStrip";
 import {
   CommitField,
@@ -205,11 +206,15 @@ export function ItemWorkspace({
         </PanelSection>
       )}
 
-      {item.stage === "intake" && !instantAnalysis && (
+      {/* The SERVER lane's products — one per product the analyzer declared,
+          each with its own research run. Leads the stage panels: it is what
+          the pipeline actually found. */}
+      <ProductsPanel products={ws.products} />
+
+      {item.stage === "intake" && !instantAnalysis && ws.products.length === 0 && (
         <PanelSection title="Awaiting analysis">
           <p className="text-sm text-muted-foreground">
-            The intake vision agent runs when capture closes. Its analysis
-            lands here; move the item manually if it is stuck.
+            Analysis lands here when capture closes.
           </p>
         </PanelSection>
       )}
