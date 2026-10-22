@@ -152,7 +152,7 @@ export function AuthenticatorSection({ challenge = false, onElevated }: Authenti
               <Button type="button" variant="outline" disabled={busy} onClick={() => void remove(removing)}>Confirm removal</Button>
               <Button type="button" variant="outline" disabled={busy} onClick={() => setRemoving(null)}>Keep authenticator</Button>
             </div> : null}
-            {!setup ? <div className="flex flex-wrap items-center gap-2">
+            {!setup && challenge && !state.elevated && state.factors.some(factor => factor.verified) ? null : !setup ? <div className="flex flex-wrap items-center gap-2">
               <label className="sr-only" htmlFor="authenticator-name">Authenticator name</label>
               <Input id="authenticator-name" className="min-w-0 flex-1" value={name} maxLength={64} placeholder="Authenticator name" onChange={event => setName(event.target.value)} disabled={busy} autoComplete="off" />
               <Button type="button" variant="outline" disabled={busy || !name.trim()} onClick={() => void begin()}>Add authenticator</Button>
@@ -163,7 +163,7 @@ export function AuthenticatorSection({ challenge = false, onElevated }: Authenti
             </div>}
             {selected ? <form className="flex flex-wrap items-center gap-2" onSubmit={event => { event.preventDefault(); void verify(); }}>
               <label className="sr-only" htmlFor="authenticator-code">Authenticator code</label>
-              <Input id="authenticator-code" className="min-w-0 flex-1" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy} />
+              <Input id="authenticator-code" className="min-w-0 flex-1" placeholder="6-digit code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={event => setCode(event.target.value)} disabled={busy} />
               <Button type="submit" variant="primary" disabled={busy || !/^\d{6}$/.test(code)}>Verify code</Button>
             </form> : null}
             <div className="space-y-3 border-t border-border pt-4">

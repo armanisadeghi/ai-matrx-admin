@@ -128,6 +128,8 @@ describe("authenticator management lifecycle", () => {
     mockRead.mockResolvedValue({ ...initial, factors: [{ id: "primary", name: "Primary", verified: true }] });
     await act(async () => root.render(<AuthenticatorSection challenge onElevated={elevated} />));
     expect(container.querySelector("#authenticator-code")).not.toBeNull();
+    // aal1 cannot add a factor beside a verified one (Auth refuses): not offered.
+    expect(container.textContent).not.toContain("Add authenticator");
     await act(async () => input("authenticator-code", "654321"));
     mockRead.mockResolvedValue({ ...initial, elevated: true, factors: [{ id: "primary", name: "Primary", verified: true }] });
     await act(async () => container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
