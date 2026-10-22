@@ -15,7 +15,8 @@
  *   pnpm surface:feedback --all          # counts per surface
  */
 
-const OPEN_STATUSES_EXCLUDED = ["resolved", "closed", "wont_fix", "split"];
+// awaiting_review: an agent fixed it and Arman has not tested it yet — not open work.
+const OPEN_STATUSES_EXCLUDED = ["resolved", "closed", "wont_fix", "split", "awaiting_review"];
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(name);

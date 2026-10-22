@@ -15,13 +15,18 @@ import { toast } from "@/lib/toast";
 import { boardHref, isBoardError } from "../persistence/boardsService";
 import { BoardSketch } from "./BoardSketch";
 import { listBoardTemplates, makeBoardFromTemplate, templateBoardTitle, type BoardTemplateEntry } from "./board-templates";
-import { isPackKey } from "./board-packs";
+import { isPackKey, listBoardPacks } from "./board-packs";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { writeDesignBoardBrand } from "../design-brand/design-board-brand";
 import { DesignBoardStartDialog, type DesignBoardProgress } from "./design-start";
 import { stashBoardStart, type BoardStartChoice } from "./board-start";
+
+/** Read the template packs ahead of opening (cached per tab), for a door that warms the gallery on hover/focus. */
+export function warmBoardTemplates(): Promise<unknown> {
+  return listBoardPacks();
+}
 
 export function BoardTemplateGallery({
   open,

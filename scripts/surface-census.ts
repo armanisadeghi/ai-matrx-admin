@@ -80,8 +80,10 @@ type Row = {
 };
 
 const PACKAGE_DIST = "node_modules/@ai-matrx/chat/dist";
+// resolveContextOnOpen: a v3 context menu that resolves per-target context at
+// right-click time and launches with it (matrx-user/assistant-message emits only so).
 const MOUNT_MARKER =
-  /SurfaceRuntimeProvider|useSurfaceRuntimeRegistration|registerSurfaceRuntime|useSurfaceScopeContribution|BattleSurfaceRuntime/;
+  /SurfaceRuntimeProvider|useSurfaceRuntimeRegistration|registerSurfaceRuntime|useSurfaceScopeContribution|BattleSurfaceRuntime|resolveContextOnOpen/;
 
 /** Every JS file of the installed chat package, excluding its manifests. */
 function packageFiles(): { file: string; text: string }[] {
@@ -148,6 +150,18 @@ async function main() {
     const builders = Object.entries(mod)
       .filter(([k, v]) => typeof v === "function" && /^create[A-Za-z0-9]*Scope$/.test(k))
       .map(([k]) => k);
+    // A builder shared by sibling surfaces lives in a `_<name>.manifest.ts`
+    // the manifest imports (run console, assessment list): it is this
+    // surface's builder too.
+    if (!rel.startsWith("@")) {
+      const text = readFileSync(rel, "utf8");
+      for (const imp of text.matchAll(/from\s+["'](\.\/_[\w.-]+\.manifest)["']/g)) {
+        const shared = requireModule(path.resolve(path.dirname(rel), `${imp[1]}.ts`)) as Record<string, unknown>;
+        for (const [k, v] of Object.entries(shared)) {
+          if (typeof v === "function" && /^create[A-Za-z0-9]*Scope$/.test(k) && !builders.includes(k)) builders.push(k);
+        }
+      }
+    }
     for (const value of Object.values(mod)) {
       if (value && typeof value === "object" && typeof (value as { surfaceName?: unknown }).surfaceName === "string") {
         const name = (value as { surfaceName: string }).surfaceName;
@@ -162,8 +176,84 @@ async function main() {
   enter("reading the installed @ai-matrx/chat package");
   const pkg = packageFiles();
   enter("finding surface mount files");
-  const mounts = [...repoMountFiles(), ...pkg.filter((f) => MOUNT_MARKER.test(f.text))];
+  // Comments are not evidence: a provider whose comment names another surface
+  // read as mounting it (basic-editor, canvas; review 2026-10-22).
+  const stripComments = (text: string) =>
+    text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`\\])\/\/.*$/gm, "$1");
+  const mounts = [...repoMountFiles(), ...pkg.filter((f) => MOUNT_MARKER.test(f.text))]
+    .map((f) => ({ file: f.file, text: stripComments(f.text) }))
+    .filter((f) => MOUNT_MARKER.test(f.text));
   const word = (w: string) => new RegExp(`\\b${w.replace(/[$]/g, "\\$")}\\b`);
+
+  // Constants outside the manifests that hold a surface's name
+  // (`IMAGE_STUDIO_SURFACE_NAME = "matrx-user/image-studio"`, or an object
+  // const whose `surfaceName:` is it, like FILES_CONTEXT_MENU_PROPS): a mount
+  // that passes the constant names the surface. Only SCREAMING_CASE or
+  // …SurfaceName identifiers count, so a generic `props` never does.
+  const nameConstsOutside = new Map<string, Set<string>>();
+  {
+    const allNames = getAllManifests().map((m) => m.surfaceName);
+    const quotedAll = allNames.flatMap((n) => [`"${n}"`, `'${n}'`]);
+    let hits: string[] = [];
+    try {
+      hits = execFileSync(
+        "git",
+        ["grep", "-n", "-F", ...quotedAll.flatMap((q) => ["-e", q]), "--", "*.ts", "*.tsx", ":!features/surfaces/manifests/*.manifest.ts", ":!features/surfaces/manifests/generated/*"],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 },
+      ).split("\n");
+    } catch {
+      hits = [];
+    }
+    const fileLines = new Map<string, string[]>();
+    const CONST = /^\s*(?:export\s+)?(?:const|let)\s+([A-Za-z_$][\w$]*)/;
+    const NAMEISH = /^[A-Z][A-Z0-9_]+$|SurfaceName$/;
+    for (const hit of hits) {
+      const m = /^(.+?):(\d+):(.*)$/.exec(hit);
+      if (!m || m[1].includes(".test.") || m[1].includes("__tests__")) continue;
+      const [, file, lineNo, text] = m;
+      if (/^\s*(\/\/|\*|\/\*)/.test(text)) continue;
+      const surface = allNames.find((n) => text.includes(`"${n}"`) || text.includes(`'${n}'`));
+      if (!surface) continue;
+      if (!fileLines.has(file)) fileLines.set(file, readFileSync(file, "utf8").split("\n"));
+      const lines = fileLines.get(file)!;
+      let ident: string | undefined;
+      // Only a const that IS the name (declared on this line) or an object
+      // whose `surfaceName:` is it — never a list of many surface names.
+      const sameLine = CONST.exec(text);
+      const isNameProp = /\bsurfaceName\s*:/.test(text);
+      if (sameLine) ident = sameLine[1];
+      for (let i = Number(lineNo) - 2; !ident && isNameProp && i >= Math.max(0, Number(lineNo) - 30); i -= 1) {
+        const c = CONST.exec(lines[i] ?? "");
+        if (c) {
+          ident = c[1];
+          break;
+        }
+      }
+      if (ident && NAMEISH.test(ident)) {
+        if (!nameConstsOutside.has(surface)) nameConstsOutside.set(surface, new Set());
+        nameConstsOutside.get(surface)!.add(ident);
+      }
+    }
+  }
+
+  // `surfaceName=` / `surfaceName:` sites anywhere in the app code: a window
+  // that hands its surface's name to a shared page component (CrmManagerWindow
+  // → CrmListPage), or a launch that names it (image-studio).
+  const surfaceNameProps: { file: string; text: string }[] = [];
+  try {
+    for (const hit of execFileSync(
+      "git",
+      ["grep", "-n", "-E", "surfaceName[[:space:]]*[=:]", "--", "*.ts", "*.tsx", ":!features/surfaces/manifests/*"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 },
+    ).split("\n")) {
+      const m = /^(.+?):\d+:(.*)$/.exec(hit);
+      if (!m || m[1].includes(".test.") || m[1].includes("__tests__")) continue;
+      if (/^\s*(\/\/|\*|\/\*)/.test(m[2])) continue;
+      surfaceNameProps.push({ file: m[1], text: m[2] });
+    }
+  } catch {
+    // git grep exits 1 when nothing matches
+  }
 
   // ONE git grep and ONE package pass for every builder (scripts/lib/surface-emitters.ts).
   const allBuilders = [...new Set([...buildersBySurface.values()].flatMap((e) => e.builders))];
@@ -187,9 +277,16 @@ async function main() {
       .filter(
         (f) =>
           quoted.some((q) => f.text.includes(q)) ||
-          (entry?.nameConsts ?? []).some((c) => word(c).test(f.text)),
+          [...(entry?.nameConsts ?? []), ...(nameConstsOutside.get(m.surfaceName) ?? [])].some((c) =>
+            word(c).test(f.text),
+          ),
       )
       .map((f) => f.file);
+    const consts = [...(entry?.nameConsts ?? []), ...(nameConstsOutside.get(m.surfaceName) ?? [])];
+    for (const site of surfaceNameProps) {
+      if (quoted.some((q) => site.text.includes(q)) || consts.some((c) => word(c).test(site.text)))
+        nameSites.push(site.file);
+    }
     const emitterFiles = [...new Set(builderSites.length ? builderSites : nameSites)];
     const detectedBy: Row["detectedBy"] = builderSites.length
       ? "builder"
@@ -228,7 +325,7 @@ with code(name, readiness, n_values) as (values
 select coalesce(c.name, s.name) as surface,
        c.readiness as code_readiness, s.readiness as db_readiness,
        c.n_values as code_values,
-       (select count(*) from ui.ui_surface_value v where v.surface_name = coalesce(c.name, s.name)) as db_values,
+       (select count(*) from ui.ui_surface_value v where v.surface_name = coalesce(c.name, s.name) and v.deleted_at is null) as db_values,
        s.check_claimed_by, s.check_claimed_at,
        case when c.name is null then 'db row with no manifest'
             when s.name is null then 'never synced'
@@ -236,7 +333,7 @@ select coalesce(c.name, s.name) as surface,
 from code c full join ui.ui_surface s on s.name = c.name
 where c.name is null or s.name is null
    or c.readiness is distinct from s.readiness
-   or c.n_values <> (select count(*) from ui.ui_surface_value v where v.surface_name = c.name)
+   or c.n_values <> (select count(*) from ui.ui_surface_value v where v.surface_name = c.name and v.deleted_at is null)
 order by 1;`);
     return;
   }

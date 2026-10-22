@@ -36,6 +36,7 @@ import type {
   CommerceReviewSchema,
   DraftField,
   DraftItem,
+  MandateStep,
   RecallAuditRow,
   RecallVerdict,
   ReviewVerdict,
@@ -81,7 +82,7 @@ type AssetRow = Pick<
 >;
 
 const RESULT_COLUMNS =
-  "id, intake_asset_id, step, mandate_key, output, confidence, reasoning, run_status, superseded_by, created_at";
+  "id, intake_asset_id, step, mandate_key, output_kind, output, confidence, reasoning, run_status, superseded_by, created_at, finished_at";
 
 type ResultRow = Pick<
   AssetMandateResultRow,
@@ -89,13 +90,82 @@ type ResultRow = Pick<
   | "intake_asset_id"
   | "step"
   | "mandate_key"
+  | "output_kind"
   | "output"
   | "confidence"
   | "reasoning"
   | "run_status"
   | "superseded_by"
   | "created_at"
+  | "finished_at"
 >;
+
+/** The order the pipeline runs its steps — the order a person reads them. */
+const STEP_ORDER: readonly MandateStep[] = [
+  "segmentation",
+  "extraction",
+  "lot_detection",
+  "research",
+  "valuation",
+  "grading",
+  "pricing",
+  "enrichment",
+  "listing_draft",
+  "preflight",
+  "review",
+];
+
+/** One step's LIVE row for an asset — what the pipeline currently holds for it. */
+export interface AssetPipelineResult {
+  id: string;
+  step: MandateStep;
+  mandateKey: string;
+  outputKind: string | null;
+  output: Json | null;
+  confidence: number | null;
+  reasoning: string | null;
+  runStatus: string;
+  finishedAt: string | null;
+}
+
+/**
+ * Every live (non-superseded) result for ONE asset, one row per step in
+ * pipeline order, any run status — a failed or pending step is shown as such
+ * rather than hidden. Re-runs chain via `superseded_by`, so "live" is the row
+ * nothing superseded; among several live rows for a step the newest wins.
+ */
+export async function listAssetPipelineResults(
+  assetId: string,
+): Promise<AssetPipelineResult[]> {
+  const { data, error } = await db()
+    .from("asset_mandate_result")
+    .select(RESULT_COLUMNS)
+    .eq("intake_asset_id", assetId)
+    .is("superseded_by", null)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const byStep = new Map<MandateStep, ResultRow>();
+  for (const row of (data ?? []) as ResultRow[]) {
+    if (!byStep.has(row.step)) byStep.set(row.step, row);
+  }
+  return STEP_ORDER.flatMap((step) => {
+    const row = byStep.get(step);
+    if (!row) return [];
+    return [
+      {
+        id: row.id,
+        step: row.step,
+        mandateKey: row.mandate_key,
+        outputKind: row.output_kind,
+        output: row.output,
+        confidence: row.confidence,
+        reasoning: row.reasoning,
+        runStatus: row.run_status,
+        finishedAt: row.finished_at,
+      },
+    ];
+  });
+}
 
 // ── Shared reads ────────────────────────────────────────────────────────────
 

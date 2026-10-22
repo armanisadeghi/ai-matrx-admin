@@ -28,7 +28,7 @@ import VisualViewportSync from "@/features/shell/components/VisualViewportSync";
 import FloatingClearanceSync from "@/features/shell/components/FloatingClearanceSync";
 import ShellSidebarCookieSync from "@/features/shell/components/ShellSidebarCookieSync";
 import ShellLayoutSync from "@/features/shell/shell-layout/ShellLayoutSync";
-import { heldShellAccent, heldShellLook } from "@/features/shell/shell-layout/held";
+import { heldShellAccent, heldShellLook, heldShellShowsDock } from "@/features/shell/shell-layout/held";
 import { accentAttributes } from "@ai-matrx/design-system/accents";
 import { shellLookAttributes } from "@/features/shell/shell-layout/looks";
 import ShellChatWidthInstant from "@/features/shell/components/ShellChatWidthInstant";
@@ -113,6 +113,8 @@ export default async function AppShell({
   // THE LOOK (custom-experience, 2026-10-20): stamped on the first frame from the layout the (core) layout
   // already picked — no read of its own. Nothing chosen (everyone uncustomized, guests) = no attribute.
   const shellLook = isAuthenticated && initialReduxState.shellLayout ? heldShellLook(initialReduxState.shellLayout, { isGuest: false }) : null;
+  // THE DOCK: hidden on every route by default (shell.css §13); a layout that carries its own Dock shows it.
+  const showDock = isAuthenticated && initialReduxState.shellLayout ? heldShellShowsDock(initialReduxState.shellLayout, { isGuest: false }) : false;
   // THE ACCENT (custom-experience P4, 2026-10-20): the same pick — the person's accent, else the
   // organization's brand color — stamped as the design system's attribute + both themes' tokens, so the
   // first frame is already in it in light or dark. None chosen = no attribute and no style.
@@ -127,6 +129,7 @@ export default async function AppShell({
           data-pathname={pathname}
           {...shellLookAttributes(shellLook)}
           {...accentAttrs}
+          {...(showDock ? { "data-show-dock": "" } : {})}
           {...shellChromeAttributes(pathname, isAuthenticated)}
           {...(domainPanel ? { "data-domain-panel": "" } : {})}
           {...(chatAvailable ? { "data-shell-chat-available": "" } : {})}

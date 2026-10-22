@@ -99,6 +99,8 @@ Every write that sets `reviewed_at` (`web.discovered_item`) or `confirmed_at` (`
 
 ## Change Log
 
+- 2026-10-22 — `runMemory.ts` reads and writes its `users.user_surface_state` row through the shared door `lib/surface-state/userSurfaceState.ts` (also the question desk's answer drafts); a refused read now says so in a toast.
+
 - 2026-10-22 — Every Smart Add and validation answer records who gave it (`reviewed_by` / `confirmed_by`), guarded in code and in the database (single-source plan step 1).
 
 - 2026-10-17 — Enrich web answers are saved the moment they are given (`webDecisions.ts` `WebDecisionSaver` → `validate/persist.ts` → promotion; `enrich/useEnrichWebDecisions.ts`), restored on a reopened Enrich, flushed at Apply and counted on "Changes to your brand"; the brand page's On the web tab (`components/brands/BrandWebDecisionsSection.tsx`) lists every web answer by relationship and changes one in place. Before this, Enrich kept them only in memory and Apply wrote none (40+ answers lost on 2026-10-17). A re-answer after Undo revives its soft-deleted row (the dedup index is not partial). Guard: `__tests__/enrichWebDecisions.test.ts`.

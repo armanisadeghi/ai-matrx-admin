@@ -45,6 +45,7 @@ import {
   useSurfaceWriteHandlers,
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { copyToClipboard } from "@/lib/clipboard/copy";
+import { resolveHiddenModelRefs } from "./resolveHiddenModelRefs";
 
 type ShowFilter = "all" | "shown" | "hidden";
 type ModelType = "text" | "speech_to_text" | "voice" | "image";
@@ -110,22 +111,8 @@ const AiModelsPreferences = () => {
         }),
   }));
   // An agent names models the way a person does ("ALLaM 2 7B") or by id; both
-  // resolve here, and anything unknown or ambiguous is refused before the card.
-  const resolveModelRefs = (value: unknown): string[] => {
-    if (!Array.isArray(value) || value.some((ref) => typeof ref !== "string"))
-      throw new Error("hidden_models expects the full list of models to hide, by id or exact name ([] shows every model).");
-    return (value as string[]).map((ref) => {
-      if (models.some((m) => m.id === ref)) return ref;
-      const needle = ref.trim().toLowerCase();
-      const byName = models.filter(
-        (m) => (m.common_name ?? "").toLowerCase() === needle || m.name.toLowerCase() === needle,
-      );
-      if (byName.length === 1) return byName[0].id;
-      if (byName.length > 1)
-        throw new Error(`"${ref}" matches ${byName.length} models: ${byName.map((m) => `${m.name} (${m.id})`).join(", ")}. Send the id.`);
-      throw new Error(`"${ref}" is not a current catalog model (by id or exact name).`);
-    });
-  };
+  // resolve, and an unknown ref is refused with the closest current models.
+  const resolveModelRefs = (value: unknown) => resolveHiddenModelRefs(value, models);
   useSurfaceWriteHandlers("matrx-user/settings", {
     hidden_models: {
       validate: (value: unknown) => void resolveModelRefs(value),

@@ -42,6 +42,9 @@ export function useShellLook() {
 /** The accent color (null = the built-in primary): the stamp on `.shell-root` and on <html> for portals. */
 export const selectShellAccent = createSelector([selectResolvedShellLayout], (layout) => layout.accent);
 
+/** The winning body carries its own Dock: `.shell-root[data-show-dock]` shows it on phones. */
+export const selectShellCustomDock = createSelector([selectResolvedShellLayout], (layout) => layout.customDock);
+
 export const selectShellStandardView = createSelector([selectShellLayoutSlice], (held) => held.standardView);
 
 export function useResolvedShellLayout(): ResolvedShellLayout {

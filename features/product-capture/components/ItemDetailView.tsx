@@ -27,6 +27,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { TapTargetButtonSolid } from "@ai-matrx/design-system/tap-target";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { CaptureThumb } from "@/features/media-capture/components/CaptureThumb";
+import { MediaThumbnail } from "@ai-matrx/media/react";
 import { toast } from "@/lib/toast";
 
 import type { CaptureFile, CaptureItem } from "../types";
@@ -398,6 +399,7 @@ export function ItemDetailView({ itemId }: { itemId: string }) {
                       key={file.id}
                       fileId={file.fileId}
                       kind={file.kind}
+                      mimeType={file.video?.mime ?? null}
                       alt={item.code ?? "Captured file"}
                       onOpen={() => setPreviewIndex(i)}
                       onLongPress={() => setConfirmDeleteFile(file)}
@@ -523,12 +525,15 @@ export function ItemDetailView({ itemId }: { itemId: string }) {
 export function MediaTile({
   fileId,
   kind,
+  mimeType = null,
   alt,
   onOpen,
   onLongPress,
 }: {
   fileId: string;
   kind: "photo" | "video" | "audio";
+  /** The recording's MIME when known — picks the video thumbnail path. */
+  mimeType?: string | null;
   alt: string;
   onOpen: () => void;
   onLongPress: () => void;
@@ -569,7 +574,22 @@ export function MediaTile({
       className="relative aspect-square select-none overflow-hidden rounded-lg bg-muted"
       style={{ WebkitTouchCallout: "none" }}
     >
-      <CaptureThumb fileId={fileId} alt={alt} />
+      {kind === "video" ? (
+        // A video is not an image: the image transport re-resolves it on every
+        // re-render and lost it after the first autosave ("Image failed to
+        // load" over a raw page URL). The canonical media thumbnail knows the
+        // kind and draws the poster or the video glyph.
+        <MediaThumbnail
+          mediaRef={{ file_id: fileId, mime_type: mimeType ?? "video/mp4" }}
+          fileName={alt}
+          mimeType={mimeType ?? "video/mp4"}
+          iconSize={28}
+          className="h-full w-full"
+          rounded="rounded-lg"
+        />
+      ) : (
+        <CaptureThumb fileId={fileId} alt={alt} />
+      )}
       {kind === "video" && (
         <span className="absolute inset-0 flex items-center justify-center bg-black/20">
           <Play className="h-6 w-6 text-white drop-shadow" />

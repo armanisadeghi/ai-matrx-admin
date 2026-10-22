@@ -121,6 +121,7 @@ const SKIP_DIRS = new Set([
   "public",
 ]);
 const EXTS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
+const PACKAGE_CHAT_DIST = join(ROOT, "node_modules/@ai-matrx/chat/dist");
 
 /** A file is a SEED (a place a handler map may be registered) if it mentions any of these. */
 const SEED_MARKERS = [
@@ -227,6 +228,13 @@ function resolveModuleSpecifier(fromFile: string, spec: string): string | null {
     ...EXTS.map((e) => join(base, "index" + e)),
     base,
   ];
+  // A cloud container has no ../aidream checkout: read `@ai-matrx/chat/*` from
+  // the INSTALLED package's compiled JS instead (2026-10-22 — without it every
+  // page using collectionWriteHandlers read as unhandled there).
+  if (spec.startsWith("@ai-matrx/chat/")) {
+    candidates.push(join(PACKAGE_CHAT_DIST, spec.slice("@ai-matrx/chat/".length) + ".js"));
+    candidates.push(join(PACKAGE_CHAT_DIST, spec.slice("@ai-matrx/chat/".length), "index.js"));
+  }
   for (const candidate of candidates) {
     try {
       if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
@@ -953,6 +961,8 @@ function resolveHandlerKeys(node: ts.Node, file: string, depth = 0): KeyResult {
  * registration is UNRESOLVED — never credited.
  */
 const COLLECTION_MODULE = resolve(ROOT, "../aidream/apps/shared/chat/src/surfaces/runtime/collection-write-targets.ts");
+/** The same builder as shipped in the installed package (used when aidream is not checked out). */
+const COLLECTION_MODULE_DIST = resolve(ROOT, "node_modules/@ai-matrx/chat/dist/surfaces/runtime/collection-write-targets.js");
 const COLLECTION_BUILDER = "collectionWriteHandlers";
 
 type KeyTemplate = { parts: (string | { prop: string })[]; guard: string | null };
@@ -962,7 +972,7 @@ function isCollectionBuilder(candidate: Located): boolean {
   return (
     ts.isFunctionDeclaration(candidate.node) &&
     candidate.node.name?.text === COLLECTION_BUILDER &&
-    resolve(candidate.file) === COLLECTION_MODULE
+    (resolve(candidate.file) === COLLECTION_MODULE || resolve(candidate.file) === COLLECTION_MODULE_DIST)
   );
 }
 

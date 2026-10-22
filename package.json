@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3437",
+  "version": "0.4.3438",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -35,6 +35,7 @@
     "build:local": "powershell -ExecutionPolicy Bypass -File ./scripts/build-local.ps1",
     "build:types": "pnpm check:private-diagnostics && ts-node scripts/generate-manifest.ts && bash scripts/fix-encoding.sh && bash scripts/machine-guard/job.sh next-build -- next build",
     "type-check": "bash scripts/tsc-capped.sh tsc --noEmit -p tsconfig.typecheck.json",
+    "type-check:files": "node scripts/type-check-files.mjs",
     "type-check:queue:test": "python3 scripts/test_tsc_queue.py -v",
     "machine-guard:status": "python3 scripts/machine-guard/machine_guard.py status",
     "machine-guard:dry-run": "python3 scripts/machine-guard/machine_guard.py once --dry-run",
@@ -43,6 +44,7 @@
     "tsc6": "bash scripts/tsc-capped.sh tsc6",
     "check:spaces-snapshot-schema": "tsx --env-file=.env --env-file=.env.local scripts/check-spaces-snapshot-schema.ts",
     "check:spaces-snapshot-schema:self-test": "tsx scripts/check-spaces-snapshot-schema.ts --self-test",
+    "check:no-retired-member-visibility-knob": "node scripts/check-no-retired-member-visibility-knob.mjs",
     "check:no-vendor-names": "node scripts/check-no-vendor-names-in-ui.mjs",
     "check:no-vendor-names:self-test": "node scripts/check-no-vendor-names-in-ui.mjs --self-test",
     "check:one-source-input": "node scripts/check-one-source-input.mjs",
@@ -530,7 +532,6 @@
     "check:hr-time-arithmetic:strict": "npx tsx scripts/check-hr-time-arithmetic.ts --strict",
     "check:surface-write-handlers": "tsx scripts/check-surface-write-handlers.ts",
     "check:surface-write-handlers:list": "tsx scripts/check-surface-write-handlers.ts --list",
-    "surface:write-handlers:emit": "tsx scripts/check-surface-write-handlers.ts --emit",
     "check:surface-write-handlers:self-test": "tsx scripts/check-surface-write-handlers.ts --self-test",
     "check:hr-custom-field-targets": "tsx scripts/check-hr-custom-field-targets.ts",
     "check:hr-custom-field-targets:self-test": "tsx scripts/check-hr-custom-field-targets.ts --self-test",

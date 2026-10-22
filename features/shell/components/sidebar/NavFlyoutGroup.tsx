@@ -20,7 +20,7 @@
 // rows) never closes it. Escape / ArrowLeft step back one level.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { KeyboardEvent as ReactKeyboardEvent } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 import { shellLookRowProps, type ShellLookId } from "@/features/shell/shell-layout/looks";
 import AppLink from "@/components/navigation/AppLink";
 import { usePathname } from "next/navigation";
@@ -35,6 +35,7 @@ import {
   type ShellNavItem,
 } from "../../constants/nav-data";
 import { useNavActions } from "../../navigation/navActions";
+import { isAddPagesHref } from "@/features/shell/shell-layout/addPagesHref";
 import { useNavPanelActions, useRunNavTile } from "../../navigation/navPanelActions";
 import {
   findActiveNavBranch,
@@ -613,7 +614,16 @@ export default function NavFlyoutGroup({
             isOpen && !isActive && "bg-accent text-accent-foreground",
           )}
           data-active={isActive ? "true" : undefined}
-          onClick={closeAll}
+          onClick={(event: ReactMouseEvent) => {
+            if (isAddPagesHref(child.href)) {
+              // An empty group: its name opens its menu ("Add pages…"), never a page.
+              event.preventDefault();
+              openSub(key);
+              setSubPinned(true);
+              return;
+            }
+            closeAll();
+          }}
         >
           <span className="shell-nav-icon">
             <ShellIcon name={child.iconName} size={16} strokeWidth={1.75} />
@@ -707,7 +717,16 @@ export default function NavFlyoutGroup({
       <AppLink prefetch={false}
         ref={triggerLinkRef}
         href={item.href}
-        data-nav-href={suppressActive ? undefined : item.href}
+        onClick={
+          isAddPagesHref(item.href)
+            ? (event: ReactMouseEvent) => {
+                // An empty group: its label opens its menu ("Add pages…"), never a page.
+                event.preventDefault();
+                toggleFlyout();
+              }
+            : undefined
+        }
+        data-nav-href={suppressActive || isAddPagesHref(item.href) ? undefined : item.href}
         data-nav-active={isGroupActive ? "true" : undefined}
         aria-current={isGroupActive ? "page" : undefined}
         className={cn(

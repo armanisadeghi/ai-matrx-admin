@@ -18,7 +18,7 @@ ASSIGNMENT
 
 A **surface** is a page or window that publishes named live values ("what the user is looking at")
 so an AI agent launched there can see them. Your job, for each surface: while a user is on it, the
-Surface Context window (header button "Agents for this page" → "Surface Context") names the surface
+"This page" window (header button "Agents for this page" → "This page"; formerly "Surface Context") names the surface
 and shows every piece of data the page loads as a supplied value. Nothing is invented, nothing is
 undeclared, and it is proven in the real UI with real data.
 
@@ -181,19 +181,24 @@ returning name;
 
 ## 3. Check, sync, commit (per batch)
 
-- Run the queued full `pnpm type-check` for the batch. Never introduce a focused tsconfig or
-  exclude shipped code. Follow `CLAUDE.md` if the launcher fails; report unrelated errors while
-  proving changed types and affected callers clean.
+- Type check by lane, as page-pass says: a local (Mac) session runs the queued full
+  `pnpm type-check`; a cloud container (15 GB, where the full check is killed) runs
+  `pnpm type-check:files <your files>`, which also checks every importer. Never hand-make a
+  focused tsconfig or exclude shipped code. Follow `CLAUDE.md` if the launcher fails; report
+  unrelated errors while proving changed types and affected callers clean.
 - `pnpm check:surface-drift` and `pnpm check:surface-routes` (seconds each). If drift is red because
   of someone else's clash, fix that one line too.
 - **Sync each focused mirror** with
   `pnpm exec tsx scripts/sync-surface-manifests-direct.ts --surface <name>`, followed by the
   matching `--check --surface <name>`. Review removed values and mappings first: stale child
   rows are archived and declared archived rows are revived.
-- If direct Postgres credentials are unavailable, generate the focused plan with the SQL
-  emitter's current arguments, inspect it, and execute it through connected Supabase MCP in a
-  transaction. Verify all metadata, values/roles/write-targets/client-tools, ownership/public
-  visibility, and archival in both directions. A value count alone is not a full check receipt.
+- If direct Postgres credentials are unavailable (a cloud container), generate the focused plan
+  with `scripts/emit-surface-sync-sql.ts --surface <name> --organization-id <system org>`, inspect
+  it, and execute it through connected Supabase MCP in a transaction. Then run the same command
+  with `--check` added: its SELECT compares all metadata, values/roles/write-targets/client-tools/
+  item types, public visibility, and archival in both directions, and returning no rows is the
+  receipt (it does not EXPLAIN the sync statements; the direct check does). A value count alone
+  is not a full check receipt.
   If the full check cannot run, record `NOT RUN`, the exact boundary, and its named owner/next
   action; do not claim a completed integration.
 - **Commit each surface separately**, keeping the owning feature's current rules in `FEATURE.md`

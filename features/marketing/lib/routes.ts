@@ -220,6 +220,8 @@ export const marketingRoutes = {
     `/marketing/${brandId}/${section}`,
   /** The brand home. `view` = media | media/research | … */
   brandIdentity: (brandId: string) => `/marketing/${brandId}/identity`,
+  /** The owner's story sitting (spoken or typed answers; Question Desk story seat). */
+  brandOwnerStory: (brandId: string) => `/marketing/${brandId}/identity/story`,
   /** The brand session: the full-screen deck where the person places each brand candidate. */
   brandSession: (brandId: string) => `/marketing/${brandId}/identity/session`,
   /**

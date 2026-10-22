@@ -23,6 +23,7 @@ import {
   answerQuestion,
   createQuestion,
   deferQuestion,
+  listItemProducts,
   listItemQuestions,
   listPayloads,
   loadPipelineItem,
@@ -31,6 +32,7 @@ import {
   setFeaturedFile,
   setItemStage,
   splitItem,
+  type CaptureProduct,
   type PipelineItem,
   type PipelineQuestion,
   type SplitGroupInput,
@@ -44,6 +46,8 @@ export interface UsePipelineItemResult {
   files: CaptureFile[];
   payloads: Partial<Record<PayloadKind, PipelinePayload>>;
   questions: PipelineQuestion[];
+  /** The server pipeline's products for this item (one research run each). */
+  products: CaptureProduct[];
   saving: boolean;
 
   reload: () => Promise<void>;
@@ -71,6 +75,7 @@ export function usePipelineItem(itemId: string | null): UsePipelineItemResult {
     Partial<Record<PayloadKind, PipelinePayload>>
   >({});
   const [questions, setQuestions] = useState<PipelineQuestion[]>([]);
+  const [products, setProducts] = useState<CaptureProduct[]>([]);
   const [saving, setSaving] = useState(false);
 
   const itemRef = useRef<PipelineItem | null>(null);
@@ -96,15 +101,24 @@ export function usePipelineItem(itemId: string | null): UsePipelineItemResult {
       }
       setNotFound(false);
       adopt(loaded);
-      const [loadedFiles, loadedPayloads, loadedQuestions] = await Promise.all([
-        listItemFiles(itemId),
-        listPayloads(itemId),
-        listItemQuestions(itemId),
-      ]);
+      const [loadedFiles, loadedPayloads, loadedQuestions, loadedProducts] =
+        await Promise.all([
+          listItemFiles(itemId),
+          listPayloads(itemId),
+          listItemQuestions(itemId),
+          // The products read must not take the item down with it: a failure
+          // here is said (console + toast) and the rest of the workspace stays.
+          listItemProducts(itemId).catch((err: unknown) => {
+            console.error("[product-pipeline] products load failed", err);
+            toast.error("Products could not load.");
+            return [] as CaptureProduct[];
+          }),
+        ]);
       setFiles(loadedFiles);
       payloadsRef.current = loadedPayloads;
       setPayloads(loadedPayloads);
       setQuestions(loadedQuestions);
+      setProducts(loadedProducts);
     } catch (err) {
       console.error("[product-pipeline] item load failed", err);
       toast.error("Could not load the item.");
@@ -123,6 +137,7 @@ export function usePipelineItem(itemId: string | null): UsePipelineItemResult {
       payloadsRef.current = {};
       setPayloads({});
       setQuestions([]);
+      setProducts([]);
       if (itemId) void reload();
     }, 0);
     return () => clearTimeout(timer);
@@ -351,6 +366,7 @@ export function usePipelineItem(itemId: string | null): UsePipelineItemResult {
     files,
     payloads,
     questions,
+    products,
     saving,
     reload,
     moveToStage,

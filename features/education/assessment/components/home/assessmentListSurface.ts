@@ -16,10 +16,11 @@ import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collect
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
 import {
-  createAssessmentListScope,
   type AssessmentListSummaryRow,
   type MyAssessmentSummary,
 } from "@/features/surfaces/manifests/_assessment-list.manifest";
+import { createEducationQuizzesScope } from "@/features/surfaces/manifests/education-quizzes.manifest";
+import { createEducationPracticeTestsScope } from "@/features/surfaces/manifests/education-practice-tests.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
 import { assessmentService } from "../../data/assessmentService";
@@ -33,9 +34,10 @@ import type { EntitlementCheckResult } from "@/features/entitlements/types";
 import type {
   GenerationOutcome,
   GenerationRequest,
-  GenerationSource,
 } from "../../data/useAssessmentGeneration";
+import type { GenerationSource } from "../../data/generationSource";
 import {
+  parseAssessmentListView,
   parseCreateAssessmentsValue,
   parseDeleteAssessmentsValue,
   parseGenerateValue,
@@ -45,6 +47,7 @@ import {
 } from "./assessmentAgentWrites";
 import { distinctTopic, type AssessmentListItem } from "./assessmentList";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
+import { makeScope } from "@/lib/list-scope/types";
 
 type Controller = EntityListSurfaceController<AssessmentListItem>;
 
@@ -102,11 +105,15 @@ const toSummary = (r: AssessmentListItem): AssessmentListSummaryRow => ({
 export function buildAssessmentListScope(input: {
   list: Controller;
   userId: string;
+  kind: KindConfig["kind"];
 }): SurfaceScopePayload {
   const { list, userId } = input;
+  // Each page emits through its own surface's builder (one shared payload).
+  const createScope =
+    input.kind === "quiz" ? createEducationQuizzesScope : createEducationPracticeTestsScope;
   const loaded = !list.isLoading && !list.error;
   const search = list.query.search.trim();
-  return createAssessmentListScope({
+  return createScope({
     assessments_loaded: loaded,
     visibility_filter: list.query.scope.kind,
     list_sort: `${list.view.sort} ${list.view.direction}`,
@@ -218,6 +225,7 @@ export function buildQuizWriteHandlers(input: Omit<HandlerInput, "config">): Sur
   return {
     ...quizOut,
     generate_quizzes: generateHandler(input2, "quizzes"),
+    list_view: listViewHandler(input.list, "quizzes"),
   };
 }
 
@@ -254,6 +262,36 @@ export function buildPracticeTestWriteHandlers(
   return {
     ...practiceOut,
     generate_practice_tests: generateHandler(input2, "practice_tests"),
+    list_view: listViewHandler(input.list, "practice tests"),
+  };
+}
+
+/**
+ * list_view (UI only, applies without asking): switch the lane, archive filter
+ * or search through the list's own query, so the agent can read rows that are
+ * not on screen. Nothing is saved.
+ */
+function listViewHandler(list: Controller, plural: string): SurfaceWriteHandlerEntry {
+  return {
+    validate: (value) => {
+      parseAssessmentListView(value);
+    },
+    apply: (value) => {
+      const plan = parseAssessmentListView(value);
+      list.patchQuery({
+        ...(plan.lane ? { scope: makeScope(plan.lane) } : {}),
+        ...(plan.archived ? { archived: plan.archived } : {}),
+        ...(plan.search !== undefined ? { search: plan.search } : {}),
+      });
+      const parts = [
+        plan.lane ? `lane ${plan.lane}` : "",
+        plan.archived ? `${plan.archived} ${plural}` : "",
+        plan.search !== undefined ? (plan.search ? `search "${plan.search}"` : "no search") : "",
+      ].filter(Boolean);
+      return {
+        summary: `The list now shows ${parts.join(", ")}. Read assessment_list again once assessments_loaded is true.`,
+      };
+    },
   };
 }
 

@@ -62,7 +62,9 @@ export function useClassAssignments(
   enabled = true,
 ): UseClassAssignmentsReturn {
   const [assignments, setAssignments] = useState<ClassAssignment[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Loading from the first render: before the read starts, "no rows" would
+  // tell the page and the agent the list is empty when it was never read.
+  const [loading, setLoading] = useState(() => Boolean(classId) && enabled);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

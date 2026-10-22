@@ -5,9 +5,17 @@ depth limit and then cannot dispatch anyone. The coordinator builds nothing itse
 true, assigns batches, and checks results. Worker brief: [campaign-worker.md](./campaign-worker.md).
 Open platform gaps: `docs/handoffs/surface-campaign.md`.
 
+**Workers work by page, through `page-pass`** (2026-10-22). A route is the unit: dispatch each
+worker with [`.claude/skills/page-pass/loop/worker-brief.md`](../../page-pass/loop/worker-brief.md),
+its lane, and its routes; page-pass step 4 is where a surface's emitter, write targets, guide and
+probe proof get built, and it sends the worker to [campaign-worker.md](./campaign-worker.md) for
+the surface mechanics. Grade finished pages with the blind
+[`judge-brief.md`](../../page-pass/loop/judge-brief.md). This brief still owns the list, the waves
+and the definition of done below; the census picks the routes.
+
 ## Goal
 
-Every registered surface is agent-readable. While a user is on it, the Surface Context window names
+Every registered surface is agent-readable. While a user is on it, the "This page" window (formerly Surface Context) names
 it and shows every piece of data the page loads, proven on the live site with real data. The
 campaign ends when the census says so, not when workers say so.
 
@@ -28,16 +36,18 @@ campaign ends when the census says so, not when workers say so.
 
 ## The list
 
-`pnpm surface:census` (5 seconds, no network) prints, per surface:
+`pnpm surface:census` (about a minute, no network) prints, per surface:
 - declared readiness;
 - host (route or overlay);
 - value count;
-- whether anything EMITS it: the manifest module's `create…Scope` has a call site outside the
-  manifest.
+- whether anything EMITS it, and how the census knows (`detectedBy`): `builder` = the manifest's
+  `create…Scope` has a call site outside the manifest, in this repo or inside the installed
+  `@ai-matrx/chat` package; `name` = a file that mounts a surface runtime names the surface;
+  `none` = nothing found;
+- write-target count, whether a guide exists, and how many values carry a context budget.
 
-It also flags "declared verified but nothing emits it". Treat a "not emitting" as a lead: a few
-surfaces emit through a shared builder the census does not map yet. Confirm those with a probe, and
-teach the census when it's wrong.
+A `name` detection is weaker than a `builder` one: probe it before trusting it. Treat "not
+emitting" as a lead and confirm with a probe; teach the census when it is wrong.
 
 `pnpm surface:census --sql` prints a read-only query. Run it through the Supabase MCP (`project_id`
 `brsgrqvjdzwihsvnfqkf`); it lists every surface whose DB mirror disagrees with code, plus DB rows
@@ -64,14 +74,18 @@ and focused mirror checks rather than a historical snapshot.
    - partial, where the note names a missing emitter or values;
    - overlays;
    - the rest.
-2. Group them into assignments of 10–15 surfaces **from the same feature area**. They share
+2. Group them into assignments of 3–5 routes (10–15 surfaces when it is emitter-only work)
+   **from the same feature area**. They share
    components, so a worker builds context once, and two workers never edit the same files.
 3. When delegation is authorized, dispatch one worker per assignment through the environment
    available to this coordinator, with
-   `campaign-worker.md` and its assignment block filled in.
+   the page-pass worker brief and its run settings filled in (lane, who pushes, routes).
    - Start with 4–6 workers at once. Raise the number when merge conflicts and review findings stay
      low.
    - Local workers share the one managed preview; do not launch additional dev servers.
+   - Cloud workers: at most two per 15 GB container. Four workers in one container (each with a
+     headless browser, plus the type-check queue) ran it out of memory and restarted it on
+     2026-10-22. More workers means more containers (one session each).
 4. Workers report through durable state, not messages:
    - assigned Work Loop state, or explicitly bounded legacy claim state;
    - readiness and note synced to the DB;

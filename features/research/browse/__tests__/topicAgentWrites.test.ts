@@ -8,6 +8,9 @@ import {
   parseCreateTopics,
   parseDeleteTopics,
   parseUpdateTopics,
+  rememberTouchedTopic,
+  rowsWithTouched,
+  type TouchedTopics,
 } from "../topicAgentWrites";
 import type { ResearchTopicListRow } from "../types";
 
@@ -126,5 +129,41 @@ describe("list_view", () => {
     expect(() => parseListView({ archived: "deleted" })).toThrow(/"active", "archived" or "all"/);
     expect(() => parseListView({})).toThrow(/changes nothing/);
     expect(() => parseListView(["all"])).toThrow(/OBJECT/);
+  });
+});
+
+describe("topics this page just touched", () => {
+  it("re-archives a topic restored from the Archived view after it left the list", () => {
+    const archived = { ...row("t-3", "Old grid study"), archived_at: "2026-09-20T00:00:00Z" };
+    const touched: TouchedTopics = new Map();
+    // Archived view: restore t-3, then the list refreshes and t-3 is gone.
+    const [restore] = parseUpdateTopics([{ id: "t-3", archived: false }], rowsWithTouched([archived], touched));
+    rememberTouchedTopic(touched, archived, restore);
+    const pageAfter: ResearchTopicListRow[] = [];
+    expect(parseDeleteTopics(["t-3"], rowsWithTouched(pageAfter, touched)).map((r) => r.id)).toEqual(["t-3"]);
+    expect(parseUpdateTopics([{ id: "t-3", archived: true }], rowsWithTouched(pageAfter, touched))[0]).toMatchObject({
+      archived: true,
+      changed: ["archived"],
+    });
+    // Restoring it again changes nothing: the remembered state is "restored".
+    expect(() => parseUpdateTopics([{ id: "t-3", archived: false }], rowsWithTouched(pageAfter, touched))).toThrow(/changes nothing/);
+  });
+
+  it("restores a topic delete_topics just archived, and still refuses truly unknown ids", () => {
+    const touched: TouchedTopics = new Map();
+    const [gone] = parseDeleteTopics(["t-1"], ROWS);
+    rememberTouchedTopic(touched, gone, { archived: true });
+    const page = ROWS.filter((r) => r.id !== "t-1");
+    expect(parseUpdateTopics([{ id: "t-1", archived: false }], rowsWithTouched(page, touched))[0]).toMatchObject({
+      archived: false,
+      changed: ["restored"],
+    });
+    expect(() => parseDeleteTopics(["t-9"], rowsWithTouched(page, touched))).toThrow(/no topic with id/);
+  });
+
+  it("prefers the page's own row over a remembered one", () => {
+    const touched: TouchedTopics = new Map();
+    rememberTouchedTopic(touched, ROWS[0], { name: "Stale name" });
+    expect(rowsWithTouched(ROWS, touched).filter((r) => r.id === "t-1")).toEqual([ROWS[0]]);
   });
 });

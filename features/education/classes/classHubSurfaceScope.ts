@@ -8,6 +8,7 @@
 import {
   createEducationClassScope,
   type ClassHubContentEntry,
+  type ClassHubLoadState,
   type ClassHubView,
 } from "@/features/surfaces/manifests/education-class.manifest";
 import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
@@ -30,6 +31,15 @@ export function buildClassHubPlaceholderScope(
   classParam: string,
 ): SurfaceScopePayload {
   return createEducationClassScope({ view, class_param: classParam });
+}
+
+/** One list's read state, so the agent can tell "still loading" from "failed". */
+export function loadState(read: {
+  loading: boolean;
+  error: string | null;
+}): ClassHubLoadState {
+  if (read.error) return `failed: ${read.error}`;
+  return read.loading ? "loading" : "ready";
 }
 
 function contentScope(content: UseClassContentReturn): {
@@ -93,6 +103,12 @@ export function buildClassHubOwnerScope(input: {
     view: "owner",
     class_param: input.classParam,
     my_status: access.state?.myStatus ?? null,
+    load_status: {
+      roster: loadState(roster),
+      assignments: loadState(assignments),
+      class_progress: loadState(progress),
+      study_content: loadState(content),
+    },
     class_id: cls.id,
     class_slug: cls.slug,
     class_name: cls.name,
@@ -170,6 +186,18 @@ export function buildClassHubMemberScope(input: {
     view: "member",
     class_param: input.classParam,
     my_status: state.myStatus,
+    ...(isActive && input.roster && assignments && myProgress
+      ? {
+          load_status: {
+            roster: loadState(input.roster),
+            my_assignments: loadState({
+              loading: assignments.loading || myProgress.loading,
+              error: assignments.error ?? myProgress.error,
+            }),
+            study_content: loadState(input.content),
+          },
+        }
+      : {}),
     class_id: state.classId,
     class_slug: state.slug,
     class_name: state.name,
