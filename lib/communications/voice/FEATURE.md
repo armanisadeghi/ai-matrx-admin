@@ -49,12 +49,18 @@ long-lived media and agent execution stay in aidream.
 - The `<Dial><Number url>` receiver callback introduces the AI transfer before bridging. A v1
   content-free brief supplies bounded counts of started agent requests and interruptions through
   the signed query; absent/invalid counts get a generic introduction. It returns only `<Say>`,
-  without hangup or redial. Raw speech, model output, tools and inferred actions never enter it.
+  without hangup or redial. Raw speech, model output, tool arguments and inferred actions never enter it.
   Signed parent identity also reads a complete bounded snapshot of this call's saved agent requests,
   through the shared canonical call/session/conversation validator. Explicit reserved voice session,
   interaction and provider-call stamps isolate calls sharing one conversation; request statuses and
   tool-call attempts never claim external action success. Unavailable/ambiguous evidence leaves
   the introduction usable and the bridge intact; no saved work facts enter the callback URL.
+  Tool-ledger outcomes reuse only those exact request IDs, owner, organization and conversation;
+  25-ID batches preserve bounded URLs and the shared deadline. Complete counts may lead pending
+  request totals but never fall below reported attempts. Explicit error evidence outranks a legacy
+  success flag; neither a clean tool return nor a completed request establishes external action
+  success. At most three sanitized failed-tool names are spoken; no arguments, outputs or raw errors
+  are read. An unavailable tool snapshot is announced without discarding known request facts.
   Official contract: https://www.twilio.com/docs/voice/twiml/number#url.
 - Signed `transfer-ended` deliveries now append `voice.call.transfer_result.observed` through
   `platform.log_activity`, correlated to the exact active parent call provider/account/SID.
