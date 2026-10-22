@@ -126,9 +126,6 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({
   EntityRef: ({ name }: { name: string }) => <span data-door="entity-ref">{name}</span>,
 }));
 
-jest.mock("@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog", () => ({
-  ClipboardFallbackDialog: () => null,
-}));
 
 /**
  * The consequence dialog is captured, never auto-accepted: these tests assert

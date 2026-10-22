@@ -510,7 +510,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
       "@/hooks/sandbox/use-compute-targets": ["useComputeTargets"],
       "@/hooks/sandbox/use-sandbox": ["useSandboxInstances"],
       "@/hooks/sandbox/use-verified-binding": ["useVerifiedSandboxBinding"],
-      "@/components/dialogs/sandbox-gate/SandboxGateHost": ["openSandboxGate"],
+      "@/components/dialogs/sandbox-gate/sandboxGateOpener": ["openSandboxGate"],
       "@/features/code/views/sandboxes/CloneRepoDialog": ["CloneRepoDialog"],
       "@/features/code/views/sandboxes/SandboxDiagnosticsPanel": ["SandboxDiagnosticsPanel"],
     }) as Parameters<typeof computeSeam.registerChatComputeTargets>[0],

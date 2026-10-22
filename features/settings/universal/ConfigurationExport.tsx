@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
-import { showManualCopy } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackHost";
+import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
 import { extractErrorMessage } from "@/utils/errors";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { formatKnobValue } from "@/lib/scoped-config/ladder";

@@ -38,7 +38,7 @@ import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { useRef, useState } from "react";
 
-import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
+import { ClipboardFallbackDialog } from "@ai-matrx/design-system";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { useOpenTopicPanel } from "@/features/overlays/definitions/topicalMapTopicPanel.overlay";

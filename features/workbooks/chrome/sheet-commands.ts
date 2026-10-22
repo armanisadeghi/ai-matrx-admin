@@ -51,7 +51,7 @@ import {
   Repeat2,
 } from "lucide-react";
 
-import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
+import { promptForValues } from "@ai-matrx/chat/ui/valuePromptsOpener";
 import {
   type EditorMenu,
   type EditorMenuEntry,
