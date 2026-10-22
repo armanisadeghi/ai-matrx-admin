@@ -23,9 +23,18 @@ import {
   fetchWorkflowIssues,
   fetchWorkflowSummaries,
   REVIEW_ISSUE_LIMIT,
+  setIssueStatus,
   type WorkflowSummary,
 } from "../service";
 import { issueView, ReviewIssuesTable } from "./ReviewIssuesTable";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
+import {
+  createWorkflowReviewScope,
+  WORKFLOW_REVIEW_SURFACE_NAME,
+} from "@/features/surfaces/manifests/workflow-review.manifest";
+import { issueSurfaceRow, parseIssueStatusChanges } from "../surface-writes";
 
 export function WorkflowReviewPage({ definitionId }: { definitionId: string }) {
   const [summary, setSummary] = useState<WorkflowSummary | null>(null);
@@ -64,8 +73,43 @@ export function WorkflowReviewPage({ definitionId }: { definitionId: string }) {
 
   const rows = issues.map((issue) => issueView(issue, summary ?? undefined));
 
+  // Surface `matrx-user/workflow-review`: what the table shows, and the row actions' own door.
+  const getScope = () =>
+    createWorkflowReviewScope({
+      workflow_id: definitionId,
+      workflow_name: summary?.name,
+      review_load_status: missing ? "not_found" : error ? "failed" : loading ? "loading" : "loaded",
+      issue_count: loading ? undefined : rows.length,
+      open_issue_count: loading ? undefined : rows.filter((r) => r.status === "open").length,
+      issues_capped: loading ? undefined : more,
+      issues: loading ? undefined : rows.map(issueSurfaceRow),
+    });
+  const getWriteHandlers = () =>
+    collectionWriteHandlers(
+      {
+        plural: "issues",
+        singular: "issue",
+        update: {
+          parse: (value: unknown) => parseIssueStatusChanges("update_issues", value, issues),
+          run: async (plan: ReturnType<typeof parseIssueStatusChanges>[number]) => {
+            const next = await setIssueStatus(plan.id, plan.status, plan.note);
+            onChanged(next);
+            return { id: next.id, name: plan.name };
+          },
+          nameOf: (plan: ReturnType<typeof parseIssueStatusChanges>[number]) => plan.name,
+          changedOf: (plan: ReturnType<typeof parseIssueStatusChanges>[number]) =>
+            plan.note !== undefined ? ["status", "note"] : ["status"],
+        },
+      },
+      refuseSurfaceWrite,
+    );
+
   return (
-    <>
+    <SurfaceRuntimeProvider
+      surfaceName={WORKFLOW_REVIEW_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
       <RouteHeader
         left={
           <div className="flex min-w-0 items-center">
@@ -120,6 +164,6 @@ export function WorkflowReviewPage({ definitionId }: { definitionId: string }) {
           )}
         </div>
       </div>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }

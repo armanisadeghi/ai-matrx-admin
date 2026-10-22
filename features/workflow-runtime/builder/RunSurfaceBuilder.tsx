@@ -42,6 +42,13 @@ import { Segmented } from "./parts";
 import { normalize, type ScreenId } from "./layout-model";
 import { describeSteps } from "./vocabulary";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  createWorkflowRunViewDesignScope,
+  WORKFLOW_RUN_VIEW_DESIGN_SURFACE_NAME,
+} from "@/features/surfaces/manifests/workflow-run-view-design.manifest";
+import { mergeViewSettings, panelSurfaceRow, retitlePanels } from "./surface-writes";
 import {
   useWorkflowsBasePath,
   workflowRunHref,
@@ -233,8 +240,75 @@ export function RunSurfaceBuilder({ definitionId }: { definitionId: string }) {
     />
   );
 
+  // Surface `matrx-user/workflow-run-view-design`: the builder's state, and two drafts.
+  const getScope = () =>
+    createWorkflowRunViewDesignScope({
+      workflow_id: definitionId,
+      workflow_name: workflow?.name,
+      design_load_status: loadFailure ? "not_found" : workflow && config ? "loaded" : "loading",
+      workflow_steps: workflow
+        ? describeSteps(workflow.definition).map((s) => ({
+            id: s.id,
+            label: s.label,
+            role: s.role,
+            worth_watching: s.worthWatching,
+            asks_the_person: s.asksThePerson,
+            is_sub_workflow: s.isSubWorkflow,
+          }))
+        : undefined,
+      view_saved: workflow ? surface !== null : undefined,
+      has_unsaved_changes: config ? dirty : undefined,
+      view_settings: config ? meta : undefined,
+      screens: config
+        ? config.pages.map((p) => ({ id: p.id, title: p.title, activate_on: p.activateOn ?? null }))
+        : undefined,
+      screen_in_view: config ? (screenId ?? "") : undefined,
+      panels: config ? config.readouts.map(panelSurfaceRow) : undefined,
+      deliverable_step_id: config?.deliverableNodeId,
+    });
+  const getWriteHandlers = () => ({
+    view_settings_draft: {
+      validate: (value: unknown) => {
+        if (!config) refuseSurfaceWrite("The builder has not loaded yet.");
+        mergeViewSettings(meta, value);
+      },
+      apply: (value: unknown) => {
+        const next = mergeViewSettings(meta, value);
+        changeMeta(next);
+        return {
+          summary: "The view settings are changed in the builder. Nothing is saved until the person presses Save.",
+          data: next,
+        };
+      },
+    },
+    panel_titles_draft: {
+      validate: (value: unknown) => {
+        if (!config) refuseSurfaceWrite("The builder has not loaded yet.");
+        retitlePanels(config as RunSurfaceConfig, value);
+      },
+      apply: (value: unknown) => {
+        if (!config) refuseSurfaceWrite("The builder has not loaded yet.");
+        const next = retitlePanels(config as RunSurfaceConfig, value);
+        changeConfig(next);
+        return {
+          summary: "The panels are retitled in the builder. Nothing is saved until the person presses Save.",
+          data: next.readouts.map(panelSurfaceRow),
+        };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={WORKFLOW_RUN_VIEW_DESIGN_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loadFailure) {
-    return (
+    return withSurface(
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <AccessGate
           token="workflow"
@@ -244,15 +318,15 @@ export function RunSurfaceBuilder({ definitionId }: { definitionId: string }) {
           fallbackHref={workflowsListHref(workflowsBase)}
           fallbackLabel="Your workflows"
         />
-      </div>
+      </div>,
     );
   }
 
   if (!workflow || !config) {
-    return (
+    return withSurface(
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
+      </div>,
     );
   }
 
@@ -311,7 +385,7 @@ export function RunSurfaceBuilder({ definitionId }: { definitionId: string }) {
     </div>
   );
 
-  return (
+  return withSurface(
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {header}
 
@@ -369,6 +443,6 @@ export function RunSurfaceBuilder({ definitionId }: { definitionId: string }) {
           setReloadNonce((n) => n + 1);
         }}
       />
-    </div>
+    </div>,
   );
 }

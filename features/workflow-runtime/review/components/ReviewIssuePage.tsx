@@ -22,12 +22,20 @@ import {
   fetchIssue,
   fetchIssueOccurrences,
   fetchWorkflowSummaries,
+  setIssueStatus,
   type RunFlag,
   type WorkflowSummary,
 } from "../service";
 import { IssueStatusBadge } from "./IssueStatusBadge";
 import { issueView } from "./ReviewIssuesTable";
 import { useIssueActions } from "./useIssueActions";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  createWorkflowReviewIssueScope,
+  WORKFLOW_REVIEW_ISSUE_SURFACE_NAME,
+} from "@/features/surfaces/manifests/workflow-review-issue.manifest";
+import { issueSurfaceRow, readIssueStatus } from "../surface-writes";
 
 const EVENT_WORD: Record<string, string> = { new: "First", reopened: "Came back", repeat: "Again" };
 
@@ -184,8 +192,51 @@ export function ReviewIssuePage({ definitionId, issueId }: { definitionId: strin
     );
   }
 
+  // Surface `matrx-user/workflow-review-issue`: the issue as shown, and the buttons' own door.
+  const getScope = () =>
+    createWorkflowReviewIssueScope({
+      workflow_id: definitionId,
+      issue_id: issueId,
+      issue_load_status: missing ? "not_found" : error ? "failed" : view ? "loaded" : "loading",
+      workflow_name: summary?.name,
+      issue_what: view?.what,
+      issue_status: view?.status,
+      issue: view ? issueSurfaceRow(view) : undefined,
+      occurrence_count: view ? occurrences.length : undefined,
+      occurrences: view
+        ? occurrences.map((occ) => ({
+            occurred_at: occ.occurred_at,
+            event: issueEventOf(occ),
+            message: occ.message,
+            run_id: occ.run_id,
+          }))
+        : undefined,
+    });
+  const getWriteHandlers = () => ({
+    set_issue_status: {
+      validate: (value: unknown) => {
+        if (!issue) refuseSurfaceWrite("The issue has not loaded yet.");
+        readIssueStatus("set_issue_status", value);
+      },
+      apply: async (value: unknown) => {
+        if (!issue) refuseSurfaceWrite("The issue has not loaded yet.");
+        const { status, note } = readIssueStatus("set_issue_status", value);
+        const next = await setIssueStatus(issueId, status, note);
+        setIssue(next);
+        return {
+          summary: `Saved: the issue is now ${next.status}.`,
+          data: { id: next.id, status: next.status, resolution_note: next.resolution_note },
+        };
+      },
+    },
+  });
+
   return (
-    <>
+    <SurfaceRuntimeProvider
+      surfaceName={WORKFLOW_REVIEW_ISSUE_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
       <RouteHeader
         left={
           <div className="flex min-w-0 items-center">
@@ -201,6 +252,6 @@ export function ReviewIssuePage({ definitionId, issueId }: { definitionId: strin
         <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">{body}</div>
       </div>
       {dialog}
-    </>
+    </SurfaceRuntimeProvider>
   );
 }

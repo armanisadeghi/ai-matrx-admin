@@ -31,6 +31,21 @@ import { CopyableValue } from "./CopyableValue";
 import { NewTriggerForm } from "./NewTriggerForm";
 import { TriggerCard } from "./TriggerCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
+import {
+  createWorkflowTriggersScope,
+  WORKFLOW_TRIGGERS_SURFACE_NAME,
+} from "@/features/surfaces/manifests/workflow-triggers.manifest";
+import {
+  parseNewSchedules,
+  parseTriggerUpdates,
+  triggerSurfaceRow,
+  type NewSchedulePlan,
+  type TriggerActivePlan,
+} from "../surface-writes";
+import { browserTimezone } from "./RecurrenceEditor";
 import {
   useWorkflowsBasePath,
   workflowRunHref,
@@ -277,14 +292,73 @@ export function WorkflowTriggersPage({
     );
   }
 
+  // Surface `matrx-user/workflow-triggers`: the list as shown, and the page's own doors.
+  const getScope = () =>
+    createWorkflowTriggersScope({
+      workflow_id: definitionId,
+      workflow_name: workflow?.name,
+      triggers_load_status: loadFailure
+        ? "not_found"
+        : triggersError
+          ? "failed"
+          : !workflow || loading
+            ? "loading"
+            : "loaded",
+      trigger_count: loading || triggersError ? undefined : triggers.length,
+      active_trigger_count: loading || triggersError ? undefined : triggers.filter((t) => t.isActive).length,
+      triggers: loading || triggersError ? undefined : triggers.map(triggerSurfaceRow),
+      new_trigger_form_open: adding,
+    });
+  const getWriteHandlers = () =>
+    collectionWriteHandlers(
+      {
+        plural: "triggers",
+        singular: "trigger",
+        create: {
+          parse: (value: unknown) => {
+            if (!workflow) refuseSurfaceWrite("The workflow has not loaded yet.");
+            return parseNewSchedules("create_triggers", value, browserTimezone());
+          },
+          run: async (plan: NewSchedulePlan) => {
+            const created = await create({
+              definitionId,
+              name: plan.name,
+              kind: "cron",
+              cronExpression: plan.cronExpression,
+              timezone: plan.timezone,
+              defaultInputs: plan.defaultInputs,
+            });
+            if (!created) throw new Error(`The schedule "${plan.name}" could not be saved.`);
+            return { id: created.id, name: created.name };
+          },
+          nameOf: (plan: NewSchedulePlan) => plan.name,
+        },
+        update: {
+          parse: (value: unknown) => parseTriggerUpdates("update_triggers", value, triggers),
+          run: async (plan: TriggerActivePlan) => {
+            const ok = await setActive(plan.id, plan.active);
+            if (!ok) throw new Error(`"${plan.name}" could not be switched ${plan.active ? "on" : "off"}.`);
+            return { id: plan.id, name: plan.name };
+          },
+          nameOf: (plan: TriggerActivePlan) => plan.name,
+          changedOf: () => ["active"],
+        },
+      },
+      refuseSurfaceWrite,
+    );
+
   return (
-    <>
+    <SurfaceRuntimeProvider
+      surfaceName={WORKFLOW_TRIGGERS_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
       {header}
       <div className="h-full overflow-hidden">
         <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]">
           {body}
         </div>
       </div>
-    </>
+    </SurfaceRuntimeProvider>
   );
 }

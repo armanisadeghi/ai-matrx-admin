@@ -357,6 +357,10 @@ import { hrRelationsCaseManifest } from "./hr-relations-case.manifest";
 import { hrVerificationsManifest } from "./hr-verifications.manifest";
 // W2 area: hr-b
 // W2 area: workflows-commerce
+import { workflowRunViewDesignManifest } from "./workflow-run-view-design.manifest";
+import { workflowReviewManifest } from "./workflow-review.manifest";
+import { workflowReviewIssueManifest } from "./workflow-review-issue.manifest";
+import { workflowTriggersManifest } from "./workflow-triggers.manifest";
 // W2 area: print-rag-memory
 // W2 area: core-rest
 // W2 area: route-groups
@@ -710,6 +714,10 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   hrVerificationsManifest,
   // W2 area: hr-b
   // W2 area: workflows-commerce
+  workflowRunViewDesignManifest,
+  workflowReviewManifest,
+  workflowReviewIssueManifest,
+  workflowTriggersManifest,
   // W2 area: print-rag-memory
   // W2 area: core-rest
   // W2 area: route-groups
