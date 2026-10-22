@@ -22,7 +22,6 @@ import { useRouter } from "next/navigation";
 import { Button, SearchField, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { PUBLISHED_TO_WEB_LABEL } from "@/lib/row-access";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
