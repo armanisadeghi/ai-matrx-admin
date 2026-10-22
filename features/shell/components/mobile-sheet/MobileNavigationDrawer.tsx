@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMenu";
 import { useNavActions } from "@/features/shell/navigation/navActions";
+import { isAddPagesHref } from "@/features/shell/shell-layout/addPagesHref";
 import { useNavPanelActions, useRunNavTile } from "@/features/shell/navigation/navPanelActions";
 import ShellIcon from "../ShellIcon";
 import MobileRouteMenuSlot from "./MobileRouteMenuSlot";
@@ -90,7 +91,12 @@ function GroupButton({
       className="shell-mobile-nav-group"
       data-active={isActive ? "true" : undefined}
     >
-      {item.external || item.openInNewTab ? (
+      {isAddPagesHref(item.href) ? (
+        // An empty group: its name drills in to "Add pages…", never a page.
+        <button type="button" className={className} onClick={onOpen}>
+          {content}
+        </button>
+      ) : item.external || item.openInNewTab ? (
         <OutboundLink
           href={item.href}
           className={className}

@@ -77,13 +77,26 @@ function regionWord(region: EditorRegion): string {
   return region === "sidebar" ? "sidebar" : region === "header" ? "header" : region === "look" ? "look" : "dock";
 }
 
-export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { target: ShellLayoutTargetKind; initialRegion?: EditorRegion }) {
+export function ShellLayoutEditor({
+  target,
+  initialRegion = "sidebar",
+  onRegionChange,
+}: {
+  target: ShellLayoutTargetKind;
+  initialRegion?: EditorRegion;
+  /** The tab shown now (the window's title follows it). */
+  onRegionChange?: (region: EditorRegion) => void;
+}) {
   const store = useShellLayoutStore();
   const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const userId = useAppSelector(selectUserId);
   const isMobile = useIsMobile();
-  const [region, setRegion] = useState<EditorRegion>(initialRegion);
+  const [region, setRegionState] = useState<EditorRegion>(initialRegion);
+  const setRegion = (next: EditorRegion) => {
+    setRegionState(next);
+    onRegionChange?.(next);
+  };
   const [pane, setPane] = useState<"choose" | "arrange">("arrange");
   const [draft, setDraft] = useState<ShellLayoutBody | null>(null);
 
@@ -96,15 +109,18 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
   const dirty = draft !== null && !sameBody(draft, own);
   const checked = parseShellLayoutBody(serializeShellLayoutBody(body));
 
+  // The organization's lock ("Members may customize" off) bites only where the organization HAS a layout:
+  // then hers does not apply, so nothing here can be saved or previewed — the organization chose that.
+  const allowed = useEffectiveKnob(store.organizationId, userId, SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB) !== false;
+  const locked = target === "person" && !allowed && store.organization !== null;
+
   // THE LIVE PREVIEW: the real shell draws the unsaved draft; closing the editor puts it back.
-  const previewText = dirty ? serializeShellLayoutBody(body) : null;
+  const previewText = dirty && !locked ? serializeShellLayoutBody(body) : null;
   useEffect(() => {
     dispatch(shellLayoutPreviewChanged(previewText));
   }, [dispatch, previewText]);
   useEffect(() => () => void dispatch(shellLayoutPreviewChanged(null)), [dispatch]);
 
-  // The organization's lock ("Members may customize").
-  const allowed = useEffectiveKnob(store.organizationId, userId, SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB) !== false;
 
   const launchpads = useLaunchpads();
   const launchpadOptions: PickOption[] = launchpads.entries.map((e) => ({ value: e.key, label: e.title }));
@@ -196,8 +212,10 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
       target === "person" && store.organization
         ? await store.save("person", standardPersonBody(), "Reset to standard")
         : await store.clear(target);
-    if (answer.ok) setDraft(null);
-    else toast.error(answer.error);
+    if (answer.ok) {
+      setDraft(null);
+      toast.success(target === "organization" ? "The organization uses the standard layout" : "Your layout is the standard one");
+    } else toast.error(answer.error);
   };
 
   const showChoose = !isMobile || pane === "choose";
@@ -219,9 +237,9 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
           />
         ) : null}
       </div>
-      {target === "person" && !allowed ? (
+      {locked ? (
         <p className="flex shrink-0 items-center gap-1.5 border-b border-border px-3 py-1.5 type-secondary text-muted-foreground">
-          <Lock className="h-3.5 w-3.5" aria-hidden /> Your organization uses one layout for everyone
+          <Lock className="h-3.5 w-3.5" aria-hidden /> Your organization&apos;s layout is in use for everyone
         </p>
       ) : null}
       {target === "organization" && store.organizationId ? <MembersMayCustomize organizationId={store.organizationId} /> : null}
@@ -282,18 +300,28 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
             {target === "person" && store.organization && store.person ? (
               <DropdownMenuItem onClick={() => void resetToOrganization()}>Use organization&apos;s layout</DropdownMenuItem>
             ) : null}
-            <DropdownMenuItem onClick={() => void resetToStandard()}>Reset to standard</DropdownMenuItem>
+            {locked ? null : <DropdownMenuItem onClick={() => void resetToStandard()}>Reset to standard</DropdownMenuItem>}
           </DropdownMenuContent>
         </DropdownMenu>
         <span className="ml-auto min-w-0 truncate type-secondary text-muted-foreground" title={checked.problems.join("\n")}>
-          {checked.problems.length > 0 ? `Cannot save: ${checked.problems[0]}` : dirty ? "Unsaved, shown live" : stored ? "Saved" : target === "organization" ? "Standard layout" : "Not customized yet"}
+          {locked
+            ? "Saving is off while your organization's layout is in use"
+            : checked.problems.length > 0
+              ? `Cannot save: ${checked.problems[0]}`
+              : dirty
+                ? "Unsaved, shown live"
+                : stored
+                  ? "Saved"
+                  : target === "organization"
+                    ? "Standard layout"
+                    : "Not customized yet"}
         </span>
         {dirty ? (
           <Button variant="quiet" onClick={() => setDraft(null)}>
             Discard
           </Button>
         ) : null}
-        <Button variant="primary" disabled={!dirty || checked.problems.length > 0 || store.saving} onClick={() => void save()}>
+        <Button variant="primary" disabled={locked || !dirty || checked.problems.length > 0 || store.saving} onClick={() => void save()}>
           {store.saving ? "Saving…" : "Save"}
         </Button>
       </div>
@@ -320,6 +348,7 @@ export function MembersMayCustomize({ organizationId }: { organizationId: string
         note: next ? "Members may customize their layout" : "Everyone uses the organization's layout",
       });
       if ((result as { ok?: boolean }).ok === false) toast.error("The setting could not be saved");
+      else toast.success(next ? "Members may use their own layout" : "Everyone uses the organization's layout");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "The setting could not be saved");
     } finally {

@@ -58,11 +58,21 @@ export async function saveShellLayout(
     return {
       ok: false,
       stale,
-      error: stale ? "This layout was changed somewhere else. Reload it and try again." : answer.error.message,
+      error: stale ? "This layout was changed somewhere else. Reload it and try again." : plainLayoutRefusal(answer.error.message),
     };
   }
   const version = (await readVersionNow(clientInOrganization(client, organizationId), answer.data)) ?? (input.current ? input.current.version + 1 : 1);
   return { ok: true, data: { recordId: answer.data, organizationId, version, updatedAt: savedAt, body: text } };
+}
+
+/**
+ * The store's refusal in the person's words. An archived organization's refusal names the storage step
+ * ("…so creating a table is not possible there…", custom._not_a_member_refusal); a layout save says what
+ * it means for her instead. Every other refusal is the store's own sentence, unchanged.
+ */
+export function plainLayoutRefusal(message: string): string {
+  if (/^This organization is archived\b/i.test(message)) return "This organization is archived. Restore it to change its layout.";
+  return message;
 }
 
 /** Archive a stored layout (the store's soft delete; restorable). The default (or the organization's) applies. */
@@ -71,7 +81,7 @@ export async function clearShellLayout(
   stored: Pick<StoredShellLayout, "recordId" | "organizationId">,
 ): Promise<ShellLayoutResult<null>> {
   const answer = await removeAppRow(client, shellLayoutTable, stored.recordId, { organizationId: stored.organizationId });
-  return answer.ok ? { ok: true, data: null } : { ok: false, error: answer.error.message };
+  return answer.ok ? { ok: true, data: null } : { ok: false, error: plainLayoutRefusal(answer.error.message) };
 }
 
 /** Every version of one stored layout, newest first (the store keeps them; nothing else does). */

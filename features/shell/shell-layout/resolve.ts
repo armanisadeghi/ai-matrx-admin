@@ -42,6 +42,7 @@ import {
   type ShellCatalogEntry,
 } from "./catalog";
 import { resolveRetiredNavId } from "./retired-nav-ids";
+import { EDIT_SIDEBAR_HREF } from "./addPagesHref";
 import { isShellLookId, STANDARD_SHELL_LOOK, type ShellLookId } from "./looks";
 
 /**
@@ -112,8 +113,7 @@ export interface ResolvedShellLayout {
 
 const LAUNCHPAD_ICON: ShellIconName = "LayoutGrid";
 const RECORD_ICON: ShellIconName = "FileText";
-/** The add row of an empty group: runs the `edit-sidebar` action; the anchor never navigates. */
-const EDIT_SIDEBAR_HREF = "#shell.edit-sidebar";
+
 
 /** The page a launchpad key opens. */
 export function launchpadHref(key: string): string {
@@ -247,7 +247,7 @@ function resolveNode(
       // pages (the editor, in place). Until 2026-10-19 an empty group was dropped from render, so a saved
       // "QA Group" showed in the editor and nowhere else.
       if (children.length === 0) {
-        const base = { id: node.id, label: node.label, href: USER_LAUNCHPAD_PATH, iconName: node.icon };
+        const base = { id: node.id, label: node.label, href: EDIT_SIDEBAR_HREF, iconName: node.icon };
         const add: ResolvedNavChild = { id: `${node.id}.add`, label: "Add pages…", href: EDIT_SIDEBAR_HREF, iconName: "Plus", action: "edit-sidebar" };
         return top ? { ...base, section: "primary", children: [add] } : { ...base, children: [add] };
       }
