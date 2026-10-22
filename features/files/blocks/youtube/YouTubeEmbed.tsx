@@ -19,9 +19,10 @@ interface YouTubeEmbedProps {
   /** Accessible label / caption. */
   title?: string;
   /**
-   * Poster image to show before play. Defaults to YouTube's `maxres` thumbnail
-   * (falls back to `hq` on error). Pass the thumbnail from the source markdown
-   * when available so the facade matches what the author embedded.
+   * Poster image to show before play. Defaults to YouTube's `maxres` thumbnail,
+   * stepping down `sd` → `hq` when a size is missing (see `nextYouTubePoster`).
+   * Pass the thumbnail from the source markdown when available so the facade
+   * matches what the author embedded.
    */
   poster?: string;
   /** Provider publish timestamp when the upstream block carries it. */
@@ -41,6 +42,28 @@ interface YouTubeEmbedProps {
  * Fed by both the markdown `youtube` block (client-detected links) and the
  * server `media_block(kind: "youtube")` render block — one component, one look.
  */
+/** YouTube's "no such thumbnail" answer: a 404 whose body is a decodable 120×90 grey JPEG. */
+const YT_MISSING_POSTER_WIDTH = 120;
+const POSTER_CHAIN = ["maxres", "sd", "hq"] as const;
+
+/**
+ * The next poster to try after `current` failed. A missing `maxresdefault` /
+ * `sddefault` does NOT fire `onError` — YouTube answers 404 with a decodable
+ * 120×90 grey placeholder — so a load whose natural width is the placeholder's
+ * counts as a miss too. `hq` exists for every video; null = nothing left.
+ */
+export function nextYouTubePoster(videoId: string, current: string): string | null {
+  const at = POSTER_CHAIN.findIndex((q) => youTubeThumbnail(videoId, q) === current);
+  const next = at >= 0 ? POSTER_CHAIN[at + 1] : "hq";
+  if (!next) return null;
+  const src = youTubeThumbnail(videoId, next);
+  return src === current ? null : src;
+}
+
+export function isMissingYouTubePoster(img: { naturalWidth: number }): boolean {
+  return img.naturalWidth > 0 && img.naturalWidth <= YT_MISSING_POSTER_WIDTH;
+}
+
 export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
   videoId,
   start,
@@ -84,10 +107,17 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
               alt={label}
               loading="lazy"
               className="h-full w-full object-cover"
-              // maxresdefault.jpg doesn't exist for every video — fall back to hq.
+              // A poster fills its 16:9 facade by design (hq carries letterbox bars):
+              // the playground's image check reads this mark and never calls it cropped.
+              data-matrx-poster=""
+              onLoad={(e) => {
+                if (!isMissingYouTubePoster(e.currentTarget)) return;
+                const next = nextYouTubePoster(videoId, posterSrc);
+                if (next) setPosterSrc(next);
+              }}
               onError={() => {
-                const hq = youTubeThumbnail(videoId, "hq");
-                if (posterSrc !== hq) setPosterSrc(hq);
+                const next = nextYouTubePoster(videoId, posterSrc);
+                if (next) setPosterSrc(next);
               }}
             />
             <span className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/0">

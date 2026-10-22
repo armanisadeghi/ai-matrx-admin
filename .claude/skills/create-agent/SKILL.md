@@ -365,7 +365,7 @@ proven nothing: check that every entity it named (route, id, keyword, quote, cit
 actually exists in what you sent it, and count the fabrications. The passing number is zero.
 Full method: [agent-provision](/skills/agent-provision/SKILL.md) § Verifying. Refine the system prompt with `update` and run again. Two runs minimum — this
 also exercises the kind component twice so you catch shape problems now, not in
-production. An agent that has never been run is not created; it is a liability.
+production. An agent that has never been run is not created; it is a liability. Then prove it live: `safety-net` skill.
 
 ### 9. Earn the examples
 

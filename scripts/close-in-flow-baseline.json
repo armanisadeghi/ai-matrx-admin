@@ -1,25 +1,8 @@
 {
   "rule": "close controls are flex items of their row, never absolute/fixed",
   "files": {
-    "features/agents/components/tools-management/AgentBundlesPanel.tsx": 1,
-    "features/agents/components/tools-management/AgentToolsManager.tsx": 1,
     "features/agents/orchestras/components/OrchestraBuilder.tsx": 1,
-    "features/connectors/ConnectorPromptCard.tsx": 1,
-    "features/data-tables/pick-lists/components/ListsSidebar.tsx": 1,
-    "features/feedback/FeedbackHighlight.tsx": 1,
-    "features/files/components/inline/MediaAttachmentThumbnail.tsx": 1,
     "features/files/components/surfaces/MobileStack.tsx": 1,
-    "features/flashcards/fast-fire/voice-test/SingleCardVoiceTest.tsx": 1,
-    "features/image-studio/components/PresetCatalog.tsx": 1,
-    "features/marketing/seo/topical-map/views/OutlineView.tsx": 1,
-    "features/meet/components/manage/FindTimePanel.tsx": 1,
-    "features/meet/components/record/RecordingsLibrary.tsx": 1,
-    "features/pricing/components/nudges/SidebarPromo.tsx": 1,
-    "features/shell/components/sidebar/NavFlyoutGroup.tsx": 1,
-    "features/shell/frame/AppFrame.tsx": 1,
-    "features/tasks/components/TaskContentNew.tsx": 1,
-    "features/tool-call-visualization/admin/McpToolsManager.tsx": 1,
-    "features/transcription-cleanup/components/CleanupPad.tsx": 1,
-    "lib/reversible/ReversibleNotice.tsx": 1
+    "features/shell/frame/AppFrame.tsx": 1
   }
 }

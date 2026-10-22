@@ -46,6 +46,7 @@
 // handed to the package (`store`), which keeps its `chatHost` slice synced.
 
 import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-local-models";
+import { yourComputersLocalModels } from "@/features/ai-models/remote/your-computers";
 import { whenEngagedLate } from "@/lib/boot/engagedLate";
 import { useMemo, type ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
@@ -450,8 +451,10 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
     routes: { workflowStudio: WORKFLOWS_APP_URL },
     canvas: appChatCanvasPort,
     // The person's local models, for the chat composer's picker only (never ModelCatalogHost):
-    // Matrx 2 on THIS computer, paired; a pick opens Confidential Chat there.
-    localModels: thisMachineLocalModels(),
+    // Matrx 2 on THIS computer, paired (a pick opens Confidential Chat there), then every online
+    // computer of the person or their organization over the relay, and "Claude (your plan)" while
+    // one of their own is online (a pick opens /chat/on-device).
+    localModels: yourComputersLocalModels(thisMachineLocalModels()),
     // Background live channels (the sidebar's nested-children socket) open on the engaged-late
     // tier: page settled AND a trusted press, key or touch. An untouched page opens none.
     whenEngaged: () => whenEngagedLate(),

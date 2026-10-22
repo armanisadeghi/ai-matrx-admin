@@ -92,6 +92,30 @@ export interface RunProvisionValue {
   valueChars: number | null;
 }
 
+/** One placement entry of the run row: names and sizes, never a value. */
+export interface RunRowPlacementEntry {
+  name: string;
+  kind: string | null;
+  bound: boolean;
+  computed: boolean;
+  deliveredTo: "input" | "context" | "media" | "watch_only" | null;
+  chars: number | null;
+}
+
+/**
+ * THE RUN ROW (`chat.user_request`, runner plan 25 step 4): the run's door, binding level, AI Watch
+ * flag, typed refusal and names-only placement. Null for a run recorded before run rows existed.
+ */
+export interface RunRow {
+  runId: string;
+  door: string | null;
+  rung: string | null;
+  holderType: string | null;
+  watching: boolean;
+  refusal: { code: string; sentence: string; missing: string[] } | null;
+  placement: RunRowPlacementEntry[] | null;
+}
+
 /** A delivered variable or context entry whose value stayed on the server: its name and size. */
 export interface WithheldEntry {
   name: string;
@@ -132,6 +156,8 @@ export interface StoredRun {
   recordedAs: "mandate_run" | "agent_run";
   /** The server's one line when the run is not a full mandate record. */
   notice: string | null;
+  /** The run row — what the Runs tab reads about the run itself (names only). */
+  runRow: RunRow | null;
 }
 
 /** Variable fates the contract paints red. */
@@ -289,6 +315,47 @@ function parseStoredRun(conversationId: string, data: unknown): StoredRun {
     valuesWithheld: d.values_withheld === true,
     withheldVariables: parseWithheld(d.withheld_variables),
     withheldContext: parseWithheld(d.withheld_context),
+    runRow: parseRunRow(d.run),
+  };
+}
+
+const DELIVERED_TO = ["input", "context", "media", "watch_only"] as const;
+
+export function parseRunRow(v: JsonValue | undefined): RunRow | null {
+  if (!isJsonObject(v)) return null;
+  const runId = str(v.run_id);
+  if (!runId) return null;
+  const refusal = isJsonObject(v.refusal)
+    ? {
+        code: str(v.refusal.code) ?? "refused",
+        sentence: typeof v.refusal.sentence === "string" ? v.refusal.sentence : "",
+        missing: list(v.refusal.missing).filter((m): m is string => typeof m === "string"),
+      }
+    : null;
+  const placement = Array.isArray(v.placement)
+    ? v.placement.filter(isJsonObject).flatMap((e): RunRowPlacementEntry[] => {
+        const name = str(e.name);
+        if (!name) return [];
+        return [
+          {
+            name,
+            kind: str(e.kind),
+            bound: e.bound === true,
+            computed: e.computed !== false,
+            deliveredTo: DELIVERED_TO.find((d) => d === e.delivered_to) ?? null,
+            chars: num(e.chars),
+          },
+        ];
+      })
+    : null;
+  return {
+    runId,
+    door: str(v.door),
+    rung: str(v.rung),
+    holderType: str(v.holder_type),
+    watching: v.watching === true,
+    refusal,
+    placement,
   };
 }
 
