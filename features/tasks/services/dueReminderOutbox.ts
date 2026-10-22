@@ -44,7 +44,7 @@ export async function enqueueDueReminder(
     .from("task_user_state")
     .select("task_id, snoozed_until, dismissed_at")
     .in("task_id", taskIds)
-    .eq("created_by", recipientId);
+    .eq("user_id", recipientId);
   if (muteError) throw muteError;
   const muted = new Set((mutes ?? [])
     .filter((m) => m.dismissed_at || (m.snoozed_until && Date.parse(m.snoozed_until) > Date.now()))

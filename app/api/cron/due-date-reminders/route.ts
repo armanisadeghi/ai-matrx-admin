@@ -107,7 +107,7 @@ export async function GET(request: Request) {
       const chunk = taskIds.slice(i, i + 150);
       const { data: userStates, error: muteError } = await projectsDb(supabase)
         .from('task_user_state')
-        .select('task_id, created_by, snoozed_until, dismissed_at')
+        .select('task_id, user_id, snoozed_until, dismissed_at')
         .in('task_id', chunk);
       if (muteError) {
         console.error('[due-date-reminders] mute-state read failed — aborting run:', muteError.message);
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
       }
       for (const s of userStates ?? []) {
         const snoozed = s.snoozed_until && new Date(s.snoozed_until) > now;
-        if (snoozed || s.dismissed_at) muted.add(`${s.task_id}:${s.created_by}`);
+        if (snoozed || s.dismissed_at) muted.add(`${s.task_id}:${s.user_id}`);
       }
     }
 
