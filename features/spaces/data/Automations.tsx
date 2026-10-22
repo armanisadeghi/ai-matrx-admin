@@ -16,6 +16,7 @@ import { ProInput } from "@/components/official/ProInput";
  * Nothing here decides access: every call runs as the person and the store refuses in its own words.
  */
 import { createContext, useContext, useEffect, useState } from "react";
+import { copyText } from "@ai-matrx/kit/clipboard";
 import { Copy, FlaskConical, History, Plus, RotateCcw, Trash2, Undo2, X } from "lucide-react";
 import { Button, Input, Switch, TimeField } from "@ai-matrx/design-system/controls";
 import { automationWebhookUrl, isAutomationAppTrigger, isButtonField } from "@ai-matrx/records";
@@ -432,7 +433,7 @@ function WebhookUrl({ item }: { item: AutomationItem | null }) {
   return (
     <div className="flex min-w-0 items-center gap-1" data-testid="spaces-automation-webhook-url">
       <code className="min-w-0 flex-1 truncate font-mono text-xs">{url}</code>
-      <Button variant="quiet" icon={<Copy size={14} />} aria-label="Copy webhook URL" onClick={() => void navigator.clipboard.writeText(url)} />
+      <Button variant="quiet" icon={<Copy size={14} />} aria-label="Copy webhook URL" onClick={() => void copyText(url)} />
     </div>
   );
 }
