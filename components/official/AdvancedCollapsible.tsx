@@ -148,7 +148,7 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
         />
       )}
       
-      <CopyButtons label="Content" human={getContentForCopy()} size="sm" className="text-gray-500 dark:text-gray-400" />
+      <CopyButtons label="Content" human={getContentForCopy()} size="sm" className="text-muted-foreground" />
       
       <IconButton
         icon={<Maximize className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />}
@@ -185,7 +185,7 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
         />
       )}
       
-      <CopyButtons label="Content" human={getContentForCopy()} size="sm" className="text-gray-500 dark:text-gray-400" />
+      <CopyButtons label="Content" human={getContentForCopy()} size="sm" className="text-muted-foreground" />
       
       <IconButton
         icon={<Minimize className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />}
@@ -213,7 +213,7 @@ const AdvancedCollapsible: React.FC<AdvancedCollapsibleProps> = ({
             {typeof title === 'string' ? <span>{title}</span> : title}
           </div>
           <ChevronDown
-            className={`h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
         </CollapsibleTrigger>
         <CollapsibleContent>

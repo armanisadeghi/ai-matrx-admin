@@ -1,7 +1,7 @@
 // scripts/frame-crawl/crawl.mjs — the frame crawl: every signed-in app page, measured the same way, every phase.
 //
 //   node scripts/frame-crawl/crawl.mjs [--mode classic|frame] [--only /prefix] [--widths 1440,390]
-//        [--concurrency 4] [--discover-only] [--report] [--retry-errors] [--limit N]
+//        [--concurrency 4] [--origin URL] [--out NAME] [--discover-only] [--report] [--retry-errors] [--limit N]
 //
 // Plan + why: common-docs/projects/app-frame/ROLLOUT-PLAN.md (P0 baseline, "Measuring breakage: the crawl").
 // Target is the LIVE site as admin@admin.com (AI_ADMIN_USERNAME / AI_ADMIN_PASSWORD from .env.local, never printed).
@@ -24,7 +24,8 @@ import { signIn, sleep } from "../lib/seat-browser.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, "..", "..");
-const ORIGIN = "https://www.aimatrx.com";
+const ORIGIN_ARG = process.argv.includes("--origin") ? process.argv[process.argv.indexOf("--origin") + 1] : "";
+const ORIGIN = (ORIGIN_ARG || "https://www.aimatrx.com").replace(/\/$/, ""); // --origin http://<session>.localhost:3001 = the shared preview
 const SCRATCH = "/private/tmp/claude-501/-Users-armanisadeghi-code-matrx-frontend/d1322d17-1a7c-4afa-90cf-465dfc366734/scratchpad/crawl-classic";
 
 const args = process.argv.slice(2);
@@ -39,7 +40,7 @@ const ONLY = opt("only", "");
 const WIDTHS = opt("widths", "1440,390").split(",").map(Number);
 const CONCURRENCY = Math.min(4, Number(opt("concurrency", "4"))); // the live-database walk cap
 const LIMIT = Number(opt("limit", "0"));
-const OUT_JSON = join(HERE, `baseline-${MODE}.json`);
+const OUT_JSON = join(HERE, `baseline-${opt("out", MODE)}.json`);
 const IDS_JSON = join(HERE, "ids.json");
 const SHOTS = MODE === "classic" ? SCRATCH : SCRATCH.replace("crawl-classic", `crawl-${MODE}`);
 const HEIGHT = (w) => (w < 600 ? 844 : 900);
@@ -176,7 +177,69 @@ const MEASURE = () => {
       }
     }
   }
+  // ---- frame-mode probes (additive; the classic baseline rows simply lack them) ----
+  const norm = (t) => (t ?? "").replace(/\s+/g, " ").trim();
+  const bodyEl = document.querySelector('[data-mf-region="body"]');
+  const sideEl = document.querySelector('[data-mf-region="sidebar"]');
+  const hdrEl = document.querySelector('header[data-mf-region="header"], [data-mf-region="header"]');
+  const frame = {};
+  frame.active = !!sideEl;
+  if (bodyEl) {
+    const br = bodyEl.getBoundingClientRect();
+    const inBody = (el) => bodyEl.contains(el);
+    // extra header rows: visible <header>/[role=banner] or header portals with content inside the page body
+    frame.bodyHeaders = [...bodyEl.querySelectorAll('header, [role="banner"], [data-page-header-portal]')].filter((e) => vis(e) && (e.textContent ?? "").trim().length > 0).length;
+    // extra left rails: tall, narrow, flush-left column inside the body
+    const rails = [...bodyEl.querySelectorAll('aside, nav, [role="complementary"], [data-sidebar], [class*="sidebar" i]')].filter((e) => {
+      if (!vis(e)) return false;
+      const r = e.getBoundingClientRect();
+      return r.height >= br.height * 0.55 && r.width >= 120 && r.width <= 460 && r.left - br.left <= 12 && r.right < br.left + br.width * 0.6;
+    });
+    // keep outermost only
+    frame.bodyRails = rails.filter((e) => !rails.some((o) => o !== e && o.contains(e))).length;
+    frame.railSamples = rails.slice(0, 2).map((e) => `${e.tagName.toLowerCase()}.${String(e.className).split(/\s+/).slice(0, 2).join(".")}`);
+    const text = norm(bodyEl.innerText);
+    frame.bodyChars = text.length;
+    frame.bodyMedia = bodyEl.querySelectorAll("img, canvas, video, iframe, svg").length;
+    frame.bodyEmpty = text.length < 15 && frame.bodyMedia < 2;
+    // body content wider than the body box (clipped when the page scroller hides it)
+    let wide = 0;
+    let worst = 0;
+    for (const e of bodyEl.querySelectorAll("*")) {
+      if (!vis(e)) continue;
+      const r = e.getBoundingClientRect();
+      if (r.width === 0) continue;
+      if (r.right > br.right + 4 && r.left < br.right) {
+        // ignore descendants of a horizontally scrolling box (a deliberate scroller)
+        let scr = false;
+        for (let a = e.parentElement; a && a !== bodyEl; a = a.parentElement) { const o = getComputedStyle(a).overflowX; if (o === "auto" || o === "scroll") { scr = true; break; } }
+        if (!scr) { wide++; worst = Math.max(worst, Math.round(r.right - br.right)); }
+      }
+    }
+    frame.bodyWide = wide;
+    frame.bodyWidePx = worst;
+    frame.bodyScrollOverflowPx = Math.max(0, bodyEl.scrollWidth - bodyEl.clientWidth);
+    // duplicate titles: the same short text twice among visible leaves in header + top of body (sidebar excluded)
+    const seen = new Map();
+    for (const e of [...(hdrEl?.querySelectorAll("*") ?? []), ...bodyEl.querySelectorAll("*")]) {
+      if (e.children.length || !vis(e)) continue;
+      const t = norm(e.textContent);
+      if (t.length < 4 || t.length > 80) continue;
+      const r = e.getBoundingClientRect();
+      if (r.top > 150) continue;
+      if (e.closest('nav[aria-label*="readcrumb" i]') && e.closest("nav") && !e.closest("h1,h2")) { /* crumb leaves count once below */ }
+      seen.set(t, (seen.get(t) ?? 0) + 1);
+    }
+    frame.dupTitles = [...seen].filter(([, n]) => n > 1).map(([t, n]) => `${t} x${n}`).slice(0, 4);
+  }
+  if (sideEl) {
+    const links = [...sideEl.querySelectorAll('[data-mf-region="product-nav"] a, [data-mf-region="product-nav"] button')].filter(vis);
+    frame.navLinks = links.length;
+    frame.navLabels = links.slice(0, 12).map((e) => norm(e.textContent).slice(0, 24));
+    frame.navHasSubmenuHeading = !!sideEl.querySelector('[data-mf-region="product-nav"] [role="group"], [data-mf-region="product-nav"] h2, [data-mf-region="product-nav"] h3');
+  }
   return {
+    frame,
     cls: +window.__f.cls.toFixed(4),
     timeToStableMs: Math.round(window.__f.lastMut || 0),
     headerPortals: portalsVisible.length,

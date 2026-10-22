@@ -164,7 +164,7 @@ export function StructuredValueView({
           {kind ? (
             <span title={kind}>
               {humanizeIdentifier(kind) || kind}
-              <span className="text-muted-foreground/70">{` — ${note}`}</span>
+              <span className="text-muted-foreground">{` — ${note}`}</span>
             </span>
           ) : null}
           <button

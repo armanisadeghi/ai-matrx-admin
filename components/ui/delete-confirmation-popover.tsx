@@ -102,7 +102,7 @@ export function DeleteConfirmationPopover({
                 {title}
               </h2>
               {itemLabel ? (
-                <p className="mt-0.5 line-clamp-2 type-secondary font-medium leading-5 text-foreground/80">
+                <p className="mt-0.5 line-clamp-2 type-secondary font-medium leading-5 text-muted-foreground">
                   {itemLabel}
                 </p>
               ) : null}
@@ -115,7 +115,7 @@ export function DeleteConfirmationPopover({
           >
             <p>{description}</p>
             {reassurance ? (
-              <p className="flex items-start gap-1.5 text-foreground/75">
+              <p className="flex items-start gap-1.5 text-muted-foreground">
                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                 <span>{reassurance}</span>
               </p>

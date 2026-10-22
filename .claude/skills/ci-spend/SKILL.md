@@ -26,7 +26,7 @@ timestamp: 2026-10-18
    Each line shows its $/week and its share of the total. Every price and the cap are `billing.ci_spend.*` knobs; no lane raises the cap.
    List price only forecasts when the free GitHub minutes run out: that is a future-billing alarm, never "off track".
 2. **Cadence.** Only aidream and ai-matrx ride the ~30-minute train. Every other app releases on meaningful change. Matrx Desktop: macOS builds only on Arman's Mac (never on GitHub), Windows/Linux at most twice a week. Matrx Local: paused, no builds. Overnight releases run hourly when main changed. No package version without a real content change. Waste to hunt first: cascading package republishes from small changes.
-3. **Every workflow change states its cost.** Each workflow has an entry in the repo's `.github/ci-cost.json` (trigger, runs/week, minutes, OS, $/week, benefit). `check_workflow_runner_cost.py` fails a workflow without one or with a stale one.
+3. **Every workflow change states its cost.** Each workflow has an entry in the repo's `.github/ci-cost.json` (trigger, runs/week, minutes, OS, $/week, benefit). `check_workflow_runner_cost.py` warns on a missing or stale entry and fails only an undeclared paid runner (macOS, Windows or larger without a manifest leg or allowlist reason). It never judges spend and has no per-repo share: the weekly total of real money against $100 is judged only by the server spend watch.
 4. **Cost without benefit is a defect.** Recognize it by these shapes:
    - Red runs repeated without a fix. The `ci-breaker` label pauses a workflow after 3 reds in a row.
    - Mac or Windows runners on push.

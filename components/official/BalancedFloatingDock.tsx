@@ -109,7 +109,7 @@ function BalancedFloatingDockMobile({
             iconBgColor,
           )}
         >
-          <IconLayoutNavbarExpand className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          <IconLayoutNavbarExpand className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
 
@@ -170,7 +170,7 @@ function BalancedFloatingDockMobile({
                     </div>
                     <span className="font-medium">{item.label}</span>
                   </div>
-                  <IconChevronRight className="h-5 w-5 text-gray-400" />
+                  <IconChevronRight className="h-5 w-5 text-muted-foreground" />
                 </Link>
               ))}
             </div>
@@ -307,7 +307,7 @@ function BalancedIconContainer({
           animate: { opacity: 1, y: 0, x: 60 },
           exit: { opacity: 0, y: 0, x: 10 },
           className: cn(
-            "p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 absolute left-full top-1/2 -translate-y-1/2 w-fit text-xs shadow-sm z-50",
+ "p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-foreground absolute left-full top-1/2 -translate-y-1/2 w-fit text-xs shadow-sm z-50",
             "border-border",
           ),
         }
@@ -316,7 +316,7 @@ function BalancedIconContainer({
           animate: { opacity: 1, y: 15 },
           exit: { opacity: 0, y: 5 },
           className: cn(
-            "p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 absolute left-1/2 -translate-x-1/2 top-full w-fit text-xs shadow-sm",
+ "p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-foreground absolute left-1/2 -translate-x-1/2 top-full w-fit text-xs shadow-sm",
             "border-border",
           ),
         };
@@ -367,7 +367,7 @@ function BalancedIconContainer({
                   animate={{ opacity: 1, x: 15 }}
                   exit={{ opacity: 0, x: 5 }}
                   className={cn(
-                    "p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-100 w-fit type-secondary shadow-sm",
+ "p-1 px-2 whitespace-pre rounded-md bg-zinc-100 dark:bg-zinc-800 text-foreground w-fit type-secondary shadow-sm",
                     "border-border",
                   )}
                 >

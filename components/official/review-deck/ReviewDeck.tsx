@@ -220,7 +220,7 @@ export function ReviewDeck({
             ) : null}
             {current.meta ? <div className="mt-2">{current.meta}</div> : null}
             {current.body ? (
-              <div className="mt-3 type-secondary text-foreground/90">{current.body}</div>
+              <div className="mt-3 type-secondary text-foreground">{current.body}</div>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">

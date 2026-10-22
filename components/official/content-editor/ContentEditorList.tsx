@@ -44,7 +44,7 @@ const stateIcon: Record<ContentEditorListItemState, React.ReactNode> = {
   open: (
     <Circle className="h-2 w-2 fill-blue-500 text-blue-500 dark:fill-blue-400 dark:text-blue-400" />
   ),
-  closed: <Circle className="h-2 w-2 text-zinc-300 dark:text-zinc-600" />,
+  closed: <Circle className="h-2 w-2 text-muted-foreground" />,
 };
 
 export function ContentEditorList({
@@ -83,14 +83,14 @@ export function ContentEditorList({
     >
       {title && (
         <div className="flex-none px-3 py-2 border-b border-border bg-zinc-50 dark:bg-zinc-900/60">
-          <div className="type-secondary font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <div className="type-secondary font-semibold uppercase tracking-wide text-muted-foreground">
             {title}
           </div>
         </div>
       )}
 
       {items.length === 0 ? (
-        <div className="px-3 py-4 type-secondary text-zinc-500 dark:text-zinc-400">
+        <div className="px-3 py-4 type-secondary text-muted-foreground">
           {emptyMessage}
         </div>
       ) : (
@@ -108,11 +108,11 @@ export function ContentEditorList({
                   className={cn(
                     "group w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-left transition-colors border-l-2",
                     state === "active" &&
-                      "bg-zinc-100 dark:bg-zinc-800 border-l-emerald-500 text-zinc-900 dark:text-zinc-100",
+ "bg-zinc-100 dark:bg-zinc-800 border-l-emerald-500 text-foreground",
                     state === "open" &&
-                      "bg-transparent border-l-blue-500/60 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/60",
+ "bg-transparent border-l-blue-500/60 text-foreground hover:bg-zinc-50 dark:hover:bg-zinc-800/60",
                     state === "closed" &&
-                      "bg-transparent border-l-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-zinc-800 dark:hover:text-zinc-200",
+ "bg-transparent border-l-transparent text-muted-foreground hover:bg-zinc-50 dark:hover:bg-zinc-800/60 hover:text-foreground",
                   )}
                   title={item.description ?? item.title}
                 >
@@ -123,10 +123,10 @@ export function ContentEditorList({
                     className={cn(
                       "h-3.5 w-3.5 flex-none",
                       state === "active"
-                        ? "text-zinc-700 dark:text-zinc-200"
+                        ? "text-foreground"
                         : state === "open"
-                          ? "text-zinc-600 dark:text-zinc-400"
-                          : "text-zinc-400 dark:text-zinc-500",
+                          ? "text-muted-foreground"
+                          : "text-muted-foreground",
                     )}
                   />
                   <span

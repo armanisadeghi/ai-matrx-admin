@@ -3,7 +3,7 @@
   "updated": "2026-10-07",
   "sha": "e389e62b291c8f8958b40ae46c3c3cb67335a4b2",
   "sites": 36071,
-  "count": 28,
+  "count": 27,
   "ids": [
     "arbitrary-text-size|features/esign/signer/parts/PaperField.tsx",
     "primitive-visual-class|components/editor-chrome/EditorRibbon.tsx",
@@ -13,7 +13,6 @@
     "primitive-visual-class|features/education/classes/components/ClassTestsSection.tsx",
     "primitive-visual-class|features/education/classes/components/MakePracticeTestButton.tsx",
     "primitive-visual-class|features/spaces/io/NotionSyncBar.tsx",
-    "raw-color|features/comparison/components/ItemLogo.tsx",
     "raw-color|features/esign/signer/parts/ControlInput.tsx",
     "raw-color|features/esign/signer/parts/Dialogs.tsx",
     "raw-color|features/esign/signer/parts/DocumentStack.tsx",
@@ -11962,11 +11961,6 @@
       "reason": "Pre-existing report dialog sizing, untouched by the L1e waiting change; the dialog primitive has no width variant yet",
       "accepted_by": "Armani Sadeghi",
       "date": "2026-10-21"
-    },
-    "raw-color|features/comparison/components/ItemLogo.tsx": {
-      "reason": "The dark-mode light chip behind a raw logo is the existing ItemLogo rule (logos stay untinted); the cover mode reuses it",
-      "accepted_by": "Armani Sadeghi",
-      "date": "2026-10-22"
     }
   }
 }

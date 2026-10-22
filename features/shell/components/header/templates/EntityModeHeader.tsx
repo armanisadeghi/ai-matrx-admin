@@ -373,7 +373,7 @@ export function EntityModeHeader({
                   // The root crumb keeps its whole word; the middle crumbs (a long name) give way first.
                   <span key={`${crumb.label}-${i}`} className={cn("flex items-center gap-1", i === 0 ? "shrink-0" : "min-w-0")}>
                     <CrumbNode crumb={crumb} isLast={false} />
-                    <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                    <ChevronRight aria-hidden className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   </span>
                 ))}
               </nav>

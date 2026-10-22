@@ -122,7 +122,7 @@ export const PageTemplate: React.FC<PageTemplateProps> = ({
               className={`px-5 py-3 rounded-lg flex items-center font-medium transition-all duration-200 ${
                 activeTab === tab.id
                   ? "bg-indigo-600 text-white shadow-md"
-                  : "bg-white hover:bg-gray-100 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200"
+                  : "bg-white hover:bg-gray-100 text-foreground dark:bg-gray-800 dark:hover:bg-gray-700 "
               }`}
             >
               <tab.icon className="mr-2 h-5 w-5" />
@@ -151,7 +151,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ title, children, className = "" }) => (
   <div className={`bg-textured rounded-xl shadow-md p-6 border-border ${className}`}>
-    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{title}</h2>
+    <h2 className="text-xl font-bold text-foreground mb-4">{title}</h2>
     {children}
   </div>
 );
@@ -204,8 +204,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => (
   <div className="relative">
     <div className="flex items-center justify-between mb-2">
-      <span className="type-title text-gray-700 dark:text-gray-300">{label}</span>
-      <span className="type-title text-gray-500 dark:text-gray-400">{value}</span>
+      <span className="type-title text-foreground dark:text-muted-foreground">{label}</span>
+      <span className="type-title text-muted-foreground">{value}</span>
     </div>
     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
       <div 
@@ -234,7 +234,7 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, text }
     <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
       <div className="flex items-center">
         <div className={`w-3 h-3 rounded-full ${statusColors[status]} mr-2`}></div>
-        <p className="type-body text-gray-700 dark:text-gray-300">{text}</p>
+        <p className="type-body text-foreground dark:text-muted-foreground">{text}</p>
       </div>
     </div>
   );
@@ -287,7 +287,7 @@ export const HeaderGroup: React.FC<HeaderGroupProps> = ({ tag, items }) => {
             key={idx}
             className="p-4 rounded-lg bg-textured shadow-sm border-border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
-            <span className={`${headerSizes[tag]} text-gray-800 dark:text-gray-200`}>{text}</span>
+            <span className={`${headerSizes[tag]} text-foreground`}>{text}</span>
           </div>
         ))}
       </AccordionContent>

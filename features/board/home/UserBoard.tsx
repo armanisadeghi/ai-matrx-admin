@@ -233,14 +233,19 @@ export function UserBoard({
   // The board's own design tokens: component samples on it draw in them.
   const tokenTables = useTokenTables(board);
   // A design system board (it holds token tables) runs the Conductor: the Agents menu presents its mandate here,
-  // with a Run door (runHere) on this board; Build with AI starts the same job in the side chat (the board surface is its input).
+  // with a Run door (runHere) on this board; an empty one starts the same job in the side chat on its own (the board surface is its input).
   useDeclaredSurfaceMandates(
     tokenTables.length
       ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME, runHere: true }]
       : [],
   );
-  // A design board just made from the gallery opens on the start the person chose (AI build or style).
-  useBoardStartRun(boardId, tokenTables.length > 0);
+  // An EMPTY design board (its cover has nothing) opens with the AI building it, talking first; one just started
+  // from a style says so (Arman 2026-10-22: no Build with AI step).
+  const coverEmpty = doc.nodes.some((n) => {
+    const cover = coverOf(n.source);
+    return cover !== null && !cover.hero.trim() && !cover.markdown.trim();
+  });
+  useBoardStartRun(boardId, tokenTables.length > 0, coverEmpty);
   // The board's own thread, read ONCE: each board-only tile's count is its part's share of it.
   const boardCommentCounts = useBoardCommentCounts(boardId);
   const tileLayers = useMemo(() => new Map(layout.tileIds.map((tid, i) => [tid, i] as const)), [layout.tileIds]);

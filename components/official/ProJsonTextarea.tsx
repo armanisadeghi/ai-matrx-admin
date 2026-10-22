@@ -459,7 +459,7 @@ function IssueCard({
                       ? isError
                         ? "border-red-800 bg-red-950/70 text-red-300"
                         : "border-amber-800 bg-amber-950/70 text-amber-300"
-                      : "border-zinc-800 text-zinc-600",
+                      : "border-zinc-800 text-muted-foreground",
                   )}
                 >
                   {absoluteIndex + 1}

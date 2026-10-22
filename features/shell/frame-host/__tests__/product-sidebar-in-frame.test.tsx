@@ -17,8 +17,14 @@ import { AppFrame } from "@/features/shell/frame/AppFrame";
 import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
 import type { FrameProduct } from "@/features/shell/frame/types";
 import { routeMenuRegistry } from "@/features/shell/constants/route-menu-registry";
-import { FrameSidebarContent, FrameSidebarSlotContext, useFrameSidebarSlot } from "../frameSidebarSlot";
-import { frameRouteMenu, useFrameProductSidebar } from "../frameProductSidebar";
+import {
+  FRAME_PAGE_SIDEBAR_ROUTES,
+  FrameSidebarContent,
+  FrameSidebarSlotContext,
+  routeSuppliesPageSidebar,
+  useFrameSidebarSlot,
+} from "../frameSidebarSlot";
+import { PAGE_SIDEBAR_RESERVE_MS, frameRouteMenu, useFrameProductSidebar } from "../frameProductSidebar";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -213,7 +219,7 @@ describe("the product's other pages stay above its module menu (owner-session, 2
   });
 
   it("the route table's own body (no module menu, no page sidebar) has no strip", async () => {
-    await mount(<FrameHost pathname="/files/all" productId="chat" product={chatLike(4)} page={<p>Page</p>} />);
+    await mount(<FrameHost pathname="/tasks" productId="chat" product={chatLike(4)} page={<p>Page</p>} />);
     expect(strip()).toBeNull();
   });
 });
@@ -283,5 +289,66 @@ describe("kind B: a page's own sidebar goes into the frame's one column", () => 
     await mount(<PageWithOwnSidebar />);
     expect(host.querySelector('[data-testid="classic-column"] [data-testid="page-sidebar"]')).not.toBeNull();
     expect(host.querySelectorAll('[data-testid="page-sidebar"]')).toHaveLength(1);
+  });
+});
+
+describe("a declared page sidebar never flashes the route rows first", () => {
+  const rowsBody = () => sidebar().querySelector(".mf-noscrollbar.px-2");
+
+  it("the declared list resolves the kind-B routes and nothing else", () => {
+    for (const path of ["/notes", "/notes/abc", "/files/all", "/messages", "/agent-connections/x"]) {
+      expect(routeSuppliesPageSidebar(path)).toBe(true);
+    }
+    for (const path of ["/chat/new", "/notesbook", "/marketing/brands"]) {
+      expect(routeSuppliesPageSidebar(path)).toBe(false);
+    }
+  });
+
+  it("every declared owner really renders <FrameSidebarContent>", () => {
+    const fs = jest.requireActual<typeof import("fs")>("fs");
+    const path = jest.requireActual<typeof import("path")>("path");
+    for (const { owner } of FRAME_PAGE_SIDEBAR_ROUTES) {
+      const src = fs.readFileSync(path.join(process.cwd(), owner), "utf8");
+      expect(`${owner}: ${src.includes("<FrameSidebarContent")}`).toBe(`${owner}: true`);
+    }
+  });
+
+  it("before the page claims it, the body is a quiet skeleton, then the page's sidebar", async () => {
+    function Late() {
+      const [on, setOn] = React.useState(false);
+      return (
+        <FrameHost
+          pathname="/notes"
+          productId="docs"
+          page={
+            <>
+              <button data-testid="arrive" onClick={() => setOn(true)} />
+              {on ? <PageWithOwnSidebar /> : null}
+            </>
+          }
+        />
+      );
+    }
+    await mount(<Late />);
+    expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).not.toBeNull();
+    expect(rowsBody()).toBeNull();
+    await act(async () => host.querySelector<HTMLButtonElement>('[data-testid="arrive"]')!.click());
+    expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).toBeNull();
+    expect(sidebar().querySelector('[data-testid="page-sidebar"]')).not.toBeNull();
+  });
+
+  it("a page that never claims it gets the route rows back", async () => {
+    jest.useFakeTimers();
+    try {
+      await mount(<FrameHost pathname="/notes" productId="docs" page={<p>Narrow list</p>} />);
+      expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).not.toBeNull();
+      await act(async () => {
+        jest.advanceTimersByTime(PAGE_SIDEBAR_RESERVE_MS + 10);
+      });
+      expect(sidebar().querySelector("[data-mf-page-sidebar-pending]")).toBeNull();
+      expect(sidebar().querySelector('[data-mf-region="product-nav"]')).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

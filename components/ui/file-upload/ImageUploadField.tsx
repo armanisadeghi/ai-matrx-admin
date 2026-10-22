@@ -76,7 +76,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+      <label className="text-sm font-medium text-foreground">
         {label}
       </label>
 
@@ -117,7 +117,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
             </div>
           </div>
         ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground">
             <Image className="h-10 w-10 mb-2" />
             <p className="type-body">Click or drag to upload an image</p>
             <p className="type-secondary mt-1">Recommended size: 1200 × 630 pixels</p>
@@ -129,7 +129,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         <p className="text-red-500 type-secondary mt-1">{error.message} <ErrorAlchemyMenu /></p>
       )}
 
-      <p className="type-secondary text-gray-500 dark:text-gray-400 mt-1">
+      <p className="type-secondary text-muted-foreground mt-1">
         Upload an image for your app banner. This will be displayed on the app card.
       </p>
     </div>

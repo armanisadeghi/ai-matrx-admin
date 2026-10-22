@@ -42,7 +42,7 @@ const colorSpecificStyles = {
     gray: {
         card: "border-border",
         cardHeader: "border-border",
-        cardTitle: "text-gray-900 dark:text-gray-100",
+        cardTitle: "text-foreground",
     },
     indigo: {
         card: "border border-indigo-200 dark:border-indigo-600",
@@ -95,9 +95,9 @@ const baseCardStyles = {
     card: "bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl",
     cardHeader: "bg-gray-100 dark:bg-gray-700 p-3 rounded-t-3xl",
     cardTitle: "pt-2",
-    cardDescription: "text-gray-600 dark:text-gray-300 text-sm",
-    cardDescriptionNode: "text-gray-600 dark:text-gray-300 text-sm pt-2",
-    cardContent: "text-gray-600 dark:text-gray-300 text-sm",
+    cardDescription: "text-muted-foreground text-sm",
+    cardDescriptionNode: "text-muted-foreground text-sm pt-2",
+    cardContent: "text-muted-foreground text-sm",
     cardFooter: "flex justify-end gap-3 p-3",
 };
 

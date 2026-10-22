@@ -85,7 +85,7 @@ export function HierarchyFilter({
         loading={isLoading}
       />
 
-      <span className="text-muted-foreground/30 text-[10px] select-none">/</span>
+      <span className="text-muted-foreground text-[10px] select-none">/</span>
 
       <HierarchyFilterPill
         label="Project"

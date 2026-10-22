@@ -58,7 +58,7 @@ export function UnsavedChangesAlert({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex items-center justify-end space-x-2">
           <AlertDialogCancel 
-            className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+            className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-foreground border-gray-300 dark:border-gray-700"
             onClick={handleContinue}
           >
             Continue Without Saving

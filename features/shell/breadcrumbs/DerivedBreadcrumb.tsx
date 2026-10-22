@@ -41,7 +41,7 @@ export function DerivedBreadcrumb({ className, max, ...options }: DerivedBreadcr
       {trail.map((crumb, i) => (
         <Fragment key={`${crumb.label}-${i}`}>
           {i > 0 && (
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           )}
           <CrumbNode crumb={crumb} isLast={i === trail.length - 1} />
         </Fragment>

@@ -650,7 +650,7 @@ export const ProInput = React.forwardRef<HTMLInputElement, ProInputProps>(
           type={type}
           placeholder={floatingLabel ? undefined : placeholder}
           className={cn(
-            "flex h-9 w-full rounded-md border border-border bg-card px-3 py-1 text-base placeholder:text-sm shadow-sm placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
+ "flex h-9 w-full rounded-md border border-border bg-card px-3 py-1 text-base placeholder:text-sm shadow-sm placeholder:text-muted-foreground",
             "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/18",
             "disabled:cursor-not-allowed disabled:opacity-50",
             startIcon && "pl-9",

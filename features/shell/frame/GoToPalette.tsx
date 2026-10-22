@@ -90,7 +90,7 @@ export default function GoToPalette({ open, onOpenChange, products, families, on
       className="group gap-2.5 !py-2"
     >
       <span className="flex min-w-0 flex-1 items-baseline gap-2">
-        <span className="shrink-0 truncate text-sm text-foreground/90">
+        <span className="shrink-0 truncate text-sm text-foreground">
           <Highlighted text={entry.label} query={trimmed} />
         </span>
         {entry.trail.length > 1 ? (

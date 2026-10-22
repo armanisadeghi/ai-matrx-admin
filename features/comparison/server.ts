@@ -160,3 +160,37 @@ export function followRun(runId: string, opts: Ctx & RunWatch & { signal: AbortS
     readRun: (id, signal) => getRun(id, { organizationId: opts.organizationId, signal }),
   });
 }
+
+/** What reading the page for "Is this them?" costs, asked before the person says yes. Free. */
+export async function getConfirmPrice(runId: string, itemIndex: number, facet: string, opts: Ctx): Promise<number> {
+  try {
+    const { data } = await getJson<unknown>(confirmPath(runId, itemIndex, facet), {
+      organizationId: org(opts.organizationId), signal: opts.signal, captureErrors: false,
+    });
+    const points = (data as { points?: unknown } | null)?.points;
+    return typeof points === "number" ? points : 0;
+  } catch (err) {
+    throw asRefusal(err);
+  }
+}
+
+/** The run owner's answer: a page to use ({ url }) or "not them" ({ reject: true }). Returns the rebuilt run. */
+export async function answerConfirm(
+  runId: string, itemIndex: number, facet: string, answer: { url: string } | { reject: true }, opts: Ctx,
+): Promise<ComparisonRunState> {
+  let data: unknown;
+  try {
+    ({ data } = await postJson<unknown>(confirmPath(runId, itemIndex, facet), answer, {
+      organizationId: org(opts.organizationId), signal: opts.signal, captureErrors: false,
+    }));
+  } catch (err) {
+    throw asRefusal(err);
+  }
+  const state = parseRunState(data);
+  if (!state) throw new ComparisonRefusal("not_found", "That comparison is not open to you.");
+  return state;
+}
+
+function confirmPath(runId: string, itemIndex: number, facet: string): string {
+  return `${BASE}/runs/${encodeURIComponent(runId)}/items/${itemIndex}/facets/${encodeURIComponent(facet)}/confirm`;
+}

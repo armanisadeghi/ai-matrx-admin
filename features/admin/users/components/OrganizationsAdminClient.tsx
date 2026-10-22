@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/lib/toast";
+import { restoreOrganization } from "@/features/organizations/service/organizationArchive";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { USERS_ADMIN_LOCATION } from "@/features/admin/users/constants";
@@ -93,6 +94,7 @@ const KIND_LABEL: Record<AdminOrganizationKind, string> = {
   guests: "Guests",
   tests: "Tests",
   empty: "Empty",
+  unknown: "Unknown",
 };
 
 export function OrganizationsAdminClient() {
@@ -118,6 +120,8 @@ export function OrganizationsAdminClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  // The table's ArchiveFilter: the read answers it (active only by default), archived ones restore from the row.
+  const [archive, setArchive] = useState<"active" | "archived" | "all">("active");
   // Which plan each organization is on (billing.org_plan via org_plan_list,
   // super-admin). An org with no row is on the default plan. A failed read is
   // shown, never rendered as "default".
@@ -148,7 +152,7 @@ export function OrganizationsAdminClient() {
         // The people come from THE shared roster (one read per tab); after a membership change
         // (refreshKey bumps) it is read fresh, since every person's organizations moved.
         const [directoryResponse, usersJson] = await Promise.all([
-          fetch("/api/admin/users/organizations", { cache: "no-store" }),
+          fetch(`/api/admin/users/organizations?archive=${archive}`, { cache: "no-store" }),
           loadAdminRoster({ refresh: refreshKey > 0 }),
         ]);
         const directoryJson = await directoryResponse.json();
@@ -189,7 +193,7 @@ export function OrganizationsAdminClient() {
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey, archive]);
 
   const planByKey = new Map(plans.map((plan) => [plan.plan_key, plan]));
   const defaultPlan = plans.find((plan) => plan.is_default && plan.active);
@@ -446,13 +450,12 @@ export function OrganizationsAdminClient() {
       width: 90,
     },
     {
-      // Who is in it (iam.organization_kind). One-at-a-time filter; the opening value is the
-      // admin_organizations.default_kind knob. Clearing it shows every kind.
+      // Who is in it (iam.organization_kind). The opening value is the admin_organizations.default_kind
+      // knob; the column menu combines kinds (Include/Exclude) and clearing it shows every kind.
       id: "kind",
       header: "Kind",
       accessorFn: (organization) => KIND_LABEL[organization.kind],
       filter: "select",
-      filterSingle: true,
       width: 80,
     },
     {
@@ -789,6 +792,16 @@ export function OrganizationsAdminClient() {
               urlState={{ id: "organizations", selectedRow: false }}
               {...(initialKindFilter ? { initialColumnFilters: initialKindFilter } : {})}
               onViewChange={(rows) => setShownCount(rows.length)}
+              archived={{
+                isArchived: (organization) => organization.archived_at !== null,
+                value: archive,
+                onValueChange: setArchive,
+                source: "read",
+                onRestore: async (organization) => {
+                  await restoreOrganization(organization.id, organization.name);
+                  setRefreshKey((current) => current + 1);
+                },
+              }}
               data={visibleOrganizations}
               columns={organizationColumns}
               getRowId={(organization) => organization.id}

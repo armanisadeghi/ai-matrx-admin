@@ -170,13 +170,13 @@ export default function IconInputWithValidation({
   const getStatusIcon = () => {
     switch (validationState) {
       case "validating":
-        return <RefreshCw className="h-4 w-4 text-gray-400 animate-spin" />;
+        return <RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" />;
       case "valid":
         return <Check className="h-4 w-4 text-green-600 dark:text-green-400" />;
       case "invalid":
         return <X className="h-4 w-4 text-red-600 dark:text-red-400" />;
       default:
-        return <RefreshCw className="h-4 w-4 text-gray-400" />;
+        return <RefreshCw className="h-4 w-4 text-muted-foreground" />;
     }
   };
 

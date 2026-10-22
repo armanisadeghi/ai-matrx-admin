@@ -226,7 +226,7 @@ export function Field({
                 <button
                   type="button"
                   aria-label="Help"
-                  className="inline-flex items-center justify-center h-4 w-4 rounded-full text-muted-foreground/70 hover:text-foreground transition-colors"
+                  className="inline-flex items-center justify-center h-4 w-4 rounded-full text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <HelpCircle className="h-3.5 w-3.5" />
                 </button>
@@ -254,7 +254,7 @@ export function Field({
         data-required-empty={requiredEmpty ? "true" : undefined}
         className={cn(
           requiredEmpty &&
-            "[&_input]:border-dashed [&_textarea]:border-dashed [&_input]:border-muted-foreground/50 [&_textarea]:border-muted-foreground/50 [&_input]:placeholder:italic [&_textarea]:placeholder:italic [&_input]:placeholder:text-muted-foreground/60 [&_textarea]:placeholder:text-muted-foreground/60",
+ "[&_input]:border-dashed [&_textarea]:border-dashed [&_input]:border-muted-foreground/50 [&_textarea]:border-muted-foreground/50 [&_input]:placeholder:italic [&_textarea]:placeholder:italic [&_input]:placeholder:text-disabled-foreground [&_textarea]:placeholder:text-disabled-foreground",
         )}
       >
         {children}

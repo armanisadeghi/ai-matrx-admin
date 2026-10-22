@@ -16,14 +16,26 @@
 // workspace's chat history behind a switch) is not the product's navigation: the rows stay.
 //
 // Only FrameHostImpl imports this file (it is inside the frame's one chunk).
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import {
   routeMenuDefaultView,
   routeMenuRegistry,
   type RouteMenuEntry,
 } from "@/features/shell/constants/route-menu-registry";
 import { ModuleSlot } from "@/features/shell/frame/FrameModules";
-import { useFrameSidebarSlotHost, type FrameSidebarSlotHost } from "./frameSidebarSlot";
+import {
+  pageSidebarOwner,
+  useFrameSidebarSlotHost,
+  type FrameSidebarSlotHost,
+} from "./frameSidebarSlot";
+
+/**
+ * How long the frame holds its sidebar body for a declared page sidebar that has not arrived. A
+ * page that does not claim it in this form (Notes' narrow list/note switch) gets the rows back.
+ */
+export const PAGE_SIDEBAR_RESERVE_MS = 4000;
 
 /** The registered menu that IS this route's product navigation in the frame, or null. */
 export function frameRouteMenu(pathname: string): RouteMenuEntry | null {
@@ -50,8 +62,27 @@ export function useFrameProductSidebar(
 ): { slotHost: FrameSidebarSlotHost; sidebarContent: ReactNode } {
   const slot = useFrameSidebarSlotHost();
   const routeMenu = frameRouteMenu(pathname);
+  // A route declared to supply a page sidebar reserves the body until the page claims it (no flash
+  // of the route rows). Once per declared family: after a claim, or after PAGE_SIDEBAR_RESERVE_MS
+  // without one (a page that does not claim it in this form), a release shows the rows at once.
+  const owner = pageSidebarOwner(pathname);
+  const [settledFor, setSettledFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!owner || settledFor === owner) return;
+    if (slot.claimed) {
+      setSettledFor(owner);
+      return;
+    }
+    const t = setTimeout(() => setSettledFor(owner), PAGE_SIDEBAR_RESERVE_MS);
+    return () => clearTimeout(t);
+  }, [owner, settledFor, slot.claimed]);
+  const reserving = owner != null && !slot.claimed && settledFor !== owner;
   const sidebarContent = slot.claimed ? (
     <div ref={slot.setTarget} data-mf-page-sidebar="" className="flex min-h-0 flex-1 flex-col" />
+  ) : reserving ? (
+    <div data-mf-page-sidebar-pending="" className="px-2 pb-2">
+      <RegionSkeleton shape="rows" count={6} aria-label="Loading the sidebar" />
+    </div>
   ) : routeMenu ? (
     <FrameRouteMenu entry={routeMenu} icon={icon} />
   ) : undefined;

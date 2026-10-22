@@ -26,6 +26,7 @@ import { barFraction, comparedItems, fieldGroups, isNumeric, headlineOf, leadsPh
 import { hasSideBySide, isCardOnly, isRich } from "../place-facts";
 import { ItemLogo } from "./ItemLogo";
 import { ClosedFlag, ReviewsDisclosure, RichField } from "./PlaceFacts";
+import { ConfirmFacetLine, isUnconfirmed, type FacetConfirm } from "./ConfirmFacetLine";
 
 export interface ComparisonViewProps {
   result: ComparisonResult;
@@ -35,12 +36,14 @@ export interface ComparisonViewProps {
   actions?: ReactNode;
   /** An item that needs a pick: what to do with the chosen candidate. */
   onPick?: (item: ComparedItem, pick: string) => void;
+  /** Answers "Is this them?" for a facet page that only resembles the company; absent = the line is read-only. */
+  onConfirm?: FacetConfirm;
 }
 
 /** Kinds whose picture is a photo (a place, a product, an avatar) and fills its square. */
 const isPhoto = (kind: string) => kind === "local_business" || kind === "products" || kind === "social_accounts";
 
-export function ComparisonView({ result, factsHref, actions, onPick }: ComparisonViewProps) {
+export function ComparisonView({ result, factsHref, actions, onPick, onConfirm }: ComparisonViewProps) {
   const verdict = verdictOf(result);
   const compared = comparedItems(result);
   const primary = result.fields.find((f) => f.is_primary) ?? null;
@@ -99,7 +102,7 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
         const text = g.fields.filter((f) => !isNumeric(f) && !isRich(f) && !isCardOnly(f));
         return (
           <div key={g.key || "own"} className="space-y-3">
-            {g.label ? <FacetHeading result={result} facetKey={g.key} label={g.label} /> : null}
+            {g.label ? <FacetHeading result={result} facetKey={g.key} label={g.label} confirm={onConfirm} /> : null}
             {numeric.length > 0 ? (
               <section className="grid gap-3 md:grid-cols-2" aria-label={g.label || "Field by field"}>
                 {numeric.map((f) => <FieldCard key={f.key} field={f} result={result} />)}
@@ -127,21 +130,29 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
 }
 
 /** A facet group's title and, when it could not be read for some items, which ones and why. */
-function FacetHeading({ result, facetKey, label }: { result: ComparisonResult; facetKey: string; label: string }) {
+function FacetHeading({ result, facetKey, label, confirm }: {
+  result: ComparisonResult; facetKey: string; label: string; confirm?: FacetConfirm;
+}) {
   const rows = comparedItems(result).map((i) => ({ item: i, f: i.facets?.find((x) => x.key === facetKey) }));
-  const failed = rows.filter((r) => r.f?.status === "failed");
+  const failed = rows.filter((r) => r.f?.status === "failed" && !isUnconfirmed(r.f));
+  const asking = rows.filter((r) => r.f && isUnconfirmed(r.f));
   const slowest = Math.max(0, ...rows.map((r) => r.f?.seconds ?? 0));
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2">
-      <h2 className="type-title text-foreground">{label}</h2>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {failed.map(({ item, f }) => (
-          <span key={item.item_id} className="type-meta text-muted-foreground" title={f?.error ?? undefined}>
-            Not found for {item.name}
-          </span>
-        ))}
-        {slowest >= 1 ? <span className="type-meta tabular-nums text-muted-foreground">{Math.round(slowest)} s</span> : null}
+    <div className="space-y-1.5 pt-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 className="type-title text-foreground">{label}</h2>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {failed.map(({ item, f }) => (
+            <span key={item.item_id} className="type-meta text-muted-foreground" title={f?.error ?? undefined}>
+              Not found for {item.name}
+            </span>
+          ))}
+          {slowest >= 1 ? <span className="type-meta tabular-nums text-muted-foreground">{Math.round(slowest)} s</span> : null}
+        </div>
       </div>
+      {asking.map(({ item, f }) => (
+        <ConfirmFacetLine key={item.item_id} item={item} facet={f as NonNullable<typeof f>} confirm={confirm} />
+      ))}
     </div>
   );
 }

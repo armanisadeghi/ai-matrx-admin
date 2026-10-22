@@ -134,7 +134,7 @@ export interface AdminOrganizationRow {
   kind: AdminOrganizationKind;
 }
 
-export type AdminOrganizationKind = "real" | "guests" | "tests" | "empty";
+export type AdminOrganizationKind = "real" | "guests" | "tests" | "empty" | "unknown";
 
 /** One active canonical organization membership. */
 export interface AdminOrganizationMembershipRow {

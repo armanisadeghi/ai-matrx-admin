@@ -19,7 +19,7 @@ const BookmarksDialog: React.FC<BookmarksDialogProps> = ({
         </DialogHeader>
         <div className="max-h-96 overflow-y-auto">
           {bookmarks.length === 0 ? (
-            <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-4 text-muted-foreground">
               No saved paths yet. Navigate to a location and save it!
             </div>
           ) : (
@@ -33,7 +33,7 @@ const BookmarksDialog: React.FC<BookmarksDialogProps> = ({
                         size="sm" 
                         variant="ghost" 
                         onClick={() => onJumpToBookmark(bookmark)}
-                        className="text-gray-700 dark:text-gray-300"
+                        className="text-foreground dark:text-muted-foreground"
                       >
                         Go
                       </Button>
@@ -48,7 +48,7 @@ const BookmarksDialog: React.FC<BookmarksDialogProps> = ({
                     </div>
                   </div>
                   {bookmark.description && (
-                    <p className="type-body text-gray-500 dark:text-gray-400 mb-2">{bookmark.description}</p>
+                    <p className="type-body text-muted-foreground mb-2">{bookmark.description}</p>
                   )}
                   <code className="type-secondary block bg-gray-100 dark:bg-gray-800 p-2 rounded">{bookmark.path}</code>
                 </div>
