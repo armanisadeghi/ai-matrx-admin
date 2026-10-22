@@ -1121,6 +1121,12 @@ def staged_import_findings():
 
 
 def _finding_line(f):
+    if f.get("reverse"):
+        what = f.get("cause") if f.get("kind") == "missing-file" else "{ %s } of %s" % (f.get("name"), f.get("cause"))
+        return "it removes %s (%s), still used by %s:%s" % (what, f.get("why"), f.get("file"), f.get("line"))
+    if f.get("via"):
+        return 'line %s imports { %s } from "%s", which passes on %s; the locked version does not export it' % (
+            f.get("line"), f.get("name"), f.get("specifier"), f.get("via"))
     if f.get("kind") == "missing-file":
         return 'line %s imports "%s", a file this sweep does not carry' % (f.get("line"), f.get("specifier"))
     return 'line %s imports { %s } from "%s"; %s as swept does not export it' % (
@@ -1129,7 +1135,9 @@ def _finding_line(f):
 
 def hold_partial_imports(skipped):
     """PARTIAL COMMIT (2026-10-22, about half of 17 failed builds): the sweep may not commit a file
-    whose local import (a file or an export) stays behind on disk. For each finding: when the sibling
+    whose local import (a file or an export) stays behind on disk, nor a deletion, rename or export
+    removal that a file it leaves alone still imports (that importer's update is the "sibling"; the
+    removal is what is held). For each finding: when the sibling
     that satisfies it is on disk, uncommitted, and not held for another reason (`skipped`), it is
     staged too and the pair is committed together; otherwise the importer is unstaged and stays on
     disk ("SWEEP SKIPPED"). Repeats until the staged set closes (an unstaged file can strand the
@@ -1156,13 +1164,19 @@ def hold_partial_imports(skipped):
                 skipped.add(sib)
                 continue
             pulled.append(sib)
-            say("SWEEP PULLED IN %s: %s imports it and it was still uncommitted; they go in one commit."
-                % (sib, f.get("file")))
+            if f.get("reverse"):
+                say("SWEEP PULLED IN %s: it still uses what %s removes, and its update was uncommitted; "
+                    "they go in one commit." % (sib, f.get("cause")))
+            else:
+                say("SWEEP PULLED IN %s: %s imports it and it was still uncommitted; they go in one commit."
+                    % (sib, f.get("file")))
         if pulled:
             continue
         by_file = {}
         for f in findings:
-            by_file.setdefault(f.get("file"), []).append(f)
+            # A reverse finding holds what the sweep REMOVES (the deletion, rename or export removal),
+            # never the untouched importer; every other finding holds the importer.
+            by_file.setdefault(f.get("hold") or f.get("file"), []).append(f)
         for path, fs in by_file.items():
             if not isinstance(path, str) or path in skipped:
                 continue
@@ -1170,8 +1184,12 @@ def hold_partial_imports(skipped):
             skipped.add(path)
             why = "; ".join(_finding_line(f) for f in fs[:3])
             out.append((path, why))
-            say("SWEEP SKIPPED %s: %s. Committing it alone breaks the build; it stays on disk and the "
-                "next sync commits it with what it imports." % (path, why))
+            if any(f.get("reverse") for f in fs):
+                say("SWEEP SKIPPED %s: %s. Committing the removal alone breaks the build; it stays "
+                    "uncommitted and the next sync commits it with the importers' update." % (path, why))
+            else:
+                say("SWEEP SKIPPED %s: %s. Committing it alone breaks the build; it stays on disk and the "
+                    "next sync commits it with what it imports." % (path, why))
     say("sweep partial-commit check did not settle in 8 rounds; committing what is staged.")
     return out
 

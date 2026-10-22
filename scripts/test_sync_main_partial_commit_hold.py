@@ -18,6 +18,7 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.environ.get("SYNC_MAIN") or os.path.join(HERE, "sync-main.py")
 spec = importlib.util.spec_from_file_location("sync_main", SRC)
+assert spec is not None and spec.loader is not None, "cannot load %s" % SRC
 sm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sm)
 
@@ -91,8 +92,47 @@ class SweepPartialCommitHold(unittest.TestCase):
         self.assertEqual(sm.hold_partial_imports(set()), [])
         self.assertEqual(self.staged(), ["features/FrameHost.tsx", "features/framePageHeader.ts"])
 
+    def commit_base_importer(self):
+        write(self.repo, "lib/base.ts", "export const a = 1;\nexport const b = 2;\n")
+        write(self.repo, "features/Use.tsx", 'import { a, b } from "@/lib/base";\nexport const U = [a, b];\n')
+        sh(self.repo, "git", "add", ".")
+        sh(self.repo, "git", "commit", "-qm", "importer")
+
+    def test_deletion_still_imported_is_held(self):
+        self.commit_base_importer()
+        os.remove(os.path.join(self.repo, "lib/base.ts"))
+        sh(self.repo, "git", "add", "-A")
+        skipped = dict(sm.hold_partial_imports(set()))
+        self.assertIn("lib/base.ts", skipped)
+        self.assertIn("features/Use.tsx", skipped["lib/base.ts"])
+        self.assertEqual(self.staged(), [], "the deletion is unstaged; the importer was never touched")
+        self.assertFalse(os.path.exists(os.path.join(self.repo, "lib/base.ts")), "the working tree keeps the deletion")
+
+    def test_rename_and_export_removal_are_held(self):
+        self.commit_base_importer()
+        sh(self.repo, "git", "mv", "lib/base.ts", "lib/moved.ts")
+        skipped = dict(sm.hold_partial_imports(set()))
+        self.assertIn("lib/base.ts", skipped)
+        self.assertIn("renamed", skipped["lib/base.ts"])
+        sh(self.repo, "git", "reset", "-q")
+        sh(self.repo, "git", "checkout", "-q", "--", ".")
+        write(self.repo, "lib/base.ts", "export const a = 1;\n")
+        sh(self.repo, "git", "add", "lib/base.ts")
+        skipped = dict(sm.hold_partial_imports(set()))
+        self.assertIn("{ b } of lib/base.ts", skipped.get("lib/base.ts", ""))
+        self.assertEqual(self.staged(), [])
+
+    def test_removal_goes_in_with_the_importers_update(self):
+        self.commit_base_importer()
+        write(self.repo, "lib/base.ts", "export const a = 1;\n")
+        write(self.repo, "features/Use.tsx", 'import { a } from "@/lib/base";\nexport const U = [a];\n')
+        sh(self.repo, "git", "add", "lib/base.ts")   # the importer's fix is on disk, not yet staged
+        self.assertEqual(sm.hold_partial_imports(set()), [])
+        self.assertEqual(self.staged(), ["features/Use.tsx", "lib/base.ts"])
+
     def test_commit_all_runs_it_before_the_commit(self):
-        src = open(SRC).read()
+        with open(SRC) as f:
+            src = f.read()
         body = src[src.index("def commit_all():"):src.index("# ── blob helpers")]
         self.assertIn("hold_partial_imports(", body, "commit_all no longer consults the partial-commit check")
         self.assertLess(body.index("hold_partial_imports("), body.index('git("commit"'),

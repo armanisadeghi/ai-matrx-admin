@@ -57,13 +57,16 @@ fi
 
 # PARTIAL COMMIT (2026-10-22, about half of 17 failed builds): a staged file may not import a LOCAL file
 # or export this commit does not carry — judged against the INDEX, never the disk where the sibling sits
-# (./framePageHeader, lineageSourcesOf). ~1 s. MATRX_RELEASE_PATH=1 reports only (inside the script).
+# (./framePageHeader, lineageSourcesOf); nor may a staged deletion, rename or export removal strand a
+# committed importer, nor a name pass through an `export * from "@ai-matrx/…"` shim the LOCKED
+# version lacks. ~1-3 s. MATRX_RELEASE_PATH=1 reports only (inside the script).
 # Self-test: node scripts/check-staged-imports.mjs --self-test. Temp-index commits: --index <file>.
 if [ -f "$ROOT/scripts/check-staged-imports.mjs" ] && git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$'; then
     (cd "$ROOT" && node scripts/check-staged-imports.mjs --staged)
     SI_RC=$?
     if [ "$SI_RC" -eq 1 ]; then
-        echo "COMMIT REFUSED: stage the file named above too, or remove the import — the build fails without it." >&2
+        echo "COMMIT REFUSED: the build fails on the imports above. A missing file/export: stage it too, or remove the import." >&2
+        echo "  A removal (\"this commit removes X still used by Y\"): stage Y's update too, or keep X." >&2
         exit 1
     fi
     # exit 2 = the checker could not run: it said so above; never a refusal.
