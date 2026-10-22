@@ -33,10 +33,13 @@ const wire = (searchFilters: string[]) => ({
   usd_per_record: 0.0015, points_per_record: 30,
   input: {
     kind: "url",
-    fields: [{ name: "url", label: "Page address", required: true, type: "url" }],
-    discover_options: searchFilters.length
-      ? { input_filters: ["location"] }
-      : { input_filters: ["location", "listingCategory", "HomeType"] },
+    // The live row (2026-10-22 fix): the search needs only Where; status and home type are optional choices.
+    fields: [
+      { name: "url", label: "Page address", required: true, type: "url" },
+      { name: "listingCategory", label: "For sale, for rent or sold", required: false },
+      { name: "HomeType", label: "Home type", required: false },
+    ],
+    discover_options: { input_filters: ["location"] },
   },
   search_filters: searchFilters,
 });
