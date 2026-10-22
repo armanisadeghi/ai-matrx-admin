@@ -30,6 +30,7 @@ import {
 } from "@/features/marketing/components/shared/MarketingRefs";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
+import { displayId } from "@ai-matrx/design-system";
 export function SnapshotDetail({
   pageId,
   snapshotId,
@@ -62,7 +63,7 @@ export function SnapshotDetail({
   const row = snapshot.data;
   const snapshotCopy = webCopy({
     kind: "web-snapshot",
-    label: `Snapshot ${row.id.slice(0, 8)}`,
+    label: `Snapshot ${displayId(row.id)}`,
     description:
       "One immutable page content snapshot: full row with head tags, headings, extracted content, structured data, links, performance, and images.",
     surface: `Snapshot detail — ${row.final_url ?? row.id}`,
@@ -123,7 +124,7 @@ export function SnapshotDetail({
             <ShareButton
               resourceType="web_snapshot"
               resourceId={row.id}
-              resourceName={row.final_url || `Snapshot ${row.id.slice(0, 8)}`}
+              resourceName={row.final_url || `Snapshot ${displayId(row.id)}`}
               size="sm"
               showStatus={false}
             />

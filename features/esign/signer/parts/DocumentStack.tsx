@@ -6,7 +6,7 @@
 // it renders on Android), and its per-page overlay slot carries the fields. The page is paper in
 // dark mode too; "Dim page" turns its brightness down for comfort (ours #24).
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type Ref } from "react";
 
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,10 @@ export function DocumentStack({
   renderPage,
   onPageRendered,
   onRetry,
+  contentRef,
 }: {
+  /** The element the shared toolbar reads page positions from. */
+  contentRef?: Ref<HTMLDivElement>;
   docs: StackDoc[];
   zoom: number;
   dim: boolean;
@@ -37,7 +40,7 @@ export function DocumentStack({
   onRetry: (docId: string) => void;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-[920px] flex-col gap-6 px-2 py-4 sm:px-6">
+    <div ref={contentRef} className="mx-auto flex w-full max-w-[920px] flex-col gap-6 px-2 py-4 sm:px-6">
       {docs.map((doc, i) => (
         <section key={doc.id} data-doc={doc.id} aria-label={doc.name} className="flex flex-col gap-2">
           {docs.length > 1 ? (
@@ -75,6 +78,7 @@ export function DocumentStack({
                   blobUrl={doc.url}
                   fileName={doc.name}
                   layout="continuous"
+                  toolbar="none"
                   continuousZoom={zoom}
                   renderOverlay={({ pageNumber }) => (
                     <div className="absolute inset-0">{renderPage(doc.id, pageNumber)}</div>
@@ -109,6 +113,7 @@ export function PageThumbnails({
                 blobUrl={doc.url}
                 fileName={doc.name}
                 layout="continuous"
+                toolbar="none"
                 renderOverlay={({ pageNumber }) => (
                   <button
                     type="button"

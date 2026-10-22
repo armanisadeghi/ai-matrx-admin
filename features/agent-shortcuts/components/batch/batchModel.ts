@@ -332,7 +332,7 @@ export const STANDARD_DEFAULTS: Record<BatchScalarFieldKey, unknown> = {
   responseDensity: "comfortable",
   showPreExecutionGate: false,
   preExecutionMessage: null,
-  bypassGateSeconds: 3,
+  bypassGateSeconds: 0,
   defaultUserInput: null,
   isActive: true,
   contextMappings: null,
@@ -625,7 +625,7 @@ export function buildCreateFormData(
       (v("responseDensity") as "comfortable" | "compact") ?? "comfortable",
     showPreExecutionGate: v("showPreExecutionGate") === true,
     preExecutionMessage: (v("preExecutionMessage") as string | null) ?? null,
-    bypassGateSeconds: Number(v("bypassGateSeconds") ?? 3),
+    bypassGateSeconds: Number(v("bypassGateSeconds") ?? 0),
     defaultUserInput: (v("defaultUserInput") as string | null) ?? null,
     defaultVariables:
       (v("defaultVariables") as Record<string, unknown> | null) ?? null,

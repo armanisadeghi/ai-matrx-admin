@@ -9,6 +9,7 @@
 //   table / list  `<id>:r<first>-<last>`   row numbers (1-based)
 //   saved result  `<id>:<key>`             `summary` or `<list>-<n>` (a card, a section)
 //   document / udt_document  `<id>:<n>`    the n-th packed paragraph run (markdown / cloud)
+//   flashcard deck `<id>:r<first>-<last>`   card numbers (1-based), opens the deck
 //
 // Pure — no hooks, no network. `recordCitationTarget` names the place (the
 // same words the Source picker shows) and builds the canonical deep link;
@@ -53,8 +54,8 @@ export function messagesLabel(range: { first: number; last: number }): string {
   return a === b ? `Message ${a}` : `Messages ${a}–${b}`;
 }
 
-/** "Row 12" / "Rows 12–15" / "Choice 3" / "Choices 3–6". */
-export function rowsLabel(range: { first: number; last: number }, noun: "Row" | "Choice"): string {
+/** "Row 12" / "Rows 12–15" / "Choice 3" / "Choices 3–6" / "Cards 1–4". */
+export function rowsLabel(range: { first: number; last: number }, noun: "Row" | "Choice" | "Card"): string {
   return range.first === range.last
     ? `${noun} ${range.first}`
     : `${noun}s ${range.first}–${range.last}`;
@@ -172,6 +173,8 @@ export function recordCitationHref(
     case "document":
     case "udt_document":
       return `/documents/${id}`;
+    case "flashcard_deck":
+      return `/education/flashcards/${id}`;
   }
 }
 
@@ -216,6 +219,9 @@ export function recordCitationTarget(c: SourceCitation): RecordCitationTarget | 
     label = rows ? rowsLabel(rows, kind === "table" ? "Row" : "Choice") : null;
   } else if (kind === "saved_result") {
     label = fieldLabelOfPart(part);
+  } else if (kind === "flashcard_deck") {
+    const cards = rowRangeOfPart(part);
+    label = cards ? rowsLabel(cards, "Card") : null;
   }
   return {
     kind,

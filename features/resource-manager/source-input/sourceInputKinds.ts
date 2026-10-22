@@ -20,6 +20,7 @@ import {
   AudioLines,
   FileText,
   Files,
+  GalleryVerticalEnd,
   Globe,
   Layers,
   Library,
@@ -58,6 +59,7 @@ const PRESENTATION: Record<string, Presentation> = {
   dataset: { plural: "Tables", Icon: Table, recordStore: true },
   workbook: { plural: "Workbooks", Icon: Sheet },
   content_ir_kind_instance: { plural: "Saved results", Icon: Layers },
+  fc_set: { plural: "Decks", Icon: GalleryVerticalEnd },
 };
 
 /** One entry of the Use existing list. */

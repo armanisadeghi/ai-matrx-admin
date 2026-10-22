@@ -297,6 +297,83 @@ export async function savePayload<K extends PayloadKind>(
   throw new Error("The payload row no longer exists.");
 }
 
+// ── Products (one row per product the intake analyzer declared) ─────────────
+
+export type CaptureProductStatus = "analyzed" | "researched";
+
+/**
+ * One product of an item — `workbench.product_capture_product`, written by
+ * the server pipeline (aidream `product_capture_intake_v1`: one research child
+ * run per product). `intake` is the analyzer's `product_entry` kind object and
+ * `research` the arbiter's `resale_intelligence_report` — both verbatim
+ * registered kinds, rendered through the kind registry, never re-shaped here.
+ */
+export interface CaptureProduct {
+  id: string;
+  itemId: string;
+  productIndex: number;
+  name: string;
+  category: string;
+  status: CaptureProductStatus;
+  intake: Record<string, unknown>;
+  research: Record<string, unknown> | null;
+  verdict: string | null;
+  realisticUsedRange: string | null;
+  updatedAt: string;
+}
+
+function products() {
+  return createClient().schema("workbench").from("product_capture_product");
+}
+
+const PRODUCT_COLUMNS =
+  "id, item_id, product_index, name, category, status, intake, research, verdict, realistic_used_range, updated_at";
+
+interface ProductRow {
+  id: string;
+  item_id: string;
+  product_index: number;
+  name: string;
+  category: string;
+  status: string;
+  intake: unknown;
+  research: unknown;
+  verdict: string | null;
+  realistic_used_range: string | null;
+  updated_at: string;
+}
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+function toProduct(row: ProductRow): CaptureProduct {
+  return {
+    id: row.id,
+    itemId: row.item_id,
+    productIndex: row.product_index,
+    name: row.name,
+    category: row.category,
+    status: row.status === "researched" ? "researched" : "analyzed",
+    intake: asRecord(row.intake) ?? {},
+    research: asRecord(row.research),
+    verdict: row.verdict,
+    realisticUsedRange: row.realistic_used_range,
+    updatedAt: row.updated_at,
+  };
+}
+
+/** The item's products in analyzer order. A short per-item list, complete by construction. */
+export async function listItemProducts(itemId: string): Promise<CaptureProduct[]> {
+  const { data, error } = await products()
+    .select(PRODUCT_COLUMNS)
+    .eq("item_id", itemId)
+    .order("product_index", { ascending: true });
+  if (error) throw error;
+  return ((data ?? []) as ProductRow[]).map(toProduct);
+}
+
 // ── Questions (the HITL queue) ──────────────────────────────────────────────
 
 export type QuestionKind = "text" | "choice" | "boolean";

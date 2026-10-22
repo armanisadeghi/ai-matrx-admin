@@ -47,6 +47,7 @@ import { RegressionCasesFromFinding } from "./RegressionCasesFromFinding";
 import { RevertButton } from "./RevertButton";
 import { LEVER_COLOR, LEVER_LABEL, VERDICT_COLOR } from "./tokens";
 
+import { displayId } from "@ai-matrx/design-system";
 export function FindingCard({
   finding,
   agentId,
@@ -230,7 +231,7 @@ export function FindingCard({
                           className="font-mono underline decoration-dotted underline-offset-2 hover:text-foreground"
                           title="Open this conversation"
                         >
-                          {part.id.slice(0, 8)}
+                          {displayId(part.id)}
                         </Link>
                       ) : (
                         <span key={j}>{part.text}</span>

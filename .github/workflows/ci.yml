@@ -1249,9 +1249,14 @@ jobs:
           repository: AI-Matrix-Engine/aidream
           path: aidream
           token: ${{ secrets.AIDREAM_REPO_TOKEN }}
+          # `packages` too: `uv sync` builds every workspace member aidream depends on
+          # (matrx-orm, matrx-scheduler, …) as an editable install, and hatchling refuses a
+          # member whose README.md the sparse checkout left out (2026-10-22: every run of
+          # this job died in "Readme file does not exist" before the corpus ran).
           sparse-checkout: |
             db
             scripts
+            packages
             pyproject.toml
             uv.lock
           sparse-checkout-cone-mode: false

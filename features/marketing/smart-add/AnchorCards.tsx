@@ -11,18 +11,16 @@
  */
 
 import { useState } from "react";
-import { Check, Info, Plus, SearchX, UserX, X } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage, Peek, PeekHoverCard } from "@ai-matrx/design-system";
+import { Plus, SearchX } from "lucide-react";
+import { CandidateCard } from "@ai-matrx/design-system";
 import { Button, Field } from "@ai-matrx/design-system/controls";
-import { formatCount } from "@ai-matrx/kit/format";
 import { profileAvatarDoor } from "@/features/marketing/social/server";
-import { browserImageUrl } from "@/lib/media/external-image";
 import { PlatformMark, platformLabel } from "@/features/marketing/social/components/PlatformMark";
-import { SocialImage } from "@/features/marketing/social/components/SocialImage";
+import { useCandidateImage } from "./candidateImage";
 import { rankByAnchors, type PersonAnchors } from "./anchorRank";
 import { websiteHost, type Decision, type EvidenceItem } from "./evidence";
 import { maskOffensive } from "@/lib/text/maskOffensive";
-import { accountHandleLine, OpenLink } from "./SmartAddExtras";
+import { accountHandleLine, outboundHref } from "./SmartAddExtras";
 
 export type AnchorAnswer = "me" | "not_me" | "namesake";
 
@@ -59,99 +57,55 @@ export function AnchorCard({
   const name = nameOf(a?.display_name) ?? nameOf(item.label) ?? handle ?? item.value;
   const url = item.url ?? item.value;
   const followers = a?.followers ?? item.followers;
-  const picked = answer === "me";
-  const out = answer === "not_me" || answer === "namesake";
+  const image = useCandidateImage(item.profile_id ? profileAvatarDoor(item.profile_id) : null, item.image_url);
+  // The shared card needs a way out on every decision; here it sets the card aside (no answer), remembered while shown.
+  const [skipped, setSkipped] = useState(false);
+  const set = (next: AnchorAnswer | null) => {
+    setSkipped(false);
+    onAnswer(next);
+  };
+  const value = answer === "me" ? "yes" : answer === "not_me" ? "no" : answer === "namesake" || skipped ? "other" : null;
   return (
-    <li
-      data-testid="smart-add-anchor-card"
-      data-answer={answer ?? "open"}
-      className={`flex w-full flex-col gap-2 rounded-xl border p-3 transition-opacity ${
-        picked ? "border-primary bg-card ring-2 ring-primary" : out ? "border-dashed border-border bg-muted/40" : "border-border bg-card"
-      } ${out ? "opacity-60" : ""}`}
-    >
-      <div className="flex items-start gap-3">
-        <Avatar className="size-12 border border-border">
-          {item.profile_id ? (
-            <SocialImage
-              door={profileAvatarDoor(item.profile_id)}
-              url={item.image_url}
-              fallback={
-                <AvatarFallback>
-                  <PlatformMark platform={platform} size={24} />
-                </AvatarFallback>
-              }
-            />
-          ) : (
-            <>
-              {item.image_url ? <AvatarImage src={browserImageUrl(item.image_url)} alt="" className="object-cover" /> : null}
-              <AvatarFallback>
-                <PlatformMark platform={platform} size={24} />
-              </AvatarFallback>
-            </>
-          )}
-        </Avatar>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className={`truncate text-sm font-medium text-foreground ${out ? "line-through" : ""}`}>{name}</span>
-          <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-            <PlatformMark platform={platform} size={12} />
-            <span className="truncate">
-              {platformLabel(platform)}
-              {handle ? ` · ${handle}` : ""}
-            </span>
-          </span>
-          {a?.bio_line ? <span className="line-clamp-1 text-xs text-muted-foreground">{maskOffensive(a.bio_line)}</span> : null}
-          <span className="text-xs text-muted-foreground">
-            {[a?.location, followers != null ? `${formatCount(followers)} followers` : null].filter(Boolean).join(" · ")}
-          </span>
-        </div>
-        <div className="flex shrink-0 items-center">
-          <PeekHoverCard side="bottom" align="end" trigger={<Button variant="quiet" icon={<Info aria-hidden />} aria-label="Why this was found" />}>
-            <Peek
-              record={{
-                kind: "Profile",
-                id: item.key,
-                title: name,
-                subtitle: `${platformLabel(platform)}${handle ? ` · ${handle}` : ""}`,
-                body: [
-                  ...(a?.reasons?.length ? [{ section: "Why this was found", items: a.reasons }] : []),
-                  ...(item.hits?.length
-                    ? [{ section: "Found in search", items: item.hits.map((h) => `${h.engine} #${h.rank}: ${h.query}`), limit: 4 }]
-                    : []),
-                ],
-                ...(url ? { href: url } : {}),
-                copyData: { name, platform: platformLabel(platform), handle, reasons: a?.reasons ?? [], hits: item.hits ?? [] },
-              }}
-            />
-          </PeekHoverCard>
-          <OpenLink url={url} />
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        <Button
-          variant={picked ? "primary" : "outline"}
-          icon={<Check aria-hidden />}
-          aria-pressed={picked}
-          onClick={() => onAnswer(picked ? null : "me")}
-        >
-          This is me
-        </Button>
-        <Button
-          variant={answer === "not_me" ? "outline" : "quiet"}
-          icon={<X aria-hidden />}
-          aria-pressed={answer === "not_me"}
-          onClick={() => onAnswer(answer === "not_me" ? null : "not_me")}
-        >
-          {answer === "not_me" ? "Not you" : "Not me"}
-        </Button>
-        <Button
-          variant={answer === "namesake" ? "outline" : "quiet"}
-          icon={<UserX aria-hidden />}
-          aria-pressed={answer === "namesake"}
-          onClick={() => onAnswer(answer === "namesake" ? null : "namesake")}
-        >
-          Namesake
-        </Button>
-      </div>
+    <li data-testid="smart-add-anchor-card" data-answer={answer ?? "open"} className="flex w-full">
+      <CandidateCard
+        className="w-full"
+        aria-label="Is this you?"
+        candidate={{
+          id: item.key,
+          name,
+          handle: handle !== name ? handle : null,
+          imageUrl: image,
+          mark: <PlatformMark platform={platform} size={24} />,
+          followers,
+          detail: [platformLabel(platform), a?.location].filter(Boolean).join(" · "),
+          bio: a?.bio_line ? maskOffensive(a.bio_line) : null,
+          href: outboundHref(url),
+        }}
+        peek={{
+          kind: "Profile",
+          id: item.key,
+          title: name,
+          subtitle: `${platformLabel(platform)}${handle ? ` · ${handle}` : ""}`,
+          body: [
+            ...(a?.reasons?.length ? [{ section: "Why this was found", items: a.reasons }] : []),
+            ...(item.hits?.length ? [{ section: "Found in search", items: item.hits.map((h) => `${h.engine} #${h.rank}: ${h.query}`), limit: 4 }] : []),
+          ],
+          ...(url ? { href: url } : {}),
+          copyData: { name, platform: platformLabel(platform), handle, reasons: a?.reasons ?? [], hits: item.hits ?? [] },
+        }}
+        value={value}
+        labels={{ yes: "This is me", no: "Not me" }}
+        onChange={(v) => set(v === "yes" ? (answer === "me" ? null : "me") : answer === "not_me" ? null : "not_me")}
+        wayOut={[{ value: "namesake", label: "Namesake" }]}
+        wayOutValue={answer === "namesake" ? "namesake" : null}
+        onWayOut={(v) => v === "namesake" && set(answer === "namesake" ? null : "namesake")}
+        onClear={() => set(null)}
+        onSkip={() => {
+          onAnswer(null);
+          setSkipped(true);
+        }}
+        skipped={skipped && !answer}
+      />
     </li>
   );
 }

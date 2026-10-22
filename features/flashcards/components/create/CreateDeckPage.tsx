@@ -63,6 +63,7 @@ import {
   presentOrganizationRefusal,
 } from "@ai-matrx/chat/host/org";
 import { selectKindEnvelope } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
+import { CreateStep } from "@/features/education/components/CreateStep";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import type { Depth } from "@/features/education/assessment/data/types";
 import type { ConvertProgress } from "@/features/education/convert/types";
@@ -649,12 +650,12 @@ export function CreateDeckPage({
           />
 
           {mode === "import" ? (
-            <Step n={1} title="Your deck file">
+            <CreateStep n={1} title="Your deck file">
               <DeckFileImport />
-            </Step>
+            </CreateStep>
           ) : (
             <>
-              <Step n={1} title="What should the cards come from?">
+              <CreateStep n={1} title="What should the cards come from?">
                 {dropNotice ? (
                   <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="min-w-0 flex-1">{dropNotice}</span>
@@ -672,9 +673,9 @@ export function CreateDeckPage({
                   deliveries={FLASHCARD_SOURCE_DELIVERIES}
                   marks={marks}
                 />
-              </Step>
+              </CreateStep>
 
-              <Step n={2} title="Style and details">
+              <CreateStep n={2} title="Style and details">
                 <div className="flex flex-col gap-4">
                   {styleDraft.didRestore ? (
                     <WizardDraftRestored
@@ -819,9 +820,9 @@ export function CreateDeckPage({
                     />
                   </div>
                 </div>
-              </Step>
+              </CreateStep>
 
-              <Step n={3} title="Make the deck">
+              <CreateStep n={3} title="Make the deck">
                 {running ? (
                   <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-3">
@@ -970,7 +971,7 @@ export function CreateDeckPage({
                     </div>
                   </div>
                 )}
-              </Step>
+              </CreateStep>
             </>
           )}
         </div>
@@ -979,29 +980,3 @@ export function CreateDeckPage({
     </>
   );
 }
-
-function Step({
-  n,
-  title,
-  children,
-}: {
-  n: number;
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      aria-label={title}
-      className="rounded-xl border border-border bg-card p-3 sm:p-5"
-    >
-      <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-foreground">
-        <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-primary px-2 text-xs text-primary-foreground">
-          {n}
-        </span>
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-

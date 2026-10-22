@@ -23,6 +23,7 @@ Contract: `common-docs/projects/esign-parity/CONTRACT.md` §1, §12, §15 (froze
 - A signer without a signature field is a warning at Send, never a block.
 
 ## Change log
+- 2026-10-22 — The stage and the signer no longer draw their own zoom row: both dock the platform PDF toolbar (`PdfStackToolbar`: zoom 50-300%, fit width, page n / N from scroll, previous / next page) above the scroll; the signer's Pages toggle and "Fill all signature fields" dock into it. Zoom now really zooms out (the stage ignored zoom below 100%). Fields are page fractions, so they stay on their spot at any zoom.
 - 2026-10-07 — editor, templates list, envelope page rewrite built against a mock; real doors wired (parity lane, sender).
 - 2026-10-10 — Access code is a real option (owner ruling): masked field with show/hide, named Send blocker, flags from stored hashes; the `honestVerification` downgrade is gone (gates lane).
 - 2026-10-11 — After Send the editor is replaced IN PLACE by the envelope page (EditorHost sentId): router.replace to the draft's own address changed nothing on screen. Unaccepted Find-fields suggestions persist per envelope in the browser. Recipient cards wrap; own row filled from the profile name.

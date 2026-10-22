@@ -14,6 +14,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { callApi } from "@/lib/api/call-api";
 import { getStore } from "@/lib/redux/store-singleton";
 import type { AppDispatch } from "@/lib/redux/store";
@@ -108,6 +109,8 @@ export async function resolveHtmlCanvasPage(
   canvasItemId: string,
   which: "self" | "latest",
 ): Promise<ResolvedHtmlCanvasPage | null> {
+  // The splitter's local `artifact-<n>` name is not a row: nothing is published for it yet.
+  if (!isMaterializedArtifactId(canvasItemId)) return null;
   const columns =
     "id, chain_version, parent_canvas_id, external_system, external_id, content";
   const { data: own, error } = await supabase

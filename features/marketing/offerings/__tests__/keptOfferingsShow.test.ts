@@ -1,8 +1,10 @@
 // Creativity Warehouse, 2026-10-16: the brand held 6 kept, confirmed `web.brand_offering` rows (written by the facts
 // step at Create) while Products & services and the brand home card read "Found 0 / No products or services found
-// yet". The screen read only the run's staged `web.discovered_item` rows. A kept offering is on the list, always.
+// yet". The screen read only the run's staged `web.discovered_item` rows. A kept offering is on the list, always —
+// and confirmed only when a person validated it (`web.person_validated_offering_ids`; offeringStanding.test.ts).
 type Rows = Record<string, unknown[]>;
 const tables: Rows = {};
+let validated: string[] = [];
 function chain(table: string) {
   const q = {
     select: () => q,
@@ -13,7 +15,12 @@ function chain(table: string) {
   return q;
 }
 jest.mock("@/utils/supabase/client", () => ({
-  supabase: { schema: () => ({ from: (t: string) => chain(t) }) },
+  supabase: {
+    schema: () => ({
+      from: (t: string) => chain(t),
+      rpc: () => Promise.resolve({ data: validated, error: null }),
+    }),
+  },
 }));
 
 import { buildOfferingItems, fetchOfferingItems, offeringMatchKey } from "../data";
@@ -50,7 +57,8 @@ describe("Products & services shows the brand's kept offerings", () => {
     for (const k of Object.keys(tables)) delete tables[k];
   });
 
-  it("kept offerings with no staged rows are found and confirmed (the Creativity Warehouse screen)", async () => {
+  it("kept offerings with no staged rows are found; the person-validated one is confirmed (Creativity Warehouse)", async () => {
+    validated = ["o1"];
     tables.discovered_item = [];
     tables.brand_offering = [
       kept("o1", "Art classes", "service"),
@@ -62,7 +70,8 @@ describe("Products & services shows the brand's kept offerings", () => {
     ];
     const items = await fetchOfferingItems("brand");
     expect(items).toHaveLength(6);
-    expect(items.every((i) => i.status === "confirmed" && i.certainty === "confirmed")).toBe(true);
+    expect(items.filter((i) => i.status === "confirmed").map((i) => i.offeringId)).toEqual(["o1"]);
+    expect(items.filter((i) => i.status === "pending")).toHaveLength(5);
     expect(items.find((i) => i.name === "Art classes")?.offeringId).toBe("o1");
     expect(items[0].quotes[0].url).toBe("https://creativitywarehouse.com/contact-us");
   });
@@ -71,6 +80,7 @@ describe("Products & services shows the brand's kept offerings", () => {
     const items = buildOfferingItems(
       [staged("d1", "craft workshop"), staged("d2", "pottery")],
       [kept("o4", "Craft workshops")],
+      new Set(["o4"]),
     );
     expect(items).toHaveLength(2);
     const craft = items.find((i) => i.key === "craft workshop");
@@ -80,7 +90,7 @@ describe("Products & services shows the brand's kept offerings", () => {
   });
 
   it("a staged row already resolved to the offering links by id, not by name", () => {
-    const items = buildOfferingItems([staged("d1", "kids camp", "pending", "o9")], [kept("o9", "Summer art camp")]);
+    const items = buildOfferingItems([staged("d1", "kids camp", "pending", "o9")], [kept("o9", "Summer art camp")], new Set(["o9"]));
     expect(items).toHaveLength(1);
     expect(items[0].status).toBe("confirmed");
   });

@@ -1,7 +1,15 @@
 import { seedParts, type DeckOp } from "@ai-matrx/design-system/swipe-deck";
 import {
+  AUDIENCE_PREFIX,
   CHOICE_PREFIX,
   FINDING_PREFIX,
+  STANCE_PREFIX,
+  answerOfPick,
+  answerOfStance,
+  audienceId,
+  stanceItem,
+  suggestedCategories,
+  wordSeeds,
   answerOfChoice,
   applyDeckOps,
   choiceItem,
@@ -38,7 +46,9 @@ const row = (over: Partial<ChoiceRow> = {}): ChoiceRow => ({
   ...over,
 });
 
-const tagline: ElementRow = { id: "e-tag", name: "Tagline", slug: "h6_tagline", position: 40, cardinality: "single" };
+const tagline: ElementRow = { id: "e-tag", name: "Known for", slug: "b2_unique_attributes", position: 40, cardinality: "many" };
+const realTagline: ElementRow = { id: "e-h6", name: "Tagline", slug: "h6_tagline", position: 50, cardinality: "single" };
+const stanceEl: ElementRow = { id: "e-a3", name: "Offering stance", slug: "a3_offering_stance", position: 2, cardinality: "single_per_subject" };
 
 function fakeDoors(words: WordRow[] = [], text = "Free e-waste drop-off for everyone") {
   const calls: string[] = [];
@@ -48,6 +58,10 @@ function fakeDoors(words: WordRow[] = [], text = "Free e-waste drop-off for ever
     },
     correct: async (id, value, action) => {
       calls.push(`correct ${id} "${value.text}" ${value.start}-${value.end} ${action}`);
+    },
+    audience: async (row, name, action, origin) => {
+      calls.push(`audience ${row} ${name} ${action} ${origin}`);
+      return { category_id: `cat-${name}` };
     },
     answerFinding: async (id, answer) => {
       calls.push(`finding ${id} ${answer}`);
@@ -62,7 +76,7 @@ describe("brand session deck", () => {
   it("a choice card asks where it belongs, leans to the curator's placement, and keeps the word check as parts", () => {
     const item = choiceItem(row(), tagline);
     expect(item.id).toBe(`${CHOICE_PREFIX}c1`);
-    expect(item.kicker).toBe("Tagline");
+    expect(item.kicker).toBe("Known for");
     expect(item.suggested).toBe("support");
     expect(item.reason).toBe("Draws households, not companies");
     expect(item.answers?.right?.id).toBe("lead");
@@ -144,7 +158,7 @@ describe("brand session deck", () => {
       ],
       words,
     );
-    expect(plan).toEqual({ create: [{ start: 4, end: 4, answer: "not_us" }], change: [{ id: "w1", answer: "lead" }], withdraw: ["w2"] });
+    expect(plan).toEqual({ create: [{ start: 4, end: 4, answer: "not_us", categories: [] }], change: [{ id: "w1", answer: "lead" }], withdraw: ["w2"] });
   });
 
   it("every deck op goes through its one door; taking an answer back retracts", async () => {
@@ -169,7 +183,125 @@ describe("brand session deck", () => {
 
   it("refuses what this deck does not do, never drops it", async () => {
     const { doors } = fakeDoors();
-    await expect(applyDeckOps([{ kind: "pick", group: "g", itemId: null }], doors)).rejects.toThrow(/no picks/);
+    await expect(applyDeckOps([{ kind: "pick", group: "g", itemId: null }], doors)).rejects.toThrow(/no pick/);
     await expect(applyDeckOps([{ kind: "answer", itemId: `${FINDING_PREFIX}k1`, answer: "lead" }], doors)).rejects.toThrow(/cannot be answered/);
+  });
+
+  it("a stance card shows the agent's precise stance as the Suggestion, leaning to its merged swipe", () => {
+    const item = stanceItem(row({ id: "s1", element_id: "e-a3", value: { offering: "E-waste drop-off", stance: "accept", primary_role: "traffic_builder" }, word_signals: [] }), stanceEl);
+    expect(item.id).toBe(`${STANCE_PREFIX}s1`);
+    expect(item.text).toBe("E-waste drop-off");
+    expect(item.suggested).toBe("sustain_or_accept");
+    expect(item.suggestedLabel).toBe("Accept");
+    expect(item.answers?.right?.label).toBe("Grow");
+    expect(item.answers?.up?.label).toBe("Sustain or Accept");
+    expect(item.answers?.left?.label).toBe("Sunset or Refuse");
+    expect(item.fields).toEqual([{ label: "Role", value: "Traffic builder" }]);
+    // The role proposer's rows carry no stance today: no Suggestion is ever invented.
+    expect(stanceItem(row({ value: { offering: "X", primary_role: "feeder" } }), stanceEl).suggested).toBeNull();
+  });
+
+  it("a stance answer is the person's own row; answering again withdraws it first; not sure parks the agent's row", async () => {
+    const ai = row({ id: "s1", element_id: "e-a3", value: { offering: "Drop-off" } });
+    const mine = row({ id: "m1", origin: "said", decision: "chosen", placement: "support", value: { stance: "sustain_or_accept", offering: "Drop-off", answer_to: "s1" } });
+    expect(answerOfStance(ai, [mine])).toBe("sustain_or_accept");
+    expect(answerOfStance({ ...ai, decision: "parked" }, [])).toBe("not_sure");
+    const { calls, doors } = fakeDoors();
+    doors.stanceOf = () => ({ ai, answers: [mine] });
+    await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: "grow" }], doors);
+    expect(calls).toEqual(["decide m1 withdraw", 'correct s1 "undefined" undefined-undefined lead']);
+    calls.length = 0;
+    doors.stanceOf = () => ({ ai, answers: [] });
+    await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: "not_sure" }], doors);
+    expect(calls).toEqual(["decide s1 not_sure"]);
+    calls.length = 0;
+    doors.stanceOf = () => ({ ai: { ...ai, decision: "parked" }, answers: [] });
+    await applyDeckOps([{ kind: "answer", itemId: `${STANCE_PREFIX}s1`, answer: null }], doors);
+    expect(calls).toEqual(["decide s1 retract"]);
+  });
+
+  it("taglines are a pick: could be it shortlists, the pick chooses, switching shortlists the old pick back first", async () => {
+    const t1 = choiceItem(row({ id: "t1", element_id: "e-h6", recommended_placement: "lead" }), realTagline);
+    const t2 = choiceItem(row({ id: "t2", element_id: "e-h6" }), realTagline);
+    expect(t1.group).toBe("h6_tagline");
+    expect(t1.answers?.right?.id).toBe("shortlist");
+    expect(t1.answers?.up).toBeNull();
+    expect(t1.suggested).toBe("shortlist");
+    expect(t1.pickSuggested).toBe(true);
+    expect(answerOfPick({ decision: "chosen" })).toBe("shortlist");
+    expect(answerOfPick({ decision: "superseded" })).toBe("shortlist");
+    const { calls, doors } = fakeDoors();
+    doors.items = [t1, t2];
+    doors.chosenInGroup = { h6_tagline: "t1" };
+    await applyDeckOps([{ kind: "pick", group: "h6_tagline", itemId: t2.id }], doors);
+    expect(calls).toEqual(["decide t1 shortlist", "decide t2 lead"]);
+    // Switching back: t2 shortlisted restores t1 (it had replaced it), so t1 is not chosen twice.
+    calls.length = 0;
+    doors.chosenInGroup = { h6_tagline: "t2" };
+    doors.decide = async (id, action) => {
+      calls.push(`decide ${id} ${action}`);
+      return id === "t2" ? { restored: ["t1"] } : {};
+    };
+    await applyDeckOps([{ kind: "pick", group: "h6_tagline", itemId: t1.id }], doors);
+    expect(calls).toEqual(["decide t2 shortlist"]);
+  });
+
+  it("a group answered down to one could-be-it picks it; undoing that answer un-picks it", async () => {
+    const t1 = choiceItem(row({ id: "t1", element_id: "e-h6" }), realTagline);
+    const t2 = choiceItem(row({ id: "t2", element_id: "e-h6" }), realTagline);
+    const { calls, doors } = fakeDoors();
+    doors.items = [t1, t2];
+    doors.before = { answers: { [t1.id]: "shortlist" }, picks: {}, parts: {}, categories: {} };
+    doors.chosenInGroup = { h6_tagline: null };
+    await applyDeckOps([{ kind: "answer", itemId: t2.id, answer: "not_us" }], doors);
+    expect(calls).toEqual(["decide t2 not_us", "decide t1 lead"]);
+    calls.length = 0;
+    doors.before = { answers: { [t1.id]: "shortlist", [t2.id]: "not_us" }, picks: { h6_tagline: t1.id }, parts: {}, categories: {} };
+    doors.chosenInGroup = { h6_tagline: "t1" };
+    await applyDeckOps([{ kind: "answer", itemId: t2.id, answer: null }], doors);
+    expect(calls).toEqual(["decide t2 retract", "decide t1 shortlist"]);
+  });
+
+  it("audience: a card answer and a category answer go through the audience door, a new one in its row", async () => {
+    const { calls, doors } = fakeDoors();
+    doors.audienceOf = () => ({ row: "who", name: "households", suggested: true });
+    doors.categoryOf = (name) => (name === "IT directors" ? { row: "who", id: "c-it" } : null);
+    await applyDeckOps(
+      [
+        { kind: "answer", itemId: audienceId("who", "households"), answer: "not_us" },
+        { kind: "answer", itemId: audienceId("who", "households"), answer: null },
+        { kind: "category", name: "audit trail", answer: "lead", row: "cares_about" },
+        { kind: "category", name: "IT directors", answer: "support" },
+        { kind: "category", name: "audit trail", answer: null, remove: true },
+      ],
+      doors,
+    );
+    expect(calls).toEqual([
+      "audience who households not_us ai",
+      "audience who households retract ai",
+      "audience cares_about audit trail lead said",
+      "audience who IT directors support said",
+      "audience who audit trail retract said",
+    ]);
+    expect(audienceId("who", "Households").startsWith(AUDIENCE_PREFIX)).toBe(true);
+  });
+
+  it("word checks carry their categories (who a word attracts), and those become audience suggestions", () => {
+    expect(wordSeeds([{ word: "Free", attracts: "bargain-seeking households", verdict: "not_us" }])).toEqual([
+      { phrase: "Free", suggested: "not_us", categories: ["bargain-seeking households"] },
+    ]);
+    const rows = [row({ word_signals: [{ word: "audit", categories: [{ name: "proof", row: "cares_about" }, "IT leads"] }, { word: "Free", attracts: "households" }] })];
+    expect(suggestedCategories(rows)).toEqual([
+      { name: "proof", row: "cares_about" },
+      { name: "IT leads", row: "who" },
+      { name: "households", row: "who" },
+    ]);
+  });
+
+  it("a word tagged with a new category adds it first, then saves the person's words with the tags", async () => {
+    const { calls, doors } = fakeDoors();
+    doors.categoryOf = (name) => (name === "households" ? { row: "who", id: "c-h" } : null);
+    await applyDeckOps([{ kind: "parts", itemId: `${CHOICE_PREFIX}c1`, parts: [{ start: 0, end: 0, categories: ["households", "price"], suggested: null, answer: null }] }], doors);
+    expect(calls).toEqual(["audience who price null said", 'correct c1 "Free" 0-0 null']);
   });
 });

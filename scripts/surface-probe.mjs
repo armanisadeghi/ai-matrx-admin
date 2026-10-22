@@ -720,10 +720,16 @@ try {
       ...(result.after?.undeclared ?? []),
       ...(result.afterAgent?.undeclared ?? []),
     ];
-    // A read that found no value rows at all proves nothing (the window moved
-    // or never opened): never a pass (2026-10-22, the "This page" redesign).
-    const readSomething = (result.before?.supplied?.length ?? 0) + (result.before?.suppliedEmpty?.length ?? 0) + (result.before?.absent?.length ?? 0) > 0;
-    if (!readSomething) result.errors.push("read no value rows from the page's values window");
+    // A read in which the page supplied nothing proves nothing — the window
+    // moved, never opened, or the page emits nothing (an admin seat lists
+    // every declared row as absent, so counting rows alone passed it): never a
+    // pass (2026-10-22, the "This page" redesign). Same for the re-read after
+    // an agent run.
+    const suppliedCount = (read) => (read?.supplied?.length ?? 0) + (read?.suppliedEmpty?.length ?? 0);
+    const readSomething = suppliedCount(result.before) > 0;
+    if (!readSomething) result.errors.push("the page supplied no values in its values window (or the window was not read)");
+    if (result.afterAgent && suppliedCount(result.afterAgent) === 0)
+      result.errors.push("the re-read after the agent run supplied no values");
     result.pass = Boolean(result.signedIn && result.surfaceNamed && readSomething && undeclared.length === 0 && result.errors.length === 0);
     if (!result.pass) exitCode = 1;
     results.push(result);

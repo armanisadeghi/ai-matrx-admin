@@ -55,8 +55,7 @@ const list = (options: readonly (string | number)[]) =>
  *
  * `snapshot` is the live setup form (its current values, its mode, the decks it
  * has loaded, whether a start is in flight). Passing the live snapshot rather
- * than the raw fields is what lets combination rules — deck-vs-pasted, and
- * which fields this mode even renders — be judged against what the learner can
+ * than the raw fields is what lets combination rules — which fields this mode even renders — be judged against what the learner can
  * see, instead of pretending the fields are independent.
  */
 export function resolvePracticeSetupPatch(
@@ -168,24 +167,6 @@ export function resolvePracticeSetupPatch(
       );
     patch.pasted = raw;
   }
-
-  // The two grounding sources are not independent: the form HIDES the paste box
-  // while a deck is chosen, so a state with both set would put text into an
-  // input the learner cannot see (and `buildDeckSource` would win anyway).
-  // Judge the RESULT of the patch, so sending the deck and the text that
-  // replaces it in one call is fine.
-  //
-  // Only a deck this mode actually renders counts. A deck chosen under an
-  // earlier mode survives the switch in component state but is hidden and
-  // ignored by handleStart, so it must not block writing source_text here.
-  const nextDeckId = snapshot.offersDeckGrounding
-    ? (patch.deckId ?? snapshot.deckId)
-    : "";
-  const nextPasted = patch.pasted ?? snapshot.pasted;
-  if (nextDeckId && nextPasted.trim())
-    throw new Error(
-      "A session grounds in a deck OR in pasted material, never both — the paste box is hidden while a deck is selected. Send deck_id and source_text in the SAME call so one clears the other: pass source_text \"\" to keep the deck, or deck_id \"\" to keep the pasted text.",
-    );
 
   return patch;
 }

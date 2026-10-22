@@ -16,6 +16,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  displayId,
 } from "@ai-matrx/design-system";
 import {
   Select,
@@ -260,7 +261,7 @@ function TopicSection({
               text={
                 topicNameById.get(edge.otherId) ??
                 edge.label ??
-                edge.otherId.slice(0, 8)
+                displayId(edge.otherId)
               }
               onRemove={() => onRemove(edge.otherId)}
             />
@@ -325,7 +326,7 @@ function EntitySection({
             party?.display_name ??
             entity?.label ??
             edge.label ??
-            edge.otherId.slice(0, 8);
+            displayId(edge.otherId);
           const edgeRole = (edge.role ?? "about") as PlanNodeEntityRole;
           return (
             <div

@@ -115,6 +115,8 @@ A structured component (like Card — with title + description fields) flips one
 **`displayMode`** (13 options) — how the result is presented:
 `inline` · `sidebar` · `modal-full` · `modal-compact` · `chat-bubble` · `flexible-panel` · `panel` · `toast` · `floating-chat` · `chat-collapsible` · `chat-assistant` · `background` · `direct` (caller manages the UI)
 
+**Where the answer goes.** `inline` is the in-place mode: when a run launched from an editable surface's selection finishes, its first answer replaces the selected text by itself, once (`apply-result-placement.ts` in `@ai-matrx/chat`; UI net Q-10-e, 2026-10-22). Every other display mode shows the answer and leaves the write to the card's Replace / Insert below buttons. A write the surface cannot honour (the text moved) says so and keeps the answer on screen. There is no separate placement setting yet.
+
 **`variableInputStyle`** (6 layouts) — how variables are collected when input is needed:
 `inline` · `wizard` · `form` · `compact` · `guided` · `cards`
 
@@ -125,6 +127,7 @@ A structured component (like Card — with title + description fields) flips one
 | `autoRun`                           | `true` = fire immediately; `false` = show variable inputs first                     |
 | `allowChat`                         | `true` = multi-turn allowed; `false` = one turn and done                            |
 | `usePreExecutionInput`              | With `autoRun`, still give the user a confirm step (optional `preExecutionMessage`) |
+| `bypassGateSeconds`                 | `0` (the default) = the gate waits for the person's Send, always. A positive number is an opt-in countdown that presses Send for them after N seconds (UI net Q-10-a, 2026-10-22: the old default of 3 made every gate confirm itself) |
 | `showVariablePanel`                 | Let the user see and modify auto-bound variable values                              |
 | `showDefinitionMessages`            | Expose non-system messages baked into the agent definition                          |
 | `showDefinitionMessageContent`      | When shown, render full content vs just the user's literal text                     |

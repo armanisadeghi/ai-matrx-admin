@@ -44,6 +44,8 @@ export interface PdfToolbarPlanInput {
   /** Measured widths of host chrome docked at the row's ends (as drawn inline). */
   startWidth?: number;
   endWidth?: number;
+  /** Controls this layout does not have (never in the row, never in the menu). */
+  omit?: PdfToolbarControl[];
 }
 
 /** How the host's docked chrome is drawn: inline, end behind one trigger, or both. */
@@ -135,7 +137,9 @@ export function planPdfToolbar(input: PdfToolbarPlanInput): PdfToolbarPlan {
   const target = input.coarse ? TOOLBAR_METRICS.targetCoarse : TOOLBAR_METRICS.targetFine;
   const hasPager = input.pageNav && input.pages > 1;
   const counterWidth = input.pages >= 100 ? 64 : 48;
-  let row: PdfToolbarControl[] = ["zoom", "fitPage", "fitWidth", "actual", "rotate"];
+  let row: PdfToolbarControl[] = (
+    ["zoom", "fitPage", "fitWidth", "actual", "rotate"] as PdfToolbarControl[]
+  ).filter((c) => !input.omit?.includes(c));
   const menu: PdfToolbarControl[] = [];
   let pager: PdfToolbarPlan["pager"] = hasPager ? "full" : "none";
 

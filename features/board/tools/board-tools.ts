@@ -124,7 +124,7 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
       type: "object",
       properties: {
         kind: { type: "string", enum: [...BOARD_TILE_KINDS], description: "What the tile holds." },
-        title: { type: "string", description: "Short title shown in the tile header." },
+        title: { type: "string", description: "Short title shown in the tile header. With kind `text` and `text` also given, the result is a titled tile (plain canvas text has no title)." },
         text: { type: "string", description: "Content for note / markdown / text tiles; a cover's prose (markdown)." },
         html: { type: "string", description: "Complete HTML document for an html tile (scripts allowed; it runs sandboxed)." },
         hero: { type: "string", description: "A cover's hero: an HTML snippet drawn seamlessly above its prose." },

@@ -20,7 +20,8 @@
 //   COALESCE(t.config->'variables'->>'panel_style',      'inline')
 //   COALESCE((t.config->'reveal'->>'…')::boolean,         false)   ×4
 //   COALESCE((t.config->'gate'->>'enabled')::boolean,     false)
-//   COALESCE((t.config->'gate'->>'bypass_seconds')::int,  3)
+//   COALESCE((t.config->'gate'->>'bypass_seconds')::int,  0)   (was 3 until 20261022120000_gate_a_gate_waits_for_the_person.sql:
+//     a positive value is an auto-send countdown, so a blank gate must wait for the person)
 //   COALESCE((t.config->'menu'->>'sort_order')::int,      0)
 //   COALESCE(t.config->'menu'->'enabled_features',        '["general"]')
 //   COALESCE(t.config->'write_policies',                  '{}')
@@ -46,7 +47,7 @@ describe("treatment-shape — the client codec for mandate.treatment.config", ()
     expect(base.hideReasoning).toBe(false);
     expect(base.hideToolResults).toBe(false);
     expect(base.showPreExecutionGate).toBe(false);
-    expect(base.bypassGateSeconds).toBe(3);
+    expect(base.bypassGateSeconds).toBe(0);
     expect(base.sortOrder).toBe(0);
     expect(base.enabledFeatures).toEqual(["general"]);
     expect(base.writePolicies).toEqual({});

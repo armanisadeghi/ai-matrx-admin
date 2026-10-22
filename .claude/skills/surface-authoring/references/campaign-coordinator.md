@@ -83,6 +83,9 @@ and focused mirror checks rather than a historical snapshot.
    - Start with 4–6 workers at once. Raise the number when merge conflicts and review findings stay
      low.
    - Local workers share the one managed preview; do not launch additional dev servers.
+   - Cloud workers: at most two per 15 GB container. Four workers in one container (each with a
+     headless browser, plus the type-check queue) ran it out of memory and restarted it on
+     2026-10-22. More workers means more containers (one session each).
 4. Workers report through durable state, not messages:
    - assigned Work Loop state, or explicitly bounded legacy claim state;
    - readiness and note synced to the DB;

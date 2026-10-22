@@ -85,7 +85,7 @@ import { buildRagDataStoresContextData } from "@/features/rag/agent-context/buil
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { pushAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { UntrustedCount } from "@ai-matrx/design-system";
+import { UntrustedCount, displayId } from "@ai-matrx/design-system";
 import { DATA_STORES_PATH } from "@/features/knowledge/modulePaths";
 import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import {
@@ -1234,7 +1234,7 @@ function StoreDetailPanel({
               const ok = await detail.addMember(input);
               if (ok) {
                 toast.success("Member bound", {
-                  description: `${input.sourceKind}/${input.sourceId.slice(0, 8)}…`,
+                  description: `${input.sourceKind}/${displayId(input.sourceId)}…`,
                 });
                 setAdvancedOpen(false);
               }
@@ -1324,7 +1324,7 @@ function MemberTable({
           onClick: async () => {
             const ok = await confirm({
               title: "Remove member",
-              description: `Remove ${m.sourceKind}/${m.sourceId.slice(0, 8)}… from this store?`,
+              description: `Remove ${m.sourceKind}/${displayId(m.sourceId)}… from this store?`,
               confirmLabel: "Remove",
               variant: "destructive",
             });

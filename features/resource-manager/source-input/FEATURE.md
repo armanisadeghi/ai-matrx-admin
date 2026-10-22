@@ -86,6 +86,8 @@ Campaign of record (design, frozen contract, register): common-docs `projects/un
 
 ## Change log
 
+- 2026-10-22 — Podcast Studio create (`/podcast/studio/create`, key `podcasts:create`, every tile but Topic, `deliveries={["direct"]}`) adopts it; the host sends `toSourceSet()` and aidream resolves it inside `/podcast/generate`.
+
 - 2026-10-03 — A Source stuck on "Cleaning…" (its pages queued on the Batch lane, which answers in
   hours and has no deadline unless `batch.deadline.processing_mode = deadline`) says
   "Cleaning queued · 25m" after `CLEAN_STALL_MS` (3 min) and offers **Clean now** — the live clean

@@ -42,6 +42,8 @@ export interface QuestionsFromSourcesInput {
   count?: number;
   difficulty: string;
   depth: Depth;
+  /** The exam the questions are styled after ("AP Biology"); empty = none. */
+  examType?: string;
   /** What the sections are titled after (the assessment's title). */
   title: string;
   /** Instruction, types, sections — folded into `user_request` / `question_types`. */
@@ -97,6 +99,7 @@ export async function generateQuestionsFromSources({
   count,
   difficulty,
   depth,
+  examType = "",
   title,
   steer = {},
   existing = [],
@@ -146,7 +149,7 @@ export async function generateQuestionsFromSources({
       difficulty,
       depth,
       question_types: questionTypesValue(types),
-      exam_type: "",
+      exam_type: examType.trim(),
       user_request: userRequest,
     }),
     extract: (value) => {

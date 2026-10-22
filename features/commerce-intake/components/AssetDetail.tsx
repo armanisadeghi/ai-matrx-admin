@@ -137,19 +137,23 @@ export function AssetDetail({ assetId }: { assetId: string }) {
   // the saved object made "Add attribute" vanish on its own save (the blank
   // row was dropped from the write, then re-derived away). The draft re-seeds
   // when the saved attributes change underneath it (adjust-during-render).
+  // Re-seed on CONTENT change, never on object identity: every guarded write
+  // (a notes autosave, Mark captured) adopts a fresh row object, and re-seeding
+  // on identity dropped the unnamed row a person was still naming. Unnamed
+  // draft rows ride across a re-seed untouched.
   const savedAttributes = asset?.attributes ?? null;
+  const savedKey = JSON.stringify(savedAttributes ?? {});
   const [attributeRows, setAttributeRows] = useState<AttributeRow[]>([]);
-  const [seededFrom, setSeededFrom] = useState<Record<string, string> | null>(
-    null,
-  );
-  if (savedAttributes !== seededFrom) {
-    setSeededFrom(savedAttributes);
-    setAttributeRows(
-      Object.entries(savedAttributes ?? {}).map(([key, value]) => ({
+  const [seededFrom, setSeededFrom] = useState<string | null>(null);
+  if (savedKey !== seededFrom) {
+    setSeededFrom(savedKey);
+    setAttributeRows((prev) => [
+      ...Object.entries(savedAttributes ?? {}).map(([key, value]) => ({
         key,
         value,
       })),
-    );
+      ...prev.filter((r) => !r.key.trim()),
+    ]);
   }
 
   const saveAttributes = useCallback(
@@ -172,7 +176,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
         // Adopt the saved row but keep the unnamed draft rows the user is
         // still typing in.
         const drafts = rows.filter((r) => !r.key.trim());
-        setSeededFrom(saved.attributes);
+        setSeededFrom(JSON.stringify(saved.attributes ?? {}));
         setAttributeRows([
           ...Object.entries(saved.attributes).map(([key, value]) => ({ key, value })),
           ...drafts,
@@ -356,7 +360,16 @@ export function AssetDetail({ assetId }: { assetId: string }) {
         )}
       </PanelSection>
 
-      <AssetPipelineResults assetId={asset.id} />
+      <AssetPipelineResults
+        assetId={asset.id}
+        instantAnalysis={
+          asset.metadata.instant_analysis &&
+          typeof asset.metadata.instant_analysis === "object" &&
+          !Array.isArray(asset.metadata.instant_analysis)
+            ? (asset.metadata.instant_analysis as Record<string, unknown>)
+            : null
+        }
+      />
 
       <PanelSection title="Attributes">
         <EditableRows<AttributeRow>

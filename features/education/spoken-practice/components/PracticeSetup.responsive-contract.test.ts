@@ -11,7 +11,7 @@ describe("PracticeSetup responsive contract", () => {
     );
 
     expect(setup).toContain(
-      'className="matrx-touch-targets mx-auto w-full max-w-md',
+      'className="matrx-touch-targets mx-auto flex w-full max-w-3xl',
     );
     expect(touchFloorRing()).toEqual({ found: true, belowLgOnly: true });
   });

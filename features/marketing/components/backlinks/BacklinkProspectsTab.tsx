@@ -89,6 +89,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { asClause } from "@ai-matrx/kit/text";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
+import { displayId } from "@ai-matrx/design-system";
 function scoreCell(row: LinkGapDomainRow) {
   return (
     <AuthorityScoreCell
@@ -525,7 +526,7 @@ export function BacklinkProspectsTab({
                     className="text-[11px] text-primary "
                     title="This run's id"
                   >
-                    run {run.runId.slice(0, 8)}
+                    run {displayId(run.runId)}
                   </Link>
                 ) : null}
               </p>

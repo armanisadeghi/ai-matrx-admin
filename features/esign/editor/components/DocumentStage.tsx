@@ -10,17 +10,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Check, Copy, Minus, Plus, Trash2, X } from "lucide-react";
+import { Check, Copy, Trash2, X } from "lucide-react";
 
 import { Button } from "@ai-matrx/design-system/controls";
 import { Spinner } from "@/components/ui/loaders/Spinner";
 import { cn } from "@/lib/utils";
 
+import { useStackZoom } from "@/features/pdf/components/viewer/toolbar/stack-hooks";
 import type { DraftField, DraftRecipient, EnvelopeDraftV1 } from "../../contract/draft";
 import type { FieldKindV2 } from "../../contract/fieldModel";
 import { PAPER, recipientColor } from "../../contract/paper";
 import { clampBox, kindSpec } from "../model";
 import type { DetectCandidate } from "../api/types";
+
+// The shared PDF toolbar row loads with the viewer, never with the page; the placeholder holds its height.
+const PdfStackToolbar = dynamic(
+  () => import("@/features/pdf/components/viewer/toolbar/PdfStackToolbar").then((m) => m.PdfStackToolbar),
+  { ssr: false, loading: () => <div className="h-10 shrink-0 border-b border-border/60" aria-hidden /> },
+);
 
 const PdfPreview = dynamic(() => import("@/features/pdf/components/viewer/PdfPreview"), {
   ssr: false,
@@ -59,22 +66,22 @@ interface Props extends StageHandlers {
 
 export function DocumentStage(props: Props) {
   const { draft, zoom, onZoom, readOnly } = props;
+  const stackZoom = useStackZoom(zoom, onZoom);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   return (
     <div className="relative flex h-full min-h-0 flex-col bg-muted/40">
-      <div className="flex shrink-0 items-center justify-end gap-1 border-b border-border bg-background/80 px-2 py-1">
-        <Button variant="quiet" aria-label="Zoom out" icon={<Minus />} disabled={zoom <= 0.5} onClick={() => onZoom(Math.max(0.5, +(zoom - 0.1).toFixed(2)))} />
-        <span className="w-10 text-center type-secondary tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
-        <Button variant="quiet" aria-label="Zoom in" icon={<Plus />} disabled={zoom >= 2} onClick={() => onZoom(Math.min(2, +(zoom + 0.1).toFixed(2)))} />
-      </div>
+      <PdfStackToolbar contentRef={contentRef} zoom={stackZoom} />
       <div data-matrx-page-scroll className="min-h-0 flex-1 overflow-auto">
-        <div className="mx-auto flex flex-col gap-6 px-2 py-4 sm:px-4" style={{ width: `${Math.max(100, zoom * 100)}%`, maxWidth: zoom <= 1 ? 900 : undefined }}>
+        <div ref={contentRef} className="mx-auto flex w-full max-w-[900px] flex-col gap-6 px-2 py-4 sm:px-4">
           {draft.documents.map((doc) => (
             <section key={doc.key} aria-label={doc.name} className="flex flex-col gap-1.5">
               <h3 className="truncate type-secondary text-muted-foreground">{doc.name}</h3>
-              <div className="overflow-hidden rounded-sm bg-white shadow-md ring-1 ring-black/10">
+              <div>
                 <PdfPreview
                   fileId={doc.file_id}
                   layout="continuous"
+                  toolbar="none"
+                  continuousZoom={zoom}
                   onDocumentLoad={(n) => props.onPages(doc.key, n)}
                   renderOverlay={({ pageNumber, rotation }) =>
                     rotation === 0 ? <PageLayer {...props} documentKey={doc.key} page={pageNumber} readOnly={!!readOnly} /> : null

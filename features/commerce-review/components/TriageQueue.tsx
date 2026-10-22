@@ -51,7 +51,8 @@ export function TriageQueue() {
   const [reloadKey, setReloadKey] = useState(0);
   const [index, setIndex] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [reasoningOpen, setReasoningOpen] = useState(false);
+  // Per item, so one item's expanded reasoning never carries to the next.
+  const [reasoningOpenFor, setReasoningOpenFor] = useState<string | null>(null);
   const busyRef = useRef(false);
 
   useEffect(() => {
@@ -218,20 +219,24 @@ export function TriageQueue() {
           <div className="mt-2">
             <p
               className={
-                reasoningOpen
+                reasoningOpenFor === item.assetId
                   ? "whitespace-pre-wrap text-sm text-muted-foreground"
                   : "line-clamp-3 text-sm text-muted-foreground"
               }
             >
               {item.aiReasoning}
             </p>
-            <Button
-              variant="quiet"
-              onClick={() => setReasoningOpen((v) => !v)}
-              aria-expanded={reasoningOpen}
-            >
-              {reasoningOpen ? "Less" : "More"}
-            </Button>
+            {item.aiReasoning.length > 240 && (
+              <Button
+                variant="quiet"
+                onClick={() =>
+                  setReasoningOpenFor((v) => (v === item.assetId ? null : item.assetId))
+                }
+                aria-expanded={reasoningOpenFor === item.assetId}
+              >
+                {reasoningOpenFor === item.assetId ? "Less" : "More"}
+              </Button>
+            )}
           </div>
         )}
         {item.notes && (
