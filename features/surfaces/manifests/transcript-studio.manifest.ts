@@ -423,6 +423,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const transcriptStudioManifest: SurfaceManifest = {
   surfaceName: "matrx-user/transcript-studio",
+  situation:
+    "They are in the live transcription studio on session \"{session_title|none chosen}\" ({session_status|no session}), one of {session_count} sessions. Its raw and cleaned text are in your context; they can add a concept item or rewrite a cleaned segment.",
   inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -365,6 +365,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const transcriptScribeLiveManifest: SurfaceManifest = {
   surfaceName: TRANSCRIPT_SCRIBE_LIVE_SURFACE,
+  situation:
+    "They are on a Scribe session's Live tab, talking by voice with an agent about the working document ({working_document_word_count} words): connection {connection_status}, mic muted: {mic_muted}, {turn_count} turns so far. They can replace or add to the working document.",
   inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

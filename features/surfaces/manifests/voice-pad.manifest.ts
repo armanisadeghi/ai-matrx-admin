@@ -205,6 +205,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const voicePadManifest: SurfaceManifest = {
   surfaceName: "matrx-user/voice-pad",
+  situation:
+    "They have the voice pad open to speak and get text (recording: {is_recording}, transcribing: {is_transcribing}). The draft text is in your context; they can replace it or add to it.",
   inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

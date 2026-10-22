@@ -531,6 +531,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const transcriptsCleanupManifest: SurfaceManifest = {
   surfaceName: "matrx-user/transcripts-cleanup",
+  situation:
+    "They are on the transcript cleanup page for \"{session_title|an untitled session}\": the recorded text ({raw_word_count} words), a cleaned version ({cleaned_word_count} words, clean run: {clean_run_status}) and {custom_slot_count} custom outputs; recording now: {is_recording}. They can rewrite the cleaned text, a custom output or the title.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

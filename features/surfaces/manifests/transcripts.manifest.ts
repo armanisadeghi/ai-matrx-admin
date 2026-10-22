@@ -599,6 +599,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const transcriptsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/transcripts",
+  situation:
+    "They have the transcript \"{transcript_title|none open}\" ({transcript_source_type|unknown source}, {segment_count} segments, {speaker_count} speakers) in the {editor_mode} mode. They can change its title, description, text and speaker names.",
   inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
