@@ -70,6 +70,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingSocialAccountsManifest: SurfaceManifest = {
   surfaceName: SOCIAL_ACCOUNTS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

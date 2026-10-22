@@ -317,6 +317,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminMcpServersManifest: SurfaceManifest = {
   surfaceName: ADMIN_MCP_SERVERS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/integrations",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

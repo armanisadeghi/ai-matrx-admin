@@ -14,7 +14,9 @@ describe("What your agents can make", () => {
     expect(g.size).toBe("chips");
     expect(g.items.map((i) => i.href)).toEqual(["/chat/new?make=data_table", "/chat/new?make=chart", "/chat/new?make=timeline"]);
     expect(g.items[0]?.identity?.color).toBe("#2563EB");
-    expect(typeof g.items[0]?.identity?.icon).not.toBe("undefined");
+    // Every pill draws its own named icon (never the hot-set fallback bolt).
+    const icon = g.items[0]?.icon as { props?: { name?: string } } | undefined;
+    expect(icon?.props?.name).toBe("Table");
   });
   it("leaves out a shape with no valid color rather than drawing it wrong", () => {
     expect(canMakeGroup([shape("a_shape", 1, null), shape("b_shape", 2, "blue")]).items).toHaveLength(0);

@@ -225,6 +225,7 @@ export const IMAGE_GENERATE_SURFACE_NAME = "matrx-user/image-generate";
 
 export const imageGenerateManifest: SurfaceManifest = {
   surfaceName: IMAGE_GENERATE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -230,6 +230,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const messageTemplateManifest: SurfaceManifest = {
   surfaceName: MESSAGE_TEMPLATE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

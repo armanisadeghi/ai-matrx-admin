@@ -627,7 +627,11 @@ export function SearchExperience({ form, inputs, surface, guest = false }: Searc
   const home = runs.length === 0 && !special && !pinnedTop;
   const compare = runs.length > 1;
   const webQuery = lastRequest?.vertical === "web" && runs[0]?.phase === "done" ? lastRequest.query : "";
-  const topStories = useTopStories(webQuery, !compare && isNewsQuery(webQuery || null));
+  const topStories = useTopStories(
+    webQuery,
+    !compare && isNewsQuery(webQuery || null),
+    webQuery ? (runs[0]?.outcome?.followUpToken ?? null) : null,
+  );
 
   // "I'm Feeling Lucky": the search runs as usual, then the first web result opens in its place.
   const lucky = useRef(false);

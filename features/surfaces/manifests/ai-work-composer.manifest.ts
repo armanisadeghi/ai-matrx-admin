@@ -230,6 +230,7 @@ export const AI_WORK_COMPOSER_SURFACE_NAME = "matrx-user/ai-work-composer";
 
 export const aiWorkComposerManifest: SurfaceManifest = {
   surfaceName: AI_WORK_COMPOSER_SURFACE_NAME,
+  inheritsFrom: "matrx-default/chat",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

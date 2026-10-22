@@ -279,6 +279,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminBundlesManifest: SurfaceManifest = {
   surfaceName: ADMIN_BUNDLES_SURFACE_NAME,
+  inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

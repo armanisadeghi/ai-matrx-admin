@@ -13,7 +13,7 @@
 //
 // React Compiler is on: no manual memo.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Headphones, MessagesSquare, Radio, Users } from "lucide-react";
 import { toast } from "@/lib/toast";
@@ -21,8 +21,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
@@ -31,7 +29,11 @@ import {
   type AudioDeckOption,
 } from "@/features/surfaces/manifests/education-audio-study.manifest";
 import { EducationCreatePage } from "@/features/education/create/EducationCreatePage";
-import { useEducationSources } from "@/features/education/create/useEducationSources";
+import { leftOutLine, seedFromParams, useEducationSources } from "@/features/education/create/useEducationSources";
+import { useCreateRun } from "@/features/education/create/useCreateRun";
+import { restoreStudyRunRequest } from "@/features/education/create/createRunRequest";
+import { useDeckChoices } from "@/features/education/create/useDeckChoices";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 import { useStyleDraft } from "@/features/education/create/useStyleDraft";
 import { useAudioStudyCreate } from "../useAudioStudyCreate";
 import type { EduAudioFormat } from "../../types";
@@ -107,8 +109,8 @@ export function AudioStudyNew() {
   // blocked from AI generation until a parent approves (never a silent failure).
   const coppa = useAiComplianceGate();
 
-  const [decks, setDecks] = useState<FcSetRow[]>([]);
-  const [decksLoaded, setDecksLoaded] = useState(false);
+  // The learner's decks — only for what an agent is offered, read when it asks.
+  const deckChoices = useDeckChoices();
   const formatParam = params.get("format");
   const initialFormat: EduAudioFormat = isFormat(formatParam) ? formatParam : "overview";
   const [format, setFormatState] = useState<EduAudioFormat>(initialFormat);
@@ -116,24 +118,25 @@ export function AudioStudyNew() {
   const [adaptive, setAdaptive] = useState<boolean>(true);
   const [reading, setReading] = useState(false);
 
-  useEffect(() => {
-    fcService.listDecks().then((res) => {
-      if (res.data) setDecks(res.data);
-      setDecksLoaded(true);
-    });
-  }, []);
-
-  const linkDeckId = params.get("deck");
   const sources = useEducationSources(AUDIO_STUDY_SURFACE_KEY, {
-    seedDeck: linkDeckId ? { id: linkDeckId, name: decks.find((d) => d.id === linkDeckId)?.name } : null,
-    seedReady: decksLoaded,
+    seed: seedFromParams(params),
     onRelease: () => void start(),
+    lateMark: "Not in this audio",
   });
 
   const styleDraft = useStyleDraft<StyleDraft>(AUDIO_STUDY_STYLE_DRAFT_ID, restoreAudioStyle, (v) => {
     if (v.format) setFormatState(v.format);
     if (v.hostCount !== undefined) setHostCount(v.hostCount);
     if (v.adaptive !== undefined) setAdaptive(v.adaptive);
+  });
+
+  // The start lives in this tab until the run row exists: a reload says so and offers the same request.
+  const createRun = useCreateRun(`${AUDIO_STUDY_SURFACE_KEY}:run`, restoreStudyRunRequest(restoreAudioStyle), sources, {
+    onRedo: ({ style }) => {
+      if (style.format) setFormatState(style.format);
+      if (style.hostCount !== undefined) setHostCount(style.hostCount);
+      if (style.adaptive !== undefined) setAdaptive(style.adaptive);
+    },
   });
 
   // A new format brings its own sensible cast size.
@@ -145,26 +148,35 @@ export function AudioStudyNew() {
 
   async function run() {
     setReading(true);
-    let prepared;
     try {
-      prepared = await sources.prepare();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't read the sources");
-      return;
+      await createRun.track(sources.runRequest({ format, hostCount, adaptive }), async (ctx) => {
+        let prepared;
+        try {
+          prepared = await sources.prepare();
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Couldn't read the sources");
+          return;
+        } finally {
+          setReading(false);
+        }
+        const ok = await create({
+          format,
+          material: prepared,
+          hostCount,
+          adaptive: sources.deckCount > 0 && adaptive,
+          beforeSave: ctx.saving,
+        });
+        // Meter only a real generation; a failed/early-returned create burns nothing.
+        if (ok) {
+          await gen.commit({ initiation: "user" });
+          const leftOut = sources.clearUsed();
+          if (leftOut > 0) toast.info(leftOutLine(leftOut, "the audio"));
+          styleDraft.clear();
+        }
+      });
     } finally {
       setReading(false);
-    }
-    const ok = await create({
-      format,
-      material: prepared,
-      hostCount,
-      adaptive: sources.deckCount > 0 && adaptive,
-    });
-    // Meter only a real generation; a failed/early-returned create burns nothing.
-    if (ok) {
-      await gen.commit({ initiation: "user" });
-      sources.clearUsed();
-      styleDraft.clear();
+      sources.endRun();
     }
   }
 
@@ -188,6 +200,8 @@ export function AudioStudyNew() {
     const picked = sources.ready.filter((s) => s.draft.ref?.resource_type === "fc_set");
     const firstDeck = picked[0]?.draft;
     const kind = !sources.hasSources ? "topic" : picked.length === sources.ready.length ? "deck" : "sources";
+    void deckChoices.load();
+    const decks = deckChoices.decks;
     return createEducationAudioStudyScope({
       view: "new",
       request_source_kind: kind,
@@ -217,6 +231,7 @@ export function AudioStudyNew() {
         backHref="/education/audio-study"
         surfaceKey={AUDIO_STUDY_SURFACE_KEY}
         purpose="your audio study"
+        extraKinds={STUDY_FROM_DECK_KINDS}
         sources={sources}
         styleDraft={styleDraft}
         onStartFresh={() => {
@@ -229,8 +244,8 @@ export function AudioStudyNew() {
           busyLabel: "Starting your audio…",
           icon: <Headphones />,
           busy: busy || reading,
+          checking: gen.isChecking,
           onMake: handleMake,
-          extraBlockedReason: gen.isChecking ? "Checking your limit…" : null,
           summary: sources.hasSources
             ? `${formatLabel} of ${count} ${count === 1 ? "source" : "sources"}${sources.topic ? `, focused on “${sources.topic}”` : ""}`
             : `${formatLabel} about “${sources.topic}”`,
@@ -242,6 +257,12 @@ export function AudioStudyNew() {
             </>
           ),
           operation: "Make an audio study",
+        }}
+        run={{
+          state: createRun,
+          stoppedLabel: "Starting your audio",
+          savingWhat: "your audio study",
+          listLabel: "Your audio studies",
         }}
       >
         <div className="flex flex-col gap-1.5">

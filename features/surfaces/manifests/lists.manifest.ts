@@ -276,6 +276,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const listsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/pick-lists",
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -5,6 +5,7 @@
 // under a one-row admin strip with the way back. Mounted under
 // /administration/** so every read carries the admin lane.
 
+import { RecordHostChrome } from "@/features/shell/host-chrome/RecordHostChrome";
 import Link from "@/components/navigation/AppLink";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -23,7 +24,10 @@ export function AdminMeetingDetail({ meetingId }: { meetingId: string }) {
         <span className="ml-auto shrink-0 text-xs text-muted-foreground">Admin view</span>
       </div>
       <div className="min-h-0 flex-1">
-        <MeetingDetail meetingId={meetingId} at={null} section={null} chrome="embedded" onMeeting={(m) => setTitle(m.title)} />
+        {/* This view's own row names the meeting: the shared host chrome drops the name from the meeting's bar. */}
+        <RecordHostChrome host="frame" record={{ token: "meet_meeting", id: meetingId }} names opens={false}>
+          <MeetingDetail meetingId={meetingId} at={null} section={null} chrome="embedded" onMeeting={(m) => setTitle(m.title)} />
+        </RecordHostChrome>
       </div>
     </div>
   );

@@ -180,6 +180,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const marketingBrandManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-brand",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

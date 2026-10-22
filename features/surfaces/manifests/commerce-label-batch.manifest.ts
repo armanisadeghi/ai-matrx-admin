@@ -90,6 +90,7 @@ const values: SurfaceValue[] = [
 ];
 export const commerceLabelBatchManifest: SurfaceManifest = {
   surfaceName: COMMERCE_LABEL_BATCH_SURFACE_NAME,
+  inheritsFrom: "matrx-default/commerce",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -16,8 +16,8 @@ import { downloadUrl } from "@ai-matrx/kit/download";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // react-pdf + pdfjs cannot SSR and are heavy — load only when a PDF arrives.
-const PdfDocumentRenderer = dynamic(
-  () => import("@/features/pdf/components/viewer/PdfDocumentRenderer"),
+const PdfDocumentViewer = dynamic(
+  () => import("@ai-matrx/media/viewers/pdf").then((m) => ({ default: m.PdfDocumentViewer })),
   { ssr: false },
 );
 
@@ -85,7 +85,7 @@ export function PdfBinaryResult({ result }: Props) {
         // in the app) — never the browser's native <object>/<iframe> viewer,
         // which was a second PDF renderer with its own chrome.
         <div className="h-[600px] overflow-hidden rounded-md border border-border">
-          <PdfDocumentRenderer blobUrl={objectUrl} fileName={result.filename} />
+          <PdfDocumentViewer blobUrl={objectUrl} fileName={result.filename} />
         </div>
       ) : isImage ? (
         <div className="flex items-center justify-center rounded-md border border-border bg-muted p-4">

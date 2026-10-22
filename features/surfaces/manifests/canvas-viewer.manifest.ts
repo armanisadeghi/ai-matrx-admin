@@ -48,6 +48,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const canvasViewerManifest: SurfaceManifest = {
   surfaceName: CANVAS_VIEWER_SURFACE_NAME,
+  inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

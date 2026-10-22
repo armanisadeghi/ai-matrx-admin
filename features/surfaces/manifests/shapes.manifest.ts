@@ -740,6 +740,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const shapesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/shapes",
+  inheritsFrom: "matrx-default/architecture",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

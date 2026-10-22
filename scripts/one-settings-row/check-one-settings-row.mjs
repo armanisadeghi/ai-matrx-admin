@@ -11,15 +11,16 @@
  * shared control is how the fake panel happened, so this fails on:
  *
  *   1. a file outside the panel's own package folder importing the row's parts
- *      (`SettingControlInput`, `InputCapabilitiesEditor`, `ExtraSettingRow`, `SettingsGroupSection`)
- *      — render the panel instead;
+ *      (`SettingControlInput`, `InputCapabilitiesEditor`, `ExtraSettingRow`, `SettingsGroupSection`,
+ *      `VoiceSettingControl`) — render the panel instead;
  *   2. a re-casing helper or a private row-button class (`sentenceCaseLabel`, `ROW_ICON_BUTTON`);
  *   3. an import of the deleted hand-built panels (`RunConfigOverrides`, `RunInputCapabilities`);
  *   4. a component (`.tsx`) outside the settings package that builds the rows itself — calls
  *      `buildSettingsRows(` / `extraSettingKeys(` or walks `SETTINGS_CATALOGUE`, whatever its rows
  *      are called;
  *   5. a component that borrows the panel's row geometry (`SettingRowFrame` / `SettingRowLabel`)
- *      without rendering `<ModelSettingsPanel` itself — the frame is for a panel's `renderRow`;
+ *      or hands the panel a row of its own (`renderRow`) — since 2026-10-22 the panel draws every
+ *      row, the Voice row included, and exports no frame;
  *   6. a component that draws three or more of the catalog's own labels ("Max Output Tokens",
  *      "Stop Sequences" …, read from the settings catalog) beside a checkbox, switch, slider,
  *      input or select, and renders neither `<ModelSettingsPanel` nor `<ConversationModelSettings`
@@ -48,12 +49,12 @@ const ALLOW = new Map([
 ]);
 
 const PART_IMPORT =
-  /(?:import|export)\s*(?:type\s*)?\{[^}]*\b(SettingControlInput|InputCapabilitiesEditor|ExtraSettingRow|SettingsGroupSection)\b[^}]*\}\s*from\s*["']@ai-matrx\/agents\/settings\/react["']/s;
+  /(?:import|export)\s*(?:type\s*)?\{[^}]*\b(SettingControlInput|InputCapabilitiesEditor|ExtraSettingRow|SettingsGroupSection|VoiceSettingControl)\b[^}]*\}\s*from\s*["']@ai-matrx\/agents\/settings\/react["']/s;
 const PRIVATE_ROW = /\b(?:function|const|let)\s+(sentenceCaseLabel|ROW_ICON_BUTTON)\b/;
 const DELETED_PANEL = /from\s*["'][^"']*\/(RunConfigOverrides|RunInputCapabilities)["']/;
 const ROWS_BY_HAND = /\b(buildSettingsRows|extraSettingKeys)\s*\(|\bSETTINGS_CATALOGUE\b/;
 const ROW_FRAME = /\b(SettingRowFrame|SettingRowLabel)\b/;
-const RENDERS_PANEL = /<ModelSettingsPanel\b/;
+const RENDER_ROW = /<ModelSettingsPanel\b[^>]*\brenderRow\s*=/s;
 const RENDERS_ANY_PANEL = /<(ModelSettingsPanel|ConversationModelSettings|StoredModelOverridesField)\b/;
 const CONTROL_JSX = /<(Checkbox|Switch|Slider|Input|Textarea|Select|Field)\b/;
 
@@ -92,9 +93,8 @@ export function judge(rel, source, labels = (LABELS ??= catalogLabels())) {
   const byHand = source.match(ROWS_BY_HAND);
   if (byHand) found.push(`builds settings rows itself (${byHand[1] ?? "SETTINGS_CATALOGUE"}) — render ModelSettingsPanel, which draws every row`);
   const frame = source.match(ROW_FRAME);
-  if (frame && !RENDERS_PANEL.test(source)) {
-    found.push(`uses ${frame[1]} without rendering <ModelSettingsPanel — the row frame is only for a panel's renderRow`);
-  }
+  if (frame) found.push(`uses ${frame[1]} — the panel draws every row (the Voice row included); render ModelSettingsPanel`);
+  if (RENDER_ROW.test(source)) found.push("hands ModelSettingsPanel a row of its own (renderRow) — the panel draws every row");
   if (CONTROL_JSX.test(source) && !RENDERS_ANY_PANEL.test(source)) {
     const named = labels.filter((label) => new RegExp(`["'>\`]\\s*${escape(label)}\\s*["'<\`]`).test(source));
     if (named.length >= 3) {
@@ -149,9 +149,12 @@ function selfTest() {
     ["chat/src/z/Extras.tsx", "const { translated } = extraSettingKeys(controls, values);", true],
     ["features/z/Walk.tsx", "SETTINGS_CATALOGUE.map((g) => <Row key={g.id} />)", true],
     ["features/z/rules.ts", "const { translated } = extraSettingKeys(controls, values);", false],
-    // 5: the row frame outside a panel's renderRow.
+    // 5: the row frame, or a row handed to the panel — the panel draws every row.
     ["features/z/Frame.tsx", 'import { SettingRowFrame } from "@ai-matrx/agents/settings/react";\n<SettingRowFrame rowKey="x" label="X" />', true],
-    ["features/z/Builder.tsx", 'import { SettingRowFrame } from "@ai-matrx/agents/settings/react";\n<ModelSettingsPanel renderRow={() => <SettingRowFrame rowKey="x" label="X" />} />', false],
+    ["features/z/Builder.tsx", 'import { SettingRowFrame } from "@ai-matrx/agents/settings/react";\n<ModelSettingsPanel renderRow={() => <SettingRowFrame rowKey="x" label="X" />} />', true],
+    ["features/z/Voice.tsx", '<ModelSettingsPanel controls={c} values={v} target={t} idPrefix="x"\n  renderRow={(row) => row.key === "tts_voice" ? <MyVoice /> : undefined} />', true],
+    ["features/z/Voice2.tsx", 'import { VoiceSettingControl } from "@ai-matrx/agents/settings/react";', true],
+    ["features/z/Builder.tsx", '<ModelSettingsPanel controls={c} values={v} target={t} idPrefix="x" />', false],
     // 6: a differently-named hand-built row: catalog labels beside its own controls.
     ["features/z/TuningPanel.tsx", '<Label>Max Output Tokens</Label><Input /><Label>Stop Sequences</Label><Textarea /><Label>Reasoning Effort</Label><Select />', true],
     ["features/z/TuningPanel.tsx", '<Label>Max Output Tokens</Label><Input /><Label>Stop Sequences</Label>', false],

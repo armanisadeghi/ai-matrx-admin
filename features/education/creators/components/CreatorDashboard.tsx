@@ -752,7 +752,7 @@ export function CreatorDashboard() {
           creator_profile_loading: loading,
           ...(profile ? { creator_profile: profile } : {}),
           ...(loadError instanceof Error ? { creator_profile_error: loadError.message } : {}),
-          ...(activeOrganizationId ? { active_organization_id: activeOrganizationId } : {}),
+          ...(activeOrganizationId ? { claim_organization_id: activeOrganizationId } : {}),
         })
       }
     >

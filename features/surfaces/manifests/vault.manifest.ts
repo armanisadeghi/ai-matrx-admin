@@ -72,6 +72,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const vaultManifest: SurfaceManifest = {
   surfaceName: "matrx-user/vault",
+  inheritsFrom: "matrx-default/account",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -595,6 +595,10 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const organizationPerformanceReviewsManifest: SurfaceManifest = {
   surfaceName: PERFORMANCE_REVIEW_SURFACE_NAME,
+  // Explicit HR parent (surface declarations W1): this route is outside `/hr`, so `HrProvider` is not
+  // mounted and the module's four HR employer values stay honestly empty here (all are
+  // `alwaysAvailable: false`); the organization values still arrive from Redux.
+  inheritsFrom: "matrx-default/human-resources",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

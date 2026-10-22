@@ -65,6 +65,7 @@ import { TRANSCRIPT_SCRIBE_SURFACE } from "./transcript-scribe.surface";
 
 export const transcriptScribeManifest: SurfaceManifest = {
   surfaceName: TRANSCRIPT_SCRIBE_SURFACE,
+  inheritsFrom: "matrx-default/audio",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

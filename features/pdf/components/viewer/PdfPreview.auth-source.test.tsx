@@ -9,15 +9,12 @@
  * `withCredentials` forced off — PDF.js fetched it bare and the files service
  * answered 401.
  *
- * The companion guard: PdfDocumentRenderer mounts react-pdf's <Document> with
- * `suspense={false}` (react-pdf 11 throws a load failure to the route error
- * boundary otherwise, turning one 401 into a whole-page "Something went wrong").
+ * The companion guard (suspense={false} on every react-pdf <Document>) moved
+ * with the viewer to @ai-matrx/media src/viewers/pdf/pdf-viewer.test.tsx.
  */
 
 import * as React from "react";
 import { act } from "react";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { createRoot, type Root } from "react-dom/client";
 
 const FILE_ID = "c363eb51-3cc0-46e3-8490-6382fcac59de";
@@ -34,13 +31,10 @@ jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => null }));
 // The chat package reads these hooks through its own module (P3): one double covers both.
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
 jest.mock("@/features/files/redux/selectors", () => ({ selectFileById: () => null }));
-jest.mock("./PdfSourceUnavailable", () => ({
+jest.mock("@ai-matrx/media/viewers/pdf", () => ({
   __esModule: true,
-  default: () => <div data-testid="unavailable" />,
-}));
-jest.mock("./PdfDocumentRenderer", () => ({
-  __esModule: true,
-  default: (props: Record<string, unknown>) => {
+  PdfSourceUnavailable: () => <div data-testid="unavailable" />,
+  PdfDocumentViewer: (props: Record<string, unknown>) => {
     rendererProps.push(props);
     return null;
   },
@@ -121,15 +115,5 @@ describe("PdfPreview auth source", () => {
     const props = render(PRIVATE_URL);
     expect(props.remoteUrl).toBeNull();
     expect(props.error).toBe("Please sign in to continue.");
-  });
-});
-
-describe("PdfDocumentRenderer suspense contract", () => {
-  it("mounts react-pdf's Document with suspense={false}", () => {
-    const source = readFileSync(join(__dirname, "PdfDocumentRenderer.tsx"), "utf8");
-    // Every JSX mount (`<Document` followed by its props), not prose in comments.
-    const documents = source.match(/<Document\s+[a-z][\s\S]*?\/?>(?=\s*\n)|<Document\s*\n[\s\S]*?onLoad/g) ?? [];
-    expect(documents.length).toBeGreaterThan(0);
-    for (const tag of documents) expect(tag).toMatch(/suspense=\{false\}/);
   });
 });

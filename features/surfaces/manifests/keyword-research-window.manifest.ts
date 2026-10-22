@@ -462,6 +462,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const keywordResearchWindowManifest: SurfaceManifest = {
   surfaceName: KEYWORD_RESEARCH_WINDOW_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
-import { actionAuthority } from "@/features/access-gate/service/actionAuthority";
-import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { actionAuthority, isGovernedActionDenial } from "@ai-matrx/data/access";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {

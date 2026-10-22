@@ -4,7 +4,7 @@ import {
   focusWithTopic,
   groundedTextOf,
   mediaSourceOf,
-  sourceTitleOf,
+  namerFloorOf,
   trustFromResolved,
   withoutChunkHeaders,
 } from "../groundedMaterial";
@@ -53,11 +53,13 @@ describe("grounded material", () => {
   });
 
   it("records one deck as a deck, anything else as named material", () => {
-    expect(mediaSourceOf([src("fc_set", "d1", "Cells", "z")])).toEqual({ kind: "deck", id: "d1", title: "Cells" });
-    const mixed = mediaSourceOf([src("fc_set", "d1", "Cells", "z"), src("note", "n1", "Notes", "a")]);
-    expect(mixed).toMatchObject({ kind: "topic", id: null, title: "Cells and Notes" });
+    expect(mediaSourceOf([src("fc_set", "d1", "Cells", "z")], "Cells")).toEqual({ kind: "deck", id: "d1", title: "Cells" });
+    const mixed = mediaSourceOf([src("fc_set", "d1", "Cells", "z"), src("note", "n1", "Notes", "a")], "Cell biology");
+    expect(mixed).toMatchObject({ kind: "topic", id: null, title: "Cell biology" });
     expect(deckIdsOf([src("fc_set", "d1", "Cells", "z"), src("note", "n1", "Notes", "a")])).toEqual(["d1"]);
-    expect(sourceTitleOf(["a", "b", "c", "d"])).toBe("a, b and 2 more");
+    // The namer's floor is the first readable Source's own name — never "<first> and N more".
+    expect(namerFloorOf([src("note", "n0", "Empty", ""), src("note", "n1", "Notes", "a")])).toBe("Notes");
+    expect(namerFloorOf([])).toBe("Study material");
   });
 
   it("a topic beside Sources only steers them", () => {

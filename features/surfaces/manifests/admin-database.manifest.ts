@@ -394,6 +394,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminDatabaseManifest: SurfaceManifest = {
   surfaceName: ADMIN_DATABASE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/architecture",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

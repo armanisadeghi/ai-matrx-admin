@@ -32,9 +32,12 @@ import type {
 
 export const EDUCATION_FLASHCARD_STUDY_SURFACE = "matrx-user/education-flashcard-study";
 
-/** The moment in words (`ui_surface.situation`, AP-6): the server fills the blanks each turn. */
+/**
+ * The moment in words (`ui_surface.situation`, AP-6): the server fills the blanks each turn. "Is in
+ * the Education area" is said once by the Education module's situation, rendered before this one.
+ */
 export const EDUCATION_FLASHCARD_STUDY_SITUATION =
-  "{user.name|The person} is using the education area, studying flashcards in {study_mode} mode. " +
+  "{user.name|The person} is studying flashcards in {study_mode} mode. " +
   "They opened the deck \"{set_details.name}\" on the topic {set_details.topic|(no topic set)}, which has {card_count} cards. " +
   "They are on card {card_number} of {cards_in_round}, a {card_kind} card, looking at the {side_shown}. " +
   "The front says: \"{card_front}\". The back says: \"{card_back}\" — {back_status}. " +

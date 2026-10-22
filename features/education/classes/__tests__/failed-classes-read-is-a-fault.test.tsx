@@ -12,7 +12,7 @@
 import * as React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { classifyDataError } from "@/features/access-gate/classifyDataError";
+import { classifyDataError } from "@ai-matrx/data/access";
 import { ClassHubView } from "../components/ClassHubView";
 
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn(), back: jest.fn() }) }));

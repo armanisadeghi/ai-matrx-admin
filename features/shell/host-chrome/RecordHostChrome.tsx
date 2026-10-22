@@ -37,7 +37,8 @@ import { createContext, useContext, useLayoutEffect, type ReactNode } from "reac
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
-export type RecordHostKind = "board-tile" | "window" | "peek";
+/** `frame`: a page that frames one record under its own title row (the admin meeting view). */
+export type RecordHostKind = "board-tile" | "window" | "peek" | "frame";
 
 /** The record a host holds: the platform entity token (`task`, `party`, `agent`…) and its id. */
 export interface HostedRecordRef {

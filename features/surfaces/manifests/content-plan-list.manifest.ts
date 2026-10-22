@@ -73,6 +73,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const contentPlanListManifest: SurfaceManifest = {
   surfaceName: "matrx-user/content-plan-list",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

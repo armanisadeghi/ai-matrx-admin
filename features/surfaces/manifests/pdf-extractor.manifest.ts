@@ -549,6 +549,7 @@ export const PDF_EXTRACTOR_SURFACE_NAME = "matrx-user/pdf-extractor";
 
 export const pdfExtractorManifest: SurfaceManifest = {
   surfaceName: PDF_EXTRACTOR_SURFACE_NAME,
+  inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

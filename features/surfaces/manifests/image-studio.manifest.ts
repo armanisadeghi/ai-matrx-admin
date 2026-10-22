@@ -502,6 +502,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const imageStudioManifest: SurfaceManifest = {
   surfaceName: IMAGE_STUDIO_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

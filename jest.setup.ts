@@ -533,7 +533,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
  * ── The files engine host (@ai-matrx/media/files/engine) ─────────────────────
  * The app wires it in `features/files/files-host.ts`, imported by the store
  * module. Here every member is required at CALL time, so a suite's
- * `jest.mock("@/lib/python-client")` (or supabase client, toast, share links,
+ * `jest.mock("@/lib/api/server-api")` (or python-client, supabase client, toast, share links,
  * store singleton) is what the engine calls — exactly as when the engine lived
  * in the app.
  */
@@ -552,7 +552,13 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       return require("@/utils/supabase/client").supabase;
     },
-    server: lazy("@/lib/python-client"),
+    get api() {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      return require("@/lib/api/server-api").serverApi;
+    },
+    wireHeaders: async (organizationId) =>
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      (await require("@/lib/python-client").buildHeaders(organizationId ? { organizationId } : {}, false)).headers,
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     store: () => require("@/lib/redux/store-singleton").getStoreSingleton(),
     scope: (state) => {

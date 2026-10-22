@@ -9,8 +9,16 @@
  * character for character (a reasoning string is a user-facing expert
  * sentence; a difference means one page gets two explanations).
  *
+ * ONE HOME: the expected results live in aidream
+ * `packages/matrx-scraper/tests/__fixtures__/page-checks-parity.json`, guarded
+ * there by `tests/test_page_checks_parity_fixture.py` (red when a Python check
+ * changes without a regenerate). `__fixtures__/page-checks-parity.json` here is
+ * the VENDORED copy the generator writes alongside it, for checkouts and CI
+ * runs with no sibling aidream. When `../aidream` exists this test replays the
+ * aidream home and fails if the vendored copy differs from it.
+ *
  * If this fails, one side changed without the other. Fix BOTH in the same
- * unit of work and regenerate:
+ * unit of work and regenerate (writes both files):
  *
  *   .venv/bin/python packages/matrx-scraper/scripts/generate_page_checks_parity_fixture.py
  */
@@ -26,7 +34,19 @@ import {
   type RedirectHop,
   type Remediation,
 } from "./checks";
-import parity from "./__fixtures__/page-checks-parity.json";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import vendored from "./__fixtures__/page-checks-parity.json";
+
+/** The one home of the expected verdicts, when the sibling aidream checkout exists. */
+const AIDREAM_HOME = join(
+  __dirname,
+  "../../../../../aidream/packages/matrx-scraper/tests/__fixtures__/page-checks-parity.json",
+);
+const aidreamHome: unknown = existsSync(AIDREAM_HOME)
+  ? JSON.parse(readFileSync(AIDREAM_HOME, "utf-8"))
+  : null;
+const parity = aidreamHome ?? vendored;
 
 /** The Python `PageEvidence` dataclass, as serialized into the fixture. */
 interface PythonEvidence {
@@ -52,6 +72,7 @@ interface PythonEvidence {
   app_root: boolean | null;
   executable_script: boolean | null;
   app_shell_words: number | null;
+  root_text_words: number | null;
   image_items: PageImageItem[];
   http_status: number | null;
   fetch_blocked_reason: string | null;
@@ -141,6 +162,7 @@ function toPageEvidence(raw: PythonEvidence): PageEvidence {
     appRoot: raw.app_root,
     executableScript: raw.executable_script,
     appShellWords: raw.app_shell_words,
+    rootTextWords: raw.root_text_words,
     imageItems: raw.image_items,
     httpStatus: raw.http_status,
     fetchBlockedReason: raw.fetch_blocked_reason,
@@ -212,6 +234,13 @@ const MEASURED_CHECKS = [
 ];
 
 describe("per-page SEO checks TS ↔ Python parity", () => {
+  (aidreamHome ? it : it.skip)(
+    "the vendored fixture is byte-for-byte the aidream home (regenerate if not)",
+    () => {
+      expect(vendored).toEqual(aidreamHome);
+    },
+  );
+
   it("fixture is non-trivial and covers every registered check", () => {
     expect(fixture.cases.length).toBeGreaterThanOrEqual(20);
     // Not a hard-coded count: the check set grows, and the order test below

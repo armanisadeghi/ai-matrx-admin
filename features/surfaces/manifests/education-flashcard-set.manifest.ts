@@ -131,6 +131,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationFlashcardDeckManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-flashcard-set",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

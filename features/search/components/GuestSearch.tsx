@@ -13,7 +13,7 @@ import { SearchExperience } from "./SearchExperience";
 export function GuestSearch() {
   const { form, inputs } = useSearchRoute({ guest: true });
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background" style={{ paddingTop: "var(--shell-header-h)" }}>
+    <div className="flex h-dvh flex-col overflow-hidden bg-search-surface" style={{ paddingTop: "var(--shell-header-h)" }}>
       <SearchExperience form={form} inputs={inputs} surface="search" guest />
     </div>
   );

@@ -361,6 +361,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const agentAdvancedEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/agent-advanced-editor",
+  inheritsFrom: "matrx-default/agents",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

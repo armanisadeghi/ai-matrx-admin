@@ -565,6 +565,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const notesEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/notes",
+  inheritsFrom: "matrx-default/content",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

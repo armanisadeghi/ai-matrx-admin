@@ -39,6 +39,7 @@ import {
   Share2,
   Unlink,
   UserRoundPlus,
+  Users,
   X,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -106,6 +107,10 @@ import { AgentOrgCard, boxHref } from "./AgentOrgCard";
 import { OrgBoxPicker } from "./OrgBoxPicker";
 import { DefineSeatJobDialog } from "./DefineSeatJobDialog";
 import { MakeOrchestraDialog, type MakeOrchestraRequest } from "./MakeOrchestraDialog";
+import { PublishChartDialog } from "./PublishChartDialog";
+import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
+import { Globe } from "lucide-react";
+import { PlanDepartmentDialog, type PlanDepartmentRequest } from "../department/PlanDepartmentDialog";
 import { selectSeatJobs } from "@/features/agents/redux/orchestras/selectors";
 import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import { INTELLIGENCE_ICON } from "@/components/icons/domain-icons";
@@ -173,6 +178,9 @@ export function AgentOrgChartView({
   const [renaming, setRenaming] = useState<OrgPosition | null>(null);
   const [defining, setDefining] = useState<OrgPosition | null>(null);
   const [making, setMaking] = useState<MakeOrchestraRequest | null>(null);
+  /** Publish the chart (rootBoxId null) or one branch as a public page. */
+  const [publishing, setPublishing] = useState<{ forest: Node[]; rootBoxId: string | null; title: string } | null>(null);
+  const [planning, setPlanning] = useState<PlanDepartmentRequest | null>(null);
   /** The chart around a seat, for the job suggester: the box above it and the boxes beside it. */
   const seatContextOf = (positionId: string) => {
     const key = firstKeyOf.get(boxId("position", positionId));
@@ -184,6 +192,18 @@ export function AgentOrgChartView({
       reportsTo: parent ? label(parent.data.boxId) : null,
       team: (parent?.children ?? []).filter((c) => c.key !== node?.key).map((c) => label(c.data.boxId)),
     };
+  };
+  /** Vision rule 5: a department planned from a description, under this box (null = the top). */
+  const planDepartmentUnder = (b: string | null) => {
+    const key = b ? firstKeyOf.get(b) : undefined;
+    const node = key ? byKey.get(key) : undefined;
+    const t = b ? parseBoxId(b) : null;
+    setPlanning({
+      underBoxId: b,
+      underLabel: b && t ? `${nameOf(b)} (${ORG_BOX_LABEL[t.type]})` : null,
+      organizationId: t?.type === "position" ? (positionById.get(t.id)?.organizationId ?? null) : null,
+      existingTeam: (node?.children ?? []).map((c) => nameOf(c.data.boxId)),
+    });
   };
   /** Form A: these agent nodes become a new Orchestra, taking their shared recorded place. */
   const makeOrchestraOf = (nodes: Node[]) => {
@@ -434,12 +454,39 @@ export function AgentOrgChartView({
   };
 
   const linkAcross = async (fromId: string, toId: string, link: CrossKind) => {
+    // Two boxes hold ONE recorded link: a new type replaces the old one, so say so first.
+    const existing = manualEdges.find((e) => e.managerId === fromId && e.reportId === toId && !e.edgeId.startsWith("pending:"));
+    if (existing && existing.kind === link) {
+      toast.info(`${await nameNow(fromId)} already ${ORG_LINK_KIND_META[link].verb} ${await nameNow(toId)}.`);
+      return;
+    }
+    if (existing) {
+      const ok = await confirm({
+        title: `Replace “${ORG_LINK_KIND_META[existing.kind].label}” with “${ORG_LINK_KIND_META[link].label}”?`,
+        description: "Two boxes keep one link between them, so the current one goes.",
+        confirmLabel: "Replace",
+      });
+      if (!ok) return;
+    }
     const res = await dispatch(addCrossLink(fromId, toId, link));
     if (!res.ok) {
       fail(res.error);
       return;
     }
-    toast.success(`${await nameNow(fromId)} ${ORG_LINK_KIND_META[link].verb} ${await nameNow(toId)}.`);
+    const subject = `${await nameNow(fromId)} ${ORG_LINK_KIND_META[link].verb} ${await nameNow(toId)}`;
+    announceReversible({
+      verb: "change",
+      noun: "link",
+      subject,
+      undo: async () => {
+        const back = !existing
+          ? await dispatch(removeManualManager(fromId, toId))
+          : ORG_LINK_KIND_META[existing.kind].tree
+            ? await dispatch(setManualManager(fromId, toId))
+            : await dispatch(addCrossLink(fromId, toId, existing.kind as CrossKind));
+        if (!back.ok) throw new Error(back.error ?? "Could not put it back.");
+      },
+    });
   };
 
   /** Fill a position with a person (their membership box), or mark it open (null). */
@@ -500,10 +547,16 @@ export function AgentOrgChartView({
       return;
     }
     const ok = await confirm({
-      title: `Remove ${what} from the chart?`,
+      title:
+        boxIds.length === 1 && parseBoxId(boxIds[0]).type === "position"
+          ? `Remove ${what}'s links?`
+          : `Remove ${what} from the chart?`,
       description: [
         links.length ? `${links.length} recorded ${links.length === 1 ? "link goes" : "links go"}.` : null,
         inOrchestra ? "Orchestra membership stays; take it out of its Orchestra separately." : null,
+        boxIds.some((b) => parseBoxId(b).type === "position")
+          ? "A position stays on the chart; archive it to remove it."
+          : null,
       ]
         .filter(Boolean)
         .join(" "),
@@ -757,9 +810,17 @@ export function AgentOrgChartView({
           <Focus className="mr-2 h-4 w-4" />
           Show only this branch
         </Item>
+        <Item onSelect={() => setPublishing({ forest: [n], rootBoxId: d.boxId, title: nameOf(d.boxId) })}>
+          <Globe className="mr-2 h-4 w-4" />
+          Publish this branch…
+        </Item>
         <Item onSelect={() => void copyLink(d.boxId)}>
           <LinkIcon className="mr-2 h-4 w-4" />
           Copy link to this box
+        </Item>
+        <Item onSelect={() => planDepartmentUnder(d.boxId)}>
+          <Users className="mr-2 h-4 w-4" />
+          Plan a department…
         </Item>
         {d.boxType === "membership" && (
           <Item
@@ -857,7 +918,11 @@ export function AgentOrgChartView({
         <Label className="text-xs text-muted-foreground">Remove</Label>
         <Item onSelect={() => void removeFromChart(many ? selectedBoxIds() : [d.boxId])}>
           <Eraser className="mr-2 h-4 w-4" />
-          {many ? `Remove ${selection.length} from the chart…` : "Remove from the chart…"}
+          {many
+            ? `Remove ${selection.length} from the chart…`
+            : d.boxType === "position"
+              ? "Remove its links…"
+              : "Remove from the chart…"}
         </Item>
         {!many && d.boxType !== "membership" && (
           <Item onSelect={() => void archiveBox(d.boxId)}>
@@ -952,6 +1017,16 @@ export function AgentOrgChartView({
       >
         Points
       </Button>
+      <Button
+        variant="outline"
+        icon={<Globe />}
+        disabled={forest.length === 0}
+        onClick={() =>
+          setPublishing({ forest, rootBoxId: branchRoot, title: branchRoot ? nameOf(branchRoot) : "Org chart" })
+        }
+      >
+        Publish
+      </Button>
       {branchRoot && (
         <div className="flex h-9 items-center gap-1 rounded-lg border border-border bg-card/95 pl-2.5 pr-1 type-secondary shadow-sm">
           <Focus className="h-3.5 w-3.5 text-muted-foreground" />
@@ -1033,6 +1108,8 @@ export function AgentOrgChartView({
         <ErrorAlchemyMenu error={directoryError} /></div>
       )}
       <OrgChart
+        // A new branch is a new picture: frame it fresh instead of keeping the old view.
+        key={branchRoot ?? "all"}
         roots={forest}
         edgeKinds={ORG_LINK_KIND_META}
         crossLinks={crossLinks}
@@ -1167,8 +1244,33 @@ export function AgentOrgChartView({
               organizationId={pick.kind === "fill" ? positionById.get(pick.positionId)?.organizationId : undefined}
             />
           )}
+          {pick?.kind === "new-root" && (
+            <div className="flex justify-end">
+              <Button
+                variant="quiet"
+                icon={<Users />}
+                onClick={() => {
+                  setPick(null);
+                  planDepartmentUnder(null);
+                }}
+              >
+                Plan a department…
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
+
+      {publishing && (
+        <PublishChartDialog
+          open
+          onClose={() => setPublishing(null)}
+          forest={publishing.forest}
+          rootBoxId={publishing.rootBoxId}
+          defaultTitle={publishing.title}
+          positions={positions}
+        />
+      )}
 
       <MakeOrchestraDialog
         request={making}
@@ -1180,6 +1282,18 @@ export function AgentOrgChartView({
           const params = new URLSearchParams(searchParams.toString());
           params.set("focus", boxId("agent", conductorId));
           router.replace(`${pathname}?${params.toString()}`);
+        }}
+      />
+
+      <PlanDepartmentDialog
+        request={planning}
+        onClose={() => setPlanning(null)}
+        onFocus={(b) => {
+          setPlanning(null);
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("focus", b);
+          // Query state only (read client-side by useSearchParams): no navigation, no RSC fetch.
+          replaceAddressWithoutNavigating(`${pathname}?${params.toString()}`);
         }}
       />
 

@@ -51,11 +51,8 @@ import { scannerManifest } from "./scanner.manifest";
 import { transcriptsManifest } from "./transcripts.manifest";
 import { transcriptsCleanupManifest } from "./transcripts-cleanup.manifest";
 import { transcriptScribeManifest } from "./transcript-scribe.manifest";
-import { agentBuilderManifest } from "@ai-matrx/chat/surfaces/manifests/agent-builder.manifest";
-import { chatManifest } from "@ai-matrx/chat/surfaces/manifests/chat.manifest";
 import { assistantMessageManifest } from "./assistant-message.manifest";
 import { contextPreviewManifest } from "@ai-matrx/chat/surfaces/manifests/context-preview.manifest";
-import { agentRunManifest } from "@ai-matrx/chat/surfaces/manifests/agent-run.manifest";
 import { agentComparisonModelManifest } from "./agent-comparison-model.manifest";
 import { agentBattleManifest } from "./agent-battle.manifest";
 import { agentStudioManifest } from "./agent-studio.manifest";
@@ -73,7 +70,6 @@ import { messagesManifest } from "./messages.manifest";
 import { listsManifest } from "./lists.manifest";
 import { canvasManifest } from "./canvas.manifest";
 import { mapsManifest } from "./maps.manifest";
-import { aiResultsManifest } from "@ai-matrx/chat/surfaces/manifests/ai-results.manifest";
 import { agentAdvancedEditorManifest } from "./agent-advanced-editor.manifest";
 import { mermaidEditorManifest } from "./mermaid-editor.manifest";
 import { ragSearchManifest } from "./rag-search.manifest";
@@ -197,7 +193,6 @@ import { marketingSiteKeywordsManifest } from "./marketing-site-keywords.manifes
 import { marketingSiteMediaManifest } from "./marketing-site-media.manifest";
 import { quickTasksManifest } from "./quick-tasks.manifest";
 import { taskCreateManifest } from "./task-create.manifest";
-import { quickNoteSaveManifest } from "@ai-matrx/chat/surfaces/manifests/quick-note-save.manifest";
 import { filePreviewManifest } from "./file-preview.manifest";
 import { fileManifest } from "./file.manifest";
 import { imageViewerManifest } from "./image-viewer.manifest";
@@ -219,12 +214,8 @@ import { markdownEditorManifest } from "./markdown-editor.manifest";
 import { listManagerManifest } from "./list-manager.manifest";
 import { canvasViewerManifest } from "./canvas-viewer.manifest";
 import { tableViewerManifest } from "./table-viewer.manifest";
-import { documentsWorkspaceManifest } from "@ai-matrx/chat/surfaces/manifests/documents-workspace.manifest";
 import { voicePadManifest } from "./voice-pad.manifest";
 import { transcriptStudioManifest } from "./transcript-studio.manifest";
-import { observationalMemoryManifest } from "@ai-matrx/chat/surfaces/manifests/observational-memory.manifest";
-import { agentGateManifest } from "@ai-matrx/chat/surfaces/manifests/agent-gate.manifest";
-import { agentRunHistoryManifest } from "@ai-matrx/chat/surfaces/manifests/agent-run-history.manifest";
 import { agentSettingsManifest } from "./agent-settings.manifest";
 import { smartCodeEditorManifest } from "./smart-code-editor.manifest";
 import { sandboxesManifest } from "./sandboxes.manifest";
@@ -253,7 +244,6 @@ import {
   marketingSocialSwipeManifest,
 } from "./marketing-social-tabs.manifest";
 import { contextItemsManifest } from "./context-items.manifest";
-import { chatVoiceManifest } from "@ai-matrx/chat/surfaces/manifests/chat-voice.manifest";
 import { staffManifest } from "./staff.manifest";
 import { voiceChatManifest } from "./voice-chat.manifest";
 import { transcriptScribeLiveManifest } from "./transcript-scribe-live.manifest";
@@ -270,7 +260,6 @@ import { adminFeedbackManifest } from "./admin-feedback.manifest";
 import { adminEmailManifest } from "./admin-email.manifest";
 import { adminAgentReviewManifest } from "./admin-agent-review.manifest";
 import { adminAgentReviewItemManifest } from "./admin-agent-review-item.manifest";
-import { adminUiSurfacesManifest } from "./admin-ui-surfaces.manifest";
 import { adminCxDashboardManifest } from "./admin-cx-dashboard.manifest";
 import { adminServerLogsManifest } from "./admin-server-logs.manifest";
 import { adminBillingSpendManifest } from "./admin-billing-spend.manifest";
@@ -306,6 +295,52 @@ import { adminReportingManifest } from "./admin-reporting.manifest";
 import { adminUtilitiesManifest } from "./admin-utilities.manifest";
 import { adminDocumentationManifest } from "./admin-documentation.manifest";
 import { quickDataManifest } from "./quick-data.manifest";
+// @ai-matrx/chat's own manifests, with their module parent (surface declarations W1).
+import {
+  agentBuilderManifest,
+  agentRunManifest,
+  agentGateManifest,
+  agentRunHistoryManifest,
+  chatManifest,
+  aiResultsManifest,
+  observationalMemoryManifest,
+  chatVoiceManifest,
+  quickNoteSaveManifest,
+  documentsWorkspaceManifest,
+  adminUiSurfacesManifest,
+} from "./package-surfaces-under-modules.manifest";
+import {
+  agentsModuleManifest,
+  appletsModuleManifest,
+  chatModuleManifest,
+  workflowsModuleManifest,
+  intelligenceModuleManifest,
+  masterworkModuleManifest,
+  knowledgeModuleManifest,
+  filesModuleManifest,
+  mediaModuleManifest,
+  audioModuleManifest,
+  contentModuleManifest,
+  dataModuleManifest,
+  codeModuleManifest,
+  workspaceModuleManifest,
+  webModuleManifest,
+  publishModuleManifest,
+  communicationsModuleManifest,
+  crmModuleManifest,
+  marketingModuleManifest,
+  humanResourcesModuleManifest,
+  integrationsModuleManifest,
+  accountModuleManifest,
+  educationModuleManifest,
+  legalModuleManifest,
+  commerceModuleManifest,
+  aiModuleManifest,
+  platformModuleManifest,
+  architectureModuleManifest,
+  appsModuleManifest,
+  publicWebModuleManifest,
+} from "./module-surfaces.manifest";
 
 /**
  * Manifests exactly as authored. Do NOT consume directly at runtime — generic
@@ -319,6 +354,37 @@ import { quickDataManifest } from "./quick-data.manifest";
  * vocabulary in two. See THE FAMILY DOCTRINE in `.claude/skills/surface-authoring`.
  */
 export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
+  // The 30 module surfaces (AI Matrx › module): every page below names one as its root parent.
+  agentsModuleManifest,
+  appletsModuleManifest,
+  chatModuleManifest,
+  workflowsModuleManifest,
+  intelligenceModuleManifest,
+  masterworkModuleManifest,
+  knowledgeModuleManifest,
+  filesModuleManifest,
+  mediaModuleManifest,
+  audioModuleManifest,
+  contentModuleManifest,
+  dataModuleManifest,
+  codeModuleManifest,
+  workspaceModuleManifest,
+  webModuleManifest,
+  publishModuleManifest,
+  communicationsModuleManifest,
+  crmModuleManifest,
+  marketingModuleManifest,
+  humanResourcesModuleManifest,
+  integrationsModuleManifest,
+  accountModuleManifest,
+  educationModuleManifest,
+  legalModuleManifest,
+  commerceModuleManifest,
+  aiModuleManifest,
+  platformModuleManifest,
+  architectureModuleManifest,
+  appsModuleManifest,
+  publicWebModuleManifest,
   videoCloneManifest,
   agentShortcutsManifest,
   barcodePreviewManifest,

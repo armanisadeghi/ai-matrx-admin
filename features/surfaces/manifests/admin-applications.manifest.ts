@@ -473,6 +473,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminApplicationsManifest: SurfaceManifest = {
   surfaceName: ADMIN_APPLICATIONS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/apps",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

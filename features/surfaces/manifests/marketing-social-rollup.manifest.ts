@@ -48,6 +48,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const marketingSocialRollupManifest: SurfaceManifest = {
   surfaceName: SOCIAL_ROLLUP_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -13,20 +13,23 @@
 //
 // React Compiler is on: no manual memo.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Network } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
 import { useEntitlementGuard } from "@/features/entitlements/components/useEntitlementGuard";
 import { useAiComplianceGate } from "@/features/education/compliance/useAiComplianceGate";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createEducationMindMapsScope } from "@/features/surfaces/manifests/education-mind-maps.manifest";
 import { EducationCreatePage } from "@/features/education/create/EducationCreatePage";
-import { useEducationSources, TOPIC_MIN_CHARS } from "@/features/education/create/useEducationSources";
+import { leftOutLine, seedFromParams, useEducationSources, TOPIC_MIN_CHARS } from "@/features/education/create/useEducationSources";
+import { useCreateRun } from "@/features/education/create/useCreateRun";
+import { restoreStudyRunRequest } from "@/features/education/create/createRunRequest";
+import { useDeckChoices } from "@/features/education/create/useDeckChoices";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 import { useStyleDraft } from "@/features/education/create/useStyleDraft";
 import { generationSourceWrite } from "@/features/education/create/generationSourceWrite";
 import { linkMadeFrom, madeFromConfig } from "@/features/education/create/madeFrom";
@@ -70,24 +73,20 @@ export function MindMapNew() {
   // blocked from AI generation until a parent approves (never a silent failure).
   const coppa = useAiComplianceGate();
 
-  const [decks, setDecks] = useState<FcSetRow[]>([]);
-  const [decksLoaded, setDecksLoaded] = useState(false);
+  // The learner's decks — only for what an agent is offered, read when it asks.
+  const deckChoices = useDeckChoices();
   const [focus, setFocus] = useState("");
   const [busy, setBusy] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fcService.listDecks().then((res) => {
-      if (res.data) setDecks(res.data);
-      setDecksLoaded(true);
-    });
-  }, []);
-
-  const linkDeckId = params.get("deck");
   const sources = useEducationSources(MIND_MAP_SURFACE_KEY, {
-    seedDeck: linkDeckId ? { id: linkDeckId, name: decks.find((d) => d.id === linkDeckId)?.name } : null,
-    seedReady: decksLoaded,
+    seed: seedFromParams(params),
     onRelease: () => void start(),
+    lateMark: "Not in this map",
+  });
+  // The run lives in this tab: a reload mid-run says so and offers the same request.
+  const createRun = useCreateRun(`${MIND_MAP_SURFACE_KEY}:run`, restoreStudyRunRequest(restoreMindMapStyle), sources, {
+    onRedo: (req) => setFocus(req.style.focus ?? ""),
   });
 
   const styleDraft = useStyleDraft<StyleDraft>(MIND_MAP_STYLE_DRAFT_ID, restoreMindMapStyle, (v) => {
@@ -98,70 +97,78 @@ export function MindMapNew() {
     setRunError(null);
     setBusy(true);
     try {
-      const prepared = await sources.prepare();
-      if (prepared.notes.length) toast.info(prepared.notes.join(" "));
-
-      // For a deck source, load the cards so generated nodes can be linked back to
-      // the exact card they summarize (clickable node → source card / Ask tutor).
-      const deckCards: LinkableCard[] = [];
-      for (const deckId of prepared.deckIds) {
-        const withCards = await fcService.getDeckWithCards(deckId);
-        for (const c of withCards.data?.cards ?? []) deckCards.push({ id: c.id, front: c.front, back: c.back });
-      }
-
-      const spec = await generate(
-        {
-          source_content: prepared.content,
-          title: prepared.title,
-          focus: sources.focusLine(focus),
-        },
-        "user",
-      );
-      // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
-      // stay unlinked; a click still offers "ask the tutor about this idea".
-      const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);
-      const title = spec.title || prepared.title;
-      const media = await studyMediaService.create({
-        mediaKind: "mind_map",
-        title,
-        source: prepared.source,
-        config: {
-          diagramKind: "diagram_spec",
-          hint: focus.trim() || undefined,
-          linkedCards: linkedCount,
-          ...madeFromConfig(prepared),
-        },
-        trust: prepared.trust,
-        irEnvelope: withUniqueEdgeIds(linkedSpec),
-        diagramKind: "diagram_spec",
-        status: "ready",
-      });
-      if (media.error || !media.data) {
-        const message = media.error ?? "Couldn't save the mind map";
-        setRunError(message);
-        toast.error(message);
-        return;
-      }
-      const href = `/education/mind-maps/${media.data.id}`;
-      await linkMadeFrom(
-        prepared,
-        { resourceType: "study_media", artifactId: media.data.id, targetKind: "mind_map", title, href },
-        await ensureOrgId(undefined),
-      );
-      // Metered action SUCCEEDED — record real usage so the meter decrements
-      // (honest even while enforced:false). Failed branches return first, so a
-      // failed generation never burns quota.
-      await gen.commit({ initiation: "user" });
-      sources.clearUsed();
-      styleDraft.clear();
-      router.push(href);
+      await createRun.track(sources.runRequest({ focus }), (ctx) => makeMap(ctx.saving));
     } catch (e) {
       const message = e instanceof Error ? e.message : "Couldn't generate the mind map";
       setRunError(message);
       toast.error(message);
     } finally {
+      sources.endRun();
       setBusy(false);
     }
+  }
+
+  async function makeMap(saving: () => Promise<void>) {
+    const prepared = await sources.prepare();
+    if (prepared.notes.length) toast.info(prepared.notes.join(" "));
+
+    // For a deck source, load the cards so generated nodes can be linked back to
+    // the exact card they summarize (clickable node → source card / Ask tutor).
+    const deckCards: LinkableCard[] = [];
+    for (const deckId of prepared.deckIds) {
+      const withCards = await fcService.getDeckWithCards(deckId);
+      for (const c of withCards.data?.cards ?? []) deckCards.push({ id: c.id, front: c.front, back: c.back });
+    }
+
+    const spec = await generate(
+      {
+        source_content: prepared.content,
+        title: prepared.title,
+        focus: sources.focusLine(focus),
+      },
+      "user",
+    );
+    // Resolve nodes → source cards where we can (DoD item 3). Unmatched nodes
+    // stay unlinked; a click still offers "ask the tutor about this idea".
+    const { spec: linkedSpec, linkedCount } = linkDiagramToCards(spec, deckCards);
+    const title = spec.title || prepared.title;
+    // Past this point the save may land even if this page never hears back.
+    await saving();
+    const media = await studyMediaService.create({
+      mediaKind: "mind_map",
+      title,
+      source: prepared.source,
+      config: {
+        diagramKind: "diagram_spec",
+        hint: focus.trim() || undefined,
+        linkedCards: linkedCount,
+        ...madeFromConfig(prepared),
+      },
+      trust: prepared.trust,
+      irEnvelope: withUniqueEdgeIds(linkedSpec),
+      diagramKind: "diagram_spec",
+      status: "ready",
+    });
+    if (media.error || !media.data) {
+      const message = media.error ?? "Couldn't save the mind map";
+      setRunError(message);
+      toast.error(message);
+      return;
+    }
+    const href = `/education/mind-maps/${media.data.id}`;
+    await linkMadeFrom(
+      prepared,
+      { resourceType: "study_media", artifactId: media.data.id, targetKind: "mind_map", title, href },
+      await ensureOrgId(undefined),
+    );
+    // Metered action SUCCEEDED — record real usage so the meter decrements
+    // (honest even while enforced:false). Failed branches return first, so a
+    // failed generation never burns quota.
+    await gen.commit({ initiation: "user" });
+    const leftOut = sources.clearUsed();
+    if (leftOut > 0) toast.info(leftOutLine(leftOut, "the map"));
+    styleDraft.clear();
+    router.push(href);
   }
 
   async function start() {
@@ -194,6 +201,8 @@ export function MindMapNew() {
       : pickedDecks.length === sources.ready.length
         ? "deck"
         : "sources";
+    void deckChoices.load();
+    const decks = deckChoices.decks;
     return createEducationMindMapsScope({
       view: "create",
       source_kind: kind,
@@ -222,10 +231,11 @@ export function MindMapNew() {
   // writes a row. Fresh closures per call (getWriteHandlers contract). The list
   // and detail mounts of this same surface register NO handlers.
   const getSurfaceWriteHandlers = () => ({
-    generation_source: generationSourceWrite({
+    generation_source: async (value: unknown) =>
+      generationSourceWrite({
       what: "a mind map",
       isBusy: isGenerating || busy,
-      decks,
+      decks: await deckChoices.load(),
       topicMin: TOPIC_MIN_CHARS,
       topicMax: TOPIC_MAX,
       setTopic: sources.set.setTopic,
@@ -233,7 +243,7 @@ export function MindMapNew() {
         if (!sources.set.hasRef("fc_set", deck.id))
           sources.intake.addExisting({ token: "fc_set", id: deck.id, title: deck.name });
       },
-    }),
+      })(value),
     generation_focus: (value: unknown) => {
       if (isGenerating || busy)
         throw new Error(
@@ -261,6 +271,7 @@ export function MindMapNew() {
         backHref="/education/mind-maps"
         surfaceKey={MIND_MAP_SURFACE_KEY}
         purpose="your mind map"
+        extraKinds={STUDY_FROM_DECK_KINDS}
         sources={sources}
         styleDraft={styleDraft}
         onStartFresh={() => setFocus("")}
@@ -269,8 +280,8 @@ export function MindMapNew() {
           busyLabel: "Mapping your material…",
           icon: <Network />,
           busy: busy || isGenerating,
+          checking: gen.isChecking,
           onMake: handleMake,
-          extraBlockedReason: gen.isChecking ? "Checking your limit…" : null,
           summary: sources.hasSources
             ? `A map of ${count} ${count === 1 ? "source" : "sources"}${sources.topic ? `, focused on “${sources.topic}”` : ""}`
             : `A map about “${sources.topic}”`,
@@ -284,6 +295,12 @@ export function MindMapNew() {
             </>
           ),
           operation: "Make a mind map",
+        }}
+        run={{
+          state: createRun,
+          stoppedLabel: "Making your mind map",
+          savingWhat: "your mind map",
+          listLabel: "Your mind maps",
         }}
       >
         <div className="flex flex-col gap-1.5">

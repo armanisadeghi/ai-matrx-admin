@@ -64,7 +64,7 @@ import { usePages } from "@/features/file-analysis/hooks/usePages";
 import type {
   AnnotationLayerMode,
   PdfRegion,
-} from "@/features/pdf/components/viewer/annotation-layer/types";
+} from "@ai-matrx/media/viewers/pdf";
 
 export interface PdfEditTabProps {
   fileId: string;

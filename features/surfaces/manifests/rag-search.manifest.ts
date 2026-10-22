@@ -158,17 +158,8 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "retrieval_scope",
     sortOrder: 335,
   },
-  {
-    name: "active_organization_id",
-    label: "Working-context organization",
-    description:
-      "The organization the Surface-A working context restricts retrieval to. Empty means NO org filter — searching across every organization the user belongs to plus their personal content and the global library. Never read this as 'no access'.",
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 36,
-    group: "retrieval_scope",
-    sortOrder: 340,
-  },
+  // `active_organization_id` (the working-context organization; empty = no org filter) is
+  // inherited from the Knowledge module (matrx-default/knowledge, surface declarations W1).
   {
     name: "active_scope_ids",
     label: "Working-context scope IDs",
@@ -495,6 +486,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const ragSearchManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-search",
+  inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

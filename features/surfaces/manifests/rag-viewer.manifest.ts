@@ -511,6 +511,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const ragViewerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/knowledge-viewer",
+  inheritsFrom: "matrx-default/knowledge",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

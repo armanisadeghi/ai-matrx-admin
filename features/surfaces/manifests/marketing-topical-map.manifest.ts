@@ -213,6 +213,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const marketingTopicalMapManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-topical-map",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

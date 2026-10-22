@@ -145,7 +145,7 @@ export async function generateQuestionsFromSources({
       source_content: segment.text,
       // The section rides in the label the agent already declares.
       source_label: plan.segments.length > 1 ? sectionRunTitle(title, segment) : title,
-      count: String(segment.items),
+      count: segment.items,
       difficulty,
       depth,
       question_types: questionTypesValue(types),

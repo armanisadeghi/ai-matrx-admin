@@ -68,6 +68,7 @@ const values: SurfaceValue[] = [
 ];
 export const adminLimitsManifest: SurfaceManifest = {
   surfaceName: ADMIN_LIMITS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

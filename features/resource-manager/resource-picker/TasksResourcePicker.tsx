@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/utils/cn";
 import { useProjectsWithTasks } from "@/features/tasks/hooks/useTaskManager";
 import type { ProjectWithTasks, DatabaseTask } from "@/features/tasks/types";
-import { getUserTasks } from "@/features/tasks/services/taskService";
+import { getUserTasksForPicker } from "@/features/tasks/services/taskService";
 import { filterAndSortBySearch, matchesSearch } from "@ai-matrx/kit/search-scoring";
 import { usePickerInputFocus } from "./usePickerInputFocus";
 import {
@@ -68,21 +68,24 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
   // Every task the person can read, fetched once on the first search at the project level: a task
   // with no project is in no project's list, so a search over projects alone could never find it.
   const [allTasks, setAllTasks] = useState<DatabaseTask[] | null>(null);
+  const [allTasksError, setAllTasksError] = useState<Error | null>(null);
+  const [allTasksTry, setAllTasksTry] = useState(0);
   const wantsAllTasks = hasQuery && !selectedProject;
   useEffect(() => {
     if (!wantsAllTasks || allTasks !== null) return;
     let live = true;
-    getUserTasks()
+    getUserTasksForPicker()
       .then((rows) => {
         if (live) setAllTasks(rows);
       })
-      .catch(() => {
-        if (live) setAllTasks([]);
+      // A failed read is said out loud with a Retry — never an empty "no tasks".
+      .catch((e: unknown) => {
+        if (live) setAllTasksError(e instanceof Error ? e : new Error(String(e)));
       });
     return () => {
       live = false;
     };
-  }, [wantsAllTasks, allTasks]);
+  }, [wantsAllTasks, allTasks, allTasksTry]);
 
   // Tasks matched by title, with or without a project (the projects' own tasks + the full read).
   const matchedTasks: DatabaseTask[] = (() => {
@@ -323,11 +326,19 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
       }
       return <div>{filteredTasks.map(renderTask)}</div>;
     }
+    const allTasksFailure =
+      wantsAllTasks && allTasksError ? (
+        <ReadFailure error={allTasksError} what="your tasks" onRetry={() => {
+            setAllTasksError(null);
+            setAllTasksTry((n) => n + 1);
+          }} />
+      ) : null;
     if (filteredProjects.length === 0 && matchedTasks.length === 0) {
-      return <PickerEmpty>{hasQuery ? "Nothing found" : "No projects yet"}</PickerEmpty>;
+      return allTasksFailure ?? <PickerEmpty>{hasQuery ? "Nothing found" : "No projects yet"}</PickerEmpty>;
     }
     return (
       <div>
+        {allTasksFailure}
         {matchedTasks.length > 0 && (
           <div data-testid="task-title-matches">
             <PickerSectionLabel>Tasks</PickerSectionLabel>

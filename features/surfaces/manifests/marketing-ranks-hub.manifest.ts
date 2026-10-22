@@ -85,6 +85,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const marketingRanksHubManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-ranks-hub",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

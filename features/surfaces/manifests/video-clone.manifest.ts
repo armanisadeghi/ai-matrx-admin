@@ -18,6 +18,7 @@ function value(name: string, label: string, description: string, valueType: Surf
 
 export const videoCloneManifest: SurfaceManifest = {
   surfaceName: VIDEO_CLONE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -138,6 +138,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const agentBattleManifest: SurfaceManifest = {
   surfaceName: "matrx-user/agent-battle",
+  inheritsFrom: "matrx-default/agents",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

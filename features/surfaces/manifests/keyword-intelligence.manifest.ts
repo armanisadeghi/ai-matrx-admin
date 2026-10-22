@@ -218,6 +218,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const keywordIntelligenceManifest: SurfaceManifest = {
   surfaceName: "matrx-user/keyword-intelligence",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

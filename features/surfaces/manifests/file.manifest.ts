@@ -451,6 +451,7 @@ const clientTools: SurfaceClientTool[] = [
 
 export const fileManifest: SurfaceManifest = {
   surfaceName: FILE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/files",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

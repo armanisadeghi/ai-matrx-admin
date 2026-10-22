@@ -189,6 +189,7 @@ const values: SurfaceValue[] = [
 
 export const marketingReportsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-reports",
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

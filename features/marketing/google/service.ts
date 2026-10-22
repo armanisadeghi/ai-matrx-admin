@@ -35,6 +35,7 @@ import { applyOrganizationContextHeader } from "@/lib/api/organization-context";
 import { operationFailed } from "@/utils/errors";
 import { getFile } from "@/features/files/api/files";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 // Keep this small exchange control local rather than deriving it from the
 // deployed OpenAPI snapshot: the frontend and backend deploy independently,
 // and a newly added fail-closed purpose must be usable as soon as both source
@@ -582,7 +583,7 @@ export async function postGoogleBackend(
     { method: "POST", headers, body: JSON.stringify(body) },
     {
       baseUrlOverride: backendBase(),
-      organizationId: headers["X-Organization-Id"],
+      organizationId: headers[MATRX_HEADERS.organization],
       bodyCarriedRead: !googlePostAsks(path),
       allowHttpError: true,
     },
@@ -615,7 +616,7 @@ export async function getGoogleBackend(
     { method: "GET", headers, signal },
     {
       baseUrlOverride: backendBase(),
-      organizationId: headers["X-Organization-Id"],
+      organizationId: headers[MATRX_HEADERS.organization],
       allowHttpError: true,
     },
   );

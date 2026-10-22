@@ -50,8 +50,11 @@ const values: SurfaceValue[] = [
     sortOrder: 210,
   },
   {
-    name: "active_organization_id",
-    label: "Active workspace ID",
+    // Renamed from `active_organization_id` (surface declarations W1): this is the organization a
+    // NEW creator profile will be claimed in, not the person's active organization that the
+    // Education module conveys under that name. One name, one meaning.
+    name: "claim_organization_id",
+    label: "Claim organization ID",
     description: "The organization in which a new creator profile will be claimed. Null means no workspace is selected; the canonical claim path will ask the person to choose one if the profile must be created.",
     valueType: "string",
     alwaysAvailable: false,
@@ -99,6 +102,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationCreatorManifest: SurfaceManifest = {
   surfaceName: EDUCATION_CREATOR_SURFACE_NAME,
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
@@ -120,7 +124,7 @@ export function createEducationCreatorScope(values: {
   creator_profile_loading: boolean;
   creator_profile?: unknown;
   creator_profile_error?: string;
-  active_organization_id?: string;
+  claim_organization_id?: string;
 }): SurfaceScopePayload {
   return {
     ...values,

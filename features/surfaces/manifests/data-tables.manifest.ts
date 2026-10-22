@@ -430,6 +430,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const dataTablesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/data-tables",
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

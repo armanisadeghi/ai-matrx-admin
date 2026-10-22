@@ -42,7 +42,7 @@ import type { EditorFile } from "../types";
 import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
 // The shared previewKind → previewer switch — one dispatch module for all
 // preview surfaces (light previewers static, heavy engines in-gate lazy).
-// The PDF blob arm renders the canonical PdfDocumentRenderer directly, which
+// The PDF blob arm renders the canonical PdfDocumentViewer directly, which
 // absorbed the former BinaryFilePdfPreview adapter.
 import { PreviewerSwitch } from "@/features/files/components/core/FilePreview/PreviewerSwitch";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

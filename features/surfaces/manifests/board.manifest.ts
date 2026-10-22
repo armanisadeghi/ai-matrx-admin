@@ -92,6 +92,7 @@ const values: SurfaceValue[] = [
 
 export const boardManifest: SurfaceManifest = {
   surfaceName: BOARD_SURFACE_NAME,
+  inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   label: "Board",

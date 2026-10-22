@@ -1021,6 +1021,26 @@ def repair_skill_copies():
             say(f"LAW 15 REPAIR SKIPPED ({' '.join(args)}): {exc}")
 
 
+MARKER_GREP = r"^(<<<<<<<|>>>>>>>)( |$)"
+
+
+def staged_marker_files(paths=None):
+    """Staged paths whose INDEX content has a git conflict-marker line (`<<<<<<< ` / `>>>>>>> `).
+    No commit sync-main makes may carry one: matrx-frontend 4d1b83b210 (2026-10-22) shipped
+    AssessmentCreate.tsx with `<<<<<<< HEAD` and release v0.4.3443 failed to build. Held copies
+    under _conflicts/ are exempt (they are the saved LOCAL side, markers and all)."""
+    if paths is None:
+        _, out, _ = git("diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z", check=False)
+        paths = [p for p in out.split("\0") if p]
+    paths = [p for p in paths if not p.startswith(HOLD_ROOT + "/") and not p.endswith(".held")]
+    bad = []
+    for i in range(0, len(paths), 500):
+        _, out, _ = git("grep", "--cached", "-z", "-lIE", MARKER_GREP, "--",
+                        *[":(literal)" + p for p in paths[i:i + 500]], check=False)
+        bad += [p for p in out.split("\0") if p]
+    return bad
+
+
 def commit_all():
     repair_skill_copies()
     _, common, _ = git("rev-parse", "--git-common-dir")
@@ -1033,6 +1053,10 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: a forcing-function plant (pid %d) is live in it; the next sync "
             "commits it." % (p, pid))
+    for p in staged_marker_files():
+        git("restore", "--staged", "--", ":(literal)" + p, check=False)
+        say("SWEEP SKIPPED %s: it holds git conflict markers (<<<<<<< / >>>>>>>); a marker breaks "
+            "the build. Resolve the file; the next sync commits it." % p)
     for p, reasons in held:
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
@@ -1716,9 +1740,13 @@ def resolve_all(stamp):
             # Listed as conflicted a moment ago, no unmerged stage now: another writer in this
             # shared checkout (a second sync, an agent's `git add`) resolved it in between. Reading
             # "no stage" as "deleted" committed two files both parents had as DELETED (common-docs
-            # 9e373e994a, 2026-10-22). Their resolution stands; nothing here touches the path.
-            say("CONFLICT ALREADY RESOLVED by another writer, left as it is: %s" % path)
-            continue
+            # 9e373e994a, 2026-10-22). Their resolution stands -- unless what they staged still
+            # holds conflict markers (a `git add` of git's own marked-up file): then it is decided
+            # here from the two parent commits, like any other conflict.
+            if not staged_marker_files([path]):
+                say("CONFLICT ALREADY RESOLVED by another writer, left as it is: %s" % path)
+                continue
+            say("CONFLICT STAGED WITH MARKERS by another writer, deciding it again: %s" % path)
         ours_mode, ours = st.get(2, (None, None))
         theirs_mode, theirs = st.get(3, (None, None))
         # A side counts as deleted only when its commit really lacks the file.

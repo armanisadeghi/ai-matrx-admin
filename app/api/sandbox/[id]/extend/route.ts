@@ -5,6 +5,7 @@ import {
   orchestratorJsonHeaders,
 } from "@/lib/sandbox/orchestrator-routing";
 import { decorateSandboxRow } from "@/lib/sandbox/decorate-sandbox-row";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 function upstreamExpiry(payload: unknown): string | null {
   if (!payload || typeof payload !== "object" || Array.isArray(payload))
@@ -47,7 +48,7 @@ export async function POST(
       .eq("id", id)
       .is("deleted_at", null)
       .single();
-    if (beforeError?.code === "PGRST116")
+    if (beforeError?.code === PG_CODES.pgrstNoRows)
       return NextResponse.json(
         { error: "Sandbox not found" },
         { status: 404 },
@@ -101,7 +102,7 @@ export async function POST(
       .eq("id", id)
       .is("deleted_at", null)
       .single();
-    if (freshError?.code === "PGRST116" || !fresh)
+    if (freshError?.code === PG_CODES.pgrstNoRows || !fresh)
       return NextResponse.json(
         { error: "Sandbox not found" },
         { status: 404 },

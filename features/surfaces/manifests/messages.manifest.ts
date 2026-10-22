@@ -229,6 +229,7 @@ const agentRoles: ManifestAgentRole[] = MESSAGING_MANDATE_ROLES.map(
 
 export const messagesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/messages",
+  inheritsFrom: "matrx-default/communications",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

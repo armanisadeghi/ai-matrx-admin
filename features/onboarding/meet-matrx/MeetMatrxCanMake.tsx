@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { getIconComponent } from "@ai-matrx/icons";
+import { DynamicIcon } from "@ai-matrx/icons";
 import { IntroStage, type IntroGroup } from "@ai-matrx/design-system/intro-stage";
 import { supabase } from "@/utils/supabase/client";
 import { meetMatrxLink } from "./meetMatrx";
@@ -47,7 +47,9 @@ export function canMakeGroup(shapes: readonly CanMakeShape[]): IntroGroup {
         name: s.short_label,
         pitch: "",
         href: canMakeHref(s.kind),
-        identity: { color: s.color as string, icon: getIconComponent(s.icon, "Shapes") },
+        // Any Lucide name, loaded on demand (the hot-set lookup knows only ~140 names and drew a bolt for the rest).
+        identity: { color: s.color as string },
+        icon: <DynamicIcon name={s.icon} color="#FFFFFF" fallbackIcon="Shapes" />,
       })),
   };
 }

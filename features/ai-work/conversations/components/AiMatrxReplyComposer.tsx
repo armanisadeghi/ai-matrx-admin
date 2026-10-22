@@ -35,7 +35,7 @@ import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { buildRequestUserOverrides } from "@ai-matrx/chat/agents/redux/execution-system/utils/request-user-overrides";
 import { callConversationContinue } from "@/lib/api/run-helpers";
 import type { TypedStreamEvent } from "@ai-matrx/agents/generated/stream-events";
-import { readServerRefusal } from "@/features/access-gate/service/serverRefusal";
+import { readServerRefusal } from "@ai-matrx/data/access";
 import { useCodingReplyResponder } from "./useCodingReplyResponder";
 import { replyDoorView } from "@ai-matrx/chat/agents/coding-session-reply/reply-door";
 import { CodingReplyNotice } from "@ai-matrx/chat/agents/coding-session-reply/CodingReplyNotice";

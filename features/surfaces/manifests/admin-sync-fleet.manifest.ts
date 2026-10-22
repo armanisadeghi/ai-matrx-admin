@@ -308,6 +308,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 export const adminSyncFleetManifest: SurfaceManifest = {
   surfaceName: ADMIN_SYNC_FLEET_SURFACE_NAME,
+  inheritsFrom: "matrx-default/apps",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

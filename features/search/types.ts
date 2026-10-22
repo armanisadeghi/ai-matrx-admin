@@ -153,6 +153,9 @@ export interface SearchOutcome {
   /** The provider wire params actually sent (secrets redacted by the server). */
   request: Record<string, unknown> | null;
   elapsedMs: number | null;
+  /** The server's proof for a companion search of these same words (Top stories): sent back as
+   *  `follow_up_token`, it spends no second free search (one person query = one count). */
+  followUpToken?: string | null;
 }
 
 export type SearchPhase = "idle" | "searching" | "done" | "error";

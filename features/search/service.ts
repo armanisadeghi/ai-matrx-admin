@@ -126,6 +126,8 @@ export interface RunSearchArgs {
   /** Optional knobs (Search Lab). Omitted = the server's defaults. */
   options?: SearchRequestOptions;
   signal?: AbortSignal;
+  /** A companion search of words just searched (Top stories): that search's `followUpToken`. */
+  followUpToken?: string | null;
   /** Fired for every kind instance the server emits, in order. */
   onOutcome: (outcome: SearchOutcome) => void;
 }
@@ -137,11 +139,18 @@ export async function runKindSearch({
   count,
   options,
   signal,
+  followUpToken,
   onOutcome,
 }: RunSearchArgs): Promise<void> {
   const response = await post(
     "/search-kinds/search",
-    { provider, query, count, ...(options ? optionsBody(options) : {}) },
+    {
+      provider,
+      query,
+      count,
+      ...(options ? optionsBody(options) : {}),
+      ...(followUpToken ? { follow_up_token: followUpToken } : {}),
+    },
     signal,
   );
 
@@ -166,6 +175,8 @@ export async function runKindSearch({
             request: isRecord(data.request) ? data.request : null,
             elapsedMs:
               typeof data.elapsed_ms === "number" ? data.elapsed_ms : null,
+            followUpToken:
+              typeof data.follow_up_token === "string" ? data.follow_up_token : null,
           });
         }
       },

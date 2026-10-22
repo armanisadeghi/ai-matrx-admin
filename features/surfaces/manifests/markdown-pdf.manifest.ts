@@ -28,6 +28,7 @@ const groups: SurfaceValueGroup[] = [
 
 export const markdownPdfManifest: SurfaceManifest = {
   surfaceName: MARKDOWN_PDF_SURFACE_NAME,
+  inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

@@ -641,7 +641,10 @@ export interface PageEvidence {
   imagesMissingAlt?: number | null;
   /** `<a href>` links on the page (`links_summary.total`); null = never captured. */
   linkCount?: number | null;
-  /** The internal ones among them (`links_summary.internal`). */
+  /**
+   * Distinct same-site pages linked ONWARD (`links_summary.onward_internal`:
+   * www/apex equivalent, no `#` jumps, no self links).
+   */
   internalLinkCount?: number | null;
   /**
    * App-shell markup facts (`snapshot.extracted.app_shell`): an app mount point
@@ -652,6 +655,11 @@ export interface PageEvidence {
   executableScript?: boolean | null;
   /** Body words outside script/style/template, measured on shell-marked pages. */
   appShellWords?: number | null;
+  /**
+   * Server-rendered words inside the app root (`app_shell.root_text_words`);
+   * real text there is evidence against a shell. Null = not measured.
+   */
+  rootTextWords?: number | null;
   /**
    * Per-<img> inventory in DOM order, capped while `imageCount` stays the true
    * total. Empty with a non-zero `imageCount` means the snapshot predates the
@@ -4495,10 +4503,18 @@ function labNumber(value: unknown): number | null {
  */
 export const JS_SHELL_WORD_LIMIT = 20;
 
+/**
+ * KNOB MIRROR: `knowledge.scraper.audit.js_shell_root_text_words` = 3 (Python
+ * `app_shell.JS_SHELL_ROOT_TEXT_WORDS_DEFAULT`). More real words than this
+ * inside the app root means a server-rendered page, not a shell.
+ */
+export const JS_SHELL_ROOT_TEXT_WORDS = 3;
+
 /** The `is_js_shell` page fact; null when a signal was never captured. */
 export function pageIsJsShell(
   ev: PageEvidence,
   wordLimit: number = JS_SHELL_WORD_LIMIT,
+  rootTextLimit: number = JS_SHELL_ROOT_TEXT_WORDS,
 ): boolean | null {
   const words =
     ev.appShellWords !== null && ev.appShellWords !== undefined
@@ -4523,7 +4539,10 @@ export function pageIsJsShell(
       (words ?? 0) < wordLimit &&
       headingCount === 0 &&
       ev.linkCount === 0 &&
-      ev.imageCount === 0,
+      ev.imageCount === 0 &&
+      (ev.rootTextWords === null ||
+        ev.rootTextWords === undefined ||
+        ev.rootTextWords <= rootTextLimit),
   );
 }
 

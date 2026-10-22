@@ -390,6 +390,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const artifactsManifest: SurfaceManifest = {
   surfaceName: ARTIFACTS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

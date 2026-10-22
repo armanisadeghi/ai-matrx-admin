@@ -197,6 +197,7 @@ export const IMAGE_EDIT_SURFACE_NAME = "matrx-user/image-edit";
 
 export const imageEditManifest: SurfaceManifest = {
   surfaceName: IMAGE_EDIT_SURFACE_NAME,
+  inheritsFrom: "matrx-default/media",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

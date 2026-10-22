@@ -527,6 +527,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationMindMapsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-mind-maps",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

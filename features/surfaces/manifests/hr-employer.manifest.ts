@@ -255,6 +255,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const hrEmployerManifest: SurfaceManifest = {
   surfaceName: HR_EMPLOYER_SURFACE_NAME,
+  inheritsFrom: "matrx-default/human-resources",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

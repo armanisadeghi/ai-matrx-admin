@@ -177,6 +177,7 @@ const writeTargets = LIST_SURFACE_WRITE_TARGETS;
 
 export const listManagerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/pick-list-manager",
+  inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

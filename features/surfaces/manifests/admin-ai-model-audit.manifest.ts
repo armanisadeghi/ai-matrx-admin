@@ -130,6 +130,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminAiModelAuditManifest: SurfaceManifest = {
   surfaceName: ADMIN_AI_MODEL_AUDIT_SURFACE_NAME,
+  inheritsFrom: "matrx-default/ai",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

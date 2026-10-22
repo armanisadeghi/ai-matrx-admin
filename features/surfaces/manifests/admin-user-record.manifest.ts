@@ -55,6 +55,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminUserRecordManifest: SurfaceManifest = {
   surfaceName: ADMIN_USER_RECORD_SURFACE_NAME,
+  inheritsFrom: "matrx-default/account",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

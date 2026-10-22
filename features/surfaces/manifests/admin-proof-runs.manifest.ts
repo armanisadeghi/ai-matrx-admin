@@ -690,6 +690,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 export const adminProofRunsManifest: SurfaceManifest = {
   surfaceName: ADMIN_PROOF_RUNS_SURFACE_NAME,
+  inheritsFrom: "matrx-default/platform",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

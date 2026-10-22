@@ -18,6 +18,7 @@ import { createClient } from "@supabase/supabase-js";
 import { loadDbEnvFrom } from "../lib/direct-db-env";
 import { SYSTEM_ORGANIZATION_ID } from "@/features/templates/files/types";
 import { THUMB_HEIGHT, THUMB_WIDTH, snapshotPreviewSvg } from "@ai-matrx/office/sheets";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 const FILES_URL = process.env.NEXT_PUBLIC_FILES_URL ?? "https://files.matrxserver.com";
 
@@ -69,7 +70,7 @@ async function main() {
       form.append("metadata_json", JSON.stringify({ purpose: "file_template_thumbnail", template_id: r.id }));
       const res = await fetch(`${FILES_URL}/files/upload`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "X-Organization-Id": orgId },
+        headers: { Authorization: `Bearer ${token}`, [MATRX_HEADERS.organization]: orgId },
         body: form,
       });
       const body = (await res.json().catch(() => ({}))) as { file_id?: string; id?: string; file?: { id?: string } };

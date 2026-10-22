@@ -189,6 +189,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const adminGrowthLoopManifest: SurfaceManifest = {
   surfaceName: ADMIN_GROWTH_LOOP_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

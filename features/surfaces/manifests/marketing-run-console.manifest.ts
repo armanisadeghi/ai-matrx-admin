@@ -56,6 +56,7 @@ const agentRoles: ManifestAgentRole[] = [
 
 export const marketingRunConsoleManifest: SurfaceManifest = {
   surfaceName: MARKETING_RUN_CONSOLE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/marketing",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

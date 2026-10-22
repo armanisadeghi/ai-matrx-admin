@@ -202,6 +202,35 @@ export async function getUserTasks(scope?: ListScopeWord): Promise<DatabaseTask[
   return data || [];
 }
 
+/** The columns a task PICKER renders or attaches by identity; the heavy JSON/source columns stay out. */
+const PICKER_TASK_COLUMNS =
+  "id,title,description,status,priority,due_date,due_time,project_id,parent_task_id,assignee_id,organization_id,created_at,completed_at,deleted_at";
+/** A picker's search window: the most recent tasks, never the whole table. */
+export const PICKER_TASK_LIMIT = 500;
+
+/**
+ * The lean read for task PICKERS: only the columns a picker row shows, most recent first, capped at
+ * `PICKER_TASK_LIMIT`. A failed read THROWS (the picker shows a Retry). `getUserTasks` stays `*` for
+ * the lists that edit tasks.
+ */
+export async function getUserTasksForPicker(scope?: ListScopeWord): Promise<DatabaseTask[]> {
+  const userId = requireUserId();
+  const listScope = await defaultListFilter("task", { userId, requested: scope });
+  let taskQuery = projectsDb(supabase)
+    .from("tasks")
+    .select(PICKER_TASK_COLUMNS)
+    .is("deleted_at", null);
+  taskQuery = listScope.apply(taskQuery);
+  const { data, error } = await taskQuery
+    .order("created_at", { ascending: false })
+    .limit(PICKER_TASK_LIMIT);
+
+  if (error) throw new Error(`Couldn't load your tasks: ${error.message}`);
+
+  // Picker rows carry the lean columns; the type stays the row type the picker hands on.
+  return (data ?? []) as unknown as DatabaseTask[];
+}
+
 /**
  * Get tasks for a specific project
  */

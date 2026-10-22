@@ -11,7 +11,7 @@
  *   1. VIEW IT PROPERLY — full-bleed use of the landing (the registry marks
  *      this lens full-bleed; the shell drops its padded column), a true
  *      fullscreen affordance, and the CANONICAL PDF viewer
- *      (`PdfDocumentRenderer` — real paging/zoom/rotate/fit, progressive
+ *      (`PdfDocumentViewer` — real paging/zoom/rotate/fit, progressive
  *      Range loading) instead of a cramped iframe. Bytes come from aidream's
  *      token-validated `/share/{token}` endpoint (`shareUrls(token)`) — a
  *      durable public URL, NOT an expiring signed URL, so raw media tags and
@@ -22,7 +22,7 @@
  *      tables from this PDF → sign up free"). Anonymous visitors get honest
  *      CTAs only — nothing here widens what the token authorizes.
  *
- * PdfDocumentRenderer is a heavy engine (react-pdf/pdfjs); it keeps a
+ * PdfDocumentViewer is a heavy engine (react-pdf/pdfjs); it keeps a
  * `React.lazy` boundary here (the in-gate form — same pattern as
  * `PublicCanvasRenderer` in ./default-renderers.tsx) so non-PDF shares and
  * non-file shares never pay for it.
@@ -61,8 +61,8 @@ import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 // The one heavy engine on this lens — React.lazy in-gate boundary so the
 // react-pdf/pdfjs chunk loads only when a PDF share actually renders.
-const PdfDocumentRenderer = React.lazy(
-  () => import("@/features/pdf/components/viewer/PdfDocumentRenderer"),
+const PdfDocumentViewer = React.lazy(
+  () => import("@ai-matrx/media/viewers/pdf").then((m) => ({ default: m.PdfDocumentViewer })),
 );
 
 // useSyncExternalStore subscriptions (module-level so identities are stable).
@@ -460,7 +460,7 @@ export function SharedFileLens({
           {kind === "pdf" &&
             (mounted ? (
               <React.Suspense fallback={<ViewerFallback />}>
-                <PdfDocumentRenderer
+                <PdfDocumentViewer
                   remoteUrl={urls.public}
                   remoteHeaders={{}}
                   fileName={name}

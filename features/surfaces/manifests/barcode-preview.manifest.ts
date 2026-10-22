@@ -29,6 +29,7 @@ const groups: SurfaceValueGroup[] = [
 
 export const barcodePreviewManifest: SurfaceManifest = {
   surfaceName: BARCODE_PREVIEW_SURFACE_NAME,
+  inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

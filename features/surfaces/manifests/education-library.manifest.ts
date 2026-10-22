@@ -226,6 +226,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const educationLibraryManifest: SurfaceManifest = {
   surfaceName: EDUCATION_LIBRARY_SURFACE_NAME,
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

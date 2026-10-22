@@ -198,6 +198,7 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const taskCreateManifest: SurfaceManifest = {
   surfaceName: TASK_CREATE_SURFACE_NAME,
+  inheritsFrom: "matrx-default/workspace",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

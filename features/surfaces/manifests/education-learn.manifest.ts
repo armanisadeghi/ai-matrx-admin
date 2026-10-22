@@ -211,6 +211,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const educationLearnManifest: SurfaceManifest = {
   surfaceName: "matrx-user/education-learn",
+  inheritsFrom: "matrx-default/education",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

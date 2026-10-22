@@ -21,7 +21,7 @@ const ALL = [task("t1", "Schedule the painter", "p1"), task("t2", "Order lanyard
 jest.mock("@/features/tasks/hooks/useTaskManager", () => ({
   useProjectsWithTasks: () => ({ projects: PROJECTS, loading: false, error: null, refresh: jest.fn() }),
 }));
-jest.mock("@/features/tasks/services/taskService", () => ({ getUserTasks: jest.fn(async () => ALL) }));
+jest.mock("@/features/tasks/services/taskService", () => ({ getUserTasksForPicker: jest.fn(async () => ALL) }));
 jest.mock("@ai-matrx/rich-content/levels/RichContent", () => ({ RichContent: () => null }));
 jest.mock("../usePickerInputFocus", () => ({ usePickerInputFocus: () => ({ current: null }) }));
 
@@ -49,6 +49,28 @@ describe("TasksResourcePicker search", () => {
     ) as HTMLElement;
     await act(async () => row.click());
     expect(onSelect).toHaveBeenCalledWith({ type: "task", data: expect.objectContaining({ id: "t2" }) });
+    act(() => root.unmount());
+  });
+});
+
+describe("TasksResourcePicker failed task read", () => {
+  it("says the read failed with a Retry, then shows the tasks when Retry works", async () => {
+    const svc = jest.requireMock("@/features/tasks/services/taskService") as { getUserTasksForPicker: jest.Mock };
+    svc.getUserTasksForPicker.mockRejectedValueOnce(new Error("offline"));
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const root = createRoot(host);
+    await act(async () => root.render(<TasksResourcePicker onBack={jest.fn()} onSelect={jest.fn()} />));
+    await act(async () => setValue(host.querySelector("input") as HTMLInputElement, "zzzz-nothing"));
+    await act(async () => {});
+    expect(host.textContent).not.toContain("Nothing found");
+    const retry = Array.from(host.querySelectorAll("button")).find((b) => /retry|try again/i.test(b.textContent ?? ""));
+    expect(retry).toBeTruthy();
+    await act(async () => setValue(host.querySelector("input") as HTMLInputElement, "lanyards"));
+    await act(async () => (retry as HTMLElement).click());
+    await act(async () => {});
+    expect(host.textContent).toContain("Order lanyards");
     act(() => root.unmount());
   });
 });

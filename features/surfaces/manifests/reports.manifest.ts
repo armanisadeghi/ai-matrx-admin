@@ -147,6 +147,7 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const reportsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/reports",
+  inheritsFrom: "matrx-default/intelligence",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
