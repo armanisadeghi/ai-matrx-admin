@@ -85,6 +85,13 @@ export interface ShellLayoutBody {
   accent?: ShellAccentRef;
   /** Catalog ids the person dismissed from What's new (never offered again). */
   dismissedNew?: string[];
+  /**
+   * Organization id → the store version of that organization's layout the person last reviewed
+   * (amendment 2026-10-22, lane AA). "Your organization updated its menu" is offered while the
+   * organization's layout is newer. No entry for an organization: offered when its layout was saved
+   * after hers. Person bodies only; an organization body never carries it.
+   */
+  reviewedOrgLayouts?: Record<string, number>;
 }
 
 /** Which stored layout won, or none (the built-in default). */

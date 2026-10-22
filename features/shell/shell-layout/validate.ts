@@ -42,7 +42,7 @@ export interface ParsedShellLayout {
 }
 
 const HEADER_CONTROL_IDS: readonly HeaderControlId[] = DEFAULT_HEADER_CONTROLS;
-const BODY_KEYS = new Set(["schemaVersion", "basedOnCatalogVersion", "sidebar", "header", "dock", "landing", "look", "accent", "dismissedNew"]);
+const BODY_KEYS = new Set(["schemaVersion", "basedOnCatalogVersion", "sidebar", "header", "dock", "landing", "look", "accent", "dismissedNew", "reviewedOrgLayouts"]);
 
 type Raw = Record<string, unknown>;
 
@@ -399,6 +399,19 @@ export function validateShellLayoutBody(value: unknown): ParsedShellLayout {
       ctx.problems.push(`dismissedNew: not a list; dropped`);
     }
   }
+  if (value.reviewedOrgLayouts !== undefined) {
+    const raw = value.reviewedOrgLayouts;
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      const kept: Record<string, number> = {};
+      for (const [organizationId, version] of Object.entries(raw)) {
+        if (typeof version === "number" && Number.isInteger(version) && version >= 0) kept[organizationId] = version;
+        else ctx.problems.push(`reviewedOrgLayouts.${organizationId}: not a version; dropped`);
+      }
+      body.reviewedOrgLayouts = kept;
+    } else {
+      ctx.problems.push(`reviewedOrgLayouts: not a map; dropped`);
+    }
+  }
   return { body, problems: ctx.problems };
 }
 
@@ -426,6 +439,7 @@ export function serializeShellLayoutBody(body: ShellLayoutBody): string {
     ...(body.look !== undefined ? { look: { id: body.look.id } } : {}),
     ...(body.accent !== undefined ? { accent: "id" in body.accent ? { id: body.accent.id } : { hex: body.accent.hex } } : {}),
     ...(body.dismissedNew !== undefined ? { dismissedNew: body.dismissedNew } : {}),
+    ...(body.reviewedOrgLayouts !== undefined ? { reviewedOrgLayouts: body.reviewedOrgLayouts } : {}),
   };
   return JSON.stringify(ordered);
 }

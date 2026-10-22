@@ -11,6 +11,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { resolveHeldShellLayout } from "./held";
+import { layoutOffers, type LayoutOffers } from "./offers";
 import type { ResolvedShellLayout } from "./resolve";
 import { holdsShellLayout, initialShellLayoutState, type ShellLayoutState } from "./shellLayoutSlice";
 
@@ -46,6 +47,20 @@ export const selectShellAccent = createSelector([selectResolvedShellLayout], (la
 export const selectShellCustomDock = createSelector([selectResolvedShellLayout], (layout) => layout.customDock);
 
 export const selectShellStandardView = createSelector([selectShellLayoutSlice], (held) => held.standardView);
+
+/**
+ * What's new — the ONE list every offer place reads (the Sidebar's slot, the launchpad band): new catalog
+ * entries for her own Sidebar and "Your organization updated its menu". From the held layouts, so the server's
+ * first frame and the client's agree (nothing is reserved when there is nothing to offer).
+ */
+export const selectShellLayoutOffers = createSelector(
+  [selectShellLayoutSlice, selectViewerIsAdmin, selectViewerIsGuest],
+  (held, isAdmin, isGuest): LayoutOffers => layoutOffers(held, { isAdmin, isGuest }),
+);
+
+export function useShellLayoutOffers(): LayoutOffers {
+  return useAppSelector(selectShellLayoutOffers);
+}
 
 export function useResolvedShellLayout(): ResolvedShellLayout {
   return useAppSelector(selectResolvedShellLayout);
