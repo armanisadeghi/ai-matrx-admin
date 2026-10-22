@@ -839,7 +839,7 @@ export function EntityManager({
                 <>
                   <CopyButtons
                     size="xs"
-                    label="People & companies"
+                    label="Contacts"
                     human={() =>
                       partyRows
                         .map((party) =>
@@ -1100,7 +1100,7 @@ export function EntityManager({
                       toast.success("Created and linked to this site."),
                     onError: (error) =>
                       toast.error(
-                        `Created, but linking to the site failed: ${extractErrorMessage(error)} — link it from the People & companies list.`,
+                        `Created, but linking to the site failed: ${extractErrorMessage(error)} — link it from the Contacts list.`,
                       ),
                   });
                 }}
