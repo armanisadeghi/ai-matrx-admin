@@ -34,6 +34,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";
+import { RecordActionsMenu } from "@/components/official/RecordActionsMenu";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 // The delete and force-stop confirmations are AlertDialogs: they block the page on purpose
 // (policy ai-reachable-everywhere; the ordinary Dialog is a non-blocking window on desktop).
@@ -627,6 +628,7 @@ export function SandboxRecord({
       <SandboxHeader
         embedded={embedded}
         label={displayName}
+        hostNames
         actions={detailActions}
         right={
           <div className="flex items-center gap-2">
@@ -1117,21 +1119,6 @@ export function SandboxRecord({
         </div>
       </div>
 
-      <footer className="shrink-0 border-t border-border bg-card px-4 py-2">
-        <div className="flex items-center justify-between gap-4 max-w-6xl mx-auto text-xs text-muted-foreground">
-          <span className="truncate font-medium">{displayName}</span>
-          <div className="flex items-center gap-3 shrink-0">
-            <Badge variant={statusVariant}>{statusLabel}</Badge>
-            {!remaining.isExpired && (
-              <span className="font-mono">
-                {isActive ? "Ends in " : ""}
-                {remaining.text}
-              </span>
-            )}
-          </div>
-        </div>
-      </footer>
-
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1179,29 +1166,38 @@ function SandboxFrame({ embedded, children }: { embedded: boolean; children: Rea
   return embedded ? <div className="flex h-full min-h-0 flex-col">{children}</div> : <>{children}</>;
 }
 
-/** The page's header (back, name, status, actions) — or, in a tile, the same actions in a bar. */
+/**
+ * The page's header (back, name, status, actions) — or, in a tile, ONE bar:
+ * state, the everyday button (Stop) and every other action in ONE "…" menu.
+ * A tile's own header names the sandbox (`hostNames`), so the bar does not.
+ */
 function SandboxHeader({
   embedded,
   label,
+  hostNames = false,
   actions,
   right,
 }: {
   embedded: boolean;
   label: string;
+  hostNames?: boolean;
   actions?: EntityHeaderAction[];
   right?: ReactNode;
 }) {
   if (!embedded) return <EntityModeHeader backHref="/sandbox" entityLabel={label} actions={actions} right={right} />;
+  const all = actions ?? [];
+  const visible = all.filter((a) => a.label === "Stop" || a.label === "Stopping…");
+  const overflow = all.filter((a) => !visible.includes(a));
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-card px-3 py-2" data-sandbox-bar>
-      <span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>
+      {hostNames ? null : <span className="min-w-0 truncate text-sm font-medium text-foreground">{label}</span>}
       {right}
-      <div className="ml-auto flex flex-wrap items-center gap-2">
-        {(actions ?? []).map((a) => (
+      <div className="ml-auto flex items-center gap-1">
+        {visible.map((a) => (
           <Button
             key={a.label}
             type="button"
-            variant={a.destructive ? "danger" : a.primary ? "primary" : "outline"}
+            variant="outline"
             icon={<a.icon />}
             onClick={a.onPress}
             disabled={a.disabled}
@@ -1209,6 +1205,15 @@ function SandboxHeader({
             {a.label}
           </Button>
         ))}
+        <RecordActionsMenu
+          actions={overflow.map((a) => ({
+            label: a.label,
+            icon: a.icon,
+            onPress: a.onPress,
+            destructive: a.destructive,
+            disabled: a.disabled,
+          }))}
+        />
       </div>
     </div>
   );

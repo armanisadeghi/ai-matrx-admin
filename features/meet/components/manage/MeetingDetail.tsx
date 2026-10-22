@@ -38,7 +38,6 @@ import {
   FileText,
   Link2,
   ListChecks,
-  MoreHorizontal,
   Pencil,
   Repeat,
   RotateCcw,
@@ -62,12 +61,7 @@ import {
   type EntityHeaderAction,
 } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RecordActionsMenu } from "@/components/official/RecordActionsMenu";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -418,30 +412,14 @@ export function MeetingDetail({
     : primaryActions;
   const moreMenu =
     !isMobile && moreActions.length > 0 ? (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            icon={<MoreHorizontal aria-hidden="true" />}
-            variant="quiet"
-            aria-label="More actions"
-          />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          {moreActions.map((a) => (
-            <DropdownMenuItem
-              key={a.label}
-              onSelect={() => a.onPress?.()}
-              className={
-                a.icon === XCircle
-                  ? "text-destructive focus:text-destructive"
-                  : undefined
-              }
-            >
-              <a.icon className="h-4 w-4" aria-hidden="true" /> {a.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <RecordActionsMenu
+        actions={moreActions.map((a) => ({
+          label: a.label,
+          icon: a.icon,
+          onPress: a.onPress,
+          destructive: a.icon === XCircle,
+        }))}
+      />
     ) : null;
 
   return (
@@ -617,29 +595,33 @@ function EmbeddedMeetingBar({
   onSection: (key: Section) => void;
   actions: EntityHeaderAction[];
 }) {
+  // ONE row: sections, the state, the everyday buttons (the main action and
+  // Invite / Restore), then every other action in ONE "…" menu. The host names
+  // the meeting, so the strip does not.
+  const visible = actions.filter(
+    (a) => a.primary || a.label === "Invite" || a.label === "Restore",
+  );
+  const overflow = actions.filter((a) => !visible.includes(a));
   return (
-    <div className="shrink-0 space-y-1.5 border-b border-border bg-card/60 px-3 py-2">
-      <div className="flex min-w-0 items-center gap-2">
-        <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-          {meeting.title}
-        </p>
-        <StatusPill meeting={meeting} live={live} />
-      </div>
-      <div className="flex flex-wrap items-center gap-1">
-        {sections.map((s) => (
-          <Button
-            key={s.key}
-            type="button"
-            variant={s.key === section ? "outline" : "quiet"}
-            aria-pressed={s.key === section}
-            onClick={() => onSection(s.key)}
-          >
-            <s.icon className="h-3.5 w-3.5" aria-hidden="true" />
-            {s.name}
-          </Button>
-        ))}
-        <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
-        {actions.map((a) => (
+    <div
+      className="flex shrink-0 flex-wrap items-center gap-1 border-b border-border bg-card/60 px-3 py-2"
+      data-meeting-bar=""
+    >
+      {sections.map((s) => (
+        <Button
+          key={s.key}
+          type="button"
+          variant={s.key === section ? "outline" : "quiet"}
+          aria-pressed={s.key === section}
+          onClick={() => onSection(s.key)}
+        >
+          <s.icon className="h-3.5 w-3.5" aria-hidden="true" />
+          {s.name}
+        </Button>
+      ))}
+      <StatusPill meeting={meeting} live={live} />
+      <div className="ml-auto flex items-center gap-1">
+        {visible.map((a) => (
           <Button
             key={a.label}
             type="button"
@@ -650,6 +632,14 @@ function EmbeddedMeetingBar({
             {a.label}
           </Button>
         ))}
+        <RecordActionsMenu
+          actions={overflow.map((a) => ({
+            label: a.label,
+            icon: a.icon,
+            onPress: a.onPress,
+            destructive: a.icon === XCircle,
+          }))}
+        />
       </div>
     </div>
   );
@@ -783,7 +773,8 @@ function DetailsSection({
           Nobody can join it.
         </div>
       ) : null}
-      <h1 className="text-xl font-semibold">{meeting.title}</h1>
+      {/* The host names the meeting (shell header, or the Board tile's header). */}
+      <h1 className="sr-only">{meeting.title}</h1>
       <Field icon={CalendarClock}>
         {start ? (
           <>
