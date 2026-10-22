@@ -47,6 +47,8 @@ import { cn } from "@/lib/utils";
 
 import { ENHANCE_LABELS } from "../../enhance";
 import type { ScanItem } from "../../types";
+import { useScanThumbSrc } from "../../useScanThumbSrc";
+import { CleanAllButton } from "../../CleanAllButton";
 import type { UseScanSessionResult } from "../../useScanSession";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { DragCursorMonitor } from "@ai-matrx/design-system";
@@ -147,6 +149,7 @@ export function DesktopReview({
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-3.5">
+            <CleanAllButton session={session} />
             <SegmentedControl aria-label="Layout" value={layout} onValueChange={setLayout} data={[{ value: "grid", label: "Grid" }, { value: "list", label: "List" }]} />
             <Button
               variant="primary"
@@ -272,7 +275,8 @@ function SourceChip({ item }: { item: ScanItem }) {
 }
 
 function ItemThumb({ item, className }: { item: ScanItem; className?: string }) {
-  if (item.kind === "pdf" || !item.previewUrl) {
+  const src = useScanThumbSrc(item);
+  if (item.kind === "pdf" || !src) {
     return (
       <div
         className={cn(
@@ -285,9 +289,9 @@ function ItemThumb({ item, className }: { item: ScanItem; className?: string }) 
     );
   }
   return (
-    // Session-local blob/data URL preview; never a stored asset.
+    // Enhanced derivative, session-local preview, or the uploaded original.
     <img
-      src={item.previewUrl}
+      src={src}
       alt={item.fileName}
       className={cn("object-cover", className)}
     />

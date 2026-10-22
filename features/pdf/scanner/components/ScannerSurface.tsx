@@ -37,6 +37,7 @@ import { useScanSession } from "../useScanSession";
 import { ScannerSurfaceRuntime } from "../ScannerSurfaceRuntime";
 import { defaultScanLabel, useScanSaveFlow } from "../useScanSaveFlow";
 import { CaptureView } from "./CaptureView";
+import { CleanAllButton } from "../CleanAllButton";
 import { CropSheet, type CropEnhance } from "./CropSheet";
 import { ProcessingView } from "./ProcessingView";
 import { ReviewList } from "./ReviewList";
@@ -136,10 +137,7 @@ export default function ScannerSurface() {
             <Button variant="primary" onClick={session.resume}>
               Resume
             </Button>
-            <Button
-              variant="quiet"
-              onClick={session.dismissResume}
-            >
+            <Button variant="quiet" onClick={session.dismissResume}>
               Later
             </Button>
           </div>
@@ -208,33 +206,36 @@ export default function ScannerSurface() {
               Files
             </Button>
           </div>
-          <Button
-            variant="primary"
-            className="mb-2 w-full"
-            disabled={
-              !session.allUploaded ||
-              Boolean(flow.processing) ||
-              flow.navigating
-            }
-            onClick={openSave}
-          >
-            {flow.navigating ? (
-              <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                Opening extractor…
-              </>
-            ) : session.uploadingCount > 0 ? (
-              <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                Waiting for uploads…
-              </>
-            ) : (
-              <>
-                Save{" "}
-                {session.items.length > 0 ? `(${session.items.length})` : ""}
-              </>
-            )}
-          </Button>
+          <div className="mb-2 flex items-center gap-2">
+            {!empty && <CleanAllButton session={session} />}
+            <Button
+              variant="primary"
+              className="flex-1"
+              disabled={
+                !session.allUploaded ||
+                Boolean(flow.processing) ||
+                flow.navigating
+              }
+              onClick={openSave}
+            >
+              {flow.navigating ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  Opening extractor…
+                </>
+              ) : session.uploadingCount > 0 ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  Waiting for uploads…
+                </>
+              ) : (
+                <>
+                  Save{" "}
+                  {session.items.length > 0 ? `(${session.items.length})` : ""}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Hidden pickers */}

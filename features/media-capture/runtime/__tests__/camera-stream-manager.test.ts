@@ -475,6 +475,28 @@ describe("camera-stream-manager", () => {
     expect(lit.supportsTorch()).toBe(false);
   });
 
+  test("flip on a phone switches SIDE even with several back lenses listed", async () => {
+    const mgr = await loadManager();
+    const cams = [
+      { deviceId: "front" },
+      { deviceId: "back-wide" },
+      { deviceId: "back-ultra" },
+      { deviceId: "back-tele" },
+    ];
+    const back = new FakeMediaStreamTrack("video", {
+      settings: { deviceId: "back-wide", facingMode: "environment" },
+    });
+    expect(mgr.nextCameraFlipTarget(back, cams)).toEqual({ facingMode: "user" });
+    const front = new FakeMediaStreamTrack("video", {
+      settings: { deviceId: "front", facingMode: "user" },
+    });
+    expect(mgr.nextCameraFlipTarget(front, cams)).toEqual({ facingMode: "environment" });
+    // Desktop webcams report no side: cycle devices; one camera: no flip.
+    const webcam = new FakeMediaStreamTrack("video", { settings: { deviceId: "back-ultra" } });
+    expect(mgr.nextCameraFlipTarget(webcam, cams)).toEqual({ deviceId: "back-tele" });
+    expect(mgr.nextCameraFlipTarget(webcam, [{ deviceId: "back-ultra" }])).toBeNull();
+  });
+
   test("shouldCombineMicPrompt: only 'prompt'/'unknown' fold the mic into the camera call", async () => {
     const mgr = await loadManager();
     expect(mgr.shouldCombineMicPrompt("prompt")).toBe(true);
