@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname, relative } from "node:path";
 import process from "node:process";
 import ts from "typescript";
-import { settingsControlSearchId } from "@/components/official/settings/searchIdentity";
+import { settingsControlSearchId } from "@ai-matrx/design-system/settings";
 
 const ROOT = process.cwd();
 const REGISTRY = resolve(ROOT, "features/settings/registry.ts");
