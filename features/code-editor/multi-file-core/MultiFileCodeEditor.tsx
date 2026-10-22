@@ -17,7 +17,7 @@ import { useMeasure } from "@ai-matrx/kit/hooks";
 
 import { useCodeEditorBasics } from "./useCodeEdiorBasics";
 import { MultiFileCodeEditorBody } from "./MultiFileCodeEditorBody";
-import CodeSidebar from "./CodeSidebar";
+import CodeSidebar from "@ai-matrx/chat/window-panels/windows/code/CodeEditorSidebar";
 import { CodeFile } from "./types";
 
 interface MultiFileCodeEditorV2Props {

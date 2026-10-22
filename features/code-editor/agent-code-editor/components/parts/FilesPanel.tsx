@@ -9,7 +9,7 @@
  */
 
 import React from "react";
-import CodeSidebar from "@/features/code-editor/multi-file-core/CodeSidebar";
+import CodeSidebar from "@ai-matrx/chat/window-panels/windows/code/CodeEditorSidebar";
 import type { CodeFile } from "@/features/code-editor/multi-file-core/types";
 
 interface FilesPanelProps {
