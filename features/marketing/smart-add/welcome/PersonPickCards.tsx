@@ -135,6 +135,30 @@ export function NarrowField({ onNarrow }: { onNarrow: (text: string) => void }) 
   );
 }
 
+/**
+ * "Which one is you?" while its people are still coming (a narrowed round searching, or the photo groups being read):
+ * the same panel and title, two cards' worth of the waiting sweep. Never a found view for nobody.
+ */
+export function PersonPickWaiting() {
+  return (
+    <section
+      className={`${found.panel} mx-auto flex w-full max-w-4xl flex-col gap-5 rounded-[2rem] p-4 sm:gap-7 sm:p-8`}
+      aria-labelledby="welcome-people-waiting-title"
+      aria-busy
+      data-testid="welcome-people-waiting"
+    >
+      <h1 id="welcome-people-waiting-title" className="px-1 text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[2.25rem]">
+        Which one is you?
+      </h1>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4" aria-hidden>
+        {[0, 1].map((n) => (
+          <li key={n} className={`${found.waiting} h-[8.5rem] rounded-3xl sm:h-[13.5rem]`} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function PersonPickCards({
   people,
   more = 0,

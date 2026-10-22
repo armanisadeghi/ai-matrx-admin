@@ -80,7 +80,8 @@ export function PersonFoundStage({
               </span>
               {/* The bio's line is reserved from the first frame, so it lands without moving anything. */}
               <p className="min-h-6 truncate text-base text-muted-foreground" data-testid="welcome-found-bio">
-                {cards.bio?.text ?? ""}
+                {/* Their confirmed company leads the line (the picked card showed it). */}
+                {[cards.work, cards.bio?.text].filter(Boolean).join(" · ")}
               </p>
             </div>
           </div>
@@ -121,7 +122,7 @@ export function PersonFoundStage({
                     key={a.item.key}
                     href={href(a.item.url ?? a.item.value)}
                     data-clickable
-                    className="flex min-w-0 items-center gap-2.5"
+                    className="flex min-w-0 max-w-full items-center gap-2.5"
                   >
                     <AccountPicture account={a} size="size-10" />
                     <span className="flex min-w-0 flex-col">

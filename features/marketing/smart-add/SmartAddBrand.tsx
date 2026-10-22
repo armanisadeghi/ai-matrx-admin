@@ -24,15 +24,16 @@ import { PersonFoundStage } from "./found/PersonFoundStage";
 import { personAnswers, personCoreReady } from "./found/personCards";
 import { loginSeed as readLoginSeed, seedEvidence, type LoginSeed } from "./welcome/loginSeed";
 import { welcomeNameOf } from "./welcome/welcomeName";
-import { readTypedName, writeTypedName } from "./welcome/typedNameStore";
+import { readPickedCard, readTypedName, writePickedCard, writeTypedName } from "./welcome/typedNameStore";
 import { WelcomeNameFrame, WelcomeNothingFrame } from "./welcome/WelcomeAsk";
 import type { PersonGroup } from "./welcome/peopleGroups";
-import { PersonPickCards } from "./welcome/PersonPickCards";
+import { PersonPickCards, PersonPickWaiting } from "./welcome/PersonPickCards";
+import { usePersonPhotoGroups } from "./welcome/usePersonPhotoGroups";
 import { welcomeFirstRound, welcomeFirstSeeds } from "./welcome/welcomeRound";
 import { recordWelcomeRound, startWelcomeRound } from "./welcome/welcomeRoundStart";
 import { welcomeVerdict } from "./welcome/welcomeVerdict";
 import { visibleEvidence } from "./visibleEvidence";
-import { MAX_WELCOME_ROUNDS, narrowAs, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
+import { MAX_WELCOME_ROUNDS, narrowAs, narrowWaiting, paidCardsHost, roundSubject, type WelcomeDone, type WelcomeLogin } from "./welcome/welcomeSession";
 import { writeWelcomeProfile } from "./welcome/saveWelcomeProfile";
 import { findSessionBrand } from "./welcome/sessionBrand";
 import type { WelcomeConfirmed } from "./welcome/welcomeProfile";
@@ -1932,12 +1933,18 @@ export function SmartAddBrand({
   // A proven anchor and no grounded round yet: one round grounded on it (Part 9), once.
   const welcomeGround =
     welcomeOn && Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && personAnchors.length > 0 && !groundedSent.current && !created;
-  const runWelcomeGround = useEffectEvent(() => void startRound({ website: "", socials: [] }));
+  const runWelcomeGround = useEffectEvent(
+    () => void startRound({ website: "", socials: [] }, welcomePickedPlace.current ? { location: welcomePickedPlace.current } : {}),
+  );
   useEffect(() => {
     if (welcomeGround) runWelcomeGround();
   }, [welcomeGround]);
   // "None of these" / "Not me": the people shown are namesakes; the typed city or company narrows the next round.
+  // The anchor round a narrowing replaces: until the new round settles, the window shows the people waiting state,
+  // never a found view for nobody (live 2026-10-21: "Welcome, Justin" + "Still looking" flashed after None of these).
+  const [welcomeNarrowFrom, setWelcomeNarrowFrom] = useState<string | null | undefined>(undefined);
   const welcomeNarrow = (text: string, shown: PersonGroup[]) => {
+    setWelcomeNarrowFrom(anchorRunId.current);
     for (const p of shown) for (const a of p.accounts) answerAnchor(a, "namesake");
     const as = narrowAs(text);
     if ("city" in as) {
@@ -1954,29 +1961,84 @@ export function SmartAddBrand({
   useEffect(() => {
     if (welcomeNarrowKick) runWelcomeNarrow();
   }, [welcomeNarrowKick]);
-  /** One click on a person: their accounts are "me", exactly as an AnchorCards answer (the next round grounds on them). */
+  /**
+   * One click on a person: they confirmed that card is them (smart-add VISION Part 29). Its accounts are "me", exactly
+   * as an AnchorCards answer; what the card showed is now their own answer, certain at once (foundCards: typed or
+   * confirmed): its place (an address they gave, carried by the grounded round) and the company its line named. A
+   * site their picked profiles link to becomes theirs as those profiles are read (welcomeVerdict sitesToConfirm).
+   */
+  const welcomePickedPlace = useRef<string | null>(null);
   const welcomePick = (p: PersonGroup) => {
     for (const a of p.accounts) answerAnchor(a, "me");
+    if (p.place) {
+      personTyped.current = { name: personTyped.current?.name ?? welcomeName, city: p.place };
+      addCustom(customItem("address", p.place));
+      // The grounded round carries it as woken (runWelcomeGround): no second round for the same place.
+      wokenSent.current.add(`location:${p.place}`);
+      welcomePickedPlace.current = p.place;
+    }
+    if (p.company) personMore.current = { ...personMore.current, company: p.company };
+    const card = { place: p.place, company: p.company };
+    setWelcomePickedCard(card);
+    if (loginSeed) writePickedCard(loginSeed.subject, card);
   };
+  const [welcomePickedCard, setWelcomePickedCard] = useState(() =>
+    door === "welcome" && loginSeed && typeof window !== "undefined" ? readPickedCard(loginSeed.subject) : null,
+  );
 
   // The login's website candidate is theirs only when the run shows it (the site names them, or their account links
   // to it); then it is vouched for like a site they typed. Until then it is never "Your site".
-  const welcome = welcomeVerdict({ items: visible, witnesses, facts, decisions, seed: welcomeSeed, name: welcomeName, namesakes });
-  const welcomeCards = welcome.cards;
   const anchorView = anchorRunId.current ? views[anchorRunId.current] : undefined;
   const anchorDone = Boolean(anchorView && TERMINAL.includes(anchorView.status ?? ""));
+  // The same profile photo is one person: the server's fingerprints, asked once the anchor round settled.
+  const welcomePhotos = usePersonPhotoGroups(
+    welcomeOn ? visible.filter((i) => i.anchor && decisions[i.key] !== "no" && !namesakes.has(i.key)) : [],
+    welcomeName,
+    welcomeOn && anchorDone,
+  );
+  const welcome = welcomeVerdict({
+    items: visible,
+    witnesses,
+    facts,
+    decisions,
+    seed: welcomeSeed,
+    name: welcomeName,
+    namesakes,
+    photoGroups: welcomePhotos.groups,
+    pickedCard: welcomePickedCard,
+  });
+  const welcomeCards = welcome.cards;
   const welcomePeople = welcome.people;
   const welcomeAnchored = welcome.anchored;
   // The people are asked only once the anchor round settled AND the session's saved answers are back: a reload must
   // never ask "Which one is you?" (or lead with another account) before the pick already made has been restored.
-  const welcomeAsks = memoryReady && !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
+  // They wait for the photo groups too, so two cards of one person never merge on screen.
+  const welcomeHasPeople = memoryReady && !welcomeAnchored && anchorDone && welcomePeople.people.length > 0;
+  const welcomeAsks = welcomeHasPeople && welcomePhotos.settled;
+  // A narrowing's new round (or the photo groups) still coming: the people waiting state, never a found view.
+  const welcomeNarrowWaiting = narrowWaiting({
+    from: welcomeNarrowFrom,
+    current: anchorRunId.current,
+    anchorDone,
+    anchored: welcomeAnchored,
+    failed: Boolean(startFailure),
+  });
+  const welcomeLooking = (welcomeHasPeople && !welcomePhotos.settled) || welcomeNarrowWaiting;
+  // Websites their own (picked or proven) accounts link to are theirs: answered yes as they arrive, which probes them.
+  const welcomeSiteKeys = welcomeOn && !created ? welcome.sitesToConfirm.map((i) => i.key).join("|") : "";
+  const confirmWelcomeSites = useEffectEvent(() => {
+    for (const i of welcome.sitesToConfirm) answerAnchor(i, "me");
+  });
+  useEffect(() => {
+    if (welcomeSiteKeys) confirmWelcomeSites();
+  }, [welcomeSiteKeys]);
   // No name from the login, the sign-up form, the email or its proven lookups: one field asks (and Skip leaves).
   const welcomeNeedsName = welcomeOn && !welcomeName;
   // Settled, and the only certain facts are what they typed (their name, a city typed under "None of these"):
   // never a grid of their own words; an honest frame with another search or Skip.
   const welcomeOnlyTyped = welcome.onlyTyped;
   const welcomeNothing =
-    Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && !startFailure && !welcomeAsks && welcomeOnlyTyped;
+    Boolean(welcomeSeed) && memoryReady && !working && rounds.length > 0 && !startFailure && !welcomeAsks && !welcomeLooking && welcomeOnlyTyped;
 
   /** "Looks right": a Yes for every card shown, then the existing Create path (their person brand). */
   const welcomeLooksRight = () => {
@@ -1998,7 +2060,7 @@ export function SmartAddBrand({
       name: basics.name ?? welcomeName,
       websiteUrl: basics.websiteUrl,
       accounts: basics.accounts.map((a) => ({ platform: a.platform, handle: a.handle, url: a.url })),
-      company: personMore.current.company || factOf(["employer", "company", "current_company", "organization"]),
+      company: personMore.current.company || welcome.pickedFacts.company || factOf(["employer", "company", "current_company", "organization"]),
       jobTitle: factOf(["job_title", "occupation", "profession", "role"]),
     };
     // Any failure says so, with Looks right as the retry: never a spinner without an end.
@@ -2045,6 +2107,8 @@ export function SmartAddBrand({
             onPick={welcomePick}
             onNarrow={(text) => welcomeNarrow(text, welcomePeople.people)}
           />
+        ) : welcomeLooking ? (
+          <PersonPickWaiting />
         ) : welcomeNothing ? (
           <WelcomeNothingFrame onNarrow={(text) => welcomeNarrow(text, welcomePeople.people)} onSkip={skip} />
         ) : (

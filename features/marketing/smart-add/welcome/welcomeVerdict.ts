@@ -13,8 +13,8 @@ import type { Witnesses } from "../found/foundCards";
 import { personCards, type PersonFoundCards } from "../found/personCards";
 import type { BrandFact } from "../validate/queue";
 import { websiteCandidate, type LoginSeed } from "./loginSeed";
-import { peopleGroups, type PeopleGroups } from "./peopleGroups";
-import { siteIsTheirs } from "./siteTheirs";
+import { cardFacts, MAX_PEOPLE, peopleGroups, type PeopleGroups } from "./peopleGroups";
+import { accountSites, siteIsTheirs } from "./siteTheirs";
 
 export interface WelcomeVerdictInput {
   /** The evidence as the screen shows it (SmartAddBrand `visible`). */
@@ -27,6 +27,10 @@ export interface WelcomeVerdictInput {
   name: string;
   /** Anchor rows answered "Namesake". */
   namesakes?: ReadonlySet<string>;
+  /** The candidates' photo groups (usePersonPhotoGroups): the same photo is one person. */
+  photoGroups?: ReadonlyMap<string, string>;
+  /** What the picked card showed, as recorded at the press (typedNameStore readPickedCard); else redrawn. */
+  pickedCard?: { place: string | null; company: string | null } | null;
 }
 
 export interface WelcomeVerdict {
@@ -40,10 +44,29 @@ export interface WelcomeVerdict {
   anchored: boolean;
   /** Nothing beyond their own words. */
   onlyTyped: boolean;
+  /** What the picked card showed, now their answer: its place and the company its line named (null: none). */
+  pickedFacts: { place: string | null; company: string | null };
+  /** Websites their own accounts link to that are not answered yet: theirs, to be answered yes (accountSites). */
+  sitesToConfirm: EvidenceItem[];
 }
 
-export function welcomeVerdict({ items, witnesses, facts, decisions, seed, name, namesakes }: WelcomeVerdictInput): WelcomeVerdict {
+const isOurs = (d: Decision | undefined) => d === "preferred" || d === "yes" || d === "alias";
+
+/**
+ * The picked card's facts, recomputed from the accounts answered "me" (taken as one person: they said so) by the same
+ * rules that drew the card, so a reload gives the same answer: its place and the company its line named.
+ */
+export function pickedCardFacts(items: readonly EvidenceItem[], decisions: Record<string, Decision>, name: string): { place: string | null; company: string | null } {
+  const mine = items.filter((i) => i.anchor && isOurs(decisions[i.key]));
+  if (!name || !mine.length) return { place: null, company: null };
+  const { place, company } = cardFacts(mine, name);
+  return { place, company };
+}
+
+export function welcomeVerdict({ items, witnesses, facts, decisions, seed, name, namesakes, photoGroups, pickedCard }: WelcomeVerdictInput): WelcomeVerdict {
   const candidate = seed ? websiteCandidate(seed) : null;
+  const picked = items.some((i) => i.anchor && (decisions[i.key] === "yes" || decisions[i.key] === "preferred"));
+  const pickedFacts = picked && pickedCard ? pickedCard : pickedCardFacts(items, decisions, name);
   const siteTheirs = Boolean(candidate && name && siteIsTheirs({ host: candidate, name, items, facts, decisions }));
   const found = personCards({
     items,
@@ -53,14 +76,14 @@ export function welcomeVerdict({ items, witnesses, facts, decisions, seed, name,
     typedWebsiteKey: siteTheirs && candidate ? `website:${websiteHost(candidate)}` : null,
     name,
     avatarUrl: seed?.avatarUrl ?? null,
+    work: pickedFacts.company,
   });
   const cards =
     candidate && !siteTheirs && found.website && websiteHost(found.website.url ?? found.website.value) === websiteHost(candidate)
       ? { ...found, website: null }
       : found;
   const candidates = items.filter((i) => i.anchor && decisions[i.key] !== "no" && !namesakes?.has(i.key));
-  const people = name ? peopleGroups(candidates, name) : { people: [], more: 0 };
-  const picked = items.some((i) => i.anchor && (decisions[i.key] === "yes" || decisions[i.key] === "preferred"));
+  const people = name ? peopleGroups(candidates, name, MAX_PEOPLE, photoGroups) : { people: [], more: 0 };
   const anchored = Boolean(seed?.githubLogin) || siteTheirs || picked || Boolean(cards.website) || cards.accounts.length > 0;
   const onlyTyped =
     !cards.website &&
@@ -68,7 +91,8 @@ export function welcomeVerdict({ items, witnesses, facts, decisions, seed, name,
     !cards.bio &&
     !cards.tools &&
     (!cards.location || (cards.location.facts.length === 0 && cards.location.item?.source.kind === "typed"));
-  return { candidate, siteTheirs, cards, people, picked, anchored, onlyTyped };
+  const sitesToConfirm = accountSites(items, decisions).filter((i) => decisions[i.key] === undefined);
+  return { candidate, siteTheirs, cards, people, picked, anchored, onlyTyped, pickedFacts, sitesToConfirm };
 }
 
 /**

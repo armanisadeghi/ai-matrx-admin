@@ -38,3 +38,17 @@ describe("the age nudge", () => {
     expect(mount).toContain('declarationPresentation: "nudge"');
   });
 });
+
+describe("the age choices (sign-up welcome final review D6, 2026-10-21)", () => {
+  it("are the ONE UI system's controls: no accent hover that hides the under-18 label", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    act(() => createRoot(host).render(<AgeDeclarationNudge open onOpenChange={jest.fn()} onPick={jest.fn()} saving={null} />));
+    const under = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("under 18")) as HTMLButtonElement;
+    expect(under).toBeTruthy();
+    expect(under.className).not.toMatch(/hover:text-accent-foreground|hover:bg-accent\b/);
+    // Choosing it still opens the finer split.
+    act(() => under.click());
+    expect(host.textContent).toContain("Back");
+  });
+});

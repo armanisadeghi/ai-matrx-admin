@@ -2,7 +2,8 @@
 
 /**
  * A domain or handle on a found card: one unbroken word, never split inside. It takes the card's type size and
- * shrinks (down to FLOOR of it) until it fits its slot; only below the floor does it wrap, and then only after a dot.
+ * shrinks (down to FLOOR of it) until it fits its slot; only below the floor does it wrap, after a dot, dash or
+ * underscore (anywhere, for one unbroken run), so it is never clipped at the card edge.
  * The line's height is held at the full size from the first frame, so a shrunk name moves nothing around it.
  */
 
@@ -16,6 +17,11 @@ export function fitScale(natural: number, room: number): number | null {
   const s = room / natural;
   const v = Math.floor(s * 99) / 100;
   return v >= FIT_FLOOR ? v : null;
+}
+
+/** Where a domain or handle may break once past the floor: after a dot, a dash or an underscore. */
+export function fitBreaks(text: string): string[] {
+  return text.split(/(?<=[._-])/);
 }
 
 export function FitText({ text }: { text: string }) {
@@ -40,8 +46,9 @@ export function FitText({ text }: { text: string }) {
     return () => ro.disconnect();
   }, [text]);
 
-  // Past the floor the text may break, but only where a dot is.
-  const parts = fit === null ? text.split(/(?<=\.)/) : [text];
+  // Past the floor the text may break: after a dot, a dash or an underscore (a domain, a LinkedIn handle), and a
+  // single unbroken run past the edge wraps anywhere rather than be clipped (live 2026-10-21 at 375px).
+  const parts = fit === null ? fitBreaks(text) : [text];
   return (
     <span ref={box} className="block min-w-0 leading-[1.1]" style={fit === null ? { minHeight: "1.1em" } : { height: "1.1em" }} data-fit-text={fit === null ? "wrap" : String(fit)}>
       <span
@@ -50,7 +57,8 @@ export function FitText({ text }: { text: string }) {
         style={{
           fontSize: `${(fit ?? FIT_FLOOR) * 100}%`,
           whiteSpace: fit === null ? "normal" : "nowrap",
-          overflowWrap: "normal",
+          overflowWrap: fit === null ? "anywhere" : "normal",
+          maxWidth: "100%",
           wordBreak: "normal",
         }}
       >

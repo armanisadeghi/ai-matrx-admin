@@ -6,7 +6,7 @@
  * category (a page title is never one) and never a competitor: those belong to a business.
  */
 
-import { cleanLine } from "../welcome/peopleGroups";
+import { cleanLine, isMaskedText } from "../welcome/peopleGroups";
 import { firstNameOf } from "../welcome/firstName";
 import { websiteHost, type Decision, type EvidenceItem } from "../evidence";
 import { foundAnswers, foundCards, type FoundAccount, type FoundCards, type FoundFact, type FoundInput } from "./foundCards";
@@ -25,6 +25,8 @@ export interface PersonFoundCards {
   photo: PersonPhotoRef | null;
   /** One line: their site's own description, else a certain account's own bio. */
   bio: { text: string; item: EvidenceItem | null } | null;
+  /** Their company, as they confirmed it (the picked card's line named it). Shown beside the bio. */
+  work: string | null;
   website: EvidenceItem | null;
   accounts: FoundAccount[];
   location: FoundFact | null;
@@ -36,6 +38,8 @@ export interface PersonFoundInput extends FoundInput {
   name: string;
   /** The login's own picture (Google, GitHub), when it has one. */
   avatarUrl?: string | null;
+  /** Their company, confirmed by them (welcomeVerdict pickedCardFacts). */
+  work?: string | null;
 }
 
 const isOurs = (d: Decision | undefined) => d === "preferred" || d === "yes" || d === "alias";
@@ -49,7 +53,7 @@ const sameUrl = (a: string | null | undefined, b: string | null | undefined) =>
 
 function oneLine(raw: string | null | undefined): string | null {
   const s = (raw ?? "").replace(/\s+/g, " ").replace(/(…|\.{3})\s*$/, "").trim();
-  if (!s) return null;
+  if (!s || isMaskedText(s)) return null;
   if (s.length <= BIO_MAX) return s;
   const cut = s.slice(0, BIO_MAX - 1);
   const space = cut.lastIndexOf(" ");
@@ -89,6 +93,7 @@ export function personCards(input: PersonFoundInput): PersonFoundCards {
     firstName: firstNameOf(name?.value ?? input.name),
     photo,
     bio,
+    work: input.work?.trim() || null,
     website: base.website,
     accounts: base.accounts,
     location: base.location,
