@@ -86,7 +86,10 @@ Two things live here, one feature:
   sizes `defaultW/defaultH/minW/minH/maxW?/maxH?`, default config, fields, `describe`, optional `href`,
   `publishes` and `accepts` — its page-bus ports, below) + one body in `widgets/registry.tsx` taking
   `{ config, editing, capacity }`. The registry test fails without both. A new field picker goes in
-  `LaunchpadPanels.tsx`.
+  `LaunchpadPanels.tsx`. **Nobody types an id**: every `*Id` field names a `picker` (registry test). A
+  dashboard widget's `dashboardId` is the `tableDashboard` picker (`TableDashboardPicker`: the table's own
+  `dashboards` read in the table's organization; Pages and Interfaces excluded; empty = the table's first);
+  choosing another table clears it.
 - **One registry for every placeable thing (lane U)**: records-ui pages (`page`) and dashboards
   (`records_dashboard`, the table's own `DashboardCanvas`), Applets (`applet`), any app page (`app_page`) and
   EVERY Board item type (`board_item`: config `{ itemType, id, title }`, the reference a board tile holds; the
@@ -178,6 +181,9 @@ No existing primitive combined the user navigation hierarchy, start actions,
 and favorites into an always-open launcher.
 
 ## Change log
+
+- `2026-10-22` — Lane W: the dashboard widget picks its dashboard from the chosen table's dashboards (no raw id
+  field); registry guard: no `*Id` field without a picker.
 
 - `2026-10-22` — Lane U (one grid engine, one widget registry): `records_dashboard` and `board_item` widgets
   (records-ui dashboards and every Board item type placeable on a launchpad); the census guard

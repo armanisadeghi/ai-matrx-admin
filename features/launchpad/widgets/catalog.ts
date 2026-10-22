@@ -183,7 +183,7 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     defaultConfig: {},
     fields: [
       { key: "tableId", label: "Table", picker: "dataTable" },
-      { key: "dashboardId", label: "Dashboard" },
+      { key: "dashboardId", label: "Dashboard", picker: "tableDashboard" },
     ],
     describe: (c) => (configText(c, "tableId") ? "A dashboard of one of your tables" : "Dashboard (no table chosen)"),
     href: (c) =>

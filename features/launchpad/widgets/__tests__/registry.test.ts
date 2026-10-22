@@ -39,6 +39,11 @@ describe("launchpad widget registry", () => {
     for (const f of spec.fields) expect(f.key).toMatch(/^[a-zA-Z]+$/);
   });
 
+  it("never asks a person to type an id: every *Id field is a picker", () => {
+    const raw = LAUNCHPAD_WIDGET_CATALOG.flatMap((s) => s.fields.filter((f) => /Id$/.test(f.key) && !f.picker).map((f) => `${s.type}.${f.key}`));
+    expect(raw).toEqual([]);
+  });
+
   it("names an unknown widget instead of dropping it", () => {
     expect(describeLaunchpadWidget({ type: "gone", config: {} })).toBe('Unavailable widget "gone"');
   });

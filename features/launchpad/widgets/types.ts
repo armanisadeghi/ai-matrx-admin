@@ -24,7 +24,7 @@ export interface LaunchpadWidgetField {
   key: string;
   label: string;
   options?: readonly { value: string; label: string }[];
-  picker?: "dataPage" | "dataTable" | "metricKeys" | "launchpad" | "applet" | "appPage" | "boardItem";
+  picker?: "dataPage" | "dataTable" | "metricKeys" | "launchpad" | "applet" | "appPage" | "boardItem" | "tableDashboard";
 }
 
 export interface LaunchpadWidgetBodyProps {

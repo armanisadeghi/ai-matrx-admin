@@ -17,7 +17,7 @@ import { appPagePath } from "@/features/board/items/page-items";
 import { listPlaceableApplets, type AppletCardInfo } from "@/features/applets/embed/appletsPort";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { LAUNCHPAD_WIDGET_CATALOG } from "../widgets/catalog";
-import { DataPagePicker, DataTablePicker } from "../widgets/DataPagePicker";
+import { DataPagePicker, DataTablePicker, TableDashboardPicker } from "../widgets/DataPagePicker";
 import { configText, type LaunchpadWidgetSpec } from "../widgets/types";
 import { loadBoardItemCatalog } from "../widgets/bodies/BoardItemWidget";
 import type { BoardItemType } from "@/features/board/items/types";
@@ -145,7 +145,13 @@ export function ConfigureWidgetPanel({
               {field.picker === "metricKeys" ? (
                 <MetricKeysPicker value={value} onChange={set} />
               ) : field.picker === "dataTable" ? (
-                <DataTablePicker value={value} onChange={set} />
+                <DataTablePicker
+                  value={value}
+                  // A dashboard chosen for the old table is not one of the new table's.
+                  onChange={(v) => onConfigure(spec.fields.some((f) => f.picker === "tableDashboard") ? { [field.key]: v, dashboardId: "" } : { [field.key]: v })}
+                />
+              ) : field.picker === "tableDashboard" ? (
+                <TableDashboardPicker tableId={configText(widget.config, "tableId")} value={value} onChange={set} />
               ) : field.picker === "dataPage" ? (
                 <DataPagePicker value={value} onChange={set} />
               ) : field.picker === "launchpad" ? (
