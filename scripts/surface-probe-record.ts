@@ -25,7 +25,12 @@
  * already there (sections S1–S18, `result`) is kept; the probe's keys replace
  * only themselves.
  *
- * Input (stdin): { surface, route, recordId, supplied[], suppliedEmpty[],
+ * Values (W5-B): `last_check.values` holds what the page showed for each supplied
+ * value — the preview line, cut to PROBE_VALUE_MAX_CHARS — so the per-surface admin
+ * page renders the situation with real values. Only the admin test account's probe
+ * is ever recorded (refused below otherwise), so these are test-record values.
+ *
+ * Input (stdin): { surface, route, recordId, supplied[], suppliedEmpty[], values{},
  *   surfaceNamed, signedIn, probedAs: { email, userId, role }, errors[], base }
  * Output (stdout): the object written, as JSON. Exit 0 written, 2 refused.
  */
@@ -36,6 +41,7 @@ export {
   CHAIN_SQL,
   judgeProbe,
   PROBE_IDENTITY,
+  PROBE_VALUE_MAX_CHARS,
   SURFACE_PROBE_VERSION,
 } from "./lib/surface-probe-judge";
 export type { ChainValue, LastCheckProbe, ProbeRecordInput } from "./lib/surface-probe-judge";
