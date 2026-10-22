@@ -392,11 +392,9 @@ export async function getTopic(topicId: string): Promise<ResearchTopic | null> {
     .select("*")
     .is("deleted_at", null)
     .eq("id", topicId)
-    .single();
-  if (error) {
-    if (error.code === "PGRST116") return null;
-    throw error;
-  }
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
   return rowToResearchTopic(data);
 }
 
@@ -699,11 +697,9 @@ export async function getSource(
     .from("rs_source")
     .select("*")
     .eq("id", sourceId)
-    .single();
-  if (error) {
-    if (error.code === "PGRST116") return null;
-    throw error;
-  }
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
   return rowToResearchSource(data);
 }
 
@@ -2181,11 +2177,9 @@ export async function getTemplate(
     .select("*")
     .is("deleted_at", null)
     .eq("id", templateId)
-    .single();
-  if (error) {
-    if (error.code === "PGRST116") return null;
-    throw error;
-  }
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
   return data;
 }
 

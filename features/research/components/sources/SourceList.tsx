@@ -7,6 +7,7 @@ import {
   useCallback,
   useMemo,
   useTransition,
+  type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -423,7 +424,15 @@ function selectedChoice(value: ColumnFilterValue | undefined): string | null {
 }
 
 /** The expanded detail under a row: authority reasoning + search snippets. */
-function SourceExpandedDetail({ source }: { source: ResearchSource }) {
+function SourceExpandedDetail({
+  source,
+  children,
+}: {
+  source: ResearchSource;
+  /** The row's own details that do not fit a one-line row: the URL, the
+   *  description, video/social facts and the tag editor. */
+  children?: ReactNode;
+}) {
   // The detail row spans the table's full (possibly scrolled) width, so its
   // text would run past the visible edge. Pin it to the left and hold it to the
   // scroller's visible width so it wraps inside what the person can see.
@@ -453,6 +462,7 @@ function SourceExpandedDetail({ source }: { source: ResearchSource }) {
       className="sticky left-0 space-y-2.5 break-words px-4 py-3"
       style={visibleWidth ? { width: Math.max(visibleWidth - 32, 200) } : undefined}
     >
+      {children}
       {hasReasoning && (
         <div>
           <div className="flex items-center gap-2">
@@ -493,11 +503,10 @@ function SourceExpandedDetail({ source }: { source: ResearchSource }) {
   );
 }
 
-function canExpandSource(source: ResearchSource): boolean {
-  return (
-    stringArrayFromJson(source.extra_snippets).length > 0 ||
-    !!source.authority_reasoning
-  );
+/** Every row opens: its URL and tag editor live in the detail, so a row
+ *  stays one line (2026-10-22 live walk: rows were 108-128px tall). */
+function canExpandSource(_source: ResearchSource): boolean {
+  return true;
 }
 
 export default function SourceList() {
@@ -1026,7 +1035,7 @@ export default function SourceList() {
       id: "thumbnail",
       header: "",
       label: "Thumbnail",
-      width: 76,
+      width: 44,
       sortable: false,
       filter: false,
       accessorFn: (s) => s.thumbnail_url ?? null,
@@ -1034,18 +1043,18 @@ export default function SourceList() {
       cell: (s) => {
         const thumb = s.thumbnail_url ?? videoIdentityFor(s)?.thumbnail_url;
         return (
-          <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+          <div className="shrink-0 w-6 h-6 rounded overflow-hidden bg-muted flex items-center justify-center">
             {thumb ? (
               <Image
                 src={thumb}
                 alt=""
-                width={56}
-                height={56}
+                width={24}
+                height={24}
                 className="w-full h-full object-cover"
                 unoptimized
               />
             ) : (
-              <Globe className="h-5 w-5 text-muted-foreground" />
+              <Globe className="h-3.5 w-3.5 text-muted-foreground" />
             )}
           </div>
         );
@@ -1061,67 +1070,37 @@ export default function SourceList() {
       accessorFn: (s) => s.title || s.url,
       filterValue: (s) =>
         [s.title, s.url, s.hostname, s.description].filter(Boolean).join(" "),
-      cell: (s) => {
-        const assigned = tagsBySource[s.id] ?? [];
-        const video = videoIdentityFor(s);
-        return (
-          <div className="min-w-0 overflow-hidden py-1">
-            {/* The title is a real anchor, so this row is cmd/middle-clickable
-                into a new tab and keyboard-reachable. */}
-            <Link
-              href={sourceHref(s.id)}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!anyNavigating) handleNavigate(s.id, e);
-              }}
-              className="block type-title leading-snug line-clamp-2 break-words hover:text-primary transition-colors"
-            >
-              {s.title || s.url}
-            </Link>
-            {/* The page this row is ABOUT — the outbound door. */}
-            <OutboundLink
-              href={s.url}
-              onClick={(e) => e.stopPropagation()}
-              title={`Open ${s.url} in a new tab`}
-              className="mt-0.5 block type-secondary text-muted-foreground break-all line-clamp-1 hover:text-foreground "
-            >
-              {s.url}
-            </OutboundLink>
-            {s.description && (
-              <div className="type-secondary text-muted-foreground/80 mt-0.5 line-clamp-2 leading-relaxed break-words">
-                {s.description}
-              </div>
-            )}
-            {(s.hostname || s.redundancy_group) && (
-              <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-                {s.hostname && (
-                  <span className="type-meta text-muted-foreground truncate max-w-48 inline-block">
-                    {s.hostname}
-                  </span>
-                )}
-                <RedundancyGroupBadge group={s.redundancy_group} />
-              </div>
-            )}
-            {video && <VideoSourceMeta identity={video} className="mt-1" />}
-            <SocialSourceSignal source={s} className="mt-1.5" />
-            <div className="mt-1.5" onClick={(e) => e.stopPropagation()}>
-              <SourceTagsInline
-                sourceId={s.id}
-                assigned={assigned}
-                tags={tagList}
-                onChanged={refreshTagState}
-                onCreateTag={(id) => setCreateTagTarget(id)}
-              />
-            </div>
-          </div>
-        );
-      },
+      cell: (s) => (
+        // One line: the row never grows with the source's text. URL,
+        // description, video/social facts and tags open in the row detail.
+        <div className="flex min-w-0 items-center gap-2 overflow-hidden">
+          {/* The title is a real anchor, so this row is cmd/middle-clickable
+              into a new tab and keyboard-reachable. */}
+          <Link
+            href={sourceHref(s.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!anyNavigating) handleNavigate(s.id, e);
+            }}
+            title={s.title || s.url}
+            className="min-w-0 truncate type-title hover:text-primary transition-colors"
+          >
+            {s.title || s.url}
+          </Link>
+          {s.hostname && (
+            <span className="shrink-0 max-w-40 truncate type-meta text-muted-foreground">
+              {s.hostname}
+            </span>
+          )}
+          <RedundancyGroupBadge group={s.redundancy_group} />
+        </div>
+      ),
     },
     {
       id: "read",
       header: "Read",
       label: "Read",
-      width: 150,
+      width: 210,
       accessorFn: (s) => s.scrape_status,
       copyValue: (s) => scrapeOutcomeFor(s.scrape_status).label,
       filter: "select",
@@ -1134,7 +1113,7 @@ export default function SourceList() {
             {sourceRowMode(s) === "captured" ? (
               <SocialOpenPost url={s.url} />
             ) : (
-              <div className="flex flex-col items-start gap-1.5">
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
                 <ScrapeOutcomeCell status={s.scrape_status} />
                 <ScrapeWorthinessFlag scrapeWorthiness={s.scrape_worthiness} />
                 <ActionTrigger
@@ -1153,7 +1132,7 @@ export default function SourceList() {
       id: "analysis",
       header: "Analysis",
       label: "Analysis",
-      width: 150,
+      width: 190,
       sortable: false,
       accessorFn: (s) => analysisStateFor(s),
       copyValue: (s) =>
@@ -1168,7 +1147,7 @@ export default function SourceList() {
       ],
       cell: (s) => (
         <div
-          className="flex flex-col items-start gap-1.5"
+          className="flex items-center gap-1.5 whitespace-nowrap"
           onClick={(e) => e.stopPropagation()}
         >
           {analyzingIds.has(s.id) ? (
@@ -1732,7 +1711,35 @@ export default function SourceList() {
           expandedIds,
           onExpandedIdsChange: setExpandedIds,
           canExpand: canExpandSource,
-          render: (s) => <SourceExpandedDetail source={s} />,
+          render: (s) => {
+            const video = videoIdentityFor(s);
+            return (
+              <SourceExpandedDetail source={s}>
+                {/* The page this row is ABOUT — the outbound door. */}
+                <OutboundLink
+                  href={s.url}
+                  title={`Open ${s.url} in a new tab`}
+                  className="block type-secondary text-muted-foreground break-all hover:text-foreground"
+                >
+                  {s.url}
+                </OutboundLink>
+                {s.description && (
+                  <p className="type-secondary text-muted-foreground leading-relaxed">
+                    {s.description}
+                  </p>
+                )}
+                {video && <VideoSourceMeta identity={video} />}
+                <SocialSourceSignal source={s} />
+                <SourceTagsInline
+                  sourceId={s.id}
+                  assigned={tagsBySource[s.id] ?? []}
+                  tags={tagList}
+                  onChanged={refreshTagState}
+                  onCreateTag={(id) => setCreateTagTarget(id)}
+                />
+              </SourceExpandedDetail>
+            );
+          },
         }}
         selection={{
           selectedIds: [...selected],
