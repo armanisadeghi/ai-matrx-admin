@@ -13,11 +13,13 @@
  *   consent  — a connector consent step owned by the flow that opened it
  *   gate     — stands in front of one run; the run is gone after a reload
  *   confirm  — a confirmation; reappearing would re-ask a settled question
+ *   watch    — a live view of one run; the page's run ids survive a reload in sessionStorage and the
+ *              debug auto-open raises the view again, so a restored copy would be a second one
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-type Reason = "picker" | "callback" | "consent" | "gate" | "confirm";
+type Reason = "picker" | "callback" | "consent" | "gate" | "confirm" | "watch";
 
 const EPHEMERAL: Record<string, Reason> = {
   agentPickerWindow: "picker",
@@ -43,6 +45,8 @@ const EPHEMERAL: Record<string, Reason> = {
   changeReviewWindow: "confirm",
   setContextValueWindow: "confirm",
   userSearchWindow: "picker",
+  aiWatchWindow: "watch",
+  workflowRunWindow: "watch",
 };
 
 const DIR = join(__dirname, "..");

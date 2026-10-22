@@ -106,6 +106,7 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 
 ## Change Log
 
+- **2026-10-22 (b)** — The Watch AI and Workflow run windows are `ephemeral` (never restored on reload; the page's run ids still survive in `sessionStorage`). `callAgentStart` / `callConversationContinue` / `callConversationForkAndRun` (`lib/api/run-helpers.ts`) now adopt their stream, so the reply composer, debrief and assignment demo are watchable (`check:ai-watch` green).
 - **2026-10-22** — Raw data (phase 1): the Data section (RAW · SENT TO MODEL · DISPLAY per tool call,
   RAW · PASSED ON · DISPLAY per non-AI workflow step, sizes and the cut trail), non-AI steps in the
   rail, web reads link their stored page, the output kind schema comes from the kind registry. The
