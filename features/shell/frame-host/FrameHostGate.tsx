@@ -35,6 +35,13 @@ function FrameSkeleton() {
 
 const FrameHostImpl = dynamic(() => import("./FrameHostImpl"), { loading: FrameSkeleton });
 
+/** The same page in the classic layout: every query parameter kept, `frame` set to classic. */
+export function classicLayoutHref(search: string): string {
+  const params = new URLSearchParams(search);
+  params.set("frame", "classic");
+  return `?${params.toString()}`;
+}
+
 class FrameBoundary extends Component<{ children: ReactNode; page: ReactNode }, { failed: unknown }> {
   override state: { failed: unknown } = { failed: null };
 
@@ -52,7 +59,10 @@ class FrameBoundary extends Component<{ children: ReactNode; page: ReactNode }, 
       <div className="flex h-dvh flex-col">
         <div role="alert" className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 text-sm text-muted-foreground">
           The new layout could not load.
-          <a className="text-foreground underline" href="?frame=classic">
+          <a
+            className="text-foreground underline"
+            href={classicLayoutHref(typeof window === "undefined" ? "" : window.location.search)}
+          >
             Use the classic layout
           </a>
           <ErrorAlchemyMenu error={this.state.failed} />
