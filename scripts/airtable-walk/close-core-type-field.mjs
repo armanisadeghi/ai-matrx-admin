@@ -27,7 +27,9 @@ try {
   const circleKeys = await keys("circle"), rectKeys = await keys("rectangle"), noType = must(await tries(() => c.fields({ table_id: shape })), "fields").map((f) => f.key).sort();
   check(JSON.stringify(circleKeys) === JSON.stringify(["kind", "name", "radius"]), "a Circle shows Name, Kind and Radius", circleKeys);
   check(JSON.stringify(rectKeys) === JSON.stringify(["height", "kind", "name", "width"]), "a Rectangle shows Name, Kind, Width and Height", rectKeys);
-  say("asked with no record type (what the grid and the record page ask today):", noType);
+  check(JSON.stringify(noType) === JSON.stringify(["kind", "name"]), "asked with no type: only the columns every record has", noType);
+  const every = must(await tries(() => c.fields({ table_id: shape, recordType: "*" })), "fields *").map((f) => f.key).sort();
+  check(JSON.stringify(every) === JSON.stringify(["height", "kind", "name", "radius", "width"]), "asked for every type ('*', the table's own screens): all five columns", every);
   const noRadius = await tries(() => c.recordWrite({ table_id: shape, data: { name: "C0", kind: "circle" } }));
   check(!noRadius.ok && /Radius is required/.test(noRadius.error.message), "a Circle with no Radius is refused by name", noRadius.ok ? "saved" : noRadius.error.message);
   const circle = must(await tries(() => c.recordWrite({ table_id: shape, data: { name: "C1", kind: "circle", radius: 12 } })), "circle");

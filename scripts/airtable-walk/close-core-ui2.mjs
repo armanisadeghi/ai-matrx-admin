@@ -10,7 +10,7 @@ import { declareTable } from "@ai-matrx/records/core";
 import { admin as adminStore, say } from "./at-fix-j-lib.mjs";
 import { ORIGIN } from "./lib.mjs";
 const STATE = process.env.HOME + "/lane-resume/close-core-state/admin.json";
-const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r2-";
+const SHOTS = process.env.HOME + "/lane-resume/close-core-shots/r3-";
 const { client } = await adminStore();
 const tries = async (fn) => { let r; for (let i = 0; i < 5; i++) { r = await fn(); if (r.ok || !["timed_out", "unreachable"].includes(r.error?.code)) return r; await new Promise((res) => setTimeout(res, 4000)); } return r; };
 const must = (r, w) => { if (!r.ok) throw new Error(w + ": " + r.error.message); return r.data; };
