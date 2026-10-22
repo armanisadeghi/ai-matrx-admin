@@ -477,6 +477,7 @@ export async function listAttentionQueue(
     ),
     listHighImpactUnknowns(organizationId),
   ]);
+  const blocked = await listBlockedAssets(organizationId);
 
   const items: AttentionItem[] = recalls.map((r) => ({
     kind: r.escalated_at
@@ -506,6 +507,18 @@ export async function listAttentionQueue(
       title: "High-impact open question",
       detail: u.question,
       createdAt: u.created_at,
+    });
+  }
+
+  for (const a of blocked) {
+    items.push({
+      kind: "blocked_asset",
+      id: a.id,
+      assetId: a.id,
+      organizationId: a.organization_id,
+      title: `Waiting in ${a.pipeline_state.replace(/_/g, " ")}`,
+      detail: a.blocked_reason ?? "",
+      createdAt: a.updated_at,
     });
   }
 
@@ -680,4 +693,32 @@ export async function hasConnectedEbayStore(
     .limit(1);
   if (error) throw new Error(`Could not read eBay connections: ${error.message}`);
   return (data ?? []).length > 0;
+}
+
+/** Assets the pipeline is holding, with the reason it recorded — a held item
+ *  is never invisible (an approved item waiting on an unbuilt stage, a
+ *  budget stop, …). Complete read: this queue IS the safety net. */
+async function listBlockedAssets(organizationId: string | null | undefined) {
+  return readAllRows<
+    Pick<
+      IntakeAssetRow,
+      "id" | "organization_id" | "pipeline_state" | "blocked_reason" | "updated_at"
+    >
+  >(
+    ({ from, to }) =>
+      orgFilter(
+        db()
+          .from("intake_asset")
+          .select("id, organization_id, pipeline_state, blocked_reason, updated_at", {
+            count: "exact",
+          }),
+        organizationId,
+      )
+        .not("blocked_reason", "is", null)
+        .is("deleted_at", null)
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to),
+    { label: "commerce.intake_asset[blocked]" },
+  );
 }

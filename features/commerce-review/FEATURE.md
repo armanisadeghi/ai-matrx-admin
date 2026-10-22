@@ -19,7 +19,9 @@ The human side of the commerce pipeline, over the C1 `commerce` schema:
   Enter/R/X verdicts at the ~15s/item bar. approve → `ready_to_publish`, revise → `drafting`,
   reject → `rejected`.
 - **Attention queue** — open `recall_audit` disagreements (`is_disagreement`, no `human_verdict`),
-  escalations (`escalated_at` set), and high-impact open `asset_unknown` rows, one list; inline
+  escalations (`escalated_at` set), high-impact open `asset_unknown` rows, and every asset the
+  pipeline is holding (`intake_asset.blocked_reason` set — e.g. approved items waiting on the unbuilt
+  listing mandates), one list; inline
   recall verdicts; every row opens its asset (no dead ends).
 - **Onboarding + store connect** — `/commerce/stores/connect`; Connect calls aidream
   `GET /ebay/oauth/connect` (via `callApi`) and sends the browser to eBay consent; the callback
@@ -62,6 +64,7 @@ a faux in-body header bar.
 
 - 2026-10-22 — `listAssetPipelineResults` + `AssetPipelineResults`: the per-asset view of every live step result (consumed by the intake asset page). Triage: the AI reasoning is clamped to three lines with a More/Less reveal so "Open full asset" and the bucket tiles stay above the fold; the queue load defers its reset a tick (React Compiler rule). Review follow-ups: the reasoning reveal is per item and only offered when there is more to show; `AssetPipelineResults` says "Still running" for pending/running rows, keeps a neutral empty state, uses `RegionSkeleton` while reading, and renders the instant lane's record alongside the ledger steps.
 
+- 2026-10-22 — Attention lists held assets (`blocked_asset`): an item the pipeline holds is never invisible.
 - 2026-10-21 — **No bulk on the three queues, by design.** Triage and Drafts decide one asset at a time on its own photos and evidence (a verdict is never applied unseen); Attention verdicts weigh the original against the skeptic per item. They are single-item decisions, so no bulk twin is declared.
 - 2026-09-19 — **THE FOURTH ORGANIZATION STATE (R37).** `AttentionQueue`, `DraftReviewQueue` and `TriageQueue` rendered `OrganizationRequiredNotice` from `!organizationId && orgBootstrapResolved` — true for a FAILED read too, since `setOrgBootstrapFailure` sets that flag. Each now reads `useOrganizationRequired().organizationState` and renders `OrganizationContextNotice`, so a failed read gets "We could not check your organization" with Try again instead of a pick nobody verified was needed. Guard: `pnpm check:org-three-states` rule 5.
 - 2026-09-17 — **The active organization, never the "effective" one.** The triage, drafts and
