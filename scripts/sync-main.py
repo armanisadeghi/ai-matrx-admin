@@ -1066,6 +1066,37 @@ def staged_marker_files(paths=None):
     return bad
 
 
+PARSE_CHECK = os.path.join("scripts", "check-parse.mjs")
+PARSE_LINE = re.compile(r"^  (\S.*?):(\d+):(\d+)  (.*)$")
+
+
+def staged_parse_failures():
+    """[(path, why)] staged code files (.ts/.tsx/.js/.mjs/...) whose INDEX content does not parse,
+    by `scripts/check-parse.mjs --staged` (2026-10-22, Arman: guards run when the code is written,
+    never at release). check-sweep-resolves.mjs already holds a TypeScript-program file that does
+    not parse; this covers every code file, .js/.mjs included. A checker that cannot run holds
+    nothing and says so: it never stops the sync."""
+    if not os.path.isfile(PARSE_CHECK):
+        return []
+    try:
+        r = subprocess.run(["node", PARSE_CHECK, "--staged"], capture_output=True, text=True,
+                           timeout=300, env={**os.environ, "MATRX_RELEASE_PATH": "0"})
+    except (OSError, subprocess.TimeoutExpired) as e:
+        say("sweep parse check could not run (%s); nothing held for parse errors." % e)
+        return []
+    if r.returncode == 0:
+        return []
+    out = []
+    for line in r.stderr.splitlines():
+        m = PARSE_LINE.match(line)
+        if m and m.group(1) not in [p for p, _ in out]:
+            out.append((m.group(1), "line %s: %s" % (m.group(2), m.group(4))))
+    if not out:
+        say("sweep parse check exited %d without naming a file; nothing held:\n%s"
+            % (r.returncode, (r.stderr or r.stdout)[-400:]))
+    return out
+
+
 def _blob_has_marker(path, sha):
     if not sha:
         return False
@@ -1130,6 +1161,10 @@ def commit_all():
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP SKIPPED %s: it holds git conflict markers (<<<<<<< / ======= / >>>>>>>); a marker breaks "
             "the build. Resolve the file; the next sync commits it." % p)
+    for p, why in staged_parse_failures():
+        git("restore", "--staged", "--", ":(literal)" + p, check=False)
+        say("SWEEP SKIPPED %s: it does not parse (%s); Turbopack refuses it and every release build "
+            "fails. Fix the file; the next sync commits it." % (p, why))
     for p, reasons in held:
         git("restore", "--staged", "--", ":(literal)" + p, check=False)
         say("SWEEP HELD %s — it would break the build, so it stays uncommitted on disk and the "
