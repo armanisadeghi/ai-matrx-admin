@@ -5621,7 +5621,7 @@
   "platform.rulebook|_stamp_actor_tier|platform._stamp_actor_tier",
   "platform.rulebook|_stamp_actor|platform._stamp_actor",
   "platform.rulebook|_t13_count_row_column_writes|platform._t13_transitional_flush_writes",
-  "platform.rulebook|_touch_row|platform._touch_rulebook",
+  "platform.rulebook|_touch_row|platform._touch_row",
   "platform.rulebook|_version_capture|platform._version_capture",
   "platform.rulebook|custom_fields_validation|custom._entity_custom_fields_guard",
   "platform.rulebook|entity_grants_purge_rulebook|platform.entity_grants_purge_rulebook",

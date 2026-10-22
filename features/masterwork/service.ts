@@ -239,7 +239,7 @@ export async function saveRules(opts: {
    */
   metadata?: Record<string, unknown>;
 }): Promise<Rulebook> {
-  // `version` is written by NOBODY here: platform._touch_rulebook owns it, and
+  // `version` is written by NOBODY here: the rulebook's touch trigger (platform._touch_row('coherence')) owns it, and
   // deliberately carries it forward when nothing an Expert or a reader can see
   // moved. The door does the compare-and-swap.
   const rulebookId = opts.base.id;
@@ -253,7 +253,7 @@ export async function saveRules(opts: {
     // THE DOOR, and the CAS now lives inside it: `rulebook_save` filters on
     // `version` itself and answers NULL on a miss, which is exactly the shape
     // guardedUpdate already reads — so the phantom-conflict `rebase` below is
-    // untouched. `nextVersion` is deliberately NOT passed: platform._touch_rulebook
+    // untouched. `nextVersion` is deliberately NOT passed: platform._touch_row('coherence')
     // owns that column and carries it FORWARD for a background-only write, and the
     // client supplying it too was a second author for one column.
     applyUpdate: ({ expectedVersion }) =>
