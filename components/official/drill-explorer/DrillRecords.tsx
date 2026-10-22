@@ -118,7 +118,8 @@ export function recordsWindow(
   const along = drillWindowKey(dimensions, carried);
   if (!along) return undefined;
   const asked = doorWindow({ by: [], show: [], where: [], window: window ?? null }, { key: along, align }).window;
-  if (asked) return asked;
+  // (the host library types a window's parts optional; the door needs all three)
+  if (asked?.key && asked.from && asked.to) return { key: asked.key, from: asked.from, to: asked.to };
   return def.mode === "definer" ? allTimeWindow(along, now) : undefined;
 }
 
