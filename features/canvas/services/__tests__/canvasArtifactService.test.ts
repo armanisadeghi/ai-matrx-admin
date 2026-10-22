@@ -87,7 +87,7 @@ describe("canvasArtifactService.readVersionHistory — owner rows only", () => {
 
   it("every chain reader through getVersionHistory sees the owner's newest version, never the planted one", async () => {
     rpc.mockResolvedValue({ data: chain, error: null });
-    const rows = await canvasArtifactService.getVersionHistory("root");
+    const rows = await canvasArtifactService.getVersionHistory("00000000-0000-4000-8000-0000000000cc");
     const latest = rows.reduce((a, b) => (b.version > a.version ? b : a));
     expect(latest.id).toBe("v2");
   });
