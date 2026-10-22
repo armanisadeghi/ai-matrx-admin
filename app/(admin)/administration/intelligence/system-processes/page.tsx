@@ -9,7 +9,7 @@ import { SystemProcessesBoard } from "@/features/system-processes/SystemProcesse
 export default function SystemProcessesPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "System processes" }} />
+      <RecordPageHeader level={{ name: "System processes" }} />
       <div className="flex h-full min-h-0 flex-col p-3">
         <Suspense fallback={<RegionSkeleton shape="rows" count={8} aria-label="Reading system processes" />}>
           <SystemProcessesBoard />

@@ -15,7 +15,7 @@ export function VisionInterviewListPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Vision Interviews" }} />
+      <RecordPageHeader level={{ name: "Vision Interviews" }} />
       <EntityListPage
         config={sessionListConfig}
         headerActions={newButton}

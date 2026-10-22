@@ -26,7 +26,7 @@ export default async function CrmOutreachListsRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Outreach Lists" }} />
+      <RecordPageHeader level={{ name: "Outreach Lists" }} />
       <OutreachListsPage />
     </>
   );

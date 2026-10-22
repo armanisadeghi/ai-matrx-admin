@@ -20,7 +20,7 @@ export function TemplatesPage() {
   );
   return (
     <>
-      <RecordPageHeader backHref="/esign" parents={[{ label: "E-Signatures", href: "/esign" }]} record={{ name: "Templates" }} />
+      <RecordPageHeader backHref="/esign" parents={[{ label: "E-Signatures", href: "/esign" }]} level={{ name: "Templates" }} />
       {ready ? (
         <EntityListPage config={templateListConfig} headerActions={action} emptyAction={action} />
       ) : (

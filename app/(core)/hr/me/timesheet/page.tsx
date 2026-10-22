@@ -49,7 +49,7 @@ export default async function MyTimesheetPage({
           { label: "HR", href: hrHref(org) },
           { label: "My info", href: hrMeHref(org) },
         ]}
-        record={{ name: "My timesheet" }}
+        level={{ name: "My timesheet" }}
       />
       {/* `(core)` body law: h-full overflow-hidden, with the scroll owned inside — and the
           route's own `pt-[var(--shell-header-h)]`, because `.shell-main` starts BEHIND the

@@ -131,7 +131,7 @@ export default function OrgMandatesPage() {
           { label: organization.name, href: `/organizations/${orgId}`},
           { label: "Settings", href: `/organizations/${orgId}/settings`},
         ]}
-        record={{ name: "Mandates" }}
+        level={{ name: "Mandates" }}
       />
       {/* The Home badge on every row: this page lists the caller's FULL
           corpus (an org's admins bind the platform's jobs here), so a row has

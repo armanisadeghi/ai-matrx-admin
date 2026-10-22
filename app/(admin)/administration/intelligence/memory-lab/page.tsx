@@ -11,7 +11,7 @@ export default function MemoryLabPage() {
       <RecordPageHeader
         backHref="/administration/intelligence"
         parents={[{ label: "Intelligence", href: "/administration/intelligence" }]}
-        record={{ name: "Memory Lab" }}
+        level={{ name: "Memory Lab" }}
       />
       <TrialList />
     </>

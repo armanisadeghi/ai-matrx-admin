@@ -171,7 +171,7 @@ export function AgentTestsPlatformPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Agent tests" }} />
+      <RecordPageHeader level={{ name: "Agent tests" }} />
       <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto px-[var(--matrx-page-gutter)] pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">
         <div className="flex justify-end">
           <ArchiveFilter

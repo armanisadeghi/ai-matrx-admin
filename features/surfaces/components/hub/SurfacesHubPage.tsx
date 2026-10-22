@@ -99,7 +99,7 @@ export function SurfacesHubPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Surfaces" }} />
+      <RecordPageHeader level={{ name: "Surfaces" }} />
       <div className="h-full overflow-hidden">
         <div
           className="h-full overflow-y-auto"

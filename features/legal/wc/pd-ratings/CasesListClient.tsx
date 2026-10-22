@@ -38,7 +38,7 @@ function CasesHeader({ showNewCase }: { showNewCase: boolean }) {
         { label: "Legal", href: "/legal" },
         { label: "CA WC", href: "/legal/ca-wc" },
       ]}
-      record={{ name: "Cases" }}
+      level={{ name: "Cases" }}
       actions={
         showNewCase
           ? [

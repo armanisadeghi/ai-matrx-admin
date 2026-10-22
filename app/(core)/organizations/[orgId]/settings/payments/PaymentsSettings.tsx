@@ -111,7 +111,7 @@ export function PaymentsSettings({ siteMode }: { siteMode: SiteStripeMode }) {
         organization ? { label: organization.name, href: `/organizations/${orgId}` } : { label: "", pending: true, href: `/organizations/${orgId}` },
         { label: "Settings", href: `/organizations/${orgId}/settings` },
       ]}
-      record={{ name: "Payments" }}
+      level={{ name: "Payments" }}
     />
   );
 

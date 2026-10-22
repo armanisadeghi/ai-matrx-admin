@@ -15,7 +15,7 @@ export function TemplateGalleryPage({ kind }: { kind: TemplateKind }): ReactNode
         : { label: "Documents", href: "/documents" };
   return (
     <>
-      <RecordPageHeader parents={[parent]} record={{ name: "Template gallery" }} />
+      <RecordPageHeader parents={[parent]} level={{ name: "Template gallery" }} />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-8">
           <TemplateGallery kind={kind} />

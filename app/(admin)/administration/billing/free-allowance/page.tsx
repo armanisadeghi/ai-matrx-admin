@@ -11,7 +11,7 @@ export default function FreeAllowancePage() {
       <RecordPageHeader
         backHref="/administration/billing"
         parents={[{ label: "Billing", href: "/administration/billing" }]}
-        record={{ name: "Free allowance" }}
+        level={{ name: "Free allowance" }}
       />
       <div className="flex h-full min-h-0 flex-col p-3">
         <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-muted/50" />}>

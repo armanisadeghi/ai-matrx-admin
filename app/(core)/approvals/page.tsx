@@ -22,7 +22,7 @@ export default async function ApprovalsPage({
   const focusItemId = Array.isArray(item) ? (item[0] ?? null) : (item ?? null);
   return (
     <>
-      <RecordPageHeader record={{ name: "Waiting on you" }} />
+      <RecordPageHeader level={{ name: "Waiting on you" }} />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <div className="mx-auto w-full max-w-7xl p-4 md:p-6">
           <ApprovalsWorkspace focusItemId={focusItemId} asPage />

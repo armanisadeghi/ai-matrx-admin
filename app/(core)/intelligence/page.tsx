@@ -48,7 +48,7 @@ export default async function IntelligenceIndexRoute({
   }
   return (
     <>
-      <RecordPageHeader record={{ name: "Intelligence" }} />
+      <RecordPageHeader level={{ name: "Intelligence" }} />
       <div className="h-full overflow-y-auto overflow-x-hidden pt-[var(--shell-header-h)]">
         <IntelligenceIndex focusDomain={domain} />
       </div>

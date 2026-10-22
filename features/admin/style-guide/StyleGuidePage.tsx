@@ -217,7 +217,7 @@ export function StyleGuidePage() {
       <RecordPageHeader
         backHref="/administration/ui"
         parents={[{ label: "UI", href: "/administration/ui" }]}
-        record={{ name: "Style guide" }}
+        level={{ name: "Style guide" }}
       />
       <div className="h-full min-h-0 overflow-y-auto" data-matrx-page-scroll>
         <div className="mx-auto grid max-w-6xl gap-10 px-[var(--matrx-page-gutter)] pt-[var(--matrx-page-top)] lg:grid-cols-[11rem_minmax(0,1fr)]">

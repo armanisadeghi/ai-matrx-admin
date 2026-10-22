@@ -12,7 +12,7 @@ export default function LifeExpectancyUtilityPage() {
           { label: "CA WC", href: "/legal/ca-wc" },
           { label: "Utilities", href: "/legal/ca-wc/utilities" },
         ]}
-        record={{ name: "Life Expectancy" }}
+        level={{ name: "Life Expectancy" }}
       />
       <MarketingPageShell className="bg-background">
         <main

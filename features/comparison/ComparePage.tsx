@@ -61,7 +61,7 @@ export function ComparePage() {
   const organizationId = useComparisonOrganizationId();
   return (
     <>
-      <RecordPageHeader backHref="/data" record={{ name: "Compare" }} />
+      <RecordPageHeader backHref="/data" level={{ name: "Compare" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto bg-textured" data-matrx-page-scroll="">
           <CompareSurface organizationId={organizationId} />

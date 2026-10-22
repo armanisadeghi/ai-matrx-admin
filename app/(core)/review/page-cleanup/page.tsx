@@ -25,7 +25,7 @@ export default async function PageCleanupPage() {
   if (status.level !== "super_admin") forbidden();
   return (
     <>
-      <RecordPageHeader record={{ name: "Page cleanup" }} />
+      <RecordPageHeader level={{ name: "Page cleanup" }} />
       <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <PageCleanupReview />
       </div>

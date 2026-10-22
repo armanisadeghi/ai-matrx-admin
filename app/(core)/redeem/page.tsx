@@ -29,7 +29,7 @@ export default async function RedeemPage({ searchParams }: RedeemPageProps) {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Redeem code" }} />
+      <RecordPageHeader level={{ name: "Redeem code" }} />
       <div className="h-full overflow-y-auto">
         <div className="mx-auto w-full max-w-lg space-y-4 p-4 pt-[var(--shell-header-h)] sm:p-6 sm:pt-[var(--shell-header-h)]">
           <h1 className="text-lg font-semibold">Redeem a free-time code</h1>

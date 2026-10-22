@@ -42,7 +42,7 @@ export default function UtilitiesHubPage() {
           { label: "Legal", href: "/legal" },
           { label: "CA WC", href: "/legal/ca-wc" },
         ]}
-        record={{ name: "Utilities" }}
+        level={{ name: "Utilities" }}
       />
       <MarketingPageShell className="bg-background">
         <div

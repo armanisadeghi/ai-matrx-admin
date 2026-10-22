@@ -14,7 +14,7 @@ export function AgentOrgChartPage() {
       <RecordPageHeader
         backHref="/agents"
         parents={[{ label: "Agents", href: "/agents" }]}
-        record={{ name: "Org chart" }}
+        level={{ name: "Org chart" }}
         actions={[{ label: "Orchestras", icon: Network, href: "/agents/orchestras", showLabel: true }]}
       />
       <div className="flex h-full flex-col overflow-hidden pt-[var(--shell-header-h)]">

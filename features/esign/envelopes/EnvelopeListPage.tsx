@@ -28,7 +28,7 @@ export function EnvelopeListPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "E-Signatures" }} />
+      <RecordPageHeader level={{ name: "E-Signatures" }} />
       {mayLoad ? (
         <EntityListPage config={envelopeListConfig} headerActions={sendButton} emptyAction={sendButton} />
       ) : (

@@ -32,7 +32,7 @@ export default async function CrmChaseboxRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Chasebox" }} />
+      <RecordPageHeader level={{ name: "Chasebox" }} />
       {/* The page reads `?queue=` so an assist chip can open one queue
           directly; `useSearchParams` needs a boundary above it. */}
       <Suspense fallback={null}>

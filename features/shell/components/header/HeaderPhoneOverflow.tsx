@@ -12,7 +12,7 @@
  * controls, the same states, the same auth gates:
  *
  *   Search        → the ⌘K bar (the dock's Search door, too)
- *   Intelligence  → the page's agents panel, in this sheet
+ *   Agents for this page → the page's agents panel, in this sheet
  *   Canvas        → open / put away; empty opens the canvas home
  *   Messages      → the Messages canvas tab; its unread count on the row
  *   Notifications → the Notifications canvas tab (notifications ruling 4: it
@@ -133,7 +133,10 @@ function CountBadge({ count }: { count: number }) {
   );
 }
 
-const TRIGGER_LABEL = "Search, intelligence, canvas, messages and notifications";
+// The agents row carries the desktop button's own name (SurfaceAgentsHeaderButton, defect 95 / Q-05):
+// at phone width this sheet is the only door, and people look for the name they know.
+const AGENTS_LABEL = "Agents for this page";
+const TRIGGER_LABEL = "Search, intelligence (agents for this page), canvas, messages and notifications";
 
 /**
  * 🚨 THE UNREAD MARK NEVER SITS ON THE ⋮ (page-pass shared defects,
@@ -369,7 +372,7 @@ export function HeaderPhoneOverflow({
   const canvasState =
     canvas.itemCount === 0 ? "empty" : canvas.isOpen ? "open" : "closed";
 
-  const title = view === "agents" ? "Intelligence" : "More";
+  const title = view === "agents" ? AGENTS_LABEL : "More";
 
   return (
     <div className="shell-header-overflow relative shrink-0" data-header-phone-overflow>
@@ -423,7 +426,7 @@ export function HeaderPhoneOverflow({
               />
               <Row
                 icon={<INTELLIGENCE_ICON className="h-5 w-5 text-primary" />}
-                label="Intelligence"
+                label={AGENTS_LABEL}
                 onClick={() => {
                   if (!isAuthenticated) {
                     close();

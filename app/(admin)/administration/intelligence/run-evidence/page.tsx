@@ -10,7 +10,7 @@ export default function RunEvidenceRoute() {
       <RecordPageHeader
         backHref="/administration/intelligence"
         parents={[{ label: "Intelligence", href: "/administration/intelligence" }]}
-        record={{ name: "Run Evidence" }}
+        level={{ name: "Run Evidence" }}
       />
       <SurfaceEvidencePage />
     </div>

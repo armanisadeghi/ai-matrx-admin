@@ -14,7 +14,7 @@ export default async function WorkflowBattleRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Workflow Battle" }} />
+      <RecordPageHeader level={{ name: "Workflow Battle" }} />
       <WorkflowBattlePage />
     </>
   );

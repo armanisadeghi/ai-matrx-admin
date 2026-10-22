@@ -24,7 +24,7 @@ export default async function CrmDealsRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Deals" }} />
+      <RecordPageHeader level={{ name: "Deals" }} />
       <DealsPageWithDrill />
     </>
   );

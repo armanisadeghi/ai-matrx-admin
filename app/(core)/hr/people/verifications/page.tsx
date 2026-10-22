@@ -22,7 +22,7 @@ export default async function HrVerificationsPage({ searchParams }: { searchPara
         parents={[
           { label: "HR", href: hrHref(org) },
         ]}
-        record={{ name: "Verification letters" }}
+        level={{ name: "Verification letters" }}
       />
       <div className="flex h-full flex-col overflow-hidden">
         <div className="min-h-0 flex-1 overflow-y-auto">

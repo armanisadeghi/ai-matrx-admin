@@ -11,7 +11,7 @@ export default function ResearchNewTopicPage() {
         parents={[
           { label: "Research topics", href: "/research/topics" },
         ]}
-        record={{ name: "New topic" }}
+        level={{ name: "New topic" }}
       />
       <div className="h-dvh w-full overflow-y-auto bg-textured">
         {/* Spacer so initial content starts below the glass header */}

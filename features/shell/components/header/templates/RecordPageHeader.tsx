@@ -61,8 +61,17 @@ export interface RecordPageHeaderProps {
    * trails sit in that guard's shrink-only baseline.
    */
   parents?: Crumb[];
-  /** The record — the LAST crumb. `siblings` turns it into a switcher. */
-  record: {
+  /**
+   * A LEVEL, not a record: a list, queue or place with no id of its own (`/crm/deals`). Its crumb's
+   * door is the derived trail's route siblings (the other places at its level). Pass `level` OR
+   * `record`, never both.
+   */
+  level?: {
+    /** Omit to use the derived last crumb's label. */
+    name?: string;
+  };
+  /** The record — the LAST crumb. `siblings` turns it into a switcher. Omit when the page is a `level`. */
+  record?: {
     /** Omit to use the derived last crumb (the address's key, the declared name, else the short id). */
     name?: string;
     siblings?: CrumbOption[];
@@ -109,7 +118,7 @@ const menuAction = (item: RecordPageMenuItem): RecordMenuAction => ({
  * is not the page).
  */
 function HostedRecordPageHeader({
-  record,
+  record = {},
   status,
   modes,
   activeModeHref,
@@ -143,7 +152,7 @@ function HostedRecordPageHeader({
 
 export function RecordPageHeader(props: RecordPageHeaderProps) {
   // In a host (board tile, window) the record is not the page: one compact in-body row instead.
-  const ref = props.record.token && props.record.id ? { token: props.record.token, id: props.record.id } : null;
+  const ref = props.record?.token && props.record.id ? { token: props.record.token, id: props.record.id } : null;
   const host = useHostChromeFor(ref);
   return host ? <HostedRecordPageHeader {...props} /> : <PageRecordHeader {...props} />;
 }
@@ -151,7 +160,8 @@ export function RecordPageHeader(props: RecordPageHeaderProps) {
 function PageRecordHeader({
   backHref,
   parents,
-  record,
+  level,
+  record: declaredRecord,
   status,
   modes,
   activeModeHref,
@@ -163,9 +173,16 @@ function PageRecordHeader({
   const menuItems = menu?.items ?? [];
   // THE DERIVED TRAIL: every level above the record comes from the address + menu; a page supplies
   // only its record. The last derived crumb is the record itself (named by `record.name` when given).
+  const record: NonNullable<RecordPageHeaderProps["record"]> = declaredRecord ?? { name: level?.name };
   const derived = useDerivedTrail({ recordName: record.name });
   const trail = parents ?? derived.slice(0, -1);
-  const recordName = record.name ?? derived[derived.length - 1]?.label ?? "";
+  const own = derived[derived.length - 1];
+  const recordName = record.name ?? own?.label ?? "";
+  // A level's door is the siblings the derived trail already has for its last crumb (the menu's
+  // rows at its level, else the route tree loaded when the door first opens).
+  const isLevel = Boolean(level) && !declaredRecord;
+  const levelOptions = isLevel ? own?.options : undefined;
+  const levelLoadOptions = isLevel ? own?.loadOptions : undefined;
   // THE NEW APP FRAME: the Actions menu's items are the frame's "…" items (desktop and phone), so
   // the line carries no second menu. Classic: no frame, nothing declared.
   const inFrame = useInFrame();
@@ -196,7 +213,8 @@ function PageRecordHeader({
       trail={trail}
       entityLabel={recordName}
       entityRecord={record.token && record.id ? { token: record.token, id: record.id } : undefined}
-      entityOptions={record.siblings}
+      entityOptions={record.siblings ?? levelOptions}
+      entityLoadOptions={levelLoadOptions}
       entityStatus={
         status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : undefined
       }

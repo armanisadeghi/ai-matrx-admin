@@ -15,7 +15,7 @@ export default async function AllRulebooksRoute() {
   if (!isAuthenticated) redirect("/masterwork");
   return (
     <>
-      <RecordPageHeader record={{ name: "All Rulebooks" }} />
+      <RecordPageHeader level={{ name: "All Rulebooks" }} />
       <MandateDoorLink feature="masterwork" label="Masterwork agents" className="ml-auto mr-1" />
       <div className="h-full overflow-y-auto bg-textured pt-[calc(var(--shell-header-h)+1rem)]">
         <MasterworkStudioPage />

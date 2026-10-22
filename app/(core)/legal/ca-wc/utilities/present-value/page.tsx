@@ -12,7 +12,7 @@ export default function PresentValueUtilityPage() {
           { label: "CA WC", href: "/legal/ca-wc" },
           { label: "Utilities", href: "/legal/ca-wc/utilities" },
         ]}
-        record={{ name: "Present Value" }}
+        level={{ name: "Present Value" }}
       />
       <MarketingPageShell className="bg-background">
         <main

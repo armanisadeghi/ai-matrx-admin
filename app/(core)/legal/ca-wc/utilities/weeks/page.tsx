@@ -12,7 +12,7 @@ export default function WeeksUtilityPage() {
           { label: "CA WC", href: "/legal/ca-wc" },
           { label: "Utilities", href: "/legal/ca-wc/utilities" },
         ]}
-        record={{ name: "Number of Weeks" }}
+        level={{ name: "Number of Weeks" }}
       />
       <MarketingPageShell className="bg-background">
         <main

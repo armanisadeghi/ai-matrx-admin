@@ -20,7 +20,7 @@ export default async function BuildAppletPage({ searchParams }: { searchParams: 
   if (applet) redirect(`/applets/build/${encodeURIComponent(applet)}`);
   return (
     <>
-      <RecordPageHeader backHref="/applets" parents={[{ label: "Applets", href: "/applets" }]} record={{ name: "Build an Applet" }} />
+      <RecordPageHeader backHref="/applets" parents={[{ label: "Applets", href: "/applets" }]} level={{ name: "Build an Applet" }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <AppletBuilder appletId={null} routed seed={seed ?? null} />
       </div>

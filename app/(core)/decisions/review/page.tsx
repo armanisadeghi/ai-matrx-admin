@@ -31,7 +31,7 @@ export default async function DecisionsReviewRoute({
         parents={[
           { label: "Decisions", href: "/decisions" },
         ]}
-        record={{ name: "Review answers" }}
+        level={{ name: "Review answers" }}
       />
       <div className="h-full overflow-hidden">
         <ReviewQueue initialSource={initialSource} />

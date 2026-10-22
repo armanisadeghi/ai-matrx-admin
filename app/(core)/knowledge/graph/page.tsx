@@ -30,7 +30,7 @@ export default async function KnowledgeGraphPage({
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Knowledge graph" }} />
+      <RecordPageHeader level={{ name: "Knowledge graph" }} />
       <div
         className="h-full overflow-hidden bg-textured"
         style={{ paddingTop: "var(--shell-header-h)" }}

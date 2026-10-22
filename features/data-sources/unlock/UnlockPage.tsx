@@ -91,7 +91,7 @@ export function UnlockPage() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data/library" record={{ name: "Blocked pages" }} />
+      <RecordPageHeader backHref="/data/library" level={{ name: "Blocked pages" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-unlock-page="">
           <div className="mx-auto flex max-w-6xl flex-col gap-4 p-4">

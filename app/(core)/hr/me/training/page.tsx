@@ -28,7 +28,7 @@ export default async function HrMeTrainingPage({ searchParams }: { searchParams:
           { label: "HR", href: hrHref(org) },
           { label: "My info", href: hrMeHref(org) },
         ]}
-        record={{ name: "My training" }}
+        level={{ name: "My training" }}
       />
       <div className="flex h-full flex-col overflow-hidden pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1 overflow-y-auto">

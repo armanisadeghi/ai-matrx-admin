@@ -33,7 +33,7 @@ export default async function SendingIdentitiesRoute() {
       <RecordPageHeader
         backHref="/crm"
         parents={[{ label: "CRM", href: "/crm" }]}
-        record={{ name: "Sending mailboxes" }}
+        level={{ name: "Sending mailboxes" }}
       />
       <SendingIdentitiesPage />
     </>

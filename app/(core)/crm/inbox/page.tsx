@@ -32,7 +32,7 @@ export default async function CrmInboxRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Outreach Inbox" }} />
+      <RecordPageHeader level={{ name: "Outreach Inbox" }} />
       <InboxPage />
     </>
   );

@@ -103,7 +103,7 @@ export function DataLibraryPage() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data" record={{ name: toolId || (toolsRequested && toolsOpen) ? "Tools" : "Data library" }} />
+      <RecordPageHeader backHref="/data" level={{ name: toolId || (toolsRequested && toolsOpen) ? "Tools" : "Data library" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-data-library="">
           {toolId ? (

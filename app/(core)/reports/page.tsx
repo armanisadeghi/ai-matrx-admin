@@ -28,7 +28,7 @@ export default async function ReportsPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Reports" }} />
+      <RecordPageHeader level={{ name: "Reports" }} />
       <div className="w-full">
         <div className="container mx-auto max-w-[1400px] px-4 pb-6 pt-[calc(var(--shell-header-h)+1.5rem)] sm:px-6 md:px-8">
           <ReportsLanding mode="user" />

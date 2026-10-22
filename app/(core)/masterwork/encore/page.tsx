@@ -14,7 +14,7 @@ export default async function EncoreRoute() {
   if (!isAuthenticated) redirect(loginHref("/masterwork/encore"));
   return (
     <>
-      <RecordPageHeader record={{ name: "Encore" }} />
+      <RecordPageHeader level={{ name: "Encore" }} />
       <EncoreHomePage />
     </>
   );

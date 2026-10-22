@@ -35,7 +35,7 @@ export default async function MyAccessLogPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Who opened my data" }} />
+      <RecordPageHeader level={{ name: "Who opened my data" }} />
       <div className="h-full overflow-y-auto">
         <div className="mx-auto w-full max-w-3xl space-y-4 p-4 pt-[var(--shell-header-h)] sm:p-6 sm:pt-[var(--shell-header-h)]">
           <div className="flex items-center gap-1.5">

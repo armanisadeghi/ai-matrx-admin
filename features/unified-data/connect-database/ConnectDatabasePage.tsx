@@ -87,7 +87,7 @@ export function ConnectDatabasePage() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data" record={{ name: "Connect a database" }} />
+      <RecordPageHeader backHref="/data" level={{ name: "Connect a database" }} />
       <div className="h-full overflow-y-auto overflow-x-hidden">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 pb-16 pt-[calc(var(--shell-header-h)+1.25rem)] sm:px-6">
           <div className="flex flex-wrap items-center justify-end gap-2">

@@ -30,12 +30,14 @@ jest.mock("@/features/shell/components/header/PageHeader", () => ({
   default: ({ children }: { children: React.ReactNode }) => <div data-testid="page-header">{children}</div>,
 }));
 // The page's REAL trail: what the address + menu derive for this record page.
+const RECORD_TRAIL = [
+  { label: "Marketing", href: "/marketing" },
+  { label: "Brands", href: "/marketing/brands" },
+  { label: "Acme Coffee" },
+];
+let mockDerived: unknown[] = RECORD_TRAIL;
 jest.mock("@/features/shell/breadcrumbs/useDerivedTrail", () => ({
-  useDerivedTrail: () => [
-    { label: "Marketing", href: "/marketing" },
-    { label: "Brands", href: "/marketing/brands" },
-    { label: "Acme Coffee" },
-  ],
+  useDerivedTrail: () => mockDerived,
 }));
 
 class RO {
@@ -157,6 +159,48 @@ describe("page-top templates in the new app frame", () => {
     const src = readFileSync(join(__dirname, "../FrameHostImpl.tsx"), "utf8");
     expect(src).toMatch(/frameHostCrumbs\(product, pageCrumbs, useDerivedTrail\(/);
     expect(src).not.toMatch(/derivedCrumbs|pageTrailCrumbs/);
+  });
+
+  describe("a LEVEL (a list, no id): its crumb's door is the derived trail's siblings", () => {
+    const LEVEL_TRAIL = [
+      { label: "Marketing", href: "/marketing" },
+      {
+        label: "Brands",
+        options: [
+          { label: "Brands", href: "/marketing/brands", active: true },
+          { label: "Reports", href: "/marketing/reports" },
+        ],
+      },
+    ];
+    beforeEach(() => {
+      mockDerived = LEVEL_TRAIL;
+    });
+    afterEach(() => {
+      mockDerived = RECORD_TRAIL;
+    });
+
+    it("classic: the level's name opens a sibling door", () => {
+      mount(<RecordPageHeader level={{ name: "Brands" }} />);
+      const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+      expect(slot.querySelector("[data-crumb-door]")).not.toBeNull();
+    });
+
+    it("frame: the level's crumb carries the derived siblings", () => {
+      mount(
+        <FrameHarness>
+          <RecordPageHeader level={{ name: "Brands" }} />
+        </FrameHarness>,
+      );
+      const frameCrumbs = el.querySelector("[data-frame-crumbs]") as HTMLElement;
+      expect(frameCrumbs.querySelector("h1")?.textContent).toBe("Brands");
+      expect(frameCrumbs.querySelector('[data-crumb-door="siblings"]')).not.toBeNull();
+    });
+
+    it("a record never borrows the level's siblings", () => {
+      mount(<RecordPageHeader record={{ name: "Brands" }} />);
+      const slot = el.querySelector('[data-testid="page-header"]') as HTMLElement;
+      expect(slot.querySelector("[data-crumb-door]")).toBeNull();
+    });
   });
 
   it("classic: the template draws its own back, trail and name, as before", () => {

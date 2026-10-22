@@ -15,7 +15,7 @@ export default async function CommerceAttentionPage() {
   if (!isAuthenticated) redirect("/login?next=/commerce/attention");
   return (
     <>
-      <RecordPageHeader record={{ name: "Attention" }} />
+      <RecordPageHeader level={{ name: "Attention" }} />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <AttentionQueue />
       </div>

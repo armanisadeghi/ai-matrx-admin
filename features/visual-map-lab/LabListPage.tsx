@@ -159,7 +159,7 @@ export function LabListPage() {
   );
   return (
     <>
-      <RecordPageHeader record={{ name: "Visual map lab" }} />
+      <RecordPageHeader level={{ name: "Visual map lab" }} />
       <EntityListPage key={attempt} config={config} defaultScope={{ kind: "system" }} scopeTabs={false} clearsShellHeader={false} notice={notice} surface={SURFACE} />
     </>
   );

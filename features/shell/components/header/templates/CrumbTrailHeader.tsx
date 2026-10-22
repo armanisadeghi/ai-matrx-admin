@@ -78,7 +78,8 @@ export interface CrumbTrailHeaderProps {
 
 // EVERY CRUMB IS A DOOR (Arman, 2026-10-22): the classic trail opens a level's siblings through the
 // SAME searchable door the new frame draws (frame/CrumbDoor) — one component, client-side moves.
-function CrumbOptions({ crumb }: { crumb: Crumb }) {
+/** A level's sibling door (the frame's CrumbDoor, siblings kind) — drawn after a crumb's text. */
+export function CrumbOptions({ crumb }: { crumb: Crumb }) {
   const router = useRouter();
   if (!crumb.loadOptions && !(crumb.options && crumb.options.length > 0)) return null;
   const go = (opt: CrumbOption) => ({ ...opt, onSelect: () => router.push(opt.href) });

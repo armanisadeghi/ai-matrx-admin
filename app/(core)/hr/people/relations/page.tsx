@@ -26,7 +26,7 @@ export default async function HrRelationsPage({ searchParams }: { searchParams: 
         parents={[
           { label: "HR", href: hrHref(org) },
         ]}
-        record={{ name: "Employee relations" }}
+        level={{ name: "Employee relations" }}
       />
       <div className="flex h-full flex-col overflow-hidden">
         <div className="min-h-0 flex-1 overflow-y-auto">

@@ -264,7 +264,7 @@ export function BrowseEverything() {
   ];
 
   const header = (
-    <RecordPageHeader record={{ name: "Connected sources" }} />
+    <RecordPageHeader level={{ name: "Connected sources" }} />
   );
 
   const connectLinks = missingProviders.map((provider) => (

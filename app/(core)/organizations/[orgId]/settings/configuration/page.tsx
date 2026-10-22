@@ -50,7 +50,7 @@ export default function OrgConfigurationPage() {
         { label: organization.name, href: `/organizations/${orgId}`},
         { label: "Settings", href: `/organizations/${orgId}/settings`},
       ]}
-      record={{ name: "Configuration" }}
+      level={{ name: "Configuration" }}
     />
     <div className="h-full overflow-y-auto pt-[var(--shell-header-h)]"><div className="mx-auto max-w-4xl space-y-8 p-6">
       <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm">

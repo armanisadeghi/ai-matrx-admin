@@ -30,7 +30,7 @@ export default async function HrTasksPage({
               parents={[
                 { label: "HR", href: hrHref(org) },
               ]}
-              record={{ name: "HR tasks" }}
+              level={{ name: "HR tasks" }}
             />
             {/*
               🚨 `pt-[var(--shell-header-h)]` IS NOT DECORATION — IT IS WHAT MAKES THIS PAGE

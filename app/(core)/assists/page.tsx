@@ -17,7 +17,7 @@ export default async function AssistsPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Assists" }} />
+      <RecordPageHeader level={{ name: "Assists" }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1">
           <AssistsManager />

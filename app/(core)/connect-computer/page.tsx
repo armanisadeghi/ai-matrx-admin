@@ -25,7 +25,7 @@ export default async function ConnectComputerRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Connect a computer" }} />
+      <RecordPageHeader level={{ name: "Connect a computer" }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1 overflow-auto">
           {/* `useSearchParams` needs a boundary; the fallback names what it is

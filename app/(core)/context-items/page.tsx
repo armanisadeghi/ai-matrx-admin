@@ -10,7 +10,7 @@ export default function AllContextItemsPage() {
       <RecordPageHeader
         backHref="/scopes"
         parents={[{ label: "Scopes", href: "/scopes" }]}
-        record={{ name: "All context items" }}
+        level={{ name: "All context items" }}
       />
       <div className="h-full overflow-hidden">
         <div className="h-full overflow-y-auto bg-textured">

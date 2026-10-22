@@ -16,7 +16,7 @@ export default async function CommerceDraftsPage() {
   if (!isAuthenticated) redirect("/login?next=/commerce/drafts");
   return (
     <>
-      <RecordPageHeader record={{ name: "Drafts Review" }} />
+      <RecordPageHeader level={{ name: "Drafts Review" }} />
       <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <DraftReviewQueue />
       </div>

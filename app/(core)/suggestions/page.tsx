@@ -10,7 +10,7 @@ export default async function SuggestionsPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Suggestions" }} />
+      <RecordPageHeader level={{ name: "Suggestions" }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1">
           <SuggestionsManager />

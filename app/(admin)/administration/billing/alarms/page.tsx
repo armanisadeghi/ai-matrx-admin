@@ -12,7 +12,7 @@ export default function SpendAlarmsPage() {
       <RecordPageHeader
         backHref="/administration/billing"
         parents={[{ label: "Billing", href: "/administration/billing" }]}
-        record={{ name: "Alarms" }}
+        level={{ name: "Alarms" }}
       />
       <div className="flex h-full min-h-0 flex-col p-3">
         <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-muted/50" />}>

@@ -16,7 +16,7 @@ export default async function CommerceStoreConnectPage() {
   if (!isAuthenticated) redirect("/login?next=/commerce/stores/connect");
   return (
     <>
-      <RecordPageHeader record={{ name: "Connect a Store" }} />
+      <RecordPageHeader level={{ name: "Connect a Store" }} />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <StoreConnectShell />
       </div>

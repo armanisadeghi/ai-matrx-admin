@@ -99,7 +99,7 @@ export function DataToModelLab() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data/library" record={{ name: "Data for a model" }} />
+      <RecordPageHeader backHref="/data/library" level={{ name: "Data for a model" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-data-lab="">
           <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-4">

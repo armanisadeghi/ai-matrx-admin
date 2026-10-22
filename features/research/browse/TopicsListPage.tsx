@@ -44,7 +44,7 @@ export function TopicsListPage() {
   const surface = useResearchTopicsSurface();
   return (
     <>
-      <RecordPageHeader record={{ name: "Research topics" }} />
+      <RecordPageHeader level={{ name: "Research topics" }} />
       <MandateDoorLink feature="research" label="Research agents" />
       <EntityListPage
         config={RESEARCH_TOPIC_LIST_CONFIG}

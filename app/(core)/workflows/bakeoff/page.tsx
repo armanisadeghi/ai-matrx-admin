@@ -81,7 +81,7 @@ export default function BakeoffPickerPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Run-page bake-off — pick a workflow, pick a design" }} />
+      <RecordPageHeader level={{ name: "Run-page bake-off — pick a workflow, pick a design" }} />
       <div className="h-full overflow-hidden flex flex-col">
         <div className="mx-auto w-full max-w-5xl px-4 pb-2 pt-[calc(var(--shell-header-h)+1rem)]">
           <div className="relative">

@@ -64,7 +64,7 @@ export function ToolBattleListPage() {
   return (
     <>
       <RecordPageHeader
-        record={{ name: "Tool Battle" }}
+        level={{ name: "Tool Battle" }}
         actions={[{ label: "New battle", icon: Plus, href: `${BATTLE_HOME}/new`, primary: true, showLabel: true }]}
       />
       <div className="h-full min-h-0 px-[var(--matrx-page-gutter)] pb-8 pt-[calc(var(--shell-header-h)+var(--matrx-page-top))]">

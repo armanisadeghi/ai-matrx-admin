@@ -23,7 +23,7 @@ export default async function HrPerformance360Page({ searchParams }: { searchPar
           { label: "HR", href: hrHref(org) },
           { label: "Performance", href: hrPerformanceHref(org) },
         ]}
-        record={{ name: "360 review (trial)" }}
+        level={{ name: "360 review (trial)" }}
       />
       <Suspense fallback={<div className="h-full animate-pulse bg-card/40" aria-label="Loading 360 reviews" />}>
         <Review360ListPage />

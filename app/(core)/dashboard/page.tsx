@@ -11,7 +11,7 @@ export default function DashboardPage() {
   return (
     <>
       <LoadMark name="page /dashboard" />
-      <RecordPageHeader record={{ name: "Dashboard" }} />
+      <RecordPageHeader level={{ name: "Dashboard" }} />
       <DashboardClient />
     </>
   );

@@ -61,7 +61,7 @@ function BoardsList() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Boards" }} />
+      <RecordPageHeader level={{ name: "Boards" }} />
       {mayLoad ? (
         <div className="contents matrx-touch-targets">
           <EntityListPage config={boardListConfig} headerActions={actions} emptyAction={actions} />

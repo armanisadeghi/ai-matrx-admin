@@ -27,7 +27,7 @@ export default async function LayoutAppletPage({ searchParams }: { searchParams:
           { label: "Applets", href: "/applets" },
           { label: "Build", href: "/applets/build" },
         ]}
-        record={{ name: "Start from a layout" }}
+        level={{ name: "Start from a layout" }}
       />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <LayoutAppletStart initialKind={initialKind} />

@@ -44,7 +44,7 @@ export const APPLET_TEMPLATES_HREF = "/templates/applets";
 export function AppletsListPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Applets" }} />
+      <RecordPageHeader level={{ name: "Applets" }} />
       <EntityListPage
         config={appletListConfig}
         surface={APPLET_LIST_SURFACE}

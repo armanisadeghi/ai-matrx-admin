@@ -28,7 +28,7 @@ export function MemoryPageFrame({
       <RecordPageHeader
         backHref="/memory"
         parents={[{ label: "Memory", href: "/memory" }]}
-        record={{ name }}
+        level={{ name }}
         actions={actions}
       />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">

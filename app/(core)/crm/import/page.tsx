@@ -30,7 +30,7 @@ export default async function CrmImportRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Import contacts" }} />
+      <RecordPageHeader level={{ name: "Import contacts" }} />
       <div className="h-full overflow-hidden">
         <ImportWizard />
       </div>

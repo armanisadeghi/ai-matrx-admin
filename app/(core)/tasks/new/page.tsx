@@ -16,7 +16,7 @@ export default function NewTaskPage() {
       <RecordPageHeader
         backHref="/tasks"
         parents={[{ label: "Tasks", href: "/tasks" }]}
-        record={{ name: "New task" }}
+        level={{ name: "New task" }}
       />
       {/* Static top UI (the form / post-save banner starts at the top) must
           clear the glass header, or it renders behind it on mobile. */}

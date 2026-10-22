@@ -31,7 +31,7 @@ export default async function NewRulebookRoute() {
         parents={[
           { label: "Masterwork", href: "/masterwork" },
         ]}
-        record={{ name: "New rulebook" }}
+        level={{ name: "New rulebook" }}
       />
       <div className="h-full w-full overflow-y-auto bg-textured pt-[var(--shell-header-h,2.75rem)]">
         <Suspense fallback={null}>

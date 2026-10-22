@@ -18,7 +18,7 @@ export default async function BringYourWorkRoute() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Connect your AI" }} />
+      <RecordPageHeader level={{ name: "Connect your AI" }} />
       <div className="flex h-full flex-col overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1 overflow-auto">
           <BringYourWorkPage />

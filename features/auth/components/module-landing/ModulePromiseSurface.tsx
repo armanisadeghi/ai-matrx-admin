@@ -49,7 +49,7 @@ export function ModulePromiseSurface({
   return (
     <>
       {parent ? (
-        <RecordPageHeader backHref={parent.href} parents={[parent]} record={{ name: title }} />
+        <RecordPageHeader backHref={parent.href} parents={[parent]} level={{ name: title }} />
       ) : (
         <PageHeader>
           <div className="flex w-full min-w-0 items-center">

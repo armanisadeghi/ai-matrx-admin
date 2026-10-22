@@ -191,7 +191,7 @@ export default function MakeHome() {
   return (
     <>
       <PageHeader>
-        <RecordPageHeader backHref="/" record={{ name: "Make" }} />
+        <RecordPageHeader backHref="/" level={{ name: "Make" }} />
       </PageHeader>
       <div className="h-full overflow-y-auto overflow-x-hidden bg-textured">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-16 pt-[calc(var(--shell-header-h)+1.25rem)] sm:px-6">

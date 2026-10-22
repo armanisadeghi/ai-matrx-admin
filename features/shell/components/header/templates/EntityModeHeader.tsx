@@ -23,13 +23,12 @@ import { usePhonePageActions } from "@/features/shell/components/header/phone-pa
 import NavLink from "@/components/navigation/NavLink";
 import {
   Check,
-  ChevronDown,
   ChevronRight,
   MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { CrumbNode, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { CrumbNode, CrumbOptions, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import {
   RouteModeNav,
   type RouteNavItem,
@@ -45,12 +44,6 @@ import {
   BottomSheetBody,
   BottomSheetHeader,
 } from "@ai-matrx/design-system";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
@@ -132,6 +125,12 @@ export interface EntityModeHeaderProps {
   entityStatus?: React.ReactNode;
   /** Sibling entities for the name dropdown. Omit for a plain label. */
   entityOptions?: EntityOption[];
+  /**
+   * Siblings loaded when the name's door first opens — a LEVEL (a list or place, no id) passes the
+   * derived trail's route siblings here, so its crumb is a door like every other. Ignored when
+   * `entityOptions` is given.
+   */
+  entityLoadOptions?: () => Promise<EntityOption[]>;
   /** Sub-view nav (View | Edit | …). Center pill on desktop; drawer rows on mobile. */
   modes?: RouteNavItem[];
   /**
@@ -312,6 +311,7 @@ export function EntityModeHeader({
   trail,
   entityStatus,
   entityOptions,
+  entityLoadOptions,
   modes,
   activeModeHref,
   onModeSelect,
@@ -330,8 +330,13 @@ export function EntityModeHeader({
   const own = useOwnAddress();
   const inFrame = useDeclareFrameCrumbs([
     ...(trail ?? []).map(frameCrumbOf),
-    { label: entityLabel, href: own.href, options: entityOptions },
+    { label: entityLabel, href: own.href, options: entityOptions, loadOptions: entityOptions ? undefined : entityLoadOptions },
   ]);
+  // The name's door (classic): the frame's CrumbDoor, siblings kind — one component in both shells.
+  const levelDoor =
+    entityOptions?.length || entityLoadOptions ? (
+      <CrumbOptions crumb={{ label: entityLabel, options: entityOptions?.length ? entityOptions : undefined, loadOptions: entityLoadOptions }} />
+    ) : null;
   const [sheetOpen, setSheetOpen] = useState(false);
   // On a phone the shell's ⋮ hosts this header's options directly.
   const isPhone = useIsMobile();
@@ -426,55 +431,19 @@ export function EntityModeHeader({
                 ))}
               </nav>
             ) : null}
-            {entityOptions && entityOptions.length > 0 ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    aria-label="Switch"
-                    className="flex shrink-0 items-center gap-0.5 rounded-full ms-[3px] px-1.5 py-0.5 hover:bg-[var(--matrx-glass-bg-active)] transition-colors"
-                  >
-                    {label}
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <div className="max-h-[60dvh] overflow-y-auto">
-                    {entityOptions.map((opt) => (
-                      <DropdownMenuItem
-                        key={opt.href}
-                        asChild
-                        className={cn(opt.active && "bg-accent/60")}
-                      >
-                        <NavLink
-                          href={opt.href}
-                          className="flex items-center gap-2"
-                        >
-                          <Check
-                            className={cn(
-                              "h-3.5 w-3.5 shrink-0",
-                              opt.active
-                                ? "opacity-100 text-primary"
-                                : "opacity-0",
-                            )}
-                          />
-                          <span className="truncate">{opt.label}</span>
-                        </NavLink>
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : own.isCurrent ? (
-              <span className="flex min-w-0 items-center ps-[3px]">{label}</span>
+            {own.isCurrent ? (
+              <span className="flex min-w-0 items-center gap-0.5 ps-[3px]">{label}{levelDoor}</span>
             ) : (
-              <NavLink
-                href={own.href}
-                data-entity-own-link=""
-                className="flex min-w-0 items-center rounded-md ms-[3px] px-1 hover:bg-[var(--matrx-glass-bg-active)] transition-colors"
-              >
-                {label}
-              </NavLink>
+              <span className="flex min-w-0 items-center gap-0.5">
+                <NavLink
+                  href={own.href}
+                  data-entity-own-link=""
+                  className="flex min-w-0 items-center rounded-md ms-[3px] px-1 hover:bg-[var(--matrx-glass-bg-active)] transition-colors"
+                >
+                  {label}
+                </NavLink>
+                {levelDoor}
+              </span>
             )}
             </>
             )}

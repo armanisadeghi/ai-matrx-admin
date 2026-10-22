@@ -15,7 +15,7 @@ export default async function MemoryHubPage() {
   if (!isAuthenticated) return <KnowledgeLanding />;
   return (
     <>
-      <RecordPageHeader record={{ name: "Memory" }} />
+      <RecordPageHeader level={{ name: "Memory" }} />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
         <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
           {MEMORY_HUB_SECTIONS.map((section) => (

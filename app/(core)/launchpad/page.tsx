@@ -9,7 +9,7 @@ export default function LaunchpadPage() {
   );
   return (
     <>
-      <RecordPageHeader record={{ name: "Launchpad" }} />
+      <RecordPageHeader level={{ name: "Launchpad" }} />
       <UserLaunchpad serverLaunchpads={serverLaunchpads} />
     </>
   );

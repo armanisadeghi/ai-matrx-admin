@@ -15,7 +15,7 @@ export default async function CommerceTriagePage() {
   if (!isAuthenticated) redirect("/login?next=/commerce/triage");
   return (
     <>
-      <RecordPageHeader record={{ name: "Warehouse Triage" }} />
+      <RecordPageHeader level={{ name: "Warehouse Triage" }} />
       <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <TriageQueue />
       </div>

@@ -18,7 +18,7 @@ export default async function HrPerformancePage({ searchParams }: { searchParams
   const org = (await searchParams).org;
   return (
     <>
-      <RecordPageHeader backHref={hrHref(org)} parents={[{ label: "HR", href: hrHref(org) }]} record={{ name: "Performance" }} />
+      <RecordPageHeader backHref={hrHref(org)} parents={[{ label: "HR", href: hrHref(org) }]} level={{ name: "Performance" }} />
       <Suspense fallback={<HrLoading variant="table" rows={5} />}>
         <StandardHome />
       </Suspense>

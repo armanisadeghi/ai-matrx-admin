@@ -23,7 +23,7 @@ export default async function HrPerformanceGoalsPage({ searchParams }: { searchP
           { label: "HR", href: hrHref(org) },
           { label: "Performance", href: hrPerformanceHref(org) },
         ]}
-        record={{ name: "Goals" }}
+        level={{ name: "Goals" }}
       />
       <Suspense fallback={<HrLoading variant="table" rows={5} />}>
         <GoalsPage />

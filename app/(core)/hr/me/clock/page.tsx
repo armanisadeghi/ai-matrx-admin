@@ -29,7 +29,7 @@ export default async function MyClockPage({
           { label: "HR", href: hrHref(org) },
           { label: "My info", href: hrMeHref(org) },
         ]}
-        record={{ name: "My time clock" }}
+        level={{ name: "My time clock" }}
       />
       <div className="flex h-full flex-col overflow-hidden pt-[var(--shell-header-h)]">
         <div className="min-h-0 flex-1 overflow-y-auto">

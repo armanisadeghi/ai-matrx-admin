@@ -42,7 +42,7 @@ export function MapsListPage() {
 
   return (
     <>
-      <RecordPageHeader record={{ name: "Maps" }} />
+      <RecordPageHeader level={{ name: "Maps" }} />
       {mayLoad ? (
         <>
           <EntityListPage

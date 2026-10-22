@@ -19,7 +19,7 @@ export const metadata = createRouteMetadata("/notifications", {
 export default function NotificationsPage() {
   return (
     <>
-      <RecordPageHeader record={{ name: "Inbox" }} />
+      <RecordPageHeader level={{ name: "Inbox" }} />
       <div className="h-full overflow-hidden bg-textured pt-[var(--shell-header-h)]">
         <Suspense fallback={null}>
           <InboxPage />
