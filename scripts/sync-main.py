@@ -1648,6 +1648,19 @@ def superseding_side(path, ours, theirs, mb):
     return None
 
 
+def parent_side(ref, path, mode):
+    """(blob, mode) of `path` in commit `ref`, or (None, mode) when that commit lacks it. A missing
+    index stage is not proof that a side deleted the file; the side's own commit is."""
+    _, out, _ = git("ls-tree", "-z", ref, "--", path, check=False)
+    rec = out.split("\0")[0]
+    if rec and "\t" in rec:
+        meta, name = rec.split("\t", 1)
+        m, typ, sha = meta.split()
+        if typ == "blob" and name == path:
+            return sha, m
+    return None, mode
+
+
 def decide(path, ours, theirs, ours_mode, theirs_mode, stamp, mb):
     """Resolve ONE conflicted file. Returns ('fixed'|'docs'|'held', held_path_or_None, summary)."""
     def held(reason):
@@ -1699,8 +1712,18 @@ def resolve_all(stamp):
     fixed, docs, held = [], [], []
     for path in files:
         st = stages(path)
+        if not st:
+            # Listed as conflicted a moment ago, no unmerged stage now: another writer in this
+            # shared checkout (a second sync, an agent's `git add`) resolved it in between. Reading
+            # "no stage" as "deleted" committed two files both parents had as DELETED (common-docs
+            # 9e373e994a, 2026-10-22). Their resolution stands; nothing here touches the path.
+            say("CONFLICT ALREADY RESOLVED by another writer, left as it is: %s" % path)
+            continue
         ours_mode, ours = st.get(2, (None, None))
         theirs_mode, theirs = st.get(3, (None, None))
+        # A side counts as deleted only when its commit really lacks the file.
+        ours, ours_mode = ours and (ours, ours_mode) or parent_side(CTX["ours"], path, ours_mode)
+        theirs, theirs_mode = theirs and (theirs, theirs_mode) or parent_side(CTX["theirs"], path, theirs_mode)
         kind, held_path, summary = decide(path, ours, theirs, ours_mode, theirs_mode, stamp, mb)
         if kind == "fixed":
             fixed.append(path)
