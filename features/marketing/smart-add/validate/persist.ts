@@ -149,6 +149,80 @@ async function freshBrand(ctx: PersistContext): Promise<MarketingBrand> {
   return brand;
 }
 
+type DiscoveredInsert = {
+  brand_id: string;
+  category: string;
+  guessed_kind: string;
+  url: string | null | undefined;
+  value: Json;
+  status: string;
+  relation_key: string | null;
+  sentiment: PersistOptions["sentiment"];
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  resolved_property_id?: string;
+  resolved_fact_id?: string;
+};
+
+/** The row the dedup index says is this finding (same brand, category, kind, url and value), answered in place. */
+async function answerTwinRow(
+  w: Awaited<ReturnType<typeof db>>,
+  row: DiscoveredInsert,
+  answerCtx: Record<string, unknown>,
+  key: string,
+): Promise<{ id: string; undo: () => Promise<void> }> {
+  let q = w
+    .from("discovered_item")
+    .select("id, status, relation_key, sentiment, reviewed_at, reviewed_by, context, resolved_property_id, resolved_fact_id, deleted_at")
+    .eq("brand_id", row.brand_id)
+    .eq("category", row.category)
+    .eq("guessed_kind", row.guessed_kind)
+    .eq("value", JSON.stringify(row.value));
+  q = row.url ? q.eq("url", row.url) : q.is("url", null);
+  const found = await q.limit(1).maybeSingle();
+  if (found.error) throw new Error(found.error.message);
+  if (!found.data) throw new Error("It tried to save a record that already existed, and that record could not be read.");
+  const was = found.data;
+  const context = { ...(isJsonRecord(was.context) ? was.context : {}), answer: answerCtx, answered_as: key } as Json;
+  const { error } = await w
+    .from("discovered_item")
+    .update({
+      deleted_at: null,
+      status: row.status,
+      relation_key: row.relation_key,
+      sentiment: row.sentiment,
+      reviewed_at: row.reviewed_at,
+      reviewed_by: row.reviewed_by,
+      context,
+      ...(row.resolved_property_id ? { resolved_property_id: row.resolved_property_id } : {}),
+      ...(row.resolved_fact_id ? { resolved_fact_id: row.resolved_fact_id } : {}),
+    })
+    .eq("id", was.id);
+  // access-errors: ok — a write failure on the person's own answer, shown as "Not saved"
+  if (error) throw new Error(error.message);
+  return {
+    id: was.id,
+    undo: async () => {
+      const { error: e } = await (await db())
+        .from("discovered_item")
+        .update({
+          deleted_at: was.deleted_at,
+          status: was.status,
+          relation_key: was.relation_key,
+          sentiment: was.sentiment,
+          reviewed_at: was.reviewed_at,
+          reviewed_by: was.reviewed_by,
+          context: was.context,
+          resolved_property_id: was.resolved_property_id,
+          resolved_fact_id: was.resolved_fact_id,
+        })
+        .eq("id", was.id);
+      // access-errors: ok — an undo write on the person's own answer; the tray shows "Not saved"
+      if (e) throw new Error(e.message);
+    },
+  };
+}
+
 async function recordDiscovered(
   ctx: PersistContext,
   item: FocusItem,
@@ -270,9 +344,7 @@ async function recordDiscovered(
     };
   }
   const ev = item.evidence;
-  const inserted = await w
-    .from("discovered_item")
-    .insert({
+  const row = {
       organization_id: ctx.organizationId,
       brand_id: brand.id,
       source: "smart_add",
@@ -312,9 +384,15 @@ async function recordDiscovered(
       sentiment,
       ...reviewStamp(status, answer, at, me),
       ...resolved,
-    })
-    .select("id")
-    .single();
+  };
+  const inserted = await w.from("discovered_item").insert(row).select("id").single();
+  if (inserted.error?.code === "23505") {
+    // The same finding is already saved under another key (live 2026-10-22, Four Barrel Coffee: the About card came
+    // from the fact finder as `fact:description:…` while Create had saved the same value as `description:<80 chars>`):
+    // the dedup index (brand, category, kind, url, md5(value)) holds it, so the answer settles THAT row instead of
+    // failing "Not saved".
+    return await answerTwinRow(w, row, answerCtx, item.key);
+  }
   if (inserted.error) throw new Error(inserted.error.message);
   const id = inserted.data.id;
   return {
