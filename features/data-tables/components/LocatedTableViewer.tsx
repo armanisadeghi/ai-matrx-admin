@@ -31,9 +31,11 @@ type ViewerProps = {
    * its own row keys here so the page shows that run's rows, not every run's.
    */
   filter?: RecordFilter | null;
+  /** A hovered row shows the one Peek (records-ui `rowPeek`). Default off. */
+  rowPeek?: boolean;
 };
 
-export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false, filter = null }: ViewerProps) {
+export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false, filter = null, rowPeek = false }: ViewerProps) {
   const mount = useUnifiedTable({
     tableId,
     address: filter ? { ...NO_ADDRESS, filter } : NO_ADDRESS,
@@ -47,7 +49,7 @@ export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false
       data-grid={mount.mergedGrid ? "merged" : "classic"}
       {...(readOnly ? { "data-read-only": "preview" } : {})}
     >
-      <UnifiedTableBody mount={mount} />
+      <UnifiedTableBody mount={mount} {...(rowPeek ? { rowPeek } : {})} />
     </div>
   );
 }
