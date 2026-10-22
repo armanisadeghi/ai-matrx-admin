@@ -52,7 +52,7 @@
     { "pair": "lib/diagnostics/captureReactError.ts|rich-content/src/host/captureReactError.ts", "reason": "Host-wired: the package function reports through rich-content's own capture hook (captureRichContentRenderError) while the app reports to its errorCaptureStore; collapse by injecting the app store as the package's capture host, then re-export. Owner: Packages - Shared UI parts lane (rich-content host). DEBT: delete this line then." },
     { "pair": "lib/media/durability.ts|rich-content/src/host/durability.ts", "reason": "Host-wired: same body as rich-content/src/host/durability.ts except it reports violations to the app errorCaptureStore instead of the package capture hook; inject the app store as the capture host, then re-export (13 importers). Owner: Files and media lane (media durability). DEBT: delete this line then." }
   ],
-  "$catalogFloor": 189,
+  "$catalogFloor": 203,
   "twins": [
     {
       "name": "isUuidShape",
@@ -3285,6 +3285,95 @@
       "name": "fieldsFromRow",
       "package": "@ai-matrx/detail",
       "why": "frontend audit 2026-09-29 detail-001: lib/detail/** was a maintained 15-module MIRROR of @ai-matrx/detail held even by a byte-parity test; the mirror and the parity mechanism were deleted 2026-09-30 when the frontend adopted the package (0.1.3). A local body of the Detail primitive is a re-grown mirror.",
+      "allow": []
+    },
+    {
+      "name": "createOpener",
+      "package": "@ai-matrx/summon/opener",
+      "why": "summon's one opener (open action, useOpen, Controller, useIsOpen, useClose, close): every overlay opener is built on it (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/opener.",
+      "allow": []
+    },
+    {
+      "name": "mintInstanceId",
+      "package": "@ai-matrx/summon/boot",
+      "why": "summon's one overlay instance-id mint (`<overlayId>-<time>-<rand>`) (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/boot (React-free: ./boot-kit).",
+      "allow": []
+    },
+    {
+      "name": "DEFAULT_INSTANCE_ID",
+      "package": "@ai-matrx/summon/boot",
+      "why": "summon's one default overlay instance id (core/instance.ts) (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/boot.",
+      "allow": []
+    },
+    {
+      "name": "readPanelsParam",
+      "package": "@ai-matrx/summon/url",
+      "why": "summon's one `?panels=` reader (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/url.",
+      "allow": []
+    },
+    {
+      "name": "requestOverlay",
+      "package": "@ai-matrx/summon/request",
+      "why": "summon's one awaitable overlay request (open, answer, cancel on close, dedupe) (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/request.",
+      "allow": [
+        {
+          "file": "features/overlays/requestOverlay.ts",
+          "reason": "The sanctioned adapter, not a copy: it binds summon's requestOverlay to the app store (open/close dispatch on getStoreSingleton()) and delegates in one call to the lazily imported @ai-matrx/summon/request; no queue, dedupe, owner disposal or handle of its own. Checked 2026-10-22 (X6)."
+        }
+      ]
+    },
+    {
+      "name": "useOverlayRequest",
+      "package": "@ai-matrx/summon/react",
+      "why": "summon's one render-side half of an awaitable overlay request (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/react.",
+      "allow": []
+    },
+    {
+      "name": "selectOverlay",
+      "package": "@ai-matrx/summon/boot-kit",
+      "why": "summon's one overlay instance read (closed before the runtime) (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/boot-kit.",
+      "allow": []
+    },
+    {
+      "name": "isOverlayOpen",
+      "package": "@ai-matrx/summon/boot",
+      "why": "summon's one 'is this overlay instance open' read (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/boot.",
+      "allow": []
+    },
+    {
+      "name": "selectOpenInstances",
+      "package": "@ai-matrx/summon/open",
+      "why": "summon's one open-instances read (stable array while unchanged) (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/open.",
+      "allow": []
+    },
+    {
+      "name": "openRegisteredOverlay",
+      "package": "@ai-matrx/summon/url",
+      "why": "summon's one open-by-registry-id door (definition defaults merged) (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/url.",
+      "allow": []
+    },
+    {
+      "name": "lazyOpener",
+      "package": "@ai-matrx/summon/boot-kit",
+      "why": "summon's one load-on-first-call opener wrapper (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/boot-kit.",
+      "allow": []
+    },
+    {
+      "name": "defineOverlay",
+      "package": "@ai-matrx/summon/define",
+      "why": "summon's one overlay definition (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/define.",
+      "allow": []
+    },
+    {
+      "name": "createBootGate",
+      "package": "@ai-matrx/summon/boot",
+      "why": "summon's one first-load gate (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon/boot.",
+      "allow": []
+    },
+    {
+      "name": "instanceKey",
+      "package": "@ai-matrx/summon",
+      "why": "summon's one `overlayId:instanceId` key (dup census 2, X6 2026-10-22: the name lane registered no summon export, so a re-grown same-name copy was invisible). Import it from @ai-matrx/summon.",
       "allow": []
     }
   ]
