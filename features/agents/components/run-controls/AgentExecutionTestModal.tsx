@@ -22,7 +22,7 @@ import { toast as copyToast } from "@ai-matrx/chat/host/notify";
 import { useState, useEffect, useCallback } from "react";
 import { kindTextToMarkdown } from "@ai-matrx/content-ir/surfaces";
 import { useAppSelector } from "@ai-matrx/chat/store/hooks";
-import { EntityDoorControls } from "@ai-matrx/chat/host/ui-slots";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useWidgetHandle } from "@ai-matrx/chat/agents/hooks/useWidgetHandle";
 import {
