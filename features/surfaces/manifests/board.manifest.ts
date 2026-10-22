@@ -47,7 +47,7 @@ const values: SurfaceValue[] = [
   {
     name: "board_id",
     label: "Board id",
-    description: "The saved board's id; null on an unsaved board. A design system run reads the board's whole state by it.",
+    description: "The saved board's id; null on an unsaved board.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,

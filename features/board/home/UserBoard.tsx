@@ -231,7 +231,7 @@ export function UserBoard({
   // The board's own design tokens: component samples on it draw in them.
   const tokenTables = useTokenTables(board);
   // A design system board (it holds token tables) runs the Conductor: the Agents menu presents its mandate here,
-  // with a Run door (runHere) that opens the job's run window on this board (the run reads board_id from the page).
+  // with a Run door (runHere) that opens the job's run window on this board (the run takes the board's values from this page).
   useDeclaredSurfaceMandates(
     tokenTables.length
       ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME, runHere: true }]
