@@ -36,10 +36,28 @@ export const selectCostUnit = (state: RootState): CostUnit =>
     ? "usd"
     : "points";
 
-/** The viewer's unit right now, read from the app store; `"points"` without one. */
+/**
+ * THE ADMIN SITE (owner ruling 2026-10-22): dollars appear without a per-figure "Admin only" tag
+ * only on the admin site (`/administration/**`, manage.aimatrx.com), where the whole site is the
+ * label. Everywhere else a dollar figure lives only inside a labelled element (`<AdminOnly>`,
+ * `<CostDoor>`'s admin block, `<Cost>`'s tagged dollar mode). Pure.
+ */
+export function isAdminSurfacePath(pathname: string | null | undefined): boolean {
+  return typeof pathname === "string" && (pathname === "/administration" || pathname.startsWith("/administration/"));
+}
+
+/** Is the code running on the admin site right now (outside render: a toast, a copy payload)? */
+function onAdminSurfaceNow(): boolean {
+  return typeof window !== "undefined" && isAdminSurfacePath(window.location?.pathname);
+}
+
+/**
+ * The viewer's unit right now, read from the app store; `"points"` without one. Text built outside
+ * render cannot carry the "Admin only" tag, so dollars come back only on the admin site.
+ */
 export function currentCostUnit(): CostUnit {
   const store = getStoreSingleton();
-  if (!store) return "points";
+  if (!store || !onAdminSurfaceNow()) return "points";
   try {
     return selectCostUnit(store.getState() as RootState);
   } catch {
@@ -48,13 +66,14 @@ export function currentCostUnit(): CostUnit {
 }
 
 /**
- * Does the viewer's seat see dollars (and the rate) at all, read at the moment it runs? A system admin
- * only; an organization admin is a user. For text built outside render (a flag's tooltip, a copy payload,
+ * Does the viewer see dollars in plain text, read at the moment it runs? A system admin on the admin
+ * site only; an organization admin is a user. For text built outside render (a flag's tooltip, a copy payload,
  * a toast). Render code uses `useSeesDollars()` in `useCostDisplay.ts`.
  */
 export function currentSeesDollars(): boolean {
   const store = getStoreSingleton();
-  if (!store) return false;
+  // Plain text carries no "Admin only" tag: dollars in it only on the admin site (ruling 2026-10-22).
+  if (!store || !onAdminSurfaceNow()) return false;
   try {
     return selectCanToggleCostUnit(store.getState() as RootState);
   } catch {
