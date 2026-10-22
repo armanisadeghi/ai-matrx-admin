@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1654 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1659 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "be9767401840";
+export const KIND_REGISTRY_FINGERPRINT = "6ca6134fa16e";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -143,13 +143,26 @@ export interface AdvertisingSignal {
 }
 
 /**
+ * Where a context policy's value comes from (a registered inventory kind).
+ *  *
+ *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ */
+export interface AgentDefinitionContextPolicySource {
+  kind: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * One context policy, as the live column actually stores it (rich objects,
  * never bare strings — the Masterwork Conductor's ``platform_capabilities`` /
  * ``my_resources`` policies are the reference shape).
  *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ *  * From kind `agent_definition`.
  */
-export interface AgentDefinitionContextPolicy {
+export interface AgentDefinitionContextPolicy_AgentDefinition {
   key: string;
   type: string;
   label?: string;
@@ -161,19 +174,29 @@ export interface AgentDefinitionContextPolicy {
   mutable?: boolean;
   persist?: string;
   description?: string;
+  max_inline_chars?: number | null;
+  summary_agent_id?: string | null;
 }
 
 /**
- * Where a context policy's value comes from (a registered inventory kind).
+ * One context policy, as the live column actually stores it (rich objects,
+ * never bare strings — the Masterwork Conductor's ``platform_capabilities`` /
+ * ``my_resources`` policies are the reference shape).
  *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
+ *  * From kind `agent_factory_build`.
  */
-export interface AgentDefinitionContextPolicySource {
-  kind: string;
+export interface AgentDefinitionContextPolicy_AgentFactoryBuild {
+  key: string;
+  type: string;
+  label?: string;
   /**
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+  source?: AgentDefinitionContextPolicySource | null;
+  mutable?: boolean;
+  persist?: string;
+  description?: string;
 }
 
 /**
@@ -248,24 +271,6 @@ export interface AgentDefinitionTextBlock {
 }
 
 /**
- * One ``{{name}}`` placeholder the agent's messages reference.
- *  *
- *  * Shared by 2 kinds (agent_definition, agent_factory_build).
- */
-export interface AgentDefinitionVariable {
-  name: string;
-  /**
-   * The registered kind this payload is an instance of, when it is one.
-   */
-  __kind?: string;
-  control?: AgentDefinitionVariableControl | null;
-  helpText?: string | null;
-  required?: boolean;
-  defaultValue?: string;
-  customComponent?: AgentDefinitionVariableComponent | null;
-}
-
-/**
  * The input control a variable renders as. Omit for a plain textarea.
  *  *
  *  * Shared by 2 kinds (agent_definition, agent_factory_build).
@@ -299,6 +304,43 @@ export interface AgentDefinitionVariableControl {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * One ``{{name}}`` placeholder the agent's messages reference.
+ *  *
+ *  * From kind `agent_definition`.
+ */
+export interface AgentDefinitionVariable_AgentDefinition {
+  name: string;
+  label?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  control?: AgentDefinitionVariableControl | null;
+  helpText?: string | null;
+  required?: boolean;
+  defaultValue?: string;
+  customComponent?: AgentDefinitionVariableComponent | null;
+}
+
+/**
+ * One ``{{name}}`` placeholder the agent's messages reference.
+ *  *
+ *  * From kind `agent_factory_build`.
+ */
+export interface AgentDefinitionVariable_AgentFactoryBuild {
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  control?: AgentDefinitionVariableControl | null;
+  helpText?: string | null;
+  required?: boolean;
+  defaultValue?: string;
+  customComponent?: AgentDefinitionVariableComponent | null;
 }
 
 /**
@@ -1646,6 +1688,58 @@ export interface Bindings {
 }
 
 /**
+ * * From kind `org_chart_snapshot`.
+ */
+export interface Box {
+  /**
+   * An opaque key for this box within the snapshot (never a database id).
+   */
+  key: string;
+  /**
+   * The box name.
+   */
+  label: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  box_type: "agent" | "person" | "team" | "position";
+  children: Box[];
+  /**
+   * Its title or role line.
+   */
+  sublabel?: string;
+  /**
+   * How this box hangs under its parent.
+   */
+  link_kind?: "directs" | "reports_to";
+  /**
+   * A public avatar image, when the box has one.
+   */
+  avatar_url?: string;
+}
+
+/**
+ * An audience a marked word speaks to, in the row the brand session shows it in.
+ *  *
+ *  * From kind `brand_curation`.
+ */
+export interface BrandAudienceCategory {
+  /**
+   * who: a group of people; cares_about: something those people care about.
+   */
+  row: "who" | "cares_about";
+  /**
+   * The audience in a few words, a real group of buyers (e.g. 'fleet managers') or what they care about (e.g. 'no downtime').
+   */
+  name: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+}
+
+/**
  * One more place the same thing was said: the verbatim quote, the page and the value it came from.
  *  *
  *  * Shared by 3 kinds (brand_claim, brand_claim_decisions, brand_claim_set).
@@ -2157,6 +2251,10 @@ export interface BrandWordSignal {
    * Who this word draws, in a few words.
    */
   attracts: string;
+  /**
+   * Optional. The audiences this word speaks to, each in its row (who or cares_about); empty or absent when it speaks to no real audience.
+   */
+  categories?: BrandAudienceCategory[];
 }
 
 /**
@@ -2792,6 +2890,26 @@ export interface ComponentAuthoringBundle {
    */
   __kind?: string;
   compile_gate?: string;
+}
+
+/**
+ * The inclusive message positions the summary replaces.
+ *  *
+ *  * From kind `conversation_condensed`.
+ */
+export interface CondensedRange {
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * Last position condensed (inclusive).
+   */
+  to_position: number;
+  /**
+   * First position condensed (inclusive).
+   */
+  from_position: number;
 }
 
 /**
@@ -4078,6 +4196,24 @@ export interface FactsDecision {
   reason: string;
   based_on?: string[];
   question: string;
+}
+
+/**
+ * One feed's health in one run: did it answer, with how many items, and how fresh the newest was.
+ *
+ * A feed that answers with a web page, nothing new for days, or far fewer items than it used to is
+ * named here per feed, so a moved or dying feed is visible in the run instead of hiding inside its
+ * provider's total.
+ *  *
+ *  * From kind `news_search_result`.
+ */
+export interface FeedHealth {
+  url: string;
+  error?: string | null;
+  items?: number;
+  __kind?: "news_feed_health";
+  status: "ok" | "empty" | "error" | "unavailable" | "not_configured";
+  newest_item_age_hours?: number | null;
 }
 
 /**
@@ -10789,6 +10925,7 @@ export interface SourceLocator {
  */
 export interface SourceStatusEntry {
   error?: string | null;
+  feeds?: FeedHealth[];
   items?: number;
   __kind?: "news_source_status";
   status: "ok" | "empty" | "error" | "unavailable" | "not_configured";
@@ -12849,7 +12986,7 @@ export interface AgentDebrief {
  * live ``agent.definition`` row (with its v1 snapshot); rendered, it is the
  * agent a person is watching being built.
  *  *
- *  * Kind `agent_definition` (registry v11).
+ *  * Kind `agent_definition` (registry v12).
  */
 export interface AgentDefinition {
   name: string;
@@ -12865,8 +13002,8 @@ export interface AgentDefinition {
   settings: AgentDefinitionSettings;
   description?: string;
   custom_tools?: string[];
-  context_policies?: AgentDefinitionContextPolicy[];
-  variable_definitions?: AgentDefinitionVariable[];
+  context_policies?: AgentDefinitionContextPolicy_AgentDefinition[];
+  variable_definitions?: AgentDefinitionVariable_AgentDefinition[];
 }
 
 /**
@@ -13629,7 +13766,7 @@ export interface AgentFactoryInstructionsStepOffer {
 }
 
 /**
- * Kind `agent_factory.proof_step.offer` (registry v11).
+ * Kind `agent_factory.proof_step.offer` (registry v12).
  */
 export interface AgentFactoryProofStepOffer {
   /**
@@ -13668,34 +13805,9 @@ export interface AgentFactoryProofStepOffer {
     accepts_user_input: boolean;
   };
   /**
-   * The Goal Writer's answer: role, objective, operating context, deliverable, weighted success criteria (gates marked), constraints, failure modes, charge.
+   * The locked job both answers are judged against: the job, output kind, required keys, output schema, the person's requested format and the rules code enforces downstream.
    */
-  goal_spec: {
-    goal: {
-    role?: string;
-    __kind: "agent_goal";
-    objective?: string;
-    constraints?: string[];
-    deliverable?: string;
-    failure_modes?: ({
-    name?: string;
-    __kind: "failure_mode";
-    description?: string;
-  })[];
-    success_criteria?: ({
-    gate?: boolean;
-    name?: string;
-    __kind: "success_criterion";
-    anchor?: string;
-    weight?: number;
-    criterion?: string;
-  })[];
-    operating_context?: string;
-  };
-    __kind: "agent_mandate_specification";
-    charge: string;
-    questions?: string[];
-  };
+  goal_spec: unknown;
   /**
    * The model id the caller pinned. LOCKED: it wins over the profile class. When absent: code maps the profile class through the live catalog.
    */
@@ -17570,7 +17682,7 @@ export interface BrandConfirmedFacts {
  * Where each open brand candidate belongs, with a one-line reason and the words that carry meaning. A
  * suggestion only: the person decides.
  *  *
- *  * Kind `brand_curation` (registry v1).
+ *  * Kind `brand_curation` (registry v2).
  */
 export interface BrandCuration {
   /**
@@ -24955,7 +25067,7 @@ export interface ContentPlanPlanReviewOffer {
 }
 
 /**
- * Kind `content_plan.plan_shape.offer` (registry v10).
+ * Kind `content_plan.plan_shape.offer` (registry v11).
  */
 export interface ContentPlanPlanShapeOffer {
   /**
@@ -24976,7 +25088,10 @@ export interface ContentPlanPlanShapeOffer {
    * The site archetypes this plan may be built from.
    */
   archetype_options: unknown;
-  target_page_count?: number;
+  /**
+   * A number or a range such as 30-60, as the setup wizard sends it.
+   */
+  target_page_count?: string;
   /**
    * The plan as it stands, when one already exists.
    */
@@ -24984,7 +25099,7 @@ export interface ContentPlanPlanShapeOffer {
 }
 
 /**
- * Kind `content_plan.research_wave.offer` (registry v20).
+ * Kind `content_plan.research_wave.offer` (registry v21).
  */
 export interface ContentPlanResearchWaveOffer {
   /**
@@ -25039,6 +25154,10 @@ export interface ContentPlanResearchWaveOffer {
    * What the brand is, when written.
    */
   brand_description?: string;
+  /**
+   * The most pages a candidate may hold: the page budget plus ten.
+   */
+  max_nodes_ceiling: number;
   /**
    * Binding instructions the operator typed for this run; absent when none.
    */
@@ -25527,6 +25646,34 @@ export interface ConversationLabelChatOffer {
 }
 
 /**
+ * Older turns of a conversation, condensed into one summary that replaces them.
+ *  *
+ *  * Kind `conversation_condensed` (registry v1).
+ */
+export interface ConversationCondensed {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "conversation_condensed";
+  /**
+   * The positions the summary replaces.
+   */
+  covers: CondensedRange;
+  /**
+   * Markdown that will REPLACE the condensed turns, read by the model from now on.
+   */
+  summary: string;
+  /**
+   * Things still unresolved at the end of the condensed range.
+   */
+  open_items?: string[];
+  /**
+   * Exact strings the summary relies on (ids, paths, URLs, numbers, names), each copied verbatim.
+   */
+  identifiers?: string[];
+}
+
+/**
  * Kind `cooking_recipe` (registry v8).
  */
 export interface CookingRecipe {
@@ -25897,7 +26044,7 @@ export interface CriterionCoverage {
 }
 
 /**
- * Kind `crm.chasebox_draft_review.offer` (registry v4).
+ * Kind `crm.chasebox_draft_review.offer` (registry v5).
  */
 export interface CrmChaseboxDraftReviewOffer {
   /**
@@ -25936,6 +26083,10 @@ export interface CrmChaseboxDraftReviewOffer {
    * Whether this draft is already approved — a reviewer that does not know this reopens settled work.
    */
   draft_approved?: boolean;
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * The personalization evidence behind the draft — what a review for unsupported claims must check the copy against.
    */
@@ -26029,7 +26180,7 @@ export interface CrmOutreachFactCheckOffer {
 }
 
 /**
- * Kind `crm.outreach_lists.offer` (registry v7).
+ * Kind `crm.outreach_lists.offer` (registry v8).
  */
 export interface CrmOutreachListsOffer {
   /**
@@ -26056,6 +26207,10 @@ export interface CrmOutreachListsOffer {
    * Just the ids of the campaigns on screen — the cheap tier when the full composite is not worth retrieving.
    */
   visible_list_ids?: string[];
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * The organizations this person can work outreach for.
    */
@@ -26926,6 +27081,71 @@ export interface DeferredWorkResult {
 }
 
 /**
+ * Kind `department_plan` (registry v2).
+ */
+export interface DepartmentPlan {
+  /**
+   * The seats the description implies, each with its job.
+   */
+  seats: ({
+    /**
+     * One or two plain sentences: what the seat is for and what a great result looks like.
+     */
+    goal: string;
+    /**
+     * The seat's name on the chart, e.g. 'Front Desk'.
+     */
+    name: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    /**
+     * What the seat is given each time it works.
+     */
+    inputs: ({
+    /**
+     * snake_case name of the input.
+     */
+    name: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    /**
+     * True when the seat cannot work without it.
+     */
+    required: boolean;
+    /**
+     * What it is, in plain words.
+     */
+    description: string;
+  })[];
+    /**
+     * What the seat hands back, concretely.
+     */
+    output: string;
+    /**
+     * The name of another seat in this plan it sits under. Left out when it sits directly under the department's box.
+     */
+    reports_to?: string;
+    /**
+     * One plain sentence on what the seat covers.
+     */
+    description: string;
+  })[];
+  __kind: "department_plan";
+  /**
+   * Choices only the person can make, including wider seats worth considering.
+   */
+  questions?: string[];
+  /**
+   * The department's name in plain words.
+   */
+  department: string;
+}
+
+/**
  * Search results that are sources, each beside the facts research stores for it.
  *  *
  *  * Kind `described_links` (registry v3).
@@ -27674,7 +27894,7 @@ export interface EducationCardImageGenerationOffer {
 }
 
 /**
- * Kind `education.card_image_prompt.offer` (registry v4).
+ * Kind `education.card_image_prompt.offer` (registry v5).
  */
 export interface EducationCardImagePromptOffer {
   /**
@@ -27701,10 +27921,14 @@ export interface EducationCardImagePromptOffer {
    * The card's front face text.
    */
   card_front: string;
+  /**
+   * The card values fused into one image brief (face, topic, front, back and what the image must teach) — built by CardImagePromptWriterAgent.prepare_variables.
+   */
+  intent_or_content: string;
 }
 
 /**
- * Kind `education.convert_source.offer` (registry v13).
+ * Kind `education.convert_source.offer` (registry v14).
  */
 export interface EducationConvertSourceOffer {
   /**
@@ -27793,7 +28017,7 @@ export interface EducationConvertSourceOffer {
    */
   source_document_id?: string;
   /**
-   * What kind of item the source was converted from — for example a flashcard set, an assessment, or a note.
+   * What kind of item the source was converted from — for example a flashcard deck, an assessment, or a note.
    */
   source_entity_type?: string;
   /**
@@ -28317,7 +28541,7 @@ export interface EducationTutorMessageOffer {
 }
 
 /**
- * Kind `education.voice_tutor.offer` (registry v7).
+ * Kind `education.voice_tutor.offer` (registry v8).
  */
 export interface EducationVoiceTutorOffer {
   /**
@@ -28341,7 +28565,7 @@ export interface EducationVoiceTutorOffer {
    */
   lapses?: number;
   /**
-   * The flashcard set.
+   * The flashcard deck.
    */
   set_id?: string;
   /**
@@ -30071,7 +30295,7 @@ export interface FlashcardsReviewBatchOffer {
 }
 
 /**
- * Kind `flashcards.tts_render.offer` (registry v10).
+ * Kind `flashcards.tts_render.offer` (registry v11).
  */
 export interface FlashcardsTtsRenderOffer {
   /**
@@ -30083,7 +30307,7 @@ export interface FlashcardsTtsRenderOffer {
    */
   __kind?: "flashcards.tts_render.offer";
   /**
-   * The flashcard set.
+   * The flashcard deck.
    */
   set_id?: string;
   /**
@@ -33483,7 +33707,7 @@ export interface KindComponentCode {
 /**
  * ``kindcomp_get_context`` — the full component-authoring bundle.
  *  *
- *  * Kind `kind_component_context` (registry v9).
+ *  * Kind `kind_component_context` (registry v10).
  */
 export interface KindComponentContext {
   kind: KindDefinitionSummary;
@@ -33508,6 +33732,13 @@ export interface KindComponentContext {
   canonical_example?: JsonValue | null;
   incidents_visible?: boolean;
   alternate_examples?: JsonValue[];
+  latest_inspections?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[];
   canonical_example_status?: string | null;
 }
 
@@ -40417,7 +40648,7 @@ export interface NewsResult {
 }
 
 /**
- * Kind `news_search_result` (registry v4).
+ * Kind `news_search_result` (registry v5).
  */
 export interface NewsSearchResult {
   hits?: NewsSearchHit[];
@@ -41257,6 +41488,49 @@ export interface OrgChartSeatJobSuggestionOffer {
    * A note about the organization: what it does, its size, its industry. Empty when unknown.
    */
   organization_context?: string;
+}
+
+/**
+ * Kind `org_chart_blurb` (registry v1).
+ */
+export interface OrgChartBlurb {
+  /**
+   * One line per top-level team or box under the top of the chart.
+   */
+  teams: ({
+    /**
+     * What that team does, in one short plain sentence.
+     */
+    does: string;
+    /**
+     * The box name exactly as it appears on the chart.
+     */
+    name: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  })[];
+  /**
+   * A short page title for the published chart, at most 60 characters.
+   */
+  title: string;
+  __kind: "org_chart_blurb";
+  /**
+   * Two or three plain sentences on what this organization or team is and how it is arranged.
+   */
+  summary: string;
+}
+
+/**
+ * Kind `org_chart_snapshot` (registry v1).
+ */
+export interface OrgChartSnapshot {
+  /**
+   * The top boxes of the published chart, each with its children nested.
+   */
+  roots: Box[];
+  __kind: "org_chart_snapshot";
 }
 
 /**
@@ -50281,7 +50555,7 @@ export interface SeoAiVisibilityBlindQuestionWriterOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_buyer_jobs.offer` (registry v4).
+ * Kind `seo.ai_visibility_buyer_jobs.offer` (registry v7).
  */
 export interface SeoAiVisibilityBuyerJobsOffer {
   /**
@@ -50301,6 +50575,10 @@ export interface SeoAiVisibilityBuyerJobsOffer {
    */
   icp_hypotheses: unknown;
   /**
+   * The site's top Search Console queries: the words real buyers type.
+   */
+  gsc_top_queries?: string;
+  /**
    * Every recorded source with its class, grade and span.
    */
   source_manifest: unknown;
@@ -50311,7 +50589,7 @@ export interface SeoAiVisibilityBuyerJobsOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_evidence_icp.offer` (registry v4).
+ * Kind `seo.ai_visibility_evidence_icp.offer` (registry v7).
  */
 export interface SeoAiVisibilityEvidenceIcpOffer {
   /**
@@ -50331,6 +50609,10 @@ export interface SeoAiVisibilityEvidenceIcpOffer {
    */
   run_clock: string;
   /**
+   * The site's recorded competitors (site-evidence pool).
+   */
+  competitors?: string;
+  /**
    * What the company does, in the owner's own words.
    */
   description: string;
@@ -50342,10 +50624,26 @@ export interface SeoAiVisibilityEvidenceIcpOffer {
    * The brand profile, confirmed business facts, the Business Discovery business model and ideal customer results, and recorded competitors — every item marked company-asserted.
    */
   company_leads: unknown;
+  /**
+   * What the crawled pages of the site cover (site-evidence pool).
+   */
+  pages_summary?: string;
+  /**
+   * The site's identity from the platform's crawl (site-evidence pool).
+   */
+  site_identity?: string;
+  /**
+   * The site's top Search Console queries: the words real buyers type.
+   */
+  gsc_top_queries?: string;
+  /**
+   * The owner's written business guidance for the site, when written.
+   */
+  business_guidance?: string;
 }
 
 /**
- * Kind `seo.ai_visibility_panel_designer.offer` (registry v5).
+ * Kind `seo.ai_visibility_panel_designer.offer` (registry v8).
  */
 export interface SeoAiVisibilityPanelDesignerOffer {
   /**
@@ -50357,13 +50655,21 @@ export interface SeoAiVisibilityPanelDesignerOffer {
    */
   __kind?: "seo.ai_visibility_panel_designer.offer";
   /**
-   * The measurement charter (T3).
+   * The measurement charter (T3). Not sent by the one-call design (redesign 2026-10-22); code holds it.
    */
-  charter: unknown;
+  charter?: unknown;
   /**
    * T10's allocation and the priced cost of one wave.
    */
-  allocation: unknown;
+  allocation?: unknown;
+  /**
+   * How many question slots each set of the panel holds, e.g. 'core 12, aided 2'.
+   */
+  set_counts: string;
+  /**
+   * The price of one weekly wave, in points.
+   */
+  wave_price: string;
   /**
    * T13's pilot results, when a pilot has run.
    */
@@ -50375,15 +50681,19 @@ export interface SeoAiVisibilityPanelDesignerOffer {
   /**
    * The person's Gate 3 decisions.
    */
-  gate_3_decisions: unknown;
+  gate_3_decisions?: unknown;
   /**
    * Every revise, quarantine and reject decision, with its reason.
    */
-  rejection_ledger: unknown;
+  rejection_ledger?: unknown;
   /**
    * The declared campaigns, when any exist.
    */
   campaign_registry?: unknown;
+  /**
+   * The exact text of every question the panel will ask.
+   */
+  selected_questions: string[];
   /**
    * The prior panel version, when one exists.
    */
@@ -50391,11 +50701,11 @@ export interface SeoAiVisibilityPanelDesignerOffer {
   /**
    * The question slots.
    */
-  prompt_architecture: unknown;
+  prompt_architecture?: unknown;
   /**
    * The candidates QA passed and the person kept at Gate 3.
    */
-  qa_approved_candidates: unknown;
+  qa_approved_candidates?: unknown;
 }
 
 /**
@@ -50429,7 +50739,7 @@ export interface SeoAiVisibilityPanelReportOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_question_architect.offer` (registry v5).
+ * Kind `seo.ai_visibility_question_architect.offer` (registry v6).
  */
 export interface SeoAiVisibilityQuestionArchitectOffer {
   /**
@@ -50445,9 +50755,9 @@ export interface SeoAiVisibilityQuestionArchitectOffer {
    */
   budget: unknown;
   /**
-   * The measurement charter (T3).
+   * The measurement charter (T3). Not sent by the one-call design (redesign 2026-10-22); code holds it.
    */
-  charter: unknown;
+  charter?: unknown;
   /**
    * The locales the panel measures.
    */
@@ -50463,7 +50773,7 @@ export interface SeoAiVisibilityQuestionArchitectOffer {
   /**
    * The approved customer profiles.
    */
-  icp_hypotheses: unknown;
+  icp_hypotheses?: unknown;
   /**
    * The prior panel version's question slots, when one exists.
    */
@@ -52026,7 +52336,7 @@ export interface SeoPressClipReviewerOffer {
 }
 
 /**
- * Kind `seo.press_headlines.offer` (registry v4).
+ * Kind `seo.press_headlines.offer` (registry v5).
  */
 export interface SeoPressHeadlinesOffer {
   /**
@@ -52050,7 +52360,7 @@ export interface SeoPressHeadlinesOffer {
    */
   current_time: string;
   /**
-   * The sender's rendered voice fingerprint block, for subject lines written as a person.
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
    */
   voice_fingerprint?: string;
 }
@@ -52138,7 +52448,7 @@ export interface SeoPressNewsworthinessCheckOffer {
 }
 
 /**
- * Kind `seo.press_source_request.offer` (registry v22).
+ * Kind `seo.press_source_request.offer` (registry v23).
  */
 export interface SeoPressSourceRequestOffer {
   /**
@@ -52193,6 +52503,10 @@ export interface SeoPressSourceRequestOffer {
    * The score floor below which the system automatically passes on the request, so a responder that knows the floor stops proposing doomed drafts.
    */
   min_respond_score?: number;
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * The requesting journalist's recent dated bylines with links, from what we already hold about them. Empty when we do not know the journalist.
    */
@@ -52270,7 +52584,7 @@ export interface SeoPressStoryAnalysisOffer {
 }
 
 /**
- * Kind `seo.reputation_crisis_holding.offer` (registry v4).
+ * Kind `seo.reputation_crisis_holding.offer` (registry v5).
  */
 export interface SeoReputationCrisisHoldingOffer {
   /**
@@ -52353,6 +52667,10 @@ export interface SeoReputationCrisisHoldingOffer {
    * What is committed, with times; absent means no commitments.
    */
   actions_committed?: string;
+  /**
+   * The sender's (or brand's) rendered <voice_fingerprint> block, when this job takes part in the voice loop and a confirmed fingerprint exists. Absent otherwise.
+   */
+  voice_fingerprint?: string;
   /**
    * 'true' only when the person pressed 'Draft for counsel anyway'.
    */
@@ -56644,7 +56962,7 @@ export interface SwipeCollection {
 /**
  * A deck of items the person answers one at a time by swiping (or the edge buttons, or the keys).
  *  *
- *  * Kind `swipe_deck` (registry v2).
+ *  * Kind `swipe_deck` (registry v3).
  */
 export interface SwipeDeck {
   /**
@@ -56704,7 +57022,7 @@ export interface TableAskOffer {
 }
 
 /**
- * Kind `table.column_fill.offer` (registry v2).
+ * Kind `table.column_fill.offer` (registry v7).
  */
 export interface TableColumnFillOffer {
   /**
@@ -56712,9 +57030,57 @@ export interface TableColumnFillOffer {
    */
   __kind?: "table.column_fill.offer";
   /**
+   * A pick-one column's choice number 1, in the column's order; absent when it has fewer.
+   */
+  choice_1?: string;
+  /**
+   * A pick-one column's choice number 2, in the column's order; absent when it has fewer.
+   */
+  choice_2?: string;
+  /**
+   * A pick-one column's choice number 3, in the column's order; absent when it has fewer.
+   */
+  choice_3?: string;
+  /**
+   * A pick-one column's choice number 4, in the column's order; absent when it has fewer.
+   */
+  choice_4?: string;
+  /**
+   * A pick-one column's choice number 5, in the column's order; absent when it has fewer.
+   */
+  choice_5?: string;
+  /**
+   * A pick-one column's choice number 6, in the column's order; absent when it has fewer.
+   */
+  choice_6?: string;
+  /**
+   * A pick-one column's choice number 7, in the column's order; absent when it has fewer.
+   */
+  choice_7?: string;
+  /**
+   * A pick-one column's choice number 8, in the column's order; absent when it has fewer.
+   */
+  choice_8?: string;
+  /**
+   * A pick-one column's choice number 9, in the column's order; absent when it has fewer.
+   */
+  choice_9?: string;
+  /**
    * 'true' when the column may search the web; default 'false'.
    */
   allow_web: string;
+  /**
+   * A pick-one column's choice number 10, in the column's order; absent when it has fewer.
+   */
+  choice_10?: string;
+  /**
+   * A pick-one column's choice number 11, in the column's order; absent when it has fewer.
+   */
+  choice_11?: string;
+  /**
+   * A pick-one column's choice number 12, in the column's order; absent when it has fewer.
+   */
+  choice_12?: string;
   /**
    * What the column holds (text, number, date, choice and its choices).
    */
@@ -60235,6 +60601,43 @@ export interface WebContentFreshnessV1 {
 }
 
 /**
+ * Kind `web_content_needs_rendering_v1` (registry v1).
+ */
+export interface WebContentNeedsRenderingV1 {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind: "web_content_needs_rendering_v1";
+  /**
+   * Number of pages inspected
+   */
+  checked?: number;
+  /**
+   * One-paragraph human summary of the finding
+   */
+  summary: string;
+  /**
+   * Per-page evidence entries
+   */
+  evidence?: ({
+    url?: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    word_count?: number;
+  })[];
+  /**
+   * Number of app-shell pages
+   */
+  issues_found: number;
+  /**
+   * Concrete, ordered fix recommendations
+   */
+  recommendations?: string[];
+}
+
+/**
  * Kind `web_content_quality_eeat_v1` (registry v5).
  */
 export interface WebContentQualityEeatV1 {
@@ -60444,6 +60847,43 @@ export interface WebCwvLcpV1 {
 }
 
 /**
+ * Kind `web_dead_end_page_v1` (registry v1).
+ */
+export interface WebDeadEndPageV1 {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind: "web_dead_end_page_v1";
+  /**
+   * Number of pages inspected
+   */
+  checked?: number;
+  /**
+   * One-paragraph human summary of the finding
+   */
+  summary: string;
+  /**
+   * Per-page evidence entries
+   */
+  evidence?: ({
+    url?: string;
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    internal_links?: number;
+  })[];
+  /**
+   * Number of dead-end pages
+   */
+  issues_found: number;
+  /**
+   * Concrete, ordered fix recommendations
+   */
+  recommendations?: string[];
+}
+
+/**
  * Kind `web_duplicate_content_exact_v1` (registry v5).
  */
 export interface WebDuplicateContentExactV1 {
@@ -60570,13 +61010,14 @@ export interface WebEvidenceCachingPolicyV1 {
 /**
  * Evidence payload for the Canonical Conflicts Evidence SEO check.
  *  *
- *  * Kind `web_evidence_canonical_conflicts_v1` (registry v4).
+ *  * Kind `web_evidence_canonical_conflicts_v1` (registry v5).
  */
 export interface WebEvidenceCanonicalConflictsV1 {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "web_evidence_canonical_conflicts_v1";
+  redirects_to?: string | null;
   canonical_url?: string | null;
 }
 
@@ -64927,22 +65368,6 @@ export interface WorkflowStepHolding {
   filled_by_holder?: string[];
 }
 
-/**
- * Kind `zz_lane_f_preview_check` (registry v1).
- */
-export interface ZzLaneFPreviewCheck {
-  items?: ({
-    label?: string;
-    /**
-     * The registered kind this payload is an instance of, when it is one.
-     */
-    __kind?: string;
-    status?: string;
-  })[];
-  title?: string;
-  __kind: "zz_lane_f_preview_check";
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // The registry as a type-level index.
 // ─────────────────────────────────────────────────────────────────────────
@@ -65289,6 +65714,7 @@ export type GeneratedKindSlug =
   | "conversation.analysis.offer"
   | "conversation.label_agent_run.offer"
   | "conversation.label_chat.offer"
+  | "conversation_condensed"
   | "cooking_recipe"
   | "counterparty_ledger"
   | "counterparty_move"
@@ -65329,6 +65755,7 @@ export type GeneratedKindSlug =
   | "decision_questions"
   | "decision_tree"
   | "deferred_work_result"
+  | "department_plan"
   | "described_links"
   | "design_system_build_result"
   | "desktop_tools_load_result"
@@ -65809,6 +66236,8 @@ export type GeneratedKindSlug =
   | "orchestras.member_roster.offer"
   | "orchestration.tool_failure_standoff.offer"
   | "org_chart.seat_job_suggestion.offer"
+  | "org_chart_blurb"
+  | "org_chart_snapshot"
   | "outlier_row"
   | "outline_section"
   | "outreach_reply_draft"
@@ -66437,11 +66866,13 @@ export type GeneratedKindSlug =
   | "web_canonical_presence_v1"
   | "web_content_depth_v1"
   | "web_content_freshness_v1"
+  | "web_content_needs_rendering_v1"
   | "web_content_quality_eeat_v1"
   | "web_crawl_depth_v1"
   | "web_cwv_cls_v1"
   | "web_cwv_inp_tbt_v1"
   | "web_cwv_lcp_v1"
+  | "web_dead_end_page_v1"
   | "web_duplicate_content_exact_v1"
   | "web_evidence_anchor_text_descriptiveness_v1"
   | "web_evidence_asset_delivery_v1"
@@ -66601,8 +67032,7 @@ export type GeneratedKindSlug =
   | "workflow_plan_result"
   | "workflow_run_result"
   | "workflow_run_status"
-  | "workflow_step_holding"
-  | "zz_lane_f_preview_check";
+  | "workflow_step_holding";
 
 /** Slug → the complete-instance payload type for that kind. */
 export interface KindPayloadBySlug {
@@ -66946,6 +67376,7 @@ export interface KindPayloadBySlug {
   "conversation.analysis.offer": ConversationAnalysisOffer;
   "conversation.label_agent_run.offer": ConversationLabelAgentRunOffer;
   "conversation.label_chat.offer": ConversationLabelChatOffer;
+  "conversation_condensed": ConversationCondensed;
   "cooking_recipe": CookingRecipe;
   "counterparty_ledger": CounterpartyLedger;
   "counterparty_move": CounterpartyMove;
@@ -66986,6 +67417,7 @@ export interface KindPayloadBySlug {
   "decision_questions": DecisionQuestions;
   "decision_tree": DecisionTree;
   "deferred_work_result": DeferredWorkResult;
+  "department_plan": DepartmentPlan;
   "described_links": DescribedLinks;
   "design_system_build_result": DesignSystemBuildResult;
   "desktop_tools_load_result": DesktopToolsLoadResult;
@@ -67466,6 +67898,8 @@ export interface KindPayloadBySlug {
   "orchestras.member_roster.offer": OrchestrasMemberRosterOffer;
   "orchestration.tool_failure_standoff.offer": OrchestrationToolFailureStandoffOffer;
   "org_chart.seat_job_suggestion.offer": OrgChartSeatJobSuggestionOffer;
+  "org_chart_blurb": OrgChartBlurb;
+  "org_chart_snapshot": OrgChartSnapshot;
   "outlier_row": OutlierRow;
   "outline_section": OutlineSection;
   "outreach_reply_draft": OutreachReplyDraft;
@@ -68094,11 +68528,13 @@ export interface KindPayloadBySlug {
   "web_canonical_presence_v1": WebCanonicalPresenceV1;
   "web_content_depth_v1": WebContentDepthV1;
   "web_content_freshness_v1": WebContentFreshnessV1;
+  "web_content_needs_rendering_v1": WebContentNeedsRenderingV1;
   "web_content_quality_eeat_v1": WebContentQualityEeatV1;
   "web_crawl_depth_v1": WebCrawlDepthV1;
   "web_cwv_cls_v1": WebCwvClsV1;
   "web_cwv_inp_tbt_v1": WebCwvInpTbtV1;
   "web_cwv_lcp_v1": WebCwvLcpV1;
+  "web_dead_end_page_v1": WebDeadEndPageV1;
   "web_duplicate_content_exact_v1": WebDuplicateContentExactV1;
   "web_evidence_anchor_text_descriptiveness_v1": WebEvidenceAnchorTextDescriptivenessV1;
   "web_evidence_asset_delivery_v1": WebEvidenceAssetDeliveryV1;
@@ -68259,7 +68695,6 @@ export interface KindPayloadBySlug {
   "workflow_run_result": WorkflowRunResult;
   "workflow_run_status": WorkflowRunStatus;
   "workflow_step_holding": WorkflowStepHolding;
-  "zz_lane_f_preview_check": ZzLaneFPreviewCheck;
 }
 
 /** `KindPayload<"web_result">` → `WebResult`. */
@@ -68607,6 +69042,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "conversation.analysis.offer",
   "conversation.label_agent_run.offer",
   "conversation.label_chat.offer",
+  "conversation_condensed",
   "cooking_recipe",
   "counterparty_ledger",
   "counterparty_move",
@@ -68647,6 +69083,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "decision_questions",
   "decision_tree",
   "deferred_work_result",
+  "department_plan",
   "described_links",
   "design_system_build_result",
   "desktop_tools_load_result",
@@ -69127,6 +69564,8 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "orchestras.member_roster.offer",
   "orchestration.tool_failure_standoff.offer",
   "org_chart.seat_job_suggestion.offer",
+  "org_chart_blurb",
+  "org_chart_snapshot",
   "outlier_row",
   "outline_section",
   "outreach_reply_draft",
@@ -69755,11 +70194,13 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "web_canonical_presence_v1",
   "web_content_depth_v1",
   "web_content_freshness_v1",
+  "web_content_needs_rendering_v1",
   "web_content_quality_eeat_v1",
   "web_crawl_depth_v1",
   "web_cwv_cls_v1",
   "web_cwv_inp_tbt_v1",
   "web_cwv_lcp_v1",
+  "web_dead_end_page_v1",
   "web_duplicate_content_exact_v1",
   "web_evidence_anchor_text_descriptiveness_v1",
   "web_evidence_asset_delivery_v1",
@@ -69920,7 +70361,6 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "workflow_run_result",
   "workflow_run_status",
   "workflow_step_holding",
-  "zz_lane_f_preview_check",
 ];
 
 const GENERATED_KIND_SLUG_SET: ReadonlySet<string> = new Set(GENERATED_KIND_SLUGS);
