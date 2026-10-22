@@ -64,7 +64,7 @@ export function PortalPasswordSetter() {
         {state === "saving" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
         Save password
       </Button>
-      <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+      <Button type="button" variant="quiet" onClick={() => setOpen(false)}>
         Cancel
       </Button>
       {problem ? <p className="w-full text-xs text-destructive">{problem}</p> : null}
