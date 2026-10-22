@@ -9,10 +9,11 @@
 // visible now and trivial to wire later.
 //
 // Section order (top → bottom):
-//   1. Source        ("What's your source?")  — every tile is functional:
-//        topic / rough notes / full script → text; file → URLs;
-//        website / note / YouTube / audio file → SourceResolverPanel resolves
-//        external content into editable text that's sent as input_data.
+//   1. Source        ("What's your source?")  — topic / rough notes / full
+//        script → typed text sent as input_data; "From your sources" → the one
+//        Source input (upload, paste, web page, YouTube, recording, image, Use
+//        existing), sent as a source_set the SERVER resolves (aidream
+//        resolve_source_set) — nothing is read or cleaned in the browser.
 //   2. Processing     (pre-script WIRED → post_prep_option; post-script ComingSoon)
 //   3. Language       (Gemini 2.5 TTS locales — English + Persian live, rest Soon)
 //   4. Format         (all wired via the multihost script agent) + theme
@@ -25,18 +26,16 @@
 // agents can fill in the source text, the show shape, the audience, the prep
 // steer, and the show blurb. Pressing Generate is NOT agent-writable.
 //
-// Request fields sent: input_data / file_urls, input_data_type, podcast_type
+// Request fields sent: input_data / source_set, input_data_type, podcast_type
 // (derived from Language + Format), language, format, theme, host_count,
 // speakers (only when customized), post_prep_option, show_id,
 // prep_user_message, first_show_info_text, truncate_audio_for_testing.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createPodcastStudioScope } from "@/features/surfaces/manifests/podcast-studio.manifest";
 import {
   AudioLines,
-  Plus,
-  X,
   ChevronDown,
   SlidersHorizontal,
   FlaskConical,
@@ -81,11 +80,14 @@ import {
   toFeatureImageStyle,
   type FeatureImageStyleValue,
 } from "../featureImageStyles";
-import { SourceResolverPanel } from "./SourceResolverPanel";
+import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
+import { sourceSurfaceKey, useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
+import { ALL_SOURCE_KIND_IDS } from "@/features/resource-manager/source-input/sourceKinds";
+import { useAppStore } from "@/lib/redux/hooks";
 import { TopicIdeaHelper } from "./TopicIdeaHelper";
 import { topicIdeaOfferFacts } from "../topicIdeaOffer";
 import {
-  SOURCE_OPTIONS,
+  GENERATOR_SOURCE_OPTIONS,
   LANGUAGE_OPTIONS,
   DEFAULT_LANGUAGE,
   isRtlLanguage,
@@ -108,6 +110,7 @@ import { usePodcastCastPreview } from "../usePodcastCastPreview";
 import {
   getPodcastSourceReadiness,
   finishedScriptSpeakers,
+  MIN_PODCAST_CONTENT_CHARS,
 } from "../sourceReadiness";
 import { SpeakerCastEditor } from "./SpeakerCastEditor";
 import type {
@@ -122,13 +125,21 @@ import { DictionaryIndicatorButton } from "@/features/dictionary/components/Dict
 import { useDictionaryContext } from "@/features/dictionary/hooks/useDictionaryContext";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+/** The one Source input's key on this surface — picks persist (and survive a reload) under it. */
+const PODCAST_SOURCES_SURFACE = "podcasts:create";
+/** Every Add new tile but Topic (the topic is its own tile here), plus Use existing. */
+const PODCAST_SOURCE_KINDS = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** The script writer needs the text up front — never "let the AI look it up". */
+const PODCAST_SOURCE_DELIVERIES = ["direct"] as const;
+
 /** Surface key the podcast studio persists its dictionary selection under. */
 const PODCAST_DICTIONARY_SURFACE = "matrx-user/podcast-studio";
 
 interface GeneratorFormProps {
   shows: PcShow[];
   onShowCreated: (show: PcShow) => void;
-  onGenerate: (body: PodcastGenerateRequest) => void;
+  /** Resolve `false` when the run did not start — the picked Sources are then kept. */
+  onGenerate: (body: PodcastGenerateRequest) => void | Promise<boolean | void>;
   busy: boolean;
   initialTopic?: string;
   initialFormat?: PodcastFormat;
@@ -204,11 +215,9 @@ export function GeneratorForm({
 }: GeneratorFormProps) {
   const [sourceKind, setSourceKind] = useState<PodcastSourceKind>("topic");
   const [text, setText] = useState(initialTopic);
-  const [urls, setUrls] = useState<string[]>([""]);
-  /** Editable text resolved from a `resolve` source (website/note/YouTube/audio). */
-  const [resolvedText, setResolvedText] = useState("");
-  /** True while a resolve source is fetching/cleaning — blocks Generate. */
-  const [resolverBusy, setResolverBusy] = useState(false);
+  // The one Source input's picks (pointers only; read on the server at Generate).
+  const sourceSet = useSourceSet(PODCAST_SOURCES_SURFACE);
+  const store = useAppStore();
   const [language, setLanguage] = useState<PodcastLanguageCode>(DEFAULT_LANGUAGE);
   const [format, setFormat] = useState<PodcastFormat>(initialFormat);
   const [theme, setTheme] = useState("");
@@ -253,21 +262,36 @@ export function GeneratorForm({
   // before the transform above). Empty = skipped.
   const [targetAudience, setTargetAudience] = useState("");
 
-  const activeSource = SOURCE_OPTIONS.find((o) => o.kind === sourceKind);
+  // A reload brings the picked Sources back — open their tile so they are seen.
+  const restoredSourcesShown = useRef(false);
+  useEffect(() => {
+    if (restoredSourcesShown.current || sourceSet.restoring) return;
+    restoredSourcesShown.current = true;
+    if (sourceSet.sources.length > 0 && !text.trim()) setSourceKind("sources");
+  }, [sourceSet.restoring, sourceSet.sources.length, text]);
+
+  const activeSource = GENERATOR_SOURCE_OPTIONS.find((o) => o.kind === sourceKind);
   if (!activeSource) {
     throw new Error(`Unknown podcast source kind: ${sourceKind}`);
   }
-  const cleanUrls = urls.map((u) => u.trim()).filter(Boolean);
   const isRtl = isRtlLanguage(language);
-  const sourceText = activeSource.control === "resolve" ? resolvedText : text;
-  const sourceReadiness = getPodcastSourceReadiness(
-    activeSource.inputDataType,
-    sourceText,
+  const usesSources = activeSource.control === "sources";
+  const readySources = sourceSet.sources.filter((s) => s.status === "ready" && s.draft.ref);
+  const landingSources = sourceSet.sources.filter(
+    (s) => s.status === "pending" || s.status === "resolving",
   );
-  const hasSourceInput =
-    activeSource.control === "urls"
-      ? cleanUrls.length > 0
-      : sourceText.trim().length > 0;
+  /** True while a new Source is still landing — blocks Generate. */
+  const resolverBusy = usesSources && landingSources.length > 0;
+  const sourceReadiness = usesSources
+    ? landingSources.length > 0
+      ? { ready: false, message: "Wait until your sources finish adding." }
+      : // The server's gate reads the resolved text; the measured size mirrors it
+        // (0 = not measured yet — the server decides).
+        sourceSet.totalChars > 0 && sourceSet.totalChars < MIN_PODCAST_CONTENT_CHARS
+        ? { ready: false, message: "Add more material — these sources are too short." }
+        : { ready: true, message: null }
+    : getPodcastSourceReadiness(activeSource.inputDataType, text);
+  const hasSourceInput = usesSources ? readySources.length > 0 : text.trim().length > 0;
 
   const canGenerate =
     !busy &&
@@ -301,19 +325,13 @@ export function GeneratorForm({
       drafts: speakerDrafts,
       voices,
       preview: castPreview.preview ?? null,
-      finishedScriptSpeakers: finishedScriptSpeakers(
-        activeSource.control === "urls"
-          ? null
-          : activeSource.control === "resolve"
-            ? resolvedText
-            : text,
-      ),
+      finishedScriptSpeakers: finishedScriptSpeakers(usesSources ? null : text),
     });
     if (cast) body.speakers = cast;
-    if (activeSource.control === "urls") {
-      body.file_urls = cleanUrls;
-    } else if (activeSource.control === "resolve") {
-      body.input_data = resolvedText.trim();
+    if (usesSources) {
+      // Pointers only — the server reads each Source (a cloud PDF as its clean
+      // text) through resolve_source_set and links it to the episode.
+      body.source_set = sourceSet.toSourceSet();
     } else {
       body.input_data = text.trim();
     }
@@ -365,11 +383,23 @@ export function GeneratorForm({
     return body;
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!canGenerate) return;
     const body = buildRequestBody();
     if (!body) return;
-    onGenerate(body);
+    const started = await onGenerate(body);
+    // The run owns its Sources now; the next episode starts from an empty input.
+    // Read the draft as it is NOW (a Source added while starting stays).
+    if (started !== false && body.source_set) {
+      const sent = new Set(body.source_set.sources.map((r) => r.resource_id));
+      const live = Object.values(
+        store.getState().instanceResources.byConversationId[sourceSurfaceKey(PODCAST_SOURCES_SURFACE)] ?? {},
+      ).filter((r) => r.blockType === "source_ref");
+      for (const r of live) {
+        const id = sourceSet.sources.find((c) => c.id === r.resourceId)?.draft.ref?.resource_id;
+        if (id && sent.has(id)) sourceSet.remove(r.resourceId);
+      }
+    }
   };
 
   // ── Surface emitter (matrx-user/podcast-studio) ───────────────────────
@@ -398,9 +428,8 @@ export function GeneratorForm({
       source_text: activeSource.control === "text" ? text || undefined : undefined,
       source_topic:
         sourceKind === "topic" ? text.trim() || undefined : undefined,
-      source_urls: cleanUrls.length > 0 ? cleanUrls : undefined,
-      resolved_source_text:
-        activeSource.control === "resolve" ? resolvedText || undefined : undefined,
+      source_urls: undefined,
+      resolved_source_text: undefined,
       theme: theme.trim() || undefined,
       speaker_cast: request?.speakers,
       cast_provider: castPreview.preview?.provider,
@@ -536,8 +565,6 @@ export function GeneratorForm({
   /** Switch source — clear the per-source text so stale content never leaks. */
   const handleSourceChange = (kind: PodcastSourceKind) => {
     setSourceKind(kind);
-    setResolvedText("");
-    setResolverBusy(false);
   };
 
   return (
@@ -560,7 +587,7 @@ export function GeneratorForm({
       <section className="space-y-2.5">
         <Label className={SECTION_LABEL}>What&apos;s your source?</Label>
         <div className="grid gap-2.5 sm:grid-cols-4">
-          {SOURCE_OPTIONS.map((opt) => {
+          {GENERATOR_SOURCE_OPTIONS.map((opt) => {
             const Icon = opt.icon;
             return (
               <Tile
@@ -596,53 +623,17 @@ export function GeneratorForm({
               enableTextStats
               className="text-base"
             />
-          ) : activeSource.control === "urls" ? (
-            <div className="space-y-2">
-              {urls.map((url, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Input
-                    value={url}
-                    onChange={(e) =>
-                      setUrls((prev) =>
-                        prev.map((u, idx) => (idx === i ? e.target.value : u)),
-                      )
-                    }
-                    placeholder="https://…/document.pdf"
-                    inputMode="url"
-                  />
-                  {urls.length > 1 && (
-                    <Button
-                      icon={<X />}
-                      type="button"
-                      variant="quiet"
-                      onClick={() =>
-                        setUrls((prev) => prev.filter((_, idx) => idx !== i))
-                      }
-                      aria-label="Remove URL"
-                    />
-                  )}
-                </div>
-              ))}
-              <Button
-                icon={<Plus />}
-                type="button"
-                variant="quiet"
-                onClick={() => setUrls((prev) => [...prev, ""])}
-              >
-                Add another file URL
-              </Button>
-            </div>
-          ) : activeSource.control === "resolve" && activeSource.resolveKind ? (
-            <SourceResolverPanel
-              resolveKind={activeSource.resolveKind}
-              value={resolvedText}
-              onChange={setResolvedText}
-              rtl={isRtl}
-              onBusyChange={setResolverBusy}
+          ) : usesSources ? (
+            <SourceInput
+              surfaceKey={PODCAST_SOURCES_SURFACE}
+              title="Sources"
+              purpose="your episode"
+              required
+              kinds={PODCAST_SOURCE_KINDS}
+              deliveries={PODCAST_SOURCE_DELIVERIES}
             />
           ) : null}
-          {activeSource.control !== "urls" &&
-            hasSourceInput &&
+          {(hasSourceInput || resolverBusy) &&
             !sourceReadiness.ready && (
               <p
                 role="alert"
