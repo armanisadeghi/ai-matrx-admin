@@ -430,13 +430,13 @@ function FileRow({ file, depth }: { file: ArtifactFile; depth: number }) {
       >
         {file.name}
       </button>
-      <span className="hidden w-16 shrink-0 text-right tabular-nums text-muted-foreground sm:inline">
+      <span className="type-body hidden w-16 shrink-0 text-right tabular-nums text-muted-foreground sm:inline">
         {file.sizeBytes === null ? "—" : formatFileSize(file.sizeBytes)}
       </span>
       <time
         dateTime={file.updatedAt}
         title={new Date(file.updatedAt).toLocaleString()}
-        className="hidden w-20 shrink-0 truncate text-right text-muted-foreground md:inline"
+        className="type-body hidden w-20 shrink-0 truncate text-right text-muted-foreground md:inline"
       >
         {formatRelativeTime(file.updatedAt, { absolute: "date" })}
       </time>

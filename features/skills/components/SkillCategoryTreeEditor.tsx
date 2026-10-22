@@ -822,7 +822,7 @@ function CreateCategoryRow({
       className={`flex min-h-7 items-center gap-1.5 pr-2 bg-accent/30 rounded ${TREE_ROW_TEXT}`}
       style={treeIndentStyle(depth)}
     >
-      <span aria-hidden="true" className="inline-block h-5 w-5" />
+      <span aria-hidden="true" className="inline-block h-5 w-5 shrink-0" />
       <TreeDisclosure expandable={false} />
       <TreeFolderIcon />
       <span aria-hidden="true" className="inline-block h-3 w-3 shrink-0" />
