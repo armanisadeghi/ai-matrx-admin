@@ -201,7 +201,7 @@ async function main() {
 
     const plan = syncPlan(manifests, organizationId);
     const surfaceRows = await client.query<Row>(
-      "select name, client_name, executor_name, execution_mode, description, is_active, label, value_groups, readiness, readiness_note, overlay_id, url_pattern, intro, parent_surface_name, content_hash, situation, system_notes from ui.ui_surface where name = any($1::text[])",
+      "select name, client_name, executor_name, execution_mode, description, is_active, label, value_groups, readiness, readiness_note, overlay_id, url_pattern, intro, parent_surface_name, content_hash, situation, taxonomy_node_slug, system_notes from ui.ui_surface where name = any($1::text[])",
       [namesSql],
     );
     const readChildRows = async () => {
@@ -265,6 +265,29 @@ async function main() {
         const planned = plan.surfaces.find((p) => p.name === manifest.surfaceName);
         if (!registrationOnly && planned)
           failures.push(...expectedMetadata(planned, row));
+      }
+    }
+    // A declared domain-tree node must exist (`taxonomyNode` → `taxonomy_node_slug`): placement
+    // (`mandate.intelligence_placement`) silently skips an unknown slug, so the sync refuses it.
+    const declaredSlugs = [
+      ...new Set(
+        plan.surfaces
+          .map((p) => p.update.taxonomy_node_slug)
+          .filter((slug): slug is string => typeof slug === "string"),
+      ),
+    ];
+    if (declaredSlugs.length > 0) {
+      const known = await client.query<{ slug: string }>(
+        "select slug from platform.taxonomy_node where slug = any($1::text[])",
+        [declaredSlugs],
+      );
+      const knownSlugs = new Set(known.rows.map((row) => String(row.slug)));
+      for (const p of plan.surfaces) {
+        const slug = p.update.taxonomy_node_slug;
+        if (typeof slug === "string" && !knownSlugs.has(slug))
+          failures.push(
+            `surface ${p.name}: taxonomyNode "${slug}" is not a platform.taxonomy_node slug`,
+          );
       }
     }
     CHILD_TABLES.forEach(([table, label], index) => {

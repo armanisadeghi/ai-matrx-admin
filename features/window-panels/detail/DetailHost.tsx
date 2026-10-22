@@ -74,7 +74,6 @@ import { supabase } from "@/utils/supabase/client";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
 import { recordPeekOpenInput } from "./canvas/recordPeek";
-import { useCloseDetailWindow, useOpenDetailWindow } from "@/features/overlays/definitions/detailWindow.overlay";
 import { encodeListQuery } from "@ai-matrx/detail";
 import { resolvedListContextMax } from "./listContextCap";
 import { stashPageSeed } from "./pageSeedHandoff";
@@ -313,8 +312,12 @@ function RefCell({
 
 export function DetailHost({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const openWindow = useOpenDetailWindow();
-  const closeWindow = useCloseDetailWindow();
+  const openWindow = useLazyAppOpener("detailWindow", () =>
+    import("@/features/overlays/definitions/detailWindow.overlay").then((m) => m.createDetailWindowOpener),
+  );
+  const closeWindow = useLazyAppOpener("detailWindow", () =>
+    import("@/features/overlays/definitions/detailWindow.overlay").then((m) => m.createDetailWindowCloser),
+  );
   const canvas = useOptionalCanvas();
   const openGoogleConnect = useLazyAppOpener("googleConnectWindow", () =>
     import("@/features/overlays/definitions/googleConnectWindow.overlay").then((m) => m.createGoogleConnectWindowOpener),

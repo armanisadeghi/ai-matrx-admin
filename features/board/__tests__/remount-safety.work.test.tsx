@@ -179,7 +179,7 @@ remountType(
       title: "unit-4b-pet-addendum.md",
       prepare: seedFile,
       loadMs: 800,
-      kept: (tile) => ({
+      kept: (tile) => (console.log("DBGF", JSON.stringify((tile.container.textContent ?? "").slice(0, 400)), tile.container.innerHTML.length), {
         preview: (tile.container.textContent ?? "").includes("Pet deposit $300, refundable at move-out."),
         saved: tile.source(),
       }),

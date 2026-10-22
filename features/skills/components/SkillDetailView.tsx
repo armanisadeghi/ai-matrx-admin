@@ -38,6 +38,7 @@ import { SkillAttributionLine, SkillOriginBadges } from "./SkillOriginBadges";
 import { SKILL_TIER_META, SKILL_TIER_ORDER, type SkillTierKey } from "./skill-tiers";
 import { catalogProseText } from "@/features/content-ir/surfaces/kind-one-line";
 
+import { displayId } from "@ai-matrx/design-system";
 interface SkillDetailViewProps {
   skill: SkillRow;
   categoryLabel?: string;
@@ -202,7 +203,7 @@ export function SkillDetailView({
                         </button>
                       ) : (
                         <span className="min-w-0 flex-1 truncate text-muted-foreground">
-                          {member?.label ?? `Skill ${id.slice(0, 8)}`}
+                          {member?.label ?? `Skill ${displayId(id)}`}
                         </span>
                       )}
                       {member && (

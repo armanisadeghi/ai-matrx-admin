@@ -29,6 +29,7 @@ import {
   ImageIcon,
   Clapperboard,
   Circle,
+  Library,
   type LucideIcon,
 } from "lucide-react";
 import { Youtube } from "@/components/icons/brand-icons";
@@ -48,7 +49,7 @@ import { Youtube } from "@/components/icons/brand-icons";
  *             resolves external content into editable text, which is then sent
  *             as `input_data`. Each `resolve` source declares how to fetch.
  */
-export type SourceControl = "text" | "urls" | "resolve";
+export type SourceControl = "text" | "urls" | "resolve" | "sources";
 
 /** How a `resolve` source turns the user's input into editable text. */
 export type ResolveKind = "website" | "note" | "youtube" | "audio_file";
@@ -151,6 +152,28 @@ export const SOURCE_OPTIONS: SourceOption[] = [
     resolveKind: "audio_file",
     inputDataType: "partial_content",
   },
+];
+
+/**
+ * THE podcast tile for the one Source input (`features/resource-manager/
+ * source-input`): upload, paste, web page, YouTube, recording, image and every
+ * kind under "Use existing". Its picks go as a `source_set` and are read on the
+ * server — this replaces the file-URL / website / note / YouTube / audio tiles
+ * above on the live create page (those stay only for the bake-off variants).
+ */
+export const SOURCE_INPUT_OPTION: SourceOption = {
+  kind: "sources",
+  label: "From your sources",
+  helper: "Files, notes, web pages, YouTube and recordings.",
+  icon: Library,
+  control: "sources",
+  inputDataType: "partial_content",
+};
+
+/** The live create page's tiles: what a person types, plus the Source input. */
+export const GENERATOR_SOURCE_OPTIONS: SourceOption[] = [
+  ...SOURCE_OPTIONS.filter((o) => o.control === "text"),
+  SOURCE_INPUT_OPTION,
 ];
 
 // ── Cleanup agents ───────────────────────────────────────────────────────────

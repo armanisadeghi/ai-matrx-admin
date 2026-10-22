@@ -65,9 +65,7 @@ begin
     (v_open,   'Wraithmoor Regional Museum — Collections Store', 'wraithmoor-collections-'||substr(v_open::text,1,8), 'WRS', c_admin);
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status) values
     (v_shared,'organization',v_shared,c_admin,'owner','active'),
-    (v_shared,'organization',v_shared,c_dana,'member','active'),
-    (v_open,'organization',v_open,c_admin,'owner','active'),
-    (v_open,'organization',v_open,c_dana,'member','active');
+    (v_open,'organization',v_open,c_admin,'owner','active');
   insert into platform.knob_override (feature,key,scope_kind,scope_id,organization_id,value,set_note) values
     ('custom','system_enabled','organization',v_shared,v_shared,'true'::jsonb,'campaign-test/storet_green'),
     ('custom','system_enabled','organization',v_open,v_open,'true'::jsonb,'campaign-test/storet_green');

@@ -108,11 +108,11 @@ select case
        count(distinct org) as organizations
   from d group by 1 order by 1;
 \echo '── by organization (where anything differs)'
-select o.name,
+select o.name, platform.knob_resolve('custom', 'member_default_visibility', o.id) #>> '{}' as member_default_visibility,
        iam.member_default_level(o.id, null)::text as member_default_level, count(*) as pairs,
        count(*) filter (where old_open <> new_open) as open_differs,
        count(*) filter (where old_edit <> new_edit) as edit_differs
   from g_ans a join context.scopes s on s.id = a.scope_id join iam.organizations o on o.id = s.organization_id
- group by o.id, o.name having count(*) filter (where old_open <> new_open or old_edit <> new_edit) > 0 order by 2 desc, 3 desc;
+ group by o.id, o.name having count(*) filter (where old_open <> new_open or old_edit <> new_edit) > 0 order by 3 desc, 4 desc;
 
 rollback;

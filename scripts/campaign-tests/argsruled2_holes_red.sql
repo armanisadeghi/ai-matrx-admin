@@ -33,9 +33,10 @@ begin
   insert into iam.organizations (name, slug, abbreviation)
   values ('Willow Creek Veterinary Clinic', 'willow-creek-vet-argsruled2red', 'WCV') returning id into v_clinic;
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
-  values (v_clinic, 'organization', v_clinic, c_mgr,  'owner',  'active');
-  -- c_tech is deliberately NOT a member of the clinic (KNOB-SWEEP 2026-10-22): the "members see only what is
-  -- shared" setting that used to wall her out is retired (access ladder T-17), so the wall is non-membership.
+  values (v_clinic, 'organization', v_clinic, c_mgr,  'owner',  'active'),
+         (v_clinic, 'organization', v_clinic, c_tech, 'member', 'active');
+  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
+  values ('custom', 'member_default_visibility', 'organization', v_clinic, v_clinic, '"shared_only"'::jsonb);
 
   insert into iam.organizations (name, slug, abbreviation)
   values ('High Desert Equine Services', 'high-desert-equine-argsruled2red', 'HDE') returning id into v_equine;

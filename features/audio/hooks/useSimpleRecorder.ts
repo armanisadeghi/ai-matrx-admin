@@ -19,10 +19,11 @@
 
 import { useState, useRef, useCallback, useEffect, useId } from 'react';
 import { getErrorSolution } from '../utils/microphone-diagnostics';
-import { acquireMicStream, releaseMicStream } from '@ai-matrx/browser-audio/core';
 import {
-  getSharedAudioContext,
-  resumeSharedAudioContext,
+  acquireMicStream,
+  createStreamLevelMeter,
+  releaseMicStream,
+  type StreamLevelMeter,
 } from '@ai-matrx/browser-audio/core';
 import { claimCapture, releaseCapture } from '@/features/audio/captureLock';
 import { beginRecordingSession } from '@/features/audio/session/audioSessionRegistry';
@@ -63,11 +64,8 @@ export function useSimpleRecorder({
   const micHeldRef = useRef(false);
   const chunksRef = useRef<Blob[]>([]);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  // The shared AudioContext is never closed (only resumed); we only own the
-  // analyzer + the source node we connect into it, and disconnect those.
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const analyserSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  // The package's one level meter (shared AudioContext, never closed here).
+  const levelMeterRef = useRef<StreamLevelMeter | null>(null);
   // This recording's session in the unified audio registry (Audio panel
   // listing, live → history). Ended in cleanup (the single exit for every
   // path: normal stop, takeover, error, reset, unmount).
@@ -80,28 +78,8 @@ export function useSimpleRecorder({
       durationIntervalRef.current = null;
     }
 
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-
-    // Disconnect (don't close — the context is shared) the analyzer graph.
-    if (analyserSourceRef.current) {
-      try {
-        analyserSourceRef.current.disconnect();
-      } catch {
-        /* ignore */
-      }
-      analyserSourceRef.current = null;
-    }
-    if (analyserRef.current) {
-      try {
-        analyserRef.current.disconnect();
-      } catch {
-        /* ignore */
-      }
-      analyserRef.current = null;
-    }
+    levelMeterRef.current?.stop();
+    levelMeterRef.current = null;
 
     // Release our hold on the shared mic stream — NEVER stop its tracks (that
     // would defeat the singleton's keepalive and kill other holders). The
@@ -179,35 +157,8 @@ export function useSimpleRecorder({
       streamRef.current = stream;
       chunksRef.current = [];
 
-      // Setup audio analysis for visual feedback on the SHARED context (never
-      // closed — only resumed). iOS caps live AudioContexts; sharing one avoids
-      // exhaustion.
-      await resumeSharedAudioContext();
-      const audioContext = getSharedAudioContext();
-      if (audioContext) {
-        analyserRef.current = audioContext.createAnalyser();
-        analyserRef.current.fftSize = 256;
-        analyserRef.current.smoothingTimeConstant = 0.8;
-        analyserSourceRef.current =
-          audioContext.createMediaStreamSource(stream);
-        analyserSourceRef.current.connect(analyserRef.current);
-      }
-
-      // Start audio level monitoring
-      const updateAudioLevel = () => {
-        if (!analyserRef.current) return;
-
-        const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-        analyserRef.current.getByteFrequencyData(dataArray);
-
-        // Calculate average audio level (0-100)
-        const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-        const normalizedLevel = Math.min(100, (average / 255) * 150); // Scale up so quiet input still shows
-
-        setAudioLevel(normalizedLevel);
-        animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
-      };
-      updateAudioLevel();
+      // Visual feedback: the package level meter (shared context, 0-100).
+      levelMeterRef.current = createStreamLevelMeter(stream, setAudioLevel);
 
       // The canonical controller owns the MIME ladder (constructor-confirmed
       // fallthrough), the lifecycle, and pause-aware elapsed time.

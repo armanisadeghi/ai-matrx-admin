@@ -68,6 +68,9 @@ export function useRecordsNoun(
   records: DrillRecordsDeclaration,
   siblings: { offered: readonly string[]; described: readonly DrillSiblingDefinition[] } = { offered: [], described: [] },
 ): string | null {
+  // the definition's own word for one record wins: a grain sentence such as "one row per tool call the
+  // re-fetch report counts (…)" has no clean noun and read "1,186 tool call the res" on screen
+  if (records.noun) return records.noun;
   const own = grainNoun(def.grain);
   if (records.fact === def.key || !siblings.offered.includes(records.fact)) return own;
   const sibling = siblings.described.find((s) => s.token === records.fact);
@@ -95,6 +98,30 @@ export function recordsSortOf(
   return columns.has(sort.key) ? { key: sort.key, direction: sort.direction ?? "asc" } : null;
 }
 
+/**
+ * THE RECORDS' WINDOW IS THE NUMBER'S (lane DRILL-NIGHT-RECORDS, live defects 1 and 3): the records are
+ * asked for exactly the window the number was asked for — along the same time Dimension, cut to the
+ * hour when the host's rollup counts whole hours (`align`) — so they are the rows that number counted.
+ * A question with no window ("All time") asks the records with none too: an invoker definition's rows
+ * are read whole (CRM deals: an "All time" window along Expected close dropped every deal with no date
+ * or a future one, so "Qualified (2)" opened 0 deals). Only a definer definition's records need a start
+ * (the door requires one): theirs is the whole span, from the platform's first day to now.
+ */
+export function recordsWindow(
+  def: Pick<DrillDefinition, "mode">,
+  dimensions: readonly { key: string; kind?: string | undefined }[],
+  carried: DrillCarried | null | undefined,
+  window: MatrxDrillQuestion["window"] | null | undefined,
+  align?: "hour" | undefined,
+  now: Date = new Date(),
+): { key: string; from: string; to: string } | undefined {
+  const along = drillWindowKey(dimensions, carried);
+  if (!along) return undefined;
+  const asked = doorWindow({ by: [], show: [], where: [], window: window ?? null }, { key: along, align }).window;
+  if (asked) return asked;
+  return def.mode === "definer" ? allTimeWindow(along, now) : undefined;
+}
+
 /** The first moment the platform holds any record: "All time" as the window records are listed for. */
 export const DRILL_ALL_TIME_FROM = "2020-01-01T00:00:00Z";
 
@@ -119,7 +146,10 @@ export function DrillRecords({
   siblings,
   openRecord,
   timeZone,
+  windowAlign,
 }: {
+  /** The host's window alignment (`"hour"` over an hourly rollup): the records' window is cut as the number's. */
+  windowAlign?: "hour" | undefined;
   /** The host's sibling definitions: the records' noun when the records are a sibling's rows. */
   siblings?: { offered: readonly string[]; described: readonly DrillSiblingDefinition[] } | undefined;
   /** The explorer's one name book (drillNames.ts); absent = one of this list's own over `resolvers`. */
@@ -171,12 +201,8 @@ export function DrillRecords({
     if (!client) return;
     const recordsSort = JSON.parse(sortKey) as { key: string; direction: "asc" | "desc" } | null;
     const asked = JSON.parse(askKey) as Pick<MatrxDrillQuestion, "where" | "window" | "sort"> & { carried: Record<string, unknown> | null };
-    // RECORDS ARE LISTED FOR A WINDOW (the door requires a start): "All time" is every record there is,
-    // so it is asked as the whole span from the platform's first day to now — never a refusal on screen
-    // (lane DRILL-FLIP-FIXES, VERIFY-DRILL-FINAL N2).
-    // along the definition's own time Dimension (lane DRILL-LIVE-FIX-2 #1); none = no window at all
-    const along = drillWindowKey(dimensions, carried);
-    const win = along ? (doorWindow({ by: [], show: [], where: [], window: asked.window ?? null }, { key: along }).window ?? allTimeWindow(along)) : undefined;
+    // THE NUMBER'S OWN WINDOW (recordsWindow): the same span, the same alignment, none when it had none
+    const win = recordsWindow(def, dimensions, carried, asked.window, windowAlign);
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -207,7 +233,9 @@ export function DrillRecords({
         for (const column of columnsKey.split(",")) {
           const dimKey = recordsColumnDimension(def, column);
           const dim = dimKey ? def.dimensions.find((d) => d.key === dimKey) : undefined;
-          if (!dim || dim.kind !== "relation") continue;
+          // a Dimension the host names (a feature code, a sign-in session) is asked for here too, whatever its
+          // kind: its cell reads "Reading the name…" until the book has asked (night walk 2026-10-22)
+          if (!dim || (dim.kind !== "relation" && !book.resolves(dim.key))) continue;
           const ids = [...new Set(page.rows.map((r) => r[column]).filter((v): v is string => typeof v === "string" && v.length > 0))].slice(0, 500);
           if (ids.length === 0) continue;
           const put = (named: Record<string, string>) => !cancelled && book.learn({ [dim.key]: named });
@@ -243,7 +271,7 @@ export function DrillRecords({
     };
     // `def` and `resolvers` are read for names only (a host passes fresh objects each render)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, sourceKey, lane, askKey, columnsKey, offset, rowNoun]);
+  }, [client, sourceKey, lane, askKey, columnsKey, offset, rowNoun, windowAlign]);
 
   // the columns asked are the columns shown (the declared record columns, in their order)
   const columns = records.columns;

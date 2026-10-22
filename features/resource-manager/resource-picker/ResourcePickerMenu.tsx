@@ -1,5 +1,6 @@
 "use client";
 
+import { PrimitiveTile, type PrimitiveId } from "@ai-matrx/icons/domain";
 import React, { useState } from "react";
 import { ChevronRight, Settings2, Bug, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -603,6 +604,7 @@ export function ResourcePickerMenu({
               key={resource.id}
               icon={resource.icon}
               iconClassName={resource.iconClassName}
+              primitive={resource.primitive}
               label={resource.label}
               count={counts[resource.id]}
               chevron
@@ -647,6 +649,7 @@ export function ResourcePickerMenu({
 function PickerMenuRow({
   icon: Icon,
   iconClassName,
+  primitive,
   label,
   count,
   chevron,
@@ -655,6 +658,7 @@ function PickerMenuRow({
 }: {
   icon: React.ComponentType<{ className?: string }>;
   iconClassName: string;
+  primitive?: PrimitiveId;
   label: string;
   count?: number;
   chevron?: boolean;
@@ -667,9 +671,15 @@ function PickerMenuRow({
       onClick={onClick}
       className="group flex h-11 w-full min-w-0 shrink-0 items-center gap-2.5 rounded-lg px-1.5 text-left text-sm transition-colors hover:bg-accent lg:h-9"
     >
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
-        <Icon className={cn("h-4 w-4", iconClassName)} />
-      </span>
+      {primitive ? (
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+          <PrimitiveTile primitive={primitive} size="md" />
+        </span>
+      ) : (
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted">
+          <Icon className={cn("h-4 w-4", iconClassName)} />
+        </span>
+      )}
       <span
         className={cn(
           "min-w-0 flex-1 truncate",

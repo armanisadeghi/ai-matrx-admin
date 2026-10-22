@@ -29,6 +29,9 @@ const opener = appOpener<OpenFavoritesManagerWindowOptions>(OVERLAY_ID, {
 
 export const useOpenFavoritesManagerWindow = opener.useOpen;
 
+/** Plain opener of the store, for boot-graph callers (useLazyAppOpener keeps this module out of first load). */
+export const createFavoritesManagerWindowOpener = opener.forStore;
+
 export const FavoritesManagerWindowController = opener.Controller;
 
 export type FavoritesManagerWindowDefinitionData = OpenFavoritesManagerWindowOptions;

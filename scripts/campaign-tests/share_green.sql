@@ -90,6 +90,7 @@ values (:ORG,  'organization', :ORG,  :ADMIN, 'owner',  'active'),
 -- below mean something: a share is the only thing that could let Dana in.
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
 values ('custom', 'system_enabled',            'organization', :ORG,  :ORG,  'true'::jsonb,          'SHARE green suite'),
+       ('custom', 'member_default_visibility', 'organization', :ORG,  :ORG,  '"shared_only"'::jsonb, 'SHARE green suite'),
        ('custom', 'system_enabled',            'organization', :ORG2, :ORG2, 'true'::jsonb,          'SHARE green suite');
 commit;
 

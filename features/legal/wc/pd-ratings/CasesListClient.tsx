@@ -29,6 +29,7 @@ import { RecordPageHeader } from "@/features/shell/components/header/templates/R
 import { formatRelativeTime } from "@/utils/datetime";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+import { displayId } from "@ai-matrx/design-system";
 function CasesHeader({ showNewCase }: { showNewCase: boolean }) {
   return (
     <RecordPageHeader
@@ -193,7 +194,7 @@ function CaseRow({
   // row did.
   const subtitle = claim.case_number
     ? claim.case_number
-    : `${claim.id.slice(0, 8)}…`;
+    : `${displayId(claim.id)}…`;
   const stamp = claim.updated_at ?? claim.created_at;
   return (
     <li className="group rounded-xl border border-border bg-card transition-colors hover:border-primary/30">

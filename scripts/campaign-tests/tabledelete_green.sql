@@ -55,6 +55,7 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'tabledelete_green.sql'
+\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -116,6 +117,8 @@ begin
   values ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'tabledelete_green');
   -- MEMBERSHIP GIVES NOTHING BY ITSELF in this organization, so PART 2's refusals are about
   -- what `test@test.com` was GIVEN and not about a default the fixture handed her.
+  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
+  values ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'tabledelete_green');
 
   -- A Home record is made by the onboarding path, not by a person's browser, and no client
   -- door covers it. It is a fixture, and it is written before the seat is taken.

@@ -84,7 +84,7 @@ export function CreateView() {
     );
   }
 
-  const handleGenerate = async (body: PodcastGenerateRequest) => {
+  const handleGenerate = async (body: PodcastGenerateRequest): Promise<boolean> => {
     setBusy(true);
     try {
       const run = await studioRunsService.createRun({
@@ -97,11 +97,13 @@ export function CreateView() {
       });
       stashPendingStart(run.id, body);
       startTransition(() => router.push(`/podcast/studio/run/${run.id}`));
+      return true;
     } catch (e) {
       toast.error(
         e instanceof Error ? e.message : "Couldn't start the generation",
       );
       setBusy(false);
+      return false;
     }
   };
 

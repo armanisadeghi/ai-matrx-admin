@@ -28,6 +28,7 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'storerel_green.sql'
+\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -66,7 +67,9 @@ begin
          (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
   values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb,
-          'campaign-test/storerel_green: the doors under test are behind the store switch');
+          'campaign-test/storerel_green: the doors under test are behind the store switch'),
+         ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb,
+          'campaign-test/storerel_green: VIS-33 shared_only, so membership alone reaches nothing');
 
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name', 'Kessler Lab — Main Laboratory')) returning id into v_home;

@@ -4,19 +4,21 @@
 // projects, deals, employees — `{kind: "entity", token}` read through the drill doors AS THE PERSON.
 //
 // The store answers which rows a person sees; this block only asks a question of it (a filter, a
-// sort) and draws the answer: table (the one data table), board (records-ui's embedded `TablePage` over
-// the source — cards move between groups), chart (`EntityChartBlock`, bare, total in the donut's middle),
+// sort) and draws the answer: table (the one data table), board (records-ui's `EntityBoard` over this
+// block's own rows — cards move between groups, a sub-group cuts it into bands), gallery, list, calendar and
+// timeline (records-ui's one calendar and timeline), chart (`EntityChartBlock`, bare, total in the donut's middle),
 // a side / center / full-page peek whose writable properties save through the module's own write door.
 // "New" adds a row where the module allows it (task, project); every other module refuses in its words.
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Input, Switch } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
-import { EntityChartBlock, RecordsMount, TablePage } from "@/features/data-tables/records-ui-host/recordsUiLazy";
-import type { ChartKind, EntityColumn, EntityRow } from "@ai-matrx/records-ui";
+import { CalendarView, EntityBoard, EntityChartBlock, RecordsMount, TimelineView } from "@/features/data-tables/records-ui-host/recordsUiLazy";
+import { RecordsSkeleton } from "@ai-matrx/records-ui/skeleton";
+import type { ChartKind, EntityColumn, EntityRow, EntityTable } from "@ai-matrx/records-ui";
 import type { RecordsConfig } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
-import { ArrowDownUp, ArrowUpRight, Database, GalleryHorizontalEnd, Kanban, PieChart, List, ListFilter, Maximize2, PanelRight, Plus, Search, SlidersHorizontal, Square, Table2, X } from "lucide-react";
+import { ArrowDownUp, ArrowUpRight, Calendar, CalendarDays, Database, GalleryHorizontalEnd, GanttChart, Kanban, PieChart, List, ListFilter, Maximize2, PanelRight, Plus, Search, SlidersHorizontal, Square, Table2, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
@@ -37,7 +39,7 @@ import { useStructureEdit } from "../page/structure";
 import { useParams } from "next/navigation";
 
 import { writeNewEntityRow } from "./entity-row-add";
-import { entityCardColumns, entityPageSize, entitySettingsFor } from "./entity-views";
+import { entityBoardColumn, entityBoardRows, entityCardColumns, entityChoiceColumnsOf, entityDateColumns, entityDateFor, entityField, entityPageSize, entityReadRows, entitySettingsFor, entitySubGroups } from "./entity-views";
 import { CARD_SIZES, LOAD_LIMITS, blockPageSize, type CardSize } from "./view-spec";
 
 /** The layouts a built-in source draws today. */
@@ -46,6 +48,8 @@ const ENTITY_LAYOUTS: Array<{ id: SpaceViewLayout; label: string; icon: typeof T
   { id: "kanban", label: "Board", icon: Kanban },
   { id: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
   { id: "list", label: "List", icon: List },
+  { id: "calendar", label: "Calendar", icon: Calendar },
+  { id: "timeline", label: "Timeline", icon: GanttChart },
   { id: "chart", label: "Chart", icon: PieChart },
 ];
 
@@ -494,14 +498,8 @@ function EntityBody({ token, entity, view, onOpen, search, onNew }: { token: str
       </div>
     );
   }
-  if (view.layout === "kanban") {
-    // records-ui's board over the source: lanes per stage / status, cards move between them.
-    return (
-      <div className="spaces-db-body">
-        <TablePage source={{ kind: "entity", token }} presentation="embedded" layout="board" groupBy={view.groupField ?? choice?.api_name} onOpenRecord={onOpen} searchOverride={search || null} searchBox={false} {...(blockPageSize(view) ? { pageSize: blockPageSize(view) } : {})} />
-      </div>
-    );
-  }
+  if (view.layout === "calendar" || view.layout === "timeline") return <EntityDatedBody token={token} entity={entity} view={view} title={title} onOpen={onOpen} />;
+  if (view.layout === "kanban") return <EntityBoardBody token={token} entity={entity} view={view} groupBy={view.groupField ?? choice?.api_name} onOpen={onOpen} />;
   const cards = view.layout === "gallery" || view.layout === "list" ? entityCardColumns(entity.columns, view.hiddenFields ?? [], title) : [];
   return (
     <div ref={bodyRef} className="spaces-db-body spaces-entity-body" data-pending={entity.pending || undefined} data-held={heldHeight !== null || undefined} style={heldHeight !== null ? { minHeight: heldHeight } : undefined}>
@@ -591,6 +589,120 @@ function EntityBody({ token, entity, view, onOpen, search, onNew }: { token: str
           </Button>
         ) : null}
       </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * CD-VIEW-11 — Notion's Board over a built-in module: records-ui's ONE board (`EntityBoard`) drawn from this
+ * block's own page of rows, so the view's filter, sort, search and load limit hold on the board exactly as on
+ * the table (the board used to read the module unfiltered). A move writes through the module's door and is
+ * drawn at once, held until the re-read rows carry it. Notion's "Sub-group" cuts the board into one band per
+ * choice of a second property.
+ */
+function EntityBoardBody({ token, entity, view, groupBy, onOpen }: { token: string; entity: Entity; view: SpaceDbView; groupBy: string | undefined; onOpen: (id: string) => void }) {
+  const [moved, setMoved] = useState<Record<string, Record<string, unknown>>>({});
+  const [movedFor, setMovedFor] = useState(entity.rows);
+  if (movedFor !== entity.rows) {
+    // New rows read: what they carry wins over a held move (React's derive-on-change; no effect, no flash).
+    setMovedFor(entity.rows);
+    setMoved({});
+  }
+  const columns = entity.columns.map(entityBoardColumn);
+  const tableOf = (rows: EntityRow[]): EntityTable => ({
+    token,
+    label: entity.label,
+    columns,
+    rows: entityBoardRows(rows, moved),
+    total: entity.total,
+    loading: entity.loading,
+    error: entity.error,
+    creatable: false,
+    canUpdate: true,
+    hasMore: false,
+    loadingMore: false,
+    loadMore: () => undefined,
+    newer: 0,
+    refresh: entity.reload,
+    update: async (rowId, column, value) => {
+      setMoved((all) => ({ ...all, [rowId]: { ...(all[rowId] ?? {}), [column.key]: value } }));
+      const refused = await entity.write(rowId, column.key, value);
+      if (refused) setMoved(({ [rowId]: _gone, ...rest }) => rest);
+      return refused;
+    },
+    // The board adds no rows here; the block's own New does (through the module's door).
+    create: async () => ({ refused: "Add a row with New." }),
+  });
+  const sub = view.subGroupField ? entityChoiceColumnsOf(entity.columns).find((c) => c.api_name === view.subGroupField && c.api_name !== groupBy) : undefined;
+  const board = (rows: EntityRow[]) => <EntityBoard entity={tableOf(rows)} groupBy={groupBy} onOpenRecord={onOpen} />;
+  return (
+    <div className="spaces-db-body spaces-entity-boardbody" data-pending={entity.pending || undefined}>
+      {entity.loading && !entity.rows.length ? (
+        <RecordsSkeleton layout="kanban" embedded />
+      ) : sub ? (
+        entitySubGroups(entity.rows, sub).map((band) => (
+          <section key={band.key || "none"} className="spaces-entity-subgroup" aria-label={band.label} data-subgroup={band.key}>
+            <header className="spaces-entity-subgroup-head">
+              <span className="truncate">{band.label}</span>
+              <span className="type-secondary text-muted-foreground">{formatCount(band.rows.length)}</span>
+            </header>
+            {board(band.rows)}
+          </section>
+        ))
+      ) : (
+        board(entity.rows)
+      )}
+      <div className="spaces-entity-foot">
+        <div className="spaces-entity-count type-secondary text-muted-foreground">
+          <span className="spaces-entity-total">{entity.loading && !entity.rows.length ? "" : `${formatCount(entity.total)} ${entity.total === 1 ? "row" : "rows"}`}</span>
+          {entity.hasMore ? (
+            <Button variant="quiet" disabled={entity.loadingMore} onClick={() => void entity.loadMore()}>
+              {entity.loadingMore ? "Loading…" : "Load more"}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * CD-VIEW-11 — Notion's Calendar and Timeline over a built-in module: records-ui's ONE calendar and ONE
+ * timeline, fed the module's columns as store Fields and its page of rows (`entity-views.ts`). A card opens
+ * the row's peek, where the module's own door writes it; the view never drag-writes a module row. The page
+ * is the view's load limit, with the same count and "Load more" as the table.
+ */
+function EntityDatedBody({ token, entity, view, title, onOpen }: { token: string; entity: Entity; view: SpaceDbView; title: EntityColumn | undefined; onOpen: (id: string) => void }) {
+  const date = entityDateFor(view, entity.columns);
+  const fields = entity.columns.map(entityField);
+  const fieldOf = (c: EntityColumn | null | undefined) => (c ? fields[entity.columns.indexOf(c)] : undefined);
+  const rows = entityReadRows(entity.rows);
+  const titleField = fieldOf(title);
+  const cardFields = entityCardColumns(entity.columns, view.hiddenFields ?? [], title)
+    .filter((c) => c !== date)
+    .flatMap((c) => fieldOf(c) ?? []);
+  // The store's undo history is keyed by a table; a module's rows never write through it here.
+  const tableId = `entity:${token}`;
+  const dateField = fieldOf(date);
+  return (
+    <div className="spaces-db-body spaces-entity-dated" data-pending={entity.pending || undefined}>
+      {!dateField ? (
+        entity.loading ? <RecordsSkeleton layout={view.layout === "timeline" ? "timeline" : "calendar"} embedded /> : <div className="spaces-db-note">No date property</div>
+      ) : view.layout === "calendar" ? (
+        <CalendarView key={entity.answered} tableId={tableId} rows={rows} dateField={dateField} fields={fields} titleField={titleField} cardFields={cardFields} onOpenRecord={(id) => onOpen(String(id))} canCreate={false} />
+      ) : (
+        <TimelineView key={entity.answered} tableId={tableId} rows={rows} fields={fields} titleField={titleField} cardFields={cardFields} startKey={dateField.key} onOpenRecord={(id) => onOpen(String(id))} layoutKept={false} />
+      )}
+      <div className="spaces-entity-foot">
+        <div className="spaces-entity-count type-secondary text-muted-foreground">
+          <span className="spaces-entity-total">{entity.loading && !entity.rows.length ? "" : `${formatCount(entity.total)} ${entity.total === 1 ? "row" : "rows"}`}</span>
+          {entity.hasMore ? (
+            <Button variant="quiet" disabled={entity.loadingMore} onClick={() => void entity.loadMore()}>
+              {entity.loadingMore ? "Loading…" : "Load more"}
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -707,7 +819,7 @@ function EntitySettings({
   onBlock: (p: Partial<DatabaseBlockProps>) => void;
   editable: boolean;
 }) {
-  const [page, setPage] = useState<"main" | "layout" | "group" | "props" | "cardsize" | "limit">("main");
+  const [page, setPage] = useState<"main" | "layout" | "group" | "subgroup" | "props" | "cardsize" | "limit" | "date">("main");
   const offers = entitySettingsFor(view.layout);
   const hidden = view.hiddenFields ?? [];
   const groupCol = columns.find((c) => c.api_name === view.groupField) ?? columns.find((c) => c.type === "choice");
@@ -725,6 +837,8 @@ function EntitySettings({
             <MenuRow icon={<Table2 size={15} />} label="Layout" end={<span className="type-secondary text-muted-foreground">{ENTITY_LAYOUTS.find((l) => l.id === view.layout)?.label ?? "Table"}</span>} onClick={() => editable && setPage("layout")} />
             <MenuRow icon={<List size={15} />} label="Properties" end={<span className="text-xs text-muted-foreground">{columns.length - hidden.filter((k) => columns.some((c) => c.api_name === k)).length} shown</span>} onClick={() => setPage("props")} />
             {view.layout === "kanban" ? <MenuRow icon={<Kanban size={15} />} label="Group" end={<span className="type-secondary text-muted-foreground">{groupCol?.name ?? "None"}</span>} onClick={() => editable && setPage("group")} /> : null}
+            {offers.subGroup ? <MenuRow icon={<Kanban size={15} />} label="Sub-group" end={<span className="type-secondary text-muted-foreground">{columns.find((c) => c.api_name === view.subGroupField)?.name ?? "None"}</span>} onClick={() => editable && setPage("subgroup")} /> : null}
+            {offers.date ? <MenuRow icon={<CalendarDays size={15} />} label={view.layout === "timeline" ? "Show timeline by" : "Show calendar by"} end={<span className="type-secondary text-muted-foreground">{entityDateFor(view, columns)?.name ?? "None"}</span>} onClick={() => editable && setPage("date")} /> : null}
             {offers.cardSize ? <MenuRow icon={<Square size={15} />} label="Card size" end={<span className="type-secondary text-muted-foreground">{SIZE_WORDS[view.cardSize ?? "medium"]}</span>} onClick={() => editable && setPage("cardsize")} /> : null}
             {offers.loadLimit ? <MenuRow icon={<List size={15} />} label="Load limit" end={<span className="type-secondary text-muted-foreground">{blockPageSize(view) ? `${blockPageSize(view)} rows` : "Default"}</span>} onClick={() => editable && setPage("limit")} /> : null}
             <div className="px-2 pt-2 pb-1 type-secondary text-muted-foreground">Open pages in</div>
@@ -767,6 +881,13 @@ function EntitySettings({
           : null}
         {page === "cardsize" ? CARD_SIZES.map((s) => <MenuRow key={s} label={SIZE_WORDS[s]} active={(view.cardSize ?? "medium") === s} onClick={() => (onView({ cardSize: s }), setPage("main"))} />) : null}
         {page === "limit" ? LOAD_LIMITS.map((n) => <MenuRow key={n} label={`${n} rows`} active={blockPageSize(view) === n} onClick={() => (onView({ loadLimit: n }), setPage("main"))} />) : null}
+        {page === "subgroup" ? (
+          <>
+            <MenuRow label="None" active={!view.subGroupField} onClick={() => (onView({ subGroupField: null }), setPage("main"))} />
+            <FieldList fields={asFields(entityChoiceColumnsOf(columns).filter((c) => c.api_name !== groupCol?.api_name))} value={view.subGroupField} onPick={(k) => (onView({ subGroupField: k }), setPage("main"))} />
+          </>
+        ) : null}
+        {page === "date" ? <FieldList fields={asFields(entityDateColumns(columns))} value={entityDateFor(view, columns)?.api_name} onPick={(k) => (onView({ dateField: k }), setPage("main"))} /> : null}
         {page === "group" ? <FieldList fields={asFields(columns.filter((c) => c.type === "choice"))} value={groupCol?.api_name} onPick={(k) => (onView({ groupField: k }), setPage("main"))} /> : null}
       </PopoverContent>
     </Popover>

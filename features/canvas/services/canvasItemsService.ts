@@ -3,6 +3,7 @@ import {
   isPersistableCanvasType,
 } from "@ai-matrx/rich-content/utils/canvasContent";
 import { supabase } from "@/utils/supabase/client";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { tryWriteOne, writeOneRow } from "@/utils/supabase/writeOne";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -367,6 +368,8 @@ export const canvasItemsService = {
   async getById(
     id: string,
   ): Promise<{ data: CanvasItemRow | null; error: any }> {
+    // A placeholder id (`artifact-0`) names no row; Postgres would refuse it (22P02).
+    if (!isMaterializedArtifactId(id)) return { data: null, error: null };
     try {
       const userId = requireUserId();
       const { data, error } = await supabase

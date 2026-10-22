@@ -8,6 +8,7 @@
 import type { DictEntryDraft } from "@/features/dictionary/types";
 import type { components } from "@ai-matrx/api/types";
 import type { FeatureImageStyleValue } from "./featureImageStyles";
+import type { SourceSet } from "@ai-matrx/agents/sources";
 
 // ── Request ────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,9 @@ export type PodcastSourceKind =
   | "website_url"
   | "note"
   | "youtube"
-  | "audio_file";
+  | "audio_file"
+  /** The one Source input (picked + new Sources), resolved on the server. */
+  | "sources";
 
 /** BCP-47 locale codes — the Gemini 2.5 TTS supported languages. English is
  *  wired; the rest are display-only previews. */
@@ -108,6 +111,10 @@ export interface PodcastGenerateRequest {
   input_data_type: PodcastInputDataType;
   input_data?: string; // topic / partial_content / full_content / single file URL
   file_urls?: string[]; // file_url: one or more publicly accessible URLs
+  /** The person's picked Sources (pointers only). The server resolves them to
+   *  clean text (aidream `resolve_source_set`), joins it after `input_data`, and
+   *  links each Source to the finished episode. */
+  source_set?: SourceSet;
 
   // Style — the single discriminator the backend honors.
   podcast_type: PodcastType;

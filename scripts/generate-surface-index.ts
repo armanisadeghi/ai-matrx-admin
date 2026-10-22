@@ -37,7 +37,7 @@ import {
 } from "@ai-matrx/chat/surfaces/runtime/registry";
 import { BASELINE_VALUES } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import type { SurfaceManifest } from "@ai-matrx/chat/surfaces/types";
-import { resolveSurfaceChain } from "@/features/surfaces/manifests/surface-declaration-registry";
+import { MAX_INHERITANCE_DEPTH, resolveSurfaceChain } from "@/features/surfaces/manifests/surface-declaration-registry";
 import {
   RAW_MANIFESTS,
   getAllManifests,
@@ -211,6 +211,7 @@ export function compareIndex(encoded: readonly EncodedSurface[]): string[] {
   const source = createIndexedSurfaceSource({
     encoded,
     baselineValues: Object.values(BASELINE_VALUES),
+    maxInheritanceDepth: MAX_INHERITANCE_DEPTH,
     loadBody: () => undefined,
   });
   const problems: string[] = [];

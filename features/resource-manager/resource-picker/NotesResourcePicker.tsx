@@ -1,9 +1,11 @@
 "use client";
 
+import { primitiveLeading } from "./primitive-leading";
 import { useState } from "react";
-import { Box, ChevronDown, House, Loader2, StickyNote } from "lucide-react";
+import { Box, ChevronDown, House, Loader2 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useNotePicker } from "@/features/notes/hooks/useNotePicker";
+import { withoutIdTail } from "@/features/scopes/homes/homeModel";
 import { useNoteHomes } from "@/features/notes/homes/useNoteHomes";
 import type { NotePickerRow } from "@/features/notes/service/notesService";
 import type { Note } from "@/features/notes/types";
@@ -80,13 +82,11 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
         <div className="flex items-center gap-1">
           <div className="min-w-0 flex-1">
             <PickerRow
-              icon={StickyNote}
-              iconClassName="text-yellow-600 dark:text-yellow-400"
+              leading={primitiveLeading("notes")}
               label={row.label}
               secondary={
-                showHome && noteHomes.labelOf(row.home_scope_id)
-                  ? noteHomes.labelOf(row.home_scope_id)
-                  : row.content_preview || "Empty note"
+                (showHome ? withoutIdTail(noteHomes.labelOf(row.home_scope_id)) : null) ??
+                (row.content_preview || "Empty note")
               }
               busy={isPicking}
               disabled={pickingId !== null}
@@ -145,7 +145,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
     }
     if (homes.data.length === 0) return null;
     const named = homes.data
-      .map((h) => ({ ...h, label: noteHomes.labelOf(h.scopeId) ?? "Home" }))
+      .map((h) => ({ ...h, label: withoutIdTail(noteHomes.labelOf(h.scopeId)) ?? "Home" }))
       .sort((a, b) => a.label.localeCompare(b.label));
     return (
       <div>
@@ -195,7 +195,7 @@ export function NotesResourcePicker({ onBack, onSelect }: NotesResourcePickerPro
 
     if (selectedHome) {
       const rows = picker.homeRows(selectedHome);
-      const homeLabel = noteHomes.labelOf(selectedHome) ?? "Home";
+      const homeLabel = withoutIdTail(noteHomes.labelOf(selectedHome)) ?? "Home";
       if (rows.loading && rows.data.length === 0) return spinner;
       if (rows.error) {
         return <ReadFailure error={rows.error} what={`the notes in ${homeLabel}`} onRetry={picker.retry} />;

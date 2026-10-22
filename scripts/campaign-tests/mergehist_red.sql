@@ -242,9 +242,10 @@ begin
   if current_user <> 'authenticated' then
     raise exception 'the access clause is not in the seat — current_user is %', current_user;
   end if;
-  -- Membership always opens a record now (access ladder T-17, 2026-10-03; the shared_only knob is
-  -- retired), so the person a share alone must reach is OUTSIDE the organization (KNOB-SWEEP).
-  delete from iam.memberships where organization_id = v_org and user_id = c_dana;
+  -- This organization says membership alone shows nothing, set through the settings door.
+  perform platform.knob_override_set('custom', 'member_default_visibility', 'organization',
+                                     v_org, v_org, '"shared_only"'::jsonb,
+                                     'campaign-test/mergehist_red access clause');
   perform set_config('request.jwt.claims', c_dana_j, true);
 
   -- She cannot read the history of a record nobody gave her.

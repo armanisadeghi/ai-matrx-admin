@@ -78,7 +78,8 @@ values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active'),
        (:ORG, 'organization', :ORG, :DANA,  'member', 'active'),
        (:ORG, 'organization', :ORG, :TOMAS,   'member', 'active');
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'LEVEL-FIX T2');
+values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'LEVEL-FIX T2'),
+       ('custom', 'member_default_visibility', 'organization', :ORG, :ORG, '"shared_only"'::jsonb, 'LEVEL-FIX T2');
 commit;
 
 -- ═══════════════════════════════════════ the three Tables, the three records and the note

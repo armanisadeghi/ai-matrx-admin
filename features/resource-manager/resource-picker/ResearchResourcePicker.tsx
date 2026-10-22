@@ -1,7 +1,8 @@
 "use client";
 
+import { primitiveLeading } from "./primitive-leading";
 import { useEffect, useState } from "react";
-import { Loader2, Telescope } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   getTopicPickerRows,
   type ResearchTopicPickerRow,
@@ -93,8 +94,7 @@ export function ResearchResourcePicker({
           filteredTopics.map((topic) => (
             <PickerRow
               key={topic.id}
-              icon={Telescope}
-              iconClassName="text-primary"
+              leading={primitiveLeading("research")}
               label={topic.name}
               secondary={topic.description || undefined}
               trailing={

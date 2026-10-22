@@ -3,9 +3,9 @@
 --
 -- For every organization she belongs to: the scope types and scopes she can open today (context.* row security, as
 -- her) against what the store's doors let her open (the organization wall, then custom.has_visibility), and then the
--- same again after the retired "members see only what is shared" setting (access ladder T-17, 2026-10-03) is
--- gone for good: nothing is changed in the second phase any more (KNOB-SWEEP 2026-10-22), so both phases must
--- print the same counts.
+-- same with ONE thing changed inside the transaction — her organization's own `custom/member_default_visibility`
+-- set back to the platform default `all_records`. If the second count equals the old one, that setting is the whole
+-- cause.
 
 \set ON_ERROR_STOP on
 \timing off
@@ -43,10 +43,13 @@ begin
 end $f$;
 
 select pg_temp.m_measure('as it is');
--- the setting that used to change here is retired; the second phase measures the same thing again
+-- the one change: the organization's own member-visibility setting back to the platform default
+update platform.knob_override set value = '"all_records"'::jsonb
+ where feature = 'custom' and key = 'member_default_visibility' and scope_kind = 'organization'
+   and scope_id in (select org from m_count) and value = '"shared_only"'::jsonb;
 select pg_temp.m_measure('its members-see-shared-only setting off');
 
-select o.name, c.phase,
+select o.name, platform.knob_resolve('custom', 'member_default_visibility', c.org) #>> '{}' as setting_now, c.phase,
        c.types_old, c.types_new, c.scopes_old, c.scopes_new
   from m_count c join iam.organizations o on o.id = c.org order by o.name, c.phase;
 select phase, sum(types_old) types_old, sum(types_new) types_new, sum(scopes_old) scopes_old, sum(scopes_new) scopes_new

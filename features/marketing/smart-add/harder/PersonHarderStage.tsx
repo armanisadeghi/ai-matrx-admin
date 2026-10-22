@@ -16,7 +16,7 @@
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { ChevronDown, SearchX } from "lucide-react";
+import { Check, ChevronDown, SearchX } from "lucide-react";
 import { CandidateCard, CandidatePickList, type Candidate } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { formatDurationMs } from "@ai-matrx/kit/format";

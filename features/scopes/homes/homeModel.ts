@@ -96,13 +96,23 @@ export function homeDisplayName(
   home: ItemHome,
   options: { notesSpanManyOrganizations: boolean; collidingNames?: ReadonlySet<string> },
 ): string {
+  const org = readableOrganizationName(home.organizationName);
   if (home.isGeneral) {
-    return options.notesSpanManyOrganizations ? `General · ${home.organizationName}` : "General";
+    return options.notesSpanManyOrganizations && org ? `General · ${org}` : "General";
   }
-  if (options.collidingNames?.has(home.name.toLocaleLowerCase())) {
-    return `${home.name} · ${home.organizationName}`;
+  if (options.collidingNames?.has(home.name.toLocaleLowerCase()) && org) {
+    return `${home.name} · ${org}`;
   }
   return home.name;
+}
+
+/** A hex id (whole, or its first block with or without an ellipsis) is never a name a person reads. */
+const ID_LIKE = /^[0-9a-f]{6,}(-[0-9a-f]{4}){0,4}(-[0-9a-f]{12})?(\.{3}|\u2026)?$/i;
+
+/** The organization's name, or null when the name is empty or is really an id. */
+export function readableOrganizationName(name: string | null | undefined): string | null {
+  const trimmed = name?.trim();
+  return trimmed && !ID_LIKE.test(trimmed) ? trimmed : null;
 }
 
 /** Lower-cased names held by scopes in more than one organization (Generals excluded). */
@@ -157,8 +167,13 @@ export function homeLabelParts(
   for (const group of byLabel.values()) {
     if (group.length < 2) continue;
     const kinds = group.map((h) => h.scopeTypeLabel.toLocaleLowerCase());
+    const orgs = group.map((h) => readableOrganizationName(h.organizationName)?.toLocaleLowerCase() ?? "");
     const suffix: (home: ItemHome) => string =
-      kinds.every(Boolean) && new Set(kinds).size === group.length ? (h) => h.scopeTypeLabel : shortIds(group);
+      kinds.every(Boolean) && new Set(kinds).size === group.length
+        ? (h) => h.scopeTypeLabel
+        : orgs.every(Boolean) && new Set(orgs).size === group.length
+          ? (h) => readableOrganizationName(h.organizationName) as string
+          : shortIds(group);
     for (const home of group) parts.set(home.scopeId, { text: parts.get(home.scopeId)!.text, tail: ` · ${suffix(home)}` });
   }
   return parts;
@@ -287,4 +302,11 @@ export function homeMatchScore(
   }
   const rest = `${home.organizationName} ${home.scopeTypeLabel}`.toLocaleLowerCase();
   return rest.includes(q) ? 0.3 : 0;
+}
+
+/** A home label without a trailing short-id tail (" · 2b5aa8b4…"): what a picker row may show a person. */
+export function withoutIdTail(label: string | null | undefined): string | null {
+  if (!label) return null;
+  const trimmed = label.replace(/ · [0-9a-f]{4,}(-[0-9a-f-]*)?(\.{3}|\u2026)?$/i, "").trim();
+  return trimmed || null;
 }

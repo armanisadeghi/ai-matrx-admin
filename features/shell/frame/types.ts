@@ -119,6 +119,8 @@ export interface FrameAction {
   onSelect: () => void;
   /** Rendered after a separator, in the destructive ink. */
   destructive?: boolean;
+  /** Shown but not pressable (a page verb that cannot run now). */
+  disabled?: boolean;
 }
 
 export interface FrameTab {

@@ -225,7 +225,10 @@ begin
     (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'visfix_red');
+    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'visfix_red'),
+    -- The same property the green suite rests on: membership conveys NOTHING here, so every
+    -- `false` below is the missing edge and not a default that was never there.
+    ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'visfix_red');
 
   -- A Home record is made by the onboarding path and no client door covers it.
   insert into custom.record (organization_id, table_id, data)

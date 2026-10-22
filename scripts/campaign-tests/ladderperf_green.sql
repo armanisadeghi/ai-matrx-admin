@@ -28,6 +28,7 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'ladderperf_green.sql'
+\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -104,6 +105,8 @@ begin
   values ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'ladderperf_green');
   -- SHARED_ONLY is the setting this lane is judged under: under `all_records` every member
   -- reaches every row and the refusal clause could never go red for the right reason.
+  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
+  values ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'ladderperf_green');
 
   -- A HOME RECORD: no client door makes one, so this step is the connected role's and asserts
   -- no product clause.

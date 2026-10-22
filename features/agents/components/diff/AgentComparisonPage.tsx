@@ -12,7 +12,7 @@ import {
 import SearchableSelect from "@/components/matrx/SearchableSelect";
 import type { Option } from "@/components/matrx/SearchableSelect";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
-import { Skeleton } from "@ai-matrx/design-system";
+import { Skeleton, displayId } from "@ai-matrx/design-system";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@ai-matrx/design-system";
@@ -115,7 +115,7 @@ export function AgentComparisonPage({
         patchIfCurrent({
           agentLoading: false,
           versionsLoading: false,
-          loadError: `Could not load agent ${agentId.slice(0, 8)}… — it may have been deleted, or it isn't visible to this account.`,
+          loadError: `Could not load agent ${displayId(agentId)}… — it may have been deleted, or it isn't visible to this account.`,
         }),
       );
 

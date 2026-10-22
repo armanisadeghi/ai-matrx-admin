@@ -569,6 +569,15 @@ export function SurfaceAdminDetailPage({
             }
           />
 
+          <AgentIntroSection
+            field="situation"
+            surfaceName={surface.name}
+            fields={surface as UiSurfaceRow & SurfaceIntroFields}
+            onSaved={(saved) =>
+              setSurface((prev) => ({ ...prev, ...saved }) as UiSurfaceRow)
+            }
+          />
+
           <IdentitySection
             surface={surface}
             busy={busy}

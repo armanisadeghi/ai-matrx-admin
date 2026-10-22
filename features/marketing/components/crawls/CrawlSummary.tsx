@@ -35,6 +35,7 @@ import {
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
+import { displayId } from "@ai-matrx/design-system";
 export function CrawlSummary({ crawlId }: { crawlId: string }) {
   const { site, brandId } = useMarketingSite();
   const crawl = useCrawl(site.id, crawlId);
@@ -89,7 +90,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
   ];
   const sessionCopy = webCopy({
     kind: "web-crawl-session",
-    label: `Crawl ${row.id.slice(0, 8)}`,
+    label: `Crawl ${displayId(row.id)}`,
     description:
       "One frozen crawl: the full row including timing, scope, stats, and metadata.",
     surface: `Crawl summary — session ${row.id}`,
@@ -152,7 +153,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
     },
   ];
   const groomerConfig = (): AgentCopyGroomerConfig => ({
-    label: `Crawl ${row.id.slice(0, 8)}`,
+    label: `Crawl ${displayId(row.id)}`,
     kind: "marketing-crawl-summary-page",
     location: pageLocation,
     description: `The full crawl summary for session ${row.id}.`,
@@ -204,7 +205,7 @@ export function CrawlSummary({ crawlId }: { crawlId: string }) {
         ) : null}
         <CopyButtons
           size="icon"
-          label={`Crawl summary (${row.id.slice(0, 8)})`}
+          label={`Crawl summary (${displayId(row.id)})`}
           human={() => sessionCopy.human()}
           json={pageFullData}
           agent={() => ({

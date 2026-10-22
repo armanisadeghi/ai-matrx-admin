@@ -11,7 +11,7 @@ import {
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import type { UntypedOverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 
 const OVERLAY_ID = "directiveReferencePickerWindow";
 const opener = createOpener<object>(OVERLAY_ID);

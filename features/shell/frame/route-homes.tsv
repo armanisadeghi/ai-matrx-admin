@@ -779,6 +779,7 @@ route	tree node	how found today	note
 /marketing/sites/new	BUSINESS › Marketing	in-page link under menu: Marketing	
 /marketing/snapshots/[snapshotId]	BUSINESS › Marketing	opened from a list (under menu: Marketing)	
 /marketing/social	BUSINESS › Marketing	menu: Marketing › Social	real page (not a redirect)
+/marketing/social/videos	BUSINESS › Marketing	in-page link under menu: Marketing › Social	every brand's video projects
 /marketing/speed-test	Not in the app frame › Internal speed-test pages	test page	performance probe, not a user page
 /marketing/tools	BUSINESS › Marketing	menu: Marketing › All SEO Tools	
 /marketing/tools/domain	BUSINESS › Marketing	menu: Marketing › Domain Research	

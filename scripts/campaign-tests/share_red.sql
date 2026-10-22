@@ -21,6 +21,7 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'share_red.sql'
+\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -44,7 +45,8 @@ insert into iam.memberships (organization_id, container_type, container_id, user
 values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active'),
        (:ORG, 'organization', :ORG, :DANA,  'member', 'active');
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'SHARE red twin');
+values ('custom', 'system_enabled',            'organization', :ORG, :ORG, 'true'::jsonb,          'SHARE red twin'),
+       ('custom', 'member_default_visibility', 'organization', :ORG, :ORG, '"shared_only"'::jsonb, 'SHARE red twin');
 insert into custom.record (id, organization_id, table_id, data_class, data, created_by)
 values (:HQ,  :ORG, '11111111-0000-4000-8000-000000000004', 'record',
         jsonb_build_object('name', 'Ironclad Mobile Mechanic HQ'), :ADMIN),

@@ -193,3 +193,41 @@ describe("one width rule and one full-screen state", () => {
     expect(changes).toEqual([false]);
   });
 });
+
+describe("the canvas has ONE title row (adversarial review, 2026-10-22)", () => {
+  it("a loaded canvas module brings its own pane header: the frame draws no second close or full screen", async () => {
+    const loadCanvas = () =>
+      Promise.resolve({ default: () => <div data-testid="canvas-module">Canvas module</div> });
+    const el = document.createElement("div");
+    document.body.appendChild(el);
+    const r = createRoot(el);
+    act(() =>
+      r.render(
+        <AppFrame
+          products={PRODUCTS}
+          families={PRODUCT_FAMILIES}
+          product={PRODUCTS[0]}
+          favorites={[]}
+          onFavoritesChange={() => {}}
+          crumbs={[{ id: "page", label: "Page" }]}
+          actions={[]}
+          phoneTools={[]}
+          variant="workspace"
+          form="wide"
+          loadCanvas={loadCanvas}
+          canvasOpen
+          canvasFull={false}
+        >
+          <p>Body</p>
+        </AppFrame>,
+      ),
+    );
+    await flush();
+    await flush();
+    expect(el.querySelector('[data-testid="canvas-module"]')).not.toBeNull();
+    expect(el.querySelector('button[aria-label="Close canvas"]')).toBeNull();
+    expect(el.querySelector('button[aria-label="Full screen"]')).toBeNull();
+    act(() => r.unmount());
+    el.remove();
+  });
+});

@@ -51,7 +51,7 @@ import { sourceNamesOf } from "@/features/flashcards/data/deckSourceSet";
 import {
   FLASHCARD_SOURCE_DELIVERIES,
   backfillFileIds,
-  lineageSourceOf,
+  lineageSourcesOf,
 } from "@/features/flashcards/data/generateDeckFromSources";
 import { useTabBoundRun, type TabBoundRun } from "@/lib/wizard-draft/useTabBoundRun";
 import { assessmentService } from "../data/assessmentService";
@@ -304,6 +304,8 @@ function AddMoreQuestionsDialog({
                 : config.kind === "practice_test"
                   ? "exam"
                   : "applied",
+            // Same exam styling as the questions it already has.
+            examType: assessment.exam_type ?? "",
             title: assessment.title,
             steer,
             existing: items.map((it) => ({ prompt: it.prompt, correctAnswer: it.correct_answer })),
@@ -347,7 +349,8 @@ function AddMoreQuestionsDialog({
             title: assessment.title,
             detail: `${questionCount(made.questions.length)} more`,
           };
-          const linkSources = made.sources.map(lineageSourceOf);
+          // Record-store Sources (tables, pick lists) have no lineage edge (lineageSourcesOf).
+          const linkSources = lineageSourcesOf({ ...resolved, sources: made.sources });
           announceLineage(
             await recordLineageForSources(result, linkSources, orgId),
             () => recordLineageForSources(result, linkSources, orgId),

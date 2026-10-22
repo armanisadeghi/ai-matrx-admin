@@ -9,3 +9,6 @@ export interface FrameRouteHomes {
   products: Readonly<Record<string, { entry: string; items: readonly FrameRouteItem[] }>>;
   routes: readonly FrameRouteRow[];
 }
+
+/** One "Go to" page: [pattern, product id ("menu" = account menu), title, path labels between product and page]. */
+export type GoToPageRow = readonly [pattern: string, productId: string, title: string, trail: readonly string[]];

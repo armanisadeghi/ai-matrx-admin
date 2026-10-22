@@ -17,8 +17,9 @@
  * person means by "my chat"), not deleted, not ephemeral, recency-first.
  */
 
+import { primitiveLeading } from "./primitive-leading";
 import { useEffect, useState } from "react";
-import { Loader2, MessagesSquare } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -77,8 +78,7 @@ function ConversationRow({
     <div className="group flex items-center gap-1 pr-1">
       <div className="min-w-0 flex-1">
         <PickerRow
-          icon={MessagesSquare}
-          iconClassName="text-emerald-600 dark:text-emerald-400"
+          leading={primitiveLeading("chats")}
           label={conversationTitleText(row.title?.trim() || null) || "Untitled chat"}
           secondary={
             `${formatRelativeTime(row.updatedAt, { fallback: "" })}${agentName ? ` · ${agentName}` : ""}` ||

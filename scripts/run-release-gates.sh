@@ -882,6 +882,10 @@ if $STRICT; then
         # Zero red at introduction (2026-09-09), so there is no backlog to
         # grandfather and it carries no `--advisory`: a finding here is new.
         "Whole jest suite (every suite, not CI's four scopes)|pnpm test"
+        # NOTHING BUILT IS EVER LOST (Arman, 2026-10-20): every page in the app frame's route
+        # groups has a home row in features/shell/frame/route-homes.tsv. Its own named row so a
+        # missing home screams by name instead of hiding inside the whole suite.
+        "Every page has a home in the app frame's product tree|npx jest features/shell/frame/__tests__/every-page-has-a-home.test.ts --silent"
         # THE LIVE REGISTRY vs THE COMMITTED SNAPSHOT. Same class, same day:
         # `check:shareable-registry` existed and nothing invoked it either, so
         # the snapshot drifted 31 rows behind the live
@@ -1723,6 +1727,10 @@ else
         # Zero red at introduction (2026-09-09), so there is no backlog to
         # grandfather and it carries no `--advisory`: a finding here is new.
         "Whole jest suite (every suite, not CI's four scopes)|pnpm test"
+        # NOTHING BUILT IS EVER LOST (Arman, 2026-10-20): every page in the app frame's route
+        # groups has a home row in features/shell/frame/route-homes.tsv. Its own named row so a
+        # missing home screams by name instead of hiding inside the whole suite.
+        "Every page has a home in the app frame's product tree|npx jest features/shell/frame/__tests__/every-page-has-a-home.test.ts --silent"
         # THE LIVE REGISTRY vs THE COMMITTED SNAPSHOT. Same class, same day:
         # `check:shareable-registry` existed and nothing invoked it either, so
         # the snapshot drifted 31 rows behind the live

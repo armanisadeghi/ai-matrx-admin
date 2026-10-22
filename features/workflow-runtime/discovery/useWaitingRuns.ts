@@ -19,19 +19,24 @@
  * that silently reports "nothing is waiting" forever.
  * `__tests__/waiting-contract.test.ts` is the tripwire.
  *
+ * 🚨 ONE read per page, however many surfaces mount this hook: the state lives
+ * in `waitingRunsStore.ts` (one request in flight, hints debounced, backoff
+ * after a failure). Five mounts used to mean five fetches (2026-10-22).
+ *
  * A failed read is a stated error, never an empty list: "nothing is waiting on
  * you" and "we could not check" are opposite answers, and showing the
  * reassuring one for the alarming one is the exact failure this inbox exists
  * to prevent.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { callApi } from "@/lib/api/call-api";
 
-import { parseWaitingRuns, type WaitingRunRow } from "./waiting";
+import type { WaitingRunRow } from "./waiting";
 import { useRunAnnouncements } from "./useRunAnnouncements";
+import { waitingRunsStore } from "./waitingRunsStore";
 
 /** The two statuses this inbox is made of — see `waiting.ts`. */
 const WAITING_STATUSES = new Set(["interrupted", "awaiting_input"]);
@@ -44,23 +49,23 @@ export interface WaitingRunsState {
   refresh: () => void;
 }
 
+const refresh = () => waitingRunsStore.request();
+
 export function useWaitingRuns(): WaitingRunsState {
   const dispatch = useAppDispatch();
   // 🚨 A LIST IS DECIDED BY ACCESS, NEVER BY THE SELECTED ORGANIZATION
   // (common-docs/policies/access-ladder.md): `GET /runs/waiting`
   // answers the person's waiting runs in EVERY organization with none
   // selected, so this inbox never waits for or refetches with the header's.
-  const [rows, setRows] = useState<WaitingRunRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [generation, setGeneration] = useState(0);
-
-  const refresh = useCallback(() => setGeneration((n) => n + 1), []);
+  const snapshot = useSyncExternalStore(
+    waitingRunsStore.subscribe,
+    waitingRunsStore.getSnapshot,
+    waitingRunsStore.getSnapshot,
+  );
 
   useEffect(() => {
-    let live = true;
-    void (async () => {
-      const result = await dispatch(
+    waitingRunsStore.setFetcher(() =>
+      dispatch(
         callApi({
           path: "/runs/waiting",
           method: "GET",
@@ -69,62 +74,30 @@ export function useWaitingRuns(): WaitingRunsState {
           // caller renders the refusal, but it is not a product incident.
           expectedErrorStatuses: [401],
         }),
-      );
-      if (!live) return;
-      if (result.error) {
-        setError(result.error.message || "Could not check what is waiting on you.");
-      } else {
-        setError(null);
-        setRows(parseWaitingRuns(result.data));
-      }
-      setLoading(false);
-    })();
-    return () => {
-      live = false;
-    };
-  }, [dispatch, generation]);
+      ),
+    );
+    // Every mount asks; the store turns a page's worth of mounts into one read.
+    waitingRunsStore.schedule();
+  }, [dispatch]);
 
-  /**
-   * Coalesced refetch. A single answered interrupt produces several
-   * transitions in a second (`interrupted` → `running` → `completed`); firing
-   * one projection read per frame would be three reads for one event.
-   */
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scheduleRefresh = useCallback(() => {
-    if (timer.current !== null) return;
-    timer.current = setTimeout(() => {
-      timer.current = null;
-      refresh();
-    }, 400);
-  }, [refresh]);
-
-  useEffect(
-    () => () => {
-      if (timer.current !== null) clearTimeout(timer.current);
-    },
-    [],
-  );
-
-  const known = useRef<Set<string>>(new Set());
-  known.current = new Set(rows.map((row) => row.runId));
+  const known = new Set(snapshot.rows.map((row) => row.runId));
 
   useRunAnnouncements({
     onAnnounce: (event) => {
       // Refetch when a run ENTERS the waiting set, or when a run currently ON
       // the list moves at all (it may have just been answered and left). Every
       // other transition in the user's whole account is none of this list's
-      // business — a busy account would otherwise refetch the inbox on every
-      // node of every unrelated run.
-      if (WAITING_STATUSES.has(event.status) || known.current.has(event.run_id)) {
-        scheduleRefresh();
+      // business.
+      if (WAITING_STATUSES.has(event.status) || known.has(event.run_id)) {
+        waitingRunsStore.schedule();
       }
     },
     // Every reconnect has a hole in it (the frames are ephemeral, with no
-    // replay), so the snapshot is re-read on each open.
+    // replay), so the snapshot is re-read on each open — once, for all mounts.
     onStatus: (status) => {
-      if (status === "open") scheduleRefresh();
+      if (status === "open") waitingRunsStore.schedule();
     },
   });
 
-  return { rows, loading, error, refresh };
+  return { rows: snapshot.rows, loading: snapshot.loading, error: snapshot.error, refresh };
 }

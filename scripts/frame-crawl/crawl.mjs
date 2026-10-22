@@ -179,7 +179,7 @@ const MEASURE = () => {
   }
   // ---- frame-mode probes (additive; the classic baseline rows simply lack them) ----
   const norm = (t) => (t ?? "").replace(/\s+/g, " ").trim();
-  const bodyEl = document.querySelector('[data-mf-region="body"]');
+  const bodyEl = document.querySelector('[data-mf-region="body"]') ?? document.querySelector(".shell-main") ?? document.querySelector("main");
   const sideEl = document.querySelector('[data-mf-region="sidebar"]');
   const hdrEl = document.querySelector('header[data-mf-region="header"], [data-mf-region="header"]');
   const frame = {};
@@ -233,10 +233,9 @@ const MEASURE = () => {
     frame.dupTitles = [...seen].filter(([, n]) => n > 1).map(([t, n]) => `${t} x${n}`).slice(0, 4);
   }
   if (sideEl) {
-    const links = [...sideEl.querySelectorAll('[data-mf-region="product-nav"] a, [data-mf-region="product-nav"] button')].filter(vis);
+    const links = [...sideEl.querySelectorAll("a[href]")].filter(vis);
     frame.navLinks = links.length;
-    frame.navLabels = links.slice(0, 12).map((e) => norm(e.textContent).slice(0, 24));
-    frame.navHasSubmenuHeading = !!sideEl.querySelector('[data-mf-region="product-nav"] [role="group"], [data-mf-region="product-nav"] h2, [data-mf-region="product-nav"] h3');
+    frame.navLabels = links.slice(0, 14).map((e) => norm(e.textContent).slice(0, 24));
   }
   return {
     frame,

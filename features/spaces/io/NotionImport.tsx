@@ -28,11 +28,13 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { createVaultItem } from "@/features/secrets/vault-service";
-import { postNdjson } from "@/lib/python-client";
+import { newRequestId, postNdjson } from "@/lib/python-client";
+import { isStreamTransportLost } from "@ai-matrx/api";
 import { createClient } from "@/utils/supabase/client";
 
 import { useSpaces } from "../state/SpacesProvider";
 import { countedKind } from "./countedKind";
+import { followImportRun } from "./notionImportRejoin";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { openOutbound } from "@ai-matrx/kit/outbound";
@@ -67,7 +69,7 @@ const STEPS: Record<string, string> = {
   report: "Report",
 };
 
-function readEvent(data: unknown): { kind: "progress"; step: string; done: number; total: number; detail: string } | { kind: "finished"; report: Finished } | { kind: "failed"; message: string } | null {
+export function readEvent(data: unknown): { kind: "progress"; step: string; done: number; total: number; detail: string } | { kind: "finished"; report: Finished } | { kind: "failed"; message: string } | null {
   if (!data || typeof data !== "object") return null;
   const d = data as Record<string, unknown>;
   if (d.type === "notion_import.progress" && typeof d.step === "string" && typeof d.done === "number" && typeof d.total === "number") {
@@ -135,23 +137,38 @@ export function useNotionImport() {
 
   const stream = async (path: string, body: Record<string, unknown>) => {
     setStage({ phase: "running", step: "reading", done: 0, total: 1, detail: "" });
+    // The dialog names its own request: the server's run for this import is found by it if the stream drops.
+    const requestId = newRequestId();
+    let last: { step: string; done: number; total: number } = { step: "reading", done: 0, total: 1 };
+    let heard = false;
+    const settle = (read: ReturnType<typeof readEvent>) => {
+      if (!read || read.kind === "progress") return false;
+      setStage(read.kind === "failed" ? { phase: "failed", message: read.message } : { phase: "finished", report: read.report });
+      return true;
+    };
+    // ADVERSARIAL-8 F3: a stream that drops (or ends without an answer) is never the import's end — the run is.
+    const follow = async () => {
+      setStage({ phase: "running", ...last, detail: "Lost the live view — following the import on the server" });
+      const end = await followImportRun(requestId);
+      if (!end) return;
+      if (end.kind === "failed") return setStage({ phase: "failed", message: end.message });
+      if (!settle(readEvent(end.end))) setStage({ phase: "failed", message: "The import ended on the server without a report. Run it again — nothing is made twice." });
+    };
     try {
       let ended = false;
-      for await (const event of postNdjson(path, body)) {
+      for await (const event of postNdjson(path, body, { requestId })) {
+        heard = true;
         if (event.event !== "data") continue;
         const read = readEvent(event.data);
         if (!read) continue;
-        if (read.kind === "progress") setStage({ phase: "running", step: read.step, done: read.done, total: read.total, detail: read.detail });
-        else if (read.kind === "failed") {
-          ended = true;
-          setStage({ phase: "failed", message: read.message });
-        } else {
-          ended = true;
-          setStage({ phase: "finished", report: read.report });
-        }
+        if (read.kind === "progress") {
+          last = { step: read.step, done: read.done, total: read.total };
+          setStage({ phase: "running", step: read.step, done: read.done, total: read.total, detail: read.detail });
+        } else ended = settle(read);
       }
-      if (!ended) setStage({ phase: "failed", message: "The import stopped without an answer. Run it again — nothing is made twice." });
+      if (!ended) await follow();
     } catch (err) {
+      if (heard || isStreamTransportLost(err)) return follow();
       setStage({ phase: "failed", message: err instanceof Error ? err.message : "The import stopped." });
     }
   };

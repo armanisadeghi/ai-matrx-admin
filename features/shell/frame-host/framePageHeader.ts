@@ -1,6 +1,8 @@
 "use client";
 
-// THE PAGE HANDS ITS CRUMBS TO THE FRAME (owner, 2026-10-22: the new header is enforced in frame mode).
+// THE PAGE HANDS ITS CRUMBS AND ITS "…" ITEMS TO THE FRAME (owner, 2026-10-22: the new header is
+// enforced in frame mode). The record a page shows is NOT declared here: the frame reads the
+// current-record primitive (features/shell/current-record) every record header already declares.
 //
 // In the new app frame the header row's crumb trail is the frame's (SheetHeader). A page-top
 // template (EntityModeHeader / RecordPageHeader, CrumbTrailHeader, DerivedBreadcrumb on a list page)
@@ -11,7 +13,7 @@
 //
 // Tiny and eager on purpose: the classic templates import it, so it carries nothing of the frame.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import type { FrameCrumb, FrameProduct } from "@/features/shell/frame/types";
+import type { FrameAction, FrameCrumb, FrameProduct } from "@/features/shell/frame/types";
 
 export interface FramePageCrumbOption {
   label: string;
@@ -35,6 +37,11 @@ export interface FramePageHeaderHost {
    * one (a layout's trail that yields to a deeper page header) counts only when no page declared.
    */
   declareCrumbs: (crumbs: readonly FramePageCrumb[], options?: { fallback?: boolean }) => () => void;
+  /**
+   * Declare the page's own "…" items (a record's Actions menu, a phone header's overflow); returns
+   * the release. Every live declaration is listed, oldest first, before the frame's defaults.
+   */
+  declareActions: (actions: readonly FrameAction[]) => () => void;
 }
 
 export const FramePageHeaderContext = createContext<FramePageHeaderHost | null>(null);
@@ -81,6 +88,35 @@ export function useDeclareFrameCrumbs(
   return host != null;
 }
 
+const actionKey = (actions: readonly FrameAction[] | null) =>
+  actions && actions.length > 0
+    ? JSON.stringify(actions.map((a) => [a.id, a.label, Boolean(a.destructive), Boolean(a.disabled)]))
+    : null;
+
+/**
+ * Hand the page's own "…" items to the frame for as long as the caller is mounted (merged with the
+ * frame's Copy link / Open in new tab). Answers whether a frame took them (true = the caller draws
+ * no menu of its own for them). A press always runs the caller's LATEST handler.
+ */
+export function useDeclareFrameActions(actions: readonly FrameAction[] | null): boolean {
+  const host = useContext(FramePageHeaderContext);
+  const latest = useRef(actions);
+  useEffect(() => {
+    latest.current = actions;
+  });
+  const key = host ? actionKey(actions) : null;
+  useEffect(() => {
+    if (!host || key == null || !latest.current) return;
+    return host.declareActions(
+      latest.current.map((a) => ({
+        ...a,
+        onSelect: () => latest.current?.find((now) => now.id === a.id)?.onSelect(),
+      })),
+    );
+  }, [host, key]);
+  return host != null;
+}
+
 interface Declaration {
   key: number;
   crumbs: readonly FramePageCrumb[];
@@ -95,8 +131,15 @@ export function pickPageCrumbs(declarations: readonly Declaration[]): readonly F
 }
 
 /** The host half (FrameHostImpl): the context value to provide and the page's current trail. */
-export function useFramePageHeaderHost(): { host: FramePageHeaderHost; pageCrumbs: readonly FramePageCrumb[] | null } {
+export function useFramePageHeaderHost(): {
+  host: FramePageHeaderHost;
+  pageCrumbs: readonly FramePageCrumb[] | null;
+  pageActions: readonly FrameAction[];
+} {
   const [declarations, setDeclarations] = useState<readonly Declaration[]>([]);
+  const [actionDeclarations, setActionDeclarations] = useState<
+    readonly { key: number; actions: readonly FrameAction[] }[]
+  >([]);
   const [host] = useState<FramePageHeaderHost>(() => {
     let next = 0;
     return {
@@ -105,9 +148,44 @@ export function useFramePageHeaderHost(): { host: FramePageHeaderHost; pageCrumb
         setDeclarations((list) => [...list, { key, crumbs, fallback: Boolean(options?.fallback) }]);
         return () => setDeclarations((list) => list.filter((d) => d.key !== key));
       },
+      declareActions: (actions) => {
+        const key = next++;
+        setActionDeclarations((list) => [...list, { key, actions }]);
+        return () => setActionDeclarations((list) => list.filter((d) => d.key !== key));
+      },
     };
   });
-  return { host, pageCrumbs: pickPageCrumbs(declarations) };
+  return {
+    host,
+    pageCrumbs: pickPageCrumbs(declarations),
+    pageActions: actionDeclarations.flatMap((d) => d.actions),
+  };
+}
+
+/** A template crumb (`Crumb` from the derived trail) as the frame's crumb data; classic-only drawing hints stay behind. */
+export function frameCrumbOf(crumb: FramePageCrumb): FramePageCrumb {
+  return {
+    label: crumb.label,
+    href: crumb.href,
+    options: crumb.options,
+    optionsLabel: crumb.optionsLabel,
+    optionsAllHref: crumb.optionsAllHref,
+    optionsAllLabel: crumb.optionsAllLabel,
+  };
+}
+
+/**
+ * THE FRAME'S ONE CRUMB DERIVATION: the trail the page declared, else the trail derived from the
+ * address (`useDerivedTrail` — the same derivation every page-top template declares), both drawn
+ * through `pageTrailCrumbs`. The route table no longer names crumbs; it only picks the product.
+ */
+export function frameHostCrumbs(
+  product: FrameProduct,
+  declared: readonly FramePageCrumb[] | null,
+  derived: readonly FramePageCrumb[],
+  go: (href: string) => void,
+): FrameCrumb[] {
+  return pageTrailCrumbs(product, declared && declared.length > 0 ? declared : derived.map(frameCrumbOf), go);
 }
 
 /**

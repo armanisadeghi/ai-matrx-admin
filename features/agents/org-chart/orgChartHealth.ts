@@ -14,7 +14,8 @@ export type HealthIssueId =
   | "stalled"
   | "loop"
   | "spread"
-  | "open_position";
+  | "open_position"
+  | "needs_agent";
 
 export interface HealthIssue {
   id: HealthIssueId;
@@ -32,7 +33,8 @@ const META: Record<HealthIssueId, { label: string; hint: string; serious: boolea
   stalled: { label: "Stalled run", hint: "Marked running, but nothing is moving", serious: true },
   loop: { label: "Loop", hint: "Sits above itself, so the chart stops there", serious: true },
   spread: { label: "Spread thin", hint: "On many teams at once", serious: true },
-  open_position: { label: "Open position", hint: "A seat nobody fills yet", serious: false },
+  open_position: { label: "Open position", hint: "No one holds it and its job isn't defined", serious: false },
+  needs_agent: { label: "Needs an agent", hint: "Its job is defined; no agent does it yet", serious: false },
 };
 
 export function orgChartHealth(
@@ -41,7 +43,8 @@ export function orgChartHealth(
     activity: Record<string, AgentActivity>;
     /** Placements at which an agent counts as spread thin (knob). Null while unknown. */
     spreadWarnAt: number | null;
-    isOpenPosition: (positionId: string) => boolean;
+    /** Where an unfilled seat stands: no job yet ("open"), a job but no agent ("needs_agent"), or neither (null). */
+    seatGap: (positionId: string) => "open" | "needs_agent" | null;
   },
 ): HealthIssue[] {
   const keys = new Map<HealthIssueId, string[]>();
@@ -57,7 +60,11 @@ export function orgChartHealth(
       if (a?.state === "stalled") add("stalled", n.key);
       if (opts.spreadWarnAt !== null && d.otherPlacements + 1 >= opts.spreadWarnAt) add("spread", n.key);
     }
-    if (d.boxType === "position" && opts.isOpenPosition(d.entityId)) add("open_position", n.key);
+    if (d.boxType === "position") {
+      const gap = opts.seatGap(d.entityId);
+      if (gap === "open") add("open_position", n.key);
+      if (gap === "needs_agent") add("needs_agent", n.key);
+    }
     n.children.forEach(walk);
   };
   forest.forEach(walk);

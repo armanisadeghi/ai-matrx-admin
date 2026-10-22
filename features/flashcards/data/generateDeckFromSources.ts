@@ -236,6 +236,18 @@ export function lineageSourceOf(source: ResolvedSource): ConvertSource {
   };
 }
 
+/**
+ * The lineage anchors of every included Source — what "Made from" links. A
+ * table or pick list lives in the record store, which no lineage edge can point
+ * at, so it is left out here (the artifact's own `source_set` records it).
+ * Shared by every Education tool that makes something from Sources.
+ */
+export function lineageSourcesOf(resolved: ResolvedSourceSet): ConvertSource[] {
+  return resolved.sources
+    .filter((s) => !RECORD_STORE_TYPES.has(s.ref.resource_type))
+    .map(lineageSourceOf);
+}
+
 export interface DeckFromSourcesInput {
   resolved: ResolvedSourceSet;
   /** Total cards the person asked for — spread across every Source. */
@@ -616,9 +628,7 @@ export async function generateDeckFromSources({
   // A table or pick list lives in the record store, which no lineage edge can
   // point at (its old tokens are retired); the deck's own `source_set` records
   // it, and "Made from" reads that list.
-  const linkSources = resolved.sources
-    .filter((s) => !RECORD_STORE_TYPES.has(s.ref.resource_type))
-    .map(lineageSourceOf);
+  const linkSources = lineageSourcesOf(resolved);
   announceLineage(
     await recordLineageForSources(result, linkSources, ctx.orgId),
     () => recordLineageForSources(result, linkSources, ctx.orgId),

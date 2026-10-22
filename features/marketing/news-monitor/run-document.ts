@@ -415,6 +415,16 @@ export function watchListCount(digest: Record<string, unknown> | null): number |
   return records(digest.watch).length + num(digest.watch_overflow);
 }
 
+/**
+ * When a story that surfaced on an earlier run went stale (`metadata.now_stale_at`,
+ * written by the server's `commit_stories`), or null. Seen means surfaced, so the
+ * status never changes; this mark is how the surfaced list says it is no longer fresh.
+ */
+export function nowStaleAt(story: { status?: string | null; metadata?: unknown } | null | undefined): string | null {
+  if (!story || story.status !== "surfaced" || !isRecord(story.metadata)) return null;
+  return str(story.metadata.now_stale_at) || null;
+}
+
 /** A funnel stage's door: the list it counts, or the run's own step view (`run_steps`). */
 export type FunnelTarget = OpenTarget | { kind: "run_steps" };
 

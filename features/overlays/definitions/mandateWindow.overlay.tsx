@@ -19,7 +19,7 @@ import type { AppStore } from "@/lib/redux/store";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { UntypedOverlayWire } from "./overlay-types";
 import { createOpener } from "@ai-matrx/summon/opener";
-import { hookController } from "./app-opener";
+import { hookController } from "./hook-controller";
 const OVERLAY_ID = "mandateWindow" as const;
 const opener = createOpener<object>(OVERLAY_ID);
 

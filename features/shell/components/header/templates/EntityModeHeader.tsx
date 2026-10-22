@@ -29,7 +29,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { CrumbNode, frameCrumbOf, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
+import { CrumbNode, type Crumb } from "@/features/shell/components/header/templates/CrumbTrailHeader";
 import {
   RouteModeNav,
   type RouteNavItem,
@@ -56,7 +56,7 @@ import { cn } from "@/lib/utils";
 import { StageSteps, type StageStep } from "@ai-matrx/design-system/controls";
 import { resolveActiveRouteMode } from "@/features/shell/components/header/route-mode-match";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { frameCrumbOf, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
 
 const EXTERNAL_HREF_RE = /^(https?:|mailto:|tel:)/;
 

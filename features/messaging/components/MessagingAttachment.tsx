@@ -3,7 +3,7 @@
 import type { Attachment } from "@ai-matrx/messaging";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { FileText, ExternalLink } from "lucide-react";
-import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /** Media resolves through the same authenticated file pipeline as Chat. */
 export function MessagingAttachment({
@@ -11,7 +11,9 @@ export function MessagingAttachment({
 }: {
   attachment: Attachment;
 }) {
-  const open = useOpenFilePreviewWindow();
+  const open = useLazyAppOpener("filePreviewWindow", () =>
+    import("@/features/overlays/definitions/filePreviewWindow.overlay").then((m) => m.createFilePreviewWindowOpener),
+  );
   const media = /^(image|video|audio)\//.test(attachment.mimeType ?? "");
   return (
     <div className="messages-media">

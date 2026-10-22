@@ -43,6 +43,7 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'checklists_green.sql'
+\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -91,7 +92,10 @@ begin
     (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
     (v_org, 'organization', v_org, c_dana,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'checklists_green');
+    ('custom','system_enabled','organization', v_org, v_org, 'true'::jsonb, 'checklists_green'),
+    -- SHARES DELIBERATELY. Under the shipped default every member already opens every record,
+    -- so "the assignment gave her access" would be true before anybody gave her anything.
+    ('custom','member_default_visibility','organization', v_org, v_org, '"shared_only"'::jsonb, 'checklists_green');
 
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name', 'Home')) returning id into v_home;

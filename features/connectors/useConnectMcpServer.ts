@@ -31,8 +31,8 @@ import type { McpCatalogEntry } from "@ai-matrx/chat/agents/types/mcp.types";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
 import { toast, recordToast } from "@/lib/toast";
-import { useOpenLiveIntegrationsWindow } from "@/features/overlays/definitions/liveIntegrationsWindow.overlay";
 import { rememberConnectIntent } from "@ai-matrx/chat/agents/connectors/connect-intent-store";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 export interface ConnectMcpOptions {
   /**
@@ -47,7 +47,9 @@ export interface ConnectMcpOptions {
 export function useConnectMcpServer() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const openDirectory = useOpenLiveIntegrationsWindow();
+  const openDirectory = useLazyAppOpener("liveIntegrationsWindow", () =>
+    import("@/features/overlays/definitions/liveIntegrationsWindow.overlay").then((m) => m.createLiveIntegrationsWindowOpener),
+  );
   const organizationId = useAppSelector(selectOrganizationId);
   const [connectingSlug, setConnectingSlug] = useState<string | null>(null);
   const pending = useRef(false);

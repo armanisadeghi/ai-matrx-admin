@@ -52,6 +52,8 @@ export function recordKindOfResourceType(resourceType: string | null | undefined
       return "document";
     case "udt_document":
       return "udt_document";
+    case "fc_set":
+      return "flashcard_deck";
     default:
       return null;
   }

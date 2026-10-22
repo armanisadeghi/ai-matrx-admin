@@ -73,7 +73,7 @@ const MIME: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg
 
 async function fromWord(file: File, fallbackTitle: string, options: ImportOptions): Promise<ImportedPage> {
   const [{ readZip }, { docxXmlToMarkdown }] = await Promise.all([import("@ai-matrx/alchemy/operate/zip"), import("@ai-matrx/office/docs/io")]);
-  const zip = await readZip(file).catch(() => null);
+  const zip = await readZip(new Uint8Array(await file.arrayBuffer())).catch(() => null);
   const body = zip?.get("word/document.xml");
   if (!zip || !body) throw new Error(`${file.name} is not a Word document (.docx).`);
   const part = async (path: string) => (await zip.get(path)?.text()) ?? null;

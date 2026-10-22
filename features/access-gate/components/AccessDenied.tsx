@@ -179,6 +179,7 @@ function headline(context: AccessDeniedContext): string {
   const kind = context.entity.label.toLowerCase();
   switch (context.status) {
     case "denied":
+      if (context.organizationArchived) return archivedOrganizationHeadline(context);
       return `You don't have access to this ${kind}`;
     case "deleted":
       // Archived, in Trash, restorable — never "deleted" (archivedWords.ts).
@@ -198,6 +199,7 @@ function explanation(context: AccessDeniedContext): string {
   const kind = context.entity.label.toLowerCase();
   switch (context.status) {
     case "denied": {
+      if (context.organizationArchived) return archivedOrganizationExplanation(context);
       const owner =
         context.organization
           ? context.organization.name
@@ -458,7 +460,7 @@ export function AccessDeniedView({
             an accused person may never request the case against them, because
             the ASK ITSELF confirms the case exists. `canRequest` cannot express
             this: it only knows whether somebody exists to receive a request. */}
-        {context.status === "denied" && !absolute ? (
+        {context.status === "denied" && !absolute && !context.organizationArchived ? (
           <div className="mt-4">
             <RequestAccessPanel
               context={context}

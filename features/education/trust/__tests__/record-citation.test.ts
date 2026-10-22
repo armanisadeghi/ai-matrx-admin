@@ -101,6 +101,13 @@ describe("a document citation opens the route of ITS OWN kind", () => {
     expect(t?.kind).toBe("udt_document");
     expect(t?.href).toBe(`/documents/${ID}`);
   });
+  it("a flashcard deck opens the deck and names the cited cards", () => {
+    const t = recordCitationTarget(cite({ recordKind: "flashcard_deck", sourceId: `${ID}:r3-5` }));
+    expect(t?.kind).toBe("flashcard_deck");
+    expect(t?.href).toBe(`/education/flashcards/${ID}`);
+    expect(t?.label).toBe("Cards 3–5");
+    expect(recordKindOfResourceType("fc_set")).toBe("flashcard_deck");
+  });
   it("the Source's resource type names which kind it is", () => {
     expect(recordKindOfResourceType("document")).toBe("document");
     expect(recordKindOfResourceType("udt_document")).toBe("udt_document");

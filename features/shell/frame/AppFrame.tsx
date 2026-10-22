@@ -45,7 +45,7 @@ import {
 } from "./geometry";
 import type { FrameInitialGeometry } from "./geometry";
 import { useModalPanel } from "./useModalPanel";
-import { BIG_ITEM_IDS } from "./products";
+import { bigItemProducts } from "./products";
 import type {
   CanvasProps,
   CompanionProps,
@@ -452,7 +452,7 @@ export function AppFrame(props: AppFrameProps) {
     onSelectPin: props.onSelectPin,
     bigItems: props.bigItems ?? "bottom",
     content: props.sidebarContent,
-    bigProducts: BIG_ITEM_IDS.flatMap((id) => products.filter((p) => p.id === id)),
+    bigProducts: bigItemProducts(products, favorites),
   };
   const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };
 
@@ -563,9 +563,12 @@ export function AppFrame(props: AppFrameProps) {
   ) : (
     <CompanionPlaceholder onClose={closeCompanion} />
   );
-  // The canvas's title bar is the frame's (full screen, close); the module renders the body only.
+  // ONE title row (adversarial review, 2026-10-22): a loaded canvas module brings its own pane
+  // header (tabs, Expand, Close — the canvas package's, driving the same store the frame reads), so
+  // the frame draws its title row only around the stand-in it owns (the lab's placeholder).
   const canvasBody = (
     <div className="flex h-full min-h-0 flex-col">
+      {loadCanvas ? null : (
       <PanelTitle
         icon={<Shapes />}
         title="Canvas"
@@ -584,6 +587,7 @@ export function AppFrame(props: AppFrameProps) {
           ) : null
         }
       />
+      )}
       <div className="min-h-0 flex-1">
         {loadCanvas ? (
           <ModuleSlot loader={loadCanvas} props={{ onClose: closeCanvas }} title="Canvas" icon={<Shapes />} bare />

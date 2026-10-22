@@ -43,6 +43,7 @@ begin
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
   select * from (values
     ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,                  's3 walk'),
+    ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb,         's3 walk: dispatch sees the jobs she booked'),
     ('custom', 'time_zone',                 'organization', v_org, v_org, '"America/Los_Angeles"'::jsonb, 's3 walk: the shop is in Ventura County, California'),
     ('custom', 'week_start',                'organization', v_org, v_org, '"sunday"'::jsonb,              's3 walk: the schedule runs Sunday to Saturday')
   ) v(feature, key, scope_kind, scope_id, organization_id, value, set_note)

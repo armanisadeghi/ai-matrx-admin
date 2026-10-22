@@ -1,5 +1,8 @@
-const postJson = jest.fn();
-jest.mock("@/lib/python-client", () => ({ postJson: (...args: unknown[]) => postJson(...args) }));
+const serverCall = jest.fn();
+jest.mock("@/lib/api/server-api", () => ({
+  ...jest.requireActual("@/lib/api/server-api"),
+  serverApi: { call: (...args: unknown[]) => serverCall(...args) },
+}));
 
 import { createSourceRef, createSourceSet } from "@ai-matrx/agents/sources";
 import { sourcesClient } from "./sourceSetApi";
@@ -9,16 +12,17 @@ import { sourcesClient } from "./sourceSetApi";
  * saw "Sizes and parts could not be read: Select an organization before sending this
  * request." Both doors are reads the server admits without one (aidream
  * `read_by_access.py` BODY_CARRIED_READS). The package client marks every call
- * `bodyCarriedRead`; this proves the web app's transport carries the mark through
- * the typed `apiPost` to the one HTTP client, never refusing in the browser.
+ * `bodyCarriedRead`; this proves the web app's transport sends each door through the
+ * generated operation (organization "optional" in its descriptor) on the one
+ * `serverApi`, naming no organization itself and never refusing in the browser.
  */
 const ref = createSourceRef("file", "0b8d1a52-2f0c-4a57-9d2c-3a6f0e8f1c11");
 const set = createSourceSet([ref]);
 const signal = new AbortController().signal;
 
 beforeEach(() => {
-  postJson.mockReset();
-  postJson.mockResolvedValue({ data: { __kind: "source_manifest", sources: [] } });
+  serverCall.mockReset();
+  serverCall.mockResolvedValue({ __kind: "source_manifest", sources: [] });
 });
 
 it.each([
@@ -33,23 +37,21 @@ it.each([
   ],
 ])("%s is sent as an organization-free read", async (_name, call, path, sent) => {
   await call();
-  expect(postJson).toHaveBeenCalledTimes(1);
-  const [calledPath, body, options] = postJson.mock.calls[0]!;
-  expect(calledPath).toBe(path);
-  expect(body).toEqual(sent);
-  expect(options).toMatchObject({ bodyCarriedRead: true });
+  expect(serverCall).toHaveBeenCalledTimes(1);
+  const [op, args, options] = serverCall.mock.calls[0]!;
+  expect(op).toMatchObject({ m: "POST", p: path, o: "optional" });
+  expect(args).toEqual({ body: sent });
   expect(options.organizationId).toBeUndefined();
 });
 
 it("still names an organization a host already resolved", async () => {
   await sourcesClient.manifest(set, { organizationId: "5dc930e9-bd65-44a1-8369-af773f6e1a5b" });
-  expect(postJson.mock.calls[0]![2]).toMatchObject({
-    bodyCarriedRead: true,
+  expect(serverCall.mock.calls[0]![2]).toMatchObject({
     organizationId: "5dc930e9-bd65-44a1-8369-af773f6e1a5b",
   });
 });
 
 it("passes the review's AbortSignal through", async () => {
   await sourcesClient.manifest(set, { signal });
-  expect(postJson.mock.calls[0]![2]).toMatchObject({ signal, bodyCarriedRead: true });
+  expect(serverCall.mock.calls[0]![2]).toMatchObject({ signal });
 });

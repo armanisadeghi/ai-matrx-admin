@@ -107,7 +107,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "source_mode",
     label: "Generation source",
     description:
-      'The create view\'s source mode: "topic" (ungrounded), "deck" (grounded in a flashcard deck), or "document" (grounded in a Knowledge document, cited). Absent outside the create view.',
+      'The create view\'s source mode: "topic" (ungrounded, the Source input\'s Topic alone) or "sources" (grounded in the picked Sources — files, notes, documents, web pages, flashcard decks…; cited). Absent outside the create view.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 8,
@@ -206,7 +206,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "selected_deck",
     label: "Selected deck",
     description:
-      "The flashcard deck picked as the grounded source, as { id, name }. Absent unless the create view is in deck mode with a deck chosen.",
+      "The first flashcard deck among the picked Sources, as { id, name }. Absent when no deck is picked.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 90,
@@ -217,7 +217,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "selected_document",
     label: "Selected document",
     description:
-      "The Knowledge document picked as the grounded (cited) source, as { id, name }. Absent unless the create view is in document mode with a document chosen.",
+      "The first picked Source that is not a deck (a file, note, document, web page…), as { id, name }. Absent when none is picked.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 100,

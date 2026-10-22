@@ -1,9 +1,10 @@
 "use client";
 import { useState, useRef, useCallback, useEffect, useId } from "react";
-import { acquireMicStream, releaseMicStream } from "@ai-matrx/browser-audio/core";
 import {
-  getSharedAudioContext,
-  resumeSharedAudioContext,
+  acquireMicStream,
+  createStreamLevelMeter,
+  releaseMicStream,
+  type StreamLevelMeter,
 } from "@ai-matrx/browser-audio/core";
 import { claimCapture, releaseCapture } from "@/features/audio/captureLock";
 import { beginRecordingSession } from "@/features/audio/session/audioSessionRegistry";
@@ -24,11 +25,9 @@ export function useAudioRecorder() {
   // `recordings` is exposed as STATE (not a ref read during render — that
   // tripped react-hooks/refs); it mirrors completed blobs keyed by `key`.
   const [recordings, setRecordings] = useState<Record<string, Blob>>({});
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const analyserSourcesRef = useRef<Record<string, MediaStreamAudioSourceNode>>(
-    {},
-  );
-  const animationFrameRef = useRef<number | undefined>(undefined);
+  // One package level meter per active key; the exposed level is the loudest.
+  const metersRef = useRef<Record<string, StreamLevelMeter>>({});
+  const levelsRef = useRef<Record<string, number>>({});
   const mediaRecordersRef = useRef<Record<string, MediaRecorder>>({});
   const audioChunksRef = useRef<Record<string, Blob[]>>({});
   // Keys for which we currently hold a singleton ref — so release is balanced
@@ -64,15 +63,9 @@ export function useAudioRecorder() {
 
   const releaseKey = useCallback(
     (key: string) => {
-      const src = analyserSourcesRef.current[key];
-      if (src) {
-        try {
-          src.disconnect();
-        } catch {
-          /* ignore */
-        }
-        delete analyserSourcesRef.current[key];
-      }
+      metersRef.current[key]?.stop();
+      delete metersRef.current[key];
+      delete levelsRef.current[key];
       if (heldKeysRef.current.has(key)) {
         releaseMicStream();
         heldKeysRef.current.delete(key);
@@ -95,17 +88,6 @@ export function useAudioRecorder() {
     disposedRef.current = false;
     return () => {
       disposedRef.current = true;
-      if (animationFrameRef.current !== undefined) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (analyserRef.current) {
-        try {
-          analyserRef.current.disconnect();
-        } catch {
-          /* ignore */
-        }
-        analyserRef.current = null;
-      }
       for (const key of Array.from(heldKeysRef.current)) {
         releaseKey(key);
       }
@@ -140,18 +122,11 @@ export function useAudioRecorder() {
         }
         heldKeysRef.current.add(key);
 
-        // Shared AudioContext for the level meter — never closed, only resumed.
-        await resumeSharedAudioContext();
-        const audioContext = getSharedAudioContext();
-        if (audioContext) {
-          if (!analyserRef.current) {
-            analyserRef.current = audioContext.createAnalyser();
-            analyserRef.current.fftSize = 256;
-          }
-          const source = audioContext.createMediaStreamSource(stream);
-          source.connect(analyserRef.current);
-          analyserSourcesRef.current[key] = source;
-        }
+        // The package level meter (shared AudioContext, never closed).
+        metersRef.current[key] = createStreamLevelMeter(stream, (level) => {
+          levelsRef.current[key] = level;
+          setAudioLevel(Math.max(0, ...Object.values(levelsRef.current)));
+        });
 
         audioChunksRef.current[key] = [];
         const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
@@ -165,18 +140,6 @@ export function useAudioRecorder() {
         };
         mediaRecordersRef.current[key] = recorder;
         recorder.start();
-        const updateAudio = () => {
-          if (!analyserRef.current) return;
-          const dataArray = new Uint8Array(
-            analyserRef.current.frequencyBinCount,
-          );
-          analyserRef.current.getByteFrequencyData(dataArray);
-          const average =
-            dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
-          setAudioLevel(average);
-          animationFrameRef.current = requestAnimationFrame(updateAudio);
-        };
-        updateAudio();
         setIsRecording(true);
       } catch (err) {
         // Release any partial hold so a failed start never leaks the mic.
@@ -200,22 +163,9 @@ export function useAudioRecorder() {
             });
             setRecordings((prev) => ({ ...prev, [key]: audioBlob }));
             delete mediaRecordersRef.current[key];
-            if (animationFrameRef.current !== undefined) {
-              cancelAnimationFrame(animationFrameRef.current);
-              animationFrameRef.current = undefined;
-            }
             // Release the singleton hold for this key (NEVER stop tracks).
             releaseKey(key);
-            // Drop the shared analyzer only when no other key is active.
-            if (heldKeysRef.current.size === 0 && analyserRef.current) {
-              try {
-                analyserRef.current.disconnect();
-              } catch {
-                /* ignore */
-              }
-              analyserRef.current = null;
-              setAudioLevel(0);
-            }
+            if (heldKeysRef.current.size === 0) setAudioLevel(0);
             setIsRecording(heldKeysRef.current.size > 0);
             resolve(audioBlob);
           };

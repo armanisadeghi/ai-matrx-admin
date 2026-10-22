@@ -83,7 +83,8 @@ begin
     (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
     (v_org, 'organization', v_org, c_agent, 'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb, 'scopeshandoffbudget fixture');
+    ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb, 'scopeshandoffbudget fixture'),
+    ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb, 'scopeshandoffbudget fixture: the leasing agent sees what she is shared');
 
   v_def := jsonb_build_object('type', 'entity', 'display', 'list', 'weight', 'light', 'ordered', true,
     'row_order', 'sorted', 'default_sort', jsonb_build_array(jsonb_build_object('field', 'created_at', 'direction', 'asc')),

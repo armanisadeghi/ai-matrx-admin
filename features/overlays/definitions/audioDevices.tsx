@@ -14,9 +14,7 @@
  * - `<AudioDevicesController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "audioControlWindow" as const;
 
@@ -26,33 +24,13 @@ export interface AudioDevicesHandle {
   close: () => void;
 }
 
-export function useOpenAudioDevices() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (_opts: OpenAudioDevicesOptions = {}): AudioDevicesHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          // `nonce` forces a re-sync even if the window is already open on the
-          // other tab; the unified window reads `data.tab` to select Devices.
-          data: { tab: "devices", nonce: Date.now() },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+// `nonce` forces a re-sync even if the window is already open on the other tab; the unified window reads
+// `data.tab` to select Devices.
+const opener = appOpener<OpenAudioDevicesOptions>(OVERLAY_ID, {
+  data: () => ({ tab: "devices", nonce: Date.now() }),
+});
 
-export function AudioDevicesController(
-  props: OpenAudioDevicesOptions,
-): null {
-  const open = useOpenAudioDevices();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenAudioDevices = opener.useOpen;
+/** Plain opener of the store, for boot-graph callers (ProTextarea, via useLazyAppOpener). */
+export const createAudioDevicesOpener = opener.forStore;
+export const AudioDevicesController = opener.Controller;

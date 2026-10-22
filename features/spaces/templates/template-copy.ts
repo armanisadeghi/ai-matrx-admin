@@ -133,24 +133,42 @@ export async function runCopyDoor(
 ): Promise<CopyDoorResult> {
   let most = 0;
   try {
-    const run = await runTemplateDoor(supabaseDataSource(createClient()), door, copy.organizationId, copy.installId, {
-      maxCalls: 400,
-      onCall: (answer) => {
-        const archived = Array.isArray(answer.archived) ? answer.archived.length : 0;
-        if (door === "template_uninstall") {
-          const total = (answer.made ?? []).filter((m) => m.id).length;
-          onProgress?.(Math.min(archived, total), total);
-        } else {
-          most = Math.max(most, archived + (answer.done ? 0 : 1));
-          onProgress?.(most - archived, most);
-        }
-      },
-    });
+    const source = supabaseDataSource(createClient());
+    const runOnce = () =>
+      runTemplateDoor(source, door, copy.organizationId, copy.installId, {
+        maxCalls: 400,
+        onCall: (answer) => {
+          const archived = Array.isArray(answer.archived) ? answer.archived.length : 0;
+          if (door === "template_uninstall") {
+            const total = (answer.made ?? []).filter((m) => m.id).length;
+            onProgress?.(Math.min(archived, total), total);
+          } else {
+            most = Math.max(most, archived + (answer.done ? 0 : 1));
+            onProgress?.(most - archived, most);
+          }
+        },
+      });
+    let run = await runOnce();
+    // RESTORE-ADVANCE (ADVERSARIAL-8 F2): a restore call that brought nothing back always refuses. With `untried` > 0 it ran
+    // out of time, not options (its refused items went to the back), so it is asked again, at most once per item still archived.
+    for (let again = 0; door === "template_restore" && !run.ok && again < restoreRetriesLeft(run.answer); again++) {
+      run = await runOnce();
+    }
     if (run.ok && run.answer) return { ok: true, answer: run.answer };
     return { ok: false, message: templateDoorSentence(run.answer?.refusal, run.error) };
   } catch (err) {
     return { ok: false, message: templateDoorSentence(null, { code: "", message: err instanceof Error ? err.message : String(err) }) };
   }
+}
+
+/**
+ * RESTORE-ADVANCE: how many more times a stopped restore is asked again. Only a stalled refusal that left items untried (the
+ * call had no time for them) is retried, bounded by the items still archived; a dead end (`untried` 0) or any other stop: 0.
+ */
+export function restoreRetriesLeft(answer: TemplateDoorAnswer | null | undefined): number {
+  const r = answer?.refusal as Record<string, unknown> | null | undefined;
+  if (!r || r["stalled"] !== true || !(Number(r["untried"]) > 0)) return 0;
+  return Array.isArray(answer?.archived) ? answer.archived.length : 0;
 }
 
 /** What Move to Trash / Restore need, handed in so the whole lifecycle runs under test. */

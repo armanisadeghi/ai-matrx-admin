@@ -21,6 +21,7 @@
 -- says which database this is, and SKIPS (never fake-passes) when a declared dependency is
 -- absent here. Declare dependencies with `\set requires` above the include; see the preamble.
 \set suite 'checklists_red.sql'
+\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -90,7 +91,8 @@ begin
     (f.org, 'organization', f.org, f.admin_id, 'owner',  'active'),
     (f.org, 'organization', f.org, f.dana_id,  'member', 'active');
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom','system_enabled','organization', f.org, f.org, 'true'::jsonb, 'checklists_red');
+    ('custom','system_enabled','organization', f.org, f.org, 'true'::jsonb, 'checklists_red'),
+    ('custom','member_default_visibility','organization', f.org, f.org, '"shared_only"'::jsonb, 'checklists_red');
   insert into custom.record (organization_id, table_id, data)
   values (f.org, null, jsonb_build_object('name', 'Home')) returning id into v_home;
 

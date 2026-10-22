@@ -109,7 +109,7 @@ composerText})`. `refreshSurfaceScope` awaits it before reading `getScope`, and 
 | Agent roles / config namespaces | `registry.ts` union, child overrides by key                                                                                                                                      |
 | Document evidence sources       | `registry.ts` union; the universal launcher turns each resolved declaration into a lazy processed-document context source before value mappings run                              |
 
-- Guards are LOUD: unknown parent, cycle, or depth > 3 **throws at module init** (`getSurfaceAncestry`).
+- Guards are LOUD: unknown parent, cycle, or depth > 5 ancestors (AI Matrx › module › feature › sub-feature, plus the DB root; D5) **throws at module init** (`getSurfaceAncestry`).
 - Manifest sync mirrors `inheritsFrom` → `ui_surface.parent_surface_name` (never clears a DB-authored parent when the manifest is silent) and mirrors the MERGED value set into `ui_surface_value`.
 - The chain is code-first (registry manifests). The DB's blanket `parent_surface_name = matrx-default/default` rows do NOT cascade bindings — only manifest-declared parents do (deliberate: cascading Default to all ~100 surfaces would be a behavior change).
 - Live families: `matrx-user/transcripts` ⊃ `transcripts-cleanup` (60 effective values, 36 own); `matrx-user/pdf-extractor` ⊃ `extractor-chunker` / `analysis-studio` / `scanner`. Bind an agent ONCE on the parent and it applies on every child.

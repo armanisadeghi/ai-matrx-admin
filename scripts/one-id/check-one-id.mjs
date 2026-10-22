@@ -20,7 +20,10 @@
  *   id-exception|<file>           an `id-exception: <reason>` on the line or within 3 lines above; ratchets too.
  *
  * Not reported: `key=`, hrefs/URLs, data-/aria- attributes, logs, tests, and context-menu ITEMS labeled
- * "Copy ID" inside a menu config (`label: "Copy ID"`, a MenuItem).
+ * "Copy ID" inside a menu config (`label: "Copy ID"`, a MenuItem); a device id (`deviceId`, a browser's
+ * MediaDeviceInfo handle, not a record); and a SERVER route file (an app page, layout or route file without
+ * "use client"): RecordId and displayId are client exports, a server file cannot call them, and what
+ * it shortens is a document title or a share-name string, not an id a person is shown.
  *
  * Scanned: this repo's .tsx and every `../aidream/apps/shared/<pkg>` source file.
  * BASELINE (scripts/one-id/baseline.json) ONLY SHRINKS. `--shrink` lowers counts, never raises;
@@ -63,6 +66,10 @@ const OUT_OF_SCOPE =
 const SKIP_LINE =
   /\bkey=|\bhref=|\bsrc=|\bdata-[\w-]+=|\baria-[\w-]+=|console\.\w+\(|\blogger?\.\w+\(|\blog(?:Debug|Info|Warn|Error)\(|\bthrow new|\bnew Error\(|\bcaptureError\(|https?:\/\/|["'`]\/[\w-]+\/\$\{|\brouter\.(push|replace)\(|\bfetch\(|\bclassName=\{?["'`][^"'`]*\$\{[^}]*\.slice/;
 
+/** Not a record id: a browser MediaDeviceInfo handle (`d.deviceId`), opaque and per-origin. */
+const NOT_A_RECORD_ID = /\b(?:device[Ii]d|device_id)\b/;
+/** A server route file: RecordId / displayId are client exports a server file cannot call. */
+const SERVER_ROUTE_FILE = /^app\/(?:.*\/)?(?:page|layout|route)\.tsx?$/;
 const ID_NAME = String.raw`(?:id|\w+Id|\w+_id|uuid|\w*Uuid|\w+_uuid)`;
 /** `row.id.slice(0, 8)`, `agentId.slice(…)`, `node?.id.slice(…)`, `x.id?.slice(…)`. */
 const SLICE_RE = new RegExp(String.raw`\b(?:\w+(?:\?)?\.)*${ID_NAME}\??\.(?:slice|substring|substr)\(\s*0\s*,\s*\d+`);
@@ -70,7 +77,8 @@ const SHORTENER_CALL_RE = /\b(?:truncateId|shortId|shortUuid|shortenId|shortenUu
 const COPY_ARG = String.raw`\(\s*(?:[\w$]+\??\.)*${ID_NAME}\s*[,)]`;
 const CLIPBOARD_RE = new RegExp(String.raw`clipboard\??\.writeText\s*${COPY_ARG}`);
 /** Any copy helper (`copyText`, `handleCopy`, `onCopyId`, `copy`) with an id-named argument in ANY position. */
-const COPY_FN_RE = /\b(?:copy|copyText|copyToClipboard|copyNotify|copyId|copyUuid|handleCopy|handleCopyId|handleCopyUuid|onCopy|onCopyId)\s*\(([^()]*)\)/g;
+// A bare `copy(` is a copy helper; `NotesAPI.copy(note.id)` / `transfers.copy(format.id)` are domain methods (duplicate a note, copy a table in a format), not the clipboard.
+const COPY_FN_RE = /(?:(?<![.\w$])copy|\b(?:copyText|copyToClipboard|copyNotify|copyId|copyUuid|handleCopy|handleCopyId|handleCopyUuid|onCopy|onCopyId))\s*\(([^()]*)\)/g;
 const ID_ARG_RE = new RegExp(String.raw`^\s*(?:[\w$]+\??\.)*${ID_NAME}\s*$`);
 function copiesAnId(line) {
   const clip = line.match(CLIPBOARD_RE);
@@ -90,6 +98,10 @@ function copiesAnId(line) {
 /** "Copy ID", "Copy UUID", "Copy agent ID", "Copy Memory ID", "Copy conversation id" (up to three words before the id word) as a title/aria-label/label or button text. */
 const COPY_WORDS = String.raw`Copy (?:(?!and\b)[A-Za-z]+ ){0,3}?(?:ID|Id|id|UUID|uuid)(?: to clipboard)?`;
 const COPY_LABEL_RE = new RegExp(String.raw`(?:title|aria-label|label|tooltip)\s*=\s*\{?\s*["'\`]${COPY_WORDS}["'\`]|>\s*${COPY_WORDS}\s*<|["'\`]${COPY_WORDS}["'\`]`);
+/** A menu ENTRY spread over lines: `label: "Copy ID"` / "Copy agent ID" a few lines above the copy call. */
+const MENU_ENTRY_LABEL_RE = new RegExp(String.raw`\blabel\s*:\s*["'\`]${COPY_WORDS}`);
+/** A "Copy" button that copies the CONTENT of the thing it names (`onCopy={() => copyText(tab.id)}`): the id only finds it. */
+const COPY_CONTENT_BUTTON_RE = /\bonCopy\s*=\s*\{/;
 const MENU_ITEM_LINE = /\blabel\s*:|MenuItem|DropdownItem|ContextItem|\bitems?\s*:|\bactions?\s*:/;
 const ID_COMPONENT = /^(?:CopyableUuid\w*|CopyableId\w*|\w*IdBadge|\w*IdCopy|ShortId|IdChip|UuidDisplay\w*|\w*UuidChip|\w*IdChip)$/;
 const DECLARE_RE =
@@ -104,6 +116,7 @@ function excepted(lines, i) {
 /** One file's sites: [{ rule, line, what }]. */
 export function scanSource(file, text) {
   if (OUT_OF_SCOPE.test(file)) return [];
+  if (SERVER_ROUTE_FILE.test(file) && !/^\s*["']use client["']/m.test(text)) return [];
   const lines = text.split("\n");
   const sites = [];
   let lastLabelLine = -10;
@@ -119,12 +132,14 @@ export function scanSource(file, text) {
       lastLabelLine = i;
       return;
     }
-    if (SKIP_LINE.test(line)) return;
+    if (SKIP_LINE.test(line) || NOT_A_RECORD_ID.test(line)) return;
     if (LOCAL_SHORTENER_DECL.test(line)) { add("hand-shortened-id", i, "local id shortener"); return; }
     const sl = line.match(SLICE_RE) ?? line.match(SHORTENER_CALL_RE);
     if (sl) { add("hand-shortened-id", i, sl[0].slice(0, 48)); return; }
     const cp = copiesAnId(line);
-    if (cp && !MENU_ITEM_LINE.test(line)) add("hand-copied-id", i, cp.slice(0, 48));
+    if (cp && !MENU_ITEM_LINE.test(line) && !COPY_CONTENT_BUTTON_RE.test(line) && !lines.slice(Math.max(0, i - 8), i).some((l) => MENU_ENTRY_LABEL_RE.test(l))) {
+      add("hand-copied-id", i, cp.slice(0, 48));
+    }
   });
   const lineOf = (index) => text.slice(0, index).split("\n").length - 1;
   for (const m of text.matchAll(DECLARE_RE)) {
@@ -260,7 +275,14 @@ function selfTest() {
         'import { RecordId } from "@ai-matrx/design-system";\nexport const A = ({ id, rows }) => (<div><RecordId value={id} />{rows.map((r) => <i key={r.id.slice(0, 4)} />)}<a href={`/x/${id.slice(0, 8)}`} /></div>);\nconsole.log(id.slice(0, 8));\nconst items = [{ label: "Copy ID", run: () => copyText(row.id) }];\nconst name = title.slice(0, 8);\n',
       "features/ok/Menu.tsx": 'const items = [{ label: "Copy agent ID", run: () => handleCopy("agent-id", agentId) }];\nexport const B = () => <button title="Copy ids" tooltip="Copy name and id">x</button>;\nexport const C = () => <button onClick={() => copyText(name, "Copied")}>x</button>;\n',
       "features/ok/Exc.tsx": '// id-exception: git sha, not a record id\nexport const A = ({ shaId }) => <b>{shaId.slice(0, 7)}</b>;\nexport const B = ({ commitId }) => <b>{commitId.slice(0, 7)}</b>; // id-exception: git sha\n',
+      // Quiet: a menu entry spread over lines, a domain method named copy, a copy-the-content button.
+      "features/ok/MenuEntry.tsx": 'const items = [{\n  kind: "item",\n  label: "Copy table ID",\n  onSelect: () => {\n    void copyText(row.id, "Copied");\n  },\n}];\nconst c = await NotesAPI.copy(note.id);\nconst b = <CopyFooterButton onCopy={() => extractor.copyText(activeTab.id)} />;\n',
       "features/ok/Ok.test.tsx": "export const x = id.slice(0, 8);\n",
+      // Quiet: a device id is not a record id; a server route file cannot call the client displayId.
+      "features/ok/Device.tsx": 'export const A = ({ d }) => <i>{d.deviceId.slice(0, 6)}</i>;\n',
+      "app/(core)/x/[id]/layout.tsx": 'export const shortId = (id) => id.slice(0, 8);\nconst t = params.id.slice(0, 8);\n',
+      // Loud: the same line in a client route file still counts.
+      "app/(core)/y/page.tsx": '"use client";\nexport const A = ({ run }) => <code>{run.id.slice(0, 8)}</code>;\n',
     };
     for (const [name, text] of Object.entries(plant)) {
       execFileSync("mkdir", ["-p", dirname(join(dir, name))]);
@@ -276,6 +298,7 @@ function selfTest() {
       "hand-copied-id|features/a/Label.tsx=1",
       "hand-copied-id|features/a/LabelText.tsx=1",
       "hand-copied-id|features/a/LabelWorded.tsx=1",
+      "hand-shortened-id|app/(core)/y/page.tsx=1",
       "hand-shortened-id|features/a/Slice.tsx=1",
       "hand-shortened-id|features/a/Slice2.tsx=1",
       "hand-shortened-id|features/a/Trunc.tsx=1",

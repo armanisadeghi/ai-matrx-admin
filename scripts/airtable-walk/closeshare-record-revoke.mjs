@@ -15,8 +15,15 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const a = await admin(); const m = await member();
 say("admin", a.email, "member", m.email, "org", ORG);
-const inOrg = await m.sb.schema("iam").from("memberships").select("user_id").eq("organization_id", ORG).eq("user_id", m.userId);
+const inOrg = await m.sb.schema("iam").from("memberships").select("user_id").eq("organization_id", ORG).eq("user_id", m.userId).eq("container_type", "organization").is("deleted_at", null);
 if ((inOrg.data ?? []).length) { say("COULD NOT RUN: the member belongs to", ORG, "- pick an organization she is not in"); process.exit(2); }
+// The agent's connection files its work in one of the member's OWN organizations (a call naming an organization she is not
+// in is held by the MCP edge, by design); the tool still finds the Table in its own organization by id.
+const mine = ((await m.sb.schema("iam").from("organization_member").select("organization_id").eq("user_id", m.userId)).data ?? []).map((r) => r.organization_id);
+const live = mine.length ? ((await m.sb.schema("iam").from("organizations").select("id").in("id", mine.slice(0, 200)).is("archived_at", null).limit(1)).data ?? []) : [];
+const MY_ORG = process.env.MEMBER_OWN_ORG ?? live[0]?.id;
+say("the member's agent files its work in", MY_ORG);
+if (!MY_ORG) { say("COULD NOT RUN: the member has no organization of her own"); process.exit(2); }
 const id = await seedTable(a.client, "rec-revoke");
 say("table", id);
 try {
@@ -28,7 +35,7 @@ try {
     const r = await fetch(SERVER + path, { ...init, headers: { authorization: `Bearer ${token}`, "content-type": "application/json", accept: "application/json, text/event-stream", ...(init?.headers ?? {}) } });
     return { status: r.status, text: await r.text() };
   };
-  const mcp = (args) => http("/matrx-mcp", { method: "POST", body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "tables", arguments: { organization_id: ORG, table: id, ...args } } }) });
+  const mcp = (args) => http("/matrx-mcp", { method: "POST", body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "tables", arguments: { organization_id: MY_ORG, table: id, ...args } } }) });
 
   async function doors(state, alphaSeen) {
     const p = await page(m.client);

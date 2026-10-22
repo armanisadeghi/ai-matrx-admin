@@ -1,6 +1,6 @@
-jest.mock("@/lib/python-client", () => ({
-  resolveFilesBaseUrl: () => "https://files.matrxserver.com",
-}));
+jest.mock("@/lib/api/server-api", () =>
+  require("@/lib/api/test-support/recordingServerApi").recordingServerApiModule(),
+);
 
 jest.mock("@/utils/permissions/shareLinks", () => ({
   shareLinkUrl: (token: string) => `https://www.aimatrx.com/s/${token}`,

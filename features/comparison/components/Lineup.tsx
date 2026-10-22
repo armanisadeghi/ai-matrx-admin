@@ -329,19 +329,10 @@ function SlotAnswer({ row, photo, places, kind, onPick }: { row: CompareRow; pho
         <ul className="space-y-1">
           {row.candidates.slice(0, 5).map((c, n) => (
             <li key={`${c.match.item.url ?? c.match.url ?? c.match.name}-${n}`}>
-              <Button variant="outline" onClick={() => onPick(c)} className="h-auto w-full min-w-0 justify-start py-2 text-left">
-                <ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={36} fill={photo} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate type-secondary font-medium text-foreground">{c.match.name}</span>
-                  <span className="block truncate type-meta text-muted-foreground">
-                    {[c.category, c.match.detail].filter(Boolean).join(" · ")}
-                  </span>
-                </span>
-                {c.match.rating !== null ? (
-                  <span className="type-meta inline-flex shrink-0 items-center gap-1 tabular-nums text-muted-foreground">
-                    <Star className="h-3 w-3 fill-current text-warning" aria-hidden />{c.match.rating.toFixed(1)}
-                  </span>
-                ) : null}
+              <Button variant="outline" onClick={() => onPick(c)} className="w-full min-w-0 justify-start"
+                icon={<ItemLogo name={c.match.name} logoUrl={c.match.logo_url} website={c.match.website} size={20} fill={photo} />}
+                meta={[c.category, c.match.detail, c.match.rating !== null ? `★ ${c.match.rating.toFixed(1)}` : null].filter(Boolean).join(" · ") || undefined}>
+                {c.match.name}
               </Button>
             </li>
           ))}

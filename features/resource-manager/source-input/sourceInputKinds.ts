@@ -51,13 +51,13 @@ interface Presentation {
 const PRESENTATION: Record<string, Presentation> = {
   file: { plural: "Files", Icon: Files },
   note: { plural: "Notes", Icon: NotebookText },
-  document: { plural: "Documents", Icon: FileText },
-  udt_document: { plural: "Documents", Icon: FileText },
+  document: { plural: "Docs", Icon: FileText },
+  udt_document: { plural: "Docs", Icon: FileText },
   processed_document: { plural: "Websites", Icon: Globe, savedSourceGroup: "web_page" },
   transcript: { plural: "Transcripts", Icon: AudioLines },
   conversation: { plural: "Conversations", Icon: MessagesSquare },
   dataset: { plural: "Tables", Icon: Table, recordStore: true },
-  workbook: { plural: "Workbooks", Icon: Sheet },
+  workbook: { plural: "Sheets", Icon: Sheet },
   content_ir_kind_instance: { plural: "Saved results", Icon: Layers },
   fc_set: { plural: "Decks", Icon: GalleryVerticalEnd },
 };
@@ -66,7 +66,7 @@ const PRESENTATION: Record<string, Presentation> = {
 export interface SourceInputEntry {
   /** Stable key: the entry's tokens joined. */
   key: string;
-  /** Every registry token this entry lists (Documents = two). */
+  /** Every registry token this entry lists (Docs = two). */
   tokens: string[];
   plural: string;
   Icon: ComponentType<{ className?: string }>;

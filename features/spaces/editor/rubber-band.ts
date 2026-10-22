@@ -177,7 +177,9 @@ export function useRubberBand(editor: SpacesEditor, editable: boolean) {
     };
 
     const onKey = (e: KeyboardEvent) => {
-      if (!selected.length) return;
+      // A key the editor's own layer already took (it listens on the document too, registered first) is not the
+      // selection's: the Esc that MADE this selection must never also be the press that clears it.
+      if (!selected.length || e.defaultPrevented) return;
       if (e.target instanceof HTMLElement && e.target.matches("input, textarea")) return;
       if (e.key === "Backspace" || e.key === "Delete") {
         e.preventDefault();
