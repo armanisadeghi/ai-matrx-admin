@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-22T00:25:00.734Z",
+  "generated_at": "2026-10-22T00:29:25.601Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -4471,6 +4471,12 @@
       "filename": "formula_red_planner_never_plans_created_by.sql",
       "checksum": "41d30d8ff8965e4cf6e8859aeee1a962fd3fc4a98eff343cc219cfeb8ec0115e",
       "applied_at": "2026-10-09 07:43:53.197736+00"
+    },
+    "migrations/campaign/formx_a_a_form_can_be_locked_answered_again_and_keeps_its_score.sql": {
+      "source": "matrx-frontend",
+      "filename": "formx_a_a_form_can_be_locked_answered_again_and_keeps_its_score.sql",
+      "checksum": "be0e06521ee7bfdea9b36950bfc66164140266594f9b0586bf61b84556a25298",
+      "applied_at": "2026-10-22 00:29:20.315067+00"
     },
     "migrations/campaign/fts2c_a_a_contact_names_the_columns_the_crm_form_edits.sql": {
       "source": "matrx-frontend",
