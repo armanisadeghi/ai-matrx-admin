@@ -6,6 +6,8 @@
  * and `updating` is true so the caller can show progress.
  */
 
+import { useState } from "react";
+
 import { useImageSrc } from "@/features/files/media-client/useImageSrc";
 
 import type { ScanItem } from "./types";
@@ -28,8 +30,18 @@ export function useScanImageSrc(
     isImage && !item.previewUrl ? (item.fileId ?? null) : null,
   );
   const base = item.previewUrl ?? original.src ?? null;
+
+  // Re-enhancing (Clean → B&W, Clean all) keeps the last enhanced image up
+  // while the new one loads, instead of flashing back to the original.
+  const [lastEnhanced, setLastEnhanced] = useState<string | null>(null);
+  if (enhanced.src && enhanced.src !== lastEnhanced) {
+    setLastEnhanced(enhanced.src);
+  }
   if (enhanced.src) {
     return { src: enhanced.src, updating: false, enhanceFailed: false };
+  }
+  if (enhancedFileId && enhanced.loading && lastEnhanced) {
+    return { src: lastEnhanced, updating: true, enhanceFailed: false };
   }
   return {
     src: base,
