@@ -14,7 +14,7 @@
  * image links; a recording file), `AudioResourcePicker` (record in place),
  * `WebpageResourcePickerCore`, `YouTubeResourcePicker`,
  * `SegmentedControl`, the inventory hooks. Configuration is by props only
- * (`kinds`, `max`, `required`, `defaultForm`, `title`, `attachTo`, `deliveries`).
+ * (`kinds`, `max`, `required`, `defaultForm`, `title`, `attachTo`, `deliveries`, `extraKinds`).
  * State: `useSourceSet(surfaceKey)`; new material: `useSourceIntake`; tiles:
  * `sourceKinds.ts`. Copy law R9: nouns, no helper lines.
  *
@@ -85,6 +85,7 @@ type AddTileId = SourceAddTileId;
 export function SourceInput({
   surfaceKey,
   kinds,
+  extraKinds,
   max,
   required = false,
   defaultForm,
@@ -444,6 +445,7 @@ export function SourceInput({
         <UseExisting
           scope={scope}
           query={query}
+          extraKinds={extraKinds}
           isPicked={(token, id) => set.hasRef(token, id)}
           onToggle={(token, item, sourceKind) => {
             const picked = set.sources.find(

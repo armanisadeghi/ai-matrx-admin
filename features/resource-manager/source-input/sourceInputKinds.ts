@@ -101,6 +101,30 @@ export function sourceInputEntries(rows: readonly SourceInputKindRow[]): SourceI
   });
 }
 
+/**
+ * Append a screen's extra kinds (SourceInputProps.extraKinds) after the registry's entries. A token
+ * already offered is skipped; one with no presentation shows under its own token. Pure.
+ */
+export function withExtraKinds(
+  entries: readonly SourceInputEntry[],
+  extraKinds: readonly string[] | undefined,
+): SourceInputEntry[] {
+  const out = [...entries];
+  for (const token of extraKinds ?? []) {
+    if (out.some((e) => e.tokens.includes(token))) continue;
+    const shown = PRESENTATION[token];
+    out.push({
+      key: token,
+      tokens: [token],
+      plural: shown?.plural ?? token,
+      Icon: shown?.Icon ?? Library,
+      savedSourceGroup: shown?.savedSourceGroup,
+      recordStore: shown?.recordStore,
+    });
+  }
+  return out;
+}
+
 let cached: Promise<SourceInputKindRow[]> | null = null;
 
 /** The offered kinds, read once per page load from the registry. A failed read is not cached. */
