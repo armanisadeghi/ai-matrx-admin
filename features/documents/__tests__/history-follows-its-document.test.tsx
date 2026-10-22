@@ -7,7 +7,7 @@
  * `DocumentHistoryViewer`. Only the data doors (snapshot list, restore) are fakes.
  */
 
-import React, { act } from "react";
+import React, { act, useEffect } from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createRoot } from "react-dom/client";
@@ -64,7 +64,10 @@ const seen: { t: Toggle | null } = { t: null };
 
 /** What the editors do: own the History button for their document, register it as open. */
 function Editor({ id, name, owns = true }: { id: string; name: string; owns?: boolean }) {
-  seen.t = useToolToggle(documentHistoryToggleInput(id, true, name));
+  const toggle = useToolToggle(documentHistoryToggleInput(id, true, name));
+  useEffect(() => {
+    seen.t = toggle;
+  });
   useHistorySubject(owns ? DOCUMENT_HISTORY_KIND : "never-registered", id);
   return null;
 }
