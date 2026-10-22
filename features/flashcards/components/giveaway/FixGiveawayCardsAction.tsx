@@ -25,6 +25,7 @@ import { useFloatingAgentRun } from "@ai-matrx/chat/agents/hooks/useFloatingAgen
 
 import { readListChangeProposal } from "@/features/content-ir/kinds/list-change-proposal";
 import { toFlashcardDeckCards } from "@/features/content-ir/kinds/flashcard-deck-cards";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { useAccess } from "@/utils/permissions/access";
 import { canEditAccess } from "@/utils/permissions/access-core";
@@ -53,6 +54,15 @@ function FixGiveawayCardsButton({ setId }: { setId: string }) {
   });
 
   async function start() {
+    // A click names what it will do before any AI work begins.
+    const approved = await confirm({
+      title: LABEL,
+      description:
+        "Rewrites cards whose back gives away the front. You approve each change.",
+      confirmLabel: "Start",
+      cancelLabel: "Cancel",
+    });
+    if (!approved) return;
     const deck = await fcService.getDeckWithCards(setId);
     if (!deck.data) {
       toast.error("Couldn't read this deck", {
@@ -108,6 +118,7 @@ function FixGiveawayCardsButton({ setId }: { setId: string }) {
     <ShieldCheckTapButton
       ariaLabel={LABEL}
       tooltip={LABEL}
+      variant="transparent"
       disabled={isRunning}
       onClick={() => void start()}
     />

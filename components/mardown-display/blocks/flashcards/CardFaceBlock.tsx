@@ -43,9 +43,10 @@ export function CardFaceBlock({
   align = "auto",
 }: {
   content: string;
-  /** "tile": compact slot (Match tiles, answer options). "card": the flip
+  /** "tile": compact slot, size by length (answer options). "uniform": one
+   *  fixed tile size for every face (Match tiles). "card": the flip
    *  card's own auto-scaling size (a Test / Write question). */
-  size?: "tile" | "card";
+  size?: "tile" | "uniform" | "card";
   /** "auto": a single-line face centered, multi-line left-aligned (the flip
    *  card). "center": centered unless the face is a list (a question whose
    *  second line is a hint). "start": always left-aligned (answer options). */
@@ -58,7 +59,9 @@ export function CardFaceBlock({
   const textSize =
     size === "card"
       ? getFaceTextSizeClass(content, isMultiLine)
-      : getTileFaceTextSizeClass(content, isMultiLine);
+      : size === "uniform"
+        ? "text-xs sm:text-sm"
+        : getTileFaceTextSizeClass(content, isMultiLine);
   return (
     <ConfigurableMarkdownContent
       imagePolicy="inherit"
