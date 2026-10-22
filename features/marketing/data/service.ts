@@ -98,7 +98,7 @@ import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { supabase } from "@/utils/supabase/client";
 import { withKnownDomainRules } from "@/lib/web-domains/registry";
 import { fetchKnownDomainRules } from "@/lib/web-domains/service";
-import { authenticatedWebDb } from "@/utils/supabase/webDb";
+import { authenticatedWebDb, signedInPersonId } from "@/utils/supabase/webDb";
 import { classifySocialLink, propertyIdentity } from "@/features/marketing/social/link";
 import { readBrandSocialCounts } from "@/features/marketing/social/service";
 import {
@@ -2697,6 +2697,7 @@ export async function confirmDiscoveredAsset(
       title: input.title,
       source: "discovered",
       confirmed_at: new Date().toISOString(),
+      confirmed_by: await signedInPersonId(supabase),
     })
     .select("id")
     .single();
@@ -2765,6 +2766,7 @@ export async function confirmDiscoveredAsset(
         status: "confirmed",
         resolved_asset_id: created.id,
         reviewed_at: new Date().toISOString(),
+        reviewed_by: await signedInPersonId(supabase),
       })
       .eq("id", input.item.id)
       .eq("status", "pending")
@@ -2800,6 +2802,7 @@ export async function confirmDiscoveredProperty(
         status: "confirmed",
         resolved_property_id: created.id,
         reviewed_at: new Date().toISOString(),
+        reviewed_by: await signedInPersonId(supabase),
       })
       .eq("id", input.item.id)
       .eq("status", "pending")
@@ -2832,6 +2835,7 @@ export async function createDiscoveredCandidates(
 ): Promise<void> {
   if (!rows.length) return;
   const reviewedAt = new Date().toISOString();
+  const me = await signedInPersonId(supabase);
   const response = await (
     await authenticatedWebDb(supabase)
   )
@@ -2850,7 +2854,7 @@ export async function createDiscoveredCandidates(
         status: r.relationKey ? "confirmed" : "pending",
         relation_key: r.relationKey ?? null,
         sentiment: r.sentiment ?? null,
-        ...(r.relationKey ? { reviewed_at: reviewedAt } : {}),
+        ...(r.relationKey ? { reviewed_at: reviewedAt, reviewed_by: me } : {}),
       })),
       // MKT-184: a finding the brand already holds (same brand, category, kind, url and value) is the same finding —
       // the insert is idempotent (ON CONFLICT DO NOTHING on discovered_item_dedup), so saving twice is not an error.
@@ -3018,6 +3022,7 @@ export async function confirmDiscoveredFact(
         .from("business_fact")
         .update({
           confirmed_at: new Date().toISOString(),
+          confirmed_by: await signedInPersonId(supabase),
           kind: input.factKind,
           ...(input.label ? { label: input.label } : {}),
         })
@@ -3029,7 +3034,7 @@ export async function confirmDiscoveredFact(
     await writeOne(
       db
         .from("discovered_item")
-        .update({ status: "confirmed", reviewed_at: new Date().toISOString() })
+        .update({ status: "confirmed", reviewed_at: new Date().toISOString(), reviewed_by: await signedInPersonId(supabase) })
         .eq("id", input.item.id)
         .eq("status", "pending")
         .select("id"),
@@ -3049,6 +3054,7 @@ export async function confirmDiscoveredFact(
         : input.item.value,
       source: "discovered",
       confirmed_at: new Date().toISOString(),
+      confirmed_by: await signedInPersonId(supabase),
     })
     .select("id")
     .single();
@@ -3060,6 +3066,7 @@ export async function confirmDiscoveredFact(
         status: "confirmed",
         resolved_fact_id: created.id,
         reviewed_at: new Date().toISOString(),
+        reviewed_by: await signedInPersonId(supabase),
       })
       .eq("id", input.item.id)
       .eq("status", "pending")
@@ -3121,7 +3128,7 @@ export async function bulkDismissDiscoveredItems(
     await authenticatedWebDb(supabase)
   )
     .from("discovered_item")
-    .update({ status: "dismissed", reviewed_at: new Date().toISOString() })
+    .update({ status: "dismissed", reviewed_at: new Date().toISOString(), reviewed_by: await signedInPersonId(supabase) })
     .in("id", itemIds)
     .eq("status", "pending")
     .select("id");
@@ -3165,7 +3172,7 @@ export async function dismissDiscoveredItem(itemId: string): Promise<void> {
   await writeOne(
     (await authenticatedWebDb(supabase))
       .from("discovered_item")
-      .update({ status: "dismissed", reviewed_at: new Date().toISOString() })
+      .update({ status: "dismissed", reviewed_at: new Date().toISOString(), reviewed_by: await signedInPersonId(supabase) })
       .eq("id", itemId)
       .eq("status", "pending")
       .select("id"),
@@ -4426,6 +4433,7 @@ export async function createBrandAsset(
       is_primary: input.isPrimary,
       source: input.source,
       confirmed_at: new Date().toISOString(),
+      confirmed_by: await signedInPersonId(supabase),
       ...(input.metadata ? { metadata: input.metadata } : {}),
     })
     .select(BRAND_ASSET_COLUMNS)
@@ -4505,6 +4513,7 @@ export async function createBusinessFact(
       source: input.source,
       ...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
       confirmed_at: new Date().toISOString(),
+      confirmed_by: await signedInPersonId(supabase),
     })
     .select(BUSINESS_FACT_COLUMNS)
     .single();
