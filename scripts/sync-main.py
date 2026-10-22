@@ -2495,6 +2495,38 @@ def guard_lock_imports(mail=None):
     return text
 
 
+def repair_frozen_lockfile(helper):
+    """Regenerate HEAD's pnpm-lock.yaml to match HEAD's package.json and commit it. True when committed."""
+    _, head_pkg, _ = git("show", "HEAD:package.json", check=False)
+    _, head_lock, _ = git("show", "HEAD:pnpm-lock.yaml", check=False)
+    try:
+        with open("package.json", encoding="utf-8", newline="") as f:
+            disk_pkg = f.read()
+        with open("pnpm-lock.yaml", encoding="utf-8", newline="") as f:
+            disk_lock = f.read()
+    except OSError:
+        return False
+    if disk_pkg != head_pkg or disk_lock != head_lock:
+        say("FROZEN-LOCKFILE REMEDY skipped: package.json or pnpm-lock.yaml on disk differs from HEAD (another writer).")
+        return False
+    out = os.path.join(tempfile.mkdtemp(), "pnpm-lock.yaml")
+    try:
+        r = subprocess.run(["bash", helper, "HEAD", "--write", out], capture_output=True, text=True, timeout=600)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        say("FROZEN-LOCKFILE REMEDY could not run (%s)." % e)
+        return False
+    if r.returncode != 3 or not os.path.isfile(out):
+        say("FROZEN-LOCKFILE REMEDY failed (exit %d): %s" % (r.returncode, r.stderr.strip()[-400:]))
+        return False
+    shutil.copyfile(out, "pnpm-lock.yaml")
+    git("add", "--", "pnpm-lock.yaml")
+    git("commit", "--no-verify", "-q", "-m",
+        "deps: regenerate pnpm-lock.yaml to match package.json (sync-main frozen-lockfile remedy)",
+        "--only", "--", "pnpm-lock.yaml")
+    say("FROZEN LOCKFILE REPAIRED and committed: HEAD's pnpm-lock.yaml now matches its package.json.")
+    return True
+
+
 def guard_frozen_lockfile():
     helper = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lockfile-frozen.sh")
     if not os.path.isfile(helper) or not blob_at("HEAD", "pnpm-lock.yaml"):
@@ -2518,6 +2550,16 @@ def guard_frozen_lockfile():
         say("FROZEN LOCKFILE already out of step on %s/%s, so this push does not add it:\n%s\n"
             "Fix main: `pnpm install --lockfile-only`, commit package.json and pnpm-lock.yaml TOGETHER." % (REMOTE, BRANCH, err))
         return
+    # THE REMEDY (2026-10-21, merge d65df2aca6): a clean merge can pair one side's package.json with
+    # the other side's lockfile lines. Regenerate HEAD's lockfile in a scratch tree (lockfile-frozen.sh
+    # --write), commit it alone, and judge again; only when that fails is the push stopped.
+    fixed_lock = repair_frozen_lockfile(helper)
+    if fixed_lock:
+        rc, err = judge("HEAD")
+        if rc == 0:
+            guard_twins()
+            guard_lock_imports()
+            return
     die("NOT PUSHED — pnpm-lock.yaml in HEAD does not match package.json, so `pnpm install "
         "--frozen-lockfile` (Vercel, CI, every agent) fails:\n%s\nRun `pnpm install --lockfile-only`, commit "
         "package.json and pnpm-lock.yaml together, and sync again. Everything is committed locally; nothing is lost." % err)
