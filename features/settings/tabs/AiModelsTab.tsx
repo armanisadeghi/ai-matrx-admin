@@ -1,7 +1,9 @@
 "use client";
 
-import { Cpu } from "lucide-react";
+import { Cpu, KeyRound } from "lucide-react";
+import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
 import AiModelsPreferences from "@/components/user-preferences/AiModelsPreferences";
 
 // One heading, then the list — no bordered card around the whole screen
@@ -15,6 +17,24 @@ export default function AiModelsTab() {
         icon={Cpu}
       />
       <AiModelsPreferences />
+      {/* A key saved in the Vault runs that vendor's models on it: "Your key", no model points. */}
+      <SettingsSection title="Your provider keys">
+        <SettingsLink
+          label="OpenAI API key"
+          description="OpenAI models run on your key."
+          icon={KeyRound}
+          href="/vault?mode=new&kind=openai_api_key"
+          actionLabel="Add"
+        />
+        <SettingsLink
+          label="Anthropic API key"
+          description="Claude models run on your key."
+          icon={KeyRound}
+          href="/vault?mode=new&kind=anthropic_api_key"
+          actionLabel="Add"
+          last
+        />
+      </SettingsSection>
     </>
   );
 }
