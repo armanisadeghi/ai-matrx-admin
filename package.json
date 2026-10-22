@@ -44,6 +44,7 @@
     "tsc6": "bash scripts/tsc-capped.sh tsc6",
     "check:spaces-snapshot-schema": "tsx --env-file=.env --env-file=.env.local scripts/check-spaces-snapshot-schema.ts",
     "check:spaces-snapshot-schema:self-test": "tsx scripts/check-spaces-snapshot-schema.ts --self-test",
+    "check:no-retired-member-visibility-knob": "node scripts/check-no-retired-member-visibility-knob.mjs",
     "check:no-vendor-names": "node scripts/check-no-vendor-names-in-ui.mjs",
     "check:no-vendor-names:self-test": "node scripts/check-no-vendor-names-in-ui.mjs --self-test",
     "check:one-source-input": "node scripts/check-one-source-input.mjs",

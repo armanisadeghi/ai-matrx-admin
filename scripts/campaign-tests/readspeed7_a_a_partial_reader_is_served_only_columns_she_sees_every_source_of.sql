@@ -64,8 +64,6 @@ begin
     insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
     values ('custom', 'system_enabled', 'organization', v_org, v_org, 'true'::jsonb, 'readspeed7_a fixture');
     if v_spec in ('A', 'B') then
-      insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
-      values ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb, 'readspeed7_a fixture: she sees what she is shared');
     end if;
     insert into custom.record (organization_id, table_id, data) values (v_org, null, jsonb_build_object('name', 'Home')) returning id into v_home;
     v_jobs := custom.table_declare(v_org, jsonb_build_object('name', 'Jobs', 'slug', 'jobs', 'type', 'entity',

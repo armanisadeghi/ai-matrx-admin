@@ -226,41 +226,23 @@ begin
   if not v_ok then raise exception '1a FAILED — with the knob unset, a member does not see the record. The default is not the old behaviour.'; end if;
   if not iam.member_lane_open(v_a) then raise exception '1a FAILED — the member lane reads shut with no override set.'; end if;
 
-  -- 1b — the organization says "only what is shared", and the SAME reader loses it.
-  --      No rebuild, no invalidation: the next read is the new answer.
-  insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value)
-  values ('custom', 'member_default_visibility', 'organization', v_a, v_a, '"shared_only"'::jsonb);
-  if iam.member_lane_open(v_a) then raise exception '1b FAILED — the knob is shared_only and the member lane still reads open.'; end if;
-  if custom.has_visibility(v_dana, 'record', v_rec, 'viewer') then
-    raise exception '1b FAILED — the organization set shared_only and the member still sees a record nobody shared with her.'; end if;
-  if iam.member_default_level(v_a, null) is not null then
-    raise exception '1b FAILED — membership still confers a level under shared_only.'; end if;
+  -- 1b — the knob that used to close the member lane is retired (access ladder T-17, 2026-10-03):
+  --      membership always opens, so there is no setting under which the member loses the record,
+  --      and membership always confers a level. (KNOB-SWEEP 2026-10-22: this part used to write
+  --      custom/member_default_visibility = shared_only and read the answers flip back and forth.)
+  if not iam.member_lane_open(v_a) then raise exception '1b FAILED — the member lane reads shut.'; end if;
+  if iam.member_default_level(v_a, null) is null then
+    raise exception '1b FAILED — membership confers no level.'; end if;
 
-  -- 1c — and the arms that are NOT membership are untouched. The owner still owns it.
+  -- 1c — and the owner still owns it.
   if not custom.has_visibility(v_admin, 'record', v_rec, 'viewer') then
-    raise exception '1c FAILED — shared_only took the record away from the person who created it.'; end if;
+    raise exception '1c FAILED — the member lane took the record away from the person who created it.'; end if;
 
-  -- 1d — a grant still reaches, and containment still carries from the granted record down.
-  insert into iam.permissions (resource_type, resource_id, granted_to_user_id, permission_level, created_by)
-  values ('record', v_rec, v_dana, 'viewer', v_admin);
-  if not custom.has_visibility(v_dana, 'record', v_rec, 'viewer') then
-    raise exception '1d FAILED — a direct grant does not reach under shared_only.'; end if;
+  -- 1d — containment still carries from the record down for a member.
   if not custom.has_visibility(v_dana, 'record', v_child, 'viewer') then
-    raise exception '1d FAILED — containment does not carry under shared_only.'; end if;
+    raise exception '1d FAILED — containment does not carry for a member.'; end if;
 
-  -- 1e — and a record she was NOT given stays out of reach, so 1d proved the grant and not the org.
-  if custom.has_visibility(v_dana, 'record', v_hq, 'viewer') then
-    raise exception '1e FAILED — a record with no grant is still reachable under shared_only.'; end if;
-
-  -- 1f — the reverse of 1b, in the same session: the organization changes its mind and the
-  --      same reader gets it back, with nothing rebuilt in between.
-  delete from iam.permissions where resource_type = 'record' and resource_id = v_rec and granted_to_user_id = v_dana;
-  update platform.knob_override set value = '"all_records"'::jsonb
-   where feature = 'custom' and key = 'member_default_visibility' and organization_id = v_a;
-  if not custom.has_visibility(v_dana, 'record', v_rec, 'viewer') then
-    raise exception '1f FAILED — back on all_records, the member does not see the record again.'; end if;
-
-  raise notice 'PART 1 PASSED (1a default, 1b shared_only, 1c owner, 1d grant+containment, 1e no free ride, 1f reversible)';
+  raise notice 'PART 1 PASSED (1a default, 1b the member lane is always open, 1c owner, 1d containment)';
 end $t$;
 commit;
 
