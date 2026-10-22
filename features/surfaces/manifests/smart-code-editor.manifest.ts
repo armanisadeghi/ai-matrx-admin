@@ -275,6 +275,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const smartCodeEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/smart-code-editor",
+  situation:
+    "They have the smart code editor window open on {active_file_path|an unnamed file} ({language|language unknown}) from {workspace_name|no named workspace}. The code, and any errors the program that opened it passed along, are in your context. You can replace their selection, insert at the cursor or rewrite the code.",
   inheritsFrom: "matrx-default/code",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

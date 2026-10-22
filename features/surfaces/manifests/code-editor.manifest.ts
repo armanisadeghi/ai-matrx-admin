@@ -334,6 +334,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const codeEditorManifest: SurfaceManifest = {
   surfaceName: "matrx-user/code-editor",
+  situation:
+    "They are in the code editor on {current_file_path|no file} ({current_file_language|language unknown}), at line {current_line_number|unknown}, with {open_file_count} files open. The file's code and its errors and warnings are in your context. You can replace their selection, insert at the cursor or rewrite the file.",
   inheritsFrom: "matrx-default/code",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
