@@ -588,6 +588,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const podcastRunManifest: SurfaceManifest = {
   surfaceName: "matrx-user/podcast-run",
+  situation:
+    "They are watching a podcast episode being made: status {run_status}, {progress_percent}% done, step {current_stage_label|unknown}, stalled: {stalled}. Episode: \"{episode_title|not titled yet}\"; audio ready: {audio_available}. They can change the title, description and chapters.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

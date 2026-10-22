@@ -765,6 +765,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const cmsSiteManifest: SurfaceManifest = {
   surfaceName: "matrx-user/cms-site",
+  situation:
+    "They have the website \"{site_name}\" open ({site_domain|no domain}, active: {site_is_active}) on the {current_mode} tab: {pages_count} pages, {published_pages_count} published, {components_count} shared parts. Agent write rule: {agent_write_policy}. They can change its name, styles, theme, menu and footer, or add a page.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

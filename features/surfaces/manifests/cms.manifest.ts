@@ -249,6 +249,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const cmsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/cms",
+  situation:
+    "They are on the CMS hub with {owned_sites_count} websites they own ({active_sites_count} active) and a way into their standalone published pages. They can start a new website.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

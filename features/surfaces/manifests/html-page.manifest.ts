@@ -366,6 +366,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const htmlPageManifest: SurfaceManifest = {
   surfaceName: "matrx-user/html-page",
+  situation:
+    "They are editing a standalone published web page, \"{meta_title}\", live at {live_url}, in the {active_tab|list} tab (unsaved edits: {is_dirty|no}, shown to search engines: {is_indexable}); they have {sibling_page_count} such pages. They can change its search settings and HTML.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

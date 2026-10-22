@@ -390,6 +390,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const artifactsManifest: SurfaceManifest = {
   surfaceName: ARTIFACTS_SURFACE_NAME,
+  situation:
+    "They are in Artifacts, the saved outputs agents produced: {visible_artifact_count|the} artifacts shown (type: {artifact_type_filter|any}, status: {artifact_status_filter|any}). Open: \"{artifact_title|none}\" ({artifact_type|no type}, {artifact_status|no status}).",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

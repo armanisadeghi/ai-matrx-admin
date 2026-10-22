@@ -158,6 +158,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const shareManifest: SurfaceManifest = {
   surfaceName: SHARE_SURFACE_NAME,
+  situation:
+    "They have the share window open for the {resource_type} \"{resource_name}\", on the {active_tab} tab: shared with {user_grant_count|0} people and {org_grant_count|0} organizations, public: {is_public|no}, they own it: {is_owner|unknown}.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

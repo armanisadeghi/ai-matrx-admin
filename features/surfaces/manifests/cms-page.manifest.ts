@@ -711,6 +711,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const cmsPageManifest: SurfaceManifest = {
   surfaceName: "matrx-user/cms-page",
+  situation:
+    "They are editing the page \"{page_title}\" of the website \"{site_name}\", in the {active_tab} tab (published: {is_published|no}, unpublished draft: {has_draft|no}, home page: {is_home_page|no}). Agent write rule: {agent_write_policy}. They can change its title, HTML, meta tags, excerpt and tags.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

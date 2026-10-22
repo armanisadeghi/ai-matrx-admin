@@ -375,6 +375,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const cmsComponentManifest: SurfaceManifest = {
   surfaceName: "matrx-user/cms-component",
+  situation:
+    "They are editing the shared parts (header, footer, sidebar, call to action) of the website \"{site_name}\", {components_count} in all. Open: \"{component_name|none}\" ({component_type|no slot}). They can change its HTML and CSS.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -481,6 +481,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const podcastStudioManifest: SurfaceManifest = {
   surfaceName: "matrx-user/podcast-studio",
+  situation:
+    "They are setting up a new podcast episode from a {source_kind} source: {format} format, {host_count} hosts, language {language}; ready to make: {can_generate}. They can edit the source text, episode shape, target audience, prep instructions and show blurb.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -28,6 +28,8 @@ const groups: SurfaceValueGroup[] = [
 
 export const markdownPdfManifest: SurfaceManifest = {
   surfaceName: MARKDOWN_PDF_SURFACE_NAME,
+  situation:
+    "They are turning markdown into a PDF to download; PDF status: {pdf_status}. The markdown is in your context.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

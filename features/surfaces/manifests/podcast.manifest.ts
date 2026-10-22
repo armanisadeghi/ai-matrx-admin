@@ -139,6 +139,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const podcastManifest: SurfaceManifest = {
   surfaceName: "matrx-user/podcast",
+  situation:
+    "They are on Podcasts, with {my_show_count} shows and {my_episode_count} episodes of their own and {published_show_count} published shows to browse.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

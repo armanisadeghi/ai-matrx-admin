@@ -29,6 +29,8 @@ const groups: SurfaceValueGroup[] = [
 
 export const barcodePreviewManifest: SurfaceManifest = {
   surfaceName: BARCODE_PREVIEW_SURFACE_NAME,
+  situation:
+    "They are making a {symbology} barcode for \"{barcode_value}\"; valid: {is_valid}, preview: {preview_status}, error: {render_error|none}.",
   inheritsFrom: "matrx-default/publish",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
