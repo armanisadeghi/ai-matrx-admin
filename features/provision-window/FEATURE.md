@@ -25,4 +25,5 @@ Used by: Smart Add (`features/marketing/smart-add/SmartAddBrand.tsx`) and the Bu
 
 ## Change log
 
+- 2026-10-22 — Claude: a kind-carrying value's closed row says the kind's own label (`kindTextLabel`), not the design system's key-by-key glance, which printed `__kind: <slug>` (sentinel: "raw __kind on screen" for `provision-value-workspace`). Test: `__tests__/a-kind-value-row-never-prints-the-kind-key.test.tsx`.
 - 2026-10-17 — Claude: `BrandGuideInputs` / `BrandAnalysisInputs` removed from the brand Identity page (Arman: ugly top row with a scrollbar). Their capability moved to the Builder Provision tab as Capture buttons + the subject's captures.

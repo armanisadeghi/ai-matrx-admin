@@ -299,6 +299,7 @@ silently drops items the server would have happily applied.
 
 ## Change Log
 
+- 2026-10-22 — Claude: generic row reads (`referenceResolvers.ts` derived resolver, `directiveRecordRow.ts`) go through `readableRow.ts` `readRowById`: a table that declares `platform.entity_types.client_excluded_columns` is read by named readable columns (registry read once via `public.entity_client_excluded_columns()`), never `select("*")` (42501). A table with no exclusions is still read whole. Test: `__tests__/readable-row-never-selects-excluded-columns.test.ts`.
 - 2026-10-13 — **Table reads load on demand (lane S8).** `referenceResolvers.ts` is on every page's first load (`chatContextSources` → `referenceCell`); its static import of `@/features/data-tables/service` dragged the record store and records-ui with it. Every read is async, so the service now loads inside the resolver (`tableService()`, one `import()`). Guard: `__tests__/table-reads-load-on-demand.test.ts`.
 - `2026-10-09` — Scopes cutover (lane SCOPES-WEB-CONSUMERS): the `context_value` reference preview reads a package `ContextValue` (`value` / `references`) from `scopesService.resolveContextCell`; a reference cell reads as the names it points at.
 
