@@ -110,7 +110,9 @@ export function AnnotationSidecarProvider({
           return raw.addHighlight(...args);
         },
         postComment: (...args) => {
-          onActivity();
+          // A comment staged into a chat (`onWritten`) rides along as a card in the composer;
+          // nothing opens until the person presses that card (Arman, 2026-10-22).
+          if (!args[0].onWritten) onActivity();
           return raw.postComment(...args);
         },
         link: (...args) => {
