@@ -40,7 +40,7 @@ const readApprovalState = jest.fn(async (_organizationId: string, _approvalId: s
   error: null,
 }));
 jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
-jest.mock("@ai-matrx/records-ui/helpers", () => ({
+jest.mock("@ai-matrx/records-ui/data-source", () => ({
   recordsDataSource: () => ({
     rpc: async (door: string, args: { p_organization_id: string; p_approval_id: string }) => {
       if (door !== "work_approval_read") throw new Error(`unexpected door ${door}`);
