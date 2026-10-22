@@ -193,9 +193,11 @@ export function SheetHeader({
     );
   }
 
-  const derived = (
+  // The crumb trail, the star and "…" are ALWAYS in the row (frame mode: a page's own header
+  // content lands in the center slot BESIDE them and never replaces them).
+  const crumbTrail = (
     <>
-      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center pl-1">
+      <nav aria-label="Breadcrumb" data-frame-crumbs="" className="flex min-w-0 shrink items-center pl-1">
         <ol className="flex min-w-0 items-center gap-0.5">
           {crumbs.map((crumb, i) => {
             const isLast = i === crumbs.length - 1;
@@ -221,11 +223,13 @@ export function SheetHeader({
           })}
         </ol>
       </nav>
-      <div className="flex shrink-0 items-center gap-0.5 pl-1">
-        {star}
-        <PageMenu actions={actions} />
-      </div>
     </>
+  );
+  const starAndMenu = (
+    <div className="flex shrink-0 items-center gap-0.5 pl-1">
+      {star}
+      <PageMenu actions={actions} />
+    </div>
   );
 
   return (
@@ -235,15 +239,11 @@ export function SheetHeader({
       className={cn(topEdge && "mf-top-edge", "flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2")}
     >
       {start}
+      {crumbTrail}
+      {starAndMenu}
       {hostSlots ? (
-        <div id={FRAME_HEADER_CENTER_ID} className="flex h-full min-w-0 flex-1 items-center">
-          <div data-page-header-portal="fallback" data-frame-derived="" className="flex min-w-0 items-center">
-            {derived}
-          </div>
-        </div>
-      ) : (
-        derived
-      )}
+        <div id={FRAME_HEADER_CENTER_ID} className="flex h-full min-w-0 flex-1 items-center pl-2" />
+      ) : null}
       {hostSlots ? <div id={FRAME_HEADER_RIGHT_ID} className="flex shrink-0 items-center" /> : <div className="min-w-2 flex-1" />}
       {tools || canvasToggle || sideChatToggle ? (
         <div data-mf-region="header-tools" data-matrx-controls="" className="flex shrink-0 items-center gap-0.5">

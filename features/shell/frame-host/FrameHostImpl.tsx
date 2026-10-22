@@ -34,6 +34,12 @@ import { FrameChrome } from "./FrameChrome";
 import { FrameSideChatHostContext } from "./frameSideChatHost";
 import { useEarlySideChatDoors } from "./frameSideChatQueue";
 import { useGridFavorites } from "./useGridFavorites";
+import {
+  FramePageHeaderContext,
+  pageTrailCrumbs,
+  useFramePageHeaderHost,
+} from "./framePageHeader";
+import { useFramePins } from "./useFramePins";
 import { menuGoToEntries } from "./goToMenuEntries";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
@@ -199,7 +205,13 @@ export default function FrameHostImpl({
     home.itemIndex >= 0
       ? items.find((i) => i.id === itemId(home.itemIndex))
       : undefined;
-  const crumbs = derivedCrumbs(product, item, home.title, pathname, go);
+  // A page whose template declared its trail names its own crumbs; otherwise the route table's.
+  const { host: pageHeaderHost, pageCrumbs } = useFramePageHeaderHost();
+  const crumbs =
+    pageCrumbs && pageCrumbs.length > 0
+      ? pageTrailCrumbs(product, pageCrumbs, go)
+      : derivedCrumbs(product, item, home.title, pathname, go);
+  const { pins, favorite } = useFramePins(pathname, crumbs[crumbs.length - 1].label);
 
   const actions: FrameAction[] = [
     {
@@ -218,6 +230,7 @@ export default function FrameHostImpl({
 
   return (
     <div className="h-dvh w-full">
+      <FramePageHeaderContext value={pageHeaderHost}>
       <FrameSideChatHostContext value={sideChatHost}>
         <FrameChrome
           userData={userData}
@@ -227,6 +240,9 @@ export default function FrameHostImpl({
           product={product}
           favorites={favorites}
           onFavoritesChange={setFavorites}
+          pins={isAuthenticated ? pins : undefined}
+          onSelectPin={(pin) => go(pin.href)}
+          favorite={isAuthenticated ? favorite : undefined}
           activeMenuItemId={item?.id}
           onSelectMenuItem={(selected) => selected.href && go(selected.href)}
           crumbs={crumbs}
@@ -262,6 +278,7 @@ export default function FrameHostImpl({
           </main>
         </FrameChrome>
       </FrameSideChatHostContext>
+      </FramePageHeaderContext>
     </div>
   );
 }

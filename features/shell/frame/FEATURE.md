@@ -278,6 +278,15 @@ ownership attributes, and no `className`/`style` on any exported props type.
 
 ## Change log
 
+- 2026-10-22: Sidebar. (1) A resize drag always ends: window listeners plus pointer capture, and
+  pointerup, pointercancel, lostpointercapture, window blur, Escape, the handle unmounting and a new
+  pointerdown all call one idempotent stop that releases the drag cursor (the old handle left the cursor
+  held when a release was missed). (2) Big items (`bigItems`: off | top | bottom, default bottom;
+  `BIG_ITEM_IDS` in products.ts): the big products as one-line rows, each opening a new tab, the current
+  one highlighted. (3) Pinned (`pins`, `onSelectPin`): the person's pins; empty shows a hint. The host
+  maps the platform's one favourites store (`usePinned`) in `frame-host/useFramePins.ts`; the header
+  star IS the pin.
+
 - 2026-10-21 (P1 live switch): admins opt in with `?frame=new`; FrameShell, FrameHostGate,
   FrameHostImpl, the generated route table, header slots, legacy page contract.
 
