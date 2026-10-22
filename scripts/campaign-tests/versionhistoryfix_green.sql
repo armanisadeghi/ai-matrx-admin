@@ -38,7 +38,7 @@ set local app.actor_system = 'matrx_graph.definition_store.publish';
 do $suite$
 declare
   c record; v_id uuid; v_ver int; v_ans int; v_now int; v_h0 int; v_h1 int;
-  v_last text; v_args text;
+  v_last text; v_args text; v_versioned boolean;
 begin
   for c in select * from (values
       ('web.page', 'web_page', 'version,updated_at'),
@@ -72,11 +72,22 @@ begin
                       version = $2 + 1 where id = $1 and version = $2 returning version$u$,
                    c.store::regclass) into v_ans using v_id, v_ver;
     select count(*) into v_h1 from history.row_versions where entity_type = c.token and row_id = v_id;
-    if v_ans is distinct from v_ver + 1 or v_h1 <> v_h0 + 1 then
-      raise exception '2: % — a real change answered version % (expected %) and history rows % -> % (expected one more)',
-        c.store, v_ans, v_ver + 1, v_h0, v_h1;
+    -- FIX-HISTSUITES (2026-10-21): whether a real change writes a history row is the table's
+    -- DECLARED choice, `platform.entity_types.is_versioned`, which `platform._version_capture`
+    -- honours since aidream db/migrations/1511_history_versioning_is_a_declared_choice.sql (DB lane
+    -- C, 2026-10-21) — and that file declared `web_page` (the scrape cache) unversioned on purpose.
+    -- So the expected count follows the declaration; the version still moves either way.
+    select coalesce(et.is_versioned, true) into v_versioned from platform.entity_types et where et.token = c.token;
+    v_versioned := coalesce(v_versioned, true);
+    if v_ans is distinct from v_ver + 1
+       or v_h1 <> v_h0 + (case when v_versioned then 1 else 0 end) then
+      raise exception '2: % — a real change answered version % (expected %) and history rows % -> % (expected % — the table is declared %)',
+        c.store, v_ans, v_ver + 1, v_h0, v_h1, case when v_versioned then 'one more' else 'none' end,
+        case when v_versioned then 'versioned' else 'unversioned' end;
     end if;
-    raise notice '2 PASSED — % real change moved % -> % and was recorded', c.store, v_ver, v_ans;
+    raise notice '2 PASSED — % real change moved % -> % and was % (declared %)', c.store, v_ver, v_ans,
+      case when v_versioned then 'recorded' else 'not recorded' end,
+      case when v_versioned then 'versioned' else 'unversioned' end;
     end if;
 
     -- 4: bound, enabled, last, exact args
