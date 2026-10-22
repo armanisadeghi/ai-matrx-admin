@@ -54,7 +54,14 @@ jest.mock("../hooks", () => ({
   libraryKey: (o: string) => ["data-sources", "library", o],
 }));
 jest.mock("../../hooks", () => ({ limitSettingHref: () => null, fetchedTablesKey: ["data-sources", "fetched-tables"] }));
-jest.mock("../../SourceInputFields", () => ({ SourceInputFields: () => <div data-testid="inputs" />, modeOf: () => ({ option: null }) }));
+const mockSourceInputValues: Record<string, string>[] = [];
+jest.mock("../../SourceInputFields", () => ({
+  SourceInputFields: ({ values }: { values: Record<string, string> }) => {
+    mockSourceInputValues.push(values);
+    return <div data-testid="inputs" />;
+  },
+  modeOf: () => ({ option: null }),
+}));
 jest.mock("../../AddToBoard", () => ({ AddToBoard: () => <button type="button">Add to a board</button> }));
 jest.mock("../../RefusalView", () => ({ RefusalView: () => <div role="alert" /> }));
 jest.mock("../../server", () => ({ fetchData: jest.fn(), getJob: jest.fn() }));
@@ -175,4 +182,12 @@ test("a past run listed on the page reopens inline (address &job=), and a reload
   search = "source=google_maps_place&job=J3";
   render();
   expect(inline()?.getAttribute("data-inline-results")).toBe("table-J3");
+});
+
+test("a reload onto a run refills the form with what that run asked", () => {
+  search = "source=google_maps_place&job=J4";
+  jobRows.J4 = job("J4", { inputs: [{ url: "https://maps.example/place/1" }] });
+  render();
+  const seen = mockSourceInputValues.at(-1);
+  expect(seen).toEqual({ url: "https://maps.example/place/1" });
 });

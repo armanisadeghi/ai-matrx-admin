@@ -28,7 +28,7 @@ import {
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
-import { buildInput, capCount, countChoices } from "../contract";
+import { buildInput, capCount, countChoices, searchOptions } from "../contract";
 import { SourceInputFields, modeOf } from "../SourceInputFields";
 import { limitSettingHref, fetchedTablesKey } from "../hooks";
 import { clearRun, resumeRun, runState, startRun, useRun } from "../runs";
@@ -46,6 +46,27 @@ import { PAST_RUNS_PREFIX, isOpenStatus, useDataFetchJob, useOpenJob } from "./r
 import { LiveRunResults, SavedRunResults } from "./SourceResults";
 
 export const libraryRunKey = (sourceKey: string) => `library:${sourceKey}`;
+
+/**
+ * What a shown run asked for, back in the form (a reload or a reopened past run keeps the question
+ * visible): the first input set's values, and the search option whose fields it carries. Pure.
+ */
+export function refillFromInputs(
+  source: Pick<LibrarySource, "input">,
+  inputs: unknown,
+): { values: Record<string, string>; option: string | null } | null {
+  const first = Array.isArray(inputs) ? inputs[0] : inputs;
+  if (!first || typeof first !== "object") return null;
+  const values: Record<string, string> = {};
+  for (const [k, v] of Object.entries(first as Record<string, unknown>)) {
+    if (typeof v === "string" && v.trim()) values[k] = v;
+    else if (typeof v === "number" && Number.isFinite(v)) values[k] = String(v);
+  }
+  if (Object.keys(values).length === 0) return null;
+  if (values.url) return { values, option: null };
+  const option = searchOptions(source).find((o) => o.fields.every((f) => f.name in values))?.name ?? null;
+  return { values, option };
+}
 
 export interface SourceDetailProps {
   sourceKey: string;
@@ -158,6 +179,12 @@ function SourceRun({
     void queryClient.invalidateQueries({ queryKey: PAST_RUNS_PREFIX });
   }, [done, queryClient]);
 
+  // A run shown that this page did not start (a reload, a reopened past run): its question refills the form.
+  const refill =
+    jobId && jobId !== runJobId && addressJob.data?.source_key === source.key
+      ? refillFromInputs(source, addressJob.data.inputs)
+      : null;
+
   // Which results show: the run in memory (unless the person reopened a different past run).
   const showLive = run.status !== "idle" && (!jobId || !runJobId || jobId === runJobId);
   const clear = () => {
@@ -168,10 +195,12 @@ function SourceRun({
   return (
     <div className="flex flex-col gap-6">
       <SourceForm
+        key={refill ? `run:${jobId}` : "new"}
         source={source}
         library={library}
         organizationId={organizationId}
-        initialValues={initialValues}
+        initialValues={refill?.values ?? initialValues}
+        initialOption={refill?.option ?? null}
         busy={run.status === "running"}
         onFetch={(input, count) => {
           if (runState(key).status === "running") return;
@@ -277,6 +306,7 @@ function SourceForm({
   library,
   organizationId,
   initialValues,
+  initialOption = null,
   busy,
   onFetch,
 }: {
@@ -284,6 +314,8 @@ function SourceForm({
   library: Library;
   organizationId: string;
   initialValues?: Record<string, string>;
+  /** The search option a refilled run used (null = by link). */
+  initialOption?: string | null;
   /** A run of this source is going: Get data waits for it. */
   busy: boolean;
   onFetch: (
@@ -293,7 +325,7 @@ function SourceForm({
 }) {
   const limit = library.limits.max_records_per_fetch;
   const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
-  const [option, setOption] = useState<string | null>(null);
+  const [option, setOption] = useState<string | null>(initialOption);
   const [choice, setChoice] = useState<CountChoice>(
     limit && limit.value < 10 ? "custom" : "10",
   );
