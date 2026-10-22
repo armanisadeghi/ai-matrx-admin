@@ -29,8 +29,11 @@
  */
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Check, ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Archive, Check, ChevronDown, ChevronRight, Fingerprint, Landmark, MoreHorizontal, Pencil, ScanSearch, Swords } from "lucide-react";
+import { useDeclareFrameActions, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import { BrandArchiveFlow } from "@/features/marketing/components/brands/BrandArchiveFlow";
 
 import {
   DropdownMenu,
@@ -265,6 +268,7 @@ function MobileCrumbDrawer({ levels }: { levels: CrumbLevel[] }) {
 
 export function MarketingBrandCrumb() {
   const brand = useMarketingBrand();
+  const router = useRouter();
   const pathname = usePathname() ?? marketingRoutes.brand(brand.seg);
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
@@ -340,6 +344,9 @@ export function MarketingBrandCrumb() {
 
   const levels: CrumbLevel[] = [
     { key: "marketing", label: "Marketing", href: marketingRoutes.home() },
+    // EVERY CRUMB IS A DOOR (Arman, 2026-10-22: "[Marketing LOGO] > Brands v > Vasaro v"): the brands
+    // list is a level of its own, so the brand sits under it as its URL will.
+    { key: "brands", label: "Brands", href: marketingRoutes.brandsAll() },
     {
       key: "brand",
       label: brand.name,
@@ -444,6 +451,41 @@ export function MarketingBrandCrumb() {
 
   const lastIndex = levels.length - 1;
   levels[lastIndex] = { ...levels[lastIndex], isCurrent: true };
+
+  // THE NEW APP FRAME draws this trail in its own crumb row (each level a door, siblings checked) —
+  // as a FALLBACK, so a page that declares its own header still wins, exactly as in classic. Every
+  // level keeps its address; the frame adds the levels below the last one from the address.
+  const inFrame = useDeclareFrameCrumbs(
+    levels.map((level) => ({ label: level.label, href: level.href, options: level.options, optionsLabel: level.optionsLabel })),
+    { fallback: true },
+  );
+  // "…" HOLDS EVERY ACTION OF THE BRAND LEVEL (Arman, 2026-10-22): the verbs the brands list offers
+  // for a brand row (useBrandRowActions), as doors from the brand itself.
+  const [archiving, setArchiving] = useState(false);
+  useDeclareFrameActions(
+    inFrame
+      ? [
+          { id: "brand:edit", label: "Edit brand", icon: Pencil, onSelect: () => router.push(`${brandPath}/settings`) },
+          { id: "brand:enrich", label: "Enrich with Smart Add", icon: ScanSearch, onSelect: () => router.push(marketingRoutes.smartAddEnrich(brand.id)) },
+          { id: "brand:competitors", label: "Discover competitors", icon: Swords, onSelect: () => router.push(marketingRoutes.brandCompetitors(brand.seg)) },
+          { id: "brand:identity", label: "Brand identity", icon: Fingerprint, onSelect: () => router.push(marketingRoutes.brandIdentity(brand.seg)) },
+          { id: "brand:all", label: "All brands", icon: Landmark, onSelect: () => router.push(marketingRoutes.brandsAll()) },
+          { id: "brand:archive", label: "Archive brand", icon: Archive, destructive: true, onSelect: () => setArchiving(true) },
+        ]
+      : null,
+  );
+  if (inFrame) {
+    return (
+      <BrandArchiveFlow
+        brand={archiving ? { id: brand.id, name: brand.name } : null}
+        onCancel={() => setArchiving(false)}
+        onDone={() => {
+          setArchiving(false);
+          router.push(marketingRoutes.brandsAll());
+        }}
+      />
+    );
+  }
 
   return (
     <PageHeader fallback>
