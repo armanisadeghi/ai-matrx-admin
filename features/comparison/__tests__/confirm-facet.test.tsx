@@ -80,3 +80,11 @@ describe("Is this them?", () => {
     expect(host.textContent).toContain("Not found for Alpha");
   });
 });
+
+describe("who may answer", () => {
+  it("the run state carries can_confirm; only true offers the buttons", () => {
+    const { parseRunState } = jest.requireActual("../contract") as typeof import("../contract");
+    expect(parseRunState({ run_id: "r", status: "done", can_confirm: true })?.can_confirm).toBe(true);
+    expect(parseRunState({ run_id: "r", status: "done" })?.can_confirm).toBe(false);
+  });
+});
