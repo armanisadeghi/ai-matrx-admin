@@ -3,6 +3,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { readAdminStatus } from "@ai-matrx/auth/admin";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { whenLateIdle } from "@/lib/boot/lateIdle";
 import {
@@ -53,6 +55,29 @@ export function isExpectedMissingAuthSession(error: unknown): boolean {
  * - Sets authReady=true when complete (either path)
  * - Non-blocking, runs after hydration
  */
+/**
+ * The browser's admin read (THE one read, `readAdminStatus`) for a user the server did not seed. Any
+ * failure (an error answer or a throw) reads as not admin; only a throw is logged.
+ */
+export async function readBrowserAdminStatus(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<{ isAdmin: boolean; adminLevel: AdminLevel | null }> {
+  let isAdmin = false;
+  let adminLevel: AdminLevel | null = null;
+  try {
+    const status = await readAdminStatus(supabase, userId);
+    isAdmin = status.state === "admin";
+    adminLevel = status.state === "admin" ? status.level : null;
+  } catch (adminError) {
+    console.warn(
+      "[usePublicAuthSync] admin status could not be read; proceeding as non-admin.",
+      adminError,
+    );
+  }
+  return { isAdmin, adminLevel };
+}
+
 export function usePublicAuthSync() {
   const dispatch = useAppDispatch();
   const store = useAppStore();
@@ -157,24 +182,7 @@ export function usePublicAuthSync() {
           let isAdmin: boolean | undefined;
           let adminLevel: AdminLevel | null | undefined;
           if (!seededSameUser) {
-            isAdmin = false;
-            adminLevel = null;
-            try {
-              const { data: adminData } = await supabase
-                .schema("admin")
-                .from("admins")
-                .select("user_id, level")
-                .eq("user_id", user.id)
-                .maybeSingle();
-              isAdmin = !!adminData;
-              adminLevel =
-                (adminData as { level?: AdminLevel } | null)?.level ?? null;
-            } catch (adminError) {
-              console.warn(
-                "[usePublicAuthSync] admin status could not be read; proceeding as non-admin.",
-                adminError,
-              );
-            }
+            ({ isAdmin, adminLevel } = await readBrowserAdminStatus(supabase, user.id));
           }
 
           // Dispatch to Redux with access token (authReady set automatically)
