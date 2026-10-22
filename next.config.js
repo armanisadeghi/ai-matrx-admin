@@ -538,6 +538,10 @@ const nextConfig = {
       { source: "/apps/:slug/:path*", destination: "/applets/:slug/:path*", permanent: true },
       { source: "/p/:slug", destination: "/applets/:slug", permanent: true },
       { source: "/templates/apps", destination: "/templates/applets", permanent: true },
+      // The retired scope-template catalog (lane TEMPLATES, RETIRE-1) → the one template gallery.
+      // A config redirect, not the page's own redirect(): that one rendered the (core) shell first and
+      // then left it for a (public) page, so a ?frame=new visit threw "Transition was aborted".
+      { source: "/scopes/templates", destination: "/templates", permanent: true },
       // 2026-10-04 (Arman: "use 'data' instead of data-v2"): the record store's
       // pages moved from /data-v2 to /data. Saved links, sent notifications and
       // DB-built hrefs keep working; the query string carries over untouched.

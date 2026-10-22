@@ -4,7 +4,7 @@
 // have been (or will be) replaced by surfaces in (core) but aren't ready to
 // delete yet. They render in the SAME AppShell as (core) and (admin): one
 // sidebar, one header and one account rail a person can always count on
-// (owner, 2026-09-30). The group's only difference from (core) is that every
+// (owner, 2026-09-30) — or the new app frame, for whoever (core) gives it. The group's only difference from (core) is that every
 // route here needs a signed-in person.
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -17,6 +17,8 @@ import {
 } from "@/utils/supabase/userSessionData";
 import type { BaseReduxState } from "@/types/reduxTypes";
 import AppShell from "@/features/shell/components/AppShell";
+import FrameShell from "@/features/shell/frame-host/FrameShell";
+import { readFrameMode } from "@/features/shell/frame-host/frameMode.server";
 import { readSidebarExpandedCookie } from "@/features/shell/utils/server-cookies";
 import {
   captureAuthDestination,
@@ -87,9 +89,15 @@ export default async function TransitionalLayout({
   const { isAdmin, level: adminLevel } = adminStatus;
   const userData = mapUserData(user, session?.access_token, isAdmin, adminLevel);
   const initialReduxState: BaseReduxState = { user: userData };
+  // THE NEW APP FRAME draws these pages too, exactly as (core) picks it (`?frame=new`, the cookie,
+  // the rollout, the kill switch): a person who opted in never drops back to the classic shell on a
+  // route that has not moved to (core) yet. The frame zeroes `--shell-header-h`, so the offset below
+  // is inert there.
+  const Shell =
+    (await readFrameMode({ isAuthenticated: true, isAdmin })) === "frame" ? FrameShell : AppShell;
 
   return (
-    <AppShell
+    <Shell
       initialReduxState={initialReduxState}
       userData={userData}
       isAuthenticated
@@ -107,6 +115,6 @@ export default async function TransitionalLayout({
       >
         {children}
       </div>
-    </AppShell>
+    </Shell>
   );
 }

@@ -59,6 +59,9 @@ const NewsCard = ({ article, index }: { article: Article; index: number }) => {
                         alt={article.title}
                         fill
                         priority={index < 6}
+                        // A publisher's own image URL: the browser loads it directly. Through the image optimizer a
+                        // publisher that refuses or stalls answered 502 /_next/image; direct, it just falls to onError.
+                        unoptimized
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={() => setImageError(true)}
                         onLoad={() => setImageLoading(false)}
