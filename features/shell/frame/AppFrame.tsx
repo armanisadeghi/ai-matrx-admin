@@ -446,7 +446,7 @@ export function AppFrame(props: AppFrameProps) {
   const companionMounted = useLatched(companionShown);
   const canvasMounted = useLatched(canvasOpen);
 
-  const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
+  const grid: AppGridProps = { products, families, favorites, onFavoritesChange, goToEntries: props.goToEntries, onGo: props.onGoTo };
   const sidebarExtras = {
     pins: props.pins,
     onSelectPin: props.onSelectPin,

@@ -22,6 +22,7 @@ import type { FrameProduct, ProductFamily } from "./types";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { rankMenuSearch } from "./searchEngine";
+import type { GoToEntry } from "./goToIndex";
 
 export interface AppGridProps {
   products: readonly FrameProduct[];
@@ -30,7 +31,14 @@ export interface AppGridProps {
   onFavoritesChange: (ids: string[]) => void;
   /** The product the frame is showing — marked in the grid. */
   currentProductId?: string;
+  /** The host's own menu entries, searched with every page (the same index as "Go to"). */
+  goToEntries?: readonly GoToEntry[];
+  /** Same-tab navigation for a page hit (the host's router). Without it the grid assigns the location. */
+  onGo?: (href: string) => void;
 }
+
+/** Page hits listed under the matching tiles. */
+const GRID_PAGE_HITS_MAX = 8;
 
 /** The card holds at most this many favorites. */
 export const GRID_FAVORITES_MAX = 9;
@@ -92,6 +100,8 @@ export function AppGrid({
   favorites,
   onFavoritesChange,
   currentProductId,
+  goToEntries,
+  onGo,
 }: AppGridProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -101,6 +111,9 @@ export function AppGrid({
   const [viewportHeight, setViewportHeight] = useState(900);
   const bodyRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  // THE SAME FULL INDEX AS "GO TO" (every page with a home, the menus), loaded on the first keystroke.
+  const [pageIndex, setPageIndex] = useState<GoToEntry[] | null>(null);
+  const indexRequested = useRef(false);
 
   const favoriteProducts = favorites
     .map((id) => products.find((p) => p.id === id))
@@ -113,6 +126,27 @@ export function AppGrid({
   // Searching: one flat list of matches, best first (editing ignores the search).
   const searching = query.trim().length > 0 && !editing;
   const matches = searching ? matchProducts(products, families, query) : [];
+  const pageHits =
+    searching && pageIndex
+      ? rankMenuSearch(pageIndex, query.trim(), GRID_PAGE_HITS_MAX * 3)
+          .filter((e) => !e.id.startsWith("product:"))
+          .slice(0, GRID_PAGE_HITS_MAX)
+      : [];
+
+  function onQueryChange(next: string) {
+    setQuery(next);
+    if (next.trim() && !indexRequested.current) {
+      indexRequested.current = true;
+      void import("./goToSearchIndex").then((m) => setPageIndex(m.fullGoToIndex(products, families, goToEntries)));
+    }
+  }
+
+  function goToPage(href: string, newTab: boolean) {
+    setOpen(false);
+    if (newTab) openOutbound(href, "_blank", "noopener,noreferrer");
+    else if (onGo) onGo(href);
+    else window.location.assign(href);
+  }
   const layout = gridLayout(viewportHeight, favoriteProducts.length, rest.length);
   const cols = layout.columns === 6 ? "grid-cols-6" : "grid-cols-5";
 
@@ -135,10 +169,13 @@ export function AppGrid({
   function onSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       const first = matches[0];
-      if (!first) return;
+      const page = pageHits[0];
+      if (!first && !page) return;
       e.preventDefault();
-      openOutbound(first.homeHref, "_blank", "noopener,noreferrer");
-      setOpen(false);
+      if (first) {
+        openOutbound(first.homeHref, "_blank", "noopener,noreferrer");
+        setOpen(false);
+      } else goToPage(page.href, e.metaKey || e.ctrlKey);
     } else if (e.key === "ArrowDown") {
       const first = bodyRef.current?.querySelector<HTMLElement>(TILE_SELECTOR);
       if (first) {
@@ -280,7 +317,7 @@ export function AppGrid({
           <SearchField
             ref={searchRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => onQueryChange(e.target.value)}
             onKeyDown={onSearchKeyDown}
             placeholder="Search products"
             aria-label="Search products"
@@ -294,13 +331,39 @@ export function AppGrid({
           className="mf-grid-scroll overflow-y-auto overscroll-contain p-2"
         >
           {searching ? (
-            matches.length > 0 ? (
-              <section aria-label="Matching products" className={cn("grid", cols)}>
-                {matches.map((p) => renderTile(p, "hit"))}
-              </section>
+            matches.length > 0 || pageHits.length > 0 ? (
+              <>
+                {matches.length > 0 ? (
+                  <section aria-label="Matching products" className={cn("grid", cols)}>
+                    {matches.map((p) => renderTile(p, "hit"))}
+                  </section>
+                ) : null}
+                {pageHits.length > 0 ? (
+                  <section aria-label="Matching pages" className="flex flex-col pt-1">
+                    {pageHits.map((hit) => (
+                      <a
+                        key={hit.id}
+                        href={hit.href}
+                        data-clickable
+                        data-mf-page-hit=""
+                        className="flex min-w-0 items-baseline gap-2 rounded-md px-2 py-1.5 outline-none hover:bg-accent focus-visible:bg-accent"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          goToPage(hit.href, e.metaKey || e.ctrlKey);
+                        }}
+                      >
+                        <span className="shrink-0 truncate text-sm text-foreground">{hit.label}</span>
+                        {hit.trail.length > 0 ? (
+                          <span className="min-w-0 truncate type-secondary text-muted-foreground">{hit.trail.join(" › ")}</span>
+                        ) : null}
+                      </a>
+                    ))}
+                  </section>
+                ) : null}
+              </>
             ) : (
               <p role="status" className="type-secondary px-2 py-6 text-center text-muted-foreground">
-                No product matches
+                {pageIndex ? "Nothing matches" : "Searching…"}
               </p>
             )
           ) : (

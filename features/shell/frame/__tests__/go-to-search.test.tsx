@@ -21,6 +21,9 @@ import { FRAME_ROUTE_HOMES } from "../route-homes.generated";
 import { GO_TO_PAGES } from "../go-to-pages.generated";
 import { PRODUCTS, PRODUCT_FAMILIES } from "../products";
 import { rankMenuSearch } from "../searchEngine";
+import { fullGoToIndex } from "../goToSearchIndex";
+import { buildMenuSearchIndex } from "../../utils/menu-search";
+import { navItemsForViewer, primaryNavItems, settingsItem } from "../../constants/nav-data";
 import { menuGoToEntries } from "../../frame-host/goToMenuEntries";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -86,8 +89,9 @@ describe("the go-to palette is lazy", () => {
     const dir = join(__dirname, "..");
     for (const file of readdirSync(dir).filter((f) => /\.tsx?$/.test(f))) {
       const src = readFileSync(join(dir, file), "utf8");
-      const staticImport = /^import (?!type)[^;]*from "\.\/(goToIndex|GoToPalette|go-to-pages\.generated)"/m.test(src);
-      if (file === "GoToPalette.tsx") expect(staticImport).toBe(true); // palette -> index
+      const staticImport = /^import (?!type)[^;]*from "\.\/(goToIndex|GoToPalette|go-to-pages\.generated|goToSearchIndex)"/m.test(src);
+      // palette -> the one full index -> index + pages; nothing else imports them statically.
+      if (file === "GoToPalette.tsx" || file === "goToSearchIndex.ts") expect(staticImport).toBe(true);
       else expect({ file, staticImport }).toEqual({ file, staticImport: false });
     }
     const edge = readFileSync(join(dir, "GoToSearch.tsx"), "utf8");
@@ -150,6 +154,26 @@ describe("the go-to icon and hotkey", () => {
     key({ key: "K", metaKey: true, shiftKey: true });
     await settle();
     expect(palette()).not.toBeNull();
+  });
+});
+
+describe("every frame search is the same full index (owner, 2026-10-22)", () => {
+  it("\"Research\" finds the research pages in the full index", () => {
+    const full = fullGoToIndex(PRODUCTS, PRODUCT_FAMILIES, menuGoToEntries({ isAuthenticated: true, isAdmin: false }));
+    const hits = rankMenuSearch(full, "research").filter((e) => !e.id.startsWith("product:"));
+    expect(hits.length).toBeGreaterThan(3);
+    expect(hits.some((e) => e.href.startsWith("/research"))).toBe(true);
+  });
+
+  it("the app grid's search loads that index (no second index) and lists page hits", () => {
+    const src = readFileSync(join(__dirname, "..", "AppGrid.tsx"), "utf8");
+    expect(src).toMatch(/import\("\.\/goToSearchIndex"\)/);
+    expect(src).toMatch(/aria-label="Matching pages"/);
+  });
+
+  it("the classic menu search finds Research too", () => {
+    const classic = buildMenuSearchIndex([...navItemsForViewer(primaryNavItems, true), settingsItem]);
+    expect(rankMenuSearch(classic, "research").some((e) => e.label.toLowerCase().includes("research"))).toBe(true);
   });
 });
 
