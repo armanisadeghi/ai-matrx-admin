@@ -22,15 +22,19 @@ export function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "
   if (mode === "frame" && frame) {
     // A frame that never spoke shows its placeholder height — that is not a render.
     const heard = frame.getAttribute("data-matrx-kind-sandbox-heard") === "true";
-    return { height: heard ? frame.getBoundingClientRect().height : 0, standIns: null, images: null };
+    // Still starting by the frame's own clock (document loading, or loaded and not yet answered):
+    // not a render, and not a failure yet either — the frame says "silent" when it gives up.
+    const state = frame.getAttribute("data-matrx-kind-sandbox-state");
+    const starting = !heard && (state === "starting" || state === "loaded");
+    return { height: heard ? frame.getBoundingClientRect().height : 0, standIns: null, images: null, starting };
   }
   const shell = host.firstElementChild as HTMLElement | null;
   // The kind's loading placeholder (body or libraries still arriving) is not a render.
   const loading = host.querySelector("[data-kind-loading]") !== null;
   const height = shell && !loading ? shell.getBoundingClientRect().height - 8 : 0;
   const hostRect = host.getBoundingClientRect();
-  const images = { total: 0, broken: 0, cropped: 0 };
-  host.querySelectorAll("img").forEach((img) => {
+  const images = { total: 0, broken: 0, cropped: 0, upscaled: 0 };
+  host.querySelectorAll<HTMLImageElement | HTMLVideoElement>("img, video").forEach((img) => {
     const box = img.getBoundingClientRect();
     let left = box.left;
     let top = box.top;
@@ -47,8 +51,17 @@ export function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "
       }
     }
     right = Math.min(right, hostRect.right);
+    const media =
+      img instanceof HTMLVideoElement
+        ? { naturalWidth: img.videoWidth, naturalHeight: img.videoHeight, complete: img.readyState >= 1 }
+        : {
+            naturalWidth: img.naturalWidth,
+            naturalHeight: img.naturalHeight,
+            complete: img.complete,
+            vector: /^data:image\/svg|\.svg(?:[?#]|$)/i.test(img.currentSrc || img.src),
+          };
     const verdict = imageProbe(
-      img,
+      media,
       { width: box.width, height: box.height },
       getComputedStyle(img).objectFit,
       { width: Math.max(0, right - left), height: Math.max(0, bottom - top) },
@@ -57,6 +70,7 @@ export function probeBox(host: HTMLElement, mode: RenderMode): Omit<DemoProbe, "
     images.total += 1;
     if (verdict === "broken") images.broken += 1;
     if (verdict === "cropped") images.cropped += 1;
+    if (verdict === "upscaled") images.upscaled += 1;
   });
   return { height, standIns: host.querySelectorAll("[data-unresolved-import]").length, images };
 }

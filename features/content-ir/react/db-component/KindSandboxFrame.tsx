@@ -776,6 +776,12 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                     // Whether the frame has spoken — a test reads this instead
                     // of guessing from the placeholder height.
                     data-matrx-kind-sandbox-heard={heard ? "true" : "false"}
+                    // Where the frame is in its start-up, by THIS component's own clock: "starting"
+                    // (document not loaded), "loaded" (not yet answered), "heard", or "silent" (the
+                    // SILENT_FRAME_MS / NEVER_LOADED_MS verdict above fired). A health check fails a
+                    // frame only on "silent" — a cold /kind-sandbox compile can take longer than any
+                    // fixed grace counted from mount (the playground's 11/12 0px first run).
+                    data-matrx-kind-sandbox-state={heard ? "heard" : silent ? "silent" : loaded ? "loaded" : "starting"}
                     className="border-0"
                     style={{
                         height: decision.height,
