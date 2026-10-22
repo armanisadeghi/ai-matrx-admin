@@ -11,7 +11,7 @@
 type Doc = { id: string; organization_id: string; format: string; title: string; created_at: string; deleted_at: string | null; metadata: Record<string, unknown> };
 type Install = { install_id: string; state: string; title: string; version: number; started_at: string; finished_at: string | null; tables: unknown[]; root_page_id: string | null; pages: Array<{ id: string; title: string }> };
 
-const db: { docs: Doc[]; installs: Install[] } = { docs: [], installs: [] };
+const db: { docs: Doc[]; installs: Install[]; asked: number } = { docs: [], installs: [], asked: 0 };
 
 function query(rows: () => Doc[]) {
   const filters: Array<(d: Doc) => boolean> = [];
@@ -40,6 +40,7 @@ jest.mock("@/utils/supabase/client", () => ({
       rpc: async (fn: string, args: Record<string, unknown>) => {
         if (fn === "template_instances") return { data: db.installs.map((i) => ({ ...i, newer_version: null, upgrade: null, instance_no: 2, mode: "fresh", template_id: "tpl" })), error: null };
         if (fn === "template_instance_of_page") {
+          db.asked++;
           const i = db.installs.find((x) => x.pages.some((pg) => pg.id === args.p_page_id));
           return { data: i ? { id: i.install_id, catalogue_id: "SP0203", status: i.state, root_page_id: i.root_page_id, template_version: i.version } : null, error: null };
         }
@@ -57,7 +58,7 @@ import { TEMPLATE_BUSY_MESSAGE } from "@ai-matrx/records/templates";
 
 import type { SpaceDoc, SpacesStore } from "../../contract";
 import { installedCopies, refusalSentence, runUseTemplate, type PackRun, type SpaceTemplateFull } from "../use-pack";
-import { removeCopyQuestion, restorePageOrCopy, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
+import { forgetTemplateCopyOfPage, removeCopyQuestion, templateCopyOfPageCached, restorePageOrCopy, templateCopyOfPage, templateDoorSentence, trashPageOrCopy, type CopyLifecyclePorts, type TemplateCopy } from "../template-copy";
 
 const ORG = "org-1";
 const at = "2026-10-20T06:00:00.000Z";
@@ -77,6 +78,8 @@ const recorded = (i: Install, rootId: string, title = "Personal Goal Tracker"): 
 beforeEach(() => {
   db.docs = [];
   db.installs = [];
+  db.asked = 0;
+  forgetTemplateCopyOfPage();
   jest.spyOn(console, "warn").mockImplementation(() => undefined);
 });
 
@@ -265,5 +268,31 @@ describe("F5: the progress counter counts pages and never freezes beside the tab
     // The table step's late progress is shown on its own, never beside a frozen "Pages x/y".
     const late = stages.find((st) => st.includes("Making tables 39/40"));
     expect(late).toBe("Making tables 39/40…");
+  });
+});
+
+describe("ADVERSARIAL-7 F7: the copy is looked up when the page opens, once per page", () => {
+  it("every later ask for the same page re-uses the first answer (one read), and a forgotten page is read again", async () => {
+    db.installs = [recorded(install("inst-a", "installed"), "root-a")];
+    db.docs = [root("root-a", "inst-a", "Personal Goal Tracker", false)];
+    const [a, b] = await Promise.all([templateCopyOfPageCached("root-a"), templateCopyOfPageCached("root-a")]);
+    expect(a).toEqual(expect.objectContaining({ installId: "inst-a", tables: 3 }));
+    expect(b).toBe(a);
+    await templateCopyOfPageCached("root-a");
+    expect(db.asked).toBe(1);
+    forgetTemplateCopyOfPage("root-a");
+    await templateCopyOfPageCached("root-a");
+    expect(db.asked).toBe(2);
+  });
+
+  it("a read that failed is not kept: the next ask tries again", async () => {
+    db.docs = [];
+    await expect(templateCopyOfPageCached("nope")).resolves.toBeNull(); // no such page: an answer, kept
+    expect(await templateCopyOfPageCached("nope")).toBeNull();
+    expect(db.asked).toBe(0);
+  });
+
+  it("Move to Trash on the root still names the tables (the cached read changes nothing in the question)", () => {
+    expect(removeCopyQuestion({ title: "Personal Goal Tracker", tables: 3 }, false).description).toBe("Also removes its 3 tables. You can restore it from Trash.");
   });
 });

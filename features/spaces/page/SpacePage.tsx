@@ -48,7 +48,7 @@ import { Cover, CoverPicker } from "./Cover";
 import { IconPicker } from "./IconPicker";
 import { AddPropertyMenu, PageProperties } from "./PageProperties";
 import { PageMenu } from "./PageMenu";
-import { copyIsLive, templateCopyOfPage } from "../templates/template-copy";
+import { copyIsLive, templateCopyOfPageCached } from "../templates/template-copy";
 import { SpaceIcon, isImageMedia } from "./SpaceIcon";
 import { TocRail } from "./TocRail";
 import { CommentMargin } from "../collab/CommentMargin";
@@ -447,7 +447,17 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
   // ADVERSARIAL-6 F1: whether this page is the root of a live template copy (null = not asked yet; asked when the ••• menu opens).
   const [copyRootOf, setCopyRootOf] = useState<{ id: string; live: boolean } | null>(null);
   const isCopyRoot = copyRootOf?.id === spaceId ? copyRootOf.live : null;
-  const setIsCopyRoot = (live: boolean) => setCopyRootOf({ id: spaceId, live });
+  // ADVERSARIAL-7 F7: asked when the page OPENS (kept per page), so the menu knows by the time it is opened.
+  useEffect(() => {
+    let current = true;
+    void templateCopyOfPageCached(spaceId).then(
+      (copy) => current && setCopyRootOf({ id: spaceId, live: !!copy && copyIsLive(copy.state) }),
+      (e: unknown) => console.warn("[spaces] could not read whether this page is a template copy", e),
+    );
+    return () => {
+      current = false;
+    };
+  }, [spaceId]);
   /** Move to Trash (Notion stays on the page and shows the Trash banner); a copy's root removes the copy (SpacesProvider). */
   const trashPage = (options?: { removeCopy?: boolean }) => {
     void (async () => {
@@ -964,6 +974,7 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
           }
           onDelete={() => trashPage()}
           onRemoveCopy={isCopyRoot ? () => trashPage({ removeCopy: true }) : undefined}
+          removeCopyPending={isCopyRoot === null}
           onUndo={() => editorRef.current?.undo()}
           onHistory={() => setHistoryOpen(true)}
           onExport={() => setExportOpen(true)}
@@ -972,12 +983,6 @@ function SpacePageScreen({ spaceId, initialDoc, servedAt }: { spaceId: string; i
           isTemplate={spaces.templates.ids ? spaces.templates.ids.includes(doc.id) : null}
           onOpen={() => {
             if (spaces.templates.ids === null) spaces.templates.refresh();
-            // ADVERSARIAL-6 F1: a template copy's root offers "Remove template copy" (read when the menu opens, never on load).
-            if (isCopyRoot === null)
-              void templateCopyOfPage(doc.id).then(
-                (copy) => setIsCopyRoot(!!copy && copyIsLive(copy.state)),
-                (e: unknown) => console.warn("[spaces] could not read whether this page is a template copy", e),
-              );
           }}
           onTemplate={(on) =>
             void spaces.templates

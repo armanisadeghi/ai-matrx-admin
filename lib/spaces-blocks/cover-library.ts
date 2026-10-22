@@ -73,6 +73,20 @@ export const BUNDLED_COVER_KEYS = [
 
 const BUNDLED = new Set<string>(BUNDLED_COVER_KEYS);
 
+/**
+ * A cover value with the library photo's durable addresses written beside its key. A published template's cover must
+ * never depend on an app release: the key is used when the app's bundled library knows it, else `src` / `thumb`.
+ * Bundled keys (gradients, solid colors, the six shipped photos) are left alone; a key that names nothing THROWS.
+ */
+export function withDurableCover<C extends { url: string } | object>(cover: C): C {
+  const url = (cover as { url?: unknown }).url;
+  if (typeof url !== "string" || !url.startsWith(GALLERY_COVER_PREFIX)) return cover;
+  const lib = BY_KEY.get(url.slice(GALLERY_COVER_PREFIX.length));
+  if (lib) return { ...cover, src: lib.src, thumb: lib.thumb };
+  if (BUNDLED.has(url.slice(GALLERY_COVER_PREFIX.length))) return cover;
+  throw new Error(`"${url}" is not a cover we can resolve: use a bundled one or a key from the cover library (lib/spaces-blocks/cover-library.json).`);
+}
+
 /** Whether `gallery:<key>` names a cover we have (bundled or library). */
 export function isKnownGalleryCover(url: string): boolean {
   if (!url.startsWith(GALLERY_COVER_PREFIX)) return false;

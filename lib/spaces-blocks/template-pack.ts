@@ -22,6 +22,7 @@
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 
+import { withDurableCover } from "./cover-library";
 import { packBodyWords, packFindWords, packLayouts } from "./template-search";
 import type { PageProperty, RichSpan, SpaceBlock, SpaceColor, SpaceMedia, SpacePageSettings } from "./types";
 
@@ -547,8 +548,21 @@ export function packPagesInOrder(pages: PackPage[]): PackPage[] {
   return out;
 }
 
+/**
+ * The pack with every `gallery:<key>` cover (the template's and each page's) carrying the photo's durable src / thumb, so
+ * a published template's cover never depends on the app release that ships the key. Throws on a key it cannot resolve.
+ */
+export function withDurableCovers(pack: SpaceTemplatePack): SpaceTemplatePack {
+  return {
+    ...pack,
+    ...(pack.cover ? { cover: withDurableCover(pack.cover) } : {}),
+    pages: pack.pages.map((p) => (p.cover ? { ...p, cover: withDurableCover(p.cover) } : p)),
+  };
+}
+
 /** What `custom.template_declare` is sent for a pack: the records declaration plus the pack and the card face. */
-export function packDeclaration<D extends { card: object }>(pack: SpaceTemplatePack, declaration: D): D & { spacePack: Omit<SpaceTemplatePack, "spec"> } {
+export function packDeclaration<D extends { card: object }>(source: SpaceTemplatePack, declaration: D): D & { spacePack: Omit<SpaceTemplatePack, "spec"> } {
+  const pack = withDurableCovers(source);
   const { spec: _spec, ...rest } = pack;
   return { ...declaration, card: { ...declaration.card, name: pack.title, space: packCardFace(pack) }, spacePack: rest };
 }

@@ -46,14 +46,16 @@ export const ICON_PICTURES: Array<{ key: string; label: string; src: string }> =
 
 const BY_KEY = new Map([...COVER_PHOTOS, ...ICON_PICTURES].map((p) => [p.key, p.src]));
 
-/** The picture a `gallery:<key>` value names — a bundled photo, or a cover-library photo (our CDN) — or null
+/** The picture a `gallery:<key>` value names — a bundled photo, a cover-library photo (our CDN), or the published src/thumb of a newer one — or null
  *  (a gradient key, or not a gallery value). `small` asks for the library's 480px copy (pickers, cards). */
-export function galleryImage(url: string, small = false): string | null {
+export function galleryImage(url: string, small = false, published?: { src?: string; thumb?: string } | null): string | null {
   if (!url.startsWith(GALLERY_PREFIX)) return null;
   const bundled = BY_KEY.get(url.slice(GALLERY_PREFIX.length));
   if (bundled) return bundled;
   const lib = libraryCover(url);
-  return lib ? (small ? lib.thumb : lib.src) : null;
+  if (lib) return small ? lib.thumb : lib.src;
+  // The key is newer than this app's bundled library: the address published beside it (template-pack withDurableCovers).
+  return (small ? (published?.thumb ?? published?.src) : published?.src) ?? null;
 }
 
 /** The cover library grouped by category, in the order the categories first appear in the manifest. */

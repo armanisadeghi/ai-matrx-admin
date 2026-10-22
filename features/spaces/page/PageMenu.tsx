@@ -6,7 +6,7 @@
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
-import { ArrowLeft, ChevronRight, Copy, CornerUpRight, FileDown, FileUp, Plug, History, LayoutTemplate, Link, Lock, MoreHorizontal, MoveHorizontal, PackageX, PenLine, Trash2, Type, Undo2 } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronRight, Copy, CornerUpRight, FileDown, FileUp, Plug, History, LayoutTemplate, Link, Lock, MoreHorizontal, MoveHorizontal, PackageX, PenLine, Trash2, Type, Undo2 } from "lucide-react";
 import { setSuggesting, useSuggesting } from "../editor/suggest";
 import { useState, type ReactNode } from "react";
 
@@ -19,7 +19,7 @@ import { PageConnections } from "./PageConnections";
 
 type Settings = SpaceDoc["settings"];
 
-function Row({ icon, label, onClick, end, danger }: { icon: ReactNode; label: string; onClick?: () => void; end?: ReactNode; danger?: boolean }) {
+function Row({ icon, label, onClick, end, danger, loading }: { icon: ReactNode; label: string; onClick?: () => void; end?: ReactNode; danger?: boolean; loading?: boolean }) {
   return (
     // A div, not a button: a toggle row carries a Switch (itself a button) at its end.
     <div
@@ -28,6 +28,8 @@ function Row({ icon, label, onClick, end, danger }: { icon: ReactNode; label: st
       data-clickable=""
       className="spaces-menu-row"
       data-danger={danger ? "true" : undefined}
+      aria-disabled={loading ? "true" : undefined}
+      aria-busy={loading ? "true" : undefined}
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -57,6 +59,7 @@ export function PageMenu({
   onMove,
   onDelete,
   onRemoveCopy,
+  removeCopyPending,
   onUndo,
   onHistory,
   onExport,
@@ -78,6 +81,8 @@ export function PageMenu({
   onDelete: () => void;
   /** ADVERSARIAL-6 F1: the page is the root of a live template copy — "Remove template copy" (absent: not one, or not known yet). */
   onRemoveCopy?: () => void;
+  /** The copy lookup (started when the page opened) has not answered: the row shows, loading, instead of arriving late. */
+  removeCopyPending?: boolean;
   onUndo: () => void;
   onHistory: () => void;
   /** K1 — opens the Export dialog. */
@@ -160,7 +165,11 @@ export function PageMenu({
         <Row icon={<Copy size={16} />} label="Duplicate" onClick={act(onDuplicate)} />
         {contentOnly ? null : <Row icon={<CornerUpRight size={16} />} label="Move to" onClick={act(onMove)} />}
         {contentOnly ? null : <Row icon={<Trash2 size={16} />} label="Move to Trash" onClick={act(onDelete)} danger />}
-        {contentOnly || !onRemoveCopy ? null : <Row icon={<PackageX size={16} />} label="Remove template copy" onClick={act(onRemoveCopy)} danger />}
+        {contentOnly ? null : removeCopyPending ? (
+          <Row icon={<PackageX size={16} />} label="Remove template copy" end={<Loader2 size={14} className="animate-spin" aria-label="Checking" />} loading />
+        ) : onRemoveCopy ? (
+          <Row icon={<PackageX size={16} />} label="Remove template copy" onClick={act(onRemoveCopy)} danger />
+        ) : null}
         <div className="my-1 border-t border-border" />
         <Row icon={<Undo2 size={16} />} label="Undo" onClick={act(onUndo)} />
         <Row icon={<History size={16} />} label="Page history" onClick={act(onHistory)} />
