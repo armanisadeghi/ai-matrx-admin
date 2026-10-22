@@ -1,3 +1,4 @@
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 /**
  * "Try advanced reader" — the wire shapes of aidream `POST /scraper/advanced-read/quote` and
  * `POST /scraper/advanced-read` (server: `services/data_fetch/advanced_read.py`). Parsed defensively:
@@ -185,8 +186,7 @@ export function slowCoverage(items: readonly QuoteItem[]): Coverage | null {
 /** "about 3 min" / "about 20 s" for a typical duration. */
 export function aboutTime(seconds: number | null): string | null {
   if (seconds == null || seconds <= 0) return null;
-  if (seconds < 90) return `about ${Math.round(seconds)} s`;
-  return `about ${Math.round(seconds / 60)} min`;
+  return `about ${formatDurationSeconds(seconds, { style: "long", abbreviate: true, round: "nearest" })}`;
 }
 
 /** "Up to 12 points": the quote's most-it-can-cost, or null when the server could not price it. */

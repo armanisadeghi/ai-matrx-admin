@@ -6,6 +6,7 @@
  * hands the SAME session to the full review. What counts as certain: foundCards.ts.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Globe, Layers, MapPin, Store, Swords, Wrench } from "lucide-react";
@@ -24,7 +25,6 @@ import styles from "./found.module.css";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export const href = (url: string) => withReferral(/^https?:\/\//i.test(url) ? url : `https://${url}`);
-export const compact = new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 });
 const RISE = { duration: 0.45, ease: [0.4, 0, 0.2, 1] as const };
 
 /**
@@ -190,7 +190,7 @@ export function FoundStage({
                       art={<AccountPicture account={lead} size="size-14" />}
                       label={platformLabel(lead.platform)}
                       value={<span className="text-[1.45rem] sm:text-[1.6rem]"><FitText text={handleOf(lead)} /></span>}
-                      sub={lead.followers != null ? `${compact.format(lead.followers)} followers` : undefined}
+                      sub={lead.followers != null ? `${formatCount(lead.followers, { style: "compact" })} followers` : undefined}
                     />
                   </OutboundLink>
                 ) : null}

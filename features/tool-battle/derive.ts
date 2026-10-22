@@ -6,6 +6,7 @@
  * never re-derives a rate. What lives here is only how a number reads and which lane placed where.
  */
 
+import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
 import { blindAnonLabel } from "@/features/agent-comparison/shared/blind";
 import type { BattleView, CellView, Lane, LaneRollup } from "./types";
 
@@ -48,10 +49,7 @@ export function marks(places: Record<string, number | null>): Record<string, Mar
 }
 
 export function formatMs(ms: number | null | undefined): string {
-  if (ms === null || ms === undefined || !Number.isFinite(ms)) return "—";
-  if (ms < 1000) return `${Math.round(ms)} ms`;
-  const s = ms / 1000;
-  return s < 10 ? `${s.toFixed(1)} s` : `${Math.round(s)} s`;
+  return formatDurationMs(ms, { style: "compact" });
 }
 
 export function formatPercent(rate: number | null | undefined): string {
@@ -96,7 +94,7 @@ export function lanePlaces(rollups: Record<string, LaneRollup>): LaneMetricPlace
   return {
     success: placeLanes(pick((r) => r.success_rate), "higher", (v) => formatPercent(v)),
     speed: placeLanes(pick((r) => r.p50_ms), "lower", (v) => formatMs(v)),
-    cost: placeLanes(pick((r) => r.cost_per_success_usd), "lower", (v) => v.toFixed(6)),
+    cost: placeLanes(pick((r) => r.cost_per_success_usd), "lower", (v) => formatUsd(v, { digits: "adaptive" })),
     fields: placeLanes(pick((r) => r.mean_filled_fields), "higher", (v) => v.toFixed(1)),
   };
 }

@@ -50,7 +50,7 @@ import {
 import type { MatrxDataTableMobileCardControls } from "@ai-matrx/design-system/data-table/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import AppLink from "@/components/navigation/AppLink";
-import { formatCount, formatRelativeTime } from "@ai-matrx/kit/format";
+import { formatCount, formatRelativeTime, formatAbsoluteDate } from "@ai-matrx/kit/format";
 import { Badge as KindBadge, PropertyRow } from "@ai-matrx/design-system/controls";
 import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { Badge } from "@/components/ui/badge";
@@ -710,7 +710,7 @@ export function ApprovalRowDetail({
 }) {
   const proposedAt = item.proposedAt ? new Date(item.proposedAt) : null;
   const proposedLabel =
-    proposedAt && !Number.isNaN(proposedAt.getTime()) ? proposedAt.toLocaleString() : null;
+    proposedAt && !Number.isNaN(proposedAt.getTime()) ? formatAbsoluteDate(proposedAt) : null;
   return (
     <div className="min-w-0 space-y-3 p-3">
       <div className="flex min-w-0 items-start gap-2">

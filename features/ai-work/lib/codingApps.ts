@@ -9,6 +9,7 @@
  * `app/renderer/src/apps/InstancesAccounts.tsx` and `chats/accountsModel.ts`), copied word for word
  * until both apps read them from one shared package. Change one, change the other. Pure.
  */
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import type { AppAccount, AppInstance, ChatRow, InstanceStatus } from "@ai-matrx/desktop-protocol";
 
 /** Every app the page shows, in Matrx 2's sidebar order. */
@@ -148,9 +149,5 @@ export function awayCount(data: AppChats | undefined, instance: string): number 
 /** "Updated just now", "Updated 4 min ago": when the oldest list shown was read. */
 export function updatedWords(asOfMs: number | null, now = Date.now()): string {
   if (asOfMs === null) return "Reading…";
-  const min = Math.floor((now - asOfMs) / 60_000);
-  if (min < 1) return "Updated just now";
-  if (min < 60) return `Updated ${min} min ago`;
-  const h = Math.floor(min / 60);
-  return h < 48 ? `Updated ${h} h ago` : `Updated ${Math.floor(h / 24)} d ago`;
+  return `Updated ${formatRelativeTime(asOfMs, { style: "short", minUnit: "minute", now })}`;
 }

@@ -84,8 +84,8 @@ function Totals() {
       />
       <KpiTile
         label="Social accounts"
-        value={social.data?.accounts.toLocaleString() ?? null}
-        hint={social.data ? `${social.data.tracked.toLocaleString()} tracked` : undefined}
+        value={social.data ? formatCount(social.data.accounts) : null}
+        hint={social.data ? `${formatCount(social.data.tracked)} tracked` : undefined}
         read={readOf(social)}
         title="Social accounts on your brands; tracked ones are refreshed on a schedule."
       />

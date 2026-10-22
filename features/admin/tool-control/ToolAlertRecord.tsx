@@ -11,7 +11,7 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { decideToolProposal, fetchToolHealth } from "@/features/admin/attention/tool-health-service";
-import { toolHealthItems, proposalDecisionPlan, TOOL_HEALTH_SOURCE_ID, type ToolHealthRow } from "@/features/admin/attention/sources/tool-health";
+import { toolHealthItems, proposalDecisionPlan, proposalUsd, TOOL_HEALTH_SOURCE_ID, type ToolHealthRow } from "@/features/admin/attention/sources/tool-health";
 import { extractErrorMessage } from "@/utils/errors";
 import { formatRelativeTime } from "@/utils/datetime";
 import { TOOL_CONTROL_PATH, TOOL_CONTROL_QUERY_KEY } from "./paths";
@@ -38,8 +38,8 @@ function Findings({ row }: { row: ToolHealthRow }) {
     return (
       <>
         <Field label="Price book entry" value={text(proposal.price_ref)} />
-        <Field label="Price book says" value={`$${text(proposal.current)}`} />
-        <Field label="Vendor publishes" value={`$${text(proposal.value)}`} />
+        <Field label="Price book says" value={proposalUsd(proposal.current)} />
+        <Field label="Vendor publishes" value={proposalUsd(proposal.value)} />
         <Field label="Evidence" value={text(proposal.evidence)} />
         <Field label="Basis" value={text(proposal.basis)} />
       </>

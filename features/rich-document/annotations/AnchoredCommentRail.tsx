@@ -10,6 +10,7 @@
 // The rail is a fixed-width column whose open state is known at the first render (kept per person; open by
 // default on wide screens), so threads loading or arriving never move the page; only the person's own toggle does.
 
+import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { Avatar, AvatarFallback, AvatarImage, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, EmptyState, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { Check, MessageSquare, MoreHorizontal, RotateCcw, Trash2, X } from "lucide-react";
@@ -62,11 +63,7 @@ function initials(name: string): string {
 const fail = (e: unknown, fallback: string) => toast.error(e instanceof Error ? e.message : fallback);
 
 function ago(iso: string): string {
-  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return "now";
-  if (s < 3600) return `${Math.floor(s / 60)}m`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h`;
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatRelativeTime(iso, { style: "short", suffix: false, minUnit: "minute", absoluteAfter: 86_400_000, absolute: "monthDay" });
 }
 
 function CommentLine({ c, thread, source, comments }: { c: AnchoredComment; thread?: AnchoredThread; source: AnnotationSource; comments: AnchoredComments }) {

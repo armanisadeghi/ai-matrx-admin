@@ -12,10 +12,17 @@
  * It is one item per source: never a modal, never repeated while the source stays off.
  */
 
+import { formatUsd } from "@ai-matrx/kit/format";
 import type { AttentionItem } from "../types";
 
 export const TOOL_HEALTH_SOURCE_ID = "tool-health";
 export const TOOL_HEALTH_SOURCE_LABEL = "Tools";
+
+/** A price-drift proposal fact as dollars ("$0.002"); anything that is not a number is shown as it came. */
+export function proposalUsd(v: unknown): string {
+  const n = typeof v === "number" ? v : typeof v === "string" && v.trim() !== "" ? Number(v) : Number.NaN;
+  return Number.isFinite(n) ? formatUsd(n, { digits: "adaptive" }) : String(v ?? "?");
+}
 export const TOOL_CONTROL_HREF = "/administration/agents/tool-control";
 /** One alert's own record page, by the alarm row id (the `tool-health:<id>` key's id). */
 export const TOOL_ALERT_RECORD_PATH = `${TOOL_CONTROL_HREF}/alerts`;
@@ -127,7 +134,7 @@ export function proposalDecisionPlan(row: Pick<ToolHealthRow, "kind" | "facts">)
     return {
       canApprove: true,
       approveLabel: "Approve new price",
-      approveConsequence: `Changes the price book entry ${String(proposal.price_ref ?? "")} from $${String(proposal.current ?? "?")} to $${String(proposal.value ?? "?")} per unit. Every cost estimate and spend check that reads it uses the new price from now on.`,
+      approveConsequence: `Changes the price book entry ${String(proposal.price_ref ?? "")} from ${proposalUsd(proposal.current)} to ${proposalUsd(proposal.value)} per unit. Every cost estimate and spend check that reads it uses the new price from now on.`,
       declineLabel: "Decline",
       declineConsequence: "Keeps the current price. This alert closes; the price check raises it again if the vendor price still differs.",
     };

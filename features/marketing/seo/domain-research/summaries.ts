@@ -1,3 +1,4 @@
+import { formatCount } from "@ai-matrx/kit/format";
 // features/marketing/seo/domain-research/summaries.ts — the few numbers a panel shows at a glance, read
 // from a finished answer's own fields (pure). The whole answer stays one press away in its kind.
 
@@ -44,10 +45,7 @@ export function searchTiles(output: unknown): StatTile[] {
 export function formatTile(tile: StatTile): string {
   const n = tile.value;
   if (tile.unit === "percent") return `${Math.round(n)}%`;
-  const compact =
-    n >= 1e9 ? `${(n / 1e9).toFixed(1).replace(/\.0$/, "")}B`
-    : n >= 1e6 ? `${(n / 1e6).toFixed(1).replace(/\.0$/, "")}M`
-    : n >= 1e4 ? `${Math.round(n / 1e3)}K`
-    : Math.round(n).toLocaleString("en-US");
+  // Under 10,000 the exact grouped figure ("4,101"); from 10,000 the compact voice ("22K", "1.3M").
+  const compact = formatCount(n >= 1e4 ? n : Math.round(n), n >= 1e4 ? { style: "compact" } : { locale: "en-US" });
   return tile.unit === "usd" ? `$${compact}` : compact;
 }

@@ -131,7 +131,7 @@ describe("the numbers a panel shows at a glance", () => {
 
   it("writes money as dollars and big counts compactly", () => {
     const tiles = searchTiles({ organic_clicks: 22140, organic_value: 83020, ad_budget: 1_250_000, organic_keywords: 26660 });
-    expect(tiles.map((t) => formatTile(t))).toEqual(["22K", "$83K", "$1.3M", "27K"]);
+    expect(tiles.map((t) => formatTile(t))).toEqual(["22k", "$83k", "$1.3M", "27k"]);
   });
 });
 
