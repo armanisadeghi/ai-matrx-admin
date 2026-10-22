@@ -163,7 +163,10 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 ## Change log
 
 - `2026-10-22` — claude (lane Y, audit round 2): catalog version 3 (Memory menu + marketing rows); the nav-id guard
-  prints the rows to add and runs in CI (`hr-guards`) and the release gates.
+  prints the rows to add and runs in CI (`hr-guards`) and the release gates; What's new offers a new menu as its
+  top rows (entries under an offered entry ride in with it); the editor opens one window per layout edited
+  (`person` / `organization-<id>`, `shellLayoutEditorInstanceId`) so the organization's editor never reuses the
+  person's. Guards `editor-window-per-target`, `catalog-additions`.
 - `2026-10-22` — claude (lane S, audit fixes): History reads in the row's organization (+ empty/error states, launchpad
   history too); a customized Dock is shown on phones; catalog version 2 + the CATALOG_ADDED_IN guard; Reset to
   standard stores an empty body; locked members get no Save; empty groups never navigate; archived orgs get no editor;

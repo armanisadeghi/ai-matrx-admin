@@ -19,7 +19,19 @@ export interface OpenShellLayoutEditorOptions {
   organizationId?: string | null;
 }
 
+/**
+ * One window per layout being edited: the person's own (`person`) and each organization's
+ * (`organization-<id>`). Until 2026-10-22 there was one window for all of them, so "Edit sidebar…" on an
+ * organization's settings page could surface the person's open (or restored) editor, and its Save wrote
+ * the person's layout (audit round 2 #3).
+ */
+export function shellLayoutEditorInstanceId(opts: OpenShellLayoutEditorOptions = {}): string {
+  return opts.target === "organization" ? `organization-${opts.organizationId ?? "none"}` : "person";
+}
+
 const opener = appOpener<OpenShellLayoutEditorOptions>(OVERLAY_ID, {
+  multi: true,
+  instanceId: (opts: OpenShellLayoutEditorOptions = {}) => shellLayoutEditorInstanceId(opts),
   data: (opts: OpenShellLayoutEditorOptions = {}) => ({ region: opts.region ?? "sidebar", target: opts.target ?? "person", organizationId: opts.organizationId ?? null }),
 });
 

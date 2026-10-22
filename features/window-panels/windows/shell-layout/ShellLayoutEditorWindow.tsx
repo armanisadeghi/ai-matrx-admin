@@ -8,6 +8,8 @@ import { ShellLayoutMount } from "@/features/shell/shell-layout/editor/ShellLayo
 import type { EditorRegion } from "@/features/shell/shell-layout/editor/regions";
 
 interface ShellLayoutEditorWindowProps {
+  /** `person` or `organization-<id>` (shellLayoutEditorInstanceId): one window per layout edited. */
+  instanceId: string;
   onClose: () => void;
   target: ShellLayoutTargetKind;
   region: EditorRegion;
@@ -17,13 +19,13 @@ interface ShellLayoutEditorWindowProps {
 const TITLE: Record<EditorRegion, string> = { sidebar: "Edit sidebar", header: "Customize header", dock: "Customize dock", look: "Choose a look" };
 
 /** "Edit sidebar…" / "Customize header…" / "Customize dock…" — the layout editor in a window (phone: full height). */
-export default function ShellLayoutEditorWindow({ onClose, target, region, organizationId }: ShellLayoutEditorWindowProps) {
+export default function ShellLayoutEditorWindow({ instanceId, onClose, target, region, organizationId }: ShellLayoutEditorWindowProps) {
   // The title follows the tab shown (until 2026-10-22 it stayed "Edit sidebar" on Header, Dock and Look).
   const [shown, setShown] = useState<EditorRegion>(region);
   return (
     <WindowPanel
       title={target === "organization" ? `${TITLE[shown]} · Organization` : TITLE[shown]}
-      id="shell-layout-editor-window"
+      id={`shell-layout-editor-window:${instanceId}`}
       overlayId="shellLayoutEditorWindow"
       minWidth={520}
       minHeight={420}
