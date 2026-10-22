@@ -5,8 +5,9 @@ import { summarizeEstimate, estimateLabel, confirmLine, outputRows, downloadName
 import { brandNameIn, hookPrefill } from "../hook-brand";
 import { joinOverlayLines } from "../text";
 import { cutText, hasBrokenCharacter, nameFromCaption } from "../text";
-import { batchStanding, batchCounts, batchProgressText, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, zipEntryNames, zipFileName } from "../variants";
-import { plainRenderMessage } from "../render-errors";
+import { batchStanding, batchCounts, batchProgressText, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, withServerBatch, zipEntryNames, zipFileName } from "../variants";
+import { BackendApiError } from "@ai-matrx/api";
+import { plainFailureText, plainRenderMessage, validationReason } from "../render-errors";
 
 describe("conflict rebase", () => {
   const doc = dragonLairComposition();
@@ -77,6 +78,23 @@ describe("render messages", () => {
     const reason = "A take's caption timing belongs to different words. Generate again so the takes and the script match, then render.";
     expect(plainRenderMessage("render_failed", reason)).toBe(reason);
     expect(plainRenderMessage("render_failed", null)).toMatch(/didn't finish/);
+  });
+});
+
+describe("refused doors name the field (walk 9)", () => {
+  const refused = (details: unknown) => new BackendApiError({ code: "validation_error", detail: "Validation failed", userMessage: "", details, status: 422 });
+  it("reads FastAPI's detail list", () => {
+    expect(validationReason([{ loc: ["body", "inputs", "answers", 0, "emoji"], msg: "String should have at least 1 character" }])).toBe(
+      "Check inputs > answers > #1 > emoji: String should have at least 1 character",
+    );
+  });
+  it("reads the server's field list", () => {
+    expect(validationReason([{ field: "inputs.answers.1.label", message: "Value error, too long" }, { field: "x", message: "y" }])).toBe(
+      "Check inputs > answers > #2 > label: too long (and 1 more)",
+    );
+  });
+  it("a refused request shows the reason, not the generic line", () => {
+    expect(plainFailureText(refused([{ loc: ["body", "name"], msg: "Field required" }]))).toBe("Check name: Field required");
   });
 });
 
@@ -186,6 +204,16 @@ describe("finished videos say which version they are", () => {
     }
     expect(variantDownloadName(long, "Captions: Bold")).toMatch(/Captions Bold\.mp4$/);
   });
+  it("cuts the project name the same way for every variant of the project (walk 9: 'Ranking ti' vs 'Ranking tie')", () => {
+    const project = "Ranking tier list of the best hot sauces";
+    const labels = ["Hook: Stop scrolling, this one is the hottest sauce on the list right now", "Hook: Nobody ranks sauces like this", "Captions: Bold", "Shape 1:1"];
+    const names = labels.map((l) => variantDownloadName(project, l));
+    const heads = names.map((n) => n.split(/ (?=Hook|Captions|Shape)/)[0]);
+    expect(new Set(heads).size).toBe(1);
+    expect(heads[0]).toBe("Ranking tier list of the");
+    for (const n of names) expect(n).not.toMatch(/ti Hook| ti\./);
+    expect(new Set(zipEntryNames(names)).size).toBe(names.length);
+  });
   it("saves under the video's name", () => {
     expect(downloadName('Tuft: "Pillow" / v2')).toBe("Tuft Pillow v2.mp4");
     expect(downloadName("  ")).toBe("video.mp4");
@@ -265,5 +293,27 @@ describe("batch standing from the run record (C6)", () => {
   it("a run from before beats existed is judged by its start", () => {
     expect(batchStanding({ status: "processing", createdAt: at(120), heartbeatAt: null }, now)).toBe("running");
     expect(batchStanding({ status: "processing", createdAt: at(3600), heartbeatAt: null }, now)).toBe("stopped");
+  });
+});
+
+describe("a reloaded page reads each variant's standing from the run record (walk 9)", () => {
+  const batch = {
+    variantIds: ["a", "b", "c", "d"],
+    rows: [
+      { variant_id: "a", status: "rendered" },
+      { variant_id: "b", status: "rendering" },
+      { variant_id: "c", status: "queued" },
+      { variant_id: "d", status: "failed", stage: "render", message: "The render fleet is full. Try again." },
+    ],
+  };
+  it("shows six rendering as rendering, not every variant queued at 0%", () => {
+    const out = withServerBatch({}, batch, "running");
+    expect(out.a?.status).toBe("rendered");
+    expect(out.b?.status).toBe("rendering");
+    expect(out.c?.status).toBe("queued");
+    expect(out.d?.status).toBe("failed");
+  });
+  it("a stopped batch never shows rendering", () => {
+    expect(withServerBatch({}, batch, "stopped").b?.status).toBe("stopped");
   });
 });

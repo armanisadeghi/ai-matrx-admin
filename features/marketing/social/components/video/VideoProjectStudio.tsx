@@ -40,7 +40,7 @@ import { describeTheirs, rebasePending } from "../../video/conflict";
 import { confirmLine, downloadName, estimateLabel, facesCostLine, finishedDownloadName, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
-import { batchCounts, batchProgressText, batchStanding, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, zipFileName, type BatchStanding } from "../../video/variants";
+import { batchCounts, batchProgressText, batchStanding, buildMatrix, countWord, createButtonText, matrixOutcomeText, matrixSize, parseHookLines, rebasedLabel, splitNewSets, withServerBatch, zipFileName, type BatchStanding, type ItemOutcome } from "../../video/variants";
 import { BackendApiError } from "@ai-matrx/api";
 import { appendPatch, conflictVersion, estimateProject, getVideoProject } from "../../video/server";
 import { readCompositionHistory } from "../../video/service";
@@ -70,12 +70,7 @@ const ASPECTS: ReadonlyArray<{ value: CloneAspect; label: string }> = [
 
 type Renderer = "hosted" | "local";
 
-export interface ItemOutcome {
-  status: string;
-  stage?: string | null;
-  error?: string | null;
-  fileId?: string | null;
-}
+export type { ItemOutcome };
 
 const EVENT = "video_variant_batch.";
 
@@ -167,26 +162,6 @@ function batchHandler(
         break;
     }
   };
-}
-
-/**
- * What this page knows of a batch (its own stream) laid over what the server's run record says. The stream wins where it has
- * spoken; the record fills in a reloaded page. A variant the record has not finished is "queued" while the batch runs and
- * "stopped" when the batch stopped under us, never a bare "ready" beside a dead run.
- */
-export function withServerBatch(local: Record<string, ItemOutcome>, batch: { rows: Array<{ variant_id: string; status: string; stage?: string | null; message?: string | null; error?: string | null }>; variantIds: string[] } | null, standing: BatchStanding): Record<string, ItemOutcome> {
-  if (!batch || standing === "none") return local;
-  const out = { ...local };
-  const byId = new Map(batch.rows.map((r) => [r.variant_id, r]));
-  for (const id of batch.variantIds) {
-    if (out[id]) continue;
-    const r = byId.get(id);
-    if (r?.status === "rendered") out[id] = { status: "rendered" };
-    else if (r?.status === "failed") out[id] = { status: "failed", stage: r.stage ?? "", error: plainRenderMessage(null, r.message ?? r.error ?? null) };
-    else if (standing === "running") out[id] = { status: "queued" };
-    else if (standing === "stopped") out[id] = { status: "stopped" };
-  }
-  return out;
 }
 
 export function VideoProjectStudio({ projectId }: { projectId: string }) {

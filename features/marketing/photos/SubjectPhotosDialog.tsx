@@ -6,7 +6,7 @@
  * the canonical image viewer (`openImageViewer`). Storage is the brand library (`subject-photos.ts`).
  */
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, X } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
@@ -26,6 +26,15 @@ import {
   removeSubjectPhoto,
   type PhotoSubject,
 } from "./subject-photos";
+
+/** The words for a failed photo change: the database's own refusals in plain sentences, anything else as the server said it. */
+export function photoFailureReason(e: unknown): string {
+  const text = extractErrorMessage(e);
+  if (/assert_same_org|same organi[sz]ation|23514/i.test(`${text} ${(e as { code?: unknown } | null)?.code ?? ""}`)) {
+    return "The photo was stored in a different organization than this brand's, so it can't be attached. Try again.";
+  }
+  return text || "Try again.";
+}
 
 export const subjectPhotosKey = (s: Pick<PhotoSubject, "brandId" | "kind" | "id">) =>
   ["marketing", "subject-photos", s.brandId, s.kind, s.id] as const;
@@ -56,12 +65,17 @@ export function SubjectPhotosDialog({
   const photos = useSubjectPhotos(subject, open);
   const list = photos.data ?? [];
   const refresh = () => qc.invalidateQueries({ queryKey: ["marketing", "subject-photos", subject.brandId] });
+  // A failed change says so inside the dialog (a toast can sit behind it) in a plain sentence.
+  const [problem, setProblem] = useState<string | null>(null);
   const run = async (what: string, fn: () => Promise<void>) => {
+    setProblem(null);
     try {
       await fn();
       await refresh();
     } catch (e) {
-      toast.error(`Could not ${what}`, { description: extractErrorMessage(e) });
+      const reason = photoFailureReason(e);
+      setProblem(`Could not ${what}. ${reason}`);
+      toast.error(`Could not ${what}`, { description: reason });
     }
   };
   const addFiles = (files: FileList | null) => {
@@ -135,6 +149,7 @@ export function SubjectPhotosDialog({
             Add photos
           </button>
         </div>
+        {problem ? <p role="alert" className="type-meta text-destructive" data-photo-problem>{problem}</p> : null}
         <input ref={input} type="file" accept="image/*" multiple className="hidden" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
       </DialogContent>
     </Dialog>

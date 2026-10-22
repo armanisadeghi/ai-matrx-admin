@@ -35,10 +35,37 @@ export function plainRenderMessage(code: string | null | undefined, message?: st
   return plain ?? GENERIC;
 }
 
+/**
+ * A refused (422) door names the field. Two shapes reach us: the server's own `details: [{ field, message }]` and
+ * FastAPI's `detail: [{ loc: ["body", "inputs", "answers", 0, "emoji"], msg }]`. Said in plain words with the field
+ * ("Check inputs > answers > #1 > emoji: ...") so a refused door never reads as a bare "didn't finish".
+ */
+export function validationReason(body: unknown): string | null {
+  const list = Array.isArray(body) ? body : null;
+  if (!list || list.length === 0) return null;
+  const first = list[0] as { loc?: unknown; msg?: unknown; field?: unknown; message?: unknown } | null;
+  const raw = typeof first?.msg === "string" ? first.msg : typeof first?.message === "string" ? first.message : "";
+  const msg = raw.replace(/^value error,\s*/i, "").trim();
+  if (!msg) return null;
+  const parts: unknown[] = Array.isArray(first?.loc)
+    ? first.loc
+    : typeof first?.field === "string"
+      ? first.field.split(/[.[\]]+/).filter(Boolean)
+      : [];
+  const path = parts
+    .filter((p) => p !== "body" && p !== "query")
+    .map((p) => (typeof p === "number" ? `#${p + 1}` : /^\d+$/.test(String(p)) ? `#${Number(p) + 1}` : String(p)));
+  const more = list.length > 1 ? ` (and ${list.length - 1} more)` : "";
+  const text = path.length ? `Check ${path.join(" > ")}: ${msg}${more}` : `${msg}${more}`;
+  return text.length <= 200 ? text : `${text.slice(0, 197)}...`;
+}
+
 /** Code + message out of whatever was thrown (stream refusal, HTTP refusal, plain Error). */
 export function plainFailureText(error: unknown): string {
   if (error instanceof BackendApiError) {
     const d = (error.details ?? {}) as { code?: unknown; message?: unknown; detail?: { code?: unknown; message?: unknown } };
+    const reason = validationReason(error.details) ?? validationReason(d.detail);
+    if (reason) return reason;
     const inner = d.detail && typeof d.detail === "object" ? d.detail : d;
     const code = typeof inner.code === "string" ? inner.code : typeof d.code === "string" ? d.code : null;
     const msg = typeof inner.message === "string" ? inner.message : typeof d.message === "string" ? d.message : null;

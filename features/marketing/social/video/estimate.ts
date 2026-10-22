@@ -79,18 +79,27 @@ export function variantDownloadName(projectName: string, variantLabel: string): 
   return nameWithSuffix(projectName, variantLabel);
 }
 
-const NAME_BUDGET = 80;
+const HEAD_MAX = 28;
+const TAIL_MAX = 56;
 const unsafeName = (s: string): string => s.replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim();
+/** `s` shortened to at most `max` characters, at a word boundary (never mid-word, never a dangling half word). */
+function cutAtWord(s: string, max: number): string {
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max + 1);
+  const space = cut.lastIndexOf(" ");
+  return (space >= max / 2 ? cut.slice(0, space) : s.slice(0, max)).trim();
+}
 
 /**
- * THE one place a "project name + suffix" file name is built: the suffix (variant label, version, id tail) is kept whole
- * and the project's name is the part that gets shortened to fit.
+ * THE one place a "project name + suffix" file name is built. One rule for every file of a project: the name is cut at a
+ * word boundary to the same length (so "Ranking tie Hook..." never turns into "Ranking ti Hook..." just because another
+ * label is longer), the suffix (variant label, version, id tail) is cut at a word boundary to its own length. Two names
+ * that still collide are told apart where they are collected (`finishedDownloadName`, `zipEntryNames`).
  */
 export function nameWithSuffix(projectName: string, suffix: string): string {
-  const tail = unsafeName(suffix);
-  const head = unsafeName(projectName).slice(0, Math.max(8, NAME_BUDGET - tail.length - 1)).trim();
-  const joined = [head, tail].filter(Boolean).join(" ").slice(0, Math.max(NAME_BUDGET, tail.length)).trim();
-  return `${joined || "video"}.mp4`;
+  const tail = cutAtWord(unsafeName(suffix), TAIL_MAX);
+  const head = cutAtWord(unsafeName(projectName), HEAD_MAX);
+  return `${[head, tail].filter(Boolean).join(" ") || "video"}.mp4`;
 }
 
 /** A file name for a saved video: the video's name, safe for a file system. */
