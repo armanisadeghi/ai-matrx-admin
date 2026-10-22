@@ -211,7 +211,7 @@ export function WorkbookRecord({
             workbook_permissions: {
               is_owner: isOwner,
               can_edit: canEdit,
-              is_public: workbook.is_public,
+              is_public: workbook.visibility === "public",
             },
             open_workbook: {
               id: workbook.id,
@@ -219,7 +219,7 @@ export function WorkbookRecord({
               description: workbook.description,
               source: workbook.source,
               version: workbook.version,
-              is_public: workbook.is_public,
+              is_public: workbook.visibility === "public",
               original_file_id: workbook.original_file_id,
               created_at: workbook.created_at,
               updated_at: workbook.updated_at,
