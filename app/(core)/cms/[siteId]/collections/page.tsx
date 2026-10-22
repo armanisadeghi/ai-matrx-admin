@@ -9,7 +9,7 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CmsCollectionService } from "@/features/cms/services/cmsService";
@@ -224,15 +224,17 @@ export default function CollectionsPage() {
     (collection) => collection.id,
     siteId,
   );
-  const bulkActions = useMemo(
-    () =>
-      defineRowVerbs<SiteCollectionSummary>(
+  // ONE declaration: the card buttons and the bulk bar both come out of it.
+  const { rowActionDefs, bulkActions } = defineRowVerbs<SiteCollectionSummary>(
         [
           {
             id: "edit",
             icon: Pencil,
             label: "Edit",
-            onClick: () => {},
+            onClick: (c) => {
+              setEditing(c as SiteCollection);
+              setEditorOpen(true);
+            },
             bulk: false,
             noBulk: "edit",
           },
@@ -242,7 +244,7 @@ export default function CollectionsPage() {
             label: "Archive",
             appliesTo: (c) => c.status !== "archived",
             unavailableTooltip: "Already archived",
-            onClick: () => {},
+            onClick: (c) => void handleToggleArchive(c as SiteCollection),
             bulk: {
               done: "Archived",
               runOne: async (id) => {
@@ -256,7 +258,7 @@ export default function CollectionsPage() {
             label: "Restore",
             appliesTo: (c) => c.status === "archived",
             unavailableTooltip: "Not archived",
-            onClick: () => {},
+            onClick: (c) => void handleToggleArchive(c as SiteCollection),
             bulk: {
               done: "Restored",
               runOne: async (id) => {
@@ -271,7 +273,7 @@ export default function CollectionsPage() {
             icon: Trash2,
             label: "Delete",
             tone: "destructive",
-            onClick: () => {},
+            onClick: (c) => setDeleteTarget(c as SiteCollection),
             bulk: {
               done: "Deleted",
               removesRows: true,
@@ -290,9 +292,7 @@ export default function CollectionsPage() {
           getRowId: (c) => c.id,
           getRowName: (c) => c.name,
         },
-      ).bulkActions,
-    [],
-  );
+      );
 
   const handleSaved = async (_saved: SiteCollection, mintedKey: boolean) => {
     await refresh();
@@ -490,37 +490,24 @@ export default function CollectionsPage() {
                         </Badge>
                       )}
                     </Link>
-                    <Button
-                      icon={<Pencil />}
-                      variant="quiet"
-                      onClick={() => {
-                        setEditing(collection);
-                        setEditorOpen(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      icon={archivingId === collection.id ? (
-                        <Loader2 className="animate-spin" />
-                      ) : collection.status === "archived" ? (
-                        <ArchiveRestore />
-                      ) : (
-                        <Archive />
-                      )}
-                      variant="quiet"
-                      disabled={archivingId === collection.id}
-                      onClick={() => handleToggleArchive(collection)}
-                      aria-label={
-                        collection.status === "archived" ? "Restore" : "Archive"
-                      }
-                    />
-                    <Button
-                      icon={<Trash2 />}
-                      variant="quiet"
-                      onClick={() => setDeleteTarget(collection)}
-                      aria-label="Delete"
-                    />
+                    {rowActionDefs
+                      .filter((def) => !def.appliesTo || def.appliesTo(collection))
+                      .map((def) => {
+                        const Icon = def.icon;
+                        const busy = archivingId === collection.id && (def.id === "archive" || def.id === "restore");
+                        return (
+                          <Button
+                            key={def.id}
+                            icon={busy ? <Loader2 className="animate-spin" /> : Icon ? <Icon /> : undefined}
+                            variant="quiet"
+                            disabled={busy}
+                            onClick={() => def.onClick(collection)}
+                            aria-label={def.label}
+                          >
+                            {def.id === "edit" ? def.label : undefined}
+                          </Button>
+                        );
+                      })}
                   </div>
                 </div>
                 </div>

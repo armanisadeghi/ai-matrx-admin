@@ -261,10 +261,7 @@ export default function HtmlPageListView({
   );
 
   // Bulk twins of the row menu — one declaration in htmlPageBulkActions.
-  const bulkActions = useMemo(
-    () => buildHtmlPageBulkActions(onDeletePage),
-    [onDeletePage],
-  );
+  const bulkActions = buildHtmlPageBulkActions(onDeletePage);
   const bulk = useTableBulkSelection<HtmlPageSummary>({
     noun: "page",
     rows: filtered,

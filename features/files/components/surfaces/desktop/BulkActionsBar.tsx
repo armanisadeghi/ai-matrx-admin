@@ -57,6 +57,7 @@ import { openFolderPicker } from "@/features/files/components/pickers/cloudFiles
 import { ingestFile } from "@/features/rag/api/ingest";
 import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
 import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
+import { formatFileSize } from "@/features/files/utils/format";
 import type { Visibility } from "@/features/files/types";
 
 const NON_INGESTABLE_MIME_PREFIXES = ["image/", "video/", "audio/"];
@@ -82,6 +83,23 @@ export function BulkActionsBar({
       filesById[id]?.fileName ?? foldersById[id]?.folderName ?? id;
     const filesOnly = (id: string) =>
       isFile(id) ? null : "Only files can do this — folders are skipped.";
+    const reprocessSkip = (fid: string): string | null => {
+      const f = filesById[fid];
+      if (!f) return "Folders cannot be reprocessed.";
+      if (f.source.kind === "virtual")
+        return "Virtual sources are ingested through their own door.";
+      const mime = f.mimeType ?? "";
+      if (NON_INGESTABLE_MIME_PREFIXES.some((p) => mime.startsWith(p)))
+        return "No text to extract.";
+      return null;
+    };
+    const duplicateSkip = (fid: string): string | null => {
+      const f = filesById[fid];
+      if (!f) return "Folders cannot be duplicated here.";
+      if (f.source.kind === "virtual")
+        return "Virtual sources have their own copy door.";
+      return null;
+    };
     const count = (n: number) => `${n} ${n === 1 ? "item" : "items"}`;
 
     const visibilityAction = (
@@ -101,7 +119,13 @@ export function BulkActionsBar({
               description: sentence,
               confirmLabel: "Make public",
             })
-          : undefined,
+          : visibility === "link"
+            ? (sel) => ({
+                title: `Share ${count(sel.count)} by link?`,
+                description: sentence,
+                confirmLabel: "Share by link",
+              })
+            : undefined,
       run: (sel) =>
         runPerRow(
           sel,
@@ -250,7 +274,7 @@ export function BulkActionsBar({
         "Shared",
         Users,
         "link",
-        "",
+        "Anyone you give the link to will be able to see them.",
       ),
       visibilityAction(
         "files-visibility-public",
@@ -263,6 +287,15 @@ export function BulkActionsBar({
         id: "files-reprocess",
         label: "Reprocess for Knowledge",
         icon: Star,
+        confirm: (sel) => {
+          const n = sel.ids.filter((fid) => !reprocessSkip(fid)).length;
+          const skipped = sel.ids.length - n;
+          return {
+            title: `Reprocess ${n} ${n === 1 ? "file" : "files"} for Knowledge?`,
+            description: `Each file is read again and re-indexed, which uses ingest processing and replaces its current Knowledge copy.${skipped ? ` ${skipped} that cannot be reprocessed will be skipped and named.` : ""}`,
+            confirmLabel: "Reprocess",
+          };
+        },
         run: (sel) =>
           runPerRow(
             sel,
@@ -281,16 +314,7 @@ export function BulkActionsBar({
               done: "Reprocessed for Knowledge",
               noun: "file",
               labelOf: nameOf,
-              skipReason: (fid) => {
-                const f = filesById[fid];
-                if (!f) return "Folders cannot be reprocessed.";
-                if (f.source.kind === "virtual")
-                  return "Virtual sources are ingested through their own door.";
-                const mime = f.mimeType ?? "";
-                if (NON_INGESTABLE_MIME_PREFIXES.some((p) => mime.startsWith(p)))
-                  return "No text to extract.";
-                return null;
-              },
+              skipReason: reprocessSkip,
             },
             idOf,
           ),
@@ -335,6 +359,16 @@ export function BulkActionsBar({
         id: "files-duplicate",
         label: "Duplicate",
         icon: CopyPlus,
+        confirm: (sel) => {
+          const runnable = sel.ids.filter((fid) => !duplicateSkip(fid));
+          const bytes = runnable.reduce((sum, fid) => sum + (filesById[fid]?.fileSize ?? 0), 0);
+          const skipped = sel.ids.length - runnable.length;
+          return {
+            title: `Duplicate ${runnable.length} ${runnable.length === 1 ? "file" : "files"}?`,
+            description: `Each file is downloaded and uploaded again as "<name> (copy)" beside the original, adding ${formatFileSize(bytes)} to your storage.${skipped ? ` ${skipped} that cannot be duplicated will be skipped and named.` : ""}`,
+            confirmLabel: "Duplicate",
+          };
+        },
         run: (sel) =>
           runPerRow(
             sel,
@@ -366,13 +400,7 @@ export function BulkActionsBar({
               done: "Duplicated",
               noun: "file",
               labelOf: nameOf,
-              skipReason: (fid) => {
-                const f = filesById[fid];
-                if (!f) return "Folders cannot be duplicated here.";
-                if (f.source.kind === "virtual")
-                  return "Virtual sources have their own copy door.";
-                return null;
-              },
+              skipReason: duplicateSkip,
             },
             idOf,
           ),

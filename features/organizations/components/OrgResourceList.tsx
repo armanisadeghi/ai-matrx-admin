@@ -171,18 +171,14 @@ export function OrgResourceList({
     (item) => item.id,
     `${orgId}:${resourceType}`,
   );
-  const bulkActions = React.useMemo(
-    () =>
-      standardBulkActionsFor<ResourceCardData>({
-        token: bulkToken,
-        noun: resourceType.replace(/_/g, " "),
-        rowIdOf: (item) => item.id,
-        labelOf: (item) => item.title || "Untitled",
-        config: { favorite: false },
-        archivedView: "all",
-      }),
-    [bulkToken, resourceType],
-  );
+  const bulkActions = standardBulkActionsFor<ResourceCardData>({
+    token: bulkToken,
+    noun: resourceType.replace(/_/g, " "),
+    rowIdOf: (item) => item.id,
+    labelOf: (item) => item.title || "Untitled",
+    config: { favorite: false },
+    archivedView: "all",
+  });
 
   React.useEffect(() => {
     let cancelled = false;

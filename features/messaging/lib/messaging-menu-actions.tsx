@@ -20,6 +20,7 @@
  * none.
  */
 
+import { CONVERSATION_VERBS } from "./conversationVerbs";
 import {
   Archive,
   ArchiveRestore,
@@ -182,51 +183,30 @@ export function buildConversationMenuSection(args: {
 
   const rowActions = args.rowActions;
   const items: ContextMenuExtraItem[] = [
-    ...(conversation && rowActions
-      ? [
-          conversation.unreadCount > 0
-            ? {
-                kind: "item" as const,
-                id: "dm-mark-read",
-                label: "Mark as read",
-                icon: MailOpen,
-                onSelect: () => rowActions.markRead(conversation.conversation.id),
-              }
-            : {
-                kind: "item" as const,
-                id: "dm-mark-unread",
-                label: "Mark as unread",
-                icon: Mail,
-                onSelect: () => rowActions.markUnread(conversation.conversation.id),
-              },
-          {
-            kind: "item" as const,
-            id: "dm-mute",
-            label: conversation.isMuted ? "Unmute" : "Mute",
-            icon: conversation.isMuted ? Bell : BellOff,
-            onSelect: () =>
-              rowActions.setMuted(conversation.conversation.id, !conversation.isMuted),
-          },
-          {
-            kind: "item" as const,
-            id: "dm-archive",
-            label: conversation.isArchived ? "Unarchive" : "Archive",
-            icon: conversation.isArchived ? ArchiveRestore : Archive,
-            onSelect: () =>
-              rowActions.setArchived(conversation.conversation.id, !conversation.isArchived),
-          },
-        ]
-      : []),
-    ...(conversation && args.onTogglePin
-      ? [
-          {
-            kind: "item" as const,
-            id: "dm-pin",
-            label: args.isPinned ? "Unpin conversation" : "Pin conversation",
-            icon: args.isPinned ? PinOff : Pin,
-            onSelect: () => args.onTogglePin?.(conversation.conversation.id),
-          },
-        ]
+    // The state verbs come from the SAME list the bulk bar reads (conversationVerbs.ts).
+    ...(conversation
+      ? CONVERSATION_VERBS.filter(
+          (verb) => verb.skip(conversation, { isPinned: Boolean(args.isPinned) }) === null,
+        ).flatMap((verb) => {
+          const id = conversation.conversation.id;
+          const run: (() => void) | null =
+            verb.id === "pin" || verb.id === "unpin"
+              ? args.onTogglePin
+                ? () => args.onTogglePin?.(id)
+                : null
+              : !rowActions
+                ? null
+                : verb.id === "mark-read"
+                  ? () => rowActions.markRead(id)
+                  : verb.id === "mark-unread"
+                    ? () => rowActions.markUnread(id)
+                    : verb.id === "mute" || verb.id === "unmute"
+                      ? () => rowActions.setMuted(id, verb.id === "mute")
+                      : () => rowActions.setArchived(id, verb.id === "archive");
+          return run
+            ? [{ kind: "item" as const, id: `dm-${verb.id}`, label: verb.label, icon: verb.icon, onSelect: run }]
+            : [];
+        })
       : []),
     ...(conversation && onOpen
       ? [

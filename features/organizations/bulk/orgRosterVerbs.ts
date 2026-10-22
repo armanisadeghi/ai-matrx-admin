@@ -38,71 +38,60 @@ function must(result: { success: boolean; error?: string }, fallback: string) {
   if (!result.success) throw new Error(result.error || fallback);
 }
 
-/** Set role / Remove for the org Members list. */
-export function orgMemberBulkActions(args: {
+/** Make Admin / Make Member / Remove for the org Members list: ONE declaration, row menu and bulk bar. */
+export function orgMemberVerbs(args: {
   organizationId: string;
   canManage: (m: PanelMember) => boolean;
   ownerCount: number;
-  onRoleChange?: (m: PanelMember) => void;
-  onRemove?: (m: PanelMember) => void;
-}): EntityBulkAction<PanelMember>[] {
+  onRoleChange: (m: PanelMember, role: "admin" | "member") => void;
+  onRemove: (m: PanelMember) => void;
+}) {
   const { organizationId, canManage, ownerCount } = args;
   const refusal = (m: PanelMember): string | null => {
     if (!canManage(m)) return "Only the owner can change this member";
     if (m.role === "owner" && ownerCount <= 1) return "Last owner";
     return null;
   };
+  const roleSkip = (role: "admin" | "member") => (m: PanelMember): string | null =>
+    m.role === "owner"
+      ? "The owner changes through Transfer ownership"
+      : (refusal(m) ?? (m.role === role ? `Already ${role}` : null));
+  const roleVerb = (role: "admin" | "member", icon: typeof Shield, label: string) => ({
+    id: `make-${role}`,
+    icon,
+    label,
+    appliesTo: (m: PanelMember) => roleSkip(role)(m) === null,
+    unavailableTooltip: `Already ${role}`,
+    onClick: (m: PanelMember) => args.onRoleChange(m, role),
+    bulk: {
+      done: `Made ${role}`,
+      skipReason: roleSkip(role),
+      confirm: (t: { ids: string[] }) => ({
+        title: `Make ${t.ids.length} member${t.ids.length === 1 ? "" : "s"} ${role}?`,
+        description: `Each member's role becomes ${role}.`,
+        confirmLabel: label,
+      }),
+      runOne: async (_id: string, row: PanelMember | undefined) => {
+        if (!row) throw new Error("Member not loaded");
+        must(
+          await updateMemberRole(organizationId, row.userId, role as OrgRole),
+          "Could not change the role",
+        );
+      },
+    },
+  });
   return defineRowVerbs<PanelMember>(
     [
-      {
-        id: "set-role",
-        icon: Shield,
-        label: "Set role",
-        appliesTo: (m) => refusal(m) === null && m.role !== "owner",
-        unavailableTooltip: "The owner changes through Transfer ownership",
-        onClick: (m) => args.onRoleChange?.(m),
-        bulk: {
-          done: "Role updated",
-          skipReason: (m) =>
-            m.role === "owner"
-              ? "The owner changes through Transfer ownership"
-              : refusal(m),
-          confirm: (t) => ({
-            title: `Set role for ${t.ids.length} member${t.ids.length === 1 ? "" : "s"}?`,
-            description: "Each member gets the role you pick.",
-            confirmLabel: "Set role",
-            ask: {
-              kind: "choice",
-              label: "Role",
-              options: MEMBER_BULK_ROLES.map((r) => ({
-                value: r.value,
-                label: r.label,
-              })),
-              defaultValue: "member",
-            },
-          }),
-          runOne: async (_id, row, input) => {
-            if (!row) throw new Error("Member not loaded");
-            if (row.role === input.value) return;
-            must(
-              await updateMemberRole(
-                organizationId,
-                row.userId,
-                input.value as OrgRole,
-              ),
-              "Could not change the role",
-            );
-          },
-        },
-      },
+      roleVerb("admin", Shield, "Make Admin"),
+      roleVerb("member", Shield, "Make Member"),
       {
         id: "remove",
         icon: UserX,
-        label: "Remove",
+        label: "Remove Member",
         tone: "destructive",
         appliesTo: (m) => refusal(m) === null,
         unavailableTooltip: "Cannot be removed",
-        onClick: (m) => args.onRemove?.(m),
+        onClick: (m) => args.onRemove(m),
         bulk: {
           done: "Removed",
           removesRows: true,
@@ -128,7 +117,7 @@ export function orgMemberBulkActions(args: {
       getRowId: (m) => m.id,
       getRowName: memberName,
     },
-  ).bulkActions;
+  );
 }
 
 /** Resend / Revoke for the org Invitations list. */

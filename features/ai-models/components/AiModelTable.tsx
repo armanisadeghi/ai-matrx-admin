@@ -373,6 +373,8 @@ export default function AiModelTable(props: AiModelTableProps) {
     getRowName: (model) => model.common_name || model.name,
     deleteOne: (model) => moveModelToTrash(model, onDelete),
     deleteLabel: "Move to Trash",
+    verb: "Move to Trash",
+    done: "Moved to Trash",
     consequence: "The model leaves the model list, and agents set to it cannot run on it. Restore it from Trash to bring it back.",
     extraVerbs: [
       { id: "view", icon: Eye, label: "View model", onClick: onSelect, bulk: false, noBulk: "view" },

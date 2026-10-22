@@ -57,6 +57,9 @@ export function restoreSkip(row: DataHomeRow): string | null {
 /** Run a door over each target, one after another; names each refusal. */
 async function oneByOne(targets: BulkTargets<DataHomeRow>, door: (row: DataHomeRow) => Promise<string | null>) {
   const failed: { id: string; reason: string }[] = [];
+  // A ticked id whose row is not loaded cannot run: name it instead of counting it done.
+  const loaded = new Set(targets.rows.map((r) => r.id));
+  for (const id of targets.ids) if (!loaded.has(id)) failed.push({ id, reason: "Not loaded" });
   for (const row of targets.rows) {
     try {
       const sentence = await door(row);

@@ -28,6 +28,30 @@ export const CONVERSATION_BULK_VERBS = [
   { id: "add-to-project", label: "Add to project…", icon: FolderKanban },
 ] as const;
 
+/**
+ * Every item id the chat package's `buildConversationMenu` can put on a row, with its bulk decision.
+ * The package owns the menu, so the guard test (`conversation-menu-has-a-bulk-decision.test.ts`) builds
+ * the real menu and fails when it grows an id this table does not list: a verb added to the row menu
+ * cannot be forgotten on the bar.
+ */
+export const CONVERSATION_MENU_DECISIONS: Record<string, "twin" | "built-in" | "single"> = {
+  archive: "twin",
+  "exclude-kg": "twin",
+  "add-to-project": "twin",
+  favorite: "built-in",
+  delete: "built-in",
+  rename: "single",
+  "open-new-tab": "single",
+  "open-agent": "single",
+  "copy-link": "single",
+  "remove-from-list": "single",
+  duplicate: "single",
+  share: "single",
+  "make-agent": "single",
+  "source-show-only": "single",
+  "source-hide": "single",
+};
+
 type Listener = (rows: ConversationBrowseRow[]) => void;
 const projectAsks = new Set<Listener>();
 

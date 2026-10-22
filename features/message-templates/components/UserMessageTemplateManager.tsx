@@ -322,10 +322,7 @@ export function UserMessageTemplateManager() {
     (t: MessageTemplateDB) => t.id,
     `${activeTab}|${searchTerm}`,
   );
-  const bulkActions = useMemo(
-    () => buildTemplateBulkActions(currentUserId),
-    [currentUserId],
-  );
+  const bulkActions = buildTemplateBulkActions(currentUserId);
 
   const handleNewTemplate = () =>
     startTransition(() => router.push("/chat/message-templates/new"));

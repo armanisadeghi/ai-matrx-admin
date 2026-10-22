@@ -39,7 +39,8 @@ import {
 } from "../copy";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 import { usePointsRate } from "@/components/cost/pointsRate.client";
-import { rosterBulkActions } from "../bulkVerbs";
+import { rosterVerbs } from "../bulkVerbs";
+import { useSpendCapPresets } from "../useSpendCapPresets";
 import { UserSearchField } from "@/features/user-search/UserSearchField";
 
 type SortKey = "name" | "role" | "lastActive" | "storage" | "spend";
@@ -239,10 +240,15 @@ export function MemberRosterTable({ orgId, orgSlug, members, onRefresh }: Props)
     [unit, costRate],
   );
   const pointsRate = usePointsRate();
-  const bulkActions = useMemo(
-    () => rosterBulkActions({ orgId, rate: pointsRate }),
-    [orgId, pointsRate],
-  );
+  const capPresets = useSpendCapPresets();
+  // ONE declaration: the row menu and the bulk bar both come out of it.
+  const { rowActionDefs, bulkActions } = rosterVerbs({
+    orgId,
+    rate: pointsRate,
+    capPoints: capPresets.points,
+    capError: capPresets.error,
+    open: (member) => go(member.userId),
+  });
   const bulk = useTableBulkSelection<OrgAdminMember>({
     noun: "member",
     rows,
@@ -396,6 +402,7 @@ export function MemberRosterTable({ orgId, orgSlug, members, onRefresh }: Props)
         getRowId={(member) => member.userId}
         density="condensed"
         copy={selectionCopy}
+        rowActionDefs={rowActionDefs}
         selection={bulk.selection}
         toolbar={{ search: false }}
         detail={{ enabled: false }}

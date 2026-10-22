@@ -16,6 +16,7 @@
  * member belongs to an org or a project. Consumers can opt out per-flag.
  */
 
+import type { MatrxTableRowActionDef } from "@ai-matrx/design-system/data-table/types";
 import { useState } from "react";
 import {
   Crown,
@@ -194,6 +195,12 @@ export interface MembersPanelProps {
     actions: EntityBulkAction<PanelMember>[];
     onRefresh: () => void;
   };
+  /**
+   * The row menu's verbs, from the SAME `defineRowVerbs` call as `bulk.actions`. When supplied they
+   * replace the role items and Remove below (Transfer ownership stays the panel's own); a verb
+   * that does not apply to a member is left off that member's menu.
+   */
+  rowVerbs?: MatrxTableRowActionDef<PanelMember>[];
 }
 
 const ROLE_ICONS: Record<MembershipRole, LucideIcon> = {
@@ -236,6 +243,7 @@ export function MembersPanel({
   onTransferOwnership,
   canRemoveMember,
   bulk,
+  rowVerbs,
 }: MembersPanelProps) {
   const container: MembershipCopyContainer = {
     noun: copyContainer?.noun ?? containerNoun,
@@ -531,6 +539,36 @@ export function MembersPanel({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {rowVerbs ? (
+                        <>
+                          {rowVerbs
+                            .filter((v) => !v.appliesTo || v.appliesTo(member))
+                            .map((v) => {
+                              const VerbIcon = v.icon;
+                              return (
+                                <DropdownMenuItem
+                                  key={v.id}
+                                  onClick={() => v.onClick(member)}
+                                  className={
+                                    v.tone === "destructive"
+                                      ? "text-red-600 dark:text-red-400"
+                                      : undefined
+                                  }
+                                >
+                                  {VerbIcon ? <VerbIcon className="h-4 w-4 mr-2" /> : null}
+                                  {v.label}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          {showTransfer(member) && (
+                            <DropdownMenuItem onClick={() => setMemberToPromote(member)}>
+                              <Crown className="h-4 w-4 mr-2" />
+                              Transfer ownership…
+                            </DropdownMenuItem>
+                          )}
+                        </>
+                      ) : (
+                        <>
                       {roleOptions
                         .filter(
                           (opt) =>
@@ -568,6 +606,8 @@ export function MembersPanel({
                             <UserX className="h-4 w-4 mr-2" />
                             Remove {memberNoun === "member" ? "Member" : memberNoun}
                           </DropdownMenuItem>
+                        </>
+                      )}
                         </>
                       )}
                     </DropdownMenuContent>

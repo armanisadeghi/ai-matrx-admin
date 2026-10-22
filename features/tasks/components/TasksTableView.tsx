@@ -4,7 +4,9 @@ import { tasksDrillFor } from "./tasksDrill";
 import { getStore } from "@/lib/redux/store-singleton";
 import { useTasksRead } from "@/features/tasks/hooks/useTasksRead";
 import React from "react";
-import { CalendarDays, CheckCircle2, CircleDashed, Flag, Folder, FolderInput, RotateCcw, Trash2, UserPlus } from "lucide-react";
+import { assignAsk, assignDisabledReason } from "./taskAssign";
+import { dateInputValue } from "@/features/admin/spend-approvals/ApprovalStatusSelect";
+import { CalendarDays, CheckCircle2, CircleDashed, Flag, Folder, FolderInput, RotateCcw, Trash2, UserMinus, UserPlus } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -106,21 +108,13 @@ export default function TasksTableView() {
   const tasksRead = useTasksRead();
   const selectedTaskId = useAppSelector(selectSelectedTaskId);
 
-  const today = React.useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
-  const todayStr = today.toISOString().split("T")[0];
-  const weekStr = React.useMemo(() => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split("T")[0];
-  }, [today]);
+  // Local calendar days (toISOString() is the UTC day, one off east of UTC).
+  const todayStr = dateInputValue(0);
+  const weekStr = dateInputValue(7);
 
   // The people list is read only once something is ticked (nothing loads until engaged).
   const [assignEngaged, setAssignEngaged] = React.useState(false);
-  const { connections: people } = useUserConnections({
+  const { connections: people, isLoading: peopleLoading } = useUserConnections({
     ...(filterOrgId ? { organizationId: filterOrgId } : {}),
     enabled: assignEngaged,
   });
@@ -195,22 +189,14 @@ export default function TasksTableView() {
       id: "assign-to",
       label: "Assign to…",
       icon: UserPlus,
+      // Never offered before the people read has answered: an empty list must not turn into a
+      // dialog whose only way forward is to unassign.
+      disabledReason: () => assignDisabledReason(peopleLoading, people),
       confirm: (selection) => ({
         title: `Assign ${bulkCountLabel(selection.count, "task")}?`,
         description: "Each task goes to the person you pick. They are told, same as one task.",
         confirmLabel: "Assign",
-        ask: {
-          kind: "choice",
-          label: "Assign to",
-          options: [
-            { value: "__none__", label: "Nobody (unassign)" },
-            ...people.map((p) => ({
-              value: p.user_id,
-              label: p.display_name || p.email || p.user_id,
-            })),
-          ],
-          defaultValue: "__none__",
-        },
+        ask: assignAsk(people),
       }),
       run: (selection, input) =>
         runPerRow(
@@ -219,13 +205,51 @@ export default function TasksTableView() {
             const value = input?.value;
             if (!value) throw new Error("no person picked");
             await dispatch(
-              updateTaskFieldThunk({
-                taskId: id,
-                patch: { assignee_id: value === "__none__" ? null : value },
-              }),
+              updateTaskFieldThunk({ taskId: id, patch: { assignee_id: value } }),
             ).unwrap();
           },
           { done: "Assigned", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    {
+      // Its own explicit verb, never a default of the picker above.
+      id: "unassign",
+      label: "Unassign",
+      icon: UserMinus,
+      confirm: (selection) => ({
+        title: `Unassign ${bulkCountLabel(selection.count, "task")}?`,
+        description: "Each task is left with nobody assigned.",
+        confirmLabel: "Unassign",
+      }),
+      run: (selection) =>
+        runPerRow(
+          selection,
+          async (id) => {
+            await dispatch(
+              updateTaskFieldThunk({ taskId: id, patch: { assignee_id: null } }),
+            ).unwrap();
+          },
+          { done: "Unassigned", noun: "task", labelOf: taskName },
+          taskId,
+        ),
+    },
+    {
+      id: "clear-due-date",
+      label: "No due date",
+      icon: CalendarDays,
+      confirm: (selection) => ({
+        title: `Clear the due date for ${bulkCountLabel(selection.count, "task")}?`,
+        description: "Each task is left without a due date.",
+        confirmLabel: "Clear due date",
+      }),
+      run: (selection) =>
+        runPerRow(
+          selection,
+          async (id) => {
+            await dispatch(updateTaskFieldThunk({ taskId: id, patch: { due_date: null } })).unwrap();
+          },
+          { done: "Due date cleared", noun: "task", labelOf: taskName },
           taskId,
         ),
     },
@@ -308,13 +332,25 @@ export default function TasksTableView() {
       label: "Move to Trash",
       icon: Trash2,
       variant: "destructive",
-      confirm: (selection) => ({
+      confirm: (selection) => {
+        // Subtasks of the ticked parents leave with them: name how many, not just "subtasks".
+        const ticked = new Set(selection.ids);
+        const entities = (getStore()?.getState().tasks.entities ?? {}) as Record<
+          string,
+          { id: string; parent_task_id?: string | null } | undefined
+        >;
+        const subtasks = Object.values(entities).filter(
+          (t) => t && t.parent_task_id && ticked.has(t.parent_task_id) && !ticked.has(t.id),
+        ).length;
+        return {
         title: `Move ${bulkCountLabel(selection.count, "task")} to Trash?`,
-        description:
-          "Their subtasks go with them. They can be restored from Trash.",
+        description: subtasks
+          ? `${bulkCountLabel(subtasks, "subtask")} go with them. They can be restored from Trash.`
+          : "They can be restored from Trash.",
         confirmLabel: "Move to Trash",
         variant: "destructive",
-      }),
+        };
+      },
       run: (selection) =>
         runPerRow(
           selection,

@@ -6,6 +6,8 @@ jest.mock("../record/useUserActions", () => ({
   runReasonDoor: jest.fn(async () => ({})),
   personChanged: jest.fn(),
 }));
+const warning = jest.fn();
+jest.mock("@/lib/toast", () => ({ toast: { warning: (...a: unknown[]) => warning(...a) } }));
 jest.mock("../adminRoster", () => ({ invalidateAdminRoster: jest.fn() }));
 
 const person = (over: Partial<AccountRow>): AccountRow => ({
@@ -60,5 +62,18 @@ describe("Accounts bulk bar is generated from the people registry", () => {
     const plan = bar.find((a) => a.id === "change_plan")!;
     const rows = [person({ plan: { key: "pro", source: "default" } })];
     expect(plan.disabledReason?.(1, { ids: ["u1"], rows, count: 1 } as never)).toBe("Already on the default plan");
+  });
+
+  it("Give free months names the ticked people whose rows are not loaded, never drops them quietly", async () => {
+    const give = jest.fn();
+    const only = bulkActionsFromRowVerbs(live, accountBulkTwins({ giveFreeMonths: give }), {
+      noun: "account",
+      getRowId: (r: AccountRow) => r.id,
+      getRowName: (r: AccountRow) => r.email ?? r.id,
+    });
+    const free = only.find((a) => a.id === "free_months")!;
+    await free.run({ ids: ["u1", "u2", "u3"], rows: [person({ id: "u1" })], count: 3 } as never, {});
+    expect(give).toHaveBeenCalledWith([{ id: "u1", label: "A" }]);
+    expect(warning).toHaveBeenCalledWith(expect.stringContaining("2 people are not loaded"));
   });
 });

@@ -51,4 +51,14 @@ describe("meeting bulk twins", () => {
     expect(actions.cancel.mock.calls[0][1]).toBe("weather");
     expect(actions.announce).toHaveBeenCalledWith("a", true);
   });
+
+  it("the cancel and archive confirms count only the meetings that will run", () => {
+    const { byId } = build({ a: "host", b: "invitee", c: "host" });
+    const rows = [meeting("a"), meeting("b"), meeting("c", { cancelledAt: "2026-01-01" })];
+    const cancel = byId("cancel-meeting").confirm!(selectionOf(rows) as never);
+    expect(cancel?.title).toBe("Cancel 1 meeting?");
+    expect(cancel?.description).toMatch(/2 that cannot be canceled will be skipped/);
+    const archive = byId("move-to-trash").confirm!(selectionOf(rows) as never);
+    expect(archive?.title).toBe("Archive 2 meetings?");
+  });
 });

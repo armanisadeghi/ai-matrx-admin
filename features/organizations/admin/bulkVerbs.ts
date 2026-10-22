@@ -5,20 +5,20 @@
  */
 import { ShieldOff, ShieldCheck, Gauge, UserX } from "lucide-react";
 import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
+import type { MatrxTableRowActionDef } from "@ai-matrx/design-system/data-table/types";
 import type { EntityBulkAction } from "@/lib/entity-list/selection";
 import { pointsToUsd } from "@ai-matrx/kit/format";
-import { removeMember, setMemberControls, setMemberStatus } from "./service";
+import { getOrgMember, removeMember, setMemberControls, setMemberStatus } from "./service";
 import { usdToMcents } from "./utils";
 import type { OrgAdminMember } from "./types";
 
-/** Monthly spend-cap choices, in points (20,000 points = $1). "none" clears the cap. */
-export const SPEND_CAP_CHOICES = [
-  { value: "none", label: "No limit" },
-  { value: "100000", label: "100,000 points" },
-  { value: "500000", label: "500,000 points" },
-  { value: "1000000", label: "1,000,000 points" },
-  { value: "5000000", label: "5,000,000 points" },
-] as const;
+/** Cap choices from the knob's point amounts; "none" (clear the cap) is always first. */
+export function capChoices(points: readonly string[]): { value: string; label: string }[] {
+  return [
+    { value: "none", label: "No limit" },
+    ...points.map((p) => ({ value: p, label: `${Number(p).toLocaleString()} points` })),
+  ];
+}
 
 /** Points choice -> stored millicents, through the same conversion the single-member form uses. */
 export function capChoiceToMcents(
@@ -31,12 +31,17 @@ export function capChoiceToMcents(
 
 const name = (m: OrgAdminMember) => m.displayName ?? m.email ?? m.userId;
 
-export function rosterBulkActions(args: {
+export function rosterVerbs(args: {
   orgId: string;
   rate: number | null;
-}): EntityBulkAction<OrgAdminMember>[] {
-  const { orgId, rate } = args;
-  const none = () => {};
+  /** The knob's point amounts; null while unread or unreadable (the cap verb stays off). */
+  capPoints: readonly string[] | null;
+  capError?: string | null;
+  /** The row's door for each verb: the member page, where its forms and dialogs live. */
+  open: (member: OrgAdminMember) => void;
+}): { rowActionDefs: MatrxTableRowActionDef<OrgAdminMember>[]; bulkActions: EntityBulkAction<OrgAdminMember>[] } {
+  const { orgId, rate, capPoints, capError, open } = args;
+  const none = open;
   return defineRowVerbs<OrgAdminMember>(
     [
       {
@@ -78,8 +83,10 @@ export function rosterBulkActions(args: {
         icon: Gauge,
         label: "Set spend cap",
         onClick: none,
+        disabled: () => capPoints === null,
         bulk: {
           done: "Spend cap set",
+          skipReason: () => (capPoints === null ? (capError ?? "Loading the cap choices…") : null),
           confirm: (t) => ({
             title: `Set the monthly spend cap for ${t.ids.length} member${t.ids.length === 1 ? "" : "s"}?`,
             description:
@@ -88,18 +95,20 @@ export function rosterBulkActions(args: {
             ask: {
               kind: "choice",
               label: "Monthly cap",
-              options: SPEND_CAP_CHOICES,
+              options: capChoices(capPoints ?? []),
               defaultValue: "none",
             },
           }),
-          runOne: (id, row, input) => {
-            if (!row) throw new Error("Member not loaded");
-            return setMemberControls(orgId, id, {
-              memberLevel: row.memberLevel,
-              tierOverride: row.tierOverride,
-              storageCapBytes: row.storageCapBytes,
+          // Patch only the cap: re-read the member just now so a change made since the list
+          // loaded (tier, storage cap, notes) is carried through, never overwritten by stale row data.
+          runOne: async (id, _row, input) => {
+            const fresh = await getOrgMember(orgId, id);
+            await setMemberControls(orgId, id, {
+              memberLevel: fresh.memberLevel,
+              tierOverride: fresh.tierOverride,
+              storageCapBytes: fresh.storageCapBytes,
               monthlyBudgetMcents: capChoiceToMcents(input.value ?? "none", rate),
-              notes: row.notes,
+              notes: fresh.notes,
             });
           },
         },
@@ -129,5 +138,5 @@ export function rosterBulkActions(args: {
       },
     ],
     { noun: "member", getRowId: (m) => m.userId, getRowName: name },
-  ).bulkActions;
+  );
 }

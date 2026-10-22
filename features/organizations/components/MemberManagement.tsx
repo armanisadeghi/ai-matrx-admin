@@ -37,7 +37,8 @@ import {
   MemberEmployeeSeam,
   useMemberEmployeeCopyDetails,
 } from "@/features/hr/entry-points/MemberEmployeeSeam";
-import { orgMemberBulkActions } from "../bulk/orgRosterVerbs";
+import { orgMemberVerbs } from "../bulk/orgRosterVerbs";
+import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface MemberManagementProps {
@@ -191,10 +192,22 @@ function OrganizationMembersPanel({
   );
   const canManageMember = (member: PanelMember) =>
     isOwner || (userRole === "admin" && member.role !== "owner");
-  const bulkActions = orgMemberBulkActions({
+  const { rowActionDefs, bulkActions } = orgMemberVerbs({
     organizationId,
     canManage: canManageMember,
     ownerCount,
+    onRoleChange: (member, role) => void onChangeRole(member, role),
+    onRemove: (member) => {
+      void (async () => {
+        const ok = await confirm({
+          title: `Remove ${member.user?.displayName ?? member.user?.email ?? "this member"}?`,
+          description: "They lose access to everything shared in this organization.",
+          confirmLabel: "Remove",
+          variant: "destructive",
+        });
+        if (ok) await onRemove(member);
+      })();
+    },
   });
   const people = members.map((m) => ({
     id: m.userId,
@@ -249,6 +262,7 @@ function OrganizationMembersPanel({
       // this in mbr_remove / mbr_update_role — these predicates mirror it, they
       // do not invent a second rule.
       canManageMember={canManageMember}
+      rowVerbs={rowActionDefs}
       bulk={{ actions: bulkActions, onRefresh }}
       // R21: one owner per organization. "Make Owner" does not exist as a role
       // change — the database refuses it and names Transfer ownership, so the

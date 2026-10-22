@@ -11,6 +11,7 @@ import { Trash2 } from "lucide-react";
 import type { MatrxTableRowActionDef } from "@ai-matrx/design-system/data-table/types";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
+import { bulkCountLabel } from "@/lib/entity-list/selection";
 import { defineRowVerbs, type RowVerb } from "@/lib/entity-list/rowVerbs";
 import { useTableBulkSelection } from "@/lib/entity-list/useTableBulkSelection";
 
@@ -23,12 +24,23 @@ export interface AiTableBulkOptions<T extends { id: string }> {
   deleteOne: (row: T) => Promise<void>;
   /** Why this row can never be deleted ("System providers cannot be deleted"), or null. */
   protectedReason?: (row: T) => string | null;
-  /** The delete verb's label. Default "Delete". */
+  /** Plural of `noun` when it is not noun + "s" ("alias" -> "aliases"). */
+  nounPlural?: string;
+  /** The delete verb's label (button and menu). Default "Delete". */
   deleteLabel?: string;
+  /** The verb phrase alone, for the confirm title ("Delete", "Move to Trash"). Default "Delete". */
+  verb?: string;
+  /** Past tense for the success line ("Deleted", "Moved to Trash"). Default "Deleted". */
+  done?: string;
   /** What deleting does, one short sentence for the confirm. */
   consequence: string;
   /** Single-row verbs that come before Delete (View, Edit, Duplicate). */
   extraVerbs?: readonly RowVerb<T>[];
+}
+
+/** "3 aliases", "1 model": the table's own singular and plural, never string-glued per call site. */
+export function aiTableCountLabel(count: number, noun: string, nounPlural?: string): string {
+  return count === 1 || !nounPlural ? bulkCountLabel(count, noun) : `${count.toLocaleString()} ${nounPlural}`;
 }
 
 export function useAiTableBulk<T extends { id: string }>(options: AiTableBulkOptions<T>): {
@@ -37,6 +49,8 @@ export function useAiTableBulk<T extends { id: string }>(options: AiTableBulkOpt
 } {
   const { noun, rows, getRowName, deleteOne, protectedReason, consequence, extraVerbs = [] } = options;
   const label = options.deleteLabel ?? "Delete";
+  const verb = options.verb ?? "Delete";
+  const countLabel = (n: number) => aiTableCountLabel(n, noun, options.nounPlural);
   const { rowActionDefs, bulkActions } = defineRowVerbs<T>(
     [
       ...extraVerbs,
@@ -64,11 +78,11 @@ export function useAiTableBulk<T extends { id: string }>(options: AiTableBulkOpt
           })();
         },
         bulk: {
-          done: label === "Delete" ? "Deleted" : `${label}d`,
+          done: options.done ?? "Deleted",
           removesRows: true,
           skipReason: (row) => protectedReason?.(row) ?? null,
           confirm: (targets) => ({
-            title: `${label} ${targets.ids.length} ${noun}${targets.ids.length === 1 ? "" : "s"}?`,
+            title: `${verb} ${countLabel(targets.ids.length)}?`,
             description: `${consequence} Refused ones are named and skipped.`,
             confirmLabel: label,
             variant: "destructive",

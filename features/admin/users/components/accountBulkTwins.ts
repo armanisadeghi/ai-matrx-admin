@@ -7,6 +7,7 @@
 import { runReasonDoor, type ReasonDoorId } from "../record/useUserActions";
 import { personChanged, type UserActionSubject } from "../record/useUserActions";
 import type { UserActionId } from "../record/userSurfaces";
+import { toast } from "@/lib/toast";
 import type { BulkTwin, RegistryTwin } from "@/lib/entity-list/rowVerbs";
 
 export type AccountRow = UserActionSubject;
@@ -99,6 +100,14 @@ export function accountBulkTwins(deps: {
     free_months: {
       run: async (targets) => {
         // The dialog applies the plan itself and resolves nothing: the selection stays.
+        // Ticked people whose rows are not loaded cannot be opened in it: say so, never drop them quietly.
+        const notLoaded = targets.ids.length - targets.rows.length;
+        if (notLoaded > 0) {
+          toast.warning(
+            `${peopleLabel(notLoaded)} ${notLoaded === 1 ? "is" : "are"} not loaded and left out of Give free months. Load them, then give again.`,
+          );
+        }
+        if (targets.rows.length === 0) throw new Error("None of the selected people are loaded.");
         deps.giveFreeMonths(
           targets.rows.map((row) => ({ id: row.id, label: row.display_name ?? row.email ?? row.id })),
         );

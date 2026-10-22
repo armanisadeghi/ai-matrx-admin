@@ -31,7 +31,14 @@ jest.mock("../service/teamsService", () => ({
 const setMemberStatus = jest.fn(async (..._a: unknown[]) => undefined);
 const setMemberControls = jest.fn(async (..._a: unknown[]) => undefined);
 const adminRemove = jest.fn(async (..._a: unknown[]) => ({ removed: true }));
+const getOrgMember = jest.fn(async (..._a: unknown[]) => ({
+  memberLevel: "team",
+  tierOverride: "t2",
+  storageCapBytes: 99,
+  notes: "fresh note",
+}));
 jest.mock("../admin/service", () => ({
+  getOrgMember: (...a: unknown[]) => getOrgMember(...a),
   setMemberStatus: (...a: unknown[]) => setMemberStatus(...a),
   setMemberControls: (...a: unknown[]) => setMemberControls(...a),
   removeMember: (...a: unknown[]) => adminRemove(...a),
@@ -46,11 +53,11 @@ jest.mock("@/features/sharing/bulk/shareWithPeopleOpener", () => ({ shareWithPeo
 import type { EntityBulkSelection } from "@/lib/entity-list/selection";
 import {
   orgInvitationBulkActions,
-  orgMemberBulkActions,
+  orgMemberVerbs,
   teamBulkActions,
   teamMemberBulkActions,
 } from "../bulk/orgRosterVerbs";
-import { rosterBulkActions } from "../admin/bulkVerbs";
+import { rosterVerbs } from "../admin/bulkVerbs";
 
 // The tests build minimal rows; the verbs read only the fields each test sets.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,29 +76,42 @@ describe("org Members list", () => {
   const mk = (id: string, role: "owner" | "admin" | "member") =>
     ({ id, userId: `u-${id}`, role, joinedAt: null, user: { id: `u-${id}`, email: `${id}@x.com` } }) as never;
   const rows = [mk("a", "member"), mk("b", "admin"), mk("o", "owner")];
-  const actions = orgMemberBulkActions({
+  const onRoleChange = jest.fn();
+  const onRemove = jest.fn();
+  const { rowActionDefs, bulkActions: actions } = orgMemberVerbs({
     organizationId: "org-1",
     canManage: (m: { role: string }) => m.role !== "owner",
     ownerCount: 1,
+    onRoleChange,
+    onRemove,
   });
 
-  it("offers Set role (a choice ask) and Remove (names the count)", () => {
-    expect(actions.map((a) => a.id)).toEqual(["set-role", "remove"]);
-    const confirm = actions[0].confirm!(sel(rows, (r) => r.id)) as { ask: { kind: string } };
-    expect(confirm.ask.kind).toBe("choice");
-    const rm = actions[1].confirm!(sel(rows, (r) => r.id)) as { title: string };
-    expect(rm.title).toContain("2 members"); // the owner is skipped, so not counted
+  it("row menu and bulk bar come from one declaration (same ids, real row handlers)", () => {
+    expect(rowActionDefs.map((d) => d.id)).toEqual(["make-admin", "make-member", "remove"]);
+    expect(actions.map((a) => a.id)).toEqual(["make-admin", "make-member", "remove"]);
+    rowActionDefs[0].onClick(rows[0]);
+    expect(onRoleChange).toHaveBeenCalledWith(rows[0], "admin");
+    rowActionDefs[2].onClick(rows[0]);
+    expect(onRemove).toHaveBeenCalledWith(rows[0]);
+    // a member already admin has no Make Admin on their row menu
+    expect(rowActionDefs[0].appliesTo!(rows[1])).toBe(false);
   });
 
-  it("sets the picked role through the row door, with the organization id, skipping the owner", async () => {
-    await actions[0].run(sel(rows, (r) => r.id), { value: "admin" });
+  it("Remove names the count, not counting the skipped owner", () => {
+    const rm = actions[2].confirm!(sel(rows, (r) => r.id)) as { title: string };
+    expect(rm.title).toContain("2 members");
+  });
+
+  it("Make Admin runs the row door with the organization id, skipping the owner and those already admin", async () => {
+    const result = await actions[0].run(sel(rows, (r) => r.id), {});
     expect(updateMemberRole).toHaveBeenCalledWith("org-1", "u-a", "admin");
     expect(updateMemberRole).not.toHaveBeenCalledWith("org-1", "u-o", expect.anything());
-    expect(updateMemberRole).toHaveBeenCalledTimes(1); // b already admin is a no-op
+    expect(updateMemberRole).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(result)).toContain("\"keepIds\":[\"b\",\"o\"]"); // skipped rows stay ticked, not counted done
   });
 
   it("removes through the row door with the organization id and never the last owner", async () => {
-    await actions[1].run(sel(rows, (r) => r.id), {});
+    await actions[2].run(sel(rows, (r) => r.id), {});
     expect(removeMember).toHaveBeenCalledWith("org-1", "u-a");
     expect(removeMember).toHaveBeenCalledWith("org-1", "u-b");
     expect(removeMember).not.toHaveBeenCalledWith("org-1", "u-o");
@@ -159,7 +179,8 @@ describe("people on one team", () => {
 describe("admin member roster", () => {
   const row = (userId: string, over: Record<string, unknown> = {}) =>
     ({ userId, email: `${userId}@x.com`, displayName: null, role: "member", status: "active", memberLevel: "pro", tierOverride: null, storageCapBytes: 5, monthlyBudgetMcents: 7, notes: "n", ...over }) as never;
-  const actions = rosterBulkActions({ orgId: "org-1", rate: 20000 });
+  const open = jest.fn();
+  const { rowActionDefs, bulkActions: actions } = rosterVerbs({ orgId: "org-1", rate: 20000, capPoints: ["100000"], open });
 
   it("covers suspend, reactivate, spend cap and remove", () => {
     expect(actions.map((a) => a.id)).toEqual(["suspend", "reactivate", "spend-cap", "remove"]);
@@ -170,16 +191,35 @@ describe("admin member roster", () => {
     expect(setMemberStatus).toHaveBeenCalledTimes(1);
     expect(setMemberStatus).toHaveBeenCalledWith("org-1", "a", "suspended", "Left the company");
   });
-  it("Set spend cap keeps every other control and sends the organization id", async () => {
+  it("Set spend cap re-reads the member and carries the FRESH other controls, not the stale row", async () => {
     const s = sel([row("a")], (r) => r.userId);
     await byId(actions, "spend-cap").run(s, { value: "none" });
+    expect(getOrgMember).toHaveBeenCalledWith("org-1", "a");
     expect(setMemberControls).toHaveBeenCalledWith("org-1", "a", {
-      memberLevel: "pro",
-      tierOverride: null,
-      storageCapBytes: 5,
+      memberLevel: "team",
+      tierOverride: "t2",
+      storageCapBytes: 99,
       monthlyBudgetMcents: null,
-      notes: "n",
+      notes: "fresh note",
     });
+  });
+  it("the cap choices come from the knob's points, plus No limit", () => {
+    const cap = actions.find((a) => a.id === "spend-cap");
+    const q = cap?.confirm?.(sel([row("a")], (r) => r.userId)) as { ask: { options: { value: string }[] } };
+    expect(q.ask.options.map((o) => o.value)).toEqual(["none", "100000"]);
+  });
+  it("Set spend cap is skipped and named while the knob has not loaded", async () => {
+    const off = rosterVerbs({ orgId: "org-1", rate: 20000, capPoints: null, open }).bulkActions;
+    setMemberControls.mockClear();
+    await expect(
+      byId(off, "spend-cap").run(sel([row("a")], (r) => r.userId), { value: "none" }),
+    ).rejects.toBeDefined();
+    expect(setMemberControls).not.toHaveBeenCalled();
+  });
+  it("the row menu is real: every verb opens the member through the same declaration", () => {
+    expect(rowActionDefs.map((d) => d.id)).toEqual(["suspend", "reactivate", "spend-cap", "remove"]);
+    rowActionDefs[0].onClick(row("a"));
+    expect(open).toHaveBeenCalledWith(expect.objectContaining({ userId: "a" }));
   });
   it("Remove never touches the owner", async () => {
     const s = sel([row("a"), row("o", { role: "owner" })], (r) => r.userId);

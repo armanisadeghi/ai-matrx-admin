@@ -758,38 +758,41 @@ export function SpendApprovalsBoard({
   const monthlyOf = (rows: SpendApprovalRow[]) => cents(rows.reduce((sum, r) => sum + (r.est_monthly_cost ?? 0), 0));
   const decideOne =
     (decision: ApprovalDecision) =>
-    async (id: string, row: SpendApprovalRow | undefined, input: { value?: string }) => {
+    async (id: string, row: SpendApprovalRow | undefined, input: { value?: string; reason?: string }) => {
       const expiresAt = decision === "approve_temporary" ? endOfLocalDayIso(input.value ?? "") : null;
       await decideSpendApproval(id, decision, {
-        note: "Batch decision",
+        note: input.reason?.trim() || undefined,
         expiresAt,
         ...(row ? { expectedStatus: row.status } : {}),
       });
     };
   // The sentence a selected row is skipped with (the row's own icon is simply disabled).
   const notFor = (r: SpendApprovalRow) => (r.can_decide ? null : "Platform decides");
+  // The ONE skip rule per status verb (the row icon and the bulk bar both read it).
+  const skipUnless = (r: SpendApprovalRow, status: SpendApprovalRow["status"]) =>
+    notFor(r) ?? (r.status === status ? `Already ${status}` : null);
   const approvalsLabel = (n: number) => `${n} ${n === 1 ? "approval" : "approvals"}`;
   const { rowActionDefs, bulkActions } = defineRowVerbs<SpendApprovalRow>(
     [
       {
         id: "approve", icon: Check, label: "Approve", tone: "success",
-        appliesTo: (r) => r.can_decide && r.status !== "approved",
+        appliesTo: (r) => skipUnless(r, "approved") === null,
         onClick: (r) => setPending({ row: r, decision: "approve" }),
         bulk: {
           done: "Approved",
-          skipReason: (r) => notFor(r) ?? (r.status === "approved" ? "Already approved" : null),
-          confirm: (t) => ({ title: `Approve ${approvalsLabel(t.ids.length)}?`, description: `${monthlyOf(t.rows)} a month combined.`, confirmLabel: "Approve" }),
+          skipReason: (r) => skipUnless(r, "approved"),
+          confirm: (t) => ({ title: `Approve ${approvalsLabel(t.ids.length)}?`, description: `${monthlyOf(t.rows)} a month combined.`, confirmLabel: "Approve", reason: { placeholder: "Note (optional, recorded with each decision)", optional: true }, }),
           runOne: decideOne("approve"),
         },
       },
       {
         id: "reject", icon: X, label: "Reject", tone: "destructive",
-        appliesTo: (r) => r.can_decide && r.status !== "rejected",
+        appliesTo: (r) => skipUnless(r, "rejected") === null,
         onClick: (r) => setPending({ row: r, decision: "reject" }),
         bulk: {
           done: "Rejected",
-          skipReason: (r) => notFor(r) ?? (r.status === "rejected" ? "Already rejected" : null),
-          confirm: (t) => ({ title: `Reject ${approvalsLabel(t.ids.length)}?`, description: `${monthlyOf(t.rows)} a month combined.`, confirmLabel: "Reject", variant: "destructive" }),
+          skipReason: (r) => skipUnless(r, "rejected"),
+          confirm: (t) => ({ title: `Reject ${approvalsLabel(t.ids.length)}?`, description: `${monthlyOf(t.rows)} a month combined.`, confirmLabel: "Reject", variant: "destructive", reason: { placeholder: "Note (optional, recorded with each decision)", optional: true }, }),
           runOne: decideOne("reject"),
         },
       },
@@ -804,6 +807,7 @@ export function SpendApprovalsBoard({
             title: `Approve ${approvalsLabel(t.ids.length)} temporarily?`,
             description: `${monthlyOf(t.rows)} a month combined, then Rejected.`,
             confirmLabel: "Approve until",
+            reason: { placeholder: "Note (optional, recorded with each decision)", optional: true },
             ask: {
               kind: "date",
               label: "Expires on",
@@ -811,7 +815,7 @@ export function SpendApprovalsBoard({
               min: dateInputValue(0),
               validate: (v) => {
                 const iso = endOfLocalDayIso(v);
-                return iso && Date.parse(iso) > Date.now() ? null : "Pick an expiry date after today";
+                return iso && Date.parse(iso) > Date.now() ? null : "Pick today or a later date";
               },
             },
           }),
@@ -820,12 +824,12 @@ export function SpendApprovalsBoard({
       },
       {
         id: "reopen", icon: RotateCcw, label: "Reopen",
-        appliesTo: (r) => r.can_decide && r.status !== "waiting",
+        appliesTo: (r) => skipUnless(r, "waiting") === null,
         onClick: (r) => setPending({ row: r, decision: "reopen" }),
         bulk: {
           done: "Reopened",
-          skipReason: (r) => notFor(r) ?? (r.status === "waiting" ? "Already waiting" : null),
-          confirm: (t) => ({ title: `Reopen ${approvalsLabel(t.ids.length)}?`, description: "Back to waiting.", confirmLabel: "Reopen" }),
+          skipReason: (r) => skipUnless(r, "waiting"),
+          confirm: (t) => ({ title: `Reopen ${approvalsLabel(t.ids.length)}?`, description: "Back to waiting.", confirmLabel: "Reopen", reason: { placeholder: "Note (optional, recorded with each decision)", optional: true }, }),
           runOne: decideOne("reopen"),
         },
       },
@@ -839,10 +843,11 @@ export function SpendApprovalsBoard({
             title: `Reset tracking for ${approvalsLabel(t.ids.length)}?`,
             description: "Runs since, avg, max and est./month restart from now. History is kept.",
             confirmLabel: "Reset tracking",
+            reason: { placeholder: "Note (optional, recorded with each decision)", optional: true },
           }),
           // One batch door: the reset RPC takes every id at once.
-          run: async (t) => {
-            await resetSpendApprovalTracking(t.ids, "Batch reset");
+          run: async (t, input) => {
+            await resetSpendApprovalTracking(t.ids, input.reason?.trim() || undefined);
             return {};
           },
         },

@@ -52,6 +52,18 @@ export function buildMeetingBulkActions(args: {
 
   const ended = (m: MeetingRecord) => m.endedAt !== null && !m.recurrenceRule;
 
+  // The skip rules, written once: the confirm counts only the meetings that will actually run.
+  const cancelSkip = (m: MeetingRecord): string | null => {
+    const r = notYours(m);
+    if (r) return r;
+    if (m.deletedAt) return "archived";
+    if (m.cancelledAt) return "already canceled";
+    if (ended(m)) return "already over";
+    return null;
+  };
+  const archiveSkip = (m: MeetingRecord): string | null =>
+    notYours(m) ?? (m.deletedAt ? "already archived" : null);
+
   const own: EntityBulkAction<MeetingRecord>[] = [
     {
       // The row menu's Going / Maybe / Not going, one answer for every meeting you are invited to.
@@ -103,10 +115,12 @@ export function buildMeetingBulkActions(args: {
       icon: XCircle,
       variant: "destructive",
       confirm: (selection) => {
-        const recurring = selection.rows.filter((m) => m.recurrenceRule).length;
+        const runnable = selection.rows.filter((m) => cancelSkip(m) === null);
+        const recurring = runnable.filter((m) => m.recurrenceRule).length;
+        const skipped = selection.count - runnable.length;
         return {
-          title: `Cancel ${bulkCountLabel(selection.count, NOUN)}?`,
-          description: `Nobody can join a canceled meeting, and every guest who was invited is emailed a cancellation that removes it from their calendar.${recurring > 0 ? ` ${recurring} ${recurring === 1 ? "is a recurring meeting" : "are recurring meetings"} — the whole series is canceled.` : ""}`,
+          title: `Cancel ${bulkCountLabel(runnable.length, NOUN)}?`,
+          description: `Nobody can join a canceled meeting, and every guest who was invited is emailed a cancellation that removes it from their calendar.${skipped > 0 ? ` ${skipped} that cannot be canceled will be skipped and named.` : ""}${recurring > 0 ? ` ${recurring} ${recurring === 1 ? "is a recurring meeting" : "are recurring meetings"} — the whole series is canceled.` : ""}`,
           confirmLabel: "Cancel and email guests",
           variant: "destructive",
           reason: { placeholder: "Reason shown on the meeting link (optional)", optional: true },
@@ -133,14 +147,7 @@ export function buildMeetingBulkActions(args: {
             done: "Canceled",
             noun: NOUN,
             labelOf,
-            skipReason: (m) => {
-              const r = notYours(m);
-              if (r) return r;
-              if (m.deletedAt) return "archived";
-              if (m.cancelledAt) return "already canceled";
-              if (ended(m)) return "already over";
-              return null;
-            },
+            skipReason: cancelSkip,
           },
           meetingIdOf,
         );
@@ -175,8 +182,9 @@ export function buildMeetingBulkActions(args: {
       variant: "destructive",
       confirm: (selection) => {
         // Built from the selected rows: what the archive does depends on which meetings they are.
-        const series = selection.rows.filter((m) => m.recurrenceRule).length;
-        const notEnded = selection.rows.filter(
+        const runnable = selection.rows.filter((m) => archiveSkip(m) === null);
+        const series = runnable.filter((m) => m.recurrenceRule).length;
+        const notEnded = runnable.filter(
           (m) => m.endedAt === null && !m.deletedAt,
         ).length;
         const parts = [
@@ -194,7 +202,7 @@ export function buildMeetingBulkActions(args: {
         }
         parts.push("Restore from Archived.");
         return {
-          title: `Archive ${bulkCountLabel(selection.count, NOUN)}?`,
+          title: `Archive ${bulkCountLabel(runnable.length, NOUN)}?`,
           description: parts.join(" "),
           confirmLabel: "Archive",
           variant: "destructive",
@@ -229,8 +237,7 @@ export function buildMeetingBulkActions(args: {
             done: "Archived",
             noun: NOUN,
             labelOf,
-            skipReason: (m) =>
-              notYours(m) ?? (m.deletedAt ? "already archived" : null),
+            skipReason: archiveSkip,
           },
           meetingIdOf,
         );

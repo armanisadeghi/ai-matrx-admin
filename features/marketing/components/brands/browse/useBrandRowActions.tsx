@@ -24,9 +24,11 @@ import { BrandEditorDialog } from "@/features/marketing/components/brands/BrandE
 import { forgetBrandListReads, type BrandBrowseRow } from "./service";
 
 /**
- * THE BULK TWIN RULE: the two mutating verbs, declared once. Restore has a twin; Archive is `single` on
- * purpose — each archive asks about the shared items it takes with it (BrandArchiveFlow). The menu below
- * is the row surface; `BRAND_BULK_ACTIONS` is what the list's selection bar offers.
+ * THE BULK TWIN RULE: the two mutating verbs, declared once, both with a twin. Archive goes through the
+ * same change engine door the row's review window commits (`commitChange` verb "delete"); the confirm
+ * names the count and what goes with each brand, and a brand the server refuses is skipped and named.
+ * The row's window then offers the SHARED items to archive too; in bulk those stay (named in the confirm).
+ * The menu below is the row surface; `BRAND_BULK_ACTIONS` is what the list's selection bar offers.
  */
 export const { bulkActions: BRAND_BULK_ACTIONS } = defineRowVerbs<BrandBrowseRow>(
   [
@@ -44,7 +46,30 @@ export const { bulkActions: BRAND_BULK_ACTIONS } = defineRowVerbs<BrandBrowseRow
         },
       },
     },
-    { id: "archive", icon: Archive, label: "Archive brand", tone: "destructive", onClick: () => undefined, bulk: false, noBulk: "single" },
+    {
+      id: "archive",
+      icon: Archive,
+      label: "Archive brand",
+      tone: "destructive",
+      appliesTo: (row) => !row.archived,
+      unavailableTooltip: "Already archived",
+      onClick: () => undefined,
+      bulk: {
+        done: "Archived",
+        removesRows: true,
+        skipReason: (row) => (row.archived ? "Already archived" : null),
+        confirm: (targets) => ({
+          title: `Archive ${targets.ids.length} ${targets.ids.length === 1 ? "brand" : "brands"}?`,
+          description:
+            "Each brand and everything that goes with it leaves your lists. Things shared with other people stay. Restore them from Archived.",
+          confirmLabel: "Archive",
+          variant: "destructive",
+        }),
+        runOne: async (id) => {
+          await commitChange(supabase, { verb: "delete", entityType: "web_brand", ids: [id] }, {}, "");
+        },
+      },
+    },
   ],
   { noun: "brand", getRowId: (row) => row.id, getRowName: (row) => row.name },
 );

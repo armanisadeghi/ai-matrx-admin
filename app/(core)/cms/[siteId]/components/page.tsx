@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (components) inside a record or scope, not the record page; the record's own page carries the section
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { CmsComponentService } from "@/features/cms/services/cmsService";
 import type { ClientComponent } from "@/features/cms/types";
@@ -115,15 +115,14 @@ export default function ComponentsPage() {
     (comp: ClientComponent) => comp.id,
     siteId,
   );
-  const bulkActions = useMemo(
-    () =>
-      defineRowVerbs<ClientComponent>(
+  // ONE declaration: the row buttons and the bulk bar both come out of it.
+  const { rowActionDefs, bulkActions } = defineRowVerbs<ClientComponent>(
         [
           {
             id: "edit",
             icon: Pencil,
             label: "Edit",
-            onClick: () => {},
+            onClick: (c) => startEditing(c),
             bulk: false,
             noBulk: "edit",
           },
@@ -132,7 +131,7 @@ export default function ComponentsPage() {
             icon: Trash2,
             label: "Move to Trash",
             tone: "destructive",
-            onClick: () => {},
+            onClick: (c) => setDeleteTarget(c),
             bulk: {
               done: "Moved to Trash",
               removesRows: true,
@@ -151,9 +150,8 @@ export default function ComponentsPage() {
           getRowId: (comp) => comp.id,
           getRowName: (comp) => comp.name,
         },
-      ).bulkActions,
-    [],
-  );
+      );
+  const rowVerb = (id: string) => rowActionDefs.find((d) => d.id === id)!;
 
   const handleCreate = async () => {
     if (!createName || !createType) return;
@@ -506,17 +504,17 @@ export default function ComponentsPage() {
                             <Button
                               icon={<Pencil />}
                               variant="quiet"
-                              onClick={() => startEditing(comp)}
+                              onClick={() => rowVerb("edit").onClick(comp)}
                             >
-                              Edit
+                              {rowVerb("edit").label}
                             </Button>
                           )}
                           <Button
                             icon={<Trash2 />}
                             variant="quiet"
-                            onClick={() => setDeleteTarget(comp)}
+                            onClick={() => rowVerb("delete").onClick(comp)}
                           >
-                            Delete
+                            {rowVerb("delete").label}
                           </Button>
                         </div>
                       </div>

@@ -186,6 +186,7 @@ export default function AliasesContainer() {
     getRowName: (item) => item.alias,
     deleteOne: handleDelete,
     deleteLabel: "Delete alias",
+    nounPlural: "aliases",
     consequence: "Requests using the alias stop resolving to its model.",
   });
 
