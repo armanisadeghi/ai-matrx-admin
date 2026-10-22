@@ -19,6 +19,12 @@ describe("record siblings", () => {
     expect(recordSiblingsLoader("no-such-type", A, `/x/${A}`)).toBeUndefined();
   });
 
+  it("notes have a sibling loader: /notes/<a>/diff opens /notes/<b>/diff", () => {
+    expect(typeof RECORD_SIBLINGS.note).toBe("function");
+    expect(recordSiblingsLoader("note", A, `/notes/${A}/diff`)).toBeInstanceOf(Function);
+    expect(siblingHref(`/notes/${A}/diff`, A, B)).toBe(`/notes/${B}/diff`);
+  });
+
   it("the derived record level carries the loader as its door (classic and frame)", async () => {
     const loadOptions = async () => [{ label: "Other", href: `/agents/${B}/build` }];
     const t = deriveTrail({ pathname: `/agents/${A}/build`, nav: NAV, records: { [`/agents/${A}`]: { label: "QME Report", loadOptions } } });

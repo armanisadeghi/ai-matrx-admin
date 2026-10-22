@@ -19,7 +19,9 @@ import React, {
 import dynamic from "next/dynamic";
 import { surfaceOwnsKey } from "@ai-matrx/kit/keyboard-scope";
 import { initialTabsFromUrl } from "@/features/notes/initialTabsFromUrl";
-import { X } from "lucide-react";
+import { ListTree, RefreshCw, X } from "lucide-react";
+import { useDeclareFrameActions, useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";
+import type { FrameAction } from "@/features/shell/frame/types";
 import { NoteModeSwitch } from "./NoteModeSwitch";
 import { NoteRecordTools } from "./NoteRecordTools";
 import {
@@ -93,6 +95,7 @@ import {
   selectInstanceSplitNoteId,
   selectInstanceOutlineOpen,
   selectNoteLabel,
+  selectAllNotesList,
 } from "../redux/selectors";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { NotesInstanceProvider } from "../context/NotesInstanceContext";
@@ -484,6 +487,44 @@ export function NotesView({
       .finally(() => setIsRefreshing(false));
   }, [dispatch, isRefreshing, openTabs]);
 
+  // EVERY CRUMB IS A DOOR (Arman, 2026-10-22): in the new app frame the trail is
+  // [Notes ▾] › Notes › <open note ▾> — the note crumb opens every other note (the list's own
+  // rows, read when the door opens, capped). The open note's own verbs come from its active tab
+  // (NoteTabItem declares THE note action list); the page's tools below join them in "…".
+  const headerNoteLabel = useAppSelector(
+    headerNoteId ? selectNoteLabel(headerNoteId) : () => null,
+  );
+  const noteDoor = (id: string) => `/notes?active=${encodeURIComponent(id)}`;
+  useDeclareFrameCrumbs(
+    hidePageHeader
+      ? null
+      : [
+          { label: "Notes", href: "/notes" },
+          ...(headerNoteId
+            ? [
+                {
+                  label: headerNoteLabel || "Untitled note",
+                  href: noteDoor(headerNoteId),
+                  optionsAllHref: "/notes",
+                  optionsAllLabel: "All notes",
+                  loadOptions: async () =>
+                    selectAllNotesList(store.getState())
+                      .slice(0, 50)
+                      .map((n) => ({ label: n.label || "Untitled note", href: noteDoor(n.id), active: n.id === headerNoteId })),
+                },
+              ]
+            : []),
+        ],
+  );
+  // The page's tools — ONE list: the header draws them (NotesHeaderTools) and "…" carries them.
+  const pageTools: FrameAction[] = [
+    ...(headerNoteId
+      ? [{ id: "notes:outline", label: "Document outline", icon: ListTree, onSelect: toggleOutline }]
+      : []),
+    { id: "notes:refresh", label: "Refresh notes", icon: RefreshCw, disabled: isRefreshing, onSelect: () => void handleRefresh() },
+  ];
+  useDeclareFrameActions(hidePageHeader ? null : pageTools);
+
   // ── Keyboard shortcuts ───────────────────────────────────────────
   // Answered only for keys pressed in THIS notes view (utils/keyboard-scope):
   // a board or a panel mounts several, and each must not act at once.
@@ -834,50 +875,14 @@ export function NotesView({
                     no deploy. Deep-linked to the `notes` domain: the bare list
                     is 331 mandates across 47 domains. */}
                 <MandateDoorLink feature="notes" label="Notes agents" />
-                {compactHeader ? (
-                  // Tight row: the tools fold into ONE menu so the toolbar keeps its marks and lists.
-                  <TapTargetButtonGroup>
-                    {headerNoteId && <NoteCleanupButton noteId={headerNoteId} asTapGroup />}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <span className="inline-flex" data-notes-tools-menu="">
-                          <MoreHorizontalTapButton variant="group" ariaLabel="Note tools" tooltip="Outline, versions, refresh" />
-                        </span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-52">
-                        {headerNoteId && (
-                          <>
-                            <DropdownMenuItem onSelect={toggleOutline}>Document outline</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={history.toggle}>Version history</DropdownMenuItem>
-                          </>
-                        )}
-                        <DropdownMenuItem disabled={isRefreshing} onSelect={() => void handleRefresh()}>Refresh notes</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TapTargetButtonGroup>
-                ) : (
-                <TapTargetButtonGroup>
-                  {headerNoteId && (
-                    <>
-                      <NoteRecordTools instanceId={instanceId} noteId={headerNoteId} />
-                    </>
-                  )}
-                  {isRefreshing ? (
-                    <LoadingTapButton
-                      variant="group"
-                      disabled
-                      ariaLabel="Refreshing…"
-                    />
-                  ) : (
-                    <RetryTapButton
-                      variant="group"
-                      onClick={handleRefresh}
-                      ariaLabel="Refresh notes"
-                      tooltip="Refresh notes list and open tabs"
-                    />
-                  )}
-                </TapTargetButtonGroup>
-                )}
+                <NotesHeaderTools
+                  compact={compactHeader}
+                  tools={pageTools}
+                  instanceId={instanceId}
+                  noteId={headerNoteId}
+                  refreshing={isRefreshing}
+                  toggleHistory={history.toggle}
+                />
               </PageHeaderRightPortal>
             </>
           )}
@@ -954,5 +959,68 @@ export function NotesView({
         </div>
       )}
     </NotesInstanceProvider>
+  );
+}
+
+/**
+ * The /notes header's tools, drawn from the page's ONE tool list (`pageTools`, also the frame's
+ * "…" items): a tight row folds them into one menu; a full row shows the note's tools
+ * (outline / versions / clean-up, with their pressed state) and Refresh.
+ */
+function NotesHeaderTools({
+  compact,
+  tools,
+  instanceId,
+  noteId,
+  refreshing,
+  toggleHistory,
+}: {
+  compact: boolean;
+  tools: FrameAction[];
+  instanceId: string;
+  noteId: string | null;
+  refreshing: boolean;
+  toggleHistory: () => void;
+}) {
+  const refresh = tools.find((t) => t.id === "notes:refresh");
+  if (compact) {
+    return (
+      <TapTargetButtonGroup>
+        {noteId && <NoteCleanupButton noteId={noteId} asTapGroup />}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <span className="inline-flex" data-notes-tools-menu="">
+              <MoreHorizontalTapButton variant="group" ariaLabel="Note tools" tooltip="Outline, versions, refresh" />
+            </span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            {tools.map((tool) => (
+              <React.Fragment key={tool.id}>
+                <DropdownMenuItem disabled={tool.disabled} onSelect={tool.onSelect}>
+                  {tool.label}
+                </DropdownMenuItem>
+                {tool.id === "notes:outline" && <DropdownMenuItem onSelect={toggleHistory}>Version history</DropdownMenuItem>}
+              </React.Fragment>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TapTargetButtonGroup>
+    );
+  }
+  return (
+    <TapTargetButtonGroup>
+      {noteId && <NoteRecordTools instanceId={instanceId} noteId={noteId} />}
+      {refresh &&
+        (refreshing ? (
+          <LoadingTapButton variant="group" disabled ariaLabel="Refreshing…" />
+        ) : (
+          <RetryTapButton
+            variant="group"
+            onClick={refresh.onSelect}
+            ariaLabel={refresh.label}
+            tooltip="Refresh notes list and open tabs"
+          />
+        ))}
+    </TapTargetButtonGroup>
   );
 }

@@ -37,6 +37,12 @@ export const RECORD_SIBLINGS: Readonly<Record<string, SiblingsLoader>> = {
     });
     return page.rows.map((row) => ({ id: row.id, label: row.name ?? "Untitled agent" }));
   },
+  note: async () => {
+    // The notes sidebar's own list read (no bodies), newest first.
+    const { fetchNoteListItems } = await import("@/features/notes/service/notesService");
+    const rows = await fetchNoteListItems();
+    return rows.slice(0, SIBLINGS_MAX).map((row) => ({ id: row.id, label: row.label || "Untitled note" }));
+  },
 };
 
 /** The address for a sibling: the current address with the record's segment swapped. */

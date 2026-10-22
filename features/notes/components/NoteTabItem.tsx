@@ -69,7 +69,8 @@ import { toast, toastErrorAlreadyCaptured } from "@/lib/toast";
 import { buildRecordReferenceFence } from "@/features/matrx-envelope/recordReference";
 import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { openRecordMenu, recordMenuChanged, registerRecordMenu, type RecordMenuRows } from "@ai-matrx/context-menu/engine";
-import { noteActionsSection, openNotePrintStudio } from "./note-actions/noteActionSet";
+import { noteActions, noteActionsSection, openNotePrintStudio, type NoteActionHandlers } from "./note-actions/noteActionSet";
+import { useDeclareFrameActions } from "@/features/shell/frame-host/framePageHeader";
 import { noteTabRecordMenuKey } from "./noteRecordMenu";
 import { HomePickerDialog } from "../homes/HomePicker";
 import { noteIdentityContentSource } from "../richDocumentSource";
@@ -365,27 +366,43 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
     ]),
   ];
 
+  const noteHandlers: NoteActionHandlers = {
+    rename: () => {
+      bumpTabInteraction();
+      setTitleEditing(true);
+    },
+    duplicate: () => void handleDuplicate(),
+    moveToHome: () => {
+      bumpTabInteraction();
+      setMoveDialogOpen(true);
+    },
+    knowledge: () => openKnowledge({ noteId, title: label }),
+    knowledgeIndexed: ingest.state === "ingested",
+    exportMarkdown: handleExport,
+    print: () => openNotePrintStudio(noteId),
+    versionHistory: () => openHistory(noteId),
+    share: () => setShareOpen(true),
+    copyReference,
+    about: () => openNoteInfo({ noteId, title: label }),
+    moveToTrash: requestDelete,
+  };
+  // "…" HOLDS EVERY ACTION OF ITS LEVEL (Arman, 2026-10-22): the open note's actions — THE note
+  // action list, the same rows as its right-click menu — are the new app frame's "…" items while
+  // this tab is the active one. Classic: no frame, nothing declared.
+  useDeclareFrameActions(
+    isActive
+      ? noteActions(noteHandlers).map((a) => ({
+          id: `note:${a.id}`,
+          label: a.label,
+          icon: a.icon,
+          destructive: a.destructive,
+          onSelect: a.run,
+        }))
+      : null,
+  );
+
   const tabExtraSections: ContextMenuExtraSection[] = [
-    noteActionsSection({
-      rename: () => {
-        bumpTabInteraction();
-        setTitleEditing(true);
-      },
-      duplicate: () => void handleDuplicate(),
-      moveToHome: () => {
-        bumpTabInteraction();
-        setMoveDialogOpen(true);
-      },
-      knowledge: () => openKnowledge({ noteId, title: label }),
-      knowledgeIndexed: ingest.state === "ingested",
-      exportMarkdown: handleExport,
-      print: () => openNotePrintStudio(noteId),
-      versionHistory: () => openHistory(noteId),
-      share: () => setShareOpen(true),
-      copyReference,
-      about: () => openNoteInfo({ noteId, title: label }),
-      moveToTrash: requestDelete,
-    }),
+    noteActionsSection(noteHandlers),
     {
       id: "note-buffer",
       anchor: "after-compare",
