@@ -44,7 +44,8 @@ jest.mock("../landAfterSignIn", () => ({ landAfterSignIn: (...args: unknown[]) =
 
 import { GoogleOneTap } from "../GoogleOneTap";
 
-const settle = () => act(async () => { for (let i = 0; i < 10; i += 1) await Promise.resolve(); await new Promise((r) => setTimeout(r, 0)); });
+// Several macrotask turns: the idle callback, then the prompt module's import(), then its awaits.
+const settle = () => act(async () => { for (let i = 0; i < 10; i += 1) await new Promise((r) => setTimeout(r, 0)); });
 
 async function mount(props: React.ComponentProps<typeof GoogleOneTap>) {
   const host = document.createElement("div");
@@ -54,9 +55,16 @@ async function mount(props: React.ComponentProps<typeof GoogleOneTap>) {
   return root;
 }
 
-beforeAll(() => {
+beforeAll(async () => {
+  // Compile the prompt module once, so the component's import() resolves inside one settle.
+  await import("../oneTapPrompt");
   if (!globalThis.crypto?.subtle) Object.defineProperty(globalThis, "crypto", { value: webcrypto });
   process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID = "web-client.apps.googleusercontent.com";
+  // The prompt loads when the page is idle; jsdom has no idle callback, so idle is now.
+  Object.assign(window, {
+    requestIdleCallback: (cb: () => void) => window.setTimeout(cb, 0),
+    cancelIdleCallback: (handle: number) => window.clearTimeout(handle),
+  });
 });
 beforeEach(() => {
   initialize.mockClear();
