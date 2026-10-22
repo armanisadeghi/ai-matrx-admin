@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-21-233111/pnpm-lock.yaml.held — LOCAL latest 2026-10-21 23:31; GITHUB latest 2026-10-21 23:33; LOCAL lacks 6 of GITHUB's 23 new lines; GITHUB lacks 16 of LOCAL's 35 new lines; recover: git show 7232feedb5:'pnpm-lock.yaml' / 0b1e4227b5:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-21 23:5x PDT — Claude data-library lane (owner 95d8a188) resolved `_conflicts/2026-10-21-231613/` (runHistory.ts + results-stream-onto-the-page.test.tsx): GITHUB (62285858d0) was a strict subset — LOCAL kept every GITHUB line except the filter-by-column-name lines it replaced; took LOCAL, whose `row_key_field` (the store's field KEY, "place_id") fixes the filter the store refused for the column name "Place Id". Tests use key_column "Place Id" so they fail on the old code.
