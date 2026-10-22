@@ -35,6 +35,7 @@ const ROUTES = [
   ["/marketing/operations/capabilities", "Cb"],
   ["/marketing/operations/data-quality", "Dq"],
   ["/marketing/social", "Sy"],
+  ["/marketing/social/videos", "Vp"],
   ["/marketing/tools", "Tl"],
   ["/marketing/tools/youtube", "Yt"],
   ["/marketing/tools/youtube/videos/video-1", "Yv"],

@@ -78,6 +78,11 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
       "Every tracked social account and recent outlier across your brands.",
     letter: "Sy",
   },
+  "/marketing/social/videos": {
+    titlePrefix: "Videos",
+    description: "Every video project across your brands, each opening in its brand.",
+    letter: "Vp",
+  },
   "/marketing/reports/cost": {
     titlePrefix: "Cost",
     description:

@@ -176,6 +176,8 @@ export const marketingRoutes = {
   cost: () => "/marketing/reports/cost",
   /** The agency-plane social roll-up (every brand's tracked accounts and outliers). */
   social: () => "/marketing/social",
+  /** Every brand's video projects in one list (Social > Videos). */
+  socialVideos: () => "/marketing/social/videos",
   /** Cross-brand rank roll-up (was /marketing/ranks). */
   ranksRollup: () => "/marketing/reports/ranks",
   /** Cross-brand Search Console landing (site picker inside). */
