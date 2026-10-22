@@ -60,6 +60,7 @@ a faux in-body header bar.
 
 ## Change Log
 
+- 2026-10-22 — `listAssetPipelineResults` + `AssetPipelineResults`: the per-asset view of every live step result (consumed by the intake asset page). Triage: the AI reasoning is clamped to three lines with a More/Less reveal so "Open full asset" and the bucket tiles stay above the fold; the queue load defers its reset a tick (React Compiler rule).
 
 - 2026-10-21 — **No bulk on the three queues, by design.** Triage and Drafts decide one asset at a time on its own photos and evidence (a verdict is never applied unseen); Attention verdicts weigh the original against the skeptic per item. They are single-item decisions, so no bulk twin is declared.
 - 2026-09-19 — **THE FOURTH ORGANIZATION STATE (R37).** `AttentionQueue`, `DraftReviewQueue` and `TriageQueue` rendered `OrganizationRequiredNotice` from `!organizationId && orgBootstrapResolved` — true for a FAILED read too, since `setOrgBootstrapFailure` sets that flag. Each now reads `useOrganizationRequired().organizationState` and renders `OrganizationContextNotice`, so a failed read gets "We could not check your organization" with Try again instead of a pick nobody verified was needed. Guard: `pnpm check:org-three-states` rule 5.

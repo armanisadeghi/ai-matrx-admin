@@ -51,27 +51,34 @@ export function TriageQueue() {
   const [reloadKey, setReloadKey] = useState(0);
   const [index, setIndex] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [reasoningOpen, setReasoningOpen] = useState(false);
   const busyRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     // Fresh load (org change / retry): drop stale rows and any prior error.
-    setItems(null);
-    setLoadError(null);
-    listTriageQueue()
-      .then((rows) => {
-        if (!cancelled) {
-          setItems(rows);
-          setLoadError(null);
-        }
-      })
-      .catch((e: unknown) => {
-        if (!cancelled)
-          setLoadError(
-            e instanceof Error ? e.message : "Could not load the queue.",
-          );
-      });
+    // Deferred a tick — no synchronous setState in the effect body (React
+    // Compiler rule); the reset and the read's result land together.
+    const timer = setTimeout(() => {
+      if (cancelled) return;
+      setItems(null);
+      setLoadError(null);
+      listTriageQueue()
+        .then((rows) => {
+          if (!cancelled) {
+            setItems(rows);
+            setLoadError(null);
+          }
+        })
+        .catch((e: unknown) => {
+          if (!cancelled)
+            setLoadError(
+              e instanceof Error ? e.message : "Could not load the queue.",
+            );
+        });
+    }, 0);
     return () => {
+      clearTimeout(timer);
       cancelled = true;
     };
   }, [reloadKey]);
@@ -208,7 +215,24 @@ export function TriageQueue() {
           <ConfidenceChip confidence={item.aiConfidence} />
         </div>
         {item.aiReasoning && (
-          <p className="mt-2 text-sm text-muted-foreground">{item.aiReasoning}</p>
+          <div className="mt-2">
+            <p
+              className={
+                reasoningOpen
+                  ? "whitespace-pre-wrap text-sm text-muted-foreground"
+                  : "line-clamp-3 text-sm text-muted-foreground"
+              }
+            >
+              {item.aiReasoning}
+            </p>
+            <Button
+              variant="quiet"
+              onClick={() => setReasoningOpen((v) => !v)}
+              aria-expanded={reasoningOpen}
+            >
+              {reasoningOpen ? "Less" : "More"}
+            </Button>
+          </div>
         )}
         {item.notes && (
           <div className="mt-2 text-sm text-foreground"><RichContent source={item.notes ?? ""} level="standard" /></div>

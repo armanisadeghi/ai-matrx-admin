@@ -619,7 +619,7 @@ export function IntakeCaptureScreen({
       </button>
 
       {/* QR feedback — an honesty chip; survives hide-controls. */}
-      {qrMode && (
+      {qrMode && !cameraBlocked && (
         <div className="pointer-events-none absolute inset-x-0 top-16 z-30 mt-safe flex justify-center">
           {qrFlash ? (
             <span className="flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-lg">
