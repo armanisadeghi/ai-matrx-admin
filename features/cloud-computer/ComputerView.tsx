@@ -347,6 +347,25 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     }
   }, [cb, viewSupport]);
 
+  if (runFailed && run?.errorCode === "browser_not_running") {
+    // The browser died and its one automatic relaunch failed: the server ended
+    // the run. Say so and offer a fresh run on the same profile — never an
+    // endless "Reconnecting…" to an empty stream (2026-10-22).
+    const reason = run.errorDetailSafe ?? "The browser stopped and could not restart.";
+    return (
+      <Centered>
+        <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden />
+        <p role="alert" className="text-sm font-medium">
+          Browser not running <ErrorAlchemyMenu error={reason} />
+        </p>
+        <p className="max-w-sm text-xs text-muted-foreground">{reason}</p>
+        <Button icon={<RotateCw />} variant="primary" onClick={() => void cb.restart()} disabled={cb.loading}>
+          Restart
+        </Button>
+      </Centered>
+    );
+  }
+
   if (runFailed || (cb.error && !run)) {
     const message = cb.error?.message ?? run?.errorDetailSafe ?? "The screen could not open.";
     return (
@@ -388,9 +407,14 @@ function ComputerScreen({ conversationId }: { conversationId?: string }) {
     }
   };
   const onStreamState = (state: StreamState) => {
-    if (state === "reconnecting") void claimGone();
+    if (state === "reconnecting") {
+      // The picture went away: the run itself may be over (its browser died).
+      void cb.checkRun();
+      void claimGone();
+    }
   };
   const onConnectTimeout = async () => {
+    void cb.checkRun();
     if (await claimGone()) return;
     if (!freshTried.current) {
       freshTried.current = true;

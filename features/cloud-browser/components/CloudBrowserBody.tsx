@@ -159,6 +159,9 @@ export function CloudBrowserBody({
   // of showing empty faces. `startFailed` wins over `starting` because a failed
   // load is finished (the slice clears `loading` when it records an error).
   const runFailed = cb.run?.state === "failed" || cb.run?.state === "failed_persistence";
+  // The browser died and its one automatic relaunch failed (2026-10-22): the
+  // run is over, and the way back is a fresh run on the same profile.
+  const browserDown = runFailed && cb.run?.errorCode === "browser_not_running";
   const startError = cb.error ?? (runFailed ? {
     message: cb.run?.errorDetailSafe || "Your cloud browser could not finish starting.",
     retryable: true,
@@ -460,7 +463,10 @@ export function CloudBrowserBody({
                 <CloudBrowserStartFailed
                   error={startError}
                   retrying={cb.loading}
-                  onRetry={() => void cb.retry()}
+                  onRetry={() => void (browserDown && !cb.error ? cb.restart() : cb.retry())}
+                  {...(browserDown && !cb.error
+                    ? { title: "Browser not running", retryLabel: "Restart" }
+                    : {})}
                 />
               ) : starting ? (
                 <CloudBrowserStarting />
@@ -473,6 +479,7 @@ export function CloudBrowserBody({
                     openError={streamError?.message ?? null}
                     openElsewhere={streamError?.openElsewhere ?? false}
                     onReconnect={() => void openStream(true)}
+                    onConnectionLost={() => void cb.checkRun()}
                   />
                 </div>
               ) : face === "screenshots" ? (
