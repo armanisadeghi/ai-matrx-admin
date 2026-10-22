@@ -2,6 +2,7 @@
 name: shape-authoring
 subject: architecture/content-ir
 description: "The complete rules for writing or editing a shape's component (kind component). Use when creating, editing, patching or fixing a kind component, calling any kindcomp_* tool, or when a shape renders empty, broken, cropped, cramped or ugly."
+allowed_tools: [kindcomp_preview]
 attach_with_tools: [kindcomp_get_context, kindcomp_create_component, kindcomp_update_code, kindcomp_patch_code, kindcomp_get_code, kindcomp_update_settings, kindcomp_resolve_incident, kindcomp_preview, kind_create]
 ---
 
