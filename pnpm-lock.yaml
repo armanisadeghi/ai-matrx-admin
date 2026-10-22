@@ -64,7 +64,7 @@ importers:
         version: 0.6.77(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))
       '@ai-matrx/chat':
         specifier: latest
-        version: 0.8.329(ed24c55c132c98d7e1bd773c5b0ade72)
+        version: 0.8.331(ed24c55c132c98d7e1bd773c5b0ade72)
       '@ai-matrx/code-runtime':
         specifier: latest
         version: 0.4.93(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1)
@@ -1271,8 +1271,8 @@ packages:
       react-dom:
         optional: true
 
-  '@ai-matrx/chat@0.8.329':
-    resolution: {integrity: sha512-eVvaSFCk5YOj8QvGC48LmRI02uddW9TsSbIMg1pEv7GLfnftA51pCGInGgY0sbQEVyi5CpB2inxjip3RR5YYtQ==}
+  '@ai-matrx/chat@0.8.331':
+    resolution: {integrity: sha512-72/cz0Y2SKcJC8Bfq0RXialmj/eKl8YZbvOuVYNy9n357iKDC959QE2AAbNgVAjhby+deaQAAT80/CX1k+L8Qg==}
     engines: {node: '>=20'}
     peerDependencies:
       '@reduxjs/toolkit': '>=2.0.0'
@@ -13760,7 +13760,7 @@ snapshots:
       - recharts
       - typescript
 
-  '@ai-matrx/chat@0.8.329(ed24c55c132c98d7e1bd773c5b0ade72)':
+  '@ai-matrx/chat@0.8.331(ed24c55c132c98d7e1bd773c5b0ade72)':
     dependencies:
       '@ai-matrx/agents': 0.59.234(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
       '@ai-matrx/alchemy': 0.23.72(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
@@ -13856,7 +13856,7 @@ snapshots:
     dependencies:
       '@ai-matrx/agents': 0.59.234(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
       '@ai-matrx/api': 0.1.63(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.1)
-      '@ai-matrx/chat': 0.8.329(ed24c55c132c98d7e1bd773c5b0ade72)
+      '@ai-matrx/chat': 0.8.331(ed24c55c132c98d7e1bd773c5b0ade72)
       '@ai-matrx/content-ir': 0.24.38(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))
       '@ai-matrx/data': 0.29.101(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@typescript/typescript6@6.0.2)(react@19.3.1)(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
       '@ai-matrx/design-system': 0.86.282(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))
@@ -13927,7 +13927,7 @@ snapshots:
     dependencies:
       '@ai-matrx/agents': 0.59.234(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
       '@ai-matrx/alchemy': 0.23.72(@supabase/supabase-js@2.117.2(@opentelemetry/api@1.9.0))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))(y-protocols@1.0.7(yjs@13.6.33))(yjs@13.6.33)
-      '@ai-matrx/chat': 0.8.329(ed24c55c132c98d7e1bd773c5b0ade72)
+      '@ai-matrx/chat': 0.8.331(ed24c55c132c98d7e1bd773c5b0ade72)
       '@ai-matrx/content-ir': 0.24.38(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))
       '@ai-matrx/design-system': 0.86.282(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(@typescript/typescript6@6.0.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(recharts@3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1))
       '@ai-matrx/icons': 0.3.83(@typescript/typescript6@6.0.2)(react@19.3.1)
