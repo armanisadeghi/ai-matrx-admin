@@ -32,7 +32,7 @@ import {
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { toast, recordToast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import {
   listBundles,
   listBundleMembers,
@@ -50,8 +50,8 @@ import {
   bundleHref,
   toolHref,
 } from "@/features/tool-registry/doors";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { AiToolRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { ADMIN_BUNDLES_SURFACE_NAME } from "@/features/surfaces/manifests/admin-bundles.manifest";

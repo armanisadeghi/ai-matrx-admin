@@ -14,7 +14,7 @@
  */
 
 import { Check } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { ApprovalKind, ApprovalScope } from "../types";
 import {
   GOOGLE_OPERATOR_SCOPE,

@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { addAgentToOrchestra } from "@/features/agents/redux/orchestras/thunks";
 import { useOrchestrasList } from "@/features/agents/orchestras/hooks/useOrchestrasList";
 

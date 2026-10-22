@@ -30,7 +30,10 @@ jest.mock("@ai-matrx/summon/open", () => ({ selectIsOverlayOpen: () => false, to
 jest.mock("@/components/agent-copy/CopyButtons", () => ({ CopyButtons: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@ai-matrx/design-system/data-table/uuid-cell", () => ({ MatrxUuidCell: () => null }));
-jest.mock("@/components/official/entity-ref/doors", () => ({ isUuidValue: () => false }));
+jest.mock("@ai-matrx/records-ui/entity-doors", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-doors"),
+  isUuidValue: () => false,
+}));
 jest.mock("@ai-matrx/design-system/controls", () => ({
   Input: (p: any) => <input {...p} />,
 }));

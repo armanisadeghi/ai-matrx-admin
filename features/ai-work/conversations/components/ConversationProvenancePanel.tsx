@@ -43,7 +43,7 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { arrivedByLabel } from "@/features/ai-work/lib/matrx2Coding";
 import {

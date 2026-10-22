@@ -23,7 +23,7 @@ import {
   withAvailability,
   type AvailabilityMap,
 } from "@ai-matrx/context-menu/engine";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { linkGapReviewLabel } from "@/features/marketing/components/backlinks/lib/link-gap";
 
 export type ProspectReviewStatus = "pending" | "approved" | "snoozed" | "rejected";

@@ -29,7 +29,7 @@ import {
   createAdminReportingScope,
 } from "@/features/surfaces/manifests/admin-reporting.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   PERF_STATES,
   PERF_STATE_LABELS,

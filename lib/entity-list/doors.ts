@@ -20,7 +20,7 @@
 // and exported for the `views.cards` / `views.rows` render props so an
 // alternate view cannot silently be a poorer door than the table.
 
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import type { EntityListConfig } from "./config";
 
 /**

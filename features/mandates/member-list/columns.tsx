@@ -9,7 +9,7 @@
 // fact (code declarations, coverage, grades) has a column here.
 
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   DATE_SORT_WORDS,
   Muted,

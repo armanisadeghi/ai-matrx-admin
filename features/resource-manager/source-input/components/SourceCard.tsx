@@ -40,7 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useStagesStatus } from "@/features/rag/hooks/useStagesStatus";
 import type { ProcessingJob } from "@/features/rag/hooks/useProcessingRunner";
 import { factsPollDelayMs } from "@/features/sources/sourceRows";

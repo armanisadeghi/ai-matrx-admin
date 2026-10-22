@@ -18,7 +18,7 @@
 import { useState } from "react";
 import { FilePlus2 } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { TextInputDialog } from "@ai-matrx/design-system";
 import {
   Select,

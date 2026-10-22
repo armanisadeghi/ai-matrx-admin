@@ -390,7 +390,7 @@ export function FileContextMenu({
     // this handler is only reachable on user action, and the file is a heavy
     // client component.
     const { toastDoor } =
-      await import("@/components/official/entity-ref/toastDoor");
+      await import("@ai-matrx/records-ui/entity-ref");
     const tid = toast.loading(
       `Reprocessing ${ids.length} files for Knowledge…`,
       {

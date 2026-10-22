@@ -61,13 +61,13 @@ import { HistoryActorName } from "./HistoryActorName";
 import { clientLazy } from "@ai-matrx/kit/client-lazy";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { savePresentation } from "./savePresentation";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   isUuidValue,
   resolveEntityDoors,
-  tokenFromColumnName,
-} from "@/components/official/entity-ref/doors";
+  doorTokenFromColumnName as tokenFromColumnName,
+} from "@ai-matrx/records-ui/entity-doors";
 import { copyContent } from "@ai-matrx/rich-content/copy/copy-commands";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";

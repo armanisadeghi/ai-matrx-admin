@@ -40,8 +40,8 @@ import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import { entityFromSurfaceKey } from "@ai-matrx/chat/agents/utils/surface-key";
 import {
   selectLastFocusedInputConversation,

@@ -50,7 +50,7 @@ import {
 } from "@/features/organizations/types";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { ReferencesBulkCopyButton } from "@/features/matrx-envelope/components/ReferencesBulkCopyButton";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
 import type { ScopeTypeWithScopes } from "@ai-matrx/records/scopes";

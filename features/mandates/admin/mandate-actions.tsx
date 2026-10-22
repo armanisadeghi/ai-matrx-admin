@@ -20,7 +20,7 @@ import {
   Building2,
 } from "lucide-react";
 import { toast, recordToast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,7 @@ import {
 } from "@/lib/redux/hooks";
 import { duplicateAgent } from "@/features/agents/redux/builder-write.thunks";
 import type { AgentLineageRef } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenAgentConvertSystemWindow } from "@/features/overlays/definitions/agentConvertSystemWindow.overlay";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
@@ -38,7 +38,7 @@ import { agentHref } from "./mandate-health";
 import { useGuardedRebind } from "./useGuardedRebind";
 import { promoteMandateToSystem } from "./promotion";
 import type { MandateCodeTruth, MandateDefinitionRow } from "./service";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { fetchAgentExecutionMinimal } from "@ai-matrx/chat/agents/redux/agent-definition/thunks";

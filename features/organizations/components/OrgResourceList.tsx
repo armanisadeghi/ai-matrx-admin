@@ -31,7 +31,7 @@
 import React from "react";
 import Link from "next/link";
 import { Eye, Loader2 } from "lucide-react";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { ResourcePeekHost } from "@/features/organizations/peek/ResourcePeekHost";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

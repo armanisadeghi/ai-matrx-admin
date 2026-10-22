@@ -24,7 +24,8 @@ jest.mock("@/features/scopes/service/entityTitles", () => ({
   fetchEntityTitles: async (token: string, ids: string[]) =>
     new Map(ids.map((id) => [id, `${token} ${id}`])),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: (p: { token: string; id: string; name: string; extraActions?: React.ReactNode }) => (
     <span data-ref={`${p.token}:${p.id}`}>
       {p.name}

@@ -26,7 +26,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 import AppLink from "@/components/navigation/AppLink";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ChangeDiff, type ChangeFieldDiff } from "@/components/ui/change-diff";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";
 import { openPath } from "@/lib/deep-link/openPath";

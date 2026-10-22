@@ -66,7 +66,7 @@ import {
   type AssetPageRef,
 } from "@/features/marketing/components/media/BrandAssetDetail";
 import { readVideoMetadata } from "@/features/marketing/lib/video-metadata";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 const PROVIDER_LABELS: Record<SiteVideoAsset["provider"], string> = {

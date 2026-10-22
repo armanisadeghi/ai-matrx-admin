@@ -40,7 +40,7 @@ import {
   selectEditorMode,
 } from "@/features/code/redux/codeWorkspaceSlice";
 import type { RootState } from "@/lib/redux/store";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import {
   AlertTriangle,

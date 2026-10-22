@@ -19,8 +19,8 @@
  * a shape has exactly one renderer.
  */
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { RecordStamps } from "@/components/official/record-stamps/RecordStamps";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { RecordStamps } from "@ai-matrx/records-ui/entity-ref";
 import { useRecordActors } from "@/components/official/record-stamps/useRecordActors";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import {

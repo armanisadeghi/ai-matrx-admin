@@ -9,7 +9,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { useOrganizationLabel } from "@/features/organizations/hooks/useOrganizationLabel";
 import { createClient } from "@/utils/supabase/client";

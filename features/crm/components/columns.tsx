@@ -17,7 +17,7 @@ import {
 import { Badge, Chip } from "@ai-matrx/design-system/controls";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatRelativeTime } from "@/utils/datetime";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { cn } from "@/lib/utils";
 import type { ExpertStatus, PartyListRow } from "../types";
 import {

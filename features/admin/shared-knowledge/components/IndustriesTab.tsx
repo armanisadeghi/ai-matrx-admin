@@ -17,7 +17,7 @@
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import { useMemo, useState } from "react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";
 import { Badge } from "@/components/ui/badge";

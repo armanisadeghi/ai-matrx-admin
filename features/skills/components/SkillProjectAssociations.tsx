@@ -19,7 +19,7 @@ import {
 import { ReadFailure } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 import { useSkillProjects } from "../hooks/useSkillProjects";
 

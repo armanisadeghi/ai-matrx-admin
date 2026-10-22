@@ -17,7 +17,7 @@
 import React, { useCallback, useState, useMemo } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { shouldOpenInNewTab } from "@/utils/navigation/should-open-in-new-tab";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {

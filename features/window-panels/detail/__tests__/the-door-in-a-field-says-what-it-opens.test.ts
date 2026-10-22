@@ -25,7 +25,7 @@ describe("the host's RefCell binding", () => {
     expect(SOURCE).toMatch(/function RefCell\([\s\S]*?name\?: string \| null;/);
     expect(SOURCE).toContain("<EntityRef token={token} id={value} name={name} />");
     expect(SOURCE).toContain(
-      'from "@/components/official/entity-ref/EntityRef"',
+      'from "@ai-matrx/records-ui/entity-ref"',
     );
   });
 

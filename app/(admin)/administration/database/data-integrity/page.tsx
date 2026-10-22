@@ -40,8 +40,8 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import {
   isUuidValue,
-  tokenFromColumnName,
-} from "@/components/official/entity-ref/doors";
+  doorTokenFromColumnName as tokenFromColumnName,
+} from "@ai-matrx/records-ui/entity-doors";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

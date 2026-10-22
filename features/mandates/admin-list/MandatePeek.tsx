@@ -17,7 +17,7 @@ import {
   useTransientPeek,
 } from "@/features/organizations/peek/useTransientPeek";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { adminMandateRecordHref } from "@/features/mandates/admin-routes";
 import { agentHref } from "@/features/mandates/admin/mandate-health";
 import {

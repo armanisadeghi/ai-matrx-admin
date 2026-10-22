@@ -12,7 +12,7 @@ import { ReadFailure } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { Bookmark, Building2, Contact, Users } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { PitchAdvisoryPanel } from "@/features/crm/pitch-advisories/PitchAdvisoryPanel";
 import { usePitchAdvisories } from "@/features/crm/pitch-advisories/usePitchAdvisories";

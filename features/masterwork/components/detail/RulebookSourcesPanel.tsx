@@ -57,7 +57,7 @@ import { selectFailedUploadsForFolderPath } from "@/features/files/redux/selecto
 import type { UploadState } from "@/features/files/types";
 import { Button } from "@/components/ui/button";
 import { firstBlockingReason, GatedActionButton, Button as ControlButton } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AssociationCaptureToolbar } from "@ai-matrx/associations/react";
 import {
   UniversalAssociationPicker,

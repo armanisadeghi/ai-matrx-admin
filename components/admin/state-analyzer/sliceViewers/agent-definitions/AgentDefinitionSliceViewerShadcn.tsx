@@ -27,7 +27,7 @@ import {
   AiModelRef,
   AiToolRef,
 } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (

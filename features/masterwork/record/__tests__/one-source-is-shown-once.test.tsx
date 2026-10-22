@@ -147,7 +147,8 @@ jest.mock("@ai-matrx/rich-content/rich-document/RichDocumentActions", () => ({
 jest.mock("@/features/masterwork/drive/DriveLinkButton", () => ({
   DriveLinkButton: () => null,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => null,
 }));
 

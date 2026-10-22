@@ -14,7 +14,7 @@ import { fetchEducationLibraryPage } from "@/features/education/library/service"
 import type { EducationLibraryRow } from "@/features/education/library/types";
 import { educationLibraryHref } from "@/features/education/library/types";
 import { artifactVisual } from "@/features/education/library/artifactVisuals";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { DEFAULT_ENTITY_LIST_QUERY } from "@/lib/entity-list/types";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { describeFailure } from "@/lib/failure/transport";

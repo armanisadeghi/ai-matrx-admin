@@ -28,7 +28,7 @@ import {
   treeIndentStyle,
 } from "@/components/official/topic-tree/geometry";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 import {
   getFileDetailsByUrl,

@@ -40,7 +40,7 @@ import {
 } from "@/features/tasks/lib/copy";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/utils/cn";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { TaskProvenanceChip } from "@/features/tasks/components/TaskProvenanceChip";
 import {
   TASK_TITLE_DOM_ATTR,

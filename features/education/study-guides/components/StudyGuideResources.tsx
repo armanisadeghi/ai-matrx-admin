@@ -1,7 +1,7 @@
 "use client";
 
 import { useContainerLinks } from "@ai-matrx/associations/react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { GeneratedFromChips } from "@/features/education/convert/GeneratedFromChips";
 import { MadeFromSource } from "@/features/education/convert/MadeFromSource";

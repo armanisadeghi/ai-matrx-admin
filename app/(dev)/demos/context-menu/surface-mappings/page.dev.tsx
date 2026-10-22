@@ -56,7 +56,7 @@ import {
   type SurfaceBoundScopeMappingResult,
 } from "@ai-matrx/chat/agents/utils/scope-mapping";
 import type { SurfaceValue } from "@ai-matrx/chat/surfaces/types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useAgentCatalogError, useAgentCatalogStatus, useAgentsById } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";

@@ -28,7 +28,7 @@ import { CATALOG_ALIASES, CATALOG_NOUNS } from "../catalog-nouns.generated";
 import { BESPOKE_REFERENCE_NOUNS, getReferenceResolver } from "../referenceResolvers";
 import { referenceDoor } from "../referenceDoor";
 import { getItemConfig } from "@/features/item-presentation/registry";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 const ID = "5c3b7d1e-2f4a-4b6c-8d9e-0a1b2c3d4e5f";
 

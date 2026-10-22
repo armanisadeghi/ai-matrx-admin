@@ -7,7 +7,7 @@
  * scope from its id alone.
  */
 import { ScopeMismatchDialog } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOverlayRequest, type OverlayRenderProps } from "@ai-matrx/summon/react";
 import type { ScopeMismatchChoice } from "@/features/scopes/utils/scopeMismatch";
 import type { ScopeMismatchRequest } from "@/components/dialogs/scope-mismatch/scopeMismatchOpener";

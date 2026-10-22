@@ -55,8 +55,8 @@ import { CrumbTrailHeader } from "@/features/shell/components/header/templates/C
 import { ArrowLeft, Copy, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SuspenseLoader } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import { cn } from "@/lib/utils";
 import styles from "./MandateWorkspace.module.css";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";

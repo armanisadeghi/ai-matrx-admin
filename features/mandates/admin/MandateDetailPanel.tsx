@@ -44,7 +44,7 @@ import type {
   AgentLineageRef,
 } from "@ai-matrx/chat/agents/identity/agent-catalog-lists";
 import type { AgentDefinition } from "@ai-matrx/chat/agents/types/agent-definition.types";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { getAgentModeHref } from "@ai-matrx/chat/agents/components/shared/AgentModeController";
 import { AgentDiffViewer } from "@/features/agents/components/diff/AgentDiffViewer";
 import { MandateNotesPanel } from "@/features/mandates/components/MandateNotesPanel";
@@ -123,7 +123,7 @@ import {
   type MandateVariableVerdict,
   type MandateVersionInfo,
 } from "./service";
-import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 import {
   GRADE_META,
   fetchStandingImpact,

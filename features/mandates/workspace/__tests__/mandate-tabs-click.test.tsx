@@ -61,12 +61,12 @@ jest.mock("../../components/MandateNotesPanel", () => ({
 jest.mock("../../components/MandateLineageLine", () => ({
   MandateLineageLine: () => <div />,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name }: { name?: string }) => <span>{name ?? ""}</span>,
-}));
-jest.mock("@/components/official/entity-ref/TextWithDoors", () => ({
   TextWithDoors: ({ text }: { text: string }) => <span>{text}</span>,
 }));
+
 jest.mock("@/features/bindings/OneBindingWorkspace", () => ({
   OneBindingWorkspace: () => <div data-testid="one-binding" />,
 }));

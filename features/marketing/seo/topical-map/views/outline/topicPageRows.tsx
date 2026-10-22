@@ -30,7 +30,7 @@
 
 import type { ReactNode } from "react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import type { TopicTreeRow } from "@/components/official/topic-tree/TopicTree";
 
 import type { MapIntentColors } from "../../knobs";

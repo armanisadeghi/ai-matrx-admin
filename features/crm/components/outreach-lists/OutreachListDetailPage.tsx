@@ -50,7 +50,7 @@ import type {
 import { ItemMenu } from "@ai-matrx/design-system/item";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { outreachMemberMenuTarget, useCrmRowMenu } from "../crm-row-actions";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";

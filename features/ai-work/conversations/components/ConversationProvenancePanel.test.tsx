@@ -40,7 +40,8 @@ jest.mock("./ContinueOnMyMacPanel", () => ({
     <div data-testid="continue-on-mac">{providerSessionId}</div>
   ),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => <span />,
 }));
 

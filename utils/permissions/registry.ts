@@ -1,4 +1,4 @@
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import { tryGetEntityInfo } from "@/features/scopes/registry/entityRegistry";
 
 /**

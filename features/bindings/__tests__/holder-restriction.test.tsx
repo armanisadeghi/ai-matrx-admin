@@ -88,7 +88,8 @@ jest.mock("@/features/workflow-runtime/listings/WorkflowListDropdown", () => ({
   WorkflowListDropdown: () => <div data-testid="workflow-picker" />,
 }));
 
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: () => <span data-testid="entity-ref" />,
 }));
 

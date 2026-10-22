@@ -114,12 +114,12 @@ jest.mock("../../components/MandateNotesPanel", () => ({
 jest.mock("../../components/MandateLineageLine", () => ({
   MandateLineageLine: () => <div />,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name }: { name?: string }) => <span>{name ?? ""}</span>,
-}));
-jest.mock("@/components/official/entity-ref/TextWithDoors", () => ({
   TextWithDoors: ({ text }: { text: string }) => <span>{text}</span>,
 }));
+
 
 /**
  * The one binding UI is mounted by BOTH the person's route and this one, and it

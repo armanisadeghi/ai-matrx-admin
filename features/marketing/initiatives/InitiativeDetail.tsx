@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { Skeleton } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
 import { getInitiative } from "./service";

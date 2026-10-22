@@ -56,7 +56,10 @@ jest.mock("@/features/organizations/components/OrganizationPickerPopover", () =>
   ),
 }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
-jest.mock("@/components/official/entity-ref/toastDoor", () => ({ toastDoor: () => undefined }));
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
+  toastDoor: () => undefined,
+}));
 jest.mock("@/components/ui/button", () => ({
   Button: ({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...rest}>{children}</button>,
 }));

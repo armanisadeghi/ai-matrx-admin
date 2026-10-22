@@ -28,7 +28,7 @@ import { Loader2, Plus, Search } from "lucide-react";
 // other marketing picker takes it from.
 import { Input } from "@ai-matrx/design-system/controls";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import {
   Command,

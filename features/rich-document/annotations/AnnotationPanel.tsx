@@ -41,7 +41,7 @@ import { cn } from "@/lib/utils";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { ContinueInNewChatItem } from "./ContinueInNewChatItem";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { foldMiddle, foldReplies } from "./foldText";
 import { announceMentions, useSidecar } from "./AnnotationSidecar";

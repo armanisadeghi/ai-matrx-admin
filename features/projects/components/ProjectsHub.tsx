@@ -52,7 +52,7 @@ import {
   type MetricNavigationItem,
 } from "@/components/navigation/MetricNavigation";
 import { WORKSPACES_NAV_GROUP } from "@/features/shell/constants/nav-data";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorNotice, StaleDataNotice } from "@ai-matrx/design-system";
 import { ProjectCopyForAiButton } from "@/features/projects/components/ProjectCopyForAiButton";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";

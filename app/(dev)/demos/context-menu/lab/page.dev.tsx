@@ -114,9 +114,9 @@ import { getAllManifests } from "@/features/surfaces/manifests/registry";
 import type { SurfaceManifest } from "@ai-matrx/chat/surfaces/types";
 import { supabase } from "@/utils/supabase/client";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
-import { isUuidValue } from "@/components/official/entity-ref/doors";
+import { isUuidValue } from "@ai-matrx/records-ui/entity-doors";
 import { entityTokenForAgentScope } from "@/features/agent-shortcuts/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";

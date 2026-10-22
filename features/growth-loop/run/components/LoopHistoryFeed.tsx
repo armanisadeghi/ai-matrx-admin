@@ -21,7 +21,7 @@ import {
   type RefSubject,
 } from "../stage-doors";
 import { formatCompactDate } from "@/features/marketing/components/shared/MarketingUi";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

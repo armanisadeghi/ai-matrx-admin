@@ -32,7 +32,7 @@ import {
   Search,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useWholeScopeTree } from "@/features/scopes/hooks/useWholeScopeTree";
 import { useActiveContext } from "@/features/scopes/hooks/useActiveContext";
 import { useScopeTypeTables } from "@/features/scopes/hooks/useScopeTypeTables";

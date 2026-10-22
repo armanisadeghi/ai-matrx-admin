@@ -28,7 +28,7 @@ import {
   Upload,
 } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { openFilePicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { useFileUpload } from "@/features/files/handler/hooks/useFileUpload";
 import { ingestLibraryFile } from "@/features/rag/api/library-ingest";

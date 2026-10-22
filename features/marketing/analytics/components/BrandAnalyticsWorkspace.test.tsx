@@ -37,7 +37,8 @@ jest.mock("@/features/marketing/analytics/window", () => ({
 jest.mock("@/features/marketing/analytics/components/SiteAnalyticsPanel", () => ({
   SiteAnalyticsPanel: () => <div>panel</div>,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name }: { name: string }) => <span>{name}</span>,
 }));
 jest.mock("@/features/overlays/definitions/siteAnalyticsWindow.overlay", () => ({

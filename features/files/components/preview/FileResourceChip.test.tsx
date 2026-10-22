@@ -14,7 +14,8 @@ jest.mock("@ai-matrx/media/react", () => ({ MediaThumbnail: () => null }));
 jest.mock("@/features/files/components/core/FileContextMenu/FileRightClickMenu", () => ({
   FileRightClickMenu: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ children }: { children: ReactNode }) => <button type="button">{children}</button>,
 }));
 jest.mock("./openFilePreview", () => ({ openFilePreview: jest.fn() }));

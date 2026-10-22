@@ -14,7 +14,7 @@
  */
 
 import type { ReactNode } from "react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Activity } from "lucide-react";
 import type { TrayPreviewContext } from "@ai-matrx/summon/window";
 import ErrorInspectorTrayChip from "@/features/admin/error-inspector/ErrorInspectorTrayChip";

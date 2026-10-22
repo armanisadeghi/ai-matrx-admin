@@ -28,7 +28,7 @@ import type {
   DetailRow,
   DetailSeed,
 } from "@ai-matrx/detail";
-import { isUuidValue, tokenFromColumnName } from "@/components/official/entity-ref/doors";
+import { isUuidValue, doorTokenFromColumnName as tokenFromColumnName } from "@ai-matrx/records-ui/entity-doors";
 
 import { entityTokenForItemType, getItemConfig, type ItemTypeConfig } from "./registry";
 import { ItemDetailFrame } from "./ItemDetailFrame";

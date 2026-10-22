@@ -14,7 +14,7 @@
 
 import { Archive, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   Muted,
   timeCell,

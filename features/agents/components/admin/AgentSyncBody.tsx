@@ -73,7 +73,7 @@ import {
 import Link from "next/link";
 import { toast } from "@/lib/toast-service";
 import { cn } from "@/lib/utils";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { AgentDiffViewer } from "@/features/agents/components/diff/AgentDiffViewer";
 import { compareAgentDefinitions } from "@ai-matrx/agents/versions";
 import { getAgentModeHref } from "@ai-matrx/chat/agents/components/shared/AgentModeController";

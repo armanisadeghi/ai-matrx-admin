@@ -51,7 +51,7 @@ import {
   fetchOrganizationNamesByIds,
   organizationDisplayName,
 } from "../utils/organizationNames";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { MatrxUuidCell } from "@ai-matrx/design-system/data-table/uuid-cell";
 import { citationHrefFor, type RagSearchHit } from "@/features/rag/api/search";
 import {

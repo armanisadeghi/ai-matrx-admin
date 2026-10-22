@@ -13,7 +13,7 @@ import * as React from "react";
 import { ArrowDown, ArrowUp, Plus, Search, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Input } from "@ai-matrx/design-system/controls";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 

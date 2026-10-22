@@ -17,7 +17,7 @@
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { EntityRef } from "../EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 const PARTY_ID = "7c9e6679-7425-40de-944b-e07fc1f90ae7";
 

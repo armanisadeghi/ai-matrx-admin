@@ -31,7 +31,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { EntityRef } from "../EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 
 jest.mock("@/utils/supabase/client", () => ({
   __esModule: true,

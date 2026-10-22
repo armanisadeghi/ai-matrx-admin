@@ -18,7 +18,7 @@ import Link from "next/link";
 
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOpenSiteAnalyticsWindow } from "@/features/overlays/definitions/siteAnalyticsWindow.overlay";
 import {
   InlineQueryError,

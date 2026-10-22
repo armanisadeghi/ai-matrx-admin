@@ -16,8 +16,8 @@
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { segmentSentenceIds } from "../doors";
-import { TextWithDoors } from "../TextWithDoors";
+import { segmentSentenceIds } from "@ai-matrx/records-ui/entity-doors";
+import { TextWithDoors } from "@ai-matrx/records-ui/entity-ref";
 
 jest.mock("next/link", () => ({
   __esModule: true,

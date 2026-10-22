@@ -40,7 +40,7 @@ import { CitationMarkerInline } from "@/components/mardown-display/chat-markdown
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
 import { useAdvancedMenu } from "@/hooks/use-advanced-menu";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { JsonTreeViewer } from "@/components/official/json-explorer/JsonTreeViewer";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

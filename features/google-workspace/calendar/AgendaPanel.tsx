@@ -31,7 +31,7 @@ import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { CONTROLS_CONTAINER_CLASS } from "@ai-matrx/design-system/controls";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ConnectorPromptHost } from "@/features/connectors/ConnectorPromptHost";
 import { useOpenDetail } from "@ai-matrx/detail/react";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";

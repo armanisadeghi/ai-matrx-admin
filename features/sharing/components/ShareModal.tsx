@@ -33,7 +33,7 @@ import {
 import type { ResourceType } from "@/utils/permissions/types";
 import { Skeleton } from "@ai-matrx/design-system";
 import { AlertTriangle, Lock } from "lucide-react";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { PermissionsList } from "./PermissionsList";
 import { AccessSummaryPanel } from "./AccessSummaryPanel";
 import { ShareWithUserTab } from "./tabs/ShareWithUserTab";

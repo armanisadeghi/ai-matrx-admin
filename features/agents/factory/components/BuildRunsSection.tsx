@@ -11,7 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import Link from "@/components/navigation/AppLink";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { outcomeChip } from "@/components/mardown-display/blocks/agent-factory-kinds/AgentFactoryKindBlocks";
 import { StateChip } from "@/components/mardown-display/blocks/result-kinds/result-kind-shared";
 import { runHref } from "@/features/workflow-runtime/run-doors";

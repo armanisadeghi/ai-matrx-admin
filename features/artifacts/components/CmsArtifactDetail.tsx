@@ -42,7 +42,7 @@ import { hasArtifactRenderer } from "@/features/canvas/artifact-types/artifact-r
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useOrganizationLabel } from "@/features/organizations/hooks/useOrganizationLabel";
 import { HTMLPageService } from "@ai-matrx/chat/window-panels/windows/html-pages/html-page-service";
 import SandboxedHtml from "@ai-matrx/rich-content/display/blocks/common/SandboxedHtml";

@@ -14,7 +14,7 @@ import { CRM_RECORD_SURFACE_NAME } from "@/features/surfaces/manifests/crm-recor
 import { parseDealDraft } from "../../agent-context/crmRecordSurfaceWrite";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { useCrmContext } from "../../hooks/useCrmContext";
 import { useCrmCardRead } from "../../hooks/useCrmCardRead";
 import { usePipelines } from "../../deals/usePipelines";

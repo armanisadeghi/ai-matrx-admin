@@ -59,7 +59,7 @@ export function fixPromptForFinding(f: DeadEndFinding): string {
     "",
     "Rules of engagement:",
     "- The door primitive is <EntityRef token=… id=… name=… /> " +
-      "(components/official/entity-ref/EntityRef.tsx). Never hand-roll a name link.",
+      "(@ai-matrx/records-ui/entity-ref). Never hand-roll a name link.",
     isRegistryToken(f.entity)
       ? `- A missing door is usually a missing hrefFor — fix ${ENTITY_REGISTRY_PATH}, not the call site.`
       : `- The detector could not name the entity here. Work out which record it is FIRST; only then does ${ENTITY_REGISTRY_PATH} come into it.`,
@@ -101,7 +101,7 @@ export function fixPromptForBucket(
     scope === "repository"
       ? "Work feature by feature — do the inventory pass ONCE per feature, then fix its files together:"
       : "Do the inventory pass ONCE for the whole bucket, then fix them together:",
-    "- Reach for <EntityRef> (components/official/entity-ref/EntityRef.tsx) for every name and id.",
+    "- Reach for <EntityRef> (@ai-matrx/records-ui/entity-ref) for every name and id.",
     `- Missing route? Add hrefFor to the token in ${ENTITY_REGISTRY_PATH}.`,
     "- Missing peek? features/organizations/peek/registry.ts + kinds-list.ts, together.",
     "- A count is a door: link it to the filtered list.",

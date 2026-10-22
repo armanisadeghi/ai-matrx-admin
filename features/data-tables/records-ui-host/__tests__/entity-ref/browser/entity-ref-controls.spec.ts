@@ -13,7 +13,7 @@ declare global {
 
 const GLOBALS_CSS = readFileSync(path.join(process.cwd(), "app/globals.css"), "utf8");
 const ENTITY_REF_SOURCE = readFileSync(
-  path.join(process.cwd(), "components/official/entity-ref/EntityRef.tsx"),
+  path.join(process.cwd(), "node_modules/@ai-matrx/records-ui/dist/entity-ref.js"),
   "utf8",
 );
 

@@ -39,7 +39,7 @@ import {
   SHOWN_TO_LABEL,
   shownToLabel,
 } from "@/lib/row-access";
-import { hasAnyDoor } from "@/components/official/entity-ref/doors";
+import { hasAnyDoor } from "@ai-matrx/records-ui/entity-doors";
 import type { Json } from "@/types/database.types";
 
 import { AGENT_CONFIG_KEYS, AGENT_CONFIG_META, type AgentConfigKey } from "./types";

@@ -25,7 +25,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import type { RootState } from "@/lib/redux/store";
-import { EntityDoorControls } from "@/components/official/entity-ref/EntityDoorControls";
+import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
 import { usePickerInputFocus } from "./usePickerInputFocus";
 import {
   PickerEmpty,

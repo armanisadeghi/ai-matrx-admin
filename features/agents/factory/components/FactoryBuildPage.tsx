@@ -39,7 +39,7 @@ import { EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { cn } from "@/lib/utils";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   CriterionVerdicts,
   LongText,

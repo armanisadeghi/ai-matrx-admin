@@ -18,7 +18,7 @@ import { Provider } from "react-redux";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { chatHostReducer } from "@ai-matrx/chat/store/chat-host.slice";
 import { withAppChatHost } from "@/lib/redux/chat-host-from-app";
-import { EntityRef } from "../EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import {
   __resetAgentAddressCache,
   seedAgentAddress,

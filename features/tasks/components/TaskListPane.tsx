@@ -54,7 +54,7 @@ import { TaskProvenanceChip } from "@/features/tasks/components/TaskProvenanceCh
 import { useRefocusInputAfterAsync } from "@/features/tasks/hooks/useRefocusInputAfterAsync";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { Button } from "@/components/ui/button";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { formatDateOnly } from "@ai-matrx/kit/dates";
 import {
   buildTaskListPayload,

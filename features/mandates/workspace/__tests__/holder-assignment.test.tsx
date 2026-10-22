@@ -71,7 +71,8 @@ jest.mock("@/features/scopes/components/active-context/binding-target/BindingTar
 jest.mock("@/features/workflow-runtime/listings/WorkflowListDropdown", () => ({
   WorkflowListDropdown: () => <div data-testid="workflow-picker" />,
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name }: { name?: string }) => <span>{name ?? ""}</span>,
 }));
 

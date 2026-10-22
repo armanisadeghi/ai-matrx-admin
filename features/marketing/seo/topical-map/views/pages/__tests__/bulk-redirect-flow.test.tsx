@@ -127,7 +127,8 @@ jest.mock("@/lib/toast", () => ({
   toast: { success: jest.fn(), warning: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name, id }: { name?: string | null; id: string }) => (
     <span data-entity-ref={id}>{name ?? id}</span>
   ),

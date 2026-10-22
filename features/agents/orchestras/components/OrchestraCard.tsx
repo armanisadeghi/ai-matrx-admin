@@ -21,7 +21,7 @@ import Link from "next/link";
 import { Webhook, Network, ArrowRight, Play, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { accentClasses } from "./accents";
 import type { OrchestraSummary } from "../types";
 

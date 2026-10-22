@@ -30,7 +30,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SyncedBadge } from "@/features/unified-data/connect-database/SyncedBadge";
 import { Muted, TextCell, timeCell, type EntityColumnSpec } from "@/lib/entity-list/columns";

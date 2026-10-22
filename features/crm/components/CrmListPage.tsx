@@ -19,8 +19,8 @@ import { UntrustedCount } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { dismissRecordToasts, recordToast, toast } from "@/lib/toast";
-import { toastDoor } from "@/components/official/entity-ref/toastDoor";
-import { resolveEntityDoors } from "@/components/official/entity-ref/doors";
+import { toastDoor } from "@ai-matrx/records-ui/entity-ref";
+import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 import {
   MoreVertical,
   Plus,

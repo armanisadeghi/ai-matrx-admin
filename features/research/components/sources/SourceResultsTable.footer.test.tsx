@@ -15,7 +15,8 @@ jest.mock("next/navigation", () => ({
 jest.mock("../../hooks/useResearchState", () => ({
   useYouTubeVideoIndex: () => ({ identityFor: () => null }),
 }));
-jest.mock("@/components/official/entity-ref/EntityRef", () => ({
+jest.mock("@ai-matrx/records-ui/entity-ref", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/entity-ref"),
   EntityRef: ({ name }: { name: string }) => <span>{name}</span>,
 }));
 jest.mock("../shared/StatusBadge", () => ({

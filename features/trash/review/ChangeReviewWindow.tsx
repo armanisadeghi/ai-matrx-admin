@@ -22,7 +22,7 @@ import {
   type ChangeTarget,
 } from "@ai-matrx/data/db";
 import { WindowPanel } from "@ai-matrx/summon/window";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { supabase } from "@/utils/supabase/client";

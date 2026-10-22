@@ -40,7 +40,7 @@ import { SurfaceValuesTable } from "@/features/surfaces/components/SurfaceValues
 import { getManifest } from "@/features/surfaces/manifests/registry";
 import type { SurfaceValue } from "@ai-matrx/chat/surfaces/types";
 import { AiToolRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
-import { EntityRef } from "@/components/official/entity-ref/EntityRef";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 interface Props {
