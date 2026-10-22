@@ -177,7 +177,7 @@ describe("question names", () => {
       slugifyQuestionName(
         "Is this a defect in existing behavior rather than a request for new behavior?",
       ),
-    ).toBe("defect_existing_behaviour_request");
+    ).toBe("defect_existing_behavior_request");
   });
 
   it("never lets two questions answer into the same field", () => {
