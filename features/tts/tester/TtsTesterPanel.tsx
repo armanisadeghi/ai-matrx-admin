@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Loader2, Pause, Play, RotateCcw, Square } from "lucide-react";
 import { SinkAwarePlayer } from "@ai-matrx/media/speech";
 import { cn } from "@/lib/utils";
-import { Select } from "@ai-matrx/design-system/controls";
+import { Button, Select } from "@ai-matrx/design-system/controls";
 import { Slider } from "@/components/ui/slider";
 import {
   EMOTION_OPTIONS,
@@ -197,14 +197,7 @@ export function TtsTesterPanel({
             </button>
           )}
           {(synthesizing || playing || paused) && (
-            <button
-              type="button"
-              onClick={stop}
-              aria-label="Stop"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground active:bg-destructive/80"
-            >
-              <Square className="h-3.5 w-3.5 fill-current" />
-            </button>
+            <Button variant="danger" onClick={stop} aria-label="Stop" icon={<Square className="fill-current" />} />
           )}
         </div>
       </div>
