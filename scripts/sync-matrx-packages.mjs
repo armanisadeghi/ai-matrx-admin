@@ -66,18 +66,12 @@ const snapshot = new Map(SNAPSHOT_FILES.filter((f) => existsSync(join(ROOT, f)))
 step("update @ai-matrx/* to latest", "pnpm", ["update", "-r", "@ai-matrx/*", "--latest"]);
 step("collapse @ai-matrx/* twins", "pnpm", ["update", "-r", "@ai-matrx/*", "--depth", "Infinity"]);
 
-console.log("[sync:matrx-packages] package-to-package imports (names and subpaths) resolve in the installed set");
+console.log("[sync:matrx-packages] package-to-package imports (names and subpaths) — report only");
+// Arman, 2026-10-22: "never ever ever during a release". This script runs in the release path, so a
+// broken pair is REPORTED loudly and the newest set is still adopted; nothing is restored or stopped.
 const graph = run("node", ["scripts/check-matrx-imports.mjs", "--packages"], { capture: true });
 if (graph !== 0) {
-  console.error(
-    "\n[sync:matrx-packages] NOT ADOPTED — the newest @ai-matrx set breaks one package's import of another (above).\n" +
-      "  Restoring the previous package.json + pnpm-lock.yaml and reinstalling them, so the older working pair stays.",
-  );
-  for (const [f, bytes] of snapshot) writeFileSync(join(ROOT, f), bytes);
-  const back = run("pnpm", ["install", "--frozen-lockfile"]);
-  if (back !== 0) console.error("[sync:matrx-packages] the restore install FAILED — run `pnpm install --frozen-lockfile` by hand.");
-  else run("node", ["scripts/check-matrx-imports.mjs", "--packages"], { capture: true });
-  process.exit(1);
+  console.error("\n[sync:matrx-packages] WARNING — the newest @ai-matrx set breaks one package's import of another (above). Adopted anyway; fix the package.\n");
 }
 
 step("every locked version is served", "pnpm", ["check:matrx-lockfile"]);
