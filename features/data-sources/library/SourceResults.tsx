@@ -19,8 +19,9 @@ import { formatCount } from "@ai-matrx/kit/format";
 import { AddToBoard } from "../AddToBoard";
 import { FetchProgress } from "../FetchProgress";
 import { RefusalView } from "../RefusalView";
+import type { DataFetchResult } from "../contract";
 import type { RunState } from "../runs";
-import { isOpenStatus, runStatusLabel, useDataFetchJob, type FetchJobRow } from "./runHistory";
+import { isOpenStatus, runHasNoRowsYet, runRowFilter, runStatusLabel, useDataFetchJob, type FetchJobRow } from "./runHistory";
 
 // The grid is heavy: it loads when there are results to draw, never with the library.
 const LocatedTableViewer = dynamic(() => import("@/features/data-tables/components/LocatedTableViewer"), {
@@ -29,10 +30,13 @@ const LocatedTableViewer = dynamic(() => import("@/features/data-tables/componen
 });
 
 /** The table, inline, at a height that shows a screenful of rows and keeps the page scrolling. */
-export function InlineResultsTable({ tableId }: { tableId: string }) {
+export function InlineResultsTable({ tableId, job }: { tableId: string; job?: FetchJobRow | null }) {
+  // Every run of a source writes one shared table: the run's own row keys narrow the grid to its rows.
+  const filter = runRowFilter(job);
+  if (runHasNoRowsYet(job)) return <RowsComing />;
   return (
-    <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId}>
-      <LocatedTableViewer tableId={tableId} />
+    <div className="flex h-[min(78dvh,760px)] min-h-[420px] flex-col" data-inline-results={tableId} data-run-rows={filter ? "this-run" : "all"}>
+      <LocatedTableViewer tableId={tableId} filter={filter} />
     </div>
   );
 }
@@ -129,11 +133,17 @@ export function LiveRunResults({
     return (
       <div className="flex flex-col gap-3" data-results-live="">
         <FetchProgress label={label} progress={progress} startedAt={startedAt} layout="row" />
-        {tableId ? <InlineResultsTable tableId={tableId} /> : <RowsComing />}
+        {tableId ? <InlineResultsTable tableId={tableId} job={row} /> : <RowsComing />}
       </div>
     );
   }
-  const done = run.result;
+  return <DoneRunResults result={run.result} />;
+}
+
+/** A run that just finished in this tab: its job row carries the keys of the rows it stored. */
+function DoneRunResults({ result: done }: { result: DataFetchResult }) {
+  const jobQuery = useDataFetchJob(done.job_id ?? null);
+  const job = jobQuery.data ?? null;
   return (
     <div className="flex flex-col gap-3">
       <DoneLine
@@ -143,7 +153,7 @@ export function LiveRunResults({
         lowered={done.limit_applied?.value ?? null}
         notices={done.notices}
       />
-      <InlineResultsTable tableId={done.table_id} />
+      {jobQuery.isLoading ? <RowsComing /> : <InlineResultsTable tableId={done.table_id} job={job} />}
     </div>
   );
 }
@@ -160,7 +170,7 @@ export function SavedRunResults({ jobId }: { jobId: string }) {
     return (
       <div className="flex flex-col gap-3" data-results-live="">
         <FetchProgress label={runStatusLabel(row.status)} progress={{ label: runStatusLabel(row.status), current: null, total: null, jobId }} startedAt={Date.parse(row.created_at)} layout="row" />
-        {row.table_id ? <InlineResultsTable tableId={row.table_id} /> : <RowsComing />}
+        {row.table_id ? <InlineResultsTable tableId={row.table_id} job={row} /> : <RowsComing />}
       </div>
     );
   }
@@ -176,7 +186,7 @@ export function SavedRunResults({ jobId }: { jobId: string }) {
   return (
     <div className="flex flex-col gap-3">
       <DoneLine rows={row.rows_created + row.rows_updated} tableId={row.table_id} tableName={row.table_name} />
-      <InlineResultsTable tableId={row.table_id} />
+      <InlineResultsTable tableId={row.table_id} job={row} />
     </div>
   );
 }

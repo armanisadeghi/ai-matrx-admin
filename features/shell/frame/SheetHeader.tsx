@@ -39,6 +39,8 @@ import type { FrameAction, FrameCrumb, FrameForm, FrameHeaderTool } from "./type
 
 export interface FrameFavorite {
   starred: boolean;
+  /** False while the saved state is not here yet: the star shows neutral and a press does nothing. */
+  known?: boolean;
   onToggle: () => void;
 }
 
@@ -147,12 +149,15 @@ export function SheetHeader({
 }: SheetHeaderProps) {
   const current = crumbs[crumbs.length - 1];
 
+  const starUnknown = favorite?.known === false;
   const star = favorite ? (
     <Button
       variant="quiet"
       icon={<Star className={cn(favorite.starred && "fill-current")} />}
-      aria-label={favorite.starred ? "Remove from favorites" : "Add to favorites"}
-      aria-pressed={favorite.starred}
+      aria-label={starUnknown ? "Favorites loading" : favorite.starred ? "Remove from favorites" : "Add to favorites"}
+      aria-pressed={starUnknown ? undefined : favorite.starred}
+      aria-busy={starUnknown || undefined}
+      disabled={starUnknown}
       onClick={favorite.onToggle}
     />
   ) : null;
@@ -226,7 +231,7 @@ export function SheetHeader({
     </>
   );
   const starAndMenu = (
-    <div className="flex shrink-0 items-center gap-0.5 pl-1">
+    <div className="flex shrink-0 items-center pl-1">
       {star}
       <PageMenu actions={actions} />
     </div>
@@ -246,7 +251,7 @@ export function SheetHeader({
       ) : null}
       {hostSlots ? <div id={FRAME_HEADER_RIGHT_ID} className="flex shrink-0 items-center" /> : <div className="min-w-2 flex-1" />}
       {tools || canvasToggle || sideChatToggle ? (
-        <div data-mf-region="header-tools" data-matrx-controls="" className="flex shrink-0 items-center gap-0.5">
+        <div data-mf-region="header-tools" data-matrx-controls="" className="flex shrink-0 items-center">
           {tools}
           {sideChatToggle ? (
             <Button
@@ -399,7 +404,7 @@ export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHe
 /** The controls that bring a hidden sidebar back, shown at the header's start. */
 export function SidebarRestore({ onShow, grid, goTo }: { onShow: () => void; grid: ReactNode; goTo: ReactNode }) {
   return (
-    <div className="flex shrink-0 items-center gap-0.5">
+    <div className="flex shrink-0 items-center">
       <Button variant="quiet" icon={<PanelLeftOpen />} aria-label="Show sidebar" onClick={onShow} />
       {grid}
       {goTo}

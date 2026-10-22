@@ -11,6 +11,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
+import type { RecordFilter } from "@ai-matrx/records";
 
 import { createClient } from "@/utils/supabase/client";
 
@@ -32,10 +33,13 @@ export interface FetchJobRow {
   error: string | null;
   created_at: string;
   finished_at: string | null;
+  /** The table's key column and, in `metadata.row_keys`, the keys of the rows THIS run stored. */
+  key_column: string | null;
+  metadata: unknown;
 }
 
 const JOB_COLUMNS =
-  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at";
+  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, metadata";
 
 const POLL_OPEN_MS = 3000;
 
@@ -59,6 +63,27 @@ export function useDataFetchJob(jobId: string | null) {
     staleTime: 0,
   });
 }
+
+/**
+ * The grid filter that shows only this run's rows: every run of a source writes one shared table, so
+ * the rows are told apart by the keys the server recorded on the job. A list value is "is either" to
+ * the store's filter (a record holding any of the keys). Null when the job has no keys to filter by
+ * (a run from before they were kept shows the whole table, as it always did). Pure.
+ */
+export function runRowFilter(job: Pick<FetchJobRow, "key_column" | "metadata"> | null | undefined): RecordFilter | null {
+  const meta = job?.metadata && typeof job.metadata === "object" ? (job.metadata as { row_keys?: unknown; row_key_field?: unknown }) : null;
+  // The store's filter reads the field KEY ("place_id"), which the server wrote beside the keys; the
+  // job's key_column is the column's NAME ("Place Id") and the store refuses it as a filter key.
+  const field = typeof meta?.row_key_field === "string" ? meta.row_key_field : null;
+  const keys = meta?.row_keys;
+  if (!field || !Array.isArray(keys) || keys.length === 0) return null;
+  // The store reads a list as "is either" on any column; its TS type only names the scalar forms.
+  return { [field]: keys } as unknown as RecordFilter;
+}
+
+/** True when the job names a key column but has stored no keys yet (a run still filling). */
+export const runHasNoRowsYet = (job: Pick<FetchJobRow, "key_column" | "metadata" | "status"> | null | undefined): boolean =>
+  Boolean(job?.key_column) && runRowFilter(job) === null && isOpenStatus(job?.status);
 
 /** The newest open fetch of this source (read under RLS), for reconnect after a reload. */
 export function useOpenJob(sourceKey: string) {

@@ -5,6 +5,8 @@
 // person's account). The header's star IS the pin: starring a page pins it, and it shows in
 // the sidebar's Pinned section here and in the classic Favorites menu. No second store.
 import type { LucideIcon } from "lucide-react";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectPreferencesLoadStatus } from "@/lib/redux/preferences/userPreferenceSelectors";
 import { usePinned } from "@/components/favorites/usePinned";
 import type { FavoriteItem } from "@/lib/redux/preferences/userPreferencesSlice";
 import { resolveShellIconName, shellIconComponents } from "@/features/shell/shellIconMap";
@@ -27,11 +29,14 @@ export function pageFavorite(pathname: string, label: string) {
 
 export function useFramePins(pathname: string, pageLabel: string) {
   const { favorites, isPinned, toggle } = usePinned();
+  // Until the saved preferences land, "not pinned" is the built-in default, not the person's answer.
+  const known = useAppSelector(selectPreferencesLoadStatus) === "loaded";
   const page = pageFavorite(pathname, pageLabel);
   const favorite: FrameFavorite = {
-    starred: isPinned(page.id),
+    starred: known && isPinned(page.id),
+    known,
     onToggle: () => {
-      toggle(page);
+      if (known) toggle(page);
     },
   };
   return { pins: favorites.map(pinFromFavorite), favorite };

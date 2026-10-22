@@ -9,6 +9,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import userPreferences from "@/lib/redux/preferences/userPreferencesSlice";
+import { buildRemoteFetchStatusAction } from "@/lib/sync/engine/remoteFetchStatus";
 import { useFramePins, pageFavorite } from "../useFramePins";
 
 jest.mock("@/features/scopes/service/favoritesService", () => ({
@@ -24,12 +25,14 @@ function makeStore() {
   });
 }
 type Store = ReturnType<typeof makeStore>;
+const markLoaded = (store: Store) =>
+  store.dispatch(buildRemoteFetchStatusAction("userPreferences", "empty", "cold-boot") as never);
 
 function Host() {
   const { pins, favorite } = useFramePins("/crm/people", "People");
   return (
     <div>
-      <button data-testid="star" aria-pressed={favorite.starred} onClick={favorite.onToggle} />
+      <button data-testid="star" aria-pressed={favorite.starred} data-known={String(favorite.known)} onClick={favorite.onToggle} />
       <ul>{pins.map((p) => <li key={p.id}>{p.label}</li>)}</ul>
     </div>
   );
@@ -52,6 +55,7 @@ const rows = () => [...host.querySelectorAll("li")].map((l) => l.textContent);
 
 it("starring the page pins it into the shared favourites; un-starring removes it", () => {
   const store = makeStore();
+  markLoaded(store);
   mount(store);
   expect(rows()).toEqual([]);
   expect(star().getAttribute("aria-pressed")).toBe("false");
@@ -68,5 +72,19 @@ it("starring the page pins it into the shared favourites; un-starring removes it
   act(() => star().click());
   expect(rows()).toEqual([]);
   expect(store.getState().userPreferences.favorites.items).toEqual([]);
+  unmount();
+});
+
+it("while preferences have not loaded the star is neutral and a press toggles nothing", () => {
+  const store = makeStore();
+  mount(store);
+  expect(star().getAttribute("data-known")).toBe("false");
+  expect(star().getAttribute("aria-pressed")).toBe("false");
+  act(() => star().click());
+  expect(store.getState().userPreferences.favorites.items).toEqual([]);
+  act(() => {
+    markLoaded(store);
+  });
+  expect(star().getAttribute("data-known")).toBe("true");
   unmount();
 });
