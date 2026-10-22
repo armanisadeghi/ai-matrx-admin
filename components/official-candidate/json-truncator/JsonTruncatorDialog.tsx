@@ -39,7 +39,7 @@ type InlineWindowPanelProps = Extract<
 export interface JsonTruncatorDialogProps
   extends
     JsonTruncatorProps,
-    Omit<InlineWindowPanelProps, "children" | "title" | "id" | "onClose"> {
+    Omit<InlineWindowPanelProps, "children" | "title" | "id" | "onClose" | "overlayId"> {
   isOpen?: boolean;
   onClose: () => void;
   /** The overlay this window renders for. Bound, summon remembers it: back in place after a

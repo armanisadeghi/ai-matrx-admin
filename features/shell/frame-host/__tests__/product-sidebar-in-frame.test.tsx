@@ -47,6 +47,7 @@ jest.mock("@/features/shell/constants/route-menu-loaders", () => {
     loadAgentRunSidebarMenu: menu("agent-runs"),
     loadAdminRouteSidebarMenu: menu("admin"),
     loadChatSidebarMenu: menu("chat"),
+    loadChatConversationSidebarMenu: menu("chat"),
     loadStaffSidebarMenu: menu("staff"),
     loadCodeSidebarMenu: menu("code"),
     loadMarketingSidebarMenu: menu("marketing"),

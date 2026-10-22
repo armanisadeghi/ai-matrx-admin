@@ -35,5 +35,6 @@ export async function mintSessionCookies(want) {
   const cookies = [...jar.values()].filter((c) => c.value && !(c.options?.maxAge === 0)).map((c) => ({
     name: c.name, value: c.value, domain: ".aimatrx.com", path: "/", secure: true, httpOnly: false, sameSite: "Lax", expires: now + (c.options?.maxAge ?? 34560000),
   }));
-  return { email, userId: data.user.id, cookies };
+  // accessToken: the same session for a harness's own API reads/writes as this person (never printed).
+  return { email, userId: data.user.id, cookies, accessToken: data.session?.access_token ?? null };
 }

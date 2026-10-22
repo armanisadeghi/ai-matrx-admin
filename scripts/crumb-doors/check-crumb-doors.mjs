@@ -127,6 +127,17 @@ function topLevelObjects(body) {
   return out;
 }
 
+let tokens = null;
+/** Entity types with a sibling loader (features/shell/breadcrumbs/record-siblings.ts RECORD_SIBLINGS). */
+function siblingTokens() {
+  if (tokens) return tokens;
+  const file = join(ROOT, "features/shell/breadcrumbs/record-siblings.ts");
+  const text = existsSync(file) ? readFileSync(file, "utf8") : "";
+  const body = /RECORD_SIBLINGS[^=]*=\s*\{([\s\S]*?)\n\};/.exec(text)?.[1] ?? "";
+  tokens = new Set([...body.matchAll(/^\s{2}([\w-]+):\s*async/gm)].map((m) => m[1]));
+  return tokens;
+}
+
 const lineOf = (text, index) => text.slice(0, index).split("\n").length;
 
 /** The JSX opening tag of `<Name` at `index` (up to its closing `>` at depth 0). */
@@ -167,7 +178,10 @@ export function scanSource(file, text) {
   for (const m of text.matchAll(/<(RecordPageHeader|EntityModeHeader)\b/g)) {
     const tag = tagAt(text, m.index);
     const isRecord = m[1] === "RecordPageHeader" ? /\brecord=\{\{/.test(tag) : /\bentityRecord=/.test(tag);
-    if (isRecord && !/\bsiblings\s*[:=]|\bentityOptions=/.test(tag)) {
+    // A record whose type has a sibling loader (record-siblings.ts) gets its door from the derived trail.
+    const token = /\btoken\s*:\s*["'`]([\w-]+)["'`]/.exec(tag)?.[1];
+    const registered = token != null && siblingTokens().has(token);
+    if (isRecord && !registered && !/\bsiblings\s*[:=]|\bentityOptions=/.test(tag)) {
       sites.push({ rule: "record-without-siblings", line: lineOf(text, m.index), what: `<${m[1]}> record without siblings` });
     }
     for (const p of tag.matchAll(/\b(right|rightEnd)=\{/g)) {

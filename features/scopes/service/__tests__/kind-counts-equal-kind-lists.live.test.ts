@@ -48,7 +48,7 @@ async function countOf(token: string, scope: Scope): Promise<number | null> {
 }
 
 async function page(token: string, scope: Scope, offset: number, search?: string) {
-  const { data, error } = await client.rpc("reference_search_candidates", {
+  const { data, error } = await client.schema("platform").rpc("reference_search_candidates", {
     p_token: token,
     p_order: "recent",
     p_limit: PAGE,

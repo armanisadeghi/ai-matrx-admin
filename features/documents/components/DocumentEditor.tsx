@@ -140,7 +140,7 @@ import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { chooseRoom } from "@/lib/collab/choose-room";
-import { seatRefusal } from "@/lib/collab/seat-notices";
+import { notSharedNotice, seatRefusal } from "@/lib/collab/seat-notices";
 import { useCommentAccess } from "@/features/rich-document/annotations/useCommentAccess";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
@@ -1152,7 +1152,7 @@ function showCollabNotice(n: DocsOtNotice): void {
       toast({ title: "This document stopped syncing", description: "Reload the page to keep editing.", variant: "destructive" });
       return;
     case "not_shared":
-      toast({ title: "That change was undone", description: "It can't be shared with other editors yet." });
+      toast(notSharedNotice());
       return;
     case "not_live":
       toast({ title: "Reconnecting", description: "Your last keystroke was made while reconnecting and was not kept." });
