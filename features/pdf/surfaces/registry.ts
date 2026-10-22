@@ -20,12 +20,10 @@ import {
   Microscope,
   Zap,
   Database,
-  PanelsTopLeft,
 } from "lucide-react";
 import { buildPdfExtractorHref, buildSourceHref } from "./hrefs";
 
 export type PdfSurfaceId =
-  | "pdf-workspace"
   | "file-viewer"
   | "analysis-studio"
   | "extractor-studio"
@@ -47,13 +45,6 @@ export interface PdfSurfaceDef {
 }
 
 export const PDF_SURFACES: PdfSurfaceDef[] = [
-  {
-    id: "pdf-workspace",
-    label: "PDF workspace",
-    description: "Pages, tools, find, print",
-    icon: PanelsTopLeft,
-    buildHref: ({ fileId }) => (fileId ? `/pdf/${fileId}` : null),
-  },
   {
     id: "file-viewer",
     label: "File viewer",

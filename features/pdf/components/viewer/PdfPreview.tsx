@@ -76,10 +76,6 @@ export interface PdfPreviewProps {
   maxPageWidth?: number;
   onDocumentLoad?: (numPages: number) => void;
   onPageRendered?: (pageNumber: number) => void;
-  /** Continuous only: two pages to a row (the workspace's two-up view). */
-  spread?: "single" | "two-up";
-  /** Continuous only: pending extra turn per page, degrees clockwise (the workspace's unsaved rotations). */
-  rotations?: Record<number, number>;
   /** Shown when the redux file record has no name yet (studio docs carry their own). */
   fileName?: string | null;
   /** Extra line on the "source unavailable" panel (e.g. what is still usable). */
@@ -106,8 +102,6 @@ export default function PdfPreview({
   maxPageWidth,
   onDocumentLoad,
   onPageRendered,
-  spread,
-  rotations,
   fileName: fileNameFallback,
   unavailableHint,
   toolbar,
@@ -172,8 +166,6 @@ export default function PdfPreview({
         maxPageWidth={maxPageWidth}
         onDocumentLoad={onDocumentLoad}
         onPageRendered={onPageRendered}
-        spread={spread}
-        rotations={rotations}
         toolbar={toolbar}
         pageNav={pageNav}
         toolbarStart={toolbarStart}
