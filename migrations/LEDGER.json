@@ -3800,6 +3800,18 @@
       "checksum": "3e5bbe2b643ee0b28b7b053583eebd2565686d0ba612ae7a4bd63c71ad4b883c",
       "applied_at": "2026-10-03 00:37:15.386839+00"
     },
+    "migrations/campaign/drillnightrecords_a_records_say_their_own_noun.sql": {
+      "source": "matrx-frontend",
+      "filename": "drillnightrecords_a_records_say_their_own_noun.sql",
+      "checksum": "dd09b48a2f11009227369b63d1ed6712fe6c952231fa2a1e68b0fc4a59060b49",
+      "applied_at": "2026-10-22 09:46:21.707193+00"
+    },
+    "migrations/campaign/drillnightrecords_drill_declares_agents_by_model_and_ai_calls_and_ai_usage_and_structured_logs_and_tool_refetch.sql": {
+      "source": "matrx-frontend",
+      "filename": "drillnightrecords_drill_declares_agents_by_model_and_ai_calls_and_ai_usage_and_structured_logs_and_tool_refetch.sql",
+      "checksum": "370ec324c70d70ffab31efb86fd50d2f6a12f8eaf17f14f6caa32bb2fff3e297",
+      "applied_at": "2026-10-22 09:47:24.907138+00"
+    },
     "migrations/campaign/drillstandarddoor_drill_declares_agents_by_model.sql": {
       "source": "matrx-frontend",
       "filename": "drillstandarddoor_drill_declares_agents_by_model.sql",
