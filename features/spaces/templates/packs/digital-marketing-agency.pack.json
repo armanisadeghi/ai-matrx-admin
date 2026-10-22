@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 9,
+  "version": 10,
   "title": "Digital Marketing Agency HQ",
   "description": "For marketing agencies: retainers, scope, hours, campaigns, approvals and monthly reports.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -3168,7 +3168,7 @@
         "Alder Quay"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3331,7 +3331,8 @@
                   "add_campaign",
                   "btn_mail",
                   "btn_site",
-                  "added_at"
+                  "added_at",
+                  "monthly_fee"
                 ]
               },
               {
@@ -3467,7 +3468,9 @@
                   "btn_mark_live",
                   "btn_close_campaign",
                   "add_deliverable",
-                  "added_at"
+                  "added_at",
+                  "budget",
+                  "spend"
                 ]
               },
               {
@@ -3492,7 +3495,8 @@
                   "btn_mark_live",
                   "btn_close_campaign",
                   "add_deliverable",
-                  "added_at"
+                  "added_at",
+                  "budget"
                 ]
               },
               {

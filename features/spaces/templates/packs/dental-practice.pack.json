@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 7,
+  "version": 8,
   "title": "Dental Practice",
   "description": "For dentists and front desks: schedule, recalls, treatment plans, claims and supplies.",
   "forWho": "Dentists, office managers and dental front desks",
@@ -2877,7 +2877,7 @@
         "Meridian Court"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3338,7 +3338,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "ins_claimed",
+                  "patient_part",
+                  "urgency",
+                  "claim_btn",
+                  "accept_btn",
+                  "done_btn",
+                  "fee",
+                  "est_ins"
+                ]
               },
               {
                 "id": "vcal",

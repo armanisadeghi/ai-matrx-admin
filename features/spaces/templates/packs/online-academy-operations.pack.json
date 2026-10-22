@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 6,
+  "version": 7,
   "title": "Online Academy Operations Desk",
   "description": "Online academy: courses, cohorts, enrollments, completion, refunds and live sessions.",
   "forWho": "Online course academies and cohort-based programs",
@@ -3547,7 +3547,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3844,7 +3844,9 @@
                   "btn_claim",
                   "add_enroll",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "revenue",
+                  "refunded_usd"
                 ]
               },
               {
@@ -3871,7 +3873,8 @@
                   "btn_claim",
                   "add_enroll",
                   "owner_me",
-                  "added_at"
+                  "added_at",
+                  "revenue"
                 ]
               },
               {

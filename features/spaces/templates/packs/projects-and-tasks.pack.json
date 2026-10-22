@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0002",
-  "version": 8,
+  "version": 9,
   "title": "Projects & Tasks",
   "description": "Small teams: run projects and tasks on a board, calendar and timeline.",
   "forWho": "Small teams running client or internal projects",
@@ -1572,7 +1572,7 @@
         "Quillmoss Row"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1681,7 +1681,8 @@
                   "task_count",
                   "done_count",
                   "progress",
-                  "add_task_btn"
+                  "add_task_btn",
+                  "budget"
                 ]
               },
               {
@@ -1689,7 +1690,14 @@
                 "name": "Timeline",
                 "layout": "timeline",
                 "dateField": "start_on",
-                "icon": "ChartGantt"
+                "icon": "ChartGantt",
+                "hiddenFields": [
+                  "task_count",
+                  "done_count",
+                  "progress",
+                  "add_task_btn",
+                  "budget"
+                ]
               },
               {
                 "id": "view-table",

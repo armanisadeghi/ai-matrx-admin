@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0551",
-  "version": 6,
+  "version": 7,
   "title": "Volunteer Program Desk",
   "description": "Recruit, screen, schedule and thank volunteers; track hours, checks and group days.",
   "forWho": "Volunteer coordinators at nonprofits and community groups",
@@ -2190,7 +2190,8 @@
               "day_on": "@today+3d",
               "headcount": 18,
               "contact": "Hollis Brandt, people team",
-              "waivers_in": false
+              "waivers_in": false,
+              "owner_me": "@installer"
             }
           },
           {
@@ -2203,7 +2204,8 @@
               "day_on": "@today",
               "headcount": 12,
               "contact": "Ms. Adebayo, club adviser",
-              "waivers_in": true
+              "waivers_in": true,
+              "owner_me": "@installer"
             }
           },
           {
@@ -2216,7 +2218,8 @@
               "day_on": "@today+5d",
               "headcount": 25,
               "contact": "Rena Kowal, community manager",
-              "waivers_in": false
+              "waivers_in": false,
+              "owner_me": "@installer"
             }
           },
           {
@@ -3110,7 +3113,7 @@
         "Marlowe Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

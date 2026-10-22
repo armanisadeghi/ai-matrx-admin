@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 8,
+  "version": 9,
   "title": "Subscription Box Business HQ",
   "description": "For subscription boxes: monthly editions, subscribers, renewals, failed charges, pauses.",
   "forWho": "Subscription box and curated gift businesses",
@@ -3201,7 +3201,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3340,7 +3340,9 @@
                   "box_margin",
                   "lineup",
                   "sent_n",
-                  "added_at"
+                  "added_at",
+                  "cost_per_box",
+                  "value_per_box"
                 ]
               },
               {

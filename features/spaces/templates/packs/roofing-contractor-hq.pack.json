@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 8,
+  "version": 9,
   "title": "Roofing Contractor HQ",
   "description": "For roofing companies: leads, inspections, estimates by the square, crews, claims.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -2553,7 +2553,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2921,7 +2921,8 @@
                   "on_hand",
                   "reorder_at",
                   "stock_value",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {

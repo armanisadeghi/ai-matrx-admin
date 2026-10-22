@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 9,
+  "version": 10,
   "title": "Web Design Studio HQ",
   "description": "For web studios: site projects by phase, page content, change requests and invoices.",
   "forWho": "Web design and development studios",
@@ -2825,7 +2825,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -2980,7 +2980,8 @@
                   "add_project",
                   "btn_mail",
                   "btn_site",
-                  "added_at"
+                  "added_at",
+                  "care_fee"
                 ]
               },
               {

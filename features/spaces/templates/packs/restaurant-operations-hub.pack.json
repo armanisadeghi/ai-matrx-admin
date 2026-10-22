@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 9,
+  "version": 10,
   "title": "Restaurant Operations Hub",
   "description": "For chefs and restaurant owners: recipe costs, food cost, pars, prep lists, inspections.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -3283,7 +3283,7 @@
         "Foundry Street"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -3446,7 +3446,8 @@
                   "lead_days",
                   "ingredient_count",
                   "orders_count",
-                  "added_at"
+                  "added_at",
+                  "floor"
                 ]
               },
               {
@@ -3502,7 +3503,8 @@
                   "par",
                   "to_order",
                   "counter",
-                  "added_at"
+                  "added_at",
+                  "unit_cost"
                 ]
               },
               {
@@ -3559,7 +3561,10 @@
                   "cost_flag",
                   "sold_week",
                   "chef",
-                  "added_at"
+                  "added_at",
+                  "price",
+                  "recipe_cost",
+                  "garnish"
                 ]
               },
               {
@@ -3727,7 +3732,9 @@
                 "groupField": "status",
                 "hiddenFields": [
                   "hours",
-                  "added_at"
+                  "added_at",
+                  "rate",
+                  "labor_cost"
                 ]
               },
               {
@@ -3739,7 +3746,9 @@
                 "hiddenFields": [
                   "hours",
                   "person",
-                  "added_at"
+                  "added_at",
+                  "rate",
+                  "labor_cost"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0212",
-  "version": 8,
+  "version": 9,
   "title": "Job Application Tracker",
   "description": "Job seekers: track every application, contact and interview in one pipeline.",
   "forWho": "Job seekers",
@@ -1478,7 +1478,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1587,7 +1587,9 @@
                   "added",
                   "applied_btn",
                   "add_interview_btn",
-                  "open_posting"
+                  "open_posting",
+                  "salary_min",
+                  "salary_max"
                 ]
               },
               {

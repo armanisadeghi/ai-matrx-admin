@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 8,
+  "version": 9,
   "title": "Real Estate Brokerage",
   "description": "For realtors and brokers: leads, listings, contracts, contingency dates and commissions.",
   "forWho": "Real estate agents, brokers and transaction coordinators",
@@ -2395,7 +2395,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2694,14 +2694,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "phone",
+                  "email",
+                  "source",
+                  "agent",
+                  "owner",
+                  "active_btn",
+                  "lost_btn",
+                  "take_btn",
+                  "budget"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "follow_up_on"
+                "dateField": "follow_up_on",
+                "hiddenFields": [
+                  "stage",
+                  "phone",
+                  "email",
+                  "source",
+                  "agent",
+                  "owner",
+                  "active_btn",
+                  "lost_btn",
+                  "take_btn",
+                  "budget"
+                ]
               },
               {
                 "id": "vall",
@@ -2764,7 +2787,8 @@
                   "offers",
                   "txn_btn",
                   "active_btn",
-                  "sold_btn"
+                  "sold_btn",
+                  "price"
                 ]
               },
               {
@@ -2772,7 +2796,17 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "listed_on"
+                "dateField": "listed_on",
+                "hiddenFields": [
+                  "reduced",
+                  "agent",
+                  "beds",
+                  "offers",
+                  "txn_btn",
+                  "active_btn",
+                  "sold_btn",
+                  "price"
+                ]
               },
               {
                 "id": "vall",

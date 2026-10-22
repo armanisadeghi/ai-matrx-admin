@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0568",
-  "version": 5,
+  "version": 6,
   "title": "Film Festival Programming Desk",
   "description": "Film festival: submissions, screener and jury scores, programming slots, venues, guests.",
   "forWho": "Film festival programmers and organizers",
@@ -3135,7 +3135,7 @@
         "Adobe Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -3604,7 +3604,8 @@
                   "screening_slots",
                   "seats_sold",
                   "comps_held",
-                  "added_at"
+                  "added_at",
+                  "hire"
                 ]
               },
               {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0571",
-  "version": 6,
+  "version": 7,
   "title": "Trucking Fleet Desk",
   "description": "Small carrier desk: loads and rate per mile, drivers' hours, maintenance, driver files.",
   "forWho": "Small trucking companies and owner-operator fleets",
@@ -2906,7 +2906,7 @@
         "Terminal Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3059,7 +3059,9 @@
                   "owner_me",
                   "revenue_live",
                   "unbilled",
-                  "added_at"
+                  "added_at",
+                  "revenue",
+                  "maint_cost"
                 ]
               },
               {
@@ -3082,7 +3084,8 @@
                   "owner_me",
                   "revenue_live",
                   "unbilled",
-                  "added_at"
+                  "added_at",
+                  "revenue"
                 ]
               },
               {

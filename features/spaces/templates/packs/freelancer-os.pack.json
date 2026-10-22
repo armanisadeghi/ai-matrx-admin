@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 10,
+  "version": 11,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -2945,7 +2945,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 10
+    "version": 11
   },
   "pages": [
     {
@@ -3187,14 +3187,45 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours_logged",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "hours_month",
+                  "est_hours",
+                  "hours_left",
+                  "invoiced",
+                  "left_to_bill",
+                  "done_btn",
+                  "add_task_btn",
+                  "add_time_entry_btn",
+                  "budget"
+                ]
               },
               {
                 "id": "view-tl",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "start_on"
+                "dateField": "start_on",
+                "hiddenFields": [
+                  "client",
+                  "hours_logged",
+                  "tasks_total",
+                  "tasks_done",
+                  "progress",
+                  "hours_month",
+                  "est_hours",
+                  "hours_left",
+                  "invoiced",
+                  "left_to_bill",
+                  "done_btn",
+                  "add_task_btn",
+                  "add_time_entry_btn",
+                  "budget"
+                ]
               },
               {
                 "id": "view-tbl",
