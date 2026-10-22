@@ -19,6 +19,7 @@ import {
   canonicalIsSelf,
   normalizeUrlForComparison,
   resolveCanonicalUrl,
+  selfCanonicalUrls,
 } from "@/features/marketing/seo/audit/indexability";
 import { parseStoredSeoMetrics } from "@/features/marketing/seo/serp/metrics";
 
@@ -281,9 +282,14 @@ export function toCrawlSnapshotReportRow(
   const performance = parseSnapshotPerformance(snapshot.perf);
   const seo = parseStoredSeoMetrics(snapshot.seo_metrics);
   const url = snapshot.page?.url ?? snapshot.final_url ?? snapshot.page_id;
+  // Self = the final URL (stored, or the redirect chain's last hop), or the page's
+  // own URL when it did not redirect — the same rule as Python `self_canonical_urls`.
   const canonicalState: CanonicalState = !head.canonicalUrl
     ? "missing"
-    : canonicalIsSelf(head.canonicalUrl, url)
+    : canonicalIsSelf(
+          head.canonicalUrl,
+          ...selfCanonicalUrls(snapshot.final_url ?? url, extracted.redirectChain, url),
+        )
       ? "self-referencing"
       : "canonicalized";
   const metaRobots = head.metaRobots?.toLowerCase() ?? "";

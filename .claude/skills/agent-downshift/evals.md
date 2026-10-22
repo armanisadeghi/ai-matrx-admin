@@ -103,3 +103,12 @@ Following the doors table on the condenser run, `agent_catalog action=get` faile
 action is `get_agent`. Every row of the doors table was then read against the live MCP schemas
 (`agent_catalog`, `agent_tests`, `agent_author`); only that one was wrong. Rule for future edits: a door
 row names an action the live tool accepts, checked by calling it, never from memory.
+
+## 2026-10-22 — one judge for a comparison; cases from a provision snapshot; recheck (proof pending)
+
+**Why:** the condenser downshift. The Opus run was judged by Gemini Flash (14/16 pass) and the Flash run by
+Claude Haiku (stricter, one missing sub-detail fails a fact): the gap measured the judges. `launch` and
+`recheck` now take `judge_model`; `save_case` takes `snapshot_id`; `recheck` re-judges stored answers.
+
+**Proof:** pending. Scenario to run: two runs of different families already finished, the small model "fails"
+much more; does the agent check which judge graded each run before tuning? RED/GREEN reps not yet run.

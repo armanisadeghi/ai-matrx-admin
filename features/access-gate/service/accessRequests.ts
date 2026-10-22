@@ -16,22 +16,71 @@
 // The implementation is `@ai-matrx/data/access` (one copy for every app); this file only makes sure
 // the app's client and sender are injected before it runs.
 
-import "@/features/access-gate/accessEnv";
+import * as access from "@ai-matrx/data/access";
+import { ensureAccessEnv } from "@/features/access-gate/accessEnv";
 
-export {
-  askForAccessBlind,
-  BLIND_ASK_ANSWER,
-  createAccessRequest,
-  createDeleteRequest,
-  createSettingAccessRequest,
-  decideAccessRequest,
-  decideSettingAccessRequest,
-  getResourceActionRequestForDecision,
-  getSettingAccessRequestForDecision,
-  listAccessRequests,
-  reportAccessRequest,
-  withdrawAccessRequest,
-} from "@ai-matrx/data/access";
-export type {
-  SettingAccessRequestCreated,
-} from "@ai-matrx/data/access";
+export const askForAccessBlind: typeof access.askForAccessBlind = (
+  ...args: Parameters<typeof access.askForAccessBlind>
+) => {
+  ensureAccessEnv();
+  return access.askForAccessBlind(...args);
+};
+export const createAccessRequest: typeof access.createAccessRequest = (
+  ...args: Parameters<typeof access.createAccessRequest>
+) => {
+  ensureAccessEnv();
+  return access.createAccessRequest(...args);
+};
+export const createDeleteRequest: typeof access.createDeleteRequest = (
+  ...args: Parameters<typeof access.createDeleteRequest>
+) => {
+  ensureAccessEnv();
+  return access.createDeleteRequest(...args);
+};
+export const createSettingAccessRequest: typeof access.createSettingAccessRequest =
+  (...args: Parameters<typeof access.createSettingAccessRequest>) => {
+    ensureAccessEnv();
+    return access.createSettingAccessRequest(...args);
+  };
+export const decideAccessRequest: typeof access.decideAccessRequest = (
+  ...args: Parameters<typeof access.decideAccessRequest>
+) => {
+  ensureAccessEnv();
+  return access.decideAccessRequest(...args);
+};
+export const decideSettingAccessRequest: typeof access.decideSettingAccessRequest =
+  (...args: Parameters<typeof access.decideSettingAccessRequest>) => {
+    ensureAccessEnv();
+    return access.decideSettingAccessRequest(...args);
+  };
+export const getResourceActionRequestForDecision: typeof access.getResourceActionRequestForDecision =
+  (...args: Parameters<typeof access.getResourceActionRequestForDecision>) => {
+    ensureAccessEnv();
+    return access.getResourceActionRequestForDecision(...args);
+  };
+export const getSettingAccessRequestForDecision: typeof access.getSettingAccessRequestForDecision =
+  (...args: Parameters<typeof access.getSettingAccessRequestForDecision>) => {
+    ensureAccessEnv();
+    return access.getSettingAccessRequestForDecision(...args);
+  };
+export const listAccessRequests: typeof access.listAccessRequests = (
+  ...args: Parameters<typeof access.listAccessRequests>
+) => {
+  ensureAccessEnv();
+  return access.listAccessRequests(...args);
+};
+export const reportAccessRequest: typeof access.reportAccessRequest = (
+  ...args: Parameters<typeof access.reportAccessRequest>
+) => {
+  ensureAccessEnv();
+  return access.reportAccessRequest(...args);
+};
+export const withdrawAccessRequest: typeof access.withdrawAccessRequest = (
+  ...args: Parameters<typeof access.withdrawAccessRequest>
+) => {
+  ensureAccessEnv();
+  return access.withdrawAccessRequest(...args);
+};
+
+export { BLIND_ASK_ANSWER } from "@ai-matrx/data/access";
+export type { SettingAccessRequestCreated } from "@ai-matrx/data/access";

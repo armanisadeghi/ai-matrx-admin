@@ -176,20 +176,22 @@ export function useEducationSources(surfaceKey: string, options: UseEducationSou
   // ── "Wait for the clean version": hold, re-read, start when ready ───────
   const [holding, setHolding] = useState(false);
   const poll = useEffectEvent(() => void set.manifest());
-  const release = useEffectEvent(() => {
-    setHolding(false);
-    options.onRelease();
-  });
   const waitingCount = waitingForClean.length;
+  // The hold ends while rendering (state adjusted from a change); the release callback runs in an effect.
+  const [releases, setReleases] = useState(0);
+  if (holding && waitingCount === 0) {
+    setHolding(false);
+    setReleases((n) => n + 1);
+  }
+  const release = useEffectEvent(() => options.onRelease());
+  useEffect(() => {
+    if (releases > 0) release();
+  }, [releases]);
   useEffect(() => {
     if (!holding) return;
-    if (waitingCount === 0) {
-      release();
-      return;
-    }
     const t = setInterval(poll, WAIT_POLL_MS);
     return () => clearInterval(t);
-  }, [holding, waitingCount]);
+  }, [holding]);
 
   /** Why Make cannot start yet, in the page's words, or null. */
   const topicMin = options.topicMinChars ?? TOPIC_MIN_CHARS;

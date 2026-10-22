@@ -133,6 +133,37 @@ describe("toCrawlSnapshotReportRow", () => {
   });
 });
 
+describe("canonicalState follows the redirect chain (Python self_canonical_urls)", () => {
+  const redirected = {
+    page: { url: "http://example.com/old" },
+    final_url: "https://example.com/new",
+    extracted: {
+      redirect_chain: [
+        { url: "http://example.com/old", status: 301 },
+        { url: "https://example.com/new", status: 200 },
+      ],
+    },
+  };
+
+  it("the final URL is self", () => {
+    const row = toCrawlSnapshotReportRow({
+      ...SNAPSHOT,
+      ...redirected,
+      head_tags: { canonical_url: "https://example.com/new" },
+    });
+    expect(row.canonicalState).toBe("self-referencing");
+  });
+
+  it("the redirecting start URL is NOT self", () => {
+    const row = toCrawlSnapshotReportRow({
+      ...SNAPSHOT,
+      ...redirected,
+      head_tags: { canonical_url: "http://example.com/old" },
+    });
+    expect(row.canonicalState).toBe("canonicalized");
+  });
+});
+
 describe("summarizeRedirectChain", () => {
   const hops = [
     { status: 301, url: "https://example.com/a" },

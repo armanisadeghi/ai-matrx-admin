@@ -805,6 +805,134 @@
           }
         ]
       }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "https://ex.com/start",
+        "redirect_chain": [
+          {
+            "url": "https://ex.com/start",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/middle",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/page",
+            "status": 200
+          }
+        ],
+        "final_url": "https://ex.com/page",
+        "requested_url": "https://ex.com/start"
+      },
+      "output": {
+        "ok": false,
+        "verdict": "check",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "https://ex.com/start",
+        "canonical_matches": false,
+        "redirect_hops": 2,
+        "final_url": "https://ex.com/page",
+        "issues": [
+          {
+            "severity": "warning",
+            "message": "Canonical points elsewhere (https://ex.com/start) — Google may index that URL instead"
+          },
+          {
+            "severity": "warning",
+            "message": "URL redirects through 2 hop(s) before resolving"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "/middle",
+        "redirect_chain": [
+          {
+            "url": "https://ex.com/start",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/middle",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/page",
+            "status": 200
+          }
+        ],
+        "final_url": "https://ex.com/page",
+        "requested_url": "https://ex.com/start"
+      },
+      "output": {
+        "ok": false,
+        "verdict": "check",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "/middle",
+        "canonical_matches": false,
+        "redirect_hops": 2,
+        "final_url": "https://ex.com/page",
+        "issues": [
+          {
+            "severity": "warning",
+            "message": "Canonical points elsewhere (/middle) — Google may index that URL instead"
+          },
+          {
+            "severity": "warning",
+            "message": "URL redirects through 2 hop(s) before resolving"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "https://ex.com/page",
+        "redirect_chain": [
+          {
+            "url": "https://ex.com/start",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/middle",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/page",
+            "status": 200
+          }
+        ],
+        "final_url": "https://ex.com/page",
+        "requested_url": "https://ex.com/start"
+      },
+      "output": {
+        "ok": false,
+        "verdict": "check",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "https://ex.com/page",
+        "canonical_matches": true,
+        "redirect_hops": 2,
+        "final_url": "https://ex.com/page",
+        "issues": [
+          {
+            "severity": "warning",
+            "message": "URL redirects through 2 hop(s) before resolving"
+          }
+        ]
+      }
     }
   ],
   "url_quality": [

@@ -2,13 +2,15 @@
  * THE best-address rule (D223): which contact point an outreach-list member is
  * bound to. Pure. The server door (aidream
  * `aidream/services/crm/outreach_members.py` `pick_best`) applies the same rule,
- * and both run every case in aidream's
+ * and both run the same cases: this repo's `best-contact-point.cases.json`,
+ * byte-identical to aidream's
  * `aidream/services/crm/tests/best_contact_point_cases.json` — change both or
  * neither.
  *
  * Usable: channel email/phone, not opted out, `valid_to` not before today.
  * Rank: the list kind's channel (call → phone, else email), primary, higher
- * confidence, lower sort_order, then id — never the order rows came back in.
+ * confidence (unscored above a known-bad 0), lower sort_order, then id — never
+ * the order rows came back in.
  */
 
 export const BEST_CONTACT_POINT_CHANNELS = ["email", "phone"] as const;
@@ -46,13 +48,16 @@ function usable(p: BestContactPointCandidate, today: string): boolean {
   return !(p.valid_to && p.valid_to.slice(0, 10) < today);
 }
 
+/** An unscored address ranks between a known-bad confidence 0 and any positive score. */
+export const UNSCORED_CONFIDENCE = 0.5;
+
 type Rank = [number, number, number, number, string];
 
 function rank(p: BestContactPointCandidate, preferred: string): Rank {
   return [
     p.channel === preferred ? 0 : 1,
     p.is_primary ? 0 : 1,
-    p.confidence != null ? -p.confidence : 1,
+    -(p.confidence ?? UNSCORED_CONFIDENCE),
     p.sort_order != null ? p.sort_order : 2 ** 31,
     p.id,
   ];

@@ -47,14 +47,14 @@ export const METRIC_CARDS: MetricCardConfig[] = [
   },
   {
     key: "conversations",
-    label: "Conversations",
-    singular: "conversation",
+    label: "Chats",
+    singular: "chat",
     iconName: "MessagesSquare",
     identity: "chats",
     color: "slate",
     href: "/chat/new",
     featured: true,
-    emptyHint: "Start a conversation",
+    emptyHint: "Start a chat",
   },
   {
     key: "knowledge_files",

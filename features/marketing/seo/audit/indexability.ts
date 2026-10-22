@@ -109,6 +109,25 @@ function robotsTokens(metaRobots: string | null): string[] {
     .filter(Boolean);
 }
 
+/**
+ * The addresses that ARE this page, for "is the canonical self?". Mirror of
+ * Python `self_canonical_urls`: the final URL (stored, and the redirect chain's
+ * last hop) plus the requested URL only when the request did not redirect.
+ */
+export function selfCanonicalUrls(
+  finalUrl: string | null,
+  redirectChain: ReadonlyArray<{ url?: string | null } | null | undefined> | null | undefined,
+  requestedUrl: string | null = null,
+): string[] {
+  const hops = (redirectChain ?? [])
+    .map((hop) => hop?.url)
+    .filter((url): url is string => typeof url === "string" && url !== "");
+  const known: string[] = finalUrl ? [finalUrl] : [];
+  if (hops.length > 0) known.push(hops[hops.length - 1]);
+  if (requestedUrl && hops.length <= 1) known.push(requestedUrl);
+  return known;
+}
+
 export function evaluateIndexability(
   input: IndexabilityInput,
 ): IndexabilityEvaluation {
@@ -116,19 +135,19 @@ export function evaluateIndexability(
   const noindex = tokens.includes("noindex") || tokens.includes("none");
   const nofollow = tokens.includes("nofollow") || tokens.includes("none");
   const redirectHops = Math.max(0, input.redirectChain.length - 1);
-  // Self-canonical means the canonical names the requested URL or the final
-  // URL (the stored one, or the redirect chain's LAST hop). An intermediate
-  // hop is NOT this page: a canonical naming it points at a redirect (Python
-  // `evaluate_indexability`, same rule).
-  const lastHop = input.redirectChain[input.redirectChain.length - 1];
+  // Self = the final URL (stored, or the chain's last hop), or the requested
+  // URL when nothing redirected. Any other chain URL — the start URL included —
+  // is a redirect (Python `self_canonical_urls`, same rule).
   const canonicalMatches =
     input.canonicalUrl && input.finalUrl
       ? Boolean(
           canonicalIsSelf(
             input.canonicalUrl,
-            input.finalUrl,
-            input.requestedUrl ?? null,
-            lastHop?.url ?? null,
+            ...selfCanonicalUrls(
+              input.finalUrl,
+              input.redirectChain,
+              input.requestedUrl ?? null,
+            ),
           ),
         )
       : null;
