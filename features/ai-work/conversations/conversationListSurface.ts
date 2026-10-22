@@ -18,7 +18,10 @@ import type {
 } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import {
   collectionWriteHandlers,
+  collectProblems,
+  ProblemList,
   readCollectionList,
+  repeatsProblem,
 } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { xmlElement, xmlList } from "@ai-matrx/chat/surfaces/runtime/context-bundle";
@@ -129,13 +132,16 @@ interface UpdatePlan {
   favorite?: boolean;
 }
 
+const rawId = (raw: unknown): string | null =>
+  typeof raw === "string"
+    ? raw
+    : raw && typeof raw === "object" && typeof (raw as { id?: unknown }).id === "string"
+      ? (raw as { id: string }).id
+      : null;
+
+/** The on-screen row an item names. */
 function rowFor(list: Controller, target: string, raw: unknown, index: number): ConversationBrowseRow {
-  const id =
-    typeof raw === "string"
-      ? raw
-      : raw && typeof raw === "object" && typeof (raw as { id?: unknown }).id === "string"
-        ? (raw as { id: string }).id
-        : null;
+  const id = rawId(raw);
   if (!id) throw new Error(`${target}[${index}] needs the conversation's id.`);
   const row = list.rows.find((r) => r.id === id);
   if (!row)
@@ -145,44 +151,87 @@ function rowFor(list: Controller, target: string, raw: unknown, index: number): 
   return row;
 }
 
+const UPDATE_KEYS = ["id", "title", "favorite"] as const;
+
+/** Every problem across the whole list, reported at once (never the first only). */
 function parseUpdates(list: Controller, value: unknown): UpdatePlan[] {
   const target = "update_conversations";
   const items = readCollectionList(target, "conversations", value);
-  const plans = items.map((raw, i) => {
-    const row = rowFor(list, target, raw, i);
-    const item = raw as { title?: unknown; favorite?: unknown };
-    const plan: UpdatePlan = { row };
-    if (item.title !== undefined) {
-      if (typeof item.title !== "string" || !item.title.trim())
-        throw new Error(`${target}[${i}].title must be non-empty text.`);
-      if (item.title.trim().length > 200)
-        throw new Error(`${target}[${i}].title is over 200 characters.`);
-      plan.title = item.title.trim();
-    }
-    if (item.favorite !== undefined) {
-      if (typeof item.favorite !== "boolean")
-        throw new Error(`${target}[${i}].favorite must be true or false.`);
-      if (!row.is_owner)
-        throw new Error(`${target}[${i}]: "${titleOf(row)}" is shared with the person; only its owner can favorite it.`);
-      plan.favorite = item.favorite;
-    }
-    if (plan.title === undefined && plan.favorite === undefined)
-      throw new Error(`${target}[${i}] changes nothing — send title and/or favorite.`);
-    return plan;
-  });
-  return plans;
+  return collectProblems(
+    target,
+    items,
+    (raw, i): UpdatePlan => {
+      const where = `${target}[${i}]`;
+      if (!raw || typeof raw !== "object" || Array.isArray(raw))
+        throw new Error(`${where} must be an object like { "id": "…", "title": "…" }; received ${JSON.stringify(raw)}.`);
+      const item = raw as Record<string, unknown>;
+      const problems = new ProblemList(where);
+      const unknownKeys = Object.keys(item).filter(
+        (k) => !(UPDATE_KEYS as readonly string[]).includes(k),
+      );
+      if (unknownKeys.length > 0)
+        problems.add(`${where} does not accept ${unknownKeys.join(", ")}. Allowed keys: ${UPDATE_KEYS.join(", ")}.`);
+      const row = problems.check(() => rowFor(list, target, raw, i));
+      const plan: Partial<UpdatePlan> = {};
+      if (item.title !== undefined) {
+        if (typeof item.title !== "string" || !item.title.trim())
+          problems.add(`${where}.title must be non-empty text.`);
+        else if (item.title.trim().length > 200)
+          problems.add(`${where}.title is over 200 characters.`);
+        else plan.title = item.title.trim();
+      }
+      if (item.favorite !== undefined) {
+        if (typeof item.favorite !== "boolean")
+          problems.add(`${where}.favorite must be true or false.`);
+        else if (row && !row.is_owner)
+          problems.add(`${where}: "${titleOf(row)}" is shared with the person; only its owner can favorite it.`);
+        else plan.favorite = item.favorite;
+      }
+      if (item.title === undefined && item.favorite === undefined)
+        problems.add(`${where} changes nothing — send title and/or favorite.`);
+      problems.throwIfAny();
+      return { ...plan, row: row! };
+    },
+    {
+      listChecks: (checked) => [
+        repeatsProblem(target, checked.map((it) => rawId(it.raw)), "conversation id"),
+      ],
+    },
+  );
 }
+
+const DELETE_KEYS = ["id"] as const;
 
 function parseDeletes(list: Controller, value: unknown): ConversationBrowseRow[] {
   const target = "delete_conversations";
-  return readCollectionList(target, "conversations", value).map((raw, i) => {
-    const row = rowFor(list, target, raw, i);
-    if (row.provider)
-      throw new Error(
-        `${target}[${i}]: "${titleOf(row)}" is linked to a coding session and cannot be moved to Trash from the list.`,
-      );
-    return row;
-  });
+  const items = readCollectionList(target, "conversations", value);
+  return collectProblems(
+    target,
+    items,
+    (raw, i) => {
+      const where = `${target}[${i}]`;
+      const problems = new ProblemList(where);
+      if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+        const unknownKeys = Object.keys(raw).filter(
+          (k) => !(DELETE_KEYS as readonly string[]).includes(k),
+        );
+        if (unknownKeys.length > 0)
+          problems.add(`${where} does not accept ${unknownKeys.join(", ")}. Send the id alone.`);
+      }
+      const row = problems.check(() => rowFor(list, target, raw, i));
+      if (row?.provider)
+        problems.add(
+          `${where}: "${titleOf(row)}" is linked to a coding session and cannot be moved to Trash from the list.`,
+        );
+      problems.throwIfAny();
+      return row!;
+    },
+    {
+      listChecks: (checked) => [
+        repeatsProblem(target, checked.map((it) => rawId(it.raw)), "conversation id"),
+      ],
+    },
+  );
 }
 
 async function setFavorite(id: string, isFavorite: boolean): Promise<void> {
@@ -205,26 +254,39 @@ interface ListViewPlan {
 // The lane tabs the page renders: All and My team come from the shell, beside the declared scopes.
 const VIEW_LANES: readonly ListScopeKind[] = ["all", "team", ...CONVERSATION_LIST_SCOPES];
 
-function parseListView(value: unknown): ListViewPlan {
-  const v = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+const LIST_VIEW_KEYS = ["lane", "bucket", "search"] as const;
+
+/** Every problem at once; an unknown key is refused, never ignored. */
+export function parseListView(value: unknown): ListViewPlan {
+  const where = "list_view";
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw new Error(`${where} expects an OBJECT like { "lane": "mine", "search": "" }; received ${JSON.stringify(value)}.`);
+  const v = value as Record<string, unknown>;
+  const problems = new ProblemList(where);
+  const unknownKeys = Object.keys(v).filter(
+    (k) => !(LIST_VIEW_KEYS as readonly string[]).includes(k),
+  );
+  if (unknownKeys.length > 0)
+    problems.add(`${where} does not accept ${unknownKeys.join(", ")}. Allowed keys: ${LIST_VIEW_KEYS.join(", ")}.`);
   const plan: ListViewPlan = {};
   if (v.lane !== undefined) {
     if (typeof v.lane !== "string" || !(VIEW_LANES as readonly string[]).includes(v.lane))
-      throw new Error(`list_view.lane must be one of ${VIEW_LANES.join(", ")}.`);
-    plan.lane = v.lane as ListScopeKind;
+      problems.add(`${where}.lane must be one of ${VIEW_LANES.join(", ")}; received ${JSON.stringify(v.lane)}.`);
+    else plan.lane = v.lane as ListScopeKind;
   }
   if (v.bucket !== undefined) {
     const allowed = [...CONVERSATION_AUDIENCES, "all"] as string[];
     if (typeof v.bucket !== "string" || !allowed.includes(v.bucket))
-      throw new Error(`list_view.bucket must be one of ${allowed.join(", ")}.`);
-    plan.bucket = v.bucket as ListViewPlan["bucket"];
+      problems.add(`${where}.bucket must be one of ${allowed.join(", ")}; received ${JSON.stringify(v.bucket)}.`);
+    else plan.bucket = v.bucket as ListViewPlan["bucket"];
   }
   if (v.search !== undefined) {
-    if (typeof v.search !== "string") throw new Error("list_view.search must be text.");
-    plan.search = v.search.trim();
+    if (typeof v.search !== "string") problems.add(`${where}.search must be text ("" clears it).`);
+    else plan.search = v.search.trim();
   }
+  problems.throwIfAny();
   if (!plan.lane && !plan.bucket && plan.search === undefined)
-    throw new Error("list_view changes nothing — send lane, bucket and/or search.");
+    throw new Error(`${where} changes nothing — send lane, bucket and/or search.`);
   return plan;
 }
 
