@@ -200,7 +200,7 @@ function coerceMyClasses(data: unknown): MyClass[] {
 export async function getClassState(
   classId: string,
 ): Promise<ClassAccessState> {
-  const { data, error } = await createClient().rpc("edu_class_state", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_state", {
     p_class: classId,
   });
   if (error) throw operationFailed("load this class", error);
@@ -210,7 +210,7 @@ export async function getClassState(
 export async function getClassRoster(
   classId: string,
 ): Promise<ClassRosterMember[]> {
-  const { data, error } = await createClient().rpc("edu_class_roster", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_roster", {
     p_class: classId,
   });
   if (error) throw operationFailed("load this class's roster", error);
@@ -218,7 +218,7 @@ export async function getClassRoster(
 }
 
 export async function getMyClasses(): Promise<MyClass[]> {
-  const { data, error } = await createClient().rpc("edu_my_classes");
+  const { data, error } = await createClient().schema("education").rpc("edu_my_classes");
   if (error) throw operationFailed("load your classes", error);
   return coerceMyClasses(data);
 }
@@ -226,7 +226,7 @@ export async function getMyClasses(): Promise<MyClass[]> {
 // ─── Membership writes ─────────────────────────────────────────────────────────
 
 export async function joinClass(classId: string): Promise<ClassJoinResult> {
-  const { data, error } = await createClient().rpc("edu_class_join", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_join", {
     p_class: classId,
   });
   if (error) throw operationFailed("join this class", error);
@@ -234,7 +234,7 @@ export async function joinClass(classId: string): Promise<ClassJoinResult> {
 }
 
 export async function requestClass(classId: string): Promise<ClassJoinResult> {
-  const { data, error } = await createClient().rpc("edu_class_request", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_request", {
     p_class: classId,
   });
   if (error) throw operationFailed("request to join this class", error);
@@ -242,7 +242,7 @@ export async function requestClass(classId: string): Promise<ClassJoinResult> {
 }
 
 export async function leaveClass(classId: string): Promise<ClassJoinResult> {
-  const { data, error } = await createClient().rpc("edu_class_leave", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_leave", {
     p_class: classId,
   });
   if (error) throw operationFailed("leave this class", error);
@@ -255,7 +255,7 @@ export async function approveMember(
   classId: string,
   userId: string,
 ): Promise<ClassJoinResult> {
-  const { data, error } = await createClient().rpc("edu_class_approve", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_approve", {
     p_class: classId,
     p_user: userId,
   });
@@ -267,7 +267,7 @@ export async function removeMember(
   classId: string,
   userId: string,
 ): Promise<ClassJoinResult> {
-  const { data, error } = await createClient().rpc("edu_class_remove", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_remove", {
     p_class: classId,
     p_user: userId,
   });
@@ -280,7 +280,7 @@ export async function grantAccess(
   classId: string,
   userId: string,
 ): Promise<ClassJoinResult> {
-  const { data, error } = await createClient().rpc("edu_class_grant", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_grant", {
     p_class: classId,
     p_user: userId,
   });
@@ -293,7 +293,7 @@ export async function setAccessMode(
   classId: string,
   mode: AccessMode,
 ): Promise<void> {
-  const { error } = await createClient().rpc("edu_class_set_access", {
+  const { error } = await createClient().schema("education").rpc("edu_class_set_access", {
     p_class: classId,
     p_access_mode: mode,
   });
@@ -312,7 +312,7 @@ export async function setAccessMode(
 export async function getClassAssignments(
   classId: string,
 ): Promise<ClassAssignment[]> {
-  const { data, error } = await createClient().rpc("edu_class_assignments", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_assignments", {
     p_class: classId,
   });
   if (error) throw operationFailed("load this class's assignments", error);
@@ -326,7 +326,7 @@ export async function assignResource(
   resourceId: string,
   dueDate?: string | null,
 ): Promise<void> {
-  const { error } = await createClient().rpc("edu_class_assign", {
+  const { error } = await createClient().schema("education").rpc("edu_class_assign", {
     p_class: classId,
     p_token: token,
     p_resource: resourceId,
@@ -341,7 +341,7 @@ export async function unassignResource(
   token: string,
   resourceId: string,
 ): Promise<void> {
-  const { error } = await createClient().rpc("edu_class_unassign", {
+  const { error } = await createClient().schema("education").rpc("edu_class_unassign", {
     p_class: classId,
     p_token: token,
     p_resource: resourceId,
@@ -357,7 +357,7 @@ export async function getClassStudentProgress(
   classId: string,
   userId: string,
 ): Promise<AssignmentProgress[]> {
-  const { data, error } = await createClient().rpc(
+  const { data, error } = await createClient().schema("education").rpc(
     "edu_class_student_progress",
     { p_class: classId, p_user: userId },
   );
@@ -369,7 +369,7 @@ export async function getClassStudentProgress(
 export async function getClassProgressOverview(
   classId: string,
 ): Promise<ClassProgressOverview> {
-  const { data, error } = await createClient().rpc(
+  const { data, error } = await createClient().schema("education").rpc(
     "edu_class_progress_overview",
     { p_class: classId },
   );
@@ -465,7 +465,7 @@ export function classInviteAcceptUrl(token: string): string {
 
 /** Owner: the class's current join code (creates one on first call). */
 export async function getJoinCode(classId: string): Promise<string | null> {
-  const { data, error } = await createClient().rpc("edu_class_join_code", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_join_code", {
     p_class: classId,
     p_action: "get",
   });
@@ -475,7 +475,7 @@ export async function getJoinCode(classId: string): Promise<string | null> {
 
 /** Owner: rotate to a fresh code (the old one stops working immediately). */
 export async function rotateJoinCode(classId: string): Promise<string | null> {
-  const { data, error } = await createClient().rpc("edu_class_join_code", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_join_code", {
     p_class: classId,
     p_action: "rotate",
   });
@@ -485,7 +485,7 @@ export async function rotateJoinCode(classId: string): Promise<string | null> {
 
 /** Owner: disable code joining entirely. */
 export async function disableJoinCode(classId: string): Promise<void> {
-  const { error } = await createClient().rpc("edu_class_join_code", {
+  const { error } = await createClient().schema("education").rpc("edu_class_join_code", {
     p_class: classId,
     p_action: "disable",
   });
@@ -496,7 +496,7 @@ export async function disableJoinCode(classId: string): Promise<void> {
 export async function getClassByCode(
   code: string,
 ): Promise<ClassCodePreview | null> {
-  const { data, error } = await createClient().rpc("edu_class_by_code", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_by_code", {
     p_code: code,
   });
   if (error) throw operationFailed("look up this class code", error);
@@ -520,7 +520,7 @@ export async function getClassByCode(
 export async function joinClassByCode(
   code: string,
 ): Promise<ClassJoinResult & { classId: string | null }> {
-  const { data, error } = await createClient().rpc("edu_class_join_by_code", {
+  const { data, error } = await createClient().schema("education").rpc("edu_class_join_by_code", {
     p_code: code,
   });
   if (error) throw operationFailed("join with this code", error);

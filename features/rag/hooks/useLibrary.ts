@@ -244,7 +244,7 @@ export function useLibrary(opts: UseLibraryOptions = {}) {
       if (firstFetch) setLoading(true);
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc(
+        const { data, error: rpcError } = await supabase.schema("rag").rpc(
           "rag_library_list",
           {
             p_limit: limit,
@@ -340,7 +340,7 @@ export function useLibrarySummary(
       if (firstFetch) setLoading(true);
       setError(null);
       try {
-        const { data, error: rpcError } = await supabase.rpc(
+        const { data, error: rpcError } = await supabase.schema("rag").rpc(
           "rag_library_summary_totals",
           {},
         );

@@ -72,7 +72,7 @@ export async function findOrCreateDirectConversation(
     );
   }
   const supabase = createAdminClient();
-  const { data: conversationId, error: rpcError } = await supabase.rpc(
+  const { data: conversationId, error: rpcError } = await supabase.schema("chat").rpc(
     "dm_get_or_create_direct_conversation",
     {
       p_user1_id: userA,

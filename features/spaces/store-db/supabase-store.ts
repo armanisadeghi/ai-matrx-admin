@@ -458,7 +458,7 @@ export class SupabaseSpacesStore implements SpacesStore {
   }
 
   private async link(childId: SpaceId, parentId: SpaceId, position: number): Promise<void> {
-    const { error } = await this.db.rpc("assoc_link", {
+    const { error } = await this.db.schema("platform").rpc("assoc_link", {
       p_source_type: "document",
       p_source_id: childId,
       p_target_type: "document",
@@ -471,7 +471,7 @@ export class SupabaseSpacesStore implements SpacesStore {
   }
 
   private async unlink(childId: SpaceId, parentId: SpaceId): Promise<void> {
-    const { error } = await this.db.rpc("assoc_unlink", {
+    const { error } = await this.db.schema("platform").rpc("assoc_unlink", {
       p_source_type: "document",
       p_source_id: childId,
       p_target_type: "document",

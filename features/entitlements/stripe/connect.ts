@@ -297,7 +297,7 @@ export async function fulfillClassPurchase(
   );
 
   // Confer the enrolment via the service_role-only RPC (the ONLY grant path).
-  const { error } = await admin.rpc("edu_class_confer_purchase", {
+  const { error } = await admin.schema("education").rpc("edu_class_confer_purchase", {
     p_class: sale.class_id,
     p_user: sale.buyer_user_id,
   });
@@ -329,7 +329,7 @@ export async function revokeClassPurchaseByPaymentIntent(
     .maybeSingle();
   if (!sale) return; // not one of ours (e.g. a subscription payment)
 
-  const { error } = await admin.rpc("edu_class_revoke_purchase", {
+  const { error } = await admin.schema("education").rpc("edu_class_revoke_purchase", {
     p_class: sale.class_id,
     p_user: sale.buyer_user_id,
   });

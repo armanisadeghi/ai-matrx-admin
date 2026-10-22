@@ -58,7 +58,7 @@ export async function listVersions(
   opts: { limit?: number; offset?: number } = {},
 ): Promise<VersionResult<VersionEntry[]>> {
   try {
-    const { data, error } = await supabase.rpc("version_list", {
+    const { data, error } = await supabase.schema("platform").rpc("version_list", {
       p_token: entityType,
       p_id: entityId,
       ...(opts.limit != null ? { p_limit: opts.limit } : {}),
@@ -85,7 +85,7 @@ export async function getVersionSnapshot(
   version: number,
 ): Promise<VersionResult<Json>> {
   try {
-    const { data, error } = await supabase.rpc("version_snapshot", {
+    const { data, error } = await supabase.schema("platform").rpc("version_snapshot", {
       p_token: entityType,
       p_id: entityId,
       p_version: version,
@@ -108,7 +108,7 @@ export async function restoreVersion(
   version: number,
 ): Promise<VersionResult<number>> {
   try {
-    const { data, error } = await supabase.rpc("version_restore", {
+    const { data, error } = await supabase.schema("platform").rpc("version_restore", {
       p_token: entityType,
       p_id: entityId,
       p_version: version,

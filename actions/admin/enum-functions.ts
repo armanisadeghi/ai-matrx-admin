@@ -17,7 +17,7 @@ export async function getDatabaseEnums(): Promise<DatabaseEnum[]> {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_database_enums");
+    const { data, error } = await supabase.schema("platform").rpc("get_database_enums");
 
     if (error) throw error;
 
@@ -38,7 +38,7 @@ export async function getEnumByName(
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_enum_by_name", {
+    const { data, error } = await supabase.schema("platform").rpc("get_enum_by_name", {
       p_schema: schema,
       p_name: name,
     });
@@ -69,7 +69,7 @@ export async function searchEnums({
     const supabase = await createClient();
 
     // Get all enums first
-    const { data, error } = await supabase.rpc("get_database_enums");
+    const { data, error } = await supabase.schema("platform").rpc("get_database_enums");
 
     if (error) throw error;
 
@@ -120,7 +120,7 @@ export async function createEnum(request: CreateEnumRequest): Promise<boolean> {
       .join(", ");
     const query = `CREATE TYPE ${request.schema}.${request.name} AS ENUM (${values});`;
 
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query,
     });
 
@@ -144,7 +144,7 @@ export async function createEnum(request: CreateEnumRequest): Promise<boolean> {
     if (request.description) {
       const escapedDescription = request.description.replace(/'/g, "''");
       const commentQuery = `COMMENT ON TYPE ${request.schema}.${request.name} IS '${escapedDescription}';`;
-      const { error: commentError } = await supabase.rpc(
+      const { error: commentError } = await supabase.schema("platform").rpc(
         "execute_admin_query",
         { query: commentQuery },
       );
@@ -173,7 +173,7 @@ export async function updateEnum(request: UpdateEnumRequest): Promise<boolean> {
     if (request.valuesToAdd && request.valuesToAdd.length > 0) {
       for (const value of request.valuesToAdd) {
         const query = `ALTER TYPE ${request.schema}.${request.name} ADD VALUE '${value}';`;
-        const { error } = await supabase.rpc("execute_admin_query", { query });
+        const { error } = await supabase.schema("platform").rpc("execute_admin_query", { query });
         if (error) throw error;
       }
     }
@@ -186,7 +186,7 @@ export async function updateEnum(request: UpdateEnumRequest): Promise<boolean> {
       const commentQuery = request.description
         ? `COMMENT ON TYPE ${request.schema}.${request.name} IS '${request.description}';`
         : `COMMENT ON TYPE ${request.schema}.${request.name} IS NULL;`;
-      await supabase.rpc("execute_admin_query", { query: commentQuery });
+      await supabase.schema("platform").rpc("execute_admin_query", { query: commentQuery });
     }
 
     revalidatePath("/administration/database/enums");
@@ -216,7 +216,7 @@ export async function deleteEnum(
 
     const query = `DROP TYPE ${schema}.${name};`;
 
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query,
     });
 
@@ -240,7 +240,7 @@ export async function getEnumUsage(
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_enum_usage", {
+    const { data, error } = await supabase.schema("platform").rpc("get_enum_usage", {
       p_schema: schema,
       p_name: name,
     });

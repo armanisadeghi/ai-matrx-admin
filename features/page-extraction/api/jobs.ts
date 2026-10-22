@@ -181,7 +181,7 @@ export async function deleteJob(jobId: string): Promise<void> {
 export async function clearJobResults(jobId: string): Promise<void> {
   // RPC functions stay in `public` regardless of the `docproc` table move —
   // call through the unscoped client, not `db` (which is `.schema("docproc")`).
-  const { error } = await supabase.rpc("page_extraction_clear_job_results", {
+  const { error } = await supabase.schema("docproc").rpc("page_extraction_clear_job_results", {
     p_job_id: jobId,
   });
   if (error) {

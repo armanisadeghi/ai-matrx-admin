@@ -240,7 +240,7 @@ export async function deleteSavedView(
   id: string,
   listKey: SavedViewListKey,
 ): Promise<void> {
-  const { data, error } = await supabase.rpc("saved_view_archive", {
+  const { data, error } = await supabase.schema("platform").rpc("saved_view_archive", {
     p_surface_key: surfaceKeyFor(listKey),
     p_id: id,
   });

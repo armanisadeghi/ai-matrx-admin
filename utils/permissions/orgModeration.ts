@@ -136,7 +136,7 @@ export async function revokeOrgShare(
   orgId: string,
 ): Promise<ReviewResult> {
   try {
-    const { data, error } = await supabase.rpc("revoke_resource_org_access", {
+    const { data, error } = await supabase.schema("iam").rpc("revoke_resource_org_access", {
       p_resource_type: resourceTable,
       p_resource_id: resourceId,
       p_target_org_id: orgId,
@@ -161,7 +161,7 @@ export async function reviewOrgShare(
   note?: string,
 ): Promise<ReviewResult> {
   try {
-    const { data, error } = await supabase.rpc("review_org_share", {
+    const { data, error } = await supabase.schema("iam").rpc("review_org_share", {
       p_permission_id: permissionId,
       p_status: status,
       p_note: note,

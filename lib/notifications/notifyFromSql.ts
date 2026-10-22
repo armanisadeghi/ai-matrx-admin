@@ -136,7 +136,7 @@ export async function userIdForEmail(
   admin: AdminClient,
   email: string,
 ): Promise<string | null> {
-  const { data, error } = await admin.rpc("lookup_user_by_email", {
+  const { data, error } = await admin.schema("users").rpc("lookup_user_by_email", {
     lookup_email: email,
   });
   if (error) {

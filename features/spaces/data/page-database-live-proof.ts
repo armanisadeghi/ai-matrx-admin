@@ -64,7 +64,7 @@ async function main() {
     pages.push(linkedPage.id);
 
     for (const id of [page.id, linkedPage.id]) {
-      const { error } = await admin.db.rpc("share_resource_with_user", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId, p_permission_level: "editor" });
+      const { error } = await admin.db.schema("iam").rpc("share_resource_with_user", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId, p_permission_level: "editor" });
       check(`share ${id === page.id ? "the page" : "the linked-view page"} with test@test.com at Edit`, !error, error?.message ?? "");
     }
 
@@ -101,7 +101,7 @@ async function main() {
     check("restoring the page brings its database back", back.ok && back.data === null, back.ok ? "" : back.error.message);
   } finally {
     for (const id of pages) {
-      await admin.db.rpc("revoke_resource_access", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId });
+      await admin.db.schema("iam").rpc("revoke_resource_access", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId });
       await store.archive(id).catch(() => undefined);
     }
   }

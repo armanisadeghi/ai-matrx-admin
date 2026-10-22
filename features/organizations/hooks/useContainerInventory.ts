@@ -103,7 +103,7 @@ async function readContainerInventory(column: ContainerColumn, value: string): P
   // unless a later read fills that key.
   const unreadKeys = new Set<string>();
   try {
-    const { data, error } = await supabase.rpc(
+    const { data, error } = await supabase.schema("platform").rpc(
       "container_resource_counts" as never,
       { p_column: column, p_container_id: value } as never,
     );

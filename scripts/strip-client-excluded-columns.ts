@@ -93,7 +93,7 @@ async function readRegistry(): Promise<RegistryRow[]> {
     // The client has no direct grant on `platform.*`; read the registry through the public
     // SECURITY-DEFINER projection (migrations/hr_c8_01_entity_client_excluded_columns_rpc.sql),
     // the same pattern `gen:entity-types` uses for `entity_types_list()`.
-    const { data, error } = await supabase.rpc("entity_client_excluded_columns");
+    const { data, error } = await supabase.schema("platform").rpc("entity_client_excluded_columns");
     if (error) fail(`could not read the registry via entity_client_excluded_columns() — ${error.message}`);
     return (data ?? []) as RegistryRow[];
 }

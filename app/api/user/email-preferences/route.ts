@@ -27,7 +27,7 @@ export async function GET() {
 
     // Get or create user email preferences
     const adminSupabase = createAdminClient();
-    const { data, error } = await adminSupabase.rpc(
+    const { data, error } = await adminSupabase.schema("users").rpc(
       "get_user_email_preferences",
       { p_user_id: user.id },
     );

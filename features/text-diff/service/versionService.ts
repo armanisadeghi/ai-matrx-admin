@@ -44,7 +44,7 @@ function mapVersionRow(row: RpcVersionRow, noteId: string): NoteVersion {
  * Fetch version history for a note
  */
 export async function fetchVersions(noteId: string): Promise<NoteVersion[]> {
-  const { data, error } = await supabase.rpc("get_note_versions", {
+  const { data, error } = await supabase.schema("users").rpc("get_note_versions", {
     p_note_id: noteId,
   });
 
@@ -63,7 +63,7 @@ export async function fetchVersions(noteId: string): Promise<NoteVersion[]> {
 export async function fetchVersion(
   versionId: string,
 ): Promise<NoteVersion | null> {
-  const { data, error } = await supabase.rpc("get_note_version", {
+  const { data, error } = await supabase.schema("users").rpc("get_note_version", {
     p_id: versionId,
   });
 
@@ -85,7 +85,7 @@ export async function restoreVersion(
   noteId: string,
   versionNumber: number,
 ): Promise<boolean> {
-  const { data, error } = await supabase.rpc("restore_note_version", {
+  const { data, error } = await supabase.schema("users").rpc("restore_note_version", {
     p_note_id: noteId,
     p_version_number: versionNumber,
   });
@@ -122,7 +122,7 @@ export async function createManualVersion(
   } = {},
 ): Promise<NoteVersion> {
   // The RPC owns ownership/version-number/timestamps; it returns the new id.
-  const { data: newId, error } = await supabase.rpc(
+  const { data: newId, error } = await supabase.schema("users").rpc(
     "create_note_version_manual",
     {
       p_note_id: noteId,

@@ -64,7 +64,7 @@ export async function listRunHistoryPage(
   filters: RunHistoryFilters,
   cursor: RunHistoryCursor | null,
 ): Promise<RunHistoryPage> {
-  const { data, error } = await supabase.rpc("admin_list_run_history", {
+  const { data, error } = await supabase.schema("ai").rpc("admin_list_run_history", {
     p_cursor_at: cursor?.at,
     p_cursor_kind: cursor?.kind,
     p_cursor_id: cursor?.id,
@@ -105,7 +105,7 @@ export async function listRunHistoryFacets(
 export async function getRunHistoryEntry(
   ref: SelectedRunRef,
 ): Promise<RunHistoryEntry | null> {
-  const { data, error } = await supabase.rpc("admin_list_run_history", {
+  const { data, error } = await supabase.schema("ai").rpc("admin_list_run_history", {
     p_kinds: [ref.kind],
     p_run_id: ref.id,
     p_activity: "all",
@@ -118,7 +118,7 @@ export async function listRunAiCalls(
   executionKind: string,
   executionId: string,
 ): Promise<RunAiCall[]> {
-  const { data, error } = await supabase.rpc("admin_list_run_ai_calls", {
+  const { data, error } = await supabase.schema("ai").rpc("admin_list_run_ai_calls", {
     p_execution_kind: executionKind,
     p_execution_id: executionId,
   });

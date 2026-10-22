@@ -145,7 +145,7 @@ export function DrillSavedViews({
   };
 
   const archive = async (view: PersonalView) => {
-    const { error: e } = await supabase.rpc("saved_view_archive", { p_surface_key: surfaceKey, p_id: view.id });
+    const { error: e } = await supabase.schema("platform").rpc("saved_view_archive", { p_surface_key: surfaceKey, p_id: view.id });
     if (e) {
       toast.error(`"${view.name}" could not be removed: ${e.message}`);
       return;

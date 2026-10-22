@@ -20,6 +20,7 @@ export async function getSqlFunctions(): Promise<SqlFunction[]> {
 
     for (let from = 0; ; from += pageSize) {
       const { data, error } = await supabase
+        .schema("platform")
         .rpc("get_database_functions")
         .range(from, from + pageSize - 1);
 
@@ -42,7 +43,7 @@ export async function getSqlFunctionById(id: string) {
   try {
     const supabase = await createClient();
 
-    const { data, error } = await supabase.rpc("get_database_function_by_id", {
+    const { data, error } = await supabase.schema("platform").rpc("get_database_function_by_id", {
       function_id: id,
     });
 
@@ -102,7 +103,7 @@ export async function createSqlFunction(functionDefinition: string) {
   try {
     const supabase = await requireSuperAdminDatabaseClient();
 
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: functionDefinition,
     });
 
@@ -123,7 +124,7 @@ export async function updateSqlFunction(functionDefinition: string) {
   try {
     const supabase = await requireSuperAdminDatabaseClient();
 
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: functionDefinition,
     });
 
@@ -218,7 +219,7 @@ export async function executeSqlFunctionCall(
 
   try {
     const supabase = await requireSuperAdminDatabaseClient();
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: sql,
     });
     if (error) return { data: null, error: error.message, sql };
@@ -243,7 +244,7 @@ export async function deleteSqlFunction(
     // Construct the DROP FUNCTION query
     const query = `DROP FUNCTION IF EXISTS ${schema}.${functionName}(${argumentTypes});`;
 
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query,
     });
 

@@ -1663,7 +1663,7 @@ async function main(): Promise<number> {
   });
 
   async function q<T>(query: string, label: string): Promise<T[]> {
-    const { data, error } = await supabase.rpc("execute_admin_query", { query });
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", { query });
     if (error) throw new Error(`${label}: ${error.message}`);
     return unwrapRows(data) as unknown as T[];
   }

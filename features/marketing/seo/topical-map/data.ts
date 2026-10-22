@@ -78,7 +78,7 @@ type TopicalMapEntityToken =
 /** Soft delete through the canonical door (db-rules §8/§8a): stamps deleted_at so the row can be restored. */
 async function softDelete(token: TopicalMapEntityToken, id: string): Promise<void> {
   await requireAuthenticatedSupabaseSession(supabase);
-  const response = await supabase.rpc("entity_soft_delete", { p_token: token, p_id: id });
+  const response = await supabase.schema("platform").rpc("entity_soft_delete", { p_token: token, p_id: id });
   const removed = assertData(response.data, response.error, "remove that record");
   if (!removed) throw new Error(`Could not remove that record: it was not found or is already removed (${token} ${id}).`);
 }

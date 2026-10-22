@@ -88,7 +88,7 @@ export function EnrollButton({ classId, title, accessMode, price, handle }: Enro
       }
 
       // Open / closed → the class-join contract.
-      const { data, error } = await sb.rpc("edu_class_join", { p_class: classId });
+      const { data, error } = await sb.schema("education").rpc("edu_class_join", { p_class: classId });
       if (error) throw error;
       const outcome = (data as { status?: string } | null)?.status;
       if (outcome === "needs_request" || outcome === "pending") {

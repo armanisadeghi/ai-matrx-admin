@@ -192,6 +192,7 @@ export const notesRealtimeMiddleware: Middleware<
     if (!editorEmailCache.has(editorId) && !editorEmailInFlight.has(editorId)) {
       editorEmailInFlight.add(editorId);
       void supabase
+        .schema("users")
         .rpc("get_user_emails_by_ids", { user_ids: [editorId] })
         .then(({ data, error }) => {
           editorEmailInFlight.delete(editorId);

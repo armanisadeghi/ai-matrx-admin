@@ -381,7 +381,7 @@ export function CatalogEntryEditor({
 
   const runUpsert = async (args: CatalogUpsertArgs) => {
     const supabase = createClient();
-    return supabase.rpc("admin_upsert_catalog_entry", args);
+    return supabase.schema("ops").rpc("admin_upsert_catalog_entry", args);
   };
 
   const commitSave = async (pending: PendingSave) => {
@@ -526,7 +526,7 @@ export function CatalogEntryEditor({
     if (!row) return;
     setDeleting(true);
     const supabase = createClient();
-    const { error } = await supabase.rpc("admin_delete_catalog_entry", {
+    const { error } = await supabase.schema("ops").rpc("admin_delete_catalog_entry", {
       p_app: row.app,
       p_kind: row.kind,
       p_key: row.key,

@@ -609,7 +609,7 @@ export const studyService = {
         mapResultToRating(input.localResult),
         now,
       );
-      const { data, error } = await supabase.rpc("game_record_answer", {
+      const { data, error } = await supabase.schema("education").rpc("game_record_answer", {
         p_session_id: input.sessionId,
         p_item_id: input.itemId,
         p_selected_answer: input.selectedAnswer,
@@ -701,7 +701,7 @@ export const studyService = {
           ? { ...(input.score ?? {}), confidence }
           : (input.score ?? null);
 
-      const { data, error } = await supabase.rpc("study_record_attempt", {
+      const { data, error } = await supabase.schema("education").rpc("study_record_attempt", {
         p_item_type: input.itemType,
         p_item_id: input.itemId,
         ...(input.sessionId != null ? { p_session_id: input.sessionId } : {}),
@@ -867,7 +867,7 @@ export const studyService = {
         (lastResult !== "correct" && lastResult !== "partial") ||
         (prevStreakBeforeLast === 0 && lastResult !== "correct");
 
-      const { data, error } = await supabase.rpc("study_override_attempt", {
+      const { data, error } = await supabase.schema("education").rpc("study_override_attempt", {
         p_attempt_id: input.attemptId,
         p_result: input.result,
         ...(input.scoreValue != null

@@ -123,7 +123,7 @@ export async function DELETE(
     // DOORS-ONLY: `platform` is not a client-writable schema. `assoc_remove` is
     // the canonical door for taking an edge down, and it decides through the one
     // ladder rather than this table's RLS.
-    const { error } = await supabase.rpc("assoc_remove", {
+    const { error } = await supabase.schema("platform").rpc("assoc_remove", {
       p_source_type: "tool",
       p_source_id: toolId,
       p_target_type: "tool_bundle",

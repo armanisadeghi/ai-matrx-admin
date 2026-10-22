@@ -20,7 +20,7 @@ export interface TeamReachPair {
 export async function fetchMyTeamReach(
   organizationId: string | null,
 ): Promise<TeamReachPair[]> {
-  const { data, error } = await supabase.rpc("my_teammates", {
+  const { data, error } = await supabase.schema("iam").rpc("my_teammates", {
     p_organization_id: organizationId ?? undefined,
   });
   if (error) throw new Error(`Your teams could not be read: ${error.message}`);

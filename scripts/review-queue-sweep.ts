@@ -202,7 +202,7 @@ async function main(): Promise<number> {
   });
 
   async function run<T>(query: string): Promise<T[]> {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query,
     });
     if (error) throw new Error(error.message);

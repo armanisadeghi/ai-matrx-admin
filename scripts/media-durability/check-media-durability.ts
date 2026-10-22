@@ -93,7 +93,7 @@ async function main(): Promise<void> {
   const uncovered: string[] = [];
 
   if (!full) {
-    const { data, error } = await supabase.rpc("mtx_media_durability_scan", {
+    const { data, error } = await supabase.schema("platform").rpc("mtx_media_durability_scan", {
       p_full: false,
       p_schema: null,
     });
@@ -105,7 +105,7 @@ async function main(): Promise<void> {
     }
     rows.push(...((data ?? []) as ScanRow[]));
   } else {
-    const { data: schemaRows, error: schemaErr } = await supabase.rpc(
+    const { data: schemaRows, error: schemaErr } = await supabase.schema("platform").rpc(
       "mtx_media_durability_schemas",
     );
     if (schemaErr) {
@@ -118,7 +118,7 @@ async function main(): Promise<void> {
       (s) => s.schema_name,
     );
     for (const schema of schemas) {
-      const { data, error } = await supabase.rpc("mtx_media_durability_scan", {
+      const { data, error } = await supabase.schema("platform").rpc("mtx_media_durability_scan", {
         p_full: true,
         p_schema: schema,
       });
@@ -138,7 +138,7 @@ async function main(): Promise<void> {
   // "succeeded". A clean data scan proves nothing if the machinery that
   // produces the data is broken, so this runs even when the scan is empty.
   let machineryOk = true;
-  const { data: health, error: healthErr } = await supabase.rpc(
+  const { data: health, error: healthErr } = await supabase.schema("platform").rpc(
     "mtx_media_durability_health",
   );
   if (healthErr) {

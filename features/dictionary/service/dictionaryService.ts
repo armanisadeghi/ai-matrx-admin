@@ -72,14 +72,14 @@ function toEntry(row: {
 export const dictionaryService = {
   /** Every dictionary-bearing owner visible to the current user. */
   async listOwners(): Promise<DictOwnerCatalogue> {
-    const { data, error } = await supabase.rpc("dict_list_owners");
+    const { data, error } = await supabase.schema("dictionary").rpc("dict_list_owners");
     if (error) rpcError("listOwners", error);
     return data as unknown as DictOwnerCatalogue;
   },
 
   /** All entries for one owner, alphabetised. */
   async listEntries(level: DictLevel, ownerId: string): Promise<DictEntry[]> {
-    const { data, error } = await supabase.rpc("dict_list_entries", {
+    const { data, error } = await supabase.schema("dictionary").rpc("dict_list_entries", {
       p_level: level,
       p_owner_id: ownerId,
     });
@@ -93,7 +93,7 @@ export const dictionaryService = {
     ownerId: string,
     entries: DictEntryDraft[],
   ): Promise<DictEntry[]> {
-    const { data, error } = await supabase.rpc("dict_upsert_entries", {
+    const { data, error } = await supabase.schema("dictionary").rpc("dict_upsert_entries", {
       p_level: level,
       p_owner_id: ownerId,
       p_entries: entries as unknown as never,
@@ -104,7 +104,7 @@ export const dictionaryService = {
 
   /** Delete entries by id; returns the number removed. */
   async deleteEntries(level: DictLevel, ownerId: string, ids: string[]): Promise<number> {
-    const { data, error } = await supabase.rpc("dict_delete_entries", {
+    const { data, error } = await supabase.schema("dictionary").rpc("dict_delete_entries", {
       p_level: level,
       p_owner_id: ownerId,
       p_ids: ids,
@@ -118,7 +118,7 @@ export const dictionaryService = {
     level: DictLevel,
     ownerId: string,
   ): Promise<{ max_inline_chars: number | null; has_row: boolean }> {
-    const { data, error } = await supabase.rpc("dict_get_settings", {
+    const { data, error } = await supabase.schema("dictionary").rpc("dict_get_settings", {
       p_level: level,
       p_owner_id: ownerId,
     });
@@ -137,7 +137,7 @@ export const dictionaryService = {
       p_owner_id: ownerId,
       p_max_inline_chars: maxInlineChars,
     };
-    const { data, error } = await supabase.rpc(
+    const { data, error } = await supabase.schema("dictionary").rpc(
       "dict_set_settings",
       rpcArgs as unknown as DictSetSettingsDbArgs,
     );
@@ -147,7 +147,7 @@ export const dictionaryService = {
 
   /** Merge + de-dupe the selected dictionaries into one active set. */
   async resolve(selection: DictSelection): Promise<ResolvedDictionary> {
-    const { data, error } = await supabase.rpc("dict_resolve", {
+    const { data, error } = await supabase.schema("dictionary").rpc("dict_resolve", {
       p_include_user: selection.includePersonal,
       p_all: selection.all,
       p_organization_ids: selection.organizationIds,

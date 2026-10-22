@@ -71,7 +71,7 @@ export async function fetchLibraryGrants(
   const supabase = createClient();
   const { data, error } = await withAdminFeature(
     "library.publish",
-    supabase.rpc("library_list_grants", {
+    supabase.schema("rag").rpc("library_list_grants", {
       p_entity_type: entityType,
       p_entity_id: entityId,
     }),
@@ -131,7 +131,7 @@ export function useLibraryGrants(
         const supabase = createClient();
         const { error: rpcError } = await withAdminFeature(
           "library.publish",
-          supabase.rpc("library_publish", {
+          supabase.schema("rag").rpc("library_publish", {
             p_entity_type: entityType,
             p_entity_id: entityId,
             p_audience: input.audience,
@@ -157,7 +157,7 @@ export function useLibraryGrants(
         const supabase = createClient();
         const { error: rpcError } = await withAdminFeature(
           "library.publish",
-          supabase.rpc("library_revoke", {
+          supabase.schema("rag").rpc("library_revoke", {
             p_grant_id: grantId,
           }),
         );

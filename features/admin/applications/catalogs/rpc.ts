@@ -42,5 +42,5 @@ export function upsertArgsFromRow(
 
 export async function upsertCatalogEntry(args: CatalogUpsertArgs) {
   const supabase = createClient();
-  return supabase.rpc("admin_upsert_catalog_entry", args);
+  return supabase.schema("ops").rpc("admin_upsert_catalog_entry", args);
 }

@@ -266,7 +266,7 @@ export async function listPayrollExports(args: {
     return HR_EXPORT_HISTORY_FIXTURES[args.mockCase ?? "happy"];
   }
 
-  const { data, error } = await supabase.rpc("hr_payroll_export_list", {
+  const { data, error } = await supabase.schema("hr").rpc("hr_payroll_export_list", {
     p_organization_id: args.organizationId,
     p_pay_period_id: args.payPeriodId ?? undefined,
     p_limit: args.limit ?? 100,

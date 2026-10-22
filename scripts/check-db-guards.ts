@@ -582,7 +582,7 @@ async function main(): Promise<number> {
 
   let rows: TriggerRow[];
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: QUERY,
     });
     if (error) throw new Error(error.message);
@@ -664,7 +664,7 @@ async function main(): Promise<number> {
   const trapUnmeasured: string[] = [];
   let trapSchemas: string[];
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: PLANNER_TRAP_SCHEMAS_QUERY,
     });
     if (error) throw new Error(error.message);
@@ -680,7 +680,7 @@ async function main(): Promise<number> {
   }
   for (const schema of trapSchemas) {
     try {
-      const { data, error } = await supabase.rpc("execute_admin_query", {
+      const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
         query: plannerTrapQueryFor(schema),
       });
       if (error) throw new Error(error.message);
@@ -694,7 +694,7 @@ async function main(): Promise<number> {
   const traps = reportPlannerTraps(trapRows, trapUnmeasured);
 
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: OVERLAP_QUERY,
     });
     if (error) throw new Error(error.message);
@@ -706,7 +706,7 @@ async function main(): Promise<number> {
 
   let undeclaredExposures = 0;
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: PUBLIC_EXPOSURE_QUERY,
     });
     if (error) throw new Error(error.message);
@@ -720,7 +720,7 @@ async function main(): Promise<number> {
 
   let unprotected = 0;
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: UNPROTECTED_RELATION_QUERY,
     });
     if (error) throw new Error(error.message);
@@ -739,13 +739,13 @@ async function main(): Promise<number> {
   // schema list the live guard governs still matches this repo's.
   let birthFindings = 0;
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: FUNCTION_BIRTH_GUARD_QUERY,
     });
     if (error) throw new Error(error.message);
     const findings = unwrapRows(data) as unknown as FunctionBirthFinding[];
 
-    const { data: schemaData, error: schemaError } = await supabase.rpc(
+    const { data: schemaData, error: schemaError } = await supabase.schema("platform").rpc(
       "execute_admin_query",
       { query: FUNCTION_BIRTH_SCHEMAS_QUERY },
     );
@@ -800,7 +800,7 @@ async function main(): Promise<number> {
   // same transaction; a mismatch here means that guard was bypassed or removed. Red within the hour.
   let kernelStale = 0;
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: "select platform.kernel_fingerprint_status()::text as s",
     });
     if (error) throw new Error(error.message);

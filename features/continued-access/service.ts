@@ -56,7 +56,7 @@ export async function fetchContinuedAccessPortal(
   let data: unknown = null;
   let error: { message?: string } | null = null;
   try {
-    ({ data, error } = (await supabase.rpc("continued_access_portal" as never, {
+    ({ data, error } = (await supabase.schema("iam").rpc("continued_access_portal" as never, {
       p_organization_id: organizationId ?? null,
     } as never)) as { data: unknown; error: { message?: string } | null });
   } catch (thrown) {

@@ -559,7 +559,7 @@ export interface RulebookVersionEntry {
 export async function listRulebookVersions(
   rulebookId: string,
 ): Promise<RulebookVersionEntry[]> {
-  const { data, error } = await supabase.rpc("rulebook_versions", {
+  const { data, error } = await supabase.schema("platform").rpc("rulebook_versions", {
     p_rulebook_id: rulebookId,
   });
   if (error) throw operationFailed("list this Rulebook's earlier versions", error);
@@ -583,7 +583,7 @@ export async function getRulebookSnapshotRules(
   rulebookId: string,
   version: number,
 ): Promise<RulebookRule[] | null> {
-  const { data, error } = await supabase.rpc("rulebook_snapshot", {
+  const { data, error } = await supabase.schema("platform").rpc("rulebook_snapshot", {
     p_rulebook_id: rulebookId,
     p_version: version,
   });

@@ -73,7 +73,7 @@ export async function loadSyncedSources(all: string[]): Promise<void> {
 }
 
 async function link(sourceId: string, targetId: string, label: string): Promise<void> {
-  const { error } = await supabase.rpc("assoc_link", {
+  const { error } = await supabase.schema("platform").rpc("assoc_link", {
     p_source_type: "document",
     p_source_id: sourceId,
     p_target_type: "document",
@@ -85,7 +85,7 @@ async function link(sourceId: string, targetId: string, label: string): Promise<
 }
 
 async function unlink(sourceId: string, targetId: string, label: string): Promise<void> {
-  const { error } = await supabase.rpc("assoc_unlink", {
+  const { error } = await supabase.schema("platform").rpc("assoc_unlink", {
     p_source_type: "document",
     p_source_id: sourceId,
     p_target_type: "document",

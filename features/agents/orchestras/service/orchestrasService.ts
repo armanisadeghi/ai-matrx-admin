@@ -160,7 +160,7 @@ export const orchestrasService = {
   async list(): Promise<RecordsResult<OrchestraSummary[]>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("orchestra_list");
+      const { data, error } = await supabase.schema("agent").rpc("orchestra_list");
       if (error) return { ok: false as const, error: mapThrownError(error, "orchestrasService") };
       const rows = (Array.isArray(data) ? data : []) as unknown as OrchestraListRow[];
       return ok(rows.map(rowToSummary));

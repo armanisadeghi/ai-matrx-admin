@@ -555,7 +555,7 @@ export async function fetchVersionSnapshotDefinition(
   versionNumber: number,
 ): Promise<AgentDefinition | null> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("agx_get_version_snapshot", {
+  const { data, error } = await supabase.schema("agent").rpc("agx_get_version_snapshot", {
     p_agent_id: agentId,
     p_version_number: versionNumber,
   });

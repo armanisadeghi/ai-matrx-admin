@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     // one `user_id`, and this row has a guardian AND a student. One declared
     // door, not a door beside a door.
     const { data: links, error: linksError } =
-      await supabase.rpc("guardian_list_links");
+      await supabase.schema("education").rpc("guardian_list_links");
     if (linksError) {
       return NextResponse.json(
         {

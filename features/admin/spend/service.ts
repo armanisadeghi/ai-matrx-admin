@@ -149,7 +149,7 @@ export async function fetchSpendOverview(
   timezone: string = viewerTimezone(),
 ): Promise<SpendOverview> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("admin_spend_overview", {
+  const { data, error } = await supabase.schema("billing").rpc("admin_spend_overview", {
     p_tz: timezone,
   });
   if (error) throw error;
@@ -178,7 +178,7 @@ export async function fetchSpendHeadline(
   timezone: string = viewerTimezone(),
 ): Promise<SpendHeadlineSnapshot> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("admin_spend_headline", {
+  const { data, error } = await supabase.schema("billing").rpc("admin_spend_headline", {
     p_tz: timezone,
   });
   if (error) throw error;

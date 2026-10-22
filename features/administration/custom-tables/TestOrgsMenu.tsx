@@ -45,7 +45,7 @@ const doors: OrgSettingsDoors = {
     return { ok: true, data: ((data as { settings: Settings | null }).settings ?? null) };
   },
   writeSettings: async (orgId, settings) => {
-    const { data, error } = await client().rpc("org_update", { p_org_id: orgId, p_patch: { settings } });
+    const { data, error } = await client().schema("iam").rpc("org_update", { p_org_id: orgId, p_patch: { settings } });
     if (error) return { ok: false, message: error.message };
     return { ok: true, data };
   },

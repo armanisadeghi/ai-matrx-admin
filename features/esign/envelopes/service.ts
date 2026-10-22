@@ -61,7 +61,7 @@ function read<T>(result: ApiCallResult): T {
 // ─── reads ─────────────────────────────────────────────────────────────────────
 
 async function listEnvelopes(lane: "all" | "sent", query: EntityListQuery): Promise<EnvelopeListRow[]> {
-  const { data, error } = await supabase.rpc("esign_envelope_list", {
+  const { data, error } = await supabase.schema("esign").rpc("esign_envelope_list", {
     p_lane: lane,
     p_org_id: listOrgParam(query),
     p_search: query.search.trim() || undefined,
@@ -134,7 +134,7 @@ export interface EnvelopeState {
 
 /** One envelope with its documents, signers and evidence trail — or null when the caller may not see it. */
 export async function fetchEnvelope(envelopeId: string): Promise<EnvelopeState | null> {
-  const { data, error } = await supabase.rpc("esign_envelope_state", { p_envelope_id: envelopeId });
+  const { data, error } = await supabase.schema("esign").rpc("esign_envelope_state", { p_envelope_id: envelopeId });
   if (error) throw operationFailed("load this envelope", error);
   const answer = data as
     | ({ granted?: boolean; scheduled_notices?: Record<string, unknown>[] } & Partial<Omit<EnvelopeState, "scheduledNotices">>)

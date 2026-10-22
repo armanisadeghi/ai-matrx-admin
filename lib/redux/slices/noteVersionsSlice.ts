@@ -27,7 +27,7 @@ const initialState: VersionHistoryState = {
 export const fetchNoteVersions = createAsyncThunk(
   "noteVersions/fetchNoteVersions",
   async (noteId: string) => {
-    const { data, error } = await supabase.rpc("get_note_versions", {
+    const { data, error } = await supabase.schema("users").rpc("get_note_versions", {
       p_note_id: noteId,
     });
 
@@ -61,7 +61,7 @@ export const restoreNoteVersion = createAsyncThunk(
     noteId: string;
     versionNumber: number;
   }) => {
-    const { data, error } = await supabase.rpc("restore_note_version", {
+    const { data, error } = await supabase.schema("users").rpc("restore_note_version", {
       p_note_id: noteId,
       p_version_number: versionNumber,
     });

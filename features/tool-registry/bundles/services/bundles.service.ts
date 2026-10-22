@@ -365,7 +365,7 @@ export async function createBundleWithLister(args: {
   listerToolName?: string;
   memberToolNames?: string[];
 }): Promise<CreateBundleResult> {
-  const { data, error } = await sb().rpc("create_bundle_with_lister", {
+  const { data, error } = await sb().schema("projects").rpc("create_bundle_with_lister", {
     p_name: args.name,
     p_organization_id: args.organizationId,
     p_description: args.description ?? "",

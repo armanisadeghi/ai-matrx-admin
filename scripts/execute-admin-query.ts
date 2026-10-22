@@ -73,7 +73,7 @@ async function main(): Promise<void> {
     env.SUPABASE_SECRET_KEY,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
-  const { data, error } = await client.rpc("execute_admin_query", { query });
+  const { data, error } = await client.schema("platform").rpc("execute_admin_query", { query });
   if (error) throw new Error(error.message);
   console.log(JSON.stringify(data, null, 2));
 }

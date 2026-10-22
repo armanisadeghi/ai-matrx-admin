@@ -105,7 +105,7 @@ function edgeToSourceTag(e: {
 export async function getTopicOverview(
   topicId: string,
 ): Promise<ResearchProgress | null> {
-  const { data, error } = await supabase.rpc("get_topic_overview", {
+  const { data, error } = await supabase.schema("research").rpc("get_topic_overview", {
     p_topic_id: topicId,
   });
   if (error) throw error;
@@ -474,7 +474,7 @@ export async function appendTopicOutput(
   kind: string,
   asset: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const { data, error } = await supabase.rpc("rs_topic_append_output", {
+  const { data, error } = await supabase.schema("research").rpc("rs_topic_append_output", {
     p_topic_id: topicId,
     p_kind: kind,
     p_asset:
@@ -595,7 +595,7 @@ export async function reorderKeywords(
   keywordIds: string[],
 ): Promise<void> {
   if (keywordIds.length === 0) return;
-  const { error } = await supabase.rpc("reorder_keywords", {
+  const { error } = await supabase.schema("research").rpc("reorder_keywords", {
     p_topic_id: topicId,
     p_keyword_ids: keywordIds,
   });

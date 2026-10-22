@@ -140,8 +140,8 @@ export async function callMandateAdminList<T>(
 ): Promise<T> {
   const { data, error } =
     lane === "support"
-      ? await supabase.rpc("mnd_admin_support_list", args)
-      : await supabase.rpc("mnd_admin_list", args);
+      ? await supabase.schema("mandate").rpc("mnd_admin_support_list", args)
+      : await supabase.schema("mandate").rpc("mnd_admin_list", args);
   if (error) {
     // A door's refusal is a sentence written for a person and is carried
     // intact; a statement timeout is not, so it gets plain words. `code` rides

@@ -109,6 +109,7 @@ export async function fetchEntityTypes(): Promise<EntityTypeSourceRow[]> {
   // Paged: a `setof` RPC is subject to the same 1000-row PostgREST cap.
   const rows = await requireReadableRegistry(() => readAllRows<EntityTypeSourceRow>(
     ({ from, to }) => supabase
+      .schema("platform")
       .rpc("entity_types_list", {}, { count: "exact" })
       .order("token", { ascending: true })
       .range(from, to) as PromiseLike<{ data: EntityTypeSourceRow[] | null; error: { message: string } | null; count?: number | null }>,
@@ -273,6 +274,7 @@ async function main(): Promise<void> {
     const schemas = await readAllRows<{ schema_name: string; display_name: string; sort_order: number; is_active: boolean }>(
       ({ from, to }) =>
         supabase
+          .schema("platform")
           .rpc("entity_schemas_list", {}, { count: "exact" })
           .order("schema_name", { ascending: true })
           .range(from, to) as PromiseLike<{
@@ -284,6 +286,7 @@ async function main(): Promise<void> {
     );
     const refCats = await readAllRows<{ slug: string; label: string; sort_order: number; is_active: boolean }>(
       ({ from, to }) => supabase
+        .schema("platform")
         .rpc("reference_categories_list", {}, { count: "exact" })
         .order("slug", { ascending: true })
         .range(from, to) as PromiseLike<{ data: { slug: string; label: string; sort_order: number; is_active: boolean }[] | null; error: { message: string } | null; count?: number | null }>,

@@ -415,7 +415,7 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
     if (!editor || !editorValid) return;
     setSaving(true);
     try {
-      const { error } = await supabase.rpc("admin_upsert_relationship_rule", {
+      const { error } = await supabase.schema("platform").rpc("admin_upsert_relationship_rule", {
         p_source_type: editor.sourceType,
         p_target_type: editor.targetType,
         p_label: editor.label || undefined,
@@ -447,7 +447,7 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
     if (!target) return;
     setSaving(true);
     try {
-      const { error } = await supabase.rpc("admin_delete_relationship_rule", {
+      const { error } = await supabase.schema("platform").rpc("admin_delete_relationship_rule", {
         p_source_type: target.source_type,
         p_target_type: target.target_type,
         p_label: target.label ?? undefined,
@@ -509,7 +509,7 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
           },
           runOne: async (_id, rule) => {
             if (!rule) throw new Error("Rule not loaded");
-            const { error } = await supabase.rpc("admin_delete_relationship_rule", {
+            const { error } = await supabase.schema("platform").rpc("admin_delete_relationship_rule", {
               p_source_type: rule.source_type,
               p_target_type: rule.target_type,
               p_label: rule.label ?? undefined,
@@ -627,7 +627,7 @@ export function RelationshipRulesClient({ rules, initialEditKey }: Props) {
                 if (!rule) continue;
                 const patch = editsMap[key] ?? {};
                 const next = { ...rule, ...patch } as RelationshipRule;
-                const { error } = await supabase.rpc(
+                const { error } = await supabase.schema("platform").rpc(
                   "admin_upsert_relationship_rule",
                   {
                     p_source_type: next.source_type,

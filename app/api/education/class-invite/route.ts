@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: invitation, error: invitationError } = await supabase.rpc(
+    const { data: invitation, error: invitationError } = await supabase.schema("iam").rpc(
       "inv_get_managed",
       { p_invitation_id: invitationId },
     );
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     // Class name — the owner-readable class state RPC (the caller manages the
     // invitation, so they can read the class).
-    const { data: classState } = await supabase.rpc("edu_class_state", {
+    const { data: classState } = await supabase.schema("education").rpc("edu_class_state", {
       p_class: invitation.target_id,
     });
     let className = "a class";

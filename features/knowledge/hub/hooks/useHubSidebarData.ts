@@ -151,7 +151,7 @@ function useLoad<T>(
 
 /** The pins are per person (`user_entity_state.is_pinned`), never on the shared row. */
 async function readPinnedViewIds(): Promise<Set<string>> {
-  const { data, error } = await supabase.rpc("ues_list", { p_kind: "pinned" });
+  const { data, error } = await supabase.schema("users").rpc("ues_list", { p_kind: "pinned" });
   if (error) throw new Error(message(error, "your pinned views"));
   const rows = (Array.isArray(data) ? data : []) as { entity_type: string; entity_id: string; is_pinned: boolean }[];
   return new Set(rows.filter((r) => r.is_pinned && r.entity_type === SAVED_VIEW_TOKEN).map((r) => r.entity_id));
@@ -247,7 +247,7 @@ const KNOWLEDGE_TOKENS = new Set<string>([
 ]);
 
 async function readFavorites(): Promise<HubFavorite[]> {
-  const { data, error } = await supabase.rpc("ues_list", { p_kind: "favorite" });
+  const { data, error } = await supabase.schema("users").rpc("ues_list", { p_kind: "favorite" });
   if (error) throw new Error(message(error, "your favorites"));
   const rows = (Array.isArray(data) ? data : []) as {
     entity_type: string;

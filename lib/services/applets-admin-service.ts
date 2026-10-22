@@ -331,7 +331,7 @@ export async function fetchAppletsAdmin(filters?: {
       ...new Set(data.map((r) => r.created_by).filter((v): v is string => !!v)),
     ];
     if (userIds.length > 0) {
-      const { data: users, error: usersError } = await supabase.rpc(
+      const { data: users, error: usersError } = await supabase.schema("users").rpc(
         "get_user_emails_by_ids",
         { user_ids: userIds },
       );

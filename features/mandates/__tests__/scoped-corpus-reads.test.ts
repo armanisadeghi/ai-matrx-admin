@@ -95,7 +95,7 @@ describe("the mandate corpus is never read unscoped", () => {
 
 describe("mnd_list_scoped has exactly one caller", () => {
   it("is reached only through the list door module", () => {
-    expect(read(LIST_DOOR)).toContain('supabase.rpc("mnd_list_scoped"');
+    expect(read(LIST_DOOR)).toContain('supabase.schema("mandate").rpc("mnd_list_scoped"');
     // The browse service used to hold its own hand-rolled RPC seam.
     expect(read(BROWSE_SERVICE)).not.toContain('rpc("mnd_list_scoped"');
     expect(read(ADMIN_SERVICE)).not.toContain('rpc("mnd_list_scoped"');

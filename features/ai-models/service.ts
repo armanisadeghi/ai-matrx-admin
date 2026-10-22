@@ -754,7 +754,7 @@ export const aiModelService = {
         { label: "ai.model_definition" },
       ),
       this.fetchProviders(),
-      supabase.rpc("admin_model_catalog"),
+      supabase.schema("ai").rpc("admin_model_catalog"),
     ]);
     if (adminCatalogRes.error) throw adminCatalogRes.error;
     const makerById = new Map(providers.map((p) => [p.id, p.name ?? null]));

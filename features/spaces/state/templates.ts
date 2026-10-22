@@ -41,7 +41,7 @@ function templateCategoryId(): Promise<string> {
 /** Ids of every record of `source` (default: Space) marked as a template that the person can open. */
 export async function listTemplateIds(source: TemplateSource = "document"): Promise<string[]> {
   const cat = await templateCategoryId();
-  const { data, error } = await supabase.rpc("assoc_for_targets", { p_target_type: "category", p_target_ids: [cat] });
+  const { data, error } = await supabase.schema("platform").rpc("assoc_for_targets", { p_target_type: "category", p_target_ids: [cat] });
   if (error) throw new Error(`We couldn't list templates: ${error.message}`);
   return [...new Set((data ?? []).filter((e) => e.source_type === source && e.label === ROLE).map((e) => e.source_id))];
 }
@@ -49,7 +49,7 @@ export async function listTemplateIds(source: TemplateSource = "document"): Prom
 export async function setTemplate(spaceId: string, on: boolean, source: TemplateSource = "document"): Promise<void> {
   const cat = await templateCategoryId();
   const { error } = on
-    ? await supabase.rpc("assoc_link", {
+    ? await supabase.schema("platform").rpc("assoc_link", {
         p_source_type: source,
         p_source_id: spaceId,
         p_target_type: "category",
@@ -57,7 +57,7 @@ export async function setTemplate(spaceId: string, on: boolean, source: Template
         p_role: ROLE,
         p_label: ROLE,
       })
-    : await supabase.rpc("assoc_unlink", { p_source_type: source, p_source_id: spaceId, p_target_type: "category", p_target_id: cat, p_role: ROLE });
+    : await supabase.schema("platform").rpc("assoc_unlink", { p_source_type: source, p_source_id: spaceId, p_target_type: "category", p_target_id: cat, p_role: ROLE });
   if (error) throw new Error(`We couldn't ${on ? `save this ${source === "board" ? "board" : "page"} as a template` : "remove the template label"}: ${error.message}`);
 }
 

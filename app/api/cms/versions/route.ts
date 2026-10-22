@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const { data, error } = await db.rpc("version_list", {
+        const { data, error } = await db.schema("platform").rpc("version_list", {
           p_token: entityType,
           p_id: rowId,
         });

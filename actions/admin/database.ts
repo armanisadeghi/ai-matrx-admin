@@ -30,7 +30,7 @@ function formatSupabaseError(error: unknown): string {
 export async function getFunctions(): Promise<ActionResult<unknown[]>> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_database_functions");
+    const { data, error } = await supabase.schema("platform").rpc("get_database_functions");
     if (error) {
       console.error("Error fetching functions:", error);
       return { data: null, error: formatSupabaseError(error) };
@@ -47,7 +47,7 @@ export async function getFunctions(): Promise<ActionResult<unknown[]>> {
 export async function getPermissions(): Promise<ActionResult<unknown[]>> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("get_database_permissions");
+    const { data, error } = await supabase.schema("platform").rpc("get_database_permissions");
     if (error) {
       console.error("Error fetching permissions:", error);
       return { data: null, error: formatSupabaseError(error) };
@@ -64,7 +64,7 @@ export async function getPermissions(): Promise<ActionResult<unknown[]>> {
 export async function executeSqlQuery(query: string): Promise<ActionResult> {
   try {
     const supabase = await requireSuperAdminDatabaseClient();
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query,
     });
     if (error) {

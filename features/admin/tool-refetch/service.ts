@@ -191,6 +191,7 @@ async function loadAllTime(): Promise<ToolRefetchSummary> {
   // `public.admin_tool_refetch_all_time()`, which refuses anyone who is not a
   // platform administrator with a sentence that says why.
   const { data: rpcData, error } = await supabase
+    .schema("tool")
     .rpc("admin_tool_refetch_all_time")
     .order("same_data_repeats", { ascending: false })
     .limit(PAGE_SIZE);

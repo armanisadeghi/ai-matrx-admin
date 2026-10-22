@@ -116,7 +116,7 @@ export const fetchTaskAssociations = createAsyncThunk<
   string,
   { dispatch: ThunkDispatch<object, unknown, UnknownAction> }
 >("taskAssociations/fetch", async (taskId) => {
-  const { data, error } = await supabase.rpc("get_task_associations", {
+  const { data, error } = await supabase.schema("projects").rpc("get_task_associations", {
     p_task_id: taskId,
   });
   if (error) throw error;
@@ -148,7 +148,7 @@ export const fetchTasksForEntity = createAsyncThunk<
   { key: string; tasks: TaskForEntityRef[] },
   { entityType: string; entityId: string; force?: boolean }
 >("taskAssociations/fetchForEntity", async ({ entityType, entityId }) => {
-  const { data, error } = await supabase.rpc("get_tasks_for_entity", {
+  const { data, error } = await supabase.schema("projects").rpc("get_tasks_for_entity", {
     p_entity_type: entityType,
     p_entity_id: entityId,
   });
@@ -406,7 +406,7 @@ export const createTasksBulk = createAsyncThunk<
   const organizationId = await withOrganizationRefusalShown("created", () =>
     ensureOrgId(input.organization_id),
   );
-  const { data, error } = await supabase.rpc("create_tasks_bulk", {
+  const { data, error } = await supabase.schema("projects").rpc("create_tasks_bulk", {
     p_items: input.items.map((x, i) => ({ ...x, index: i })),
     p_project_id: input.project_id ?? undefined,
     p_organization_id: organizationId,

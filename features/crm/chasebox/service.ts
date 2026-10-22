@@ -29,7 +29,7 @@ export async function fetchChaseboxCounts(
   /** The page's organization filter (null = All organizations) — never the active organization. */
   orgId: string | null = null,
 ): Promise<ChaseboxCounts> {
-  const { data, error } = await supabase.rpc("crm_chasebox_counts", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_chasebox_counts", {
     p_scope: scope.kind,
     p_org_id: orgId ?? undefined,
   });
@@ -55,7 +55,7 @@ export async function fetchChaseboxItems(args: {
   page: number;
   pageSize: number;
 }): Promise<ChaseboxItemsPage> {
-  const { data, error } = await supabase.rpc("crm_chasebox_items", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_chasebox_items", {
     p_queue: args.queue,
     p_scope: args.scope.kind,
     p_org_id: args.orgId ?? undefined,

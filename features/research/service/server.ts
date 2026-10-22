@@ -37,7 +37,7 @@ export async function getTopicOverviewServer(
   topicId: string,
 ): Promise<ResearchProgress | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_topic_overview", {
+  const { data, error } = await supabase.schema("research").rpc("get_topic_overview", {
     p_topic_id: topicId,
   });
   if (error) throw error;

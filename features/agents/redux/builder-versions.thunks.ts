@@ -45,7 +45,7 @@ type AgentVersionHistoryItemDbProjection = Omit<
   output_contract_hash: string;
 };
 type _Check_AgentVersionHistoryItem =
-  AgentVersionHistoryItemDbProjection extends DbRpcRow<"agx_get_version_history">
+  AgentVersionHistoryItemDbProjection extends DbRpcRow<"agx_get_version_history", "agent">
     ? true
     : false;
 declare const _agentVersionHistoryItem: _Check_AgentVersionHistoryItem;

@@ -834,7 +834,7 @@ interface RawProjectReferenceDetailed extends RawProjectReference {
 export async function getProjectReferences(
   projectId: string,
 ): Promise<ProjectReference[]> {
-  const { data, error } = await supabase.rpc("get_project_references", {
+  const { data, error } = await supabase.schema("projects").rpc("get_project_references", {
     p_project_id: projectId,
   });
   if (error) throw pgErrorToError(error);
@@ -851,7 +851,7 @@ export async function getProjectReferencesDetailed(
   projectId: string,
   sampleLimit = 5,
 ): Promise<ProjectReferenceDetailed[]> {
-  const { data, error } = await supabase.rpc(
+  const { data, error } = await supabase.schema("projects").rpc(
     "get_project_references_detailed",
     {
       p_project_id: projectId,

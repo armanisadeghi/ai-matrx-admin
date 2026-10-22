@@ -146,7 +146,7 @@ export async function listMandatesScoped(
 ): Promise<{ rows: MandateListRow[]; total: number }> {
   const home = query.home ?? ALL_HOMES;
   const organizationId = query.organizationId ?? null;
-  const { data, error } = await supabase.rpc("mnd_list_scoped", {
+  const { data, error } = await supabase.schema("mandate").rpc("mnd_list_scoped", {
     p_home: homeParam(home),
     p_resolution_for: query.resolutionFor ?? "mine",
     ...(organizationId ? { p_org_id: organizationId } : {}),

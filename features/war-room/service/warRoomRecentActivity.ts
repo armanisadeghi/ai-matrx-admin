@@ -35,7 +35,7 @@ export async function fetchWarRoomRecentActivity(
   warRoomId: string,
   limit = 25,
 ): Promise<WarRoomActivityRow[]> {
-  const { data, error } = await supabase.rpc("war_room_recent_activity", {
+  const { data, error } = await supabase.schema("projects").rpc("war_room_recent_activity", {
     p_war_room_id: warRoomId,
     p_limit: limit,
   });

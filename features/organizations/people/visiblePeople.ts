@@ -39,7 +39,7 @@ async function flush(batch: Pending[]): Promise<void> {
   const found = new Map<string, VisiblePerson>();
   for (let i = 0; i < ids.length; i += 200) {
     visiblePeopleStats.calls++;
-    const { data, error } = await supabase.rpc("people_you_share_an_organization_with", {
+    const { data, error } = await supabase.schema("iam").rpc("people_you_share_an_organization_with", {
       p_user_ids: ids.slice(i, i + 200),
     });
     if (error || !Array.isArray(data)) continue;

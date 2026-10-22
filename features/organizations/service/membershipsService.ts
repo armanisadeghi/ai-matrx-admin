@@ -287,7 +287,7 @@ export const membershipsService = {
     try {
       requireUserId();
       const { data, error } = await runWithSessionRetry(() =>
-        supabase.rpc("mbr_list", {
+        supabase.schema("iam").rpc("mbr_list", {
           p_container_type: containerType,
           p_container_id: containerId,
         }),
@@ -315,7 +315,7 @@ export const membershipsService = {
     try {
       requireUserId();
       const { data, error } = await runWithSessionRetry(() =>
-        supabase.rpc("mbr_list_with_users", {
+        supabase.schema("iam").rpc("mbr_list_with_users", {
           p_container_type: containerType,
           p_container_id: containerId,
         }),
@@ -397,7 +397,7 @@ export const membershipsService = {
     try {
       requireUserId();
       const { data, error } = await runWithSessionRetry(() =>
-        supabase.rpc("mbr_list_for_user", {
+        supabase.schema("iam").rpc("mbr_list_for_user", {
           p_user_id: userId,
           ...(containerType ? { p_container_type: containerType } : {}),
         }),
@@ -450,7 +450,7 @@ export const membershipsService = {
         for (let i = 0; i < ids.length; i += FOR_USER_PAGE) {
           const slice = ids.slice(i, i + FOR_USER_PAGE);
           const { data, error } = await runWithSessionRetry(() =>
-            supabase.rpc("mbr_count", {
+            supabase.schema("iam").rpc("mbr_count", {
               p_container_type: containerType,
               p_container_ids: slice,
             }),
@@ -501,7 +501,7 @@ export const membershipsService = {
   }): Promise<RecordsResult<{ id: string }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("mbr_add", {
+      const { data, error } = await supabase.schema("iam").rpc("mbr_add", {
         p_container_type: args.containerType,
         p_container_id: args.containerId,
         p_user_id: args.userId,
@@ -539,7 +539,7 @@ export const membershipsService = {
   }): Promise<RecordsResult<null>> {
     try {
       requireUserId();
-      const { error } = await supabase.rpc("mbr_update_role", {
+      const { error } = await supabase.schema("iam").rpc("mbr_update_role", {
         p_container_type: args.containerType,
         p_container_id: args.containerId,
         p_user_id: args.userId,
@@ -575,7 +575,7 @@ export const membershipsService = {
   }): Promise<RecordsResult<null>> {
     try {
       requireUserId();
-      const { error } = await supabase.rpc("mbr_remove", {
+      const { error } = await supabase.schema("iam").rpc("mbr_remove", {
         p_container_type: args.containerType,
         p_container_id: args.containerId,
         p_user_id: args.userId,

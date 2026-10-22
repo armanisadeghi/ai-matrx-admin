@@ -63,7 +63,7 @@ export async function getOrgModuleSettings(
 ): Promise<Map<string, OrgModuleSetting>> {
   const map = new Map<string, OrgModuleSetting>();
   if (!orgId) return map;
-  const { data, error } = await supabase.rpc("get_org_module_settings", {
+  const { data, error } = await supabase.schema("iam").rpc("get_org_module_settings", {
     p_org_id: orgId,
   });
   if (error) {
@@ -115,7 +115,7 @@ export async function getOrgModuleCustomValues(
   moduleKey: string,
   namespace: string,
 ): Promise<OrgModuleCustomValues> {
-  const { data, error } = await supabase.rpc("org_module_custom_values", {
+  const { data, error } = await supabase.schema("iam").rpc("org_module_custom_values", {
     p_org_id: orgId,
     p_module_key: moduleKey,
     p_namespace: namespace,
@@ -130,7 +130,7 @@ export async function addOrgModuleCustomValue(
   namespace: string,
   value: string,
 ): Promise<string[]> {
-  const { data, error } = await supabase.rpc("org_module_custom_value_add", {
+  const { data, error } = await supabase.schema("iam").rpc("org_module_custom_value_add", {
     p_org_id: orgId,
     p_module_key: moduleKey,
     p_namespace: namespace,
@@ -146,7 +146,7 @@ export async function removeOrgModuleCustomValue(
   namespace: string,
   value: string,
 ): Promise<string[]> {
-  const { data, error } = await supabase.rpc("org_module_custom_value_remove", {
+  const { data, error } = await supabase.schema("iam").rpc("org_module_custom_value_remove", {
     p_org_id: orgId,
     p_module_key: moduleKey,
     p_namespace: namespace,
@@ -161,7 +161,7 @@ export async function setOrgModuleCustomValuePolicy(
   moduleKey: string,
   membersCanAdd: boolean,
 ): Promise<void> {
-  const { error } = await supabase.rpc("org_module_custom_value_policy_set", {
+  const { error } = await supabase.schema("iam").rpc("org_module_custom_value_policy_set", {
     p_org_id: orgId,
     p_module_key: moduleKey,
     p_members_can_add: membersCanAdd,
@@ -190,7 +190,7 @@ export async function setOrgModuleSetting(
   setting: OrgModuleSetting,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { data, error } = await supabase.rpc("set_org_module_setting", {
+    const { data, error } = await supabase.schema("iam").rpc("set_org_module_setting", {
       p_org_id: orgId,
       p_module_key: moduleKey,
       p_members_can_add: setting.membersCanAdd,

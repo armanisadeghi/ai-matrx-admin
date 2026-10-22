@@ -22,7 +22,7 @@ export function sharedKeywordMetricsQueryKey(token: string) {
 export async function fetchSharedKeywordMetrics(
   token: string,
 ): Promise<KeywordReportRow[]> {
-  const response = await supabase.rpc("share_token_keyword_metrics", {
+  const response = await supabase.schema("iam").rpc("share_token_keyword_metrics", {
     p_token: token,
   });
   if (response.error) throw response.error;

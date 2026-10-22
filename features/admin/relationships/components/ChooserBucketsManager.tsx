@@ -237,6 +237,7 @@ export function ChooserBucketsManager() {
         readAllRows(
           ({ from, to }) =>
             supabase
+              .schema("platform")
               .rpc("reference_categories_list", undefined, { count: "exact" })
               .order("slug", { ascending: true })
               .range(from, to),
@@ -245,6 +246,7 @@ export function ChooserBucketsManager() {
         readAllRows(
           ({ from, to }) =>
             supabase
+              .schema("platform")
               .rpc("entity_schemas_list", undefined, { count: "exact" })
               .order("schema_name", { ascending: true })
               .range(from, to),
@@ -283,7 +285,7 @@ export function ChooserBucketsManager() {
   }, []);
 
   async function saveCategory(row: BucketRow) {
-    const { error } = await supabase.rpc("admin_upsert_reference_category", {
+    const { error } = await supabase.schema("platform").rpc("admin_upsert_reference_category", {
       p_slug: row.key,
       p_label: row.label.trim(),
       p_sort_order: row.sort_order,
@@ -295,7 +297,7 @@ export function ChooserBucketsManager() {
   }
 
   async function saveSchema(row: BucketRow) {
-    const { error } = await supabase.rpc("admin_upsert_schema", {
+    const { error } = await supabase.schema("platform").rpc("admin_upsert_schema", {
       p_schema_name: row.key,
       p_display_name: row.label.trim(),
       p_sort_order: row.sort_order,

@@ -117,7 +117,7 @@ export function useStoresProvenance(storeIds: readonly string[]): {
     (async () => {
       try {
         const supabase = createClient();
-        const { data, error: rpcError } = await supabase.rpc(
+        const { data, error: rpcError } = await supabase.schema("rag").rpc(
           "library_grant_provenance_batch",
           { p_stores: ids },
         );

@@ -157,7 +157,7 @@ async function main() {
 
     // 5. ACCESS: a member sees only the child rows they may read.
     const share = async (type: string, id: string) => {
-      const { error } = await admin.db.rpc("share_resource_with_user", { p_resource_type: type, p_resource_id: id, p_target_user_id: member.userId, p_permission_level: "viewer" });
+      const { error } = await admin.db.schema("iam").rpc("share_resource_with_user", { p_resource_type: type, p_resource_id: id, p_target_user_id: member.userId, p_permission_level: "viewer" });
       if (error) throw new Error(`share ${type}: ${error.message}`);
       shared.push({ type, id });
     };
@@ -173,7 +173,7 @@ async function main() {
 
     if (keep) console.log(`\nKEPT  clients=${clients} payments=${payments} projects=${projects} meetings=${meetings} links=${links} harbor=${harbor} northline=${northline} saltwater=${saltwater} harborPage=${ensured.spaceId}`);
   } finally {
-    for (const s of shared) await admin.db.rpc("revoke_resource_access", { p_resource_type: s.type, p_resource_id: s.id, p_target_user_id: member.userId });
+    for (const s of shared) await admin.db.schema("iam").rpc("revoke_resource_access", { p_resource_type: s.type, p_resource_id: s.id, p_target_user_id: member.userId });
     if (!keep) {
       for (const id of pages) await store.archive(id).catch(() => undefined);
       for (const id of tables) await admin.records.tableArchive({ table_id: id } as never).catch(() => undefined);

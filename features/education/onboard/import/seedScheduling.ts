@@ -46,7 +46,7 @@ export async function seedImportedScheduling(items: SchedulingSeedItem[]): Promi
       source,
     };
   });
-  const { data, error } = await supabase.rpc("edu_import_review_history", {
+  const { data, error } = await supabase.schema("education").rpc("edu_import_review_history", {
     p_items: payload,
   });
   if (error) {

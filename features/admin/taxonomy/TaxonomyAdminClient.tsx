@@ -46,7 +46,7 @@ export default function TaxonomyAdminClient() {
 
   const load = useCallback(async () => {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("admin_taxonomy_list");
+    const { data, error } = await supabase.schema("platform").rpc("admin_taxonomy_list");
     if (error) {
       setLoadError(error.message);
       return;
@@ -100,7 +100,7 @@ export default function TaxonomyAdminClient() {
     });
     if (!approved) return;
     const supabase = createClient();
-    const { error } = await supabase.rpc("admin_taxonomy_delete", {
+    const { error } = await supabase.schema("platform").rpc("admin_taxonomy_delete", {
       p_id: node.id,
     });
     if (error) {

@@ -154,7 +154,7 @@ function selfTest(): void {
     const planted = scan(files(), dir, {});
     if (planted.over.length !== 1) throw new Error("self-test: a planted definition fetch was NOT reported");
 
-    write(`export const x = () => supabase.rpc("agx_get_execution_minimal", {});\n`);
+    write(`export const x = () => supabase.schema("agent").rpc("agx_get_execution_minimal", {});\n`);
     const rpc = scan(files(), dir, {});
     if (rpc.legacy.length !== 1) throw new Error("self-test: a planted legacy RPC was NOT reported");
 

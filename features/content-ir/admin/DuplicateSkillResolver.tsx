@@ -198,7 +198,7 @@ function CaseCard({ item }: { item: DuplicateSkillCase }) {
     // spells "absent" as `undefined` — so CLEARING the declaration omits
     // p_skill_id rather than sending an explicit null.
     const trimmedNote = note.trim();
-    const { error } = await supabase.rpc("shape_doctor_set_skill_owner", {
+    const { error } = await supabase.schema("platform").rpc("shape_doctor_set_skill_owner", {
       p_kind: item.kind,
       p_syntax: item.syntax,
       ...(skillId ? { p_skill_id: skillId } : null),
