@@ -1,7 +1,8 @@
 /**
  * ONE GRID ENGINE + ONE WIDGET REGISTRY (custom-experience PLAN §5.6, lane U) — the census for this repo.
  *
- * Every "page made of blocks" is drawn by @ai-matrx/design-system `GridCanvas` (launchpads here; records-ui
+ * Every "page made of blocks" is drawn by @ai-matrx/design-system `GridCanvas` (launchpads and workflow run
+ * pages here — the run page in line mode, lane W; records-ui
  * dashboards, Pages and Interfaces in the package, guarded there by `one-grid-engine.census.test.ts`), and every
  * placeable widget registers ONCE in `features/launchpad/widgets` (Board items and records-ui dashboards and pages
  * are entries there, not registries of their own). This fails when a second grid engine or a second widget
@@ -26,6 +27,11 @@ const COLLECTION_REORDER = new Set([
 const ENGINE_SIGNATURES: readonly { name: string; re: RegExp }[] = [
   { name: "grid-layout library", re: /from\s+["'](react-grid-layout|gridstack|muuri|react-mosaic-component)["']/ },
   { name: "dnd-kit sortable GRID (rectSortingStrategy)", re: /\brectSortingStrategy\b/ },
+  // Lane W: the workflow run page's own engines — a line packer that wraps a cursor against a column count,
+  // a CSS flow that turns a stored width into a column span, and a box-collision compaction engine.
+  { name: "hand-rolled line packer", re: /\b\w+\s*\+\s*\w+(\.\w+)?\s*>\s*[A-Z_]*COLUMNS\b/ },
+  { name: "span-from-width flow", re: /gridColumn:\s*`span \$\{/ },
+  { name: "box-collision compaction engine", re: /function\s+(collides|collidesAny|compactLayout|compactWith|applyPlacement|findFreeSlot)\b/ },
 ];
 
 /** A second registry of placeable widgets/blocks/tiles. */
