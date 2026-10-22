@@ -68,7 +68,7 @@ import { typedAnswerBody } from "./typed-answer";
 import { createIntelligencePort } from "@ai-matrx/agents/intelligence";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { BuildAttachments } from "./BuildAttachments";
-import { attachedJobKeys, attachmentsContext, readBuildSeed, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
+import { attachedJobKeys, attachedTableIds, attachedTableOrganization, attachmentsContext, readBuildSeed, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -207,7 +207,7 @@ export function AppletBuilder({
         const record = await readBuildRecord(client, id);
         const current = record.hasContent ? await readBuilderApplet(client, id) : null;
         const org = current?.organizationId ?? record.organizationId;
-        const catalogue = await readAppletCatalogue(client, { organizationId: org, request: entry.text, attachedJobs: attachedJobKeys(record.references), describe: describeJob });
+        const catalogue = await readAppletCatalogue(client, { organizationId: org, request: entry.text, attachedJobs: attachedJobKeys(record.references), attachedTables: attachedTableIds(record.references), describe: describeJob });
         const [{ appletImportProblems }, { checkBuildAnswer }] = await Promise.all([import("@ai-matrx/applets/frame"), import("./check-build-answer")]);
         // What each job really takes (F1): a form that fills a job with names it does not declare is refused.
         const jobInputs = await readJobInputs(client, jobKeysOf(catalogue, current?.applet ?? null, value), { describe: describeJob });
@@ -358,7 +358,10 @@ export function AppletBuilder({
     let started: { id: string; entry: BuildEntry } | null = null;
     try {
       // A new app needs an organization: with none set, the picker asks and THIS build continues with the pick.
-    const org = appletId || retry ? null : (organizationId ?? (await whenOrgReady(() => ensureOrgId(null)))); // org-filter: default-for-new a new applet is created in the selected organization
+      // Started from one of her tables ("Build an Applet on this database"): the build runs in THAT table's
+      // organization (acting on that record), so the catalog offers the table and the Applet can bind it.
+      const tableOrg = attachedTableOrganization(pendingRefs);
+    const org = appletId || retry ? null : tableOrg ? await ensureOrgId(tableOrg) : (organizationId ?? (await whenOrgReady(() => ensureOrgId(null)))); // org-filter: default-for-new a new applet is created in the selected organization
       // The request is written BEFORE anything runs — a new app is born here and the address becomes its own.
       // An automatic fix round is claimed instead: exactly one tab runs it, every other tab follows that run.
       let begun: { record: BuildRecord; entry: BuildEntry };
@@ -385,7 +388,7 @@ export function AppletBuilder({
       const runOrg = current?.organizationId ?? record.organizationId;
       // What she attached: its material rides THE attach path every round, its jobs the catalog.
       const refs = record.references;
-      const catalogue = await readAppletCatalogue(client, { organizationId: runOrg, request, attachedJobs: attachedJobKeys(refs), describe: describeJob });
+      const catalogue = await readAppletCatalogue(client, { organizationId: runOrg, request, attachedJobs: attachedJobKeys(refs), attachedTables: attachedTableIds(refs), describe: describeJob });
       // The frame (already the preview's) answers which names each module really exports; the checks read
       // the code's syntax tree, so both load here, on demand — never with the builder's first screen.
       const [{ appletImportProblems }, { checkBuildAnswer }] = await Promise.all([import("@ai-matrx/applets/frame"), import("./check-build-answer")]);

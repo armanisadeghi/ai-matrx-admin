@@ -232,7 +232,8 @@ describe("the build's conversation on a reload (host chunk still loading)", () =
     expect(bad).toEqual([]);
     expect(seen.problems).toBe(false);
     expect(seen.card).toBe(true);
-    expect(seen.text).toContain("Favorite Movies");
+    // The recorded stream (fixtures/applet-build-stream.ndjson) is real model output: its spelling stays as recorded.
+    expect(seen.text).toContain("Favourite Movies");
     expect(seen.text).not.toContain("import React");
   });
 });

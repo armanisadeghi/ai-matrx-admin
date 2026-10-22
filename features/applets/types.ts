@@ -92,8 +92,11 @@ export interface AppletJob {
 export interface AppletPage {
   path: string;
   title: string;
+  /** The file that draws the page; "" for a Space page. */
   file: string;
   parent?: string;
+  /** A Space page shown as this page (`@ai-matrx/applets` `AppletPage.space`): the Space look and editing kept. */
+  space?: string;
 }
 
 /** One source of the record — her table, a platform record type, or a table "Use it" makes (`new_table`). */
@@ -117,14 +120,15 @@ export function appletJobs(app: Pick<AppletDefinition, "mandates">): AppletJob[]
 
 /** The pages an Applet routes (`pages` column). */
 export function appletPages(app: Pick<AppletDefinition, "pages">): AppletPage[] {
-  return objects(app.pages).flatMap(({ path, title, file, parent }) =>
-    typeof path === "string" && typeof file === "string"
+  return objects(app.pages).flatMap(({ path, title, file, parent, space }) =>
+    typeof path === "string" && (typeof file === "string" || (typeof space === "string" && space))
       ? [
           {
             path,
             title: typeof title === "string" ? title : path,
-            file,
+            file: typeof file === "string" ? file : "",
             ...(typeof parent === "string" && parent ? { parent } : {}),
+            ...(typeof space === "string" && space ? { space } : {}),
           },
         ]
       : [],

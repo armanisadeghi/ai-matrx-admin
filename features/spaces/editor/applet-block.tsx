@@ -5,11 +5,11 @@
 // picker first (applet-picker.tsx) and the block lands only once an Applet is chosen, so no half-made block is
 // ever saved.
 //
-// EDITOR-LIVE, PUBLIC-STATIC (attack U1/C3): in the app the block mounts the Applet through the ONE host
-// (`AppletInPageLazy`, `embedded`) in a reserved-height frame, once the block scrolls into view. On a published
-// Site (`publicSite`) it draws the static `AppletCardLazy` instead — the page reads as its publisher while a live
-// Applet would read as the visitor, and guest data (G1) is not shipped. FOLLOW-UP "live Applets on Sites, gated on
-// G1 guest data": swap the card for `AppletInPageLazy` at the marked switch below once G1 lands.
+// LIVE EVERYWHERE (2026-10-22, guest data shipped): in the app AND on a published Site (`publicSite`) the block
+// mounts the Applet through the ONE host (`AppletInPageLazy`, `embedded`) in a reserved-height frame, once the
+// block scrolls near. On a Site a reader with no account runs it on the guest lane (`site` → `visitor`): her saves
+// are her own records and stay hers when she signs up — the same lane as the standalone `/applets/<slug>`. The
+// Applet's chunk loads only when an applet block nears the viewport; a page without one pays nothing.
 //
 // Hover bar (editable): Open Applet (new tab, the full www link) · Change with AI (the Applet's builder) · Remove.
 // The bottom edge drags the reserved height.
@@ -18,7 +18,7 @@ import { ArrowUpRight, MessageSquare, Trash2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { appletBuilderHref, appletWebUrl, AppletCardLazy, AppletInPageLazy, readAppletCards, type AppletCardInfo } from "@/features/applets/embed/appletsPort";
+import { appletBuilderHref, appletWebUrl, AppletInPageLazy, readAppletCards, type AppletCardInfo } from "@/features/applets/embed/appletsPort";
 import { APPLET_BLOCK_MIN_HEIGHT } from "@/lib/spaces-blocks/types";
 
 import { readPublishState } from "../publish/publish-doors";
@@ -94,17 +94,9 @@ function AppletBlockView({ p, ctx }: { p: Record<string, unknown>; ctx: Ctx }) {
     };
   }, [editable, publicSite, appletId]);
 
-  // SWITCH POINT (public-static): a published Site shows the card, never the live Applet, until G1 guest data ships.
-  if (publicSite)
-    return (
-      <div className="spaces-applet" contentEditable={false} data-applet-block={appletId} data-mode="card">
-        <AppletCardLazy appId={appletId} />
-      </div>
-    );
-
   return (
-    <div ref={ref} className="spaces-applet" contentEditable={false} data-applet-block={appletId} data-mode="live">
-      {near ? <AppletInPageLazy appId={appletId} height={height} pagePublished={pagePublished} onInfo={setInfo} /> : <AppletFrame height={height} />}
+    <div ref={ref} className="spaces-applet" contentEditable={false} data-applet-block={appletId} data-mode="live" data-site={publicSite || undefined}>
+      {near ? <AppletInPageLazy appId={appletId} height={height} pagePublished={pagePublished} onInfo={setInfo} site={publicSite} /> : <AppletFrame height={height} />}
       {editable ? (
         <>
           <div className="spaces-applet-tools" onMouseDown={(e) => e.stopPropagation()}>

@@ -35,7 +35,8 @@ export interface BuilderApplet {
   description: string;
   entry: string;
   files: BuilderFile[];
-  pages: { path: string; title: string; file: string; parent?: string }[];
+  /** `space`: a Space page shown as this page (added by her in the Pages editor); `file` is "" then. */
+  pages: { path: string; title: string; file: string; parent?: string; space?: string }[];
   sources: BuilderSource[];
   mandates: { alias: string; key: string }[];
 }
@@ -109,8 +110,16 @@ export function coerceBuildAnswer(value: unknown): BuildAnswer {
     isRecord(f) && typeof f.name === "string" && typeof f.source === "string" ? [{ name: f.name, source: f.source }] : [],
   );
   const pages = (Array.isArray(a.pages) ? a.pages : []).flatMap((p) =>
-    isRecord(p) && typeof p.path === "string" && typeof p.file === "string"
-      ? [{ path: p.path, title: str(p.title) || p.path, file: p.file, ...(typeof p.parent === "string" && p.parent ? { parent: p.parent } : {}) }]
+    isRecord(p) && typeof p.path === "string" && (typeof p.file === "string" || str(p.space))
+      ? [
+          {
+            path: p.path,
+            title: str(p.title) || p.path,
+            file: str(p.space) ? "" : str(p.file),
+            ...(typeof p.parent === "string" && p.parent ? { parent: p.parent } : {}),
+            ...(str(p.space) ? { space: str(p.space) } : {}),
+          },
+        ]
       : [],
   );
   const sources = (Array.isArray(a.sources) ? a.sources : []).flatMap((s): BuilderSource[] =>
@@ -281,6 +290,16 @@ export async function readBuilderApplet(client: Client, appletId: string): Promi
   return { applet: answer.applet, organizationId: data.organization_id, slug: data.slug };
 }
 
+/**
+ * The Space pages she added (Pages editor) survive a build round: one the builder's answer left out is put back,
+ * unless the answer now holds a page at that address. Nothing she placed is lost to a rewrite. Exported for tests.
+ */
+export function keepSpacePages(answer: BuilderApplet["pages"], current: BuilderApplet["pages"] | null): BuilderApplet["pages"] {
+  const key = (path: string) => path.trim().replace(/^\/+/, "").replace(/\/+$/, "");
+  const taken = new Set(answer.map((p) => key(p.path)));
+  return [...answer, ...(current ?? []).filter((p) => p.space && !taken.has(key(p.path)))];
+}
+
 /** A file the builder answered "(unchanged…)" keeps its stored source. */
 function mergeFiles(answer: BuilderFile[], current: BuilderFile[] | null): Record<string, string> {
   const before = new Map((current ?? []).map((f) => [f.name, f.source]));
@@ -340,7 +359,7 @@ export async function saveBuiltApplet(
     description: applet.description || input.current?.description || null,
     entry: applet.entry,
     files: mergeFiles(applet.files, input.current?.files ?? null),
-    pages: applet.pages,
+    pages: keepSpacePages(applet.pages, input.current?.pages ?? null),
     sources: scopeEntitySources(applet.sources, input.organizationId),
     mandates: applet.mandates,
   };

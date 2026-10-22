@@ -6,7 +6,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/types/database.types";
-import { attachedJobKeys, attachmentsContext, buildSeedHref, jobReference, layoutReference, readBuildReferences, readBuildSeed } from "./build-references";
+import { attachedJobKeys, attachmentsContext, jobReference, layoutReference, readBuildReferences, readBuildSeed } from "./build-references";
+import { buildSeedHref } from "./build-seed";
 import { createLayoutApplet, layoutJson } from "./layout-applet";
 
 jest.mock("./build-applet", () => ({
