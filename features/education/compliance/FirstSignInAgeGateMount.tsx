@@ -132,6 +132,8 @@ export function FirstSignInAgeGateMount() {
   const declared = declaredInThisBrowser(userId);
   const gate = useAiComplianceGate({
     declarationVariant: "first_run",
+    // A floating card with "Not now", never a modal over the page (Arman, 2026-10-17; feedback 6818af69).
+    declarationPresentation: "nudge",
     enabled: settled && !onPortal && !onWelcome && !askedAtMount && !declared,
   });
   const { loading, gate: verdict, promptDeclarationIfNeeded, reload } = gate;

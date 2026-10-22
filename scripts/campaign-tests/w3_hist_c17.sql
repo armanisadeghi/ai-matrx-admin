@@ -130,6 +130,7 @@ declare
   v_txt     text;
   v_wpath   record;
   v_msg     text;
+  v_det     text;
   v_n       integer;
   v_days    integer;
   v_ver     integer;
@@ -621,12 +622,20 @@ begin
 
   -- (d) THE UNDO ITSELF IS ON THE RECORD. Putting something back is not the same as it never
   --     having happened, and that is the difference between a log and a rewrite.
+  --     FIX-HIS8 (2026-10-21): this used to count rows of `history.row_versions` FROM THE SEAT
+  --     and failed "the undo wrote no version of its own" while the store HAD written one —
+  --     measured with the same count taken as the connected role (1 row, operation UPDATE,
+  --     this record, this organization). The seat reads that table through RLS `std_select`
+  --     (iam.my_orgs()), and this suite's disposable organization is built by direct insert
+  --     and is not one of the seat's memberships, so the raw count was always 0. A person
+  --     audits the past through `custom.io_revisions`, so that is what is asked, and it also
+  --     asserts the version is SIGNED as the undo ("undo of rename", carrying the log id).
   select count(*) into v_n
-    from history.row_versions v
-   where v.id > v_mark and v.entity_type = 'custom.record'
-     and v.organization_id = v_org and v.row_id = v_rec;
+    from custom.io_revisions(v_org, v_rec) r
+   where r.operation = 'undo of rename'
+     and (r.changed_fields ->> 'migration_id')::uuid = v_log;
   if v_n < 1 then
-    raise exception 'HIS-8 (d): the undo wrote no version of its own — it went round custom.record_update';
+    raise exception 'HIS-8 (d): the undo wrote no version of its own — custom.io_revisions shows none signed "undo of rename" for Migration %', v_log;
   end if;
 
   -- (e) Undoing it twice changes nothing and says why.
@@ -660,14 +669,13 @@ begin
   -- (b) RESTORE an earlier version through `custom.io_restore`, and it becomes a NEW version
   --     rather than a hole.
   select min(r.version) into v_ver from custom.io_revisions(v_org, v_rec) r;
-  perform set_config('role', v_boss, true);
-  select coalesce(max(id), 0) into v_mark from history.row_versions;
-  perform set_config('role', 'authenticated', true);
+  -- FIX-HIS8 (2026-10-21): the new version is counted through `custom.io_revisions` (top of the
+  -- chain before and after), not by counting `history.row_versions` from the seat — that table
+  -- is read through RLS `std_select` and this suite's disposable organization is not one of
+  -- the seat's memberships, so the raw count was 0 whether or not the restore recorded.
+  select max(r.version) into v_n from custom.io_revisions(v_org, v_rec) r;
   v_ver2 := custom.io_restore(v_org, v_rec, v_ver);
-  select count(*) into v_n
-    from history.row_versions v
-   where v.id > v_mark and v.entity_type = 'custom.record' and v.row_id = v_rec;
-  if v_n < 1 then
+  if coalesce((select max(r.version) from custom.io_revisions(v_org, v_rec) r), 0) <= coalesce(v_n, 0) then
     raise exception 'HIS-N-1 (b): restoring version % wrote no new version', v_ver;
   end if;
   -- THE CHAIN WENT FORWARD, asked of the door rather than of the restore's return value.
@@ -794,17 +802,20 @@ begin
     perform * from custom.visibility_as_of(v_org, v_rec, v_t_open - interval '1 day');
     raise exception 'VIS-16 (d): a replay of a moment before the store was recording was answered';
   exception when others then
-    get stacked diagnostics v_msg = message_text;
+    get stacked diagnostics v_msg = message_text, v_det = pg_exception_detail;
+    -- FIX-HIS8 (2026-10-21): the door now says "does not reach back to that moment ... cannot
+    -- be answered" in the message and carries the date History begins in the DETAIL
+    -- (`history_starts_at`), so the date is read from there.
     -- 🚨 RE-MEASURED ON MAIN (SEAT-SUITES, 2026-09-19). The branch's sentence was "not
     -- watching" / "has not started recording"; main's door says it in plainer English and
     -- NAMES THE DATE the store's history begins, which is the remedy a person can act on. The
     -- clause asserts the thing that matters — the refusal states when the window opens and
     -- that the question cannot be answered — rather than a form of words.
     if v_msg !~* 'not watching' and v_msg !~* 'not started recording'
-       and not (v_msg ~* 'starts at' and v_msg ~* 'cannot be answered') then
+       and not ((v_msg ~* 'starts at' or v_msg ~* 'reach back') and v_msg ~* 'cannot be answered') then
       raise exception 'VIS-16 (d): the refusal read "%"', v_msg;
     end if;
-    if v_msg !~ to_char(v_t_open, 'YYYY-MM-DD') then
+    if v_msg !~ to_char(v_t_open, 'YYYY-MM-DD') and coalesce(v_det, '') !~ to_char(v_t_open, 'YYYY-MM-DD') then
       raise exception 'VIS-16 (d): the refusal does not name the moment History starts (%) — "%"', v_t_open, v_msg;
     end if;
   end;

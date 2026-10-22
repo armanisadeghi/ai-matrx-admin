@@ -40,7 +40,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { buildKeywordResearchScope } from "@/features/marketing/lib/scopes/keyword-research-scope";
 import { extractErrorMessage } from "@/utils/errors";
 import { cn } from "@/lib/utils";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import {
   Select,
   SelectContent,

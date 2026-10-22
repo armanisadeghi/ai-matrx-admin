@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { useQuizStudy } from "../../data/useQuizStudy";
 import { StudyDeckHeader } from "./StudyDeckHeader";

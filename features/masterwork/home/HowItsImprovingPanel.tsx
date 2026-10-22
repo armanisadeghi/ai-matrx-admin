@@ -21,7 +21,7 @@ import {
   type ImprovementRow,
 } from "./service";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**

@@ -6,7 +6,7 @@ import { SettingsSection } from "@/components/official/settings/layout/SettingsS
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { useSetting } from "../hooks/useSetting";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useActiveSettingsTabId } from "../components/SettingsTabHost";
 import { useUniversalSettings } from "../universal/UniversalSettingsContext";
 import { UniversalSettingsRows } from "../universal/UniversalSettingsPane";

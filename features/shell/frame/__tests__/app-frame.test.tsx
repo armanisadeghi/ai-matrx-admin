@@ -34,12 +34,8 @@ import {
   type AppFrameProps,
 } from "../AppFrame";
 import {
-  FRAME_COMPANION_OPEN_COOKIE,
-  FRAME_COMPANION_OPEN_KEEP,
   FRAME_SIDEBAR_WIDTH_COOKIE,
-  frameCompanionOpenFor,
   frameGeometryFromCookies,
-  nextFrameCompanionOpen,
   readFrameCookie,
 } from "../geometry";
 import { HeaderToolButtons } from "../SheetHeader";
@@ -328,27 +324,30 @@ describe("the side chat loads only when engaged", () => {
     expect(sideChatDoor().getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("is closed by default, remembered per page, and a link wins until the person acts", async () => {
-    clearCookies();
-    mount(base({ form: "desktop", pageKey: "a" }));
-    await flush();
-    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
-    act(() => sideChatDoor().click());
-    expect(frameCompanionOpenFor(readFrameCookie(FRAME_COMPANION_OPEN_COOKIE), "a")).toBe(true);
-    act(() => root.unmount());
-    mount(base({ form: "desktop", pageKey: "b" }));
+  it("is closed by default, and a host controls it (the Side Chat's one rule lives in the package)", async () => {
+    mount(base({ form: "desktop" }));
     await flush();
     expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
     act(() => root.unmount());
-    mount(base({ form: "desktop", pageKey: "a" }));
+    const changes: boolean[] = [];
+    mount(base({ form: "desktop", companionOpen: true, onCompanionOpenChange: (open: boolean) => changes.push(open) }));
     await flush();
     expect(sideChatDoor().getAttribute("aria-pressed")).toBe("true");
-    act(() => root.unmount());
-    window.history.replaceState(null, "", "/?side_chat=closed");
-    mount(base({ form: "desktop", pageKey: "a" }));
+    act(() => sideChatDoor().click());
+    // Controlled: the frame asks, the host decides (still open until the host says otherwise).
+    expect(changes).toEqual([false]);
+    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("true");
+  });
+});
+
+describe("the canvas is controllable (a canvas store opens it from any page)", () => {
+  it("a host's canvasOpen opens the canvas; the toggle asks the host", async () => {
+    const changes: boolean[] = [];
+    const loader = jest.fn(() => Promise.resolve({ default: TestCanvas }));
+    mount(base({ form: "wide", loadCanvas: loader, canvasOpen: true, onCanvasOpenChange: (open: boolean) => changes.push(open) }));
     await flush();
-    expect(sideChatDoor().getAttribute("aria-pressed")).toBe("false");
-    window.history.replaceState(null, "", "/");
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(q('[data-mf-region="canvas"]')!.hasAttribute("inert")).toBe(false);
   });
 });
 
@@ -719,8 +718,8 @@ describe("geometry the server can read (ROLLOUT-PLAN Attack #4)", () => {
     mount(
       base({
         form: "desktop",
-        pageKey: "p",
-        initialGeometry: { sidebarWidth: 320, companionWidth: 500, companionOpen: true },
+        companionOpen: true,
+        initialGeometry: { sidebarWidth: 320, companionWidth: 500 },
       }),
     );
     // No effect has run: this is what the server rendered.
@@ -729,29 +728,12 @@ describe("geometry the server can read (ROLLOUT-PLAN Attack #4)", () => {
     expect(q<HTMLElement>('[data-mf-region="side-chat"]')!.style.width).toBe("500px");
   });
 
-  it("one cookie keeps the most recent pages' side chat choices, bounded", () => {
-    let value: string | null = null;
-    for (let i = 0; i < FRAME_COMPANION_OPEN_KEEP + 5; i++) value = nextFrameCompanionOpen(value, `page-${i}`, true);
-    expect(JSON.parse(value!)).toHaveLength(FRAME_COMPANION_OPEN_KEEP);
-    expect(frameCompanionOpenFor(value, `page-${FRAME_COMPANION_OPEN_KEEP + 4}`)).toBe(true);
-    expect(frameCompanionOpenFor(value, "page-0")).toBeNull();
-    expect(frameCompanionOpenFor("not json", "x")).toBeNull();
-    // A reader that hands the raw (encoded) header value still parses.
-    expect(frameCompanionOpenFor(encodeURIComponent(nextFrameCompanionOpen(null, "a", true)), "a")).toBe(true);
-  });
-
   it("the server reader turns the cookie header into initialGeometry", () => {
     const jar: Record<string, string> = {
       "matrx-frame:sidebar-width": "300",
       "matrx-frame:side-chat-width": "garbage",
-      "matrx-frame:side-chat-open": nextFrameCompanionOpen(null, "crm", true),
     };
-    expect(frameGeometryFromCookies((n) => jar[n], "crm")).toEqual({
-      sidebarWidth: 300,
-      companionWidth: null,
-      companionOpen: true,
-    });
-    expect(frameGeometryFromCookies((n) => jar[n], undefined).companionOpen).toBeNull();
+    expect(frameGeometryFromCookies((n) => jar[n])).toEqual({ sidebarWidth: 300, companionWidth: null });
   });
 
   it("the frame never writes geometry to localStorage", () => {

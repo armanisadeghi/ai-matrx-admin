@@ -16,7 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
 import { ProJsonTextarea } from "@/components/official/ProJsonTextarea";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { KIND_KEY, type KindSchema } from "@ai-matrx/content-ir";
 import type { KindStreamEvent } from "@ai-matrx/content-ir";

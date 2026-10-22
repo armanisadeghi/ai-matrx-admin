@@ -22,7 +22,13 @@ function sourceFiles(dir: string, out: string[] = []): string[] {
     const full = join(dir, name);
     if (statSync(full).isDirectory()) {
       if (!SKIP_DIRS.has(name)) sourceFiles(full, out);
-    } else if (/\.(ts|tsx)$/.test(name) && !/\.test\.tsx?$/.test(name)) {
+    } else if (
+      /\.(ts|tsx)$/.test(name) &&
+      !/\.test\.tsx?$/.test(name) &&
+      // A generated route inventory (route-homes.generated.ts) names every
+      // route that exists, the forwarder included - it is not a link to it.
+      !/\.generated\.tsx?$/.test(name)
+    ) {
       out.push(full);
     }
   }

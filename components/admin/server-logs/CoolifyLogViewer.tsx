@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import {
   RefreshCw,
   Loader2,

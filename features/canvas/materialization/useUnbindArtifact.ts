@@ -21,7 +21,7 @@ import { useContext, useState } from "react";
 import { toast } from "@/lib/toast";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import type { CxContentBlock } from "@ai-matrx/chat/public-chat/types/cx-tables";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { isRealSourceId, type PersistRewrite } from "./materializeBlocks";
 import { cxMessageContentRewriter } from "./materializeMessageArtifacts";
 import { flipMessageToDbRender } from "./flipMessageToDbRender";

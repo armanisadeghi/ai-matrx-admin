@@ -47,6 +47,7 @@
 \set FLD   '\'a50f0000-0000-4a00-8a00-000000000701\''
 \set DEEP1 '\'a50f0000-0000-4a00-8a00-000000001001\''
 \set GRANT '\'a50f0000-0000-4a00-8a00-000000009901\''
+\set GRANT2 '\'a50f0000-0000-4a00-8a00-000000009902\''
 
 -- NO TEMP TABLE CARRIES STATE BETWEEN THESE TRANSACTIONS: this database is reached through the
 -- transaction-mode pooler, where every transaction may land on a different backend. Every
@@ -57,7 +58,7 @@ begin;
 set local statement_timeout = '60s';
 set local lock_timeout = '10s';
 select set_config('app.actor_system', 'asof_green_suite', true);
-delete from iam.permissions where id = :GRANT;
+delete from iam.permissions where id in (:GRANT, :GRANT2);
 delete from iam.permissions where resource_type = 'record'
    and resource_id in (select id from custom.record where organization_id = :ORG);
 delete from platform.reachability where origin = 'store-asof-test';
@@ -74,7 +75,7 @@ delete from custom.external_link where organization_id = :ORG;
 delete from custom.external_source where organization_id = :ORG;
 delete from history.migration_log where organization_id = :ORG;
 -- this suite's own history, so a previous run's share is never counted as this one's
-delete from history.row_versions where entity_type = 'iam.permissions' and row_id = :GRANT;
+delete from history.row_versions where entity_type = 'iam.permissions' and row_id in (:GRANT, :GRANT2);
 delete from history.row_versions where organization_id = :ORG;
 delete from platform.knob_override where organization_id = :ORG;
 delete from iam.memberships where organization_id = :ORG;
@@ -83,16 +84,21 @@ delete from iam.organizations where id = :ORG;
 insert into iam.organizations (id, name, slug, abbreviation, created_by)
 values (:ORG, 'Rincon Plumbing Co', 'rincon-plumbing-asof', 'RPC', :ADMIN);
 insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
-values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active'),
-       (:ORG, 'organization', :ORG, :DANA,  'member', 'active');
+values (:ORG, 'organization', :ORG, :ADMIN, 'owner',  'active');
+-- 🚨 DANA IS NOT A MEMBER UNTIL PART 4 (lane ASOF-REVOKE, 2026-10-21). Part 3 needs a person whom
+-- a SHARE is the only thing that lets see the record, so that "and then she lost it" means
+-- anything. This suite used to make her a member and close the member lane with the knob
+-- custom/member_default_visibility = shared_only. The access ladder retired that knob on
+-- 2026-10-03 (T-17: every member opens every Organization record, no setting changes who may
+-- open one; lists hide, they never lock), so a member kept the record after the revoke and 3b
+-- read as a revoke that did not work. The revoke worked; the premise had gone. A person OUTSIDE
+-- the organization is the one the law still lets a share alone open the record to. She joins as
+-- an ordinary member just before Part 4, whose 4e is about a member.
 -- The store is ON for this organization, so history records what it does (GUARD-SWITCH).
--- Membership alone shows nothing, so a SHARE is the only thing that could ever have let Dana
--- see the record — which is what makes Part 3's "and then she lost it" mean anything.
 -- And the containment ceiling is raised to 24, which REC-N-4 allows an organization to do and
 -- which is exactly how a real path outruns the parity walk's 16 hops.
 insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note)
 values ('custom', 'system_enabled',             'organization', :ORG, :ORG, 'true'::jsonb,           'STORE-ASOF green suite'),
-       ('custom', 'member_default_visibility',  'organization', :ORG, :ORG, '"shared_only"'::jsonb,  'STORE-ASOF green suite'),
        ('custom', 'containment_depth_ceiling',  'organization', :ORG, :ORG, '24'::jsonb,             'STORE-ASOF green suite');
 commit;
 
@@ -373,6 +379,71 @@ begin
 end $t$;
 commit;
 
+-- ════════ PART 3f — EVERY REVOKE PATH TAKES IT AWAY AT ONCE (lane ASOF-REVOKE, 2026-10-21)
+-- Part 3 revokes with a DELETE, which is how history sees the end of a share. The product's own
+-- revoke never deletes: the Share dialog, custom.share_revoke and every person-share remover go
+-- through iam.remove_grant, which ARCHIVES the row and stamps expires_at (T-32e). So the same
+-- question is asked again through that door, each step its own transaction, as a person sees it.
+begin;
+set local statement_timeout = '60s';
+select set_config('app.actor_system', 'asof_green_suite', true);
+insert into iam.permissions (id, resource_type, resource_id, granted_to_user_id, permission_level, status, created_by)
+values (:GRANT2, 'record', :REC, :DANA, 'viewer', 'active', :ADMIN);
+commit;
+
+do $t$
+begin
+  if not custom.has_visibility('4060701e-706a-4c76-b3ca-0bbc69fa5a14', 'record',
+                               'a50f0000-0000-4a00-8a00-000000000301', 'viewer') then
+    raise exception '3f FAILED — the second share did not give her the record.';
+  end if;
+end $t$;
+
+begin;
+set local statement_timeout = '60s';
+select set_config('app.actor_system', 'asof_green_suite', true);
+do $t$
+declare v jsonb;
+begin
+  v := iam.remove_grant('a50f0000-0000-4a00-8a00-000000009902', '87a6e699-3622-4869-8843-d0867456c0dd', true);
+  if v ->> 'outcome' is distinct from 'removed' then
+    raise exception '3f FAILED — the revoke door answered % for a live share.', v;
+  end if;
+end $t$;
+commit;
+
+do $t$
+declare
+  v_org  constant uuid := 'a50f0000-0000-4a00-8a00-000000000a01';
+  v_rec  constant uuid := 'a50f0000-0000-4a00-8a00-000000000301';
+  v_dana constant uuid := '4060701e-706a-4c76-b3ca-0bbc69fa5a14';
+  v_bad  int;
+begin
+  if custom.has_visibility(v_dana, 'record', v_rec, 'viewer') then
+    raise exception '3f FAILED — iam.remove_grant archived the share and the ladder still opens the record for her.';
+  end if;
+  if iam.has_access_for(v_dana, 'record', v_rec, 'viewer') then
+    raise exception '3f FAILED — iam.remove_grant archived the share and the access kernel still opens the record for her.';
+  end if;
+  -- and the door that answers a person's screen agrees, as her
+  perform set_config('request.jwt.claims', '{"sub":"4060701e-706a-4c76-b3ca-0bbc69fa5a14"}', true);
+  select count(*) into v_bad from custom.record r
+   where r.organization_id = v_org and r.id = v_rec and custom.query_can_see(v_org, r.id, 'viewer');
+  perform set_config('request.jwt.claims', '', true);
+  if v_bad > 0 then
+    raise exception '3f FAILED — custom.query_can_see still opens the revoked record for her.';
+  end if;
+  raise notice 'PART 3f PASSED — a share revoked through iam.remove_grant is refused at once by the ladder, the kernel and the screen door.';
+end $t$;
+
+-- Dana joins as an ordinary member now: Part 4e is about a member.
+begin;
+set local statement_timeout = '60s';
+select set_config('app.actor_system', 'asof_green_suite', true);
+insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
+values (:ORG, 'organization', :ORG, :DANA, 'member', 'active');
+commit;
+
 -- ═════════ PART 4 — T1: THE CUTOVER DIFF IS HONEST ABOUT ITS DEPTH, AND A PERSON CAN RUN IT
 begin;
 set local statement_timeout = '60s';
@@ -505,7 +576,7 @@ begin;
 set local statement_timeout = '60s';
 set local lock_timeout = '10s';
 select set_config('app.actor_system', 'asof_green_suite', true);
-delete from iam.permissions where id = :GRANT;
+delete from iam.permissions where id in (:GRANT, :GRANT2);
 delete from iam.permissions where resource_type = 'record'
    and resource_id in (select id from custom.record where organization_id = :ORG);
 delete from platform.reachability where origin = 'store-asof-test';
@@ -527,7 +598,7 @@ delete from iam.organizations where id = :ORG;
 -- HISTORY LAST, and that is not tidiness: deleting the memberships and the knob overrides is
 -- itself a change, and their capture triggers write history rows in THIS transaction. Sweeping
 -- history before them left five rows behind on the first run.
-delete from history.row_versions where entity_type = 'iam.permissions' and row_id = :GRANT;
+delete from history.row_versions where entity_type = 'iam.permissions' and row_id in (:GRANT, :GRANT2);
 delete from history.row_versions where organization_id = :ORG;
 do $t$
 declare
@@ -542,7 +613,8 @@ begin
        + (select count(*) from platform.knob_override where organization_id = v_org)
        + (select count(*) from platform.reachability where origin = 'store-asof-test')
        + (select count(*) from history.row_versions where organization_id = v_org)
-       + (select count(*) from iam.permissions where id = 'a50f0000-0000-4a00-8a00-000000009901')
+       + (select count(*) from iam.permissions where id in ('a50f0000-0000-4a00-8a00-000000009901',
+                                                              'a50f0000-0000-4a00-8a00-000000009902'))
     into n;
   if n <> 0 then raise exception 'TEARDOWN FAILED — % row(s) of this suite are still on the database.', n; end if;
   raise notice 'TEARDOWN PASSED — census zero.';

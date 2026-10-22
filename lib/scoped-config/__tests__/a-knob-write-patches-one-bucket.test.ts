@@ -90,7 +90,7 @@ it("a knob write is answered with its bucket alone, and a key deleted from it di
   expect(peekEffectiveKnob(ORG, USER, { feature: "far", key: "near" })).toBe(2);
 
   // The stored copy is the buckets at the new vector, not a second flat map.
-  const stored = JSON.parse(window.localStorage.getItem("knobs.defaults.v1") ?? "{}") as { vector?: string; values?: unknown; buckets?: Buckets };
+  const stored = JSON.parse(window.localStorage.getItem("matrx:client:knobs.defaults.v1") ?? "{}") as { vector?: string; values?: unknown; buckets?: Buckets };
   expect(stored.vector).toBe(V1);
   expect(stored.values).toBeUndefined();
   expect(stored.buckets?.["3"]).toEqual({ "lists.org_filter": { mode: "none" } });

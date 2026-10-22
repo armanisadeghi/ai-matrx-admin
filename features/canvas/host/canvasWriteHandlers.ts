@@ -38,7 +38,7 @@ import {
   canvasItemRecord,
   type CanvasItemRecord,
 } from "@/features/canvas/lib/canvas-item-reference";
-import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import { htmlPageUrl } from "@/features/cms/utils/pageUrls";
 import { artifactKey, contentOf, readArtifactItemData, type ArtifactItemData } from "./artifactItem";
 

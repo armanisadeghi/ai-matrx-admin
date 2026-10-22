@@ -24,7 +24,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { toast } from "@/lib/toast";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { currentPathWithSearch, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { cn } from "@/lib/utils";
 

@@ -13,7 +13,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface Recipient {

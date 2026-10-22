@@ -1,5 +1,5 @@
 import { canvasArtifactService } from "@/features/canvas/services/canvasArtifactService";
-import { readArtifactPointerId } from "./artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 
 /**
  * resolveArtifactData — turn a canvas `content.data` value into REAL content.

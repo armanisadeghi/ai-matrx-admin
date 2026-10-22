@@ -24,6 +24,11 @@ import DeferredIslands from "@/features/shell/islands/DeferredIslands";
 import { SettingsRouteProvider } from "@/features/settings/route-shell/SettingsRouteProvider";
 import type { UserData } from "@/utils/userDataMapper";
 import type { BaseReduxState } from "@/types/reduxTypes";
+import { cookies } from "next/headers";
+import { shellChatHome } from "@ai-matrx/chat/canvas/workspace/shell-chat-route";
+import { canvasChatCookieName } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
+import { sideChatChoiceFromCookie } from "@ai-matrx/chat/canvas/workspace/side-chat-state";
+import { readComposerModeCookie } from "@ai-matrx/chat/next/server/composer-mode.server";
 import { readFrameGeometry } from "./frameGeometry.server";
 import { FrameHostGate } from "./FrameHostGate";
 // What this file shares with AppShell: FRAME_SHARED_SHELL_PARTS (./frameShellParts), kept in step by a test.
@@ -40,12 +45,23 @@ interface FrameShellProps {
 }
 
 export default async function FrameShell({ children, initialReduxState, userData, isAuthenticated, pathname }: FrameShellProps) {
-  const initialGeometry = await readFrameGeometry(pathname);
+  const [initialGeometry, cookieStore, mode] = await Promise.all([
+    readFrameGeometry(),
+    cookies(),
+    isAuthenticated ? readComposerModeCookie() : Promise.resolve(null),
+  ]);
+  // The side chat's first paint: the person's own choice for this page's home — the same cookie the
+  // classic dock reads (AppShell), so the choice follows them across the two shells.
+  const chatHome = shellChatHome(pathname, isAuthenticated);
+  const sideChat = {
+    choice: isAuthenticated ? sideChatChoiceFromCookie(cookieStore.get(canvasChatCookieName(chatHome.layoutId))?.value) : null,
+    mode,
+  };
   return (
     <Providers initialReduxState={initialReduxState}>
       <SettingsRouteProvider>
         <div data-matrx-frame-host="" data-pathname={pathname}>
-          <FrameHostGate userData={userData} isAuthenticated={isAuthenticated} initialGeometry={initialGeometry}>
+          <FrameHostGate userData={userData} isAuthenticated={isAuthenticated} initialGeometry={initialGeometry} sideChat={sideChat}>
             {children}
           </FrameHostGate>
         </div>

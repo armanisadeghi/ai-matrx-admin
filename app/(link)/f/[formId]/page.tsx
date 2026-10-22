@@ -31,12 +31,15 @@
 
 import { markdownToPlainText } from "@/lib/markdown/plain-text";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { PublicLinkNotice } from "@/components/public-link/PublicLinkNotice";
 import { FormLookFrame } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 import { isPortalAccent, type PortalStyle as RecordsPortalStyle } from "@ai-matrx/records";
-import { prefillFromLink, publicForm, publicFormOptions, type PublicForm } from "@/features/forms/service";
+import { formUnlock, prefillFromLink, publicForm, publicFormOptions, type PublicForm } from "@/features/forms/service";
+import { PublicViewLocked } from "@/features/sharing/public-view/PublicViewLocked";
+import { formUnlockCookieName, readUnlockCookieValue } from "@/features/sharing/public-view/unlock";
 
 import { PublicFormRunner } from "./PublicFormRunner";
 import { paymentNoticeFor } from "@/features/payments/notice";
@@ -68,6 +71,11 @@ export async function generateMetadata({
   const form = await publicForm(formId).catch(() => null);
   if (!form) {
     return { title: "Form · AI Matrx", robots: { index: false, follow: false } };
+  }
+  // A protected form names nothing about itself — not even in a link preview — until its password is typed.
+  const fingerprint = readUnlockCookieValue(formId, (await cookies()).get(formUnlockCookieName(formId))?.value);
+  if ((await formUnlock(formId, null, fingerprint ?? null).catch(() => null))?.state === "locked") {
+    return { title: "Password needed · AI Matrx", robots: { index: false, follow: false } };
   }
   // A meta description is WORDS: the intro may carry markdown, which would
   // show its asterisks in link previews and search results.
@@ -101,6 +109,24 @@ export default async function PublicFormPage({
   // every public link in this product uses for a refusal.
   if (form.state !== "open") {
     return <PublicLinkNotice title={form.title} message={form.message} />;
+  }
+
+  // CD-PAGE-08 — A FORM WITH A PASSWORD shows its password box and not one of its questions until the password is
+  // right. The store checks it (`custom.form_unlock`); a visitor who already typed it carries the signed cookie
+  // `/f/<id>/unlock` set, and the fingerprint inside it goes on to the runner, which sends it with the answers.
+  const fingerprint = readUnlockCookieValue(formId, (await cookies()).get(formUnlockCookieName(formId))?.value);
+  const gate = await formUnlock(formId, null, fingerprint ?? null);
+  if (gate?.state === "locked") {
+    const kept = new URLSearchParams();
+    for (const [k, v] of Object.entries(query)) if (typeof v === "string" && k !== "wrong") kept.set(k, v);
+    return (
+      <PublicViewLocked
+        token={formId}
+        wrong={query["wrong"] === "1"}
+        action={`/f/${formId}/unlock`}
+        keep={kept.toString()}
+      />
+    );
   }
 
   // THE ORGANIZATION'S LOOK (MAKE-HOME W5, W5b): the store resolved it (`presentation.look`), and the
@@ -137,6 +163,7 @@ export default async function PublicFormPage({
           form={form}
           prefill={prefillFromLink(form, query).answers}
           linkQuery={query}
+          unlock={gate?.unlock ?? null}
           autoAdvance={options.choice_auto_advance}
           paymentNotice={await paymentNoticeFor(form.form_id, query, `/f/${formId}`)}
         />

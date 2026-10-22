@@ -26,7 +26,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import {
   computeKpis,

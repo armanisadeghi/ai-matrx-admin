@@ -104,3 +104,24 @@ test("CODE: an import ahead of the installed package is named with its owner, ne
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("STALE SERVER: the server runs an @ai-matrx package version that is no longer installed (module factory not available)", async () => {
+  // 2026-10-21: every route answered 500 with "Module [project]/node_modules/.pnpm/@ai-matrx+chat@0.8.300_…/page-leaving.js
+  // … but the module factory is not available" after an install moved chat to 0.8.303. Broken for every session, so a
+  // restart is due even under other sessions' holds.
+  const gone = "@ai-matrx+chat@0.0.1-never-installed_bd16bdfc69c8e56a155d0f75963f39cc";
+  const text = `⨯ Error: Module [project]/node_modules/.pnpm/${gone}/node_modules/@ai-matrx/chat/dist/agents/redux/execution-system/utils/page-leaving.js [app-route] (ecmascript) was instantiated because it was required from module [project]/lib/diagnostics/errorCaptureStore.ts [app-route] (ecmascript), but the module factory is not available.`;
+  const d = await diagnoseBuildError(text, ROOT);
+  assert.equal(d.stale, true, d.lines.join("\n"));
+  assert.equal(d.brokenForAll, true, d.lines.join("\n"));
+  assert.match(d.lines.join("\n"), /@ai-matrx\/chat 0\.0\.1-never-installed/);
+});
+
+test("a module-factory error on a package version that IS installed is not called stale by this rule", async () => {
+  const { readdirSync } = await import("node:fs");
+  const here = readdirSync(join(ROOT, "node_modules", ".pnpm")).find((n) => n.startsWith("@ai-matrx+chat@"));
+  assert.ok(here, "the checkout has @ai-matrx/chat installed");
+  const text = `⨯ Error: Module [project]/node_modules/.pnpm/${here}/node_modules/@ai-matrx/chat/dist/x.js [app-route] (ecmascript) was instantiated because it was required from module [project]/lib/y.ts [app-route] (ecmascript), but the module factory is not available.`;
+  const d = await diagnoseBuildError(text, ROOT);
+  assert.notEqual(d.brokenForAll, true, d.lines.join("\n"));
+});

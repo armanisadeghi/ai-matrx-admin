@@ -36,7 +36,7 @@ import { configAttestationCounters, noteConfigMissing } from "@/lib/config-attes
 import {
   APP_BOOTED_FLAG,
   CHUNK_LOAD_ERROR_EVENT,
-} from "@/components/errors/chunk-load-recovery";
+} from "@ai-matrx/kit/chunk-load-recovery";
 import {
   REFRESH_REQUIRED_EVENT,
   type RefreshRequiredDetail,

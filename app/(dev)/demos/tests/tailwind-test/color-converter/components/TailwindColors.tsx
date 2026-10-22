@@ -6,7 +6,7 @@ import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/
 import {Button} from "@/components/ui/button";
 import { Button as SurfaceButton } from "@ai-matrx/design-system";
 import {ChevronDown, ChevronUp} from "lucide-react";
-import {tailwindColors} from "@/constants/tailwind-colors";
+import {tailwindColors} from "@ai-matrx/kit/color-util";
 import {Colord, colord, extend} from "colord";
 import namesPlugin from "colord/plugins/names";
 import cmykPlugin from "colord/plugins/cmyk";

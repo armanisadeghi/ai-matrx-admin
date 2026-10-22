@@ -22,8 +22,10 @@ import type { ConditionField } from "@ai-matrx/records-ui";
 
 import { fetchMandateCatalogue, type MandateCatalogue } from "@/features/mandates/catalogue";
 import { useMandateInputSurface } from "@/features/mandates/input-surface";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { usePersonTimeZone } from "@/hooks/usePersonTimeZone";
+import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
+import { discoverMcpServerTools, fetchMcpAvailability } from "@ai-matrx/chat/agents/services/mcp-connections.service";
 
 import { stepCount, type Step } from "./automation-step-count";
 
@@ -87,6 +89,19 @@ function sourcesOf(n: number, s: Step, fieldsOf: (tableId: string) => Field[], t
   }
   if (s.do === "add_row") return [{ token: tok(`step${n}.record_id`), label: `${g} · New record`, group: g }];
   if (s.do === "run_mandate") return [{ token: tok(`step${n}.output.text`), label: `${g} · Agent answer`, group: g }];
+  if (s.do === "app_tool") {
+    const app = str(s.connection) || "App";
+    return [
+      { token: tok(`step${n}.output.result`), label: `${g} · ${app} answer`, group: g },
+      { token: tok(`step${n}.output.text`), label: `${g} · ${app} answer text`, group: g },
+    ];
+  }
+  if (s.do === "document") {
+    return [
+      { token: tok(`step${n}.output.render_id`), label: `${g} · Document`, group: g },
+      { token: tok(`step${n}.output.body`), label: `${g} · Document text`, group: g },
+    ];
+  }
   if (s.do === "script") {
     const names = Array.from(new Set(Array.from(str(s.code).matchAll(/output\.set\(\s*["']([^"']+)["']/g)).map((m) => m[1] ?? "")));
     return names.filter(Boolean).map((k) => ({ token: tok(`step${n}.output.${k}`), label: `${g} · Script answer › ${k}`, group: g }));
@@ -423,6 +438,90 @@ function MandateRows({ step, onChange, sources }: { step: Step; onChange: (s: St
   );
 }
 
+interface AppConn { slug: string; serverId: string }
+interface AppTool { name: string; description?: string; inputSchema: Record<string, unknown> }
+
+/** BUILD-CONN: ANY tool on ANY of the owner's connected apps — one step for every app (aidream app_tool_step). */
+function AppToolRows({ step, onChange, sources }: { step: Step; onChange: (s: Step) => void; sources: Source[] }) {
+  const org = useAppSelector(selectActiveOrganizationId);
+  const [conns, setConns] = useState<AppConn[] | null>(null);
+  const [tools, setTools] = useState<AppTool[] | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  const connection = str(step.connection);
+  const toolName = str(step.tool);
+  useEffect(() => {
+    if (!org) return;
+    let live = true;
+    fetchMcpAvailability(org).then(
+      (rows) => live && setConns(rows.filter((r) => r.state === "connected" && r.server_id).map((r) => ({ slug: r.slug, serverId: String(r.server_id) }))),
+      (e: unknown) => live && setProblem(e instanceof Error ? e.message : "Your connected apps could not be read."),
+    );
+    return () => {
+      live = false;
+    };
+  }, [org]);
+  const serverId = conns?.find((c) => c.slug === connection)?.serverId ?? "";
+  useEffect(() => {
+    if (!serverId) return;
+    let live = true;
+    setTools(null);
+    discoverMcpServerTools(serverId).then(
+      (got) => live && setTools(got.tools.map((t) => ({ name: t.name, description: t.description, inputSchema: rec(t.inputSchema) }))),
+      (e: unknown) => live && setProblem(e instanceof Error ? e.message : "That app's actions could not be read."),
+    );
+    return () => {
+      live = false;
+    };
+  }, [serverId]);
+  const tool = tools?.find((t) => t.name === toolName);
+  const props = rec(tool?.inputSchema.properties);
+  const required = new Set(Array.isArray(tool?.inputSchema.required) ? (tool?.inputSchema.required as string[]) : []);
+  const args = rec(step.arguments);
+  return (
+    <div className="flex flex-col gap-1" data-testid="automation-app-tool-step">
+      {problem ? <ErrorNotice size="inline" message={problem} /> : null}
+      <Pick label="App" value={connection} onChange={(c) => onChange({ ...step, connection: c, tool: "", arguments: {} })} options={(conns ?? []).map((c) => ({ value: c.slug, label: c.slug }))} />
+      {connection ? (
+        <Pick label="Action" value={toolName} onChange={(t) => onChange({ ...step, tool: t, arguments: {} })} options={(tools ?? []).map((t) => ({ value: t.name, label: t.name.replace(/[_-]+/g, " ") }))} />
+      ) : null}
+      {tool
+        ? Object.keys(props).map((name) => (
+            <div key={name} className="flex flex-wrap items-center gap-1" data-app-argument={name}>
+              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">{name.replace(/[_-]+/g, " ")}{required.has(name) ? " *" : ""}</span>
+              <TokenText label={name} value={str(args[name])} onChange={(v) => onChange({ ...step, arguments: { ...args, [name]: v } })} sources={sources} placeholder={str(rec(props[name]).type)} />
+            </div>
+          ))
+        : null}
+    </div>
+  );
+}
+
+/** BUILD-CONN: make a document from a record through one of this table's document templates. */
+function DocumentRows({ step, onChange, recordSources }: { step: Step; onChange: (s: Step) => void; recordSources: Source[] }) {
+  const env = useEnv();
+  const client = useOptionalRecordsClient();
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
+  useEffect(() => {
+    if (!client || !env.tableId) return;
+    let live = true;
+    void client.docTemplates({ table_id: env.tableId as never }).then((got) => {
+      if (live && got.ok) setTemplates((got.data ?? []).map((t) => ({ id: String(t.id), name: t.name })));
+    });
+    return () => {
+      live = false;
+    };
+  }, [client, env.tableId]);
+  return (
+    <div className="flex flex-col gap-1" data-testid="automation-document-step">
+      <Pick label="Template" value={str(step.template_id)} onChange={(v) => onChange({ ...step, template_id: v })} options={templates.map((t) => ({ value: t.id, label: t.name }))} />
+      <div className="flex flex-wrap items-center gap-1">
+        <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">From</span>
+        <TokenPick label="Choose a record" value={str(step.record)} onChange={(v) => onChange({ ...step, record: v })} sources={recordSources} />
+      </div>
+    </div>
+  );
+}
+
 /** The calendar step's time zone: starts on the person's own zone (the resolved one) and is kept in the step, so what runs is what shows. */
 function CalendarZone({ value, onChange }: { value: string; onChange: (zone: string) => void }) {
   const personal = usePersonTimeZone();
@@ -460,6 +559,8 @@ const KIND_TITLE: Record<string, string> = {
   outlook_calendar_event: "Outlook calendar event",
   teams_message: "Teams message",
   slack_post: "Post in Slack",
+  app_tool: "Use a connected app",
+  document: "Make a document",
   add_row: "Add a record",
   email: "Send email",
   slack: "Slack message",
@@ -484,6 +585,8 @@ function newStep(kind: string, env: Env): Step {
     case "outlook_calendar_event": return { do: "outlook_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" };
     case "teams_message": return { do: "teams_message", channel_link: "", message: "" };
     case "slack_post": return { do: "slack_post", channel: "", message: "" };
+    case "app_tool": return { do: "app_tool", connection: "", tool: "", arguments: {} };
+    case "document": return { do: "document", template_id: "", record: "" };
     case "add_row": return { do: "add_row", table_id: env.tableId, values: {} };
     case "email": return { do: "email", to: { address: "" }, subject: "", body: "" };
     case "slack": return { do: "slack", url: "", text: "" };
@@ -492,7 +595,7 @@ function newStep(kind: string, env: Env): Step {
   }
 }
 
-const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "slack_post", "email", "slack", "webhook"] as const;
+const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "slack_post", "app_tool", "document", "email", "slack", "webhook"] as const;
 
 function AddStep({ onAdd, kinds = STEP_KINDS }: { onAdd: (kind: string) => void; kinds?: readonly string[] }) {
   const [open, setOpen] = useState(false);
@@ -609,6 +712,8 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
         </div>
       ) : null}
       {step.do === "run_mandate" ? <MandateRows step={step} onChange={onChange} sources={sources} /> : null}
+      {step.do === "app_tool" ? <AppToolRows step={step} onChange={onChange} sources={sources} /> : null}
+      {step.do === "document" ? <DocumentRows step={step} onChange={onChange} recordSources={recordSources} /> : null}
       {step.do === "gmail" ? (
         <div className="flex flex-col gap-1">
           <TokenText label="To" value={str(step.to)} onChange={(v) => set({ to: v })} sources={sources} placeholder="Email address" />

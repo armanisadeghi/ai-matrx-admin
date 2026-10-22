@@ -8,6 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle2, CircleAlert } from "lucide-react";
+import { formatDurationMs } from "@ai-matrx/kit/format";
 import { ErrorNotice } from "@ai-matrx/design-system";
 
 import { cn } from "@/lib/utils";
@@ -37,8 +38,7 @@ function useElapsed(startedAt: number): string {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
-  const s = Math.max(0, Math.floor((now - startedAt) / 1000));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  return formatDurationMs(Math.max(0, now - startedAt), { style: "clock" });
 }
 
 export function RunProgress({ kind, kindLabel, items, identities, startedAt, recovering }: {

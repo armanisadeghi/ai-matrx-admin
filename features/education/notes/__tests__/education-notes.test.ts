@@ -15,7 +15,11 @@ const mockReadAllRows = jest.fn();
 const mockDefaultListFilter = jest.fn();
 const schema = jest.fn();
 
-jest.mock("@ai-matrx/data/db", () => ({ readAllRows: mockReadAllRows }));
+// Keep the rest of the package real: @ai-matrx/chat builds its session retry from it at import time.
+jest.mock("@ai-matrx/data/db", () => ({
+  ...jest.requireActual("@ai-matrx/data/db"),
+  readAllRows: mockReadAllRows,
+}));
 jest.mock("@/utils/auth/getUserId", () => ({ requireUserId: () => "learner-1" }));
 jest.mock("@/lib/list-scope", () => ({ defaultListFilter: mockDefaultListFilter }));
 jest.mock("@/features/notes/service/noteContextAssociations", () => ({

@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { knobBool, knobInt, knobString } from "@/lib/knobs/featureKnobs";
 import type { AppStore } from "@/lib/redux/store";
 import type { paths } from "@ai-matrx/api/types";

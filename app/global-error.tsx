@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { isChunkLoadError } from "@/components/errors/chunk-load-recovery";
+import { isChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 import { LazyErrorAlchemyMenu as ErrorAlchemyMenu } from "@/components/errors/LazyErrorAlchemyMenu";
 
 export default function GlobalError({

@@ -11,7 +11,7 @@ import { openContextMenuForElement } from "@ai-matrx/context-menu/engine";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { createClient } from "@/utils/supabase/client";
 import { extractErrorMessage } from "@/utils/errors";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import {
   renameTab,
   selectActiveTabId,

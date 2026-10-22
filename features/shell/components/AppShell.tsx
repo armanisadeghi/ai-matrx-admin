@@ -159,7 +159,17 @@ export default async function AppShell({
           <Header isAuthenticated={isAuthenticated} />
           <ShellUserBlock userData={userData} isAuthenticated={isAuthenticated} />
 
+          {/* THE FIRST PAINT WAITS FOR THE ROUTE'S FIRST FRAME (CLOSE-PERF, CD-PERF-01). A streamed
+              document could paint the shell before the route's first markup (its skeleton, its
+              server-rendered header) had arrived, and every decision the header makes from that
+              markup — folding its controls into the ⋮ for a route header too wide for its row —
+              then moved what was already on screen. `rel=expect` holds rendering until the marker
+              after <main> is parsed: the route's synchronous part (a loading.tsx skeleton included)
+              is always before it, and nothing past it is waited for. A browser that does not know
+              `rel=expect` ignores it. */}
+          <link rel="expect" href="#shell-first-frame" blocking="render" />
           <main className="shell-main">{children}</main>
+          <span id="shell-first-frame" hidden />
           {/* Before first paint: a canvas saved open reserves its column (no shift when it lands). */}
           <CanvasPrepaintScript />
 

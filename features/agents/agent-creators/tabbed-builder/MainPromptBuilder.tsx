@@ -1,7 +1,7 @@
 'use client';
 
 import React, { lazy, Suspense } from 'react';
-import SuspenseLoader from '@/components/loaders/SuspenseLoader';
+import { SuspenseLoader } from '@ai-matrx/design-system';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PromptBuilderProvider, usePromptBuilder } from './PromptBuilderContext';
 

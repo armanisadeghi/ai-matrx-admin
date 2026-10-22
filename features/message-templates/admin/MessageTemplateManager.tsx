@@ -75,7 +75,7 @@ import {
 } from "@/features/message-templates/services/message-templates-service";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { requestRaw } from "@/lib/python-client";
 import { getUserMessage } from "@ai-matrx/api";
 import { ENDPOINTS } from "@ai-matrx/api";

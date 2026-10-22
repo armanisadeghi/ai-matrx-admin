@@ -10,7 +10,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { AlertCircle, BookOpen } from "lucide-react";
 import FlashcardItem from "@/components/mardown-display/blocks/flashcards/FlashcardItem";
 import FlashcardMobileView from "@/components/mardown-display/blocks/flashcards/FlashcardMobileView";

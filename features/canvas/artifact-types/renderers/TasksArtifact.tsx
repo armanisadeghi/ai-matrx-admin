@@ -13,12 +13,12 @@ import TaskChecklist, {
   type CheckboxStateType,
 } from "@/components/mardown-display/blocks/tasks/TaskChecklist";
 import { useBlockState } from "@/features/block-state/useBlockState";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import TaskChipRow from "@/features/tasks/widgets/TaskChipRow";
 import TaskPreviewWindow from "@/features/tasks/components/TaskPreviewWindow";
 import { Button } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
-import { isMaterializedArtifactId } from "../artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import type { ArtifactRendererProps } from "../types";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 

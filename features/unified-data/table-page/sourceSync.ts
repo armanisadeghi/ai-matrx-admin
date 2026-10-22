@@ -4,6 +4,7 @@
 export const SYNC_SOURCES: Record<string, { name: string; path: string }> = {
   airtable_base: { name: "Airtable", path: "/airtable-import/sync" },
   github_issues: { name: "GitHub", path: "/github-sync/sync" },
+  connected_app: { name: "Connected app", path: "/connection-sync/sync" },
 };
 
 export interface SyncReport {

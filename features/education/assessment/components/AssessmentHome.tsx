@@ -29,7 +29,7 @@ import {
 import { useAssessmentGeneration } from "../data/useAssessmentGeneration";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAuthReady, selectUserId } from "@/lib/redux/selectors/userSelectors";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import type { AssessmentKind } from "../data/types";
 import { KIND_CONFIG, type KindConfig } from "./kindConfig";

@@ -14,7 +14,6 @@
  * AUTO-WATCH lives in `features/ai-watch/AutoWatch.tsx` (always mounted for admins), never here.
  */
 
-import { useEffect, useState } from "react";
 import { Eye } from "lucide-react";
 import { selectLivePageAiRuns } from "@/features/ai-watch/page-ai-runs";
 import { cn } from "@/lib/utils";
@@ -28,13 +27,10 @@ export default function SidebarWatchAiToggle() {
   const watch = useWatchAiRun();
   const count = live.length;
 
-  // Post-hydration gate, so this footer control never swaps DOM between SSR and first commit.
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-  if (!hydrated || !canWatch) return null;
+  // Drawn from the server's HTML when it may watch (CD-PERF-01): the store starts with the saved debug
+  // switch (lib/redux/store.ts seededDebugMode), so the server and the first commit agree and the row
+  // is in the footer from the first paint instead of appearing (and moving the footer) later.
+  if (!canWatch) return null;
 
   // The page's one Watch AI window; with one live run, that run is selected.
   const open = () => watch({ requestId: count === 1 ? live[0].requestIds.at(-1) ?? null : null });

@@ -10,7 +10,7 @@ import Editor, {
 // where possible; the handful of shapes we need are narrowed locally.
 import { configureMonaco } from "./monaco-config";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { useEffectsAttached } from "@/hooks/use-is-mounted";
+import { useEffectsAttached } from "@ai-matrx/kit/hooks";
 import { useMonacoTheme } from "./useMonacoTheme";
 
 // LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.

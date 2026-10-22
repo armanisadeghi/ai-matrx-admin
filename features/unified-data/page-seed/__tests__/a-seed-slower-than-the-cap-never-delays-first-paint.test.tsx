@@ -43,6 +43,9 @@ jest.mock("@ai-matrx/records-ui/skeleton", () => ({
   RecordsSkeleton: () => <div data-testid="skeleton" />,
 }));
 jest.mock("../primeTablePage", () => ({ primeTablePage: () => {} }));
+// The skeleton's route header (DataRouteFallbackHeader, CD-PERF-01) needs the shell's providers; this
+// test is about when the skeleton and the rows flush, not about the header.
+jest.mock("@/features/shell/components/header/RouteHeader", () => ({ __esModule: true, default: () => <div data-testid="route-header" /> }));
 jest.mock("@/features/unified-data/table-page/UnifiedDataTablePage", () => ({
   UnifiedDataTablePage: () => <div data-testid="page" />,
 }));

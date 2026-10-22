@@ -17,13 +17,13 @@
 import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import type { CanvasContent } from "@/features/canvas/canvasContent";
 import {
   isMaterializedArtifactId,
   readArtifactPointerId,
-} from "@/features/canvas/artifact-types/artifactId";
+} from "@ai-matrx/kit/artifact-id";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 import { isJsonObject } from "@/types/json";
 import {

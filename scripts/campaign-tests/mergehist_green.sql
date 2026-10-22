@@ -81,6 +81,11 @@ begin
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name', 'Hands & Hope Alliance — Main Office')) returning id into v_home;
 
+  -- PART 5's STRANGER: a real person who is not a member of this brand-new organization. Picked
+  -- here, before the seat is taken, because the seat cannot read auth.users.
+  perform set_config('hha.stranger', (select u.id::text from auth.users u
+                                       where u.id not in (c_admin, c_dana) order by u.created_at limit 1), false);
+
   -- ════════════════════════════════════════════════════════════════════════════
   -- PART 0 — THE SEAT. Everything below this line, in this block and in every
   -- statement after it, runs as a signed-in person.
@@ -150,6 +155,7 @@ begin
   perform set_config('hha.n2',   v_n2::text,   false);
   perform set_config('hha.tbl',  v_per_t::text, false);
   perform set_config('hha.boss', v_boss,       false);
+  perform set_config('hha.home', v_home::text, false);
 end $t$;
 
 -- ── THE MERGE, in its own statement, exactly as a client sends it ─────────────────────────
@@ -317,38 +323,114 @@ begin
   raise notice '[GREEN] part 4 — the undo of the merge is on the record, in those words.';
 end $t$;
 
--- ── PART 5 — THE NEGATIVE CLAUSE, AS A REAL SECOND PERSON ────────────────────────────────
--- `test@test.com` is a member of this organization and was shared nothing. Everything above
--- is a STORE rule; this is the ACCESS question, which the old seat could not ask at all: as
--- the owner of `custom.record`, `custom.assert_client_may_reach` returned true on its first
--- line for every organization on this database.
+-- ── PART 5 — THE NEGATIVE CLAUSE, AS A REAL SECOND AND THIRD PERSON ──────────────────────
+-- THE HISTORY DOOR ASKS THE SAME QUESTION THE RECORD READ ASKS. `custom.io_revisions` answers a
+-- person exactly when `custom.read_record` opens the record for them (both ask
+-- `custom.has_visibility`, the one ladder over `iam.has_access_for`) — never a rule of its own.
+--
+-- 🚨 RE-POINTED (lane FIX-HISTSUITES, 2026-10-21). This part used to set the organization setting
+-- `custom/member_default_visibility = shared_only` and expect test@test.com, a MEMBER, to be
+-- refused an ordinary record's history. Access ladder T-17 (common-docs
+-- projects/access-ladder/REGISTER.md, live 2026-10-03) retired that setting on purpose:
+-- `iam.member_lane_open` is always open and "no setting changes who may open a record" — what
+-- membership SHOWS in lists is the Shown to knob, which hides and never locks. A member opens that
+-- record through `custom.read_record` too, so the old 5a asked the history door to be stricter
+-- than the record read. The wall a member really meets today is a CONFIDENTIAL Table that does
+-- not name her, so 5a asks the history of a record in one; 5b asks a real person outside the
+-- organization; 5d is the control (the member reads an ordinary record and its history).
+--
+-- The Confidential Table is declared by the admin in the seat; making it Confidential is the
+-- Arman-approved server door no browser reaches, so that ONE call steps out and says so.
 do $t$
 declare
-  c_admin   constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
-  c_dana    constant uuid := '4060701e-706a-4c76-b3ca-0bbc69fa5a14';
+  v_org  uuid := current_setting('hha.org')::uuid;
+  v_conf uuid;
+  v_min  uuid;
+begin
+  if current_user <> 'authenticated' then
+    raise exception 'PART 5 setup is not in the seat — current_user is %', current_user;
+  end if;
+  v_conf := custom.table_declare(v_org, jsonb_build_object(
+    'name','Board Minutes','slug','board_minutes','type','entity',
+    'label_singular','Board Minute','label_plural','Board Minutes','title_field','mtitle',
+    'display','list','weight','light','ordered',false,'row_order','sorted',
+    'default_sort','[]'::jsonb,'agent_writable',false,'retention_days',365,
+    'fields', jsonb_build_array(jsonb_build_object('name','mtitle')),
+    'parent_id', current_setting('hha.home')));
+  v_min := custom.record_write(v_org, v_conf, jsonb_build_object('mtitle','Executive session, October'));
+  perform custom.record_update(v_org, v_min, jsonb_build_object('mtitle','Executive session, October (amended)'));
+  perform set_config('hha.conf', v_conf::text, false);
+  perform set_config('hha.min',  v_min::text,  false);
+end $t$;
+
+select set_config('role', current_setting('hha.boss'), true) as stepped_out_for_the_confidential_door;
+select custom.set_table_confidential_arman_explicitly_approved(current_setting('hha.conf')::uuid,
+         '[]'::jsonb, 'campaign-test/mergehist_green: board minutes are read by their maker only',
+         current_date, true) is not null as made_confidential;
+select set_config('role', 'authenticated', true) as back_in_the_seat;
+
+do $t$
+declare
   c_admin_j constant text := '{"sub":"87a6e699-3622-4869-8843-d0867456c0dd","role":"authenticated"}';
   c_dana_j  constant text := '{"sub":"4060701e-706a-4c76-b3ca-0bbc69fa5a14","role":"authenticated"}';
+  v_stranger uuid := nullif(current_setting('hha.stranger'), '')::uuid;
   v_org  uuid := current_setting('hha.org')::uuid;
   v_ch1  uuid := current_setting('hha.ch1')::uuid;
+  v_min  uuid := current_setting('hha.min')::uuid;
   v_tbl  uuid := current_setting('hha.tbl')::uuid;
+  v_doc  jsonb;
   v_caught text;
-  r record;
+  v_read_caught text;
   v_n integer;
 begin
   if current_user <> 'authenticated' then
     raise exception 'PART 5 is not in the seat — current_user is %', current_user;
   end if;
-  -- THE ORGANIZATION'S OWN SETTING, set through the settings screen's door (a person with
-  -- the owner's seat, not a table INSERT): membership alone shows nothing here. Without this
-  -- the platform default is `all_records`, under which a member legitimately reads every
-  -- record — and a negative clause that the settings say YES to proves nothing at all.
-  perform platform.knob_override_set('custom', 'member_default_visibility', 'organization',
-                                     v_org, v_org, '"shared_only"'::jsonb,
-                                     'campaign-test/mergehist_green part 5');
-  perform set_config('request.jwt.claims', c_dana_j, true);
+  if v_stranger is null then
+    raise exception '5: no person other than the two test accounts exists to be the stranger';
+  end if;
 
-  -- 5a. She cannot read the history of a record nobody gave her. A revision list is the whole
-  --     edit trail of a record — if it answered her, the access wall would be decorative.
+  -- 5a. A member of the organization whom a Confidential Table does not name: the record read
+  --     gives her the header and nothing else, so its history gives her nothing. A revision list
+  --     is the whole edit trail of a record — if it answered her, the wall would be decorative.
+  perform set_config('request.jwt.claims', c_admin_j, true);
+  select count(*) into v_n from custom.io_revisions(v_org, v_min);
+  if coalesce(v_n, 0) = 0 then
+    raise exception '5a: the maker of the confidential minute has no history for it, so the clause below would prove nothing';
+  end if;
+  perform set_config('request.jwt.claims', c_dana_j, true);
+  v_read_caught := null;
+  begin
+    v_doc := custom.read_record(v_org, v_min, false);
+  exception when others then
+    v_read_caught := sqlerrm;
+  end;
+  if v_read_caught is null and v_doc ? 'mtitle' then
+    raise exception '5a: test@test.com read the confidential minute through custom.read_record, so this clause has no wall to ask about';
+  end if;
+  v_caught := null;
+  v_n := null;
+  begin
+    select count(*) into v_n from custom.io_revisions(v_org, v_min);
+  exception when others then
+    v_caught := sqlerrm;
+  end;
+  if v_caught is null and coalesce(v_n, 0) > 0 then
+    raise exception '5a: test@test.com read % revision(s) of a confidential record that custom.read_record does not open for her', v_n;
+  end if;
+
+  -- 5b. A real person outside the organization: refused the record and so refused its history.
+  perform set_config('request.jwt.claims',
+                     jsonb_build_object('sub', v_stranger, 'role', 'authenticated')::text, true);
+  v_read_caught := null;
+  begin
+    perform custom.read_record(v_org, v_ch1, false);
+  exception when others then
+    v_read_caught := sqlerrm;
+  end;
+  if v_read_caught is null then
+    raise exception '5b: a person outside the organization opened its record through custom.read_record';
+  end if;
   v_caught := null;
   v_n := null;
   begin
@@ -357,10 +439,11 @@ begin
     v_caught := sqlerrm;
   end;
   if v_caught is null and coalesce(v_n, 0) > 0 then
-    raise exception '5a: test@test.com read % revision(s) of a record nobody shared with her, in an organization that says members see only what is shared', v_n;
+    raise exception '5b: a person outside the organization read % revision(s) of a record custom.read_record refuses her', v_n;
   end if;
 
-  -- 5b. Nor change the shape of a table she is not an admin of.
+  -- 5c. Nor may a plain member change the shape of a table she is not an admin of.
+  perform set_config('request.jwt.claims', c_dana_j, true);
   v_caught := null;
   begin
     perform custom.field_declare(v_org, v_tbl, jsonb_build_object('label','Sneaked in','plain','text'));
@@ -368,24 +451,21 @@ begin
     v_caught := sqlerrm;
   end;
   if v_caught is null then
-    raise exception '5b: test@test.com added a column to a table she is not an admin of';
+    raise exception '5c: test@test.com added a column to a table she is not an admin of';
   end if;
 
-  -- 5c. THE CONTROL, so 5a and 5b are not a door that refuses her everything: the record she
-  --     IS given, she reads, and its history reads with it.
-  perform set_config('request.jwt.claims', c_admin_j, true);
-  perform custom.share_grant(v_org, v_ch1, 'user', c_dana, 'viewer'::public.permission_level);
-  perform set_config('request.jwt.claims', c_dana_j, true);
-  if (custom.read_record(v_org, v_ch1, false) ->> 'pname') <> 'Chen' then
-    raise exception '5c: the record shared with test@test.com at viewer does not read back for her';
+  -- 5d. THE CONTROL, so 5a is not a door that refuses everyone: the ordinary record the record
+  --     read opens for her (membership, T-17), she reads the history of too.
+  if (custom.read_record(v_org, v_ch1, false) ->> 'pname') is null then
+    raise exception '5d: the ordinary record does not read back for test@test.com, a member of its organization';
   end if;
   select count(*) into v_n from custom.io_revisions(v_org, v_ch1);
   if coalesce(v_n, 0) = 0 then
-    raise exception '5c: the record shared with test@test.com at viewer has no history for her, so 5a is a door that refuses everyone';
+    raise exception '5d: custom.read_record opens the record for test@test.com but its history is empty for her, so the history door has a wall of its own';
   end if;
   perform set_config('request.jwt.claims', c_admin_j, true);
-  raise notice '[GREEN] part 5 — the wall is real for a second person, and it is not a wall against everyone.';
-  raise notice 'ALL PARTS PASSED (the seat 0, T5 1a-1e, the fence 2a, the cascade 3a-3c, the undo 4a, access 5a-5c) — every clause from the seat `authenticated`, through the doors a signed-in person reaches.';
+  raise notice '[GREEN] part 5 — the history door answers exactly whom the record read answers: a confidential record and a stranger get nothing, a member reads the ordinary record''s history.';
+  raise notice 'ALL PARTS PASSED (the seat 0, T5 1a-1e, the fence 2a, the cascade 3a-3c, the undo 4a, access 5a-5d) — every clause from the seat `authenticated`, through the doors a signed-in person reaches.';
 end $t$;
 
 -- ── THE CENSUS, over every record version on the platform ────────────────────────────────
@@ -394,6 +474,9 @@ end $t$;
 -- `custom.io_changed_keys`, which holds no client grant because no screen asks it anything. It
 -- asserts no product clause — it prints an operator census — and the seat is not used for it.
 select set_config('role', current_setting('hha.boss'), true) as stepped_out;
+-- The census reads every custom.record version on the platform (1.2 million on 2026-10-21) and
+-- outgrew the suite's 60 s statement budget; it asserts nothing, so it gets its own budget.
+set local statement_timeout = '600s';
 
 -- A revision that says nothing moved while the document moved is the defect, wherever it is.
 -- `say_nothing_moved` is the census and it is ZERO; `update_versions` is its denominator, so

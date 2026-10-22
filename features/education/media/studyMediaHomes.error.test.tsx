@@ -31,9 +31,13 @@ jest.mock("./service", () => ({
   studyMediaService: { listByKind: (...args: unknown[]) => listByKind(...args) },
 }));
 jest.mock("@/features/surfaces/manifests/education-audio-study.manifest", () => ({
+  // Real manifest too: the surface registry reads it when the chat package's bridge resolves a surface.
+  ...jest.requireActual("@/features/surfaces/manifests/education-audio-study.manifest"),
   createEducationAudioStudyScope: (scope: Record<string, unknown>) => scope,
 }));
 jest.mock("@/features/surfaces/manifests/education-memory.manifest", () => ({
+  // Real manifest too: the surface registry reads it when the chat package's bridge resolves a surface.
+  ...jest.requireActual("@/features/surfaces/manifests/education-memory.manifest"),
   createEducationMemoryScope: (scope: Record<string, unknown>) => scope,
 }));
 

@@ -33,6 +33,7 @@ import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { createClient } from "@/utils/supabase/server";
 
 import type { SpaceBlock, SpaceDoc } from "../contract";
+import { entityPageSize } from "../data/entity-views";
 import { activeView, chartTileSpecs, DEFAULT_CHART, ENTITY_PAGE, entityChartBy, entityRowsArgs, entityShownColumns, hasListFilter } from "../data/first-reads";
 import { viewSpec } from "../data/view-spec";
 import { usesThisRow } from "../data/this-row";
@@ -156,12 +157,12 @@ class PageReads {
    * (the records client carries no organization then: the app has not resolved it yet). `columns` answers
    * with the describe alone, so a chart's question can be asked while the page is still being read.
    */
-  entityRows(token: string, filters: Record<string, unknown>, sort: { field: string; direction: "asc" | "desc" } | null): { seed: Promise<RecordsSeed>; columns: Promise<EntityColumn[]> } {
-    return this.once(`rows:${token}|${JSON.stringify(filters)}|${JSON.stringify(sort)}`, () => {
+  entityRows(token: string, filters: Record<string, unknown>, sort: { field: string; direction: "asc" | "desc" } | null, pageSize: number = ENTITY_PAGE): { seed: Promise<RecordsSeed>; columns: Promise<EntityColumn[]> } {
+    return this.once(`rows:${token}|${JSON.stringify(filters)}|${JSON.stringify(sort)}|${pageSize}`, () => {
       const recording = recordingDataSource(asRecordsDataSource(this.supabase));
       const client = createRecordsClient({ dataSource: recording.source, organizationId: null as never, actor: this.actor, onError: () => undefined });
       const def = client.drillDescribe({ source: { kind: "entity", token } });
-      const page = client.drillRows(entityRowsArgs(token, filters, sort, "", ENTITY_PAGE));
+      const page = client.drillRows(entityRowsArgs(token, filters, sort, "", pageSize));
       const columns = def.then((d) => (d.ok ? entityShownColumns((d.data as unknown as { api?: { columns?: EntityColumn[] } }).api?.columns ?? [], undefined) : []));
       return { seed: Promise.all([def, page]).then(() => recording.seed()), columns };
     });
@@ -212,7 +213,8 @@ async function entityBlockSeed(reads: PageReads, { props }: DatabaseOnPage, knob
   const filters = (view.filters ?? {}) as Record<string, unknown>;
   const sort = view.sorts?.[0] ?? null;
   if (!(await reads.knob(await knobOrg))) return null;
-  const rows = reads.entityRows(token, filters, sort);
+  // The view's own load limit (CD-VIEW-11), so the seeded first page is the one the block asks for.
+  const rows = reads.entityRows(token, filters, sort, entityPageSize(view));
   const base = { dataSource: reads.supabase, organizationId: null as never, actor: reads.actor };
   let more: Promise<RecordsSeed | null> = Promise.resolve(null);
   if (view.layout === "chart") {

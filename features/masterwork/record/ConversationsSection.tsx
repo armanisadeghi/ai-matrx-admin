@@ -37,7 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import {
   Tooltip,
   TooltipContent,

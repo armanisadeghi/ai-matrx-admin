@@ -13,7 +13,7 @@ import ShellIcon from "@/features/shell/components/ShellIcon";
 import { resolveShellIconName } from "@/features/shell/shellIconMap";
 import { PrimitiveTile } from "@ai-matrx/icons/domain";
 import { iconColorMap } from "@/features/shell/constants/nav-data";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { cn } from "@/lib/utils";
 import {
   searchUserLaunchpad,

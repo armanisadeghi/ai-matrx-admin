@@ -30,7 +30,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { MASTERWORK_RESULT_KIND } from "@/features/content-ir/kinds/masterwork-result";
 import { formatRelativeTime } from "@/utils/datetime";

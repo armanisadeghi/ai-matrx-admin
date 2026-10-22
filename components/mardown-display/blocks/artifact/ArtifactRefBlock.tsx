@@ -6,7 +6,7 @@ import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { kindServerDataFromStoredValue } from "@ai-matrx/rich-content/kinds/react/kind-route";
 import { storedKindValue } from "@/features/canvas/artifact-types/storedKindValue";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import ArtifactBlock from "./ArtifactBlock";
 import { SavedArtifactEdit } from "./SavedArtifactEdit";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

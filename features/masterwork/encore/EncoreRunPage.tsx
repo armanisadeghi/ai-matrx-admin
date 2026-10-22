@@ -18,7 +18,7 @@ import Link from "next/link";
 import { Clock3, Rocket, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { formatAbsoluteDate, formatRelativeTime } from "@/utils/datetime";

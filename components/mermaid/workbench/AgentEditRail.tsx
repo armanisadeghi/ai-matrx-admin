@@ -14,7 +14,7 @@ import { toast } from "@/lib/toast";
 
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { Button } from "@/components/ui/button";
-import { SimpleTooltip } from "@/components/matrx/Tooltip";
+import { SimpleTooltip } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 
 import { StandaloneMermaidView } from "@ai-matrx/rich-content/mermaid/MermaidView";

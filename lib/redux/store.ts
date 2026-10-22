@@ -61,6 +61,7 @@ import { mapUserData, type UserData } from "@/utils/userDataMapper";
 import type { BaseReduxState } from "@/types/reduxTypes";
 import { defaultUserPreferences } from "@/lib/redux/preferences/defaultUserPreferences";
 import { initializeUserPreferencesState } from "@/lib/redux/preferences/userPreferencesSlice";
+import adminDebugReducer from "@/lib/redux/preferences/adminDebugSlice";
 import type {
   UserPreferences,
   UserPreferencesState,
@@ -171,6 +172,20 @@ function resolveUserPreferencesForBootstrap(
 }
 
 /**
+ * THE DEBUG SWITCH IS DRAWN FROM THE SERVER'S HTML (CLOSE-PERF, CD-PERF-01). Debug mode is a saved
+ * preference (`useDebugModePersistence`) and the layout's boot seed already carries the account's
+ * preferences row, so an admin whose switch is saved On starts with it On — on the server and in the
+ * browser alike. Before, the switch started Off and turned On after the preferences loaded, and the
+ * debug-gated "Watch AI" row then appeared in the sidebar footer and moved it (CLS 0.0001 on every
+ * admin page load). The saved value still wins afterwards; nothing is written here.
+ */
+function seededDebugMode(user: UserData, seed: BaseReduxState["coreBootSeed"]): boolean {
+  if (!user.isAdmin) return false;
+  const prefs = seed?.preferencesRow?.preferences as { system?: { debugMode?: unknown } } | null | undefined;
+  return prefs?.system?.debugMode === true;
+}
+
+/**
  * Builds slim preloaded state from optional partial bootstrap data.
  * Does NOT include `globalCache` — the slim store has no entity reducers.
  *
@@ -216,6 +231,9 @@ export function resolveStoreBootstrapState(
       userPreferences: baseUserPreferences,
     }),
     ...(input.shellLayout ? { shellLayout: input.shellLayout } : {}),
+    ...(seededDebugMode(mergedUser, input.coreBootSeed)
+      ? { adminDebug: { ...adminDebugReducer(undefined, { type: "@@matrx/boot-seed" }), isDebugMode: true } }
+      : {}),
   };
 
   return out;

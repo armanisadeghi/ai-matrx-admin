@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
-import MatrxMiniLoader from '@/components/loaders/MatrxMiniLoader';
+import { MatrxMiniLoader } from '@ai-matrx/design-system';
 import { ReadFailure } from '@ai-matrx/design-system';
 import type { ResearchTemplate } from '../types';
 import type { PromptBuiltinRef, AgentConfigKey } from './types';

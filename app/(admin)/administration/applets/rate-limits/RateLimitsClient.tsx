@@ -17,7 +17,7 @@ import {
   type AppletRateLimitRow,
 } from "@/lib/services/applets-admin-service";
 import { useToast } from "@/components/ui/use-toast";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { ShieldCheckTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import {
   MatrxDataTable,

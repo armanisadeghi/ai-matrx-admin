@@ -12,7 +12,7 @@ jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
 }));
 
-jest.mock("@/hooks/use-is-mounted", () => ({
+jest.mock("@ai-matrx/kit/hooks", () => ({
   useIsMounted: () => true,
 }));
 

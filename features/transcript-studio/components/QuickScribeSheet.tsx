@@ -21,7 +21,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import { getUserId } from "@/utils/auth/getUserId";
 import {

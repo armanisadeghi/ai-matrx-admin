@@ -10,7 +10,7 @@
 import { useState } from "react";
 import { Network, Loader2 } from "lucide-react";
 import { recordToast, toast } from "@/lib/toast";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import {
   Dialog,
   DialogContent,

@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useMemo } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { parseProgressMarkdown } from "@/components/mardown-display/blocks/progress/parseProgressMarkdown";
 import {
   resolveMarkdownPayload,

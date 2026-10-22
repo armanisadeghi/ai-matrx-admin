@@ -18,7 +18,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 
 import { topicalMapErrorText, TopicalMapError } from "../errors";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

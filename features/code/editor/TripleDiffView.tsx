@@ -29,7 +29,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { DiffEditor } from "@monaco-editor/react";
-import { useEffectsAttached } from "@/hooks/use-is-mounted";
+import { useEffectsAttached } from "@ai-matrx/kit/hooks";
 import { AlertTriangle, FileText, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LegacyDiffChip } from "@/components/diff/LegacyDiffChip";

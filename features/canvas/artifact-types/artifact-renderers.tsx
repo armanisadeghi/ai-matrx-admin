@@ -19,7 +19,7 @@
 import { BlockStateHost } from "@/features/block-state/BlockStateContext";
 import { canvasItemIdForHost } from "@/features/block-state/hostEntity";
 import React, { Suspense, lazy } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import ComparisonArtifact from "./renderers/ComparisonArtifact";
 import FlashcardsArtifact from "./renderers/FlashcardsArtifact";
 import TimelineArtifact from "./renderers/TimelineArtifact";
@@ -57,7 +57,7 @@ import type { ArtifactRendererProps } from "./types";
 import { ArtifactBlockAttach } from "@/features/canvas/output/ArtifactBlockAttach";
 import { SavedArtifactEdit } from "@/components/mardown-display/blocks/artifact/SavedArtifactEdit";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 
 type ArtifactRendererComponent = React.ComponentType<ArtifactRendererProps>;

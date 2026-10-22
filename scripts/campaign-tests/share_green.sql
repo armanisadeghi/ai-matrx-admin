@@ -36,17 +36,22 @@
 \quit
 \endif
 
-\set ORG    '\'5ba50000-0000-4a00-8a00-000000000a01\''
-\set ORG2   '\'5ba50000-0000-4a00-8a00-000000000a02\''
+\set ORG    '\'5ba50001-0000-4a00-8a00-000000000a01\''
+\set ORG2   '\'5ba50001-0000-4a00-8a00-000000000a02\''
 \set ADMIN  '\'87a6e699-3622-4869-8843-d0867456c0dd\''
 \set DANA   '\'4060701e-706a-4c76-b3ca-0bbc69fa5a14\''
 \set TOMAS    '\'daeb6d44-a7dd-4085-aba2-5025fb711b79\''
-\set HQ     '\'5ba50000-0000-4a00-8a00-000000000101\''
-\set TBL    '\'5ba50000-0000-4a00-8a00-000000000201\''
-\set REC    '\'5ba50000-0000-4a00-8a00-000000000301\''
-\set BOX    '\'5ba50000-0000-4a00-8a00-000000000401\''
-\set INBOX  '\'5ba50000-0000-4a00-8a00-000000000402\''
+\set HQ     '\'5ba50001-0000-4a00-8a00-000000000101\''
+\set TBL    '\'5ba50001-0000-4a00-8a00-000000000201\''
+\set REC    '\'5ba50001-0000-4a00-8a00-000000000301\''
+\set BOX    '\'5ba50001-0000-4a00-8a00-000000000401\''
+\set INBOX  '\'5ba50001-0000-4a00-8a00-000000000402\''
 
+-- FIXTURE IDS MOVED 5ba50000- → 5ba50001- (lane ASOF-REVOKE, 2026-10-21). On 2026-09-26 another
+-- lane's verifier landed 10 docproc.processed_documents rows ("verifier 067/…") inside the old
+-- throwaway organization. That table's organization_id is NOT NULL with ON DELETE SET NULL, so
+-- step 0's delete of the organization raised 23502 on every run since. They are not this suite's
+-- rows, so it does not delete them; it moved to ids nobody else uses.
 -- ══════════════════════════════════════════════ STEP 0 — a clean slate, both ways
 begin;
 set local statement_timeout = '60s';
@@ -71,8 +76,8 @@ delete from iam.memberships where organization_id in (:ORG, :ORG2);
 delete from iam.organizations where id in (:ORG, :ORG2);
 
 insert into iam.organizations (id, name, slug, abbreviation, created_by)
-values (:ORG,  'Rincon Plumbing Co',        'rincon-plumbing-share-green',   'RPC', :ADMIN),
-       (:ORG2, 'Ironclad Mobile Mechanic',  'ironclad-mobile-mechanic-share-other', 'IMM', :ADMIN);
+values (:ORG,  'Rincon Plumbing Co',        'rincon-plumbing-share-green-2',   'RPC', :ADMIN),
+       (:ORG2, 'Ironclad Mobile Mechanic',  'ironclad-mobile-mechanic-share-other-2', 'IMM', :ADMIN);
 insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status)
 values (:ORG,  'organization', :ORG,  :ADMIN, 'owner',  'active'),
        (:ORG,  'organization', :ORG,  :DANA,  'member', 'active'),
@@ -95,14 +100,14 @@ set local statement_timeout = '60s';
 select set_config('app.actor_system', 'share_green_suite', true);
 do $t$
 declare
-  v_org   constant uuid := '5ba50000-0000-4a00-8a00-000000000a01';
+  v_org   constant uuid := '5ba50001-0000-4a00-8a00-000000000a01';
   v_korg  constant uuid := '11111111-0000-4000-8000-000000000004';
   v_admin constant uuid := '87a6e699-3622-4869-8843-d0867456c0dd';
-  v_hq    constant uuid := '5ba50000-0000-4a00-8a00-000000000101';
-  v_tbl   constant uuid := '5ba50000-0000-4a00-8a00-000000000201';
-  v_rec   constant uuid := '5ba50000-0000-4a00-8a00-000000000301';
-  v_box   constant uuid := '5ba50000-0000-4a00-8a00-000000000401';
-  v_inbox constant uuid := '5ba50000-0000-4a00-8a00-000000000402';
+  v_hq    constant uuid := '5ba50001-0000-4a00-8a00-000000000101';
+  v_tbl   constant uuid := '5ba50001-0000-4a00-8a00-000000000201';
+  v_rec   constant uuid := '5ba50001-0000-4a00-8a00-000000000301';
+  v_box   constant uuid := '5ba50001-0000-4a00-8a00-000000000401';
+  v_inbox constant uuid := '5ba50001-0000-4a00-8a00-000000000402';
   t uuid;
 begin
   insert into custom.record (id, organization_id, table_id, data_class, data, created_by)
@@ -174,7 +179,7 @@ do $t$
 declare v_n int;
 begin
   select count(*) into v_n from iam.permissions
-   where resource_type = 'record' and resource_id = '5ba50000-0000-4a00-8a00-000000000301'
+   where resource_type = 'record' and resource_id = '5ba50001-0000-4a00-8a00-000000000301'
      and granted_to_user_id = 'daeb6d44-a7dd-4085-aba2-5025fb711b79';
   if v_n <> 1 then raise exception '2a FAILED — the direct share did not land (% rows).', v_n; end if;
   raise notice 'PART 2 PASSED — a signed-in person wrote a record grant through the client role.';
@@ -207,15 +212,15 @@ end $t$;
 do $t$
 declare v_row record;
 begin
-  select * into v_row from custom.share_people('5ba50000-0000-4a00-8a00-000000000a01',
-                                               '5ba50000-0000-4a00-8a00-000000000301')
+  select * into v_row from custom.share_people('5ba50001-0000-4a00-8a00-000000000a01',
+                                               '5ba50001-0000-4a00-8a00-000000000301')
    where email = 'test@test.com';
   if not found then raise exception '3b FAILED — a member of the organization is not in the picker.'; end if;
   if v_row.already_at is not null then
     raise exception '3b FAILED — Dana holds % before anybody shared with her, under shared_only.', v_row.already_at;
   end if;
-  select * into v_row from custom.share_people('5ba50000-0000-4a00-8a00-000000000a01',
-                                               '5ba50000-0000-4a00-8a00-000000000301')
+  select * into v_row from custom.share_people('5ba50001-0000-4a00-8a00-000000000a01',
+                                               '5ba50001-0000-4a00-8a00-000000000301')
    where email = 'tomas.iversen@fixtures.aimatrx.com';
   if v_row.already_at is distinct from 'viewer'::public.permission_level
      or v_row.already_why is distinct from 'Shared with them directly' then
@@ -233,15 +238,15 @@ begin
          count(*) filter (where reason = 'direct'),
          count(*) filter (where reason = 'organization default')
     into v_own, v_dir, v_def
-    from custom.share_access('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301');
+    from custom.share_access('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301');
   if v_own <> 1 then raise exception '3c FAILED — the Owner is not named (% rows).', v_own; end if;
   if v_dir <> 2 then raise exception '3c FAILED — % direct shares, expected Tomas and Dana.', v_dir; end if;
   if v_def <> 0 then raise exception '3c FAILED — an organization-default reason under shared_only.'; end if;
-  if (select count(*) from custom.share_access('5ba50000-0000-4a00-8a00-000000000a01','5ba50000-0000-4a00-8a00-000000000301')
+  if (select count(*) from custom.share_access('5ba50001-0000-4a00-8a00-000000000a01','5ba50001-0000-4a00-8a00-000000000301')
        where reason_detail is null or btrim(reason_detail) = '') > 0 then
     raise exception '3c FAILED — a reason with no sentence.';
   end if;
-  if (select count(*) from custom.share_access('5ba50000-0000-4a00-8a00-000000000a01','5ba50000-0000-4a00-8a00-000000000301')
+  if (select count(*) from custom.share_access('5ba50001-0000-4a00-8a00-000000000a01','5ba50001-0000-4a00-8a00-000000000301')
        where reason = 'direct' and not revocable) > 0 then
     raise exception '3c FAILED — an admin is shown a direct share the dialog cannot take back.';
   end if;
@@ -265,11 +270,11 @@ begin
   -- over the whole set rather than one row of it. Stricter than the old clause in two ways: it
   -- cannot be satisfied by luck of sort order, and every containment row must carry a sentence.
   select count(*) into v_n
-    from custom.share_access('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000402')
+    from custom.share_access('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000402')
    where reason = 'containment';
   if v_n < 1 then raise exception '3d FAILED — the thing that carries this record is not named as a reason.'; end if;
   select string_agg(reason_detail, ' | ' order by reason_detail) into v_detail
-    from custom.share_access('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000402')
+    from custom.share_access('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000402')
    where reason = 'containment';
   if v_detail not like '%Matter box%' then
     raise exception '3d FAILED — no containment reason names the container: %', v_detail;
@@ -280,13 +285,13 @@ end $t$;
 do $t$
 declare v_out jsonb; v_n int;
 begin
-  v_out := custom.share_grant('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301',
+  v_out := custom.share_grant('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301',
                               'person', '4060701e-706a-4c76-b3ca-0bbc69fa5a14', 'editor');
   if v_out ->> 'was' <> 'viewer' or v_out ->> 'level' <> 'editor' then
     raise exception '3e FAILED — raising a level did not report the change: %', v_out;
   end if;
   select count(*) into v_n from iam.permissions
-   where resource_type = 'record' and resource_id = '5ba50000-0000-4a00-8a00-000000000301'
+   where resource_type = 'record' and resource_id = '5ba50001-0000-4a00-8a00-000000000301'
      and granted_to_user_id = '4060701e-706a-4c76-b3ca-0bbc69fa5a14';
   if v_n <> 1 then raise exception '3e FAILED — re-sharing made a SECOND grant row (% rows).', v_n; end if;
 end $t$;
@@ -296,7 +301,7 @@ do $t$
 declare v_msg text;
 begin
   begin
-    perform custom.share_grant('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301',
+    perform custom.share_grant('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301',
                                'person', '00000000-0000-4000-8000-0000000000ff', 'viewer');
     raise exception '3f FAILED — a person outside the organization was let in.';
   exception when insufficient_privilege then
@@ -306,8 +311,8 @@ begin
     end if;
   end;
   begin
-    perform custom.share_grant('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301',
-                               'organization', '5ba50000-0000-4a00-8a00-000000000a02', 'viewer');
+    perform custom.share_grant('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301',
+                               'organization', '5ba50001-0000-4a00-8a00-000000000a02', 'viewer');
     raise exception '3f FAILED — a share reached an organization.';
   -- SHARE-PEOPLE-ONLY (owner ruling 2026-09-23, access is personal): a share names a person, so an
   -- organization principal is refused by name before any cross-organization wall is asked.
@@ -323,14 +328,14 @@ end $t$;
 do $t$
 declare v_out jsonb; v_msg text; v_n int;
 begin
-  v_out := custom.share_lane_set('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301',
+  v_out := custom.share_lane_set('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301',
                                  'organization');
   select count(*) into v_n from iam.permissions
-   where resource_type = 'record' and resource_id = '5ba50000-0000-4a00-8a00-000000000301'
-     and granted_to_organization_id = '5ba50000-0000-4a00-8a00-000000000a01';
+   where resource_type = 'record' and resource_id = '5ba50001-0000-4a00-8a00-000000000301'
+     and granted_to_organization_id = '5ba50001-0000-4a00-8a00-000000000a01';
   if v_n <> 1 then raise exception '3g FAILED — the organization lane wrote no organization grant.'; end if;
   begin
-    perform custom.share_lane_set('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301', 'world');
+    perform custom.share_lane_set('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301', 'world');
     raise exception '3g FAILED — the world lane published while custom/world_publish_enabled is false.';
   exception when insufficient_privilege then
     get stacked diagnostics v_msg = message_text;
@@ -338,10 +343,10 @@ begin
       raise exception '3g FAILED — the world refusal does not name the switch: %', v_msg;
     end if;
   end;
-  v_out := custom.share_lane_set('5ba50000-0000-4a00-8a00-000000000a01', '5ba50000-0000-4a00-8a00-000000000301', 'mine');
+  v_out := custom.share_lane_set('5ba50001-0000-4a00-8a00-000000000a01', '5ba50001-0000-4a00-8a00-000000000301', 'mine');
   select count(*) into v_n from iam.permissions
-   where resource_type = 'record' and resource_id = '5ba50000-0000-4a00-8a00-000000000301'
-     and granted_to_organization_id = '5ba50000-0000-4a00-8a00-000000000a01';
+   where resource_type = 'record' and resource_id = '5ba50001-0000-4a00-8a00-000000000301'
+     and granted_to_organization_id = '5ba50001-0000-4a00-8a00-000000000a01';
   if v_n <> 0 then raise exception '3g FAILED — going back to mine left the organization grant standing.'; end if;
 end $t$;
 reset role;
@@ -357,10 +362,10 @@ set local role authenticated;
 do $t$
 declare v_out jsonb;
 begin
-  if public.may_manage_sharing('record', '5ba50000-0000-4a00-8a00-000000000301') then
+  if public.may_manage_sharing('record', '5ba50001-0000-4a00-8a00-000000000301') then
     raise exception '4a FAILED — an editor is told they may decide who else sees this.';
   end if;
-  v_out := public.share_resource_with_user('record', '5ba50000-0000-4a00-8a00-000000000301',
+  v_out := public.share_resource_with_user('record', '5ba50001-0000-4a00-8a00-000000000301',
                                            'daeb6d44-a7dd-4085-aba2-5025fb711b79', 'admin');
   if (v_out ->> 'success')::boolean then raise exception '4a FAILED — an editor shared it.'; end if;
   if v_out ->> 'error' not like '%need Admin%' then
@@ -378,13 +383,13 @@ set local role authenticated;
 do $t$
 declare v_out jsonb; v_n int;
 begin
-  if not public.may_manage_sharing('record', '5ba50000-0000-4a00-8a00-000000000301') then
+  if not public.may_manage_sharing('record', '5ba50001-0000-4a00-8a00-000000000301') then
     raise exception '4b FAILED — an admin on the record still may not manage sharing.';
   end if;
   -- The one that used to return an EMPTY LIST with no error at all.
-  select count(*) into v_n from public.get_resource_permissions('record', '5ba50000-0000-4a00-8a00-000000000301');
+  select count(*) into v_n from public.get_resource_permissions('record', '5ba50001-0000-4a00-8a00-000000000301');
   if v_n < 2 then raise exception '4b FAILED — an admin is shown % grants, expected the real list.', v_n; end if;
-  v_out := public.revoke_resource_access('record', '5ba50000-0000-4a00-8a00-000000000301',
+  v_out := public.revoke_resource_access('record', '5ba50001-0000-4a00-8a00-000000000301',
                                          'daeb6d44-a7dd-4085-aba2-5025fb711b79');
   if not (v_out ->> 'success')::boolean then
     raise exception '4b FAILED — an admin could not revoke: %', v_out ->> 'error';
@@ -411,7 +416,7 @@ begin
     into v_ins, v_upd, v_del, v_org_null
     from history.row_versions
    where entity_type = 'iam.permissions'
-     and (row_data ->> 'resource_id')::uuid = '5ba50000-0000-4a00-8a00-000000000301';
+     and (row_data ->> 'resource_id')::uuid = '5ba50001-0000-4a00-8a00-000000000301';
   if v_ins < 3 then raise exception '5a FAILED — % share rows in history, expected one per share.', v_ins; end if;
   if v_upd < 1 then raise exception '5a FAILED — a level change wrote no history row.'; end if;
   if v_del < 1 then raise exception '5a FAILED — a revoke wrote no history row.'; end if;
@@ -420,8 +425,8 @@ begin
   end if;
   -- And the audit can name the interval a person held it, replayed from those same rows.
   if not exists (
-    select 1 from custom.visibility_as_of('5ba50000-0000-4a00-8a00-000000000a01',
-                                          '5ba50000-0000-4a00-8a00-000000000301', now()) v
+    select 1 from custom.visibility_as_of('5ba50001-0000-4a00-8a00-000000000a01',
+                                          '5ba50001-0000-4a00-8a00-000000000301', now()) v
      where v.held_from is not null) then
     raise exception '5a FAILED — the audit cannot say when access began.';
   end if;
@@ -454,22 +459,22 @@ delete from iam.organizations where id in (:ORG, :ORG2);
 -- and the organization each write their OWN history rows, so a history sweep placed earlier
 -- leaves behind exactly the rows the sweep caused. The census below is what caught it.
 delete from iam.permissions where resource_type = 'record'
-   and resource_id::text like '5ba50000-0000-4a00-8a00-%';
+   and resource_id::text like '5ba50001-0000-4a00-8a00-%';
 delete from history.row_versions where organization_id in (:ORG, :ORG2);
 delete from history.row_versions where entity_type = 'iam.permissions'
-   and (row_data ->> 'resource_id') like '5ba50000-0000-4a00-8a00-%';
+   and (row_data ->> 'resource_id') like '5ba50001-0000-4a00-8a00-%';
 do $t$
 declare v_n int := 0; v_x int;
 begin
   select count(*) into v_x from custom.record where organization_id in
-    ('5ba50000-0000-4a00-8a00-000000000a01','5ba50000-0000-4a00-8a00-000000000a02'); v_n := v_n + v_x;
+    ('5ba50001-0000-4a00-8a00-000000000a01','5ba50001-0000-4a00-8a00-000000000a02'); v_n := v_n + v_x;
   select count(*) into v_x from iam.organizations where id in
-    ('5ba50000-0000-4a00-8a00-000000000a01','5ba50000-0000-4a00-8a00-000000000a02'); v_n := v_n + v_x;
+    ('5ba50001-0000-4a00-8a00-000000000a01','5ba50001-0000-4a00-8a00-000000000a02'); v_n := v_n + v_x;
   select count(*) into v_x from history.row_versions where organization_id in
-    ('5ba50000-0000-4a00-8a00-000000000a01','5ba50000-0000-4a00-8a00-000000000a02'); v_n := v_n + v_x;
+    ('5ba50001-0000-4a00-8a00-000000000a01','5ba50001-0000-4a00-8a00-000000000a02'); v_n := v_n + v_x;
   select count(*) into v_x from iam.permissions p
     where p.resource_type = 'record'
-      and p.resource_id::text like '5ba50000-0000-4a00-8a00-%'; v_n := v_n + v_x;
+      and p.resource_id::text like '5ba50001-0000-4a00-8a00-%'; v_n := v_n + v_x;
   if v_n <> 0 then raise exception 'TEARDOWN FAILED — % row(s) of this suite are still on the database.', v_n; end if;
   raise notice 'TEARDOWN PASSED — census zero.';
   raise notice 'ALL PARTS PASSED';

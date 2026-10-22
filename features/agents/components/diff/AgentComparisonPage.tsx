@@ -13,7 +13,7 @@ import SearchableSelect from "@/components/matrx/SearchableSelect";
 import type { Option } from "@/components/matrx/SearchableSelect";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { Skeleton } from "@ai-matrx/design-system";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@ai-matrx/chat/host/ui-slots";

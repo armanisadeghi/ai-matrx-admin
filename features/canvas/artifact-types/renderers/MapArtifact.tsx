@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import type { ArtifactRendererProps } from "../types";
 import MapBlock from "@/components/mardown-display/blocks/map/MapBlock";
 

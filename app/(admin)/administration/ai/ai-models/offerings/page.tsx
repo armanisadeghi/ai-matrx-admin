@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import OfferingsContainer from "@/features/ai-models/components/offerings/OfferingsContainer";
 
 export const metadata = {

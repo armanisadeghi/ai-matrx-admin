@@ -19,7 +19,7 @@ import {
   type AgentResourceReference,
 } from "@ai-matrx/chat/agents/agent-context/resource-reference";
 import type { CanvasContent } from "@/features/canvas/canvasContent";
-import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import { htmlPageIdFromUrl } from "@/features/cms/utils/pageUrls";
 
 export type CanvasItemRecordType = "html_page" | "canvas_item";

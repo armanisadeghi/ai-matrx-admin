@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 // The storage-delete confirmation is an AlertDialog: it blocks the page on purpose
 // (policy ai-reachable-everywhere; the ordinary Dialog is a non-blocking window on desktop).
 import {

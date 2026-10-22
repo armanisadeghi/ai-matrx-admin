@@ -17,7 +17,7 @@ import { Button, Select } from "@ai-matrx/design-system/controls";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, Pause, Play, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 const SOURCES = [

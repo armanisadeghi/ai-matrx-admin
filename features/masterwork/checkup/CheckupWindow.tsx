@@ -14,7 +14,7 @@ import {
 import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 import { WindowPanel } from "@ai-matrx/summon/window";

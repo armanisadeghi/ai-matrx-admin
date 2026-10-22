@@ -822,7 +822,7 @@ function CreateCategoryRow({
       className={`flex min-h-7 items-center gap-1.5 pr-2 bg-accent/30 rounded ${TREE_ROW_TEXT}`}
       style={treeIndentStyle(depth)}
     >
-      <span aria-hidden="true" className="inline-block h-5 w-5" />
+      <span aria-hidden="true" className="inline-block h-5 w-5 shrink-0" />
       <TreeDisclosure expandable={false} />
       <TreeFolderIcon />
       <span aria-hidden="true" className="inline-block h-3 w-3 shrink-0" />
@@ -833,15 +833,13 @@ function CreateCategoryRow({
         className="flex-1 min-w-0"
         autoFocus
       />
-      <Input mono
+      <Input mono data-identifier placeholder="category_key"
         value={key}
         onChange={(e) => {
           keyTouchedRef.current = true;
           setKey(e.target.value);
         }}
         className="w-40"
-        data-identifier
-        placeholder="category_key"
       />
       {isAdmin && (
         <label className="inline-flex items-center gap-1 text-xs text-muted-foreground">

@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { AlertTriangle, Settings as SettingsIcon } from "lucide-react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { SettingsBreadcrumb } from "@/components/official/settings/tree/SettingsBreadcrumb";

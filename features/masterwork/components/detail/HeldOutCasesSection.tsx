@@ -30,7 +30,7 @@ import { useCallback, useEffect, useState } from "react";
 import { EyeOff, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { supabase } from "@/utils/supabase/client";
 import { readAllRows } from "@ai-matrx/data/db";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

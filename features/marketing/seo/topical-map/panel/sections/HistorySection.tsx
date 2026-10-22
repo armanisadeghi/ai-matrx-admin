@@ -12,7 +12,7 @@
  * printed as the row says it, never invented.
  */
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 
 import { topicalMapErrorText } from "../../errors";
 import { useMapHistory } from "../../hooks";

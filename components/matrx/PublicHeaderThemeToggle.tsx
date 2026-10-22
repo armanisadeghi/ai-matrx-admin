@@ -6,7 +6,7 @@ import { setMode } from '@/styles/themes/themeSlice';
 import { useThemeMode } from '@/styles/themes/useThemeMode';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useIsMounted } from '@/hooks/use-is-mounted';
+import { useIsMounted } from '@ai-matrx/kit/hooks';
 import { PUBLIC_HEADER_ICON_BUTTON } from "./publicHeaderChrome";
 
 export function PublicHeaderThemeToggle() {

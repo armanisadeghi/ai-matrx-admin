@@ -2,8 +2,8 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "@/lib/toast";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import { isMaterializedArtifactId } from "../artifactId";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import {
   useCanvasItem,
   CANVAS_ITEM_UPDATED_EVENT,

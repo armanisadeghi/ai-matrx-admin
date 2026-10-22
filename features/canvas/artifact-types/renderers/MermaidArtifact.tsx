@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { artifactDedupKey } from "../artifact-renderers";
 import MermaidWorkbench from "@/components/mermaid/workbench/MermaidWorkbench";
 import MermaidBlock from "@ai-matrx/rich-content/display/blocks/mermaid/MermaidBlock";

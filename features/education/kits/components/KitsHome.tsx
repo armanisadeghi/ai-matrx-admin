@@ -13,7 +13,7 @@ import { NEW_KIT_HREF } from "@/features/education/onboard/startRoutes";
 import { Package } from "lucide-react";
 import { Button } from "@ai-matrx/design-system";
 import { Skeleton } from "@ai-matrx/design-system";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import { TARGET_PRESENTATION } from "@/features/education/convert/targetPresentation";
 import { archiveKit, kitMembershipFingerprint, listKits, kitHref, renameKit, type StudyKit } from "../kitService";

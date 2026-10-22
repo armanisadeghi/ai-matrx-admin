@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import type { ArtifactRendererProps } from "../types";
 import ReactCodeBlock from "@/features/dynamic-react/ReactCodeBlock";
 import CodeBlock from "@ai-matrx/rich-content/code-block/CodeBlock";

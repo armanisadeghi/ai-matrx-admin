@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { Loader2, Check } from "lucide-react";
 import { useAgentBuilder } from "../services/agentBuilderService";

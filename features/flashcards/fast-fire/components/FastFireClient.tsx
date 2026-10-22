@@ -10,7 +10,7 @@
 // only this. (CLAUDE.md heavy-client-code-split rule.)
 
 import { useEffect, useState, type ComponentType } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import {
   FASTFIRE_SURFACE_LOAD_TIMEOUT_MESSAGE,

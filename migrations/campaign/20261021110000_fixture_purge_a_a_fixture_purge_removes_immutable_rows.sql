@@ -1,9 +1,17 @@
 -- additive: yes
--- target: production
 -- lane: FIXTURE-PURGE
 -- Inverse: migrations/inverse/20261021110000_fixture_purge_a_a_fixture_purge_removes_immutable_rows_down.sql
 -- Adds iam.fixture_purge_allows (read-only helper) and a guarded early exit in nine append-only / immutable row rules.
 -- Nothing is dropped, revoked or deleted. Every real edit still refuses exactly as before.
+-- based-on: content._document_version_immutable() 01a35d94da503c2ad1a62d14cb43e5c9bb88a0f8717b13727fe1a51e6358e20c
+-- based-on: content._space_payload_insert_only() 02254cea182aef509a22a96f508c734159ca1da669d845de4bf07f5d9b84156c
+-- based-on: content._univer_payload_insert_only() 728d437d93bef40884cd16104ba01f1dcadd966b4377484305a28c73a9117500
+-- based-on: admin._support_session_events_append_only() 474c6c8e25c60e0b1374d4279ff1a97280b9d34ab7eb349e9f61316cd7efeb2f
+-- based-on: browser._action_event_append_only() 576ca077a8268320c325272580b3a19db65d7055753ce65526f2c076c5e773f6
+-- based-on: esign._guard_append_only() 58c783ed9d9e97c683c1d63bc222f0baf7622a1a010e97ab26de3654d8befb52
+-- based-on: web.reject_crawl_fact_mutation() f79b4dd1701e3907c76367662cdad6ebb8724dcd876dee2d16e2a18a3626508f
+-- based-on: web.reject_immutable_fact_mutation() 89b7ab8d610c6d345df6f85b5d9b0589ac8973027166356b9999d0aae95c96c2
+-- based-on: workflow.reject_plan_event_mutation() c3ee8e3359e2d3892d77a32ca2b1e8b40470858080fff701ddb2889b9ad5139a
 --
 -- FIXTURE-PURGE. A test person who used Spaces "Add a sample" could not be deleted: the sweeper clears the person's
 -- document versions and Space payloads, and the rule that keeps versions unchangeable refused. The same refusal sits

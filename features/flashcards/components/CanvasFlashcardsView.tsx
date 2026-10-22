@@ -20,7 +20,7 @@ import {
 import type { ReviewResult } from "../types";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { InlineArtifactDebugStrip } from "@/features/canvas/components/CanvasArtifactDebugPanel";
 import { cn } from "@/styles/themes/utils";
 import {
@@ -35,7 +35,7 @@ import {
 import Link from "next/link";
 import { flashcardDeckHref } from "../routes";
 import { Button } from "@ai-matrx/design-system";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useCanvasFit } from "@ai-matrx/rich-content/display/blocks/canvas-fit";
 

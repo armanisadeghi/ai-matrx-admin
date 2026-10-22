@@ -7,7 +7,7 @@
  * height of the thing it stands for. Layout only; every control is a design-system control.
  */
 
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 
 /** The tab's top row: fixed 36px so the primary action never moves between tabs or states. */

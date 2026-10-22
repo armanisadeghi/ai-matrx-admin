@@ -79,7 +79,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu/context-menu";
 import { TextInputDialog } from "@ai-matrx/design-system";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { announceReversible } from "@/lib/reversible/announceReversible";

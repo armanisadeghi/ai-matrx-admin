@@ -28,7 +28,7 @@ import { useRef, useState } from "react";
 import { Files, PanelRight } from "lucide-react";
 
 import { TopicTree, type TopicTreeRow } from "@/components/official/topic-tree/TopicTree";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ClipboardFallbackDialog } from "@/components/dialogs/clipboard-fallback/ClipboardFallbackDialog";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

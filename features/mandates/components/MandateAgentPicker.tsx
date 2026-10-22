@@ -31,7 +31,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

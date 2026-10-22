@@ -9,12 +9,29 @@
 // LAYER 2: the header carries the page-header slots (`hostHeaderSlots`), so a page's own header
 // content lands in the frame and the derived crumbs yield to it.
 // The page renders inside a `.shell-main` scroller, the classic page contract (legacy-contracts.css).
-import { useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
+//
+// SIDE CHAT AND CANVAS (ROLLOUT-PLAN §3): each loads on first open through ONE dynamic import
+// (`FrameSideChat`, `FrameCanvas`), then stays mounted. Before that nothing of them is here but
+// their state: the side chat's open / closed is the Side Chat's ONE rule and cookie (the light
+// `side-chat-state` module — per home, shared with the classic dock), with ⌘\ and the header
+// toggle event; the canvas's open / closed is the canvas store's, so `openCanvasItem(...)` from any
+// page opens the frame's canvas (the frame presents the canvas window while it is mounted).
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Copy, ExternalLink, LayoutList } from "lucide-react";
 import { copyText } from "@ai-matrx/kit/clipboard";
 import { openOutbound } from "@ai-matrx/kit/outbound";
+import { selectCanvasIsOpen } from "@ai-matrx/canvas";
+import {
+  useOptionalCanvas,
+  useOptionalCanvasState,
+} from "@ai-matrx/canvas/react";
+import {
+  useSideChatOpen,
+  useSideChatToggleKeys,
+} from "@ai-matrx/chat/canvas/workspace/side-chat-state";
 import { FrameChrome } from "./FrameChrome";
+import { FrameSideChatHostContext } from "./frameSideChatHost";
 import { useGridFavorites } from "./useGridFavorites";
 import type { FrameHostProps } from "./FrameHostGate";
 import { PRODUCTS, PRODUCT_FAMILIES } from "@/features/shell/frame/products";
@@ -32,11 +49,12 @@ import type {
   FrameProduct,
 } from "@/features/shell/frame/types";
 
-/** The two panels this step does not bring into the frame yet (ROLLOUT-PLAN P3) — said, never silent. */
-export const FRAME_SIDE_CHAT_PENDING =
-  "The side chat comes to the new layout in the next step";
-export const FRAME_CANVAS_PENDING =
-  "The canvas comes to the new layout in the next step";
+/** /chat and /code carry their own chat: the frame's toggle says so instead of opening a second one. */
+export const FRAME_SIDE_CHAT_HOSTED_ELSEWHERE = "This page has its own chat";
+
+/** The frame's heavy modules: each is ONE dynamic import, called only on first open. */
+const loadSideChat = () => import("./FrameSideChat");
+const loadCanvas = () => import("./FrameCanvas");
 
 const itemId = (index: number) => `r-${index}`;
 
@@ -122,9 +140,36 @@ export default function FrameHostImpl({
   userData,
   isAuthenticated,
   initialGeometry,
+  sideChat,
   children,
 }: FrameHostProps) {
   const pathname = usePathname() ?? "/";
+  const searchParams = useSearchParams();
+  const sideChatState = useSideChatOpen({
+    pathname,
+    search: searchParams?.toString() ?? "",
+    signedIn: isAuthenticated,
+    initialChoice: sideChat.choice,
+  });
+  const toggleSideChat = () => sideChatState.setOpen(!sideChatState.open);
+  useSideChatToggleKeys({
+    enabled: isAuthenticated,
+    canToggle: !sideChatState.standsAside,
+    onToggle: toggleSideChat,
+  });
+  const [initialPathname] = useState(pathname);
+  const sideChatHost = {
+    signedIn: isAuthenticated,
+    initialPathname,
+    initialMode: sideChat.mode,
+    open: sideChatState.open,
+    onOpenChange: sideChatState.setOpen,
+  };
+  const canvas = useOptionalCanvas();
+  const canvasOpen = useOptionalCanvasState(selectCanvasIsOpen, false);
+  // The frame presents the canvas window while it is mounted: `openCanvasItem(...)` from any page
+  // reaches the store and opens the frame's canvas, even before its body has loaded.
+  useEffect(() => canvas?.registerPresentation(), [canvas]);
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [favorites, setFavorites] = useGridFavorites();
@@ -160,34 +205,46 @@ export default function FrameHostImpl({
 
   return (
     <div className="h-dvh w-full">
-      <FrameChrome
-        userData={userData}
-        isAuthenticated={isAuthenticated}
-        products={products}
-        families={PRODUCT_FAMILIES}
-        product={product}
-        favorites={favorites}
-        onFavoritesChange={setFavorites}
-        activeMenuItemId={item?.id}
-        onSelectMenuItem={(selected) => selected.href && go(selected.href)}
-        crumbs={crumbs}
-        actions={actions}
-        onBack={crumbs.length > 1 ? () => router.back() : undefined}
-        variant="workspace"
-        pageKey={pathname}
-        initialGeometry={initialGeometry}
-        hostHeaderSlots
-        companionUnavailable={FRAME_SIDE_CHAT_PENDING}
-        canvasUnavailable={FRAME_CANVAS_PENDING}
-      >
-        <main
-          className="shell-main"
-          data-matrx-frame-main=""
-          data-matrx-page-scroll=""
+      <FrameSideChatHostContext value={sideChatHost}>
+        <FrameChrome
+          userData={userData}
+          isAuthenticated={isAuthenticated}
+          products={products}
+          families={PRODUCT_FAMILIES}
+          product={product}
+          favorites={favorites}
+          onFavoritesChange={setFavorites}
+          activeMenuItemId={item?.id}
+          onSelectMenuItem={(selected) => selected.href && go(selected.href)}
+          crumbs={crumbs}
+          actions={actions}
+          onBack={crumbs.length > 1 ? () => router.back() : undefined}
+          variant="workspace"
+          initialGeometry={initialGeometry}
+          hostHeaderSlots
+          loadCompanion={isAuthenticated ? loadSideChat : undefined}
+          companionOpen={sideChatState.open}
+          onCompanionOpenChange={sideChatState.setOpen}
+          companionUnavailable={
+            sideChatState.standsAside
+              ? FRAME_SIDE_CHAT_HOSTED_ELSEWHERE
+              : undefined
+          }
+          loadCanvas={canvas ? loadCanvas : undefined}
+          canvasOpen={canvasOpen}
+          onCanvasOpenChange={(open) =>
+            open ? canvas?.show() : canvas?.hide()
+          }
         >
-          {children}
-        </main>
-      </FrameChrome>
+          <main
+            className="shell-main"
+            data-matrx-frame-main=""
+            data-matrx-page-scroll=""
+          >
+            {children}
+          </main>
+        </FrameChrome>
+      </FrameSideChatHostContext>
     </div>
   );
 }

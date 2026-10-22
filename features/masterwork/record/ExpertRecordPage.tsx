@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";

@@ -41,7 +41,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { commitUrlParams, useUrlSearchParams } from "@ai-matrx/kit/url-state";
 
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
-import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import { useArtifactCanvas } from "@/features/canvas/host/useArtifactCanvas";
 import { useCanvasOpenGuard } from "./useCanvasOpenGuard";
 import { useOpenCanvasItem } from "./useOpenCanvasItem";

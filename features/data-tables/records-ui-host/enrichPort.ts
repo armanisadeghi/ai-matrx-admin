@@ -118,3 +118,45 @@ export async function enrichByRunner(post: Post, ask: EnrichAsk, watch?: WatchRu
     return { ok: false, message };
   }
 }
+
+/**
+ * WHAT A FILL WOULD COST, BEFORE IT RUNS (lane FIX-AI4, CD-AI-04 — law 14: the confirm step shows points).
+ * `POST /v1/tables/{table}/ai-columns/{field}/estimate` answers from the column's measured cost per row when it has
+ * run, else from the bound model's catalog price over what each row would send. Asks no model, writes nothing. The
+ * shape is records-ui's `FillEstimate` (declared here so a records-ui build before the port still compiles).
+ */
+export interface FillEstimateShape {
+  basis: "measured" | "estimated" | "none";
+  costCents: number | null;
+  extraReads?: boolean;
+  says?: string;
+}
+
+interface AiColumnEstimate {
+  basis?: "measured" | "estimated" | "none";
+  cost_cents?: number | null;
+  extra_reads?: boolean;
+  says?: string;
+}
+
+export async function estimateByRunner(
+  post: Post,
+  ask: { tableId: string; fieldId: string; rows: number },
+): Promise<FillEstimateShape> {
+  try {
+    const response = await post(
+      `/v1/tables/${encodeURIComponent(ask.tableId)}/ai-columns/${encodeURIComponent(ask.fieldId)}/estimate`,
+      { rows: Math.max(1, Math.min(50, ask.rows)) },
+    );
+    if (!response.ok) return { basis: "none", costCents: null, says: await refusalSentence(response) };
+    const body = (await response.json()) as AiColumnEstimate;
+    return {
+      basis: body.basis ?? "none",
+      costCents: typeof body.cost_cents === "number" ? body.cost_cents : null,
+      ...(body.extra_reads ? { extraReads: true } : {}),
+      ...(body.says ? { says: body.says } : {}),
+    };
+  } catch (thrown) {
+    return { basis: "none", costCents: null, says: thrown instanceof Error ? thrown.message : "No estimate" };
+  }
+}

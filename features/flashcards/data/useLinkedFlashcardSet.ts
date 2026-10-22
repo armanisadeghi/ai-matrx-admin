@@ -15,7 +15,7 @@
 
 import { useEffect, useRef } from "react";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { flashcardDeckHref } from "../routes";
 
 export const FC_SET_EXTERNAL_SYSTEM = "fc_set";

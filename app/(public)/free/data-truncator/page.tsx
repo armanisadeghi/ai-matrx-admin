@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { JsonTruncator } from "@/components/official-candidate/json-truncator/JsonTruncator";
 
 // ─── Sample-data loader (page-level concern, not part of the component) ───────

@@ -487,7 +487,7 @@ export function TriggersManager({
           removesRows: true,
           confirm: (t) => ({
             title: `Archive ${triggersLabel(t.ids.length)}?`,
-            description: "They stop firing and leave this list. Past runs and costs stay on record. Archived triggers cannot be turned back on from this page.",
+            description: "They stop firing and leave this list. Past runs stay on record. They cannot be turned back on here.",
             confirmLabel: "Archive",
             variant: "destructive",
           }),

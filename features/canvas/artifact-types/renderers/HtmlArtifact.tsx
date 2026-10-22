@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useCanvasPresentation } from "@ai-matrx/canvas/react";
 import SandboxedHtml from "@ai-matrx/rich-content/display/blocks/common/SandboxedHtml";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import type { ArtifactRendererProps } from "../types";
 import HtmlInlinePreview from "@/features/html-pages/components/HtmlInlinePreview";
 import KindValueFrontDoor from "@/components/official/structured-value/KindValueFrontDoor";

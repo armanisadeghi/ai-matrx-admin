@@ -19,7 +19,7 @@
 // A new Approach appears here by existing as a row — never by editing a list.
 
 import { RefreshCw } from "lucide-react";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { approachState, type DistillationApproach } from "./approaches";
 import { useApproachRegistry } from "./useApproachRegistry";

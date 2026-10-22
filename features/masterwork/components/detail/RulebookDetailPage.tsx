@@ -40,7 +40,7 @@ import {
   EditableLabel,
 } from "@ai-matrx/design-system";
 import { Input } from "@ai-matrx/design-system/controls";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import {
   Tooltip,
   TooltipContent,

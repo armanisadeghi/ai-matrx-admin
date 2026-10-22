@@ -349,7 +349,9 @@ export default function RouteHeader({
   const isPhone = useIsMobile();
   const pathname = usePathname();
   const surface = clusterSurface(pathname, !isPhone);
-  const [reservedCluster, setReservedCluster] = useState<number | null>(null);
+  // The first-visit width is reserved from the SERVER's HTML on (CLOSE-PERF, CD-PERF-01): the shell decides
+  // whether to fold its own controls before the first paint, from the route header the server drew.
+  const [reservedCluster, setReservedCluster] = useState<number | null>(() => FIRST_VISIT_CLUSTER_PX[surface] ?? null);
   useLayoutEffect(() => {
     const stored = Number(clusterWidths.getJSON<number>(surface));
     setReservedCluster(stored > 0 ? stored : (FIRST_VISIT_CLUSTER_PX[surface] ?? null));

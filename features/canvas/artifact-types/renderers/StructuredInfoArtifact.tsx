@@ -1,8 +1,8 @@
 "use client";
 
 import { Suspense, useMemo } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
-import { isMaterializedArtifactId } from "../artifactId";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
 import { kindServerDataFromStoredValue } from "@ai-matrx/rich-content/kinds/react/kind-route";

@@ -326,7 +326,7 @@ NM_PENDING_LOG_OFFSET=0
 stale_graph_failing() {
   [[ -f "$LOG" ]] || return 1
   tail -c "+$(( ${NM_PENDING_LOG_OFFSET:-0} + 1 ))" "$LOG" 2>/dev/null |
-    grep -a -E "Can't resolve '@ai-matrx/|doesn't exist in target module" >/dev/null
+    grep -a -E "Can't resolve '@ai-matrx/|doesn't exist in target module|node_modules/\.pnpm/@ai-matrx\+[^ ]* .*module factory is not available" >/dev/null
 }
 restart_if_node_modules_moved() {
   local pid="$1" recorded current now moves

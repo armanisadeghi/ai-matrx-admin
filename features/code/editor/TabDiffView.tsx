@@ -43,7 +43,7 @@ import React, {
 import { createPortal } from "react-dom";
 import { Check, ChevronLeft, ChevronRight, Rocket, X } from "lucide-react";
 import { DiffEditor, type DiffOnMount } from "@monaco-editor/react";
-import { useEffectsAttached } from "@/hooks/use-is-mounted";
+import { useEffectsAttached } from "@ai-matrx/kit/hooks";
 import type { editor as MonacoEditorNS } from "monaco-editor";
 import { LegacyDiffChip } from "@/components/diff/LegacyDiffChip";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

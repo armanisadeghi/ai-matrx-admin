@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 
 import { topicalMapErrorText } from "../../errors";
 import { useMapFacets, useMapFacetValues, useMapTopicFacets, useSetMapTopicFacet } from "../../hooks";

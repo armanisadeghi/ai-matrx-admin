@@ -13,7 +13,7 @@ import type { CanvasMenuItem, CanvasOutputRequest } from "@ai-matrx/canvas/react
 import { attachRenderedArtifact } from "@ai-matrx/chat/agents/components/inputs/resources/useAttachRenderedArtifact";
 import { availableRenderedArtifactRepresentations } from "@ai-matrx/chat/agents/utils/renderedArtifactContext";
 import { contentOf, readArtifactItemData } from "@/features/canvas/host/artifactItem";
-import { isMaterializedArtifactId } from "@ai-matrx/rich-content/utils/lifted/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import {
   type RenderedRecord,
   captureRecordOnServer,

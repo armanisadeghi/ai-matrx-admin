@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import type { ArtifactRendererProps } from "../types";
 import TreeBlock from "@ai-matrx/rich-content/display/blocks/tree/TreeBlock";
 

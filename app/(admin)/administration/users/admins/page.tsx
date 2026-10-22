@@ -395,7 +395,7 @@ function AdminsManagementPageContent() {
           done: "Revoked",
           confirm: (targets) => ({
             title: `Revoke admin access for ${targets.ids.length} admin${targets.ids.length === 1 ? "" : "s"}?`,
-            description: "They can no longer open /administration. You can re-promote them later; the server refuses anyone it must keep.",
+            description: "They lose admin access now. You can re-promote them later; protected admins are named and skipped.",
             confirmLabel: "Revoke",
             variant: "destructive",
           }),

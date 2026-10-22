@@ -18,7 +18,7 @@
  */
 
 import { askTableByMandate } from "@/features/data-tables/records-ui-host/askTable";
-import { enrichByRunner } from "@/features/data-tables/records-ui-host/enrichPort";
+import { enrichByRunner, estimateByRunner, type FillEstimateShape } from "@/features/data-tables/records-ui-host/enrichPort";
 import { endServerWork, followServerWork } from "@/features/ai-watch/followed-work";
 import { selectCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useBackendApi } from "@/hooks/useBackendApi";
@@ -84,6 +84,8 @@ export interface RecordsUiPorts {
   askTable?: RecordsUiHost["askTable"];
   /** An AI column's Preview and Fill: the server's one enrichment runner (`enrichPort.ts`). */
   enrich?: RecordsUiHost["enrich"];
+  /** What an AI column fill would cost BEFORE it runs: the server's estimate door (`enrichPort.ts`, CD-AI-04). */
+  estimateFill?: (ask: { tableId: string; fieldId: string; rows: number }) => Promise<FillEstimateShape>;
   /** The table's organization — the record chat files its conversation there. */
   organizationId: string | null;
   /** "Link a record…" on a store record: the one record picker, pointed at that record. */
@@ -179,6 +181,9 @@ export function recordsUiHostFor({ ports, merged, gridContext, rights }: Records
     ...(ports.askTable ? { askTable: ports.askTable } : {}),
     ...(ports.presence ? { presence: ports.presence } : {}),
     ...(ports.enrich ? { enrich: ports.enrich } : {}),
+    // The confirm step's points before a fill runs (records-ui `estimateFill`, CD-AI-04).
+    // Spread as its own object: a records-ui build before the port ignores the key.
+    ...(ports.estimateFill ? { estimateFill: ports.estimateFill } : {}),
     // Every cost the package shows is points at the platform's rate (records-ui `pointsRate`).
     // Spread as its own object: a records-ui build before the port ignores the key.
     ...{ pointsRate: currentPointsRate() },
@@ -348,6 +353,12 @@ export function useRecordsUiPorts({
       ),
     [backend, store],
   );
+  /** WHAT A FILL WOULD COST, BEFORE IT RUNS: the server's estimate door (`enrichPort.ts`, CD-AI-04). */
+  const estimateFill = useCallback(
+    (ask: { tableId: string; fieldId: string; rows: number }) =>
+      estimateByRunner((endpoint, body) => backend.post(endpoint, body), ask),
+    [backend],
+  );
   const openLinkRecordSheet = useOpenLinkRecordSheet();
   const linkRecord = useCallback(
     (target: { tableId: string; recordId: string; name: string }) => {
@@ -475,7 +486,7 @@ export function useRecordsUiPorts({
       }),
     [store],
   );
-  return { members, onAskForOne, openRecords, navigate, runAgentAction, askTable, enrich, organizationId, linkRecord, presence };
+  return { members, onAskForOne, openRecords, navigate, runAgentAction, askTable, enrich, estimateFill, organizationId, linkRecord, presence };
 }
 
 export { useAppRecordsConfig, type AppRecordsConfig } from "./appRecordsConfig";

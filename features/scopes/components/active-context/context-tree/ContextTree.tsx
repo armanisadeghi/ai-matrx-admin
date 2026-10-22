@@ -83,6 +83,16 @@ interface TreeRow {
   add?: { placeholder: string; commit: (v: string) => void };
 }
 
+/**
+ * The glyph of a scope-type row: its own icon when it has one. With none, a container wears the
+ * tree's folder and a leaf a neutral document glyph - a leaf never wears a folder.
+ */
+function typeIcon(icon: string | null | undefined, fg: string, container: boolean, open: boolean): React.ReactNode {
+  if (icon) return React.createElement(resolveIcon(icon), { className: cn("h-4 w-4 shrink-0", fg) });
+  if (container) return <TreeFolderIcon open={open} />;
+  return <FileText aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />;
+}
+
 /** The glyph of a row: its own icon, else by what it is. Containers wear the folder, leaves a document. */
 function rowIcon(r: TreeRow, open: boolean): React.ReactNode {
   if (r.icon) return r.icon;
@@ -253,9 +263,7 @@ export function ContextTree({
               id: t.id,
               label: `All ${t.label_plural}`,
               tone: cn("font-medium", c.fg),
-              icon: React.createElement(resolveIcon(t.icon), {
-                className: cn("h-4 w-4 shrink-0", c.fg),
-              }),
+              icon: typeIcon(t.icon, c.fg, false, false),
               tag: o.name,
             });
           for (const s of scopesOf(t)) {
@@ -361,9 +369,7 @@ export function ContextTree({
           id: t.id,
           label: t.label_plural,
           tone: cn("font-medium", c.fg),
-          icon: React.createElement(resolveIcon(t.icon), {
-            className: cn("h-4 w-4 shrink-0", c.fg),
-          }),
+          icon: typeIcon(t.icon, c.fg, true, tOpen),
           meta: countOf(t),
           expandKey: tKey,
           expandable: true,

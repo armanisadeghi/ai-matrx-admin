@@ -19,7 +19,7 @@
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 import { ADMIN_FOOTER_ATTR, rememberAdminFooterHeight } from "./admin-footer-reserve";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAuthReady, selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
 

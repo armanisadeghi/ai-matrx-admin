@@ -74,6 +74,8 @@ m.on("pageerror", (e) => console.log("[pageerror m]", e.message.slice(0, 300)));
 await login(m, `/spaces/${id}`, member);
 await resumeIfPaused(m);
 await m.locator(".bn-editor .bn-block-content[data-content-type=paragraph] .bn-inline-content").nth(1).waitFor({ timeout: 120_000 });
+// The first paint is the server-drawn copy (not editable); write only once the live editor has taken over.
+await m.locator('.spaces-editor .bn-editor[contenteditable="true"]').first().waitFor({ timeout: 120_000 });
 const bar = m.getByRole("toolbar", { name: "Block tools" });
 r.barHiddenBeforeWriting = !(await bar.isVisible().catch(() => false));
 await m.locator(".bn-editor .bn-block-content[data-content-type=paragraph] .bn-inline-content").nth(1).tap();

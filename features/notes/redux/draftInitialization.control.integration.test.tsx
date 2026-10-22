@@ -38,7 +38,7 @@ jest.mock("@/lib/redux/slices/userSlice", () => ({
   selectIsSuperAdmin: () => false,
   selectIsSuperAdminDebugger: () => false,
 }));
-jest.mock("@/components/matrx/Tooltip", () => ({ SimpleTooltip: ({ children }: { children: React.ReactNode }) => children }));
+jest.mock("@ai-matrx/design-system", () => ({ SimpleTooltip: ({ children }: { children: React.ReactNode }) => children }));
 jest.mock("@/features/notes/canvas/noteKnowledgeKind", () => ({
   ...jest.requireActual<typeof import("@/features/notes/canvas/noteKnowledgeKind")>("@/features/notes/canvas/noteKnowledgeKind"),
   useOpenNoteKnowledgePanel: () => jest.fn(),

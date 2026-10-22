@@ -6,7 +6,7 @@ jest.mock("@ai-matrx/kit/download", () => ({ downloadFile: (...a: unknown[]) => 
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
 const resolve = jest.fn();
 jest.mock("@/features/html-pages/services/canvasVersionPage", () => ({ resolveHtmlCanvasPage: (...a: unknown[]) => resolve(...a) }));
-jest.mock("@/features/canvas/artifact-types/artifactId", () => ({ isMaterializedArtifactId: (id: string) => id.startsWith("ok-") }));
+jest.mock("@ai-matrx/kit/artifact-id", () => ({ isMaterializedArtifactId: (id: string) => id.startsWith("ok-") }));
 
 import { copyHtmlSource, downloadHtmlSource, htmlPageFileName, resolveShownHtml } from "./htmlSourceOutput";
 

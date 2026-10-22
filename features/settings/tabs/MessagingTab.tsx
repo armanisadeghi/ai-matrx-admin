@@ -19,7 +19,7 @@ import {
 import { SmsEnrollmentSettingsSection } from "@/features/sms/components/SmsEnrollmentSettingsSection";
 import { SmsNotificationPreferencesSettingsSection } from "@/features/sms/components/SmsNotificationPreferencesSettingsSection";
 import { SmsAssistantSettingsSection } from "@/features/sms/components/SmsAssistantSettingsSection";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { PreferencesLoadGate } from "@/components/read-state/PreferencesLoadGate";
 
 type PermissionStatus = "granted" | "denied" | "default" | "unsupported";

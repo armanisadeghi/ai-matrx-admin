@@ -29,7 +29,7 @@ import { SettingsCallout } from "@/components/official/settings/layout/SettingsC
 import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
 import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
 import { SettingsRow } from "@/components/official/settings/SettingsRow";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import type { ScopedKnob } from "@/lib/scoped-config/types";
 import { useSetting, useSettingReset } from "../hooks/useSetting";
 import { THEME_MODE_OPTIONS, type ThemeMode } from "../agent-writable-settings";

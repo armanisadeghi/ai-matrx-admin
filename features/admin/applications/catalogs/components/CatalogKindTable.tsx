@@ -296,7 +296,7 @@ export function CatalogKindTable({
           skipReason: (r) => (r.is_active ? "Already active" : null),
           confirm: (t) => ({
             title: `Activate ${entriesLabel(t.ids.length)}?`,
-            description: "Installed clients pick them up on their next catalog refresh. Entries whose payload fails its kind schema are refused and named; artifact links are not probed here.",
+            description: "Installed clients pick them up on their next refresh. Entries that fail their schema are named and skipped.",
             confirmLabel: "Activate",
           }),
           runOne: (_id, row) => setActiveOne(row as CatalogEntryRow, true),

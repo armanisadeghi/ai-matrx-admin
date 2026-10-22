@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { LogIn, Moon, PanelRight, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { PUBLIC_HEADER_ICON_BUTTON } from "@/components/matrx/publicHeaderChrome";

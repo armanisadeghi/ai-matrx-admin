@@ -11,7 +11,7 @@
 
 import type { ReactNode } from "react";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 

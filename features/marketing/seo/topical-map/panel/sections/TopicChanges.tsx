@@ -618,8 +618,10 @@ function TopicPicker({
               key={row.slug}
               value={row.slug}
               className="text-xs"
-              // The menu's own 28px check gutter plus one geometry step per level.
-              style={{ paddingLeft: 28 + treeIndentPx(row.depth) }}
+              // SelectItem spreads `style` onto the Radix item (design-system source), and its check mark sits on the
+              // RIGHT (pr-8), so there is no left gutter: the item's own pl-2 (8px) = the 4px tree inset + 4. One step
+              // per level, and one more when the root option above makes the topics its children.
+              style={{ paddingLeft: treeIndentPx(row.depth + (allowRoot ? 1 : 0)) + 4 }}
             >
               {row.name}
             </SelectItem>

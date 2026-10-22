@@ -12,7 +12,7 @@
 // item holds state only where there is no answer to belong to — the canvas
 // pane itself, or a surface with no chat message.
 
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 
 export interface HostEntityInput {
   mode?: "inline" | "artifact" | "canvas" | null;

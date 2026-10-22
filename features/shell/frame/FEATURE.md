@@ -43,9 +43,6 @@ together. Linear is the visual reference. It is built beside the old shell and i
   "…" menu (`defaultPageActions`) and the right-side slot. On phones the header shrinks to
   back or menu, the title and "…".
 - `SheetFooter.tsx`: the status slot, Properties, history and help.
-- `sideChatAddress.ts`: the frame's small reading of the `side_chat*` link, so no chat code
-  loads before the side chat opens (held to `@ai-matrx/chat`'s answers by
-  `__tests__/side-chat-address.test.ts`).
 - `FrameModules.tsx`: the heavy-module machinery: `lazyModule` (one `React.lazy` per loader),
   `ModuleSlot` (Suspense with a row skeleton, and an honest failure), the labelled stand-ins,
   the side chat's resize handle and the ask bar.
@@ -126,7 +123,7 @@ Every region carries `data-mf-owner="frame"|"page"` (and `data-mf-region`).
 | Body | page | the content (`children`), properties content |
 | Ask bar slot | frame | on or off (`askBar`) |
 | Footer | frame | the status text |
-| Side chat, canvas | frame | the loaders (`loadCompanion`, `loadCanvas`), the page key, the visit's link |
+| Side chat, canvas | frame | the loaders (`loadCompanion`, `loadCanvas`), `companionOpen` / `canvasOpen` (controlled) |
 | Widths, breakpoints, motion | frame | nothing |
 
 ## The frame's heavy modules
@@ -135,16 +132,25 @@ Every region carries `data-mf-owner="frame"|"page"` (and `data-mf-region`).
   the person first opens it, never on render, and rendered through `React.lazy` in Suspense.
   Once loaded it stays mounted (inert while closed). Resizable 340 to 768px (default 350) by
   dragging its left edge or with the arrow keys; dragging 80px past the minimum snaps it shut;
-  the width is remembered per browser (cookie `matrx-frame:side-chat-width`). Closed by default; the
-  person's open or closed choice is remembered per page (`pageKey`). A host reads the
-  `side_chat` link with `@ai-matrx/chat`'s `readSideChatLink` and passes `companionLink`: the
-  link wins until the person acts. The frame reads that link itself (`sideChatAddress.ts`, no
-  chat import) and hands the new address to `onSideChatAddress`. ZERO WEIGHT: nothing of the
+  the width is remembered per browser (cookie `matrx-frame:side-chat-width`). OPEN / CLOSED is not
+  the frame's: `companionOpen` + `onCompanionOpenChange` are controlled by the host (uncontrolled:
+  local state, closed). The live host (`frame-host/FrameHostImpl.tsx`) uses the Side Chat's ONE
+  rule and cookie — `useSideChatOpen` from `@ai-matrx/chat/canvas/workspace/side-chat-state`: per
+  home (the classic dock's `canvas-workspace:<home>:chat` cookie, read on the server by FrameShell),
+  closed by default, the visit's `side_chat*` link wins until the person acts — plus
+  `useSideChatToggleKeys` (⌘\, the header toggle event). Its `loadCompanion` is
+  `import("./FrameSideChat")`: the package's `SideChatSession` (the same session the classic dock
+  renders) in its plain `SideChatPanel`, controlled by the host. ZERO WEIGHT: nothing of the
   side chat is on a page until it is opened, and it arrives as one chunk; a test fails if any
-  frame or playground file imports `@ai-matrx/chat` statically. ONE door: the header's right
+  frame or playground file imports `@ai-matrx/chat` statically, and the live host's only eager chat import is the light `side-chat-state` (`frame-host/__tests__/frame-side-chat-and-canvas.test.tsx`). ONE door: the header's right
   group (`SIDE_CHAT_DOOR`), the canvas toggle beside it; on a phone it is a "…" item.
 - **Canvas**: `loadCanvas`, the same lazy rule, then stays mounted (its state survives close
-  and reopen). Its toggle is the last tool in the header's right group (Lucide `Shapes`). From
+  and reopen). `canvasOpen` / `onCanvasOpenChange` are controllable: the live host binds them to
+  the canvas store (`selectCanvasIsOpen`, `canvas.show()` / `hide()`) and presents the canvas
+  window while mounted, so `openCanvasItem(...)` from any page opens the frame's canvas; its
+  `loadCanvas` is `import("./FrameCanvas")` → `features/canvas/host/ShellCanvasBody` (surface scope,
+  write handlers, the package column with `placement="fill"`) — the classic column's geometry stays
+  in `ShellCanvasColumn`. Its toggle is the last tool in the header's right group (Lucide `Shapes`). From
   the desktop form it is a full-height column at the sheet's right, header band included, so
   it never fights for space; its title row is the frame's, with full screen (the whole sheet,
   the sidebar stays) and close. On medium and phone it covers the sheet.

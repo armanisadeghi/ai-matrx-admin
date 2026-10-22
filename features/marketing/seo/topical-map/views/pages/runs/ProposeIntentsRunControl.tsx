@@ -24,7 +24,7 @@ import { X } from "lucide-react";
 import { Input } from "@ai-matrx/design-system/controls";
 
 import { Button } from "@/components/ui/button";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 import { TopicalMapFailed } from "../../../components/TopicalMapStates";

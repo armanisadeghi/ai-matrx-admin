@@ -10,7 +10,7 @@
 
 import React, { Suspense, lazy } from "react";
 import { WindowPanel } from "@ai-matrx/summon/window";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
   datasetTableEntityRef,

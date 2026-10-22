@@ -34,13 +34,9 @@ import {
 import { SheetFooter } from "./SheetFooter";
 import { SheetHeader, SidebarRestore } from "./SheetHeader";
 import type { FrameFavorite } from "./SheetHeader";
-import { sideChatAddressFor, sideChatOpenFromAddress } from "./sideChatAddress";
 import {
-  FRAME_COMPANION_OPEN_COOKIE,
   FRAME_COMPANION_WIDTH_COOKIE,
   FRAME_SIDEBAR_WIDTH_COOKIE,
-  frameCompanionOpenFor,
-  nextFrameCompanionOpen,
   parseFrameWidth,
   readFrameCookie,
   writeFrameCookie,
@@ -209,19 +205,20 @@ export interface AppFrameProps {
   /** The side chat. Without it the frame shows a labelled stand-in. */
   loadCompanion?: FrameModuleLoader<CompanionProps>;
   /**
-   * The page, for remembering whether the person left the side chat open here (closed by
-   * default; the owner, 2026-10-08: remembered per page, never one global last state).
+   * Whether the side chat is open. Controlled by a host that owns the rule (the live host: the
+   * Side Chat's one open / closed rule and cookie, `@ai-matrx/chat/canvas/workspace/side-chat-state`);
+   * uncontrolled, the frame keeps it in local state, closed to start.
    */
-  pageKey?: string;
-  /**
-   * The person opened or closed the side chat. The frame reads the `side_chat` link itself (it
-   * wins over the remembered choice until the person acts) and hands back the address that now
-   * says what the panel is; the host replaces the address with it (no navigation).
-   */
-  onSideChatAddress?: (search: string) => void;
+  companionOpen?: boolean;
   onCompanionOpenChange?: (open: boolean) => void;
   /** The canvas. Without it the frame shows a labelled stand-in. */
   loadCanvas?: FrameModuleLoader<CanvasProps>;
+  /**
+   * Whether the canvas is open. Controlled by a host whose canvas store decides (the live host:
+   * `openCanvasItem(...)` from any page opens it); uncontrolled, local state, closed to start.
+   */
+  canvasOpen?: boolean;
+  onCanvasOpenChange?: (open: boolean) => void;
   /**
    * The host cannot offer the side chat / canvas yet: its toggle is disabled with this sentence as
    * its tooltip (and leaves the phone "…" menu) — an honest stand-in, never a dead button.
@@ -236,7 +233,7 @@ export interface AppFrameProps {
   sidebarOpen?: boolean;
   onSidebarOpenChange?: (open: boolean) => void;
   /**
-   * The remembered widths and this page's side chat choice, read by the host's server from the
+   * The remembered widths, read by the host's server from the
    * frame's cookies (`geometry.ts`), so the first paint is already right. Without it the frame
    * reads the cookies after mount.
    */
@@ -325,59 +322,6 @@ function useRememberedWidth(cookie: string, initial: number | null | undefined) 
   return { stored, setStored, remember };
 }
 
-/**
- * Whether the side chat is open: the visit's link wins until the person acts; otherwise what
- * the person left on THIS page (closed by default). Only the person's own act is remembered.
- */
-function useCompanionOpen(
-  pageKey: string | undefined,
-  initialOpen: boolean | null | undefined,
-  onChange?: (open: boolean) => void,
-  onAddress?: (search: string) => void,
-) {
-  const [state, setState] = useState<{ pageKey?: string; remembered: boolean; acted: boolean; link: boolean | null }>({
-    pageKey,
-    // The host's server read of this page's cookie: the first paint already shows the choice.
-    remembered: initialOpen === true,
-    acted: false,
-    link: null,
-  });
-  // The page the host's server read was for: its choice is already in state, not re-read.
-  const [serverPageKey] = useState(initialOpen !== undefined ? pageKey : undefined);
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setState((previous) => {
-        if (previous.pageKey === pageKey && previous.acted) return previous;
-        const fromServer = serverPageKey !== undefined && serverPageKey === pageKey && previous.pageKey === pageKey;
-        return {
-          pageKey,
-          remembered: fromServer
-            ? previous.remembered
-            : pageKey ? frameCompanionOpenFor(readFrameCookie(FRAME_COMPANION_OPEN_COOKIE), pageKey) === true : false,
-          acted: false,
-          link: sideChatOpenFromAddress(window.location.search),
-        };
-      });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [pageKey, serverPageKey]);
-  const open = !state.acted && state.link !== null ? state.link : state.remembered;
-  function set(next: boolean) {
-    setState({ pageKey, remembered: next, acted: true, link: state.link });
-    if (pageKey) {
-      writeFrameCookie(
-        FRAME_COMPANION_OPEN_COOKIE,
-        nextFrameCompanionOpen(readFrameCookie(FRAME_COMPANION_OPEN_COOKIE), pageKey, next),
-      );
-    }
-    onChange?.(next);
-    const search = window.location.search;
-    const address = sideChatAddressFor(search, next);
-    if (address !== search) onAddress?.(address);
-  }
-  return [open, set] as const;
-}
-
 /** True from the first time `on` is true: a module stays mounted (and inert) once engaged. */
 function useLatched(on: boolean) {
   const [latched, setLatched] = useState(on);
@@ -417,14 +361,9 @@ export function AppFrame(props: AppFrameProps) {
   const [root, setRoot] = useState<HTMLDivElement | null>(null);
   const [sidebarOpen, setSidebarOpen] = useControllable(props.sidebarOpen, props.onSidebarOpenChange, true);
   const geometry = props.initialGeometry;
-  const [companionOpen, setCompanionOpen] = useCompanionOpen(
-    props.pageKey,
-    geometry?.companionOpen,
-    props.onCompanionOpenChange,
-    props.onSideChatAddress,
-  );
+  const [companionOpen, setCompanionOpen] = useControllable(props.companionOpen, props.onCompanionOpenChange, false);
   const headerEdge = props.headerEdge ?? "fade";
-  const [canvasOpen, setCanvasOpen] = useState(false);
+  const [canvasOpen, setCanvasOpen] = useControllable(props.canvasOpen, props.onCanvasOpenChange, false);
   const [canvasFull, setCanvasFull] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [propertiesOpen, setPropertiesOpen] = useState(true);

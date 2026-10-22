@@ -1,3 +1,4 @@
+-- window-class: DROP TRIGGER on platform.feature_knob takes ACCESS EXCLUSIVE and may hold the supautils auth/storage/realtime set; production rollback only at 0100-0400 Pacific.
 -- based-on: platform.admin_lane_open() 3c68665102a1c6fdd2a138e318443c8aa9956d7292b7d4da395c465075838fea
 -- based-on: platform._admin_operator_session() e9207f1c9ff3ef8c5b618f3cb1baf0b8844d2e4cc0ac2d2cdba1913c5c49937d
 -- based-on: platform._admin_mfa_required() 88c3dbe4c28d27cb7342410c7d8d46fb9c0e50b9f065e50c7b80fbf48702e24c
@@ -5,7 +6,6 @@
 -- based-on: platform._set_admin_mfa_required(boolean,uuid,text,text) d6db9bf919afd01ffe739d781068d4317b848d0ad31fcc612b6bf434297a987c
 -- based-on: platform.admin_session_state() 34153373bca38098d1940c79e8f8514bb953d50086d945667c6cad30fc37d1b2
 -- chair-step: Restore original lane only while MFA is off and no newer consumers exist. Retain audit history.
-begin;
 do $guard$ begin
 if encode(sha256(convert_to(pg_get_functiondef('platform.admin_lane_open()'::regprocedure),'UTF8')),'hex') <> '3c68665102a1c6fdd2a138e318443c8aa9956d7292b7d4da395c465075838fea' then raise exception 'MFA inverse refuses changed platform.admin_lane_open()'; end if;
 if encode(sha256(convert_to(pg_get_functiondef('platform._admin_operator_session()'::regprocedure),'UTF8')),'hex') <> 'e9207f1c9ff3ef8c5b618f3cb1baf0b8844d2e4cc0ac2d2cdba1913c5c49937d' then raise exception 'MFA inverse refuses changed platform._admin_operator_session()'; end if;
@@ -16,7 +16,7 @@ if encode(sha256(convert_to(pg_get_functiondef('platform.admin_session_state()':
 if platform._admin_mfa_required() then raise exception 'MFA inverse requires an audited operator deactivation first'; end if;
 if exists(select 1 from pg_proc p join pg_namespace n on p.pronamespace=n.oid
  where p.prokind='f' and p.prosrc ~ '(admin_session_state|_admin_mfa_required|_set_admin_mfa_required|_admin_operator_session)'
- and not (n.nspname='platform' and p.proname in ('admin_lane_open','admin_session_state','_admin_mfa_required','_set_admin_mfa_required','_admin_operator_session','_admin_mfa_policy_guard'))) then
+ and p.oid <> all(array['platform.admin_lane_open()'::regprocedure::oid,'platform.admin_session_state()'::regprocedure::oid,'platform._admin_mfa_required()'::regprocedure::oid,'platform._set_admin_mfa_required(boolean,uuid,text,text)'::regprocedure::oid,'platform._admin_operator_session()'::regprocedure::oid,'platform._admin_mfa_policy_guard()'::regprocedure::oid])) then
  raise exception 'MFA inverse refuses newly installed consumers'; end if;
 end $guard$;
 
@@ -42,4 +42,5 @@ drop function platform._set_admin_mfa_required(boolean,uuid,text,text);
 drop function platform._admin_mfa_policy_guard();
 drop function platform._admin_mfa_required();
 drop function platform._admin_operator_session();
-commit;
+delete from platform.client_callable_door where schema_name='platform' and function_name<>'admin_lane_open' and declared_by='20261021215557_admin_mfa_session_admission.sql';
+-- Retain the corrected declaration of the pre-existing lane grant; removing it would make DDL guards silently revoke its original anonymous EXECUTE.

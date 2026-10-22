@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
 import { toast } from "@/lib/toast";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import {
   NOTIFICATION_CHANNELS,
   clearNotificationPreference,

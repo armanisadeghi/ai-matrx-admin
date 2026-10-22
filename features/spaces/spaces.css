@@ -310,12 +310,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
+  height: 28px;
   margin: 0 8px;
   padding-right: 4px;
   border-radius: 6px;
   color: var(--spaces-ink-soft);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   outline: none;
 }
@@ -355,56 +355,6 @@
 .spaces-root-drop[data-drop]::after {
   top: 2px;
 }
-.spaces-row-icon {
-  position: relative;
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-}
-.spaces-row-glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 100ms ease;
-}
-/* Notion's tree disclosure: the chevron takes the page icon's own 22px slot while the row is
-   hovered or focused, so every title starts on the same line and nothing shifts. */
-.spaces-row-chevron {
-  position: absolute;
-  inset: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: var(--spaces-ink-soft);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 100ms ease, background-color 100ms ease;
-}
-.spaces-row-chevron > svg {
-  transition: transform 150ms ease;
-}
-.spaces-row-chevron[data-open] > svg {
-  transform: rotate(90deg);
-}
-.spaces-row-chevron:hover {
-  background: var(--spaces-hover-strong);
-  color: var(--spaces-ink);
-}
-.spaces-row:hover .spaces-row-chevron,
-.spaces-row:focus-visible .spaces-row-chevron,
-.spaces-row-chevron:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-.spaces-row:hover .spaces-row-glyph,
-.spaces-row:focus-visible .spaces-row-glyph,
-.spaces-row:has(.spaces-row-chevron:focus-visible) .spaces-row-glyph {
-  opacity: 0;
-}
 /* The row's real link: it fills the row under the icon, title and buttons, which let the pointer through
    except the buttons (the chevron and the actions stay pressable). */
 .spaces-row-link {
@@ -412,7 +362,6 @@
   inset: 0;
   border-radius: 6px;
 }
-.spaces-row-icon,
 .spaces-row-title {
   position: relative;
   z-index: 1;
@@ -1621,6 +1570,20 @@
 .spaces-entity-card { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 8px 10px; border-radius: 6px; background: hsl(var(--card)); border: 1px solid var(--spaces-rule); box-shadow: 0 1px 2px var(--spaces-shadow-sm); min-width: 0; }
 .spaces-entity-card:hover { background: var(--spaces-hover); }
 .spaces-entity-cardtitle { font-weight: 500; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A built-in source's gallery and list (CD-VIEW-11): tiles of a fixed minimum width per card size, lines of a
+   fixed height, so nothing reflows as values land. */
+.spaces-entity-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding: 4px 0 8px; margin: 0; list-style: none; }
+.spaces-entity-gallery[data-size="small"] { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.spaces-entity-gallery[data-size="large"] { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.spaces-entity-tile { width: 100%; min-height: 96px; cursor: pointer; }
+.spaces-entity-card-wait { min-height: 96px; background: var(--spaces-hover); }
+.spaces-entity-cardline { display: flex; min-width: 0; height: 22px; align-items: center; font-size: 13px; overflow: hidden; }
+.spaces-entity-list { margin: 0; padding: 0; list-style: none; }
+.spaces-entity-listrow { display: flex; align-items: center; gap: 12px; width: 100%; height: 36px; padding: 0 6px; border-bottom: 1px solid var(--spaces-rule); text-align: left; min-width: 0; }
+.spaces-entity-listrow:hover { background: var(--spaces-hover); }
+.spaces-entity-listrow > .spaces-entity-cardtitle { flex: 1 1 auto; min-width: 0; }
+.spaces-entity-listprops { display: flex; gap: 8px; flex: 0 1 auto; min-width: 0; overflow: hidden; color: hsl(var(--muted-foreground)); font-size: 13px; }
+.spaces-entity-listprop { display: inline-flex; max-width: 160px; min-width: 0; overflow: hidden; }
 .spaces-entity-peek { padding: 8px 24px 32px; }
 .spaces-entity-peek h2.spaces-entity-peektitle { font-size: 32px; font-weight: 700; line-height: 1.2; margin: 12px 0 16px; }
 .spaces-entity-props { display: flex; flex-direction: column; gap: 2px; }

@@ -7,7 +7,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Check, LayoutList } from "lucide-react";
 import { Button, SegmentedControl } from "@ai-matrx/design-system/controls";
-import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import type { FrameHeaderEdge, FrameSidebarColor, FrameSpace } from "@/features/shell/frame/AppFrame";
 import type { FrameGridLook } from "@/features/shell/frame/AppGrid";
@@ -508,8 +507,6 @@ export function ShellPlayground({ initialProduct, initialItem }: { initialProduc
             variant={frameVariant}
             properties={frameVariant === "record" ? properties : undefined}
             askBar={askBar}
-            pageKey={`lab-shell:${pageKey}`}
-            onSideChatAddress={(search) => replaceAddressWithoutNavigating(`${window.location.pathname}${search}`)}
             headerEdge={headerEdge}
             gridLook={gridLook}
             space={space}

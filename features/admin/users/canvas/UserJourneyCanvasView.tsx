@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Route } from "lucide-react";
 import type { CanvasKindProps } from "@ai-matrx/canvas/react";
 import { Badge } from "@/components/ui/badge";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useAdminCost } from "@/components/cost/useAdminCost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AcquisitionJourneySchema, type AcquisitionJourney } from "../types";

@@ -9,7 +9,7 @@
 import { useState, type ReactNode } from "react";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { saveFeedback, type FeedbackRating } from "@/features/agents/run-review/responseFeedbackService";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { useAppSelector } from "@/lib/redux/hooks";

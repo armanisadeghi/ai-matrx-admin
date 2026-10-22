@@ -49,7 +49,7 @@ import { Button } from "@/components/ui/button";
 import { CanvasPagePanel } from "@/features/canvas/host/pagePanel";
 import { AgentConversationColumn } from "@ai-matrx/chat/agents/components/shared/AgentConversationColumn";
 import { ChatRoomSkeleton } from "@ai-matrx/chat/agents/components/chat/ChatRoomSkeleton";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 import { useConversationResume } from "@ai-matrx/chat/agents/hooks/useConversationResume";
 import { useMandate } from "@ai-matrx/chat/mandates/useMandate";

@@ -117,9 +117,9 @@ import {
 // Lazy shell (next/dynamic ssr:false inside) — Babel/compiler weight ships in
 // its own chunk, fetched only when a block actually routed to a db component.
 import DbKindComponent from "@/features/content-ir/react/db-component/DbKindComponent";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import {
   detectVideoMarkdown,
 } from "@ai-matrx/rich-content/display/markdown-classification/processors/utils/content-splitter-v2";

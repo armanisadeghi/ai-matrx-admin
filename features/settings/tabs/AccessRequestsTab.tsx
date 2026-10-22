@@ -7,7 +7,7 @@
 // moved; the old `/settings/access-requests` URL redirects here.
 
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { AccessRequestsSurface } from "@/features/access-gate/components/AccessRequestsSurface";
 
 export default function AccessRequestsTab() {

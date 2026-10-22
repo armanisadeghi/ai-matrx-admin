@@ -3,7 +3,8 @@
   python3 scripts/campaign-tests/closeshare_who_could_see_green.py
 
 Live, one connection, short transactions (History needs real moments, so the share and the revoke are COMMITTED):
-admin@admin.com writes one disposable record in the "ATFJ main wfob" test table, shares it with an outside person, a moment
+admin@admin.com writes one disposable record in its own "Onboarding checklist" table in Oak Street Studio (an organization
+test@test.com is not in, so the test member is the outside person; never a real stranger's account), shares it with them, a moment
 passes, the share is revoked; then custom.who_could_see_on(record, the moment in between) must list the outside person with
 has_access_now false, an outsider asking is refused, and the record is put away (custom.record_delete = soft delete) at the end.
 RED before 20261021132000_closeshare_c_who_could_see_a_record_on_a_date (the door is missing), GREEN after.
@@ -12,9 +13,9 @@ import json, re, time
 import psycopg
 
 ADMIN = "87a6e699-3622-4869-8843-d0867456c0dd"
-OUT = "000eaa28-cf5d-402a-8f01-5e2c24191323"   # an outside person (not in admin's Workspace)
-ORG = "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f"   # admin's Workspace
-TABLE = "3c0440ef-6f75-4064-afd4-fd35409d33df"  # ATFJ main wfob (test table)
+OUT = "4060701e-706a-4c76-b3ca-0bbc69fa5a14"   # test@test.com: not a member of Oak Street Studio
+ORG = "2643e470-b275-47f3-95f3-ae275ad3ca47"   # Oak Street Studio (admin owns it)
+TABLE = "459fc731-3224-442d-b5eb-6134a9ded1fe"  # Onboarding checklist (admin's own table there)
 env = {}
 for line in open("/Users/armanisadeghi/code/aidream/.env"):
     m = re.match(r"^(SUPABASE_MATRIX_\w+)=(.*)$", line.strip())
@@ -36,7 +37,7 @@ def as_(who, sql, args=()):
     return row
 
 
-rec = as_(ADMIN, "select custom.record_write(%s, %s, %s::jsonb)", (ORG, TABLE, json.dumps({"name": "CLOSE-SHARE who-could-see probe"})))[0]
+rec = as_(ADMIN, "select custom.record_write(%s, %s, %s::jsonb)", (ORG, TABLE, json.dumps({})))[0]
 print("record", rec)
 status = "FAIL"
 try:

@@ -8,7 +8,7 @@
  */
 
 import dynamic from "next/dynamic";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import type { ArtifactRendererProps } from "./types";
 
 export const ArtifactRenderDynamic = dynamic(

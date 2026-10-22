@@ -34,7 +34,7 @@ import { MatrxSplit } from "@/components/matrx/MatrxSplit";
 import { useTextareaFormatting } from "@ai-matrx/rich-content/editor/format/useTextareaFormatting";
 import { FormatButtons } from "@ai-matrx/rich-content/editor/format/FormatButtons";
 import { formatTargetWithin } from "@ai-matrx/rich-content/editor/format/format-target";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import {

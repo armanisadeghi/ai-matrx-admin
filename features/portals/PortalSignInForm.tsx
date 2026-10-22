@@ -16,11 +16,39 @@ import { Input } from "@ai-matrx/design-system/controls";
 
 import { Button } from "@/components/ui/button";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { signInWithGoogleAction } from "@/actions/auth.actions";
+import { supabase } from "@/utils/supabase/client";
 
-export function PortalSignInForm({ slug }: { slug: string }) {
+/** CD-PAGE-12: the ways in the portal's owner turned on (`custom.portal_public.access`). The email link is always one. */
+export interface PortalWaysIn {
+  password: boolean;
+  google: boolean;
+  self_signup: boolean;
+}
+
+export function PortalSignInForm({ slug, ways }: { slug: string; ways?: PortalWaysIn | null }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [problem, setProblem] = useState<string | null>(null);
+  // CD-PAGE-12: which way in is on screen — the link (default), a password, or signing up.
+  const [mode, setMode] = useState<"link" | "password" | "signup">("link");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+
+  async function onPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (state === "sending") return;
+    setState("sending");
+    setProblem(null);
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) {
+      setProblem("That email and password do not match. Use the email link instead, or try again.");
+      setState("error");
+      return;
+    }
+    // Signed in on this origin: the page now draws her portal (the server reads the new session).
+    window.location.reload();
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,10 +56,10 @@ export function PortalSignInForm({ slug }: { slug: string }) {
     setState("sending");
     setProblem(null);
     try {
-      const response = await fetch(`/api/portal/${encodeURIComponent(slug)}/sign-in`, {
+      const response = await fetch(`/api/portal/${encodeURIComponent(slug)}/${mode === "signup" ? "sign-up" : "sign-in"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(mode === "signup" ? { email, name } : { email }),
       });
       const body = (await response.json().catch(() => null)) as
         | { ok?: boolean; message?: string }
@@ -69,8 +97,73 @@ export function PortalSignInForm({ slug }: { slug: string }) {
     );
   }
 
+  const others = (
+    <div className="mt-4 flex flex-col gap-2" data-portal-ways-in="">
+      {ways?.google ? (
+        <form action={signInWithGoogleAction}>
+          <input type="hidden" name="redirectTo" value={`/portal/c/${slug}`} />
+          <Button variant="outline" type="submit" className="w-full" data-portal-google="">
+            Continue with Google
+          </Button>
+        </form>
+      ) : null}
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
+        {mode !== "link" ? (
+          <button type="button" className="font-medium text-primary underline underline-offset-4" onClick={() => setMode("link")}>
+            Email me a link instead
+          </button>
+        ) : null}
+        {ways?.password && mode !== "password" ? (
+          <button type="button" className="font-medium text-primary underline underline-offset-4" onClick={() => setMode("password")} data-portal-use-password="">
+            Use a password
+          </button>
+        ) : null}
+        {ways?.self_signup && mode !== "signup" ? (
+          <button type="button" className="font-medium text-primary underline underline-offset-4" onClick={() => setMode("signup")} data-portal-sign-up="">
+            New here? Sign up
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  if (mode === "password") {
+    return (
+      <>
+        <form onSubmit={onPassword} className="mt-6 space-y-3" data-portal-password-form="">
+          <label htmlFor="portal-email" className="block text-sm font-medium text-foreground">
+            Your email address
+          </label>
+          <Input id="portal-email" name="email" type="email" inputMode="email" autoComplete="email" required value={email}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setEmail(event.target.value)} placeholder="you@yourcompany.com" />
+          <label htmlFor="portal-password" className="block text-sm font-medium text-foreground">
+            Password
+          </label>
+          <Input id="portal-password" name="password" type="password" autoComplete="current-password" required value={password}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPassword(event.target.value)} />
+          <Button variant="primary" type="submit" className="w-full" disabled={state === "sending"}>
+            {state === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Sign in
+          </Button>
+          {problem ? <p className="text-sm text-destructive">{problem}</p> : null}
+        </form>
+        {others}
+      </>
+    );
+  }
+
   return (
+    <>
     <form onSubmit={onSubmit} className="mt-6 space-y-3">
+      {mode === "signup" ? (
+        <>
+          <label htmlFor="portal-name" className="block text-sm font-medium text-foreground">
+            Your name
+          </label>
+          <Input id="portal-name" name="name" autoComplete="name" required value={name}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setName(event.target.value)} data-portal-name="" />
+        </>
+      ) : null}
       <label htmlFor="portal-email" className="block text-sm font-medium text-foreground">
         Your email address
       </label>
@@ -95,7 +188,7 @@ export function PortalSignInForm({ slug }: { slug: string }) {
         ) : (
           <>
             <Mail className="h-4 w-4" />
-            Email me a sign-in link
+            {mode === "signup" ? "Sign up and email me a link" : "Email me a sign-in link"}
           </>
         )}
       </Button>
@@ -110,5 +203,7 @@ export function PortalSignInForm({ slug }: { slug: string }) {
         </p>
       )}
     </form>
+    {others}
+    </>
   );
 }

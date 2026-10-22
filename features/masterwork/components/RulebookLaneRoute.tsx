@@ -37,7 +37,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { MandateDoorLink } from "@/features/mandates/components/MandateDoorLink";

@@ -29,7 +29,7 @@ import { ExternalLink, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import { convertToKebabCase } from "@/utils/text/stringUtils";
 

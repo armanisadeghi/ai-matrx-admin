@@ -8,7 +8,7 @@ import { resolveShellIconName } from "@/features/shell/shellIconMap";
 import { iconColorMap } from "@/features/shell/constants/nav-data";
 import { cn } from "@/lib/utils";
 import { usePinned } from "@/components/favorites/usePinned";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 export function PinnedSection({

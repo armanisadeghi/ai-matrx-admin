@@ -62,7 +62,7 @@ import {
   File as FileIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { SandboxVersionHealthCard } from "./SandboxVersionHealthCard";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { RecordId } from "@ai-matrx/design-system";

@@ -67,7 +67,7 @@ import { isSkipped, slideTextStyleOf } from "../deck-slide-ops";
 import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
 import { pastePlainText } from "../paste-plain";
 import { createDeckSaver, listenToDeckPage, type DeckSaver } from "../deck-autosave";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
 import { DeckGridView } from "./DeckGridView";
 import { deckDownloads, downloadDeckAsOdp, downloadDeckAsText, downloadSlideAsImage, printDeck } from "../deck-export";

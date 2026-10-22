@@ -43,7 +43,10 @@ jest.mock("@/features/canvas/hooks/useCanvasItem", () => ({
 jest.mock("@/features/canvas/artifact-types/artifact-type-registry", () => ({ getArtifactDef: () => ({ userEditable: false }) }));
 jest.mock("@ai-matrx/rich-content/kinds/react/kind-route", () => ({ kindServerDataFromStoredValue: () => null }));
 jest.mock("@/features/canvas/artifact-types/storedKindValue", () => ({ storedKindValue: () => null }));
-jest.mock("@/components/loaders/MatrxMiniLoader", () => () => null);
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  MatrxMiniLoader: () => null,
+}));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@ai-matrx/rich-content/display/blocks/mermaid/MermaidBlock", () => () => null);
 

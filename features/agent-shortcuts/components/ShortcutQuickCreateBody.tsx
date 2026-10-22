@@ -20,7 +20,7 @@ import {
   Hammer,
   Variable,
 } from "lucide-react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@ai-matrx/design-system/controls";

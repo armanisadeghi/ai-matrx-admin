@@ -190,12 +190,21 @@ end $t$;
 -- B4: the owner still reads it all.
 select set_config('request.jwt.claims', '{"sub":"87a6e699-3622-4869-8843-d0867456c0dd","role":"authenticated"}', true);
 set local role authenticated;
--- C2: after "mine" the lane door says mine and names no default.
+-- C2: after "mine" the lane door says mine, Shown to only_me, not published, and STILL names the
+-- organization default. Only me hides and never locks (access ladder T-17, 2026-10-03): B2 just
+-- proved Dana opens this Table by link at the member level, so a door that named no default would
+-- be the lie. (Lane ASOF-REVOKE 2026-10-21: this used to demand a null default, the pre-T-17 rule
+-- where "mine" closed membership. `world_open` is whether this store CAN publish to the web at
+-- all, custom._row_control_columns, not whether this row is open: `published_to_web` is.)
 do $t$
 declare d jsonb;
 begin
   d := public.store_door_lane('record', (select v from st_probe where k = 'tbl'));
-  if d ->> 'lane' is distinct from 'mine' or d -> 'organization_default' <> 'null'::jsonb then
+  if d ->> 'lane' is distinct from 'mine'
+     or d ->> 'shown_to' is distinct from 'only_me'
+     or (d ->> 'published_to_web')::boolean is distinct from false
+     or d #>> '{organization_default,level}' is distinct from d ->> 'member_default_level'
+     or d #>> '{organization_default,level}' is null then
     raise exception 'C2 FAILED — after mine the lane door says %', d;
   end if;
 end $t$;
@@ -210,9 +219,12 @@ begin
   if l.means !~ 'with the link' or l.means ~* 'nobody reaches|only the people' then
     raise exception 'B3 FAILED — the mine choice promises a lock: %', l.means;
   end if;
-  if exists (select 1 from custom.share_access('5ba5aa1e-0000-4a00-8a00-000000000a01', (select v from st_probe where k = 'tbl')) a
+  -- Only me hides and never locks (T-17), so membership still opens this Table (B2) and the
+  -- dialog must SAY so: the organization-default row stays listed. (Lane ASOF-REVOKE 2026-10-21:
+  -- this used to demand the row was gone, the pre-T-17 rule where "mine" closed membership.)
+  if not exists (select 1 from custom.share_access('5ba5aa1e-0000-4a00-8a00-000000000a01', (select v from st_probe where k = 'tbl')) a
               where a.reason = 'organization default') then
-    raise exception 'B3 FAILED — the dialog lists an organization-default share row on an "Only me" Table.';
+    raise exception 'B3 FAILED — members still open this "Only me" Table and the dialog no longer says the organization default reaches it.';
   end if;
 end $t$;
 do $t$

@@ -28,7 +28,10 @@ jest.mock("@/features/canvas/artifact-types/artifact-renderers", () => ({
   hasArtifactRenderer: () => true,
   ArtifactRender: () => <div data-testid="card" />,
 }));
-jest.mock("@/components/loaders/MatrxMiniLoader", () => () => null);
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  MatrxMiniLoader: () => null,
+}));
 jest.mock("@ai-matrx/rich-content/code-block/CodeBlock", () => () => null);
 jest.mock("@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent", () => () => null);
 jest.mock("@ai-matrx/rich-content/display/chat-markdown/block-registry/json-parse-utils", () => ({

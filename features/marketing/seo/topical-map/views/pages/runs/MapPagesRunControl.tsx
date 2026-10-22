@@ -28,7 +28,7 @@ import { useState } from "react";
 import {  } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 
 import { TopicalMapFailed } from "../../../components/TopicalMapStates";
 import { usePageMappingStatus } from "../../../hooks";

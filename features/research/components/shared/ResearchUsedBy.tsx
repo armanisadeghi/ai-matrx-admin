@@ -15,7 +15,7 @@
 
 import { ExternalLink } from "lucide-react";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useAssociations } from "@/features/scopes/hooks/useAssociations";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";

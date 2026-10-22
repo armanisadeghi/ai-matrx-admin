@@ -16,6 +16,7 @@
  * the menu and missing here.
  */
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { useState } from "react";
 import { ArrowRight, Globe2, Inbox, Plus, Share2 } from "lucide-react";
 
@@ -133,11 +134,11 @@ function BrandGlimpseCard({ row }: { row: BrandListRow }) {
         {row.pending_discovered ? (
           <Link
             href={marketingRoutes.brandDiscovery(row.id)}
-            aria-label={`${row.pending_discovered.toLocaleString()} to review for ${row.name}`}
+            aria-label={`${formatCount(row.pending_discovered)} to review for ${row.name}`}
           >
             <Badge variant="warning" className="gap-1">
               <Inbox className="h-3 w-3" />
-              {row.pending_discovered.toLocaleString()}
+              {formatCount(row.pending_discovered)}
             </Badge>
           </Link>
         ) : null}
@@ -148,7 +149,7 @@ function BrandGlimpseCard({ row }: { row: BrandListRow }) {
           className="inline-flex items-center gap-1 hover:text-foreground"
         >
           <Globe2 className="h-3 w-3" />
-          {row.sites.length.toLocaleString()}{" "}
+          {formatCount(row.sites.length)}{" "}
           {row.sites.length === 1 ? "website" : "websites"}
         </Link>
         <Link
@@ -156,7 +157,7 @@ function BrandGlimpseCard({ row }: { row: BrandListRow }) {
           className="inline-flex items-center gap-1 hover:text-foreground"
         >
           <Share2 className="h-3 w-3" />
-          {row.social_count.toLocaleString()} social
+          {formatCount(row.social_count)} social
         </Link>
       </div>
     </Card>

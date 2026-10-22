@@ -54,7 +54,6 @@
 -- the rollback verification all run on the clone against a two-record fixture.
 -- Do not answer a skip here by raising the ceiling, or by shrinking the fixture RED 1's 50 ms
 -- floor is sized on: the ceiling is the assertion.
-\set requires 'row:platform.feature_knob:feature = \'custom\' and key = \'member_default_visibility\''
 \i scripts/campaign-tests/_preamble.sql
 \if :matrx_skip
 \quit
@@ -107,15 +106,16 @@ begin
           'compass-route-relocation-desk-' || substr(v_org::text, 1, 8), 'CRR', c_admin);
   -- A seat is a PERSON, and a person reaches an organization only through a membership.
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status) values
-    (v_org, 'organization', v_org, c_admin, 'owner',  'active'),
-    (v_org, 'organization', v_org, c_dana,  'member', 'active');
+    (v_org, 'organization', v_org, c_admin, 'owner',  'active');
+  -- test@test.com is NOT a member (lane ASOF-REVOKE, 2026-10-21): the access clauses below are
+  -- about what a SHARE conveys, and since access ladder T-17 (2026-10-03) every member opens every
+  -- Organization record whatever any setting says. This suite used to close the member lane with
+  -- custom/member_default_visibility = shared_only, a knob T-17 retired; a person outside the
+  -- organization is the one a share alone still opens a record to.
   -- The store answers a person only where it is switched ON; the superuser walked past this
-  -- switch on its first line. And `shared_only`, because the access clauses below are about
-  -- what a SHARE conveys and cannot be asked in an organization that shows every member
-  -- everything by default.
+  -- switch on its first line.
   insert into platform.knob_override (feature, key, scope_kind, scope_id, organization_id, value, set_note) values
-    ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,          'asof_red'),
-    ('custom', 'member_default_visibility', 'organization', v_org, v_org, '"shared_only"'::jsonb, 'asof_red');
+    ('custom', 'system_enabled',            'organization', v_org, v_org, 'true'::jsonb,          'asof_red');
   -- A HOME record has no client door of its own (a Home is made by the onboarding path, not by
   -- a person's browser). This step asserts nothing.
   insert into custom.record (organization_id, table_id, data)
@@ -176,9 +176,25 @@ begin
     v_built := 0;
     raise notice 'FIXTURE: NOT BUILT — the %-record fixture RED 1 is sized on needs compute:shared_buffers:524288 and this server is smaller. RED 1 below is gated with it; every other clause runs against the two records this suite still writes.', c_n;
   else
-    for i in 1..c_n loop
-      v_rec := custom.record_write(v_org, v_tbl, jsonb_build_object('name', 'Deal ' || i));
-    end loop;
+    -- ONE SET-BASED INSERT, out of the seat (lane ASOF-REVOKE, 2026-10-21). Ten thousand calls of
+    -- the write door cost ~21 ms each, ~211 s inside this file's 60-second ceiling, so on the
+    -- main database this suite timed out here on every run, and it was ten thousand door writes
+    -- of load on live for a fixture that asserts nothing. RED 1 times a READ over N live records;
+    -- how those records were written is not what it measures, and the shared record below still
+    -- goes through the door.
+    -- Row triggers are skipped for this one statement (session_replication_role = replica, put
+    -- back on the next line): through them the insert still cost ~11 ms a row, 113 s measured
+    -- 2026-10-21. Column defaults still apply; the transaction is rolled back at the end of the
+    -- file, and RED 1 reads these rows, never what a trigger would have derived from them.
+    perform set_config('role', v_boss, true);
+    perform set_config('session_replication_role', 'replica', true);
+    insert into custom.record (organization_id, table_id, data_class, data, created_by)
+    select v_org, v_tbl, 'record', jsonb_build_object('name', 'Deal ' || g), c_admin
+      from generate_series(1, c_n) g;
+    perform set_config('session_replication_role', 'origin', true);
+    select r.id into v_rec from custom.record r
+     where r.organization_id = v_org and r.table_id = v_tbl and r.data ->> 'name' = 'Deal ' || c_n;
+    perform set_config('role', 'authenticated', true);
     v_built := c_n;
   end if;
   v_shared := custom.record_write(v_org, v_tbl, jsonb_build_object('name','The shared one'));

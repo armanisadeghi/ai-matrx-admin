@@ -23,7 +23,7 @@ import {
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { callApi } from "@/lib/api/call-api";
 import { useAppStore } from "@/lib/redux/hooks";

@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import dynamic from "next/dynamic";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import ShellIcon from "../ShellIcon";
 
 const MenuSearchPalette = dynamic(() => import("./MenuSearchPalette"), {

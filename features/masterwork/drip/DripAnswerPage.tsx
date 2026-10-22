@@ -36,7 +36,7 @@ import {
   GatedActionButton,
 } from "@/components/official/GatedActionButton";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { knobInt } from "@/lib/knobs/featureKnobs";
 import { MasterworkDictationOrigin } from "../MasterworkDictationOrigin";
 import type { Rulebook } from "../types";

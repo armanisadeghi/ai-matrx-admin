@@ -16,7 +16,7 @@
 import { useEffect, useRef, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { buildApplicationScopeFromMenuContext } from "@ai-matrx/context-menu/engine";

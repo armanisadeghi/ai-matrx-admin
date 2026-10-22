@@ -103,7 +103,7 @@ import { resolveSystemOrgId } from "@/lib/organizations/systemOrg";
 import { filterAndSortBySearch } from "@ai-matrx/kit/search-scoring";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { ENDPOINTS } from "@ai-matrx/api";
 import { parseNdjsonStream } from "@/lib/api/stream-parser";
 import type {

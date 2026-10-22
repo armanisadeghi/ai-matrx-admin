@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ShowDetailClient } from "@/features/podcasts/components/admin/ShowDetailClient";
 
 export const metadata = { title: "New Podcast Show" };

@@ -27,7 +27,7 @@ import { reportCanvasOpenDrop } from "@/features/canvas/openRequest";
 import { useCanvasOpenGuard } from "./useCanvasOpenGuard";
 import type { CanvasContentType } from "@/features/canvas/canvasContent";
 import { useArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { canvasArtifactService } from "@/features/canvas/services/canvasArtifactService";
 

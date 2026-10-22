@@ -20,6 +20,7 @@
 // the cap, the rate window, every exposed key and every required answer are all
 // the door's, and its sentences are carried back whole.
 
+import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { publicForm, submitPublicForm } from "@/features/forms/service";
@@ -56,9 +57,13 @@ export async function POST(
       : null;
   const visit = typeof values["_visit"] === "string" ? values["_visit"] : null;
   const timeZone = typeof values["_time_zone"] === "string" ? values["_time_zone"] : null;
+  // CD-PAGE-08: a protected form's page hands the runner the password's fingerprint; it rides to the door, which checks it.
+  const unlock = typeof values["_unlock"] === "string" ? values["_unlock"] : null;
   delete values["_hidden"];
   delete values["_visit"];
   delete values["_time_zone"];
+  delete values["_unlock"];
+  delete values["_edit"];
 
   // The form tells us the decoy's name; we take it out of the answers and hand
   // it to the door separately, so a real field can never be mistaken for it and
@@ -91,6 +96,10 @@ export async function POST(
     );
   }
 
+  // CD-PAGE-08 — ANSWER AGAIN. When the form lets answers be changed, THIS server mints the respondent's secret; the
+  // store keeps only its hash, and the person gets it back once, as their private link.
+  const edit = form.presentation?.allow_edit === true ? randomBytes(24).toString("base64url") : null;
+
   const origin = request.headers.get("origin") ?? new URL(request.url).origin;
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   const bucket = forwarded && forwarded.length > 0 ? forwarded : origin;
@@ -100,7 +109,14 @@ export async function POST(
       formId,
       origin,
       bucket,
-      values: { ...typed.values, ...(hidden ? { _hidden: hidden } : {}), ...(visit ? { _visit: visit } : {}), ...(timeZone ? { _time_zone: timeZone } : {}) },
+      values: {
+        ...typed.values,
+        ...(hidden ? { _hidden: hidden } : {}),
+        ...(visit ? { _visit: visit } : {}),
+        ...(timeZone ? { _time_zone: timeZone } : {}),
+        ...(unlock ? { _unlock: unlock } : {}),
+        ...(edit ? { _edit: edit } : {}),
+      },
       honeypot,
       clientKey: typeof body.clientKey === "string" ? body.clientKey : null,
     });
@@ -129,6 +145,8 @@ export async function POST(
         state: outcome.state,
         message: outcome.message,
         record_id: outcome.record_id,
+        // A replay of an answer that already arrived keeps the secret the first send was given, so none is handed out.
+        ...(edit && sent && !(outcome.state === "accepted" && outcome.message) ? { edit } : {}),
         ...(payment && "url" in payment ? { payment_url: payment.url } : {}),
         ...(payment && "refused" in payment ? { payment_refused: payment.refused } : {}),
       },

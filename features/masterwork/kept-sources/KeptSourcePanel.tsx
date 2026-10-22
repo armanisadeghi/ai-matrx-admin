@@ -17,7 +17,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Archive } from "lucide-react";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
 import { KeptSourceReader } from "./KeptSourceReader";
 import { getKeptSource } from "./service";

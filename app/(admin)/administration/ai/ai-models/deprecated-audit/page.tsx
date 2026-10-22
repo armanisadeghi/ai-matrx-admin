@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import DeprecatedModelsAuditPage from "@/features/ai-models/components/DeprecatedModelsAuditPage";
 
 export default function DeprecatedAuditPage() {

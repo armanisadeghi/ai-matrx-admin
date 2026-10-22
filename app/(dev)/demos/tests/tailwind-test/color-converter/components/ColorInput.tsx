@@ -7,7 +7,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardTitle} from '@/components/ui/card';
 import {HexColorPicker} from 'react-colorful';
-import {tailwindColors} from '@/constants/tailwind-colors';
+import {tailwindColors} from '@ai-matrx/kit/color-util';
 import {predefinedColors} from '@/constants/standard-colors';
 import {colorFormats, getColorString, isValidColor, normalizeColorInput} from '@/utils/color-utils/color-change-util';
 import {useAppDispatch} from '@/lib/redux/hooks';

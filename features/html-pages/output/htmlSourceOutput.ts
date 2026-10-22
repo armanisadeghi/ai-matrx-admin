@@ -11,7 +11,7 @@ import { copyText } from "@ai-matrx/kit/clipboard";
 import { downloadFile } from "@ai-matrx/kit/download";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { resolveHtmlCanvasPage } from "@/features/html-pages/services/canvasVersionPage";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 
 export function htmlPageFileName(title: string): string {
   const base = title.replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-").toLowerCase();

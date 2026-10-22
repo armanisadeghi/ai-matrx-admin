@@ -10,7 +10,7 @@ jest.mock("@ai-matrx/chat/agents/components/chat/begin-fresh-chat", () => ({ cha
 jest.mock("@/features/html-pages/capture/renderedCapture", () => ({}));
 jest.mock("@/lib/redux/store-singleton", () => ({ getStore: () => null }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn() } }));
-jest.mock("@ai-matrx/rich-content/utils/lifted/artifactId", () => ({ isMaterializedArtifactId: () => true }));
+jest.mock("@ai-matrx/kit/artifact-id", () => ({ isMaterializedArtifactId: () => true }));
 jest.mock("@/features/canvas/host/artifactItem", () => ({}));
 jest.mock("../publishedPage", () => ({}));
 

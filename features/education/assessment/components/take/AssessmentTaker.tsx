@@ -18,7 +18,7 @@ import { Clock, ChevronRight, Flag, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { StudyDeckHeader } from "@/features/flashcards/components/study/StudyDeckHeader";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { useTakeAssessment, type AnswerRecord, type TakeOptions } from "./useTakeAssessment";
 import {

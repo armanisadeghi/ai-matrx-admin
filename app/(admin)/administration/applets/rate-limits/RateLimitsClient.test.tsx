@@ -30,9 +30,9 @@ jest.mock("@/components/ui/use-toast", () => ({
   useToast: () => ({ toast: jest.fn() }),
 }));
 
-jest.mock("@/components/loaders/MatrxMiniLoader", () => ({
-  __esModule: true,
-  default: () => null,
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  MatrxMiniLoader: () => null,
 }));
 
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({

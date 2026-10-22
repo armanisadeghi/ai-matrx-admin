@@ -1,15 +1,15 @@
 import type { ErrorInfo, ReactNode } from "react";
 import { captureRichContentRenderError } from "@ai-matrx/rich-content/utils/lifted/captureReactError";
-import { notifyChunkLoadError } from "@ai-matrx/rich-content/utils/lifted/chunk-load-recovery";
+import { notifyChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 import { MarkdownErrorBoundary } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/MarkdownErrorBoundary";
 
 jest.mock("@ai-matrx/rich-content/utils/lifted/captureReactError", () => ({
   captureRichContentRenderError: jest.fn(),
 }));
 
-jest.mock("@ai-matrx/rich-content/utils/lifted/chunk-load-recovery", () => {
+jest.mock("@ai-matrx/kit/chunk-load-recovery", () => {
   const actual = jest.requireActual(
-    "@ai-matrx/rich-content/utils/lifted/chunk-load-recovery",
+    "@ai-matrx/kit/chunk-load-recovery",
   ) as object;
   return { ...actual, notifyChunkLoadError: jest.fn() };
 });

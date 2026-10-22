@@ -1,0 +1,30 @@
+// Lane CLOSE-AGENT, CD-AGENT-11: REST v1 rows (list, get, create, update, conflict, upsert, delete), schema, comments and a
+// signed webhook, against the live server as admin@admin.com, on one disposable table. TABLE=<id> node close-agent-rest.mjs
+import { admin, say, must } from "./at-fix-j-lib.mjs";
+const SERVER = process.env.SERVER ?? "https://server.app.matrxserver.com";
+const SINK = process.env.SINK ?? "https://www.aimatrx.com/api/webhooks/records-test-sink";
+const id = process.env.TABLE;
+const a = await admin();
+const token = (await a.sb.auth.getSession()).data.session.access_token;
+const H = { authorization: `Bearer ${token}`, "content-type": "application/json", "X-Organization-Id": process.env.WALK_ORG_ID ?? "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f" };
+const out = {};
+const rq = async (m, p, body) => { const r = await fetch(SERVER + p, { method: m, headers: H, body: body ? JSON.stringify(body) : undefined }); const t = await r.text(); let j; try { j = JSON.parse(t); } catch { j = t.slice(0, 200); } return { s: r.status, j }; };
+const note = (k, v) => { out[k] = v; say(k, typeof v === "string" ? v : JSON.stringify(v).slice(0, 300)); };
+const list = await rq("GET", `/v1/tables/${id}/rows?limit=3`); note("GET rows", `${list.s} rows=${list.j.rows?.length}`);
+const cols = await rq("GET", `/v1/tables/${id}/columns`); note("GET columns (schema)", `${cols.s} ${cols.j.columns?.map((c) => c.name).join(",")}`);
+const made = await rq("POST", `/v1/tables/${id}/rows`, { values: { Item: "REST kettle", Qty: 3, Status: "Ordered" } });
+const rid = made.j.id ?? made.j.row?.id ?? made.j.rows?.[0]?.id; note("POST row", `${made.s} id=${rid}`);
+const got = await rq("GET", `/v1/tables/${id}/rows/${rid}`); note("GET row", `${got.s} ${JSON.stringify(got.j.values ?? got.j)}`);
+const v = got.j.version;
+const upd = await rq("PATCH", `/v1/tables/${id}/rows/${rid}`, { values: { Qty: 4 }, expected_version: v }); note("PATCH row", `${upd.s} version=${upd.j.version}`);
+const stale = await rq("PATCH", `/v1/tables/${id}/rows/${rid}`, { values: { Qty: 5 }, expected_version: v }); note("PATCH stale version", `${stale.s} ${stale.j.message ?? stale.j.error}`);
+const ups = await rq("POST", `/v1/tables/${id}/rows/upsert`, { key_column: "Item", rows: [{ Item: "REST kettle", Qty: 6 }, { Item: "REST cups", Qty: 2 }] }); note("POST upsert", `${ups.s} ${JSON.stringify(ups.j).slice(0, 200)}`);
+const cm = await rq("POST", `/v1/tables/${id}/rows/${rid}/comments`, { body: "REST comment (close-agent)" }); note("POST comment", `${cm.s} ${JSON.stringify(cm.j).slice(0, 160)}`);
+const cl = await rq("GET", `/v1/tables/${id}/rows/${rid}/comments`); note("GET comments", `${cl.s} ${JSON.stringify(cl.j).slice(0, 200)}`);
+const wh = must(await a.client.tableWebhookDeclare({ table_id: id, target_url: SINK, description: "close-agent" }), "webhook declare");
+const whId = wh.webhook_id ?? wh.id; note("webhook declared", { id: whId, secret_shown_once: !!wh.secret });
+const t0 = new Date().toISOString();
+const chg = await rq("PATCH", `/v1/tables/${id}/rows/${rid}`, { values: { Qty: 7 } }); note("PATCH after webhook", `${chg.s}`);
+const del = await rq("DELETE", `/v1/tables/${id}/rows/${rid}`); note("DELETE row", `${del.s}`);
+console.log("WEBHOOK " + JSON.stringify({ webhook_id: whId, since: t0 }));
+console.log("RESULTS_JSON " + JSON.stringify(out));

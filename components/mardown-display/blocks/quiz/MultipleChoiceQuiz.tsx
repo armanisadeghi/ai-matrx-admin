@@ -38,7 +38,7 @@ import { toast } from "@/lib/toast";
 import { fcService } from "@/features/flashcards/data/fcService";
 import { flashcardDeckHref } from "@/features/flashcards/routes";
 import { makeQuizDeck } from "./quiz-flashcards";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { IconButton } from "@ai-matrx/design-system";
 import { Tile } from "@ai-matrx/design-system/controls";

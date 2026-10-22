@@ -14,7 +14,7 @@
 // Contract: features/marketing/bing/FEATURE.md.
 
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { BingOAuthCallback } from "@/features/marketing/bing/BingOAuthCallback";
 
 export default function BingOAuthCallbackPage() {

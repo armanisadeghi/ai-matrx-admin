@@ -12,6 +12,8 @@ import type { ErrorInfo, ReactNode } from "react";
 import dynamic from "next/dynamic";
 import type { UserData } from "@/utils/userDataMapper";
 import type { FrameInitialGeometry } from "@/features/shell/frame/geometry";
+import type { CanvasChatState } from "@ai-matrx/chat/canvas/workspace/workspace-cookies";
+import type { ComposerMode } from "@ai-matrx/chat/agents/components/inputs/smart-input/composer/composer-types";
 // The lazy twin: the full menu loads only if the frame ever fails (this file is in every eager graph).
 import { LazyErrorAlchemyMenu as ErrorAlchemyMenu } from "@/components/errors/LazyErrorAlchemyMenu";
 
@@ -19,6 +21,11 @@ export interface FrameHostProps {
   userData: UserData;
   isAuthenticated: boolean;
   initialGeometry: FrameInitialGeometry;
+  /**
+   * The server's read for the side chat: this page's home's remembered open / closed (the Side
+   * Chat's one cookie, shared with the classic dock; null = never chosen) and the composer mode.
+   */
+  sideChat: { choice: CanvasChatState | null; mode: ComposerMode | null };
   children: ReactNode;
 }
 

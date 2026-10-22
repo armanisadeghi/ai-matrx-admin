@@ -4,6 +4,7 @@
 // figure opening the tab that holds it. Same stage as the topic video library
 // (flagship surface, Arman 2026-10-17): display figures, quiet labels, no boxes.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import Link from "next/link";
 import { useTopicContext } from "../../context/ResearchContext";
 import { useTopicVideoCounts } from "../../hooks/useResearchState";
@@ -20,11 +21,11 @@ export function TopicHeadline() {
   if (!progress) return null;
   // A failed count says so; a count still loading shows the dash.
   const videoValue = (count: number | undefined) =>
-    videos.error ? "Unavailable" : count == null ? "—" : count.toLocaleString();
+    videos.error ? "Unavailable" : count == null ? "—" : formatCount(count);
 
   const figures: { label: string; value: string; of?: string; href: string }[] = [
-    { label: "Sources found", value: progress.total_sources.toLocaleString(), href: hrefFor("sources", topicId) },
-    { label: "Captured", value: progress.total_content.toLocaleString(), href: hrefFor("content", topicId) },
+    { label: "Sources found", value: formatCount(progress.total_sources), href: hrefFor("sources", topicId) },
+    { label: "Captured", value: formatCount(progress.total_content), href: hrefFor("content", topicId) },
     // No "of N": N is every page and video captured, not a goal, so "29 of 38"
     // read as unfinished on a topic whose report is ready.
     {

@@ -25,7 +25,7 @@ import {
   type ContentIrHost,
 } from "@ai-matrx/content-ir/react";
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { SafeBlockRenderer } from "@ai-matrx/rich-content/display/chat-markdown/internal-handlers/SafeBlockRenderer";
 import type { RenderBlock } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/BlockRenderer";
 import { StructuredValueView } from "@/components/official/structured-value/StructuredValueView";

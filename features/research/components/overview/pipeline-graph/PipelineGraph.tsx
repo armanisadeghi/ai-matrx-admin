@@ -23,7 +23,7 @@ import {
 import { toast } from "@/lib/toast";
 import Link from "next/link";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,

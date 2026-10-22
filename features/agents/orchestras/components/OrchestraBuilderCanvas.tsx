@@ -9,7 +9,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import type { OrchestraAccent } from "../constants";
 import type { OrchestraConfig, OrchestraMember } from "../types";
 

@@ -30,7 +30,7 @@ import type {
 } from "@ai-matrx/chat/host";
 import type { CanvasContent, CanvasContentType } from "@/features/canvas/canvasContent";
 import { reportCanvasOpenDrop, titleForDrop } from "@/features/canvas/openRequest";
-import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import { readArtifactItemData, contentOf } from "./artifactItem";
 import { useCanvasSources } from "./canvasSources";
 import { openArtifactContent } from "./useArtifactCanvas";

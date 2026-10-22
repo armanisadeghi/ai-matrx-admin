@@ -16,7 +16,7 @@ import {
   selectIsSuperAdminPerson,
 } from "@/lib/redux/selectors/userSelectors";
 import { cn } from "@/lib/utils";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import { PUBLIC_HEADER_ICON_BUTTON } from "./publicHeaderChrome";
 // THE package initials formatter (`@ai-matrx/kit/format`, census H1

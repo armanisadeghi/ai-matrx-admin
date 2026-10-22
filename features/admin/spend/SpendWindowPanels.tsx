@@ -22,7 +22,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Building2, Check, ChevronDown } from "lucide-react";
 
 import AppLink from "@/components/navigation/AppLink";
-import { useIsMounted } from "@/hooks/use-is-mounted";
+import { useIsMounted } from "@ai-matrx/kit/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -22,7 +22,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { Switch } from "@/components/ui/switch";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { callApi } from "@/lib/api/call-api";

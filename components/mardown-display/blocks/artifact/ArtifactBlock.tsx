@@ -10,7 +10,7 @@ import { artifactContentToMarkdown } from "@/features/canvas/export/exportArtifa
 import { useUnbindArtifact } from "@/features/canvas/materialization/useUnbindArtifact";
 import { ArtifactDoorsDrawnProvider } from "@/features/canvas/output/ArtifactBlockAttach";
 import { ArtifactVersionHistory } from "@/features/canvas/components/ArtifactVersionHistory";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifactInCanvas";
 import { useArtifactContentToggle } from "@/features/canvas/host/useArtifactCanvas";
@@ -24,7 +24,7 @@ import {
   ArtifactRender,
   hasArtifactRenderer,
 } from "@/features/canvas/artifact-types/artifact-renderers";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import BasicMarkdownContent from "@ai-matrx/rich-content/display/chat-markdown/BasicMarkdownContent";
 import { safeJsonParse } from "@ai-matrx/rich-content/display/chat-markdown/block-registry/json-parse-utils";
 import { Button } from "@ai-matrx/design-system/controls";

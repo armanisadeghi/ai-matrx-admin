@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { tailwindColors } from '@/constants/tailwind-colors';
+import { tailwindColors } from '@ai-matrx/kit/color-util';
 import { Popover, PopoverContent, PopoverTrigger } from '@ai-matrx/design-system';
 import { cn } from '@/lib/utils';
 

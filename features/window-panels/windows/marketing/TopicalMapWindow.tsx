@@ -32,7 +32,7 @@ import {
   Table2,
 } from "lucide-react";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { useOpenMandateWindow } from "@/features/overlays/definitions/mandateWindow.overlay";
 import {

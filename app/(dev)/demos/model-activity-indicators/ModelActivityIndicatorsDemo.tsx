@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { AgentPlanningIndicator } from "@ai-matrx/chat/agents/components/shared/AgentPlanningIndicator";
 import { AgentStatusIndicator } from "@ai-matrx/chat/agents/components/run/AgentStatusIndicator";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import MatxRouteLoader from "@/components/loaders/route-loading";
 import MatxLoader from "@/components/loaders/MatxLoader";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import ThinkingVisualization from "@ai-matrx/rich-content/display/blocks/thinking-reasoning/ThinkingVisualization";
 import ReasoningVisualization from "@ai-matrx/rich-content/display/blocks/thinking-reasoning/ReasoningVisualization";
 import ConsolidatedReasoningVisualization from "@ai-matrx/rich-content/display/blocks/thinking-reasoning/ConsolidatedReasoningVisualization";

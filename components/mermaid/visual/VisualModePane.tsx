@@ -16,7 +16,7 @@ import { ArrowLeftRight, Check, Plus, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
-import { SimpleTooltip } from "@/components/matrx/Tooltip";
+import { SimpleTooltip } from "@ai-matrx/design-system";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { cn } from "@/lib/utils";
 

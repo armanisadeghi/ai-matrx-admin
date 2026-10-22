@@ -19,7 +19,7 @@ import {
   type AgentPayloadInput,
 } from "@/components/agent-copy/buildAgentPayload";
 import { collectOverlayDiagnostics } from "@/features/overlays/host/overlayDiagnostics";
-import { hasChunkLoadErrorSignature } from "@/components/errors/chunk-load-recovery";
+import { hasChunkLoadErrorSignature } from "@ai-matrx/kit/chunk-load-recovery";
 
 export interface OverlayErrorContext {
   /** Module path of the failed dynamic import, if we could derive it. */

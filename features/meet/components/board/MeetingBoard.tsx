@@ -52,7 +52,7 @@ import {
 } from "@ai-matrx/meet/skins/meet";
 import { formatDurationMs } from "@ai-matrx/kit/format";
 import { Button } from "@/components/ui/button";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAuthenticated } from "@/lib/redux/selectors/userSelectors";

@@ -15,7 +15,7 @@ const restURL=new URL(process.env.MATRX_MFA_REST_URL??'http://refused.invalid');
 const dbURL=new URL(process.env.MATRX_MFA_DB_URL??'postgres://refused.invalid/no');
 for(const u of [authURL,restURL,dbURL]) {assert.equal(u.hostname,'127.0.0.1');assert.ok(u.port);}
 assert.equal(authURL.protocol,'http:');assert.equal(restURL.protocol,'http:');assert.equal(dbURL.protocol,'postgres:');assert.equal(dbURL.pathname,'/casa_mfa_admission');
-const baseline=process.env.MATRX_MFA_BASELINE_DIR;assert.ok(baseline);
+const baseline=process.env.MATRX_MFA_BASELINE_DIR??'';assert.ok(baseline);
 const db=new pg.Client({connectionString:dbURL.href});
 const auth=new AuthClient({url:authURL.origin,persistSession:false,autoRefreshToken:false,detectSessionInUrl:false});
 let n=0;const check=(v:unknown,m:string)=>{assert.ok(v,m);n++;console.log('PASS',m);};
@@ -39,7 +39,7 @@ async function main(){await db.connect();try{
  await policy(true,uid);
  const mutant=process.env.MATRX_MFA_MUTANT;
  if(mutant){assert.ok(['true','false'].includes(mutant));await db.query(`create or replace function platform.admin_lane_open() returns boolean language sql stable as $$select ${mutant}$$`);}
- const serviceToken=(await readFile(resolve(baseline!,'service.jwt'),'utf8')).trim();
+ const serviceToken=(await readFile(resolve(baseline,'service.jwt'),'utf8')).trim();
  check((await state(serviceToken)).authority==='service_role'&&(await state(serviceToken)).admitted,'real signed service-role PostgREST path stays explicit machine authority');
  check((await state('')).reason==='missing_session','anonymous PostgREST gets a self-only denial');
  for(const role of ['anon','authenticated','dashboard_user','svc_seo','vault_history_writer','postgres','service_role']){
@@ -86,7 +86,7 @@ async function main(){await db.connect();try{
  for(const role of ['authenticated','service_role'])for(const sql of ["update platform.feature_knob set value='false' where feature='platform.auth' and key='admin_mfa_required'","delete from platform.feature_knob where feature='platform.auth' and key='admin_mfa_required'","update platform.feature_knob set key='renamed' where feature='platform.auth' and key='admin_mfa_required'","update platform.feature_knob set key='admin_mfa_required' where feature='platform.auth' and key='ordinary_fixture'","insert into platform.feature_knob(feature,key,value,default_value,value_type,label,description) values('platform.auth','admin_mfa_required','false','false','boolean','Attempt','Blocked insert')"]){
   await db.query('begin');try{await db.query('set local role '+role);await assert.rejects(db.query(sql),(x:unknown)=>x instanceof Error&&'code' in x&&x.code==='42501'&&x.message.includes('private audited operator setter'));n++;console.log('PASS',role,'raw policy mutation refused');}finally{await db.query('rollback');}
  }
- await db.query('begin');try{await db.query('set local role authenticated');await db.query("update platform.feature_knob set value='true' where feature='platform.auth' and key='ordinary_fixture'");check(true,'ordinary settings retain their existing write behavior');}finally{await db.query('rollback');}
+ await db.query('begin');try{await db.query('set local role authenticated');const ordinary=await db.query("update platform.feature_knob set value='true' where feature='platform.auth' and key='ordinary_fixture' returning value");check(ordinary.rowCount===1&&ordinary.rows[0].value===true,'ordinary settings retain their existing write behavior');}finally{await db.query('rollback');}
  const audit=(await db.query("select set_note from platform.knob_override_audit where feature='platform.auth' and key='admin_mfa_required' and action='update'")).rows;
  check(audit.length===1&&JSON.parse(audit[0].set_note).evidence.includes('READY-04'),'operator change has exactly one canonical reasoned audit');
  await db.query('alter table platform.feature_knob disable trigger feature_knob_audit_tg');

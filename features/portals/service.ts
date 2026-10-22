@@ -113,6 +113,11 @@ export interface PortalPublic {
    * organization's brand. Absent only on a database older than lane S6.
    */
   style?: PortalStyle;
+  /**
+   * CD-PAGE-12 — the ways in the sign-in page offers, the owner's switches (`custom.portal.config.access`): the email link
+   * always, and a password, Google and self sign-up only when the owner turned them on.
+   */
+  access?: { magic_link: boolean; password: boolean; google: boolean; self_signup: boolean };
 }
 
 /** The design system's color names — the only accents a portal carries (`custom.portal_accents()`). */
@@ -193,6 +198,25 @@ export async function portalInvitation(
     await adminDoors().rpc("portal_invitation", {
       p_slug: (slug ?? "").trim().toLowerCase(),
       p_email: (email ?? "").trim(),
+    }),
+  );
+  return row ?? null;
+}
+
+/** CD-PAGE-12 — what `custom.portal_self_signup` answers. */
+export interface PortalSelfSignup {
+  state: "off" | "refused" | "exists" | "unready" | "signed_up";
+  message?: string | null;
+}
+
+/** A visitor puts herself on a portal whose owner turned sign-up on (server lane). Null is the 404. */
+export async function portalSelfSignup(slug: string, email: string, name: string): Promise<PortalSelfSignup | null> {
+  const row = unwrap<PortalSelfSignup | null>(
+    "custom.portal_self_signup",
+    await adminDoors().rpc("portal_self_signup", {
+      p_slug: (slug ?? "").trim().toLowerCase(),
+      p_email: (email ?? "").trim(),
+      p_name: (name ?? "").trim(),
     }),
   );
   return row ?? null;

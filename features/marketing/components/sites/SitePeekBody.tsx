@@ -27,7 +27,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import {

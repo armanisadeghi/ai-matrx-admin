@@ -28,7 +28,7 @@ import {
   firstBlockingReason,
   GatedActionButton,
 } from "@/components/official/GatedActionButton";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { MasterworkDictationOrigin } from "@/features/masterwork/MasterworkDictationOrigin";

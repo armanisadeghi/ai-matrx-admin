@@ -33,7 +33,7 @@ import {
 } from "@/features/mandates/admin-routes";
 import { ArrowLeft, Copy, ExternalLink, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { TextWithDoors } from "@/components/official/entity-ref/TextWithDoors";
 import { cn } from "@/lib/utils";

@@ -9,7 +9,7 @@
  */
 
 import { resolveHtmlCanvasPage } from "@/features/html-pages/services/canvasVersionPage";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 
 const HTML_SITE_URL = process.env.NEXT_PUBLIC_HTML_SITE_URL || "https://www.mymatrx.com";
 

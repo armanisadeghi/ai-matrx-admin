@@ -18,7 +18,7 @@
 import {
   isMaterializedArtifactId,
   readArtifactPointerId,
-} from "@/features/canvas/artifact-types/artifactId";
+} from "@ai-matrx/kit/artifact-id";
 import { canvasArtifactService } from "@/features/canvas/services/canvasArtifactService";
 import {
   ensureArtifactPersisted,

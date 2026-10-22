@@ -19,7 +19,7 @@ import { execFileSync } from "node:child_process";
 const BASELINE = "scripts/tree-indent-baseline.json";
 const STEP = /\b(?:[a-zA-Z_$][\w$]*\.)?(?:depth|level)\s*\*\s*\d+(?:\.\d+)?\b/;
 // A step hidden in a named constant or a default prop (`const INDENT_PX = 14`, `indent = 12,`).
-const NAMED_STEP = /\b(?:const|let)\s+\w*indent\w*\s*=\s*\d+(?:\.\d+)?\s*;|\bindent\w*\s*=\s*\d+(?:\.\d+)?\s*,/i;
+const NAMED_STEP = /\b(?:const|let)\s+\w*indent\w*\s*=\s*(?:[1-9]\d*(?:\.\d+)?|0\.\d+)\s*;|\bindent\w*\s*=\s*(?:[1-9]\d*(?:\.\d+)?|0\.\d+)\s*,/i;
 const INDENT_CONTEXT = /paddingLeft|marginLeft|paddingInlineStart|marginInlineStart|indent|width:|\bpl-|\bml-|\.repeat\(/i;
 
 export function findings(file, text) {
@@ -52,6 +52,7 @@ function selfTest() {
   const green = [
     ...findings("a.tsx", `<div style={treeIndentStyle(depth)} />`),
     ...findings("a.tsx", `const pct = Math.round(level * 100);`),
+    ...findings("a.tsx", `function Row({ indentPx = 0, label }) {`),
     ...findings("a.tsx", `// tree-indent-ok: chart axis offset, not a tree\nconst w = { width: depth * 20 };`),
   ];
   if (red.length !== 5 || green.length !== 0) {

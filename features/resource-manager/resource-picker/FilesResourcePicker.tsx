@@ -202,9 +202,14 @@ interface FileRowProps {
   onSelect: (file: CloudFileRecord) => void;
   multiple: boolean;
   selected: boolean;
+  /**
+   * Inside the folder tree the checkbox sits in the row's empty 16px disclosure slot, so a file's
+   * thumbnail stays on the same vertical line as a sibling folder's icon in both modes.
+   */
+  checkboxInGutter?: boolean;
 }
 
-function FileRow({ file, onSelect, multiple, selected }: FileRowProps) {
+function FileRow({ file, onSelect, multiple, selected, checkboxInGutter }: FileRowProps) {
   return (
     <div
       className={cn(
@@ -213,7 +218,14 @@ function FileRow({ file, onSelect, multiple, selected }: FileRowProps) {
       )}
     >
       {multiple ? (
-        <label className="flex h-11 w-8 shrink-0 cursor-pointer items-center justify-center pointer-coarse:w-11">
+        <label
+          className={cn(
+            "flex h-11 shrink-0 cursor-pointer items-center justify-center",
+            checkboxInGutter
+              ? "relative -ml-5 w-4 before:absolute before:-inset-x-1 before:inset-y-0 before:content-[''] pointer-coarse:before:-left-6"
+              : "w-8 pointer-coarse:w-11",
+          )}
+        >
           <Checkbox
             checked={selected}
             onCheckedChange={() => onSelect(file)}
@@ -332,6 +344,8 @@ interface FileListOrGridProps {
   multiple: boolean;
   selectedFileIds: ReadonlySet<string>;
   className?: string;
+  /** Rows inside a folder tree: the checkbox takes the empty disclosure slot (see FileRow). */
+  checkboxInGutter?: boolean;
   /**
    * `false` = more rows only on an explicit "Show more" click. Recents uses it
    * so scrolling through it never auto-grows the list past the Folders below.
@@ -346,6 +360,7 @@ function FileListOrGrid({
   multiple,
   selectedFileIds,
   className,
+  checkboxInGutter,
   autoLoad = true,
 }: FileListOrGridProps) {
   const { visibleCount, hasMore, sentinelRef, loadMore } = useInfiniteWindow({
@@ -399,6 +414,7 @@ function FileListOrGrid({
           onSelect={onSelect}
           multiple={multiple}
           selected={selectedFileIds.has(file.id)}
+          checkboxInGutter={checkboxInGutter}
         />
       ))}
       {more}
@@ -558,6 +574,7 @@ function FolderNode({
                     onSelect={onFileSelect}
                     multiple={multiple}
                     selectedFileIds={selectedFileIds}
+                    checkboxInGutter
                   />
                 </div>
               </div>

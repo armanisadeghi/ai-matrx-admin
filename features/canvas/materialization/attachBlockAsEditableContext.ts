@@ -26,7 +26,7 @@ import { reconstructBlockMarkdown } from "@ai-matrx/chat/agents/redux/execution-
 import { setContextEntry } from "@ai-matrx/chat/agents/redux/execution-system/instance-context/instance-context.slice";
 import { flipMessageToDbRender } from "./flipMessageToDbRender";
 import { buildCanvasItemContextValue } from "@ai-matrx/chat/agents/utils/canvasItemContext";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import {
   CANVAS_ITEM_UPDATED_EVENT,
   invalidateCanvasItemCache,

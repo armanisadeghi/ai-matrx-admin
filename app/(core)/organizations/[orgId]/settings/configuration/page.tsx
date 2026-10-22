@@ -9,7 +9,7 @@ import { OrganizationAccessGate } from "@/features/organizations/components/Orga
 import { hrSettingsHref } from "@/features/hr/routes";
 import { SettingsDesignProvider } from "@/components/official/settings/SettingsDesignProvider";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { UniversalSettingsProvider, useUniversalSettings } from "@/features/settings/universal/UniversalSettingsContext";
 import { UniversalSettingsRows } from "@/features/settings/universal/UniversalSettingsPane";
 import { Skeleton } from "@ai-matrx/design-system";

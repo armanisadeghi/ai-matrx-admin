@@ -8,7 +8,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 
 const SettingsTabContentImplLazy = dynamic(
   () =>

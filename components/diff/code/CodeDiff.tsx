@@ -16,7 +16,7 @@
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import dynamic from "next/dynamic";
 import type { DiffOnMount } from "@monaco-editor/react";
-import { useEffectsAttached } from "@/hooks/use-is-mounted";
+import { useEffectsAttached } from "@ai-matrx/kit/hooks";
 import { Skeleton } from "@ai-matrx/design-system";
 import { MONACO_DIFF_EDITOR_OPTIONS } from "@ai-matrx/diff/react";
 import { cn } from "@/lib/utils";

@@ -35,6 +35,10 @@ jest.mock("@ai-matrx/records/react", () => ({
 }));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ push: jest.fn(), refresh: jest.fn() }) }));
 jest.mock("@/features/unified-data/actions/useTableFavorite", () => ({ useStarToggle: () => ({ toggle: jest.fn() }) }));
+// The row menus read the starred set through the preference store; this test has no Provider.
+jest.mock("../useDataHomeMarks", () => ({
+  useDataHomeMarks: () => ({ starred: [], recent: [], setStarred: jest.fn(), opened: jest.fn() }),
+}));
 
 // eslint-disable-next-line import/first
 import { useDataHomeRowMenus } from "../useDataHomeRowMenus";

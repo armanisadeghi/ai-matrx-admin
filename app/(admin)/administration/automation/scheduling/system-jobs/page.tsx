@@ -879,7 +879,7 @@ export default function SystemJobsPage() {
           label: "Enable", done: "Enabled",
           confirm: (t) => ({
             title: `Enable ${jobsLabel(t.ids.length)}?`,
-            description: `This starts real recurring server work for ${jobsLabel(t.ids.length)}, each on its own schedule until disabled. Jobs with no registered handler are refused and named.`,
+            description: `Starts recurring server work for ${jobsLabel(t.ids.length)} until disabled. Jobs with no handler are named and skipped.`,
             confirmLabel: "Enable",
           }),
           runOne: async (id) => {

@@ -83,6 +83,7 @@ import {
   studioJobParam,
   studioCaseFromBuild,
   studioCasesFromBuild,
+  sampleInputsError,
   studioHref,
   type StudioCase,
   type StudioMessageRecord,
@@ -240,6 +241,16 @@ function StudioWorkspace({
       : mode.id === "from-examples"
         ? studioCaseFromBuild(build, EXAMPLES_CASE_SOURCE)
         : null;
+  // An unparseable saved-cases record is said once per build, after mount (never during render).
+  const casesError = sampleInputsError(build);
+  useEffect(() => {
+    if (casesError) {
+      toast.error("The saved example cases could not be read", {
+        id: "studio-sample-inputs-unreadable",
+        description: casesError,
+      });
+    }
+  }, [casesError]);
   /** The run seed a case gives: only when the case carries an input (an example may not). */
   const caseSeed =
     studioCase && (studioCase.userInput.trim() || Object.keys(studioCase.variables).length > 0)

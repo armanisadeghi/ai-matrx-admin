@@ -20,7 +20,10 @@ jest.mock("@/components/navigation/AppLink", () => ({ __esModule: true, default:
 jest.mock("@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef", () => ({ AiToolRef: (p: { name?: string }) => <span>{p.name}</span> }));
 jest.mock("@/features/tool-call-visualization/admin/mcp-tools/source-kind-badge", () => ({ SourceKindBadge: () => null }));
 jest.mock("@/features/tool-registry/executor-surfaces/components/AddToolBindingDialog", () => ({ AddToolBindingDialog: () => null }));
-jest.mock("@/components/loaders/SuspenseLoader", () => ({ __esModule: true, default: () => null }));
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  SuspenseLoader: () => null,
+}));
 
 const listBindingsForExecutor = jest.fn();
 const updateBinding = jest.fn();

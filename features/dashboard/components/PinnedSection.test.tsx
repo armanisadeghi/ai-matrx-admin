@@ -22,7 +22,7 @@ jest.mock("@/components/favorites/usePinned", () => ({
   }),
 }));
 
-jest.mock("@/hooks/use-is-mounted", () => ({
+jest.mock("@ai-matrx/kit/hooks", () => ({
   useIsMounted: () => true,
 }));
 

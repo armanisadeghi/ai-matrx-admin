@@ -12,7 +12,7 @@
 import React from "react";
 import { ListTree } from "lucide-react";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { useMapTopicRow } from "@/features/marketing/seo/topical-map/hooks";
 import { TopicDetailBody } from "@/features/marketing/seo/topical-map/panel/TopicDetailBody";

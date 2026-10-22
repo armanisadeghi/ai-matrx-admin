@@ -225,7 +225,7 @@ import ComparisonLoadingVisualization from "@/components/mardown-display/blocks/
 import TroubleshootingLoadingVisualization from "@/components/mardown-display/blocks/troubleshooting/TroubleshootingLoadingVisualization";
 import DecisionTreeLoadingVisualization from "@/components/mardown-display/blocks/decision-tree/DecisionTreeLoadingVisualization";
 import MathProblemLoadingVisualization from "@/components/mardown-display/blocks/math/MathProblemLoadingVisualization";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 
 // Inline auto-preview for complete HTML documents (converts to a live webpage).
 const HtmlInlinePreview = lazy(

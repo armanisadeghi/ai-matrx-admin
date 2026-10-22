@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense, useMemo } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { parseComparisonJSON } from "@/components/mardown-display/blocks/comparison/parseComparisonJSON";
 import { resolveJsonPayload, artifactDedupKey } from "../artifact-renderers";
 import type { ArtifactRendererProps } from "../types";

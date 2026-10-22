@@ -26,7 +26,7 @@ import { useConnectMcpServer } from "@/features/connectors/useConnectMcpServer";
 import { buildSupabaseScopedMcpEndpoint } from "@ai-matrx/chat/agents/services/mcp-oauth/endpoint";
 import { toast, recordToast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 

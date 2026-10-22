@@ -69,7 +69,7 @@ import {
   type CanvasContentType,
 } from "@/features/canvas/canvasContent";
 import { canvasContentHasSource } from "@/features/canvas/core/canvasSource";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { artifactPrinterFor } from "@/features/canvas/output/canvasOutputPorts";
 import { artifactOutputDef } from "@/features/canvas/artifact-types/artifact-output";
 import { loadArtifactPrinters } from "@/features/canvas/artifact-types/loadArtifactPrinters";

@@ -8,9 +8,9 @@ jest.mock("@/components/dialogs/confirm/ConfirmDialogHost", () => ({
   confirm: (...args: unknown[]) => mockConfirm(...args),
 }));
 
-jest.mock("@/components/loaders/SuspenseLoader", () => ({
-  __esModule: true,
-  default: ({ message }: { message: string }) => <span>{message}</span>,
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  SuspenseLoader: ({ message }: { message: string }) => <span>{message}</span>,
 }));
 
 jest.mock("./useGitHubConnection", () => ({

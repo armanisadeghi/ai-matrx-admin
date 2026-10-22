@@ -3,6 +3,7 @@
 // transaction on the server, under the server's statement budget, as this person. The screen reads the job's durable state
 // (`GET /base-move/jobs/{id}`) once a second, so a closed tab or a server restart loses nothing. Smaller bases move directly.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import type { RecordsClient } from "@ai-matrx/records/core";
 
 import { getJson, postJson } from "@/lib/python-client";
@@ -52,7 +53,7 @@ export function snapshotProgressLine(view: BaseSnapshotJobView | null, verb: "sn
   const secs = typeof p.seconds === "number" ? ` ${Math.round(p.seconds)} s` : "";
   const which = p.table ? `${p.table}${p.of && p.of > 1 ? ` (${p.at} of ${p.of})` : ""}` : "";
   if (view.phase === "copying" && which) {
-    const rows = typeof p.total === "number" ? `: ${(p.done ?? 0).toLocaleString()} of ${p.total.toLocaleString()} rows` : "";
+    const rows = typeof p.total === "number" ? `: ${formatCount(p.done ?? 0)} of ${formatCount(p.total)} rows` : "";
     return `Copying ${which}${rows}…${secs}`;
   }
   if (view.phase === "putting_away" && which) return `Putting away ${which}…${secs}`;
@@ -98,7 +99,7 @@ export async function followBaseSnapshotJob(organizationId: string, jobId: strin
     lastMark = mark;
     if (still >= SNAPSHOT_JOB_STALL_READS) {
       const p = view.progress ?? {};
-      const at = typeof p.total === "number" ? ` at ${(p.done ?? 0).toLocaleString("en-US")} of ${p.total.toLocaleString("en-US")} rows` : "";
+      const at = typeof p.total === "number" ? ` at ${formatCount(p.done ?? 0, { locale: "en-US" })} of ${formatCount(p.total, { locale: "en-US" })} rows` : "";
       const what = view.kind === "restore" ? "restore" : "snapshot";
       return { state: "refused", kind: view.kind, code: "stalled",
         message: `The ${what} stopped moving${at} for ${Math.round(SNAPSHOT_JOB_STALL_READS / 60)} minutes, so this screen stopped waiting. Open Snapshots again later to see whether it finished.` };

@@ -25,7 +25,7 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectUserId: () => "u1",
   selectAccessToken: () => "tok",
 }));
-jest.mock("@/components/loaders/ShimmerText", () => ({ ShimmerText: ({ text }: { text: string }) => <span>{text}</span> }));
+jest.mock("@ai-matrx/design-system", () => ({ ShimmerText: ({ text }: { text: string }) => <span>{text}</span> }));
 // `cn` is imported by packaged chat panels the page graph reaches; the Dialog family is what the design-start dialog draws.
 jest.mock("@ai-matrx/design-system", () => {
   const box = ({ children }: { children?: unknown }) => <div>{children as never}</div>;

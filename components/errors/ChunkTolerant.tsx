@@ -13,7 +13,7 @@
 // else to the real boundary above it, so a genuine bug is never hidden here.
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { isChunkLoadError } from "./chunk-load-recovery";
+import { isChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 
 interface Props {
   /** Names the extra in the console line, so the log says which chunk did not arrive. */

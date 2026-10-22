@@ -1,16 +1,15 @@
--- draft: CASA owner; rehearse and independently review before governed apply. Never activate during rollout.
+-- reviewed rollout: CASA owner; initial policy false. Activation still requires full READY-04 acceptance.
 -- chair-step: Add current-session administrator admission and an operator-held audited MFA switch.
 -- based-on: platform.admin_lane_open() 5a66823ce4cefecfb0aae548b6b540fecd44d44f4f7e4218f9601b6dc1ec24df
-begin;
 
 do $baseline$
 declare actual jsonb;
 begin
  if encode(sha256(convert_to(pg_get_functiondef('platform.admin_lane_open()'::regprocedure),'UTF8')),'hex')<>'5a66823ce4cefecfb0aae548b6b540fecd44d44f4f7e4218f9601b6dc1ec24df' then
  raise exception 'Administrator lane changed since captured baseline'; end if;
- select jsonb_build_object('acl',to_jsonb(p.proacl),'owner',pg_get_userbyid(p.proowner),'config',to_jsonb(p.proconfig),'language',l.lanname,'volatility',p.provolatile,'security_definer',p.prosecdef)
+ select jsonb_build_object('acl',(select jsonb_agg(a::text order by a::text) from unnest(p.proacl) a),'owner',pg_get_userbyid(p.proowner),'config',to_jsonb(p.proconfig),'language',l.lanname,'volatility',p.provolatile,'security_definer',p.prosecdef)
  into actual from pg_proc p join pg_language l on l.oid=p.prolang where p.oid='platform.admin_lane_open()'::regprocedure;
- if actual is distinct from '{"acl":["postgres=X/postgres","dashboard_user=X/postgres","authenticated=X/postgres","service_role=X/postgres","svc_seo=X/postgres","anon=X/postgres","vault_history_writer=X/postgres"],"owner":"postgres","config":["search_path=pg_catalog"],"language":"plpgsql","volatility":"s","security_definer":false}'::jsonb then raise exception 'Administrator lane metadata/ACL changed since baseline'; end if;
+ if actual is distinct from '{"acl":["anon=X/postgres","authenticated=X/postgres","dashboard_user=X/postgres","postgres=X/postgres","service_role=X/postgres","svc_seo=X/postgres","vault_history_writer=X/postgres"],"owner":"postgres","config":["search_path=pg_catalog"],"language":"plpgsql","volatility":"s","security_definer":false}'::jsonb then raise exception 'Administrator lane metadata/ACL changed since baseline'; end if;
 end $baseline$;
 
 insert into platform.feature_knob(feature,key,value,default_value,value_type,label,description,set_by,basis,overridable_by,delegable,not_delegable_reason)
@@ -120,6 +119,11 @@ begin
    'is_admin',lvl is not null,'admin_level',lvl,'session_valid',valid,'aal',c->>'aal','reason',why);
 end $fn$;
 
+-- Existing anonymous EXECUTE was unregistered; declare its unchanged lane-only verdict before replacement.
+insert into platform.client_callable_door(schema_name,function_name,identity_args,identity_argtypes,reason,declared_by,non_client_lane,signed_in_callers,anonymous_callers,anonymous_purpose)
+select 'platform','admin_lane_open','',array[]::oid[],'Existing self-only lane marker; it never grants membership or administrator power by itself.','20261021215557_admin_mfa_session_admission.sql',NULL,true,true,'Preserve the existing signed-out lane marker verdict; administrator membership and current MFA admission remain separate checks.'
+where not exists(select 1 from platform.client_callable_door where schema_name='platform' and function_name='admin_lane_open' and identity_args='');
+
 create or replace function platform.admin_lane_open() returns boolean
 language plpgsql stable set search_path=pg_catalog as $fn$
 declare h json; lane boolean:=false;
@@ -132,6 +136,14 @@ begin
  if not platform._admin_mfa_required() then return true; end if;
  return coalesce((platform.admin_session_state()->>'admitted')::boolean,false);
 end $fn$;
+
+
+insert into platform.client_callable_door(schema_name,function_name,identity_args,identity_argtypes,reason,declared_by,non_client_lane,signed_in_callers,anonymous_callers,anonymous_purpose) values
+('platform','_admin_operator_session','',array[]::oid[],'Self-only MFA admission verdict.','20261021215557_admin_mfa_session_admission.sql','server_only: existing database operator or internal SECURITY DEFINER composition only',false,false,NULL),
+('platform','_admin_mfa_required','',array[]::oid[],'Self-only MFA admission verdict.','20261021215557_admin_mfa_session_admission.sql',NULL,true,true,'Signed-out lane callers receive only a self-only missing-session denial or non-sensitive MFA-required boolean; no administrator privilege or other identity data is returned.'),
+('platform','_admin_mfa_policy_guard','',array[]::oid[],'Self-only MFA admission verdict.','20261021215557_admin_mfa_session_admission.sql','server_only: existing database operator or internal SECURITY DEFINER composition only',false,false,NULL),
+('platform','_set_admin_mfa_required','p_required boolean, p_actor uuid, p_reason text, p_evidence text',array['boolean'::regtype::oid,'uuid'::regtype::oid,'text'::regtype::oid,'text'::regtype::oid]::oid[],'Self-only MFA admission verdict.','20261021215557_admin_mfa_session_admission.sql','server_only: existing database operator or internal SECURITY DEFINER composition only',false,false,NULL),
+('platform','admin_session_state','',array[]::oid[],'Self-only MFA admission verdict.','20261021215557_admin_mfa_session_admission.sql',NULL,true,true,'Signed-out lane callers receive only a self-only missing-session denial or non-sensitive MFA-required boolean; no administrator privilege or other identity data is returned.');
 
 comment on function platform.admin_session_state() is 'Self-only current administrator/session/AAL admission. Identity is separate from power. READY-04 rollout remains off until full acceptance.';
 -- Preserve the existing lane callers' ability to receive a self-only denial/verdict.
@@ -160,4 +172,3 @@ begin
    end loop;
  end loop;
 end $acl$;
-commit;

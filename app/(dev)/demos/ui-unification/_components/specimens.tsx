@@ -41,8 +41,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import LoadingSpinner from "@/components/ui/loading-spinner";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { LoadingSpinner } from "@ai-matrx/design-system";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import {
   MoreHorizontalTapButton,

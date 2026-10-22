@@ -21,7 +21,7 @@ import {
 } from "@/lib/diagnostics/errorCaptureStore";
 import { extractErrorMessage } from "@/utils/errors";
 import { isKnownThirdPartyNoise } from "@/lib/console-noise";
-import { isChunkLoadError } from "@/components/errors/chunk-load-recovery";
+import { isChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 import { isStructuredConsoleMirrorActive, mirrorCapturedErrorToConsole } from "./structuredConsoleMirror";
 import { setSyncConsoleErrorWriter, setSyncFailureSink, type SyncFailure } from "@/lib/sync/logger";
 import { installAppApiFetchCapture } from "@/lib/diagnostics/captureAppApiFetch";

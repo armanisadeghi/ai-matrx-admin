@@ -28,7 +28,7 @@ import type { FilesystemAdapter } from "../../adapters/FilesystemAdapter";
 import type { FilesystemNode } from "../../types";
 import { FileIcon } from "../../styles/file-icon";
 import { extractErrorMessage } from "@/utils/errors";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ACTIVE_ROW, HOVER_ROW, TEXT_BODY } from "../../styles/tokens";
 import {
   TreeDisclosure,
@@ -624,8 +624,8 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
        *  expect. */}
       {isDir && expanded && pendingCreate && (
         <div
-          className="flex items-center gap-1 text-[13px]"
-          style={childIndentStyle}
+          className="flex items-center gap-1 text-[13px] max-lg:h-11"
+          style={{ ...childIndentStyle, minHeight: TREE_ROW_HEIGHT.compact }}
         >
           <TreeDisclosure expandable={false} />
           {pendingCreate.kind === "directory" ? (

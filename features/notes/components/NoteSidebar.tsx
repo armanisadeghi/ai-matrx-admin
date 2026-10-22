@@ -119,7 +119,7 @@ import {
 import { NoteSidebarBulkBar } from "./NoteSidebarBulkBar";
 import { useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { NoteSyncStatusStrip } from "./NoteSyncStatusStrip";
-import { SimpleTooltip } from "@/components/matrx/Tooltip";
+import { SimpleTooltip } from "@ai-matrx/design-system";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type {
   ContextMenuExtraItem,

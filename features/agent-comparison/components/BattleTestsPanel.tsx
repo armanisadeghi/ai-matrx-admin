@@ -21,7 +21,7 @@ import { selectAgentIdFromInstance } from "@ai-matrx/chat/agents/redux/execution
 import { selectSettingsOverridesForApi } from "@ai-matrx/chat/agents/redux/execution-system/instance-model-overrides/instance-model-overrides.selectors";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { Cost } from "@/components/cost/Cost";
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/store";
 import { createClient } from "@/utils/supabase/client";

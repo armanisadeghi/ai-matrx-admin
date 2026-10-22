@@ -17,7 +17,7 @@ import { canvasArtifactService } from "@/features/canvas/services/canvasArtifact
 import { getArtifactDef } from "@/features/canvas/artifact-types/artifact-type-registry";
 import { getAdapter } from "@/features/canvas/artifact-types/persistence/artifact-adapters";
 import type { ArtifactSourceRef } from "@/features/canvas/artifact-types/persistence/artifact-adapters";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { isRealSourceId } from "./materializeBlocks";
 import type { CanvasArtifactRow } from "@/features/canvas/services/canvasArtifactService";
 

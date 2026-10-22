@@ -17,6 +17,7 @@
  * Result: { downloaded: true, filename }
  */
 
+import { formatFileSize } from "@ai-matrx/kit/format";
 import type {
   KindActionContext,
   KindActionDefinition,
@@ -112,7 +113,7 @@ export function parseDownload(input: unknown): DownloadRequest | { error: string
     return { error: "A download needs `content` (text) or `base64`, or a saved `file_id`." };
   }
   if (size > MAX_DOWNLOAD_BYTES) {
-    return { error: `This file is larger than ${MAX_DOWNLOAD_BYTES / (1024 * 1024)} MB, so it was not saved.` };
+    return { error: `This file is larger than ${formatFileSize(MAX_DOWNLOAD_BYTES)}, so it was not saved.` };
   }
   return { kind: "content", filename, content, mime, size };
 }

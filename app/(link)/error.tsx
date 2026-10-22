@@ -35,7 +35,7 @@
 import { useEffect } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 
-import { isChunkLoadError } from "@/components/errors/chunk-load-recovery";
+import { isChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 import { captureReactRenderError } from "@/lib/diagnostics/captureReactError";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 

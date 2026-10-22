@@ -23,7 +23,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdminDebugger, selectUser } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { isChunkLoadError } from "@/components/errors/chunk-load-recovery";
+import { isChunkLoadError } from "@ai-matrx/kit/chunk-load-recovery";
 import { captureReactRenderError } from "@/lib/diagnostics/captureReactError";
 import { mirrorCapturedErrorToConsole } from "@/lib/diagnostics/structuredConsoleMirror";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

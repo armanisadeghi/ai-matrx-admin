@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { SimpleTooltip } from "@/components/matrx/Tooltip";
+import { SimpleTooltip } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import {
   TreeDisclosure,

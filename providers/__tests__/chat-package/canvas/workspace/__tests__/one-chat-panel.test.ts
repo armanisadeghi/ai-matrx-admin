@@ -1,6 +1,7 @@
 /**
  * ONE CHAT PANEL (owner, 2026-10-05: "one copy of everything"; the chat on ALL
- * pages). The shell's chat (ShellChatDock) is the only page-level chat panel:
+ * pages). The shell's chat (SideChatSession, hosted by the classic ShellChatDock and
+ * the app frame's FrameSideChat) is the only page-level chat panel:
  * the Board and Education hand it their context instead of drawing their own.
  * The chat column itself (CanvasChatColumn + its conversation hook) is mounted
  * by exactly two hosts — the shell chat and a board chat TILE (a chat placed
@@ -14,7 +15,8 @@ import { CHAT_SRC_REL, gitGrepFiles } from "../../../chat-source";
 
 const REPO = process.cwd();
 const ALLOWED_HOSTS = new Set([
-  `${CHAT_SRC_REL}/canvas/workspace/ShellChatDock.tsx`,
+  // THE Side Chat: one session, two hosts (the classic dock and the app frame render it).
+  `${CHAT_SRC_REL}/canvas/workspace/SideChatSession.tsx`,
   "features/board/items/work-items.tsx",
   // The board's agent-form tile (board lane, 9f582f28af/3c6a290bc1): a tile that runs one agent and
   // shows its result inside the board item - content on the board, not a page-level chat panel.

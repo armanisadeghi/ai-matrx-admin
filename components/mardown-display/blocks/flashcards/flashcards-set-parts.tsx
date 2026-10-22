@@ -27,7 +27,7 @@ import {
   type EnsureArtifactResult,
 } from "@/features/canvas/materialization/ensureArtifactPersisted";
 import { toast } from "@/lib/toast";
-import { isMaterializedArtifactId } from "@/features/canvas/artifact-types/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import type { FlashcardsBlockData } from "@ai-matrx/agents/generated/stream-events";
 import { flashcardsPrinterLazy as flashcardsPrinter } from "@ai-matrx/print/flashcards-lazy";
 import { usePrintOptions } from "@ai-matrx/print/react";

@@ -15,7 +15,7 @@ import type { CanvasKind, CanvasKindSurface } from "@ai-matrx/canvas/react";
 import type { CanvasContentType } from "@/features/canvas/canvasContent";
 import { printPublishedPage } from "@/features/canvas/output/printPage";
 import { contentOf, readArtifactItemData } from "@/features/canvas/host/artifactItem";
-import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import {
   captureHtmlArtifact,
   CLOUD_BROWSER_OUTPUT,

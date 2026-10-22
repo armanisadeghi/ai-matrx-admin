@@ -21,7 +21,7 @@ import { SettingsSection } from "@/components/official/settings/layout/SettingsS
 import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
 import { SettingsNavigationRow } from "@/components/official/settings/SettingsNavigationRow";
 import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import type { ReactNode } from "react";
 import { KnobOverrideRow } from "@/lib/scoped-config/KnobOverrideRow";
 import {

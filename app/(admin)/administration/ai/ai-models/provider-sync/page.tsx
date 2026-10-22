@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { Skeleton } from "@ai-matrx/design-system";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { aiModelService } from "@/features/ai-models/service";
 import ProviderSyncDashboard from "@/features/ai-models/components/ProviderSyncDashboard";
 import type { AiModel, AiProvider } from "@/features/ai-models/types";

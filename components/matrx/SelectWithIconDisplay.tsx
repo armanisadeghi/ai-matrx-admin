@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, forwardRef } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, X } from "lucide-react";
-import { AdvancedTooltip } from "./Tooltip";
+import { AdvancedTooltip } from "@ai-matrx/design-system";
 import { cn } from "@/utils/cn";
 
 type Item = {

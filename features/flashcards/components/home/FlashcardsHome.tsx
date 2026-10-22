@@ -44,7 +44,7 @@ import {
   selectAuthReady,
   selectUserId,
 } from "@/lib/redux/selectors/userSelectors";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useLoginHref } from "@/hooks/auth/useLoginHref";
 import {
   FLASHCARD_SETS_BASE,

@@ -14,6 +14,7 @@
  * Result: { blob: Blob, mime_type: string, size: number }
  */
 
+import { formatFileSize } from "@ai-matrx/kit/format";
 import type {
   KindActionContext,
   KindActionDefinition,
@@ -53,7 +54,7 @@ export function checkImageBytes(blob: Blob, saved = false): { ok: true } | { err
     return { error: "That address is not an image." };
   }
   if (blob.size > MAX_IMAGE_BYTES) {
-    return { error: `This image is larger than ${MAX_IMAGE_BYTES / (1024 * 1024)} MB, so it was not loaded.` };
+    return { error: `This image is larger than ${formatFileSize(MAX_IMAGE_BYTES)}, so it was not loaded.` };
   }
   return { ok: true };
 }

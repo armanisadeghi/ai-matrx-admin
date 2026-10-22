@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import DiscoveryContainer from "@/features/ai-models/discovery/DiscoveryContainer";
 
 export default function AiModelDiscoveryPage() {

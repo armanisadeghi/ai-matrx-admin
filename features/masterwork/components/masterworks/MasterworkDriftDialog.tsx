@@ -26,7 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import { SEVERITY_LABELS, type RulebookRule } from "../../types";
 import { diffRules, FIELD_LABELS, type RulebookDiff } from "../../rulebookDiff";
 import { getRulebookSnapshotRules } from "../../service";

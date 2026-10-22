@@ -30,7 +30,7 @@ import {
   type RenderedCaptureResult,
 } from "@ai-matrx/chat/agents/components/inputs/resources/useAttachRenderedArtifact";
 import type { AttachStore } from "@ai-matrx/chat/agents/components/inputs/resources/attach-resource";
-import { isMaterializedArtifactId } from "@ai-matrx/rich-content/utils/lifted/artifactId";
+import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { artifactOutputDef } from "@/features/canvas/artifact-types/artifact-output";
 
 /** What an artifact's content representation is called, by what it holds. */

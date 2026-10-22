@@ -44,6 +44,7 @@ import type { AgeBand, CoppaGate } from "./types";
 import { AiConsentRequiredDialog } from "./components/AiConsentRequiredDialog";
 import {
   AgeDeclarationDialog,
+  AgeDeclarationNudge,
   type AgeDeclarationVariant,
 } from "./components/AgeDeclarationDialog";
 
@@ -87,6 +88,11 @@ export interface UseAiComplianceGateOptions {
    * write through the same audited `edu_set_age_band` RPC.
    */
   declarationVariant?: AgeDeclarationVariant;
+  /**
+   * How the age question shows. `dialog` (default) is the modal in front of an AI action; `nudge` is a floating,
+   * non-blocking card with "Not now" for prompts nobody is waiting on (the first-sign-in prompt).
+   */
+  declarationPresentation?: "dialog" | "nudge";
   /** `false` reads nothing (the first-sign-in popup already asked this session). Default true. */
   enabled?: boolean;
 }
@@ -95,6 +101,7 @@ export function useAiComplianceGate(
   options: UseAiComplianceGateOptions = {},
 ): UseAiComplianceGateResult {
   const declarationVariant = options.declarationVariant ?? "gate";
+  const AgeQuestion = options.declarationPresentation === "nudge" ? AgeDeclarationNudge : AgeDeclarationDialog;
   // The verdict is kept in Redux for the person (`useStoreRead`): a remount, a wake from sleep
   // (a Board tile) or another gate mounted beside this one reads nothing. `ensureAllowed` is the
   // deliberate server-truth check before an AI action; it and the age prompt write the fresh
@@ -272,7 +279,7 @@ export function useAiComplianceGate(
   const Gate = useCallback(
     () => (
       <>
-        <AgeDeclarationDialog
+        <AgeQuestion
           open={askAge}
           onOpenChange={(next) => {
             if (!next) settleAgePrompt(false);
@@ -296,6 +303,7 @@ export function useAiComplianceGate(
       gate?.reason,
       gate?.isAnonymous,
       declarationVariant,
+      AgeQuestion,
       onPickBand,
       settleAgePrompt,
     ],

@@ -11,7 +11,7 @@
 // leaf). Measured with `scripts/build-lab/graph-report.ts` closures.
 
 import React, { Suspense, lazy } from "react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import type { AnswerValueViewProps } from "@/components/official/structured-value/AnswerValueView";
 
 const KindValueRenderImpl = lazy(

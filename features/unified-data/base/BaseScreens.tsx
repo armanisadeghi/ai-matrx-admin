@@ -6,6 +6,7 @@
 // with a name, icon, color and description a person can change. Duplicate base, snapshots and the two importers start here. The
 // whole-base verbs are @ai-matrx/records `duplicateBase` / `snapshotBase` over the records client; a restore is the server job.
 
+import { formatCount } from "@ai-matrx/kit/format";
 import { ActivityFeedButton } from "@/features/unified-data/table-page/TableAccessBar";
 import { ensureTable } from "@ai-matrx/records/core";
 import { duplicateBase, restoredBaseName, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
@@ -38,6 +39,7 @@ import {
   type BaseSnapshotJobView,
 } from "./baseMoveJob";
 import { GithubImportDialog } from "./GithubImportDialog";
+import { ConnectionImportDialog } from "./ConnectionImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
   archiveBaseIdentity, baseMoveAccessKept, baseMoveRemoveAccess, listBases, listSnapshots, readBase, saveBase, saveSnapshot, setSnapshotSchedule, trashSnapshot,
@@ -252,7 +254,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   const [identity, setIdentity] = useState<BaseIdentity | null>(null);
   const [extras, setExtras] = useState<Extras>({ pages: [], automations: [] });
   const [error, setError] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets" | "github">(null);
+  const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets" | "github" | "connection">(null);
   const [archiving, setArchiving] = useState<null | "ask" | { done: number; total: number } | { problem: string }>(null);
   const port = useBasePort();
   const router = useRouter();
@@ -361,6 +363,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
           <Button variant="quiet" onClick={() => setDialog("airtable")} data-base-airtable="">From Airtable</Button>
           <Button variant="quiet" onClick={() => setDialog("sheets")} data-base-sheets="">From Google Sheets</Button>
           <Button variant="quiet" onClick={() => setDialog("github")} data-base-github="">From GitHub</Button>
+          <Button variant="quiet" onClick={() => setDialog("connection")} data-base-connection="">From a connected app</Button>
           <Button variant="quiet" onClick={() => setArchiving("ask")} disabled={typeof archiving === "object" && archiving !== null && "total" in archiving} data-base-archive="">Archive</Button>
         </div>
       </header>
@@ -398,6 +401,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
       <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
       <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
       <GithubImportDialog open={dialog === "github"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
+      <ConnectionImportDialog open={dialog === "connection"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
     </div>
   );
 }
@@ -532,7 +536,7 @@ export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, ta
       <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-base-move-dialog="">
         <DialogTitle>Move {name}</DialogTitle>
         {phase.kind === "moving" ? <Words>Moving the base…</Words> : phase.kind === "job" ? (
-          <div data-base-move-progress=""><Words>{`Moving ${tableCount} tables${phase.rows === null ? "" : `, ${phase.rows.toLocaleString()} rows`}… ${phase.seconds} s`}</Words></div>
+          <div data-base-move-progress=""><Words>{`Moving ${tableCount} tables${phase.rows === null ? "" : `, ${formatCount(phase.rows)} rows`}… ${phase.seconds} s`}</Words></div>
         ) : (
           <>
             <label className="flex items-center justify-between gap-2 text-sm"><span>Workspace</span>

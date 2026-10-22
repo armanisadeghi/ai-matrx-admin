@@ -15,7 +15,7 @@
 
 import { useEffect, useState } from "react";
 import { Layers } from "lucide-react";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { createClient } from "@/utils/supabase/client";
 import { PublicFlashcardDeck } from "@/features/flashcards/components/public/PublicFlashcardDeck";
 import type {

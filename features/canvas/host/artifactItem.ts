@@ -17,7 +17,7 @@ import type { CanvasJson, CanvasOpenInput } from "@ai-matrx/canvas";
 import { findNonJson } from "@ai-matrx/canvas";
 import { titleToString } from "@/features/canvas/canvasContent";
 import type { ArtifactDebugTrace, CanvasContent } from "@/features/canvas/canvasContent";
-import { readArtifactPointerId } from "@/features/canvas/artifact-types/artifactId";
+import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 
 export type ArtifactView = "preview" | "source";
 

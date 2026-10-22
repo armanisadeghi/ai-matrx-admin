@@ -3,7 +3,7 @@
  * viewport as root, a rootMargin never reaches past the panel's clip, so lazy
  * diagrams and progressive blocks mounted only once already on screen.
  */
-import { nearestScrollRoot } from "./scroll-root";
+import { nearestScrollRoot } from "@ai-matrx/kit/dom";
 
 function box(overflowY: string, scrollHeight: number, clientHeight: number, overflowX = "visible") {
   const el = document.createElement("div");

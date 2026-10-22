@@ -46,7 +46,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SimpleTooltip } from "@/components/matrx/Tooltip";
+import { SimpleTooltip } from "@ai-matrx/design-system";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { selectMermaidPreferences } from "@/lib/redux/preferences/userPreferenceSelectors";

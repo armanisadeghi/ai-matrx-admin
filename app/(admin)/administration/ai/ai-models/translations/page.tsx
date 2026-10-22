@@ -1,6 +1,6 @@
 // record-view: none — an admin catalog of model name translations, no single record
 import { Suspense } from "react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import TranslationGrid from "@/features/ai-models/translation/components/TranslationGrid";
 
 export default function AiSettingsTranslationPage() {

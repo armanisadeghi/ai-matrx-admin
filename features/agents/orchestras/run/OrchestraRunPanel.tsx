@@ -12,7 +12,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ExternalLink, Play, X } from "lucide-react";
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { accentClasses } from "../components/accents";

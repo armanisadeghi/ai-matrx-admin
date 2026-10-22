@@ -24,7 +24,10 @@ jest.mock("@/features/feature-docs/service", () => ({
   listFeatureDocs: () => listFeatureDocs(),
 }));
 
-jest.mock("@/components/loaders/MatrxMiniLoader", () => () => null);
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  MatrxMiniLoader: () => null,
+}));
 
 const rows: FeatureDocListRow[] = [
   {

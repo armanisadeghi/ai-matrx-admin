@@ -19,7 +19,7 @@ import { useMediaClient } from "@ai-matrx/media/core";
 
 import { toast } from "@/lib/toast";
 
-import { ShimmerText } from "@/components/loaders/ShimmerText";
+import { ShimmerText } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 

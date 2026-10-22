@@ -99,15 +99,14 @@ export function useAgeDeclarationContent({
   const explainer =
     step === "minor_band" ? (
       <span className="block">
-        Under 13 means a parent or guardian has to approve before AI features
-        turn on — that&apos;s children&apos;s privacy law (COPPA), not a
-        preference.
+        Under 13 needs a parent or guardian to approve before AI features turn
+        on (COPPA).
       </span>
     ) : (
       <>
         <span className="block">
-          We ask once, and we ask a range — never your date of birth. It lets us
-          apply the right privacy protections to your account.
+          We ask once, as a range, never your birth date. It sets the right
+          privacy protections for your account.
         </span>
         {variant === "gate" ? (
           <span className="block">
@@ -183,6 +182,47 @@ export function useAgeDeclarationContent({
     );
 
   return { title, explainer, choices, busy };
+}
+
+/**
+ * The same question as a NON-BLOCKING card that floats over the page (no overlay, no focus trap, nothing behind it
+ * goes inert). Used by the site-wide first-sign-in prompt: a nudge, never a wall (Arman, 2026-10-17: nothing may
+ * block a new person's way in). "Not now" closes it; the caller holds that for the session.
+ */
+export function AgeDeclarationNudge({
+  open,
+  onOpenChange,
+  ...rest
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onPick: (band: AgeBand) => void;
+  saving: AgeBand | null;
+  isGuest?: boolean;
+  variant?: AgeDeclarationVariant;
+}) {
+  const { title, choices, busy } = useAgeDeclarationContent({ open, ...rest });
+  if (!open) return null;
+  return (
+    <aside
+      role="region"
+      aria-label={title}
+      data-testid="age-nudge"
+      data-matrx-floating-bottom
+      className="fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3 rounded-lg border border-border bg-card p-4 shadow-lg"
+    >
+      <div className="flex items-center gap-2">
+        <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
+        <p className="type-body font-medium text-foreground">{title}</p>
+      </div>
+      {choices}
+      <div className="flex justify-end">
+        <Button variant="ghost" size="sm" disabled={busy} data-testid="age-nudge-not-now" onClick={() => onOpenChange(false)}>
+          Not now
+        </Button>
+      </div>
+    </aside>
+  );
 }
 
 export function AgeDeclarationDialog({

@@ -114,6 +114,8 @@ export function PublicFormRunner({
   linkQuery,
   autoAdvance,
   paymentNotice,
+  unlock = null,
+  words = null,
 }: {
   /** TYPEFORM-2: a single choice moves on when picked (the knob, resolved by the page). */
   autoAdvance?: boolean;
@@ -124,6 +126,10 @@ export function PublicFormRunner({
   linkQuery?: Record<string, string | string[] | undefined>;
   /** PAYMENTS: what the server read about this visit's payment (REVIEW-PAYMENTS I4) — never the query. */
   paymentNotice?: PaymentNoticeProps | null;
+  /** CD-PAGE-08: the password's fingerprint the page read from this visitor's signed cookie (a protected form). */
+  unlock?: string | null;
+  /** CD-PAGE-08: the runner's own words in the language the visitor met (null: English). */
+  words?: Record<string, string> | null;
 }) {
   const hidden = hiddenFromLink(form.presentation?.hidden_fields ?? [], linkQuery ?? {});
   // PAYMENTS-CONNECT: a payment that could not start after the answers were saved (I5) — said in
@@ -159,7 +165,14 @@ export function PublicFormRunner({
   const [sent, setSent] = useState(false);
   const [copied, setCopied] = useState<"idle" | "copied" | "manual">("idle");
   const secretRef = useRef<string | null>(null);
+  // CD-PAGE-08 — ANSWER AGAIN. `editKey` is the respondent's own secret: handed back once after a send (their private
+  // link), or read from the link's fragment (`#answer=…`) when they come back to change what they sent.
+  const [editKey, setEditKey] = useState<string | null>(null);
+  const [editing, setEditing] = useState<{ kind: "none" } | { kind: "found"; answers: Record<string, unknown> } | { kind: "gone"; message: string }>({ kind: "none" });
+  const [editCopied, setEditCopied] = useState<"idle" | "copied" | "manual">("idle");
+  const w = { changeAnswers: "Change your answers", saveChanges: "Save changes", ...(words ?? {}) };
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const editingRef = useRef(false);
   const inFlight = useRef<Promise<void> | null>(null);
 
   // ── WHERE WAS I: the link's fragment first, then this browser's own memory ──────────
@@ -170,6 +183,36 @@ export function PublicFormRunner({
   const linkSecret = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     let cancelled = false;
+    // CD-PAGE-08: `#answer=<secret>` opens the respondent's own sent answers to change them — not a saved place.
+    const answerKey = /(?:^|[#&])answer=([A-Za-z0-9_-]{24,})/.exec(window.location.hash)?.[1] ?? null;
+    if (answerKey) {
+      replaceAddressWithoutNavigating(window.location.pathname + window.location.search);
+      void (async () => {
+        try {
+          const response = await fetch(`/api/forms/${form.form_id}/response`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ edit: answerKey, unlock }),
+          });
+          const body = (await response.json()) as { ok?: boolean; answers?: Record<string, unknown> | null; message?: string | null };
+          if (cancelled) return;
+          if (body.ok && body.answers) {
+            setEditKey(answerKey);
+            setEditing({ kind: "found", answers: body.answers });
+            setRunKey((k) => k + 1);
+          } else {
+            setEditing({ kind: "gone", message: body.message ?? "This link does not open an answer to this form." });
+          }
+        } catch {
+          if (!cancelled) setEditing({ kind: "gone", message: "Your answers could not be opened just now. Try the link again in a moment." });
+        } finally {
+          if (!cancelled) setPlaceChecked(true);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
     if (linkSecret.current === undefined) {
       linkSecret.current = /(?:^|[#&])resume=([A-Za-z0-9_-]{16,})/.exec(window.location.hash)?.[1] ?? null;
     }
@@ -276,6 +319,8 @@ export function PublicFormRunner({
 
   const onAnswersChange = useCallback(
     (answers: Record<string, unknown>) => {
+      // Changing a sent answer keeps no saved place: the answer itself is what changes, on Save changes.
+      if (editingRef.current) return;
       if (pending.current) clearTimeout(pending.current);
       pending.current = setTimeout(() => {
         pending.current = null;
@@ -292,6 +337,31 @@ export function PublicFormRunner({
       if (pending.current) clearTimeout(pending.current);
     },
     [],
+  );
+
+  editingRef.current = editing.kind === "found";
+
+  // CD-PAGE-08: SAVE CHANGES — the record the answer became is changed in place, through the store's own judgement.
+  const saveChanges = useCallback(
+    async (values: Record<string, unknown>): Promise<FormSubmitOutcome> => {
+      try {
+        const response = await fetch(`/api/forms/${form.form_id}/response/update`, {
+          method: "POST",
+          signal: AbortSignal.timeout(45_000),
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ edit: editKey, values: { ...values, ...(unlock ? { _unlock: unlock } : {}) } }),
+        });
+        const body = (await response.json()) as { ok?: boolean; message?: string | null; record_id?: string | null };
+        if (!response.ok || body.ok === false) {
+          return { ok: false, message: body.message ?? "Your changes could not be saved. Nothing changed, so it is safe to try again." };
+        }
+        setSent(true);
+        return { ok: true, recordId: body.record_id ?? null };
+      } catch {
+        return { ok: false, message: "Your changes did not reach us — the connection dropped. Nothing changed, so saving again is safe." };
+      }
+    },
+    [form.form_id, editKey, unlock],
   );
 
   const submit = useCallback(
@@ -317,6 +387,7 @@ export function PublicFormRunner({
               ...(hidden && Object.keys(hidden).length > 0 ? { _hidden: hidden } : {}),
               ...(visitKey.current ? { _visit: visitKey.current } : {}),
               _time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              ...(unlock ? { _unlock: unlock } : {}),
             },
             clientKey: secretRef.current,
           }),
@@ -328,6 +399,8 @@ export function PublicFormRunner({
           record_id?: string | null;
           payment_url?: string | null;
           payment_refused?: string | null;
+          /** CD-PAGE-08: the respondent's answer-again secret, handed back once. */
+          edit?: string | null;
         };
         if (!response.ok || body.ok === false) {
           return {
@@ -340,6 +413,7 @@ export function PublicFormRunner({
         storePlace(form.form_id, null);
         secretRef.current = null;
         setSecret(null);
+        if (body.edit) setEditKey(body.edit);
         // PAYMENTS-CONNECT: the form asks for payment. The answers are saved; now pay on Stripe
         // (the organization's own account). Coming back lands on ?payment=paid|cancelled.
         if (body.payment_url) {
@@ -364,7 +438,7 @@ export function PublicFormRunner({
         };
       }
     },
-    [form.form_id],
+    [form.form_id, unlock],
   );
 
   // WHICH QUESTIONS COME NEXT — the store's answer, through the server (lane FORMS-FIX-1).
@@ -420,7 +494,22 @@ export function PublicFormRunner({
     window.setTimeout(() => setCopied("idle"), 1600);
   }
 
-  const initialAnswers = resumed.kind === "found" ? { ...(prefill ?? {}), ...resumed.answers } : (prefill ?? {});
+  const initialAnswers =
+    editing.kind === "found"
+      ? editing.answers
+      : resumed.kind === "found"
+        ? { ...(prefill ?? {}), ...resumed.answers }
+        : (prefill ?? {});
+  const editUrl =
+    editKey && typeof window !== "undefined" ? `${window.location.origin}${window.location.pathname}#answer=${editKey}` : null;
+  async function copyEditLink(url: string) {
+    if (!(await copyText(url))) {
+      setEditCopied("manual");
+      return;
+    }
+    setEditCopied("copied");
+    window.setTimeout(() => setEditCopied("idle"), 1600);
+  }
   const thankYou = form.presentation?.thank_you ?? null;
   const resumeUrl =
     secret && typeof window !== "undefined"
@@ -438,6 +527,7 @@ export function PublicFormRunner({
     onStart: () => count("start"),
     onQuestionShown: (field: string) => count("reach", field),
     ...(typeof autoAdvance === "boolean" ? { autoAdvance } : {}),
+    ...(words ? { words } : {}),
   };
   const spec: Record<string, unknown> = {
     name: form.title,
@@ -460,7 +550,7 @@ export function PublicFormRunner({
     thankYou: thankYou
       ? { title: thankYou.title ?? null, body: thankYou.body ?? null, redirectUrl: thankYou.redirect_url ?? null }
       : null,
-    submitLabel: form.presentation?.submit_label ?? null,
+    submitLabel: editing.kind === "found" ? w.saveChanges : (form.presentation?.submit_label ?? null),
     isPublic: true,
   };
 
@@ -472,6 +562,16 @@ export function PublicFormRunner({
           <button type="button" className="underline underline-offset-2" onClick={startOver}>
             Start over
           </button>
+        </p>
+      ) : null}
+      {editing.kind === "found" && !sent ? (
+        <p className="mt-3 rounded border border-dashed px-2 py-1 text-xs text-muted-foreground" data-form-editing="">
+          {w.changeAnswers}
+        </p>
+      ) : null}
+      {editing.kind === "gone" ? (
+        <p className="mt-3 rounded border border-dashed px-2 py-1 text-xs text-muted-foreground" data-form-editing-gone="">
+          {editing.message}
         </p>
       ) : null}
       {resumed.kind === "gone" && !sent ? (
@@ -498,13 +598,22 @@ export function PublicFormRunner({
           form={spec as unknown as ComponentProps<typeof FormRunner>["form"]}
           fields={form.fields as unknown as Field[]}
           honeypotKey={form.honeypot_key}
-          onSubmit={submit}
+          onSubmit={editing.kind === "found" ? saveChanges : submit}
           {...ports}
         />
         </div>
       </RecordsUiProvider>
       </TranscriptionGrantProvider>
 
+      {sent && editUrl ? (
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground" aria-live="polite" data-form-edit-link="">
+          <span>{w.changeAnswers}:</span>
+          <button type="button" className="underline underline-offset-2" onClick={() => void copyEditLink(editUrl)}>
+            {editCopied === "copied" ? "Link copied" : "Copy my link"}
+          </button>
+          {editCopied === "manual" ? <span className="break-all rounded border border-dashed px-2 py-1">{editUrl}</span> : null}
+        </div>
+      ) : null}
       {!sent && save.kind !== "idle" ? (
         <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground" aria-live="polite">
           {save.kind === "saving" ? <span>Saving your answers…</span> : null}

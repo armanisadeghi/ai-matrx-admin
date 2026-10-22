@@ -69,7 +69,7 @@ export function useAiTableBulk<T extends { id: string }>(options: AiTableBulkOpt
           skipReason: (row) => protectedReason?.(row) ?? null,
           confirm: (targets) => ({
             title: `${label} ${targets.ids.length} ${noun}${targets.ids.length === 1 ? "" : "s"}?`,
-            description: `${consequence} Any the server refuses are skipped and named.`,
+            description: `${consequence} Refused ones are named and skipped.`,
             confirmLabel: label,
             variant: "destructive",
           }),

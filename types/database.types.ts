@@ -32483,6 +32483,60 @@ export type Database = {
           },
         ]
       }
+      render_inspection: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          diagnostics: Json
+          id: string
+          measurements: Json
+          metadata: Json
+          organization_id: string
+          round: number
+          screenshot_file_id: string | null
+          spec: Json
+          subject_ref: string
+          subject_type: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          diagnostics?: Json
+          id?: string
+          measurements?: Json
+          metadata?: Json
+          organization_id: string
+          round?: number
+          screenshot_file_id?: string | null
+          spec?: Json
+          subject_ref: string
+          subject_type: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          diagnostics?: Json
+          id?: string
+          measurements?: Json
+          metadata?: Json
+          organization_id?: string
+          round?: number
+          screenshot_file_id?: string | null
+          spec?: Json
+          subject_ref?: string
+          subject_type?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       kind_component_version: {
@@ -42337,6 +42391,14 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      _lookup_answers_many: {
+        Args: {
+          p_field_data: Json
+          p_organization_id: string
+          p_table_id: string
+        }
+        Returns: boolean
       }
       _may_know_table: {
         Args: { p_organization_id: string; p_table_id: string }
@@ -89098,6 +89160,10 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["permission_level"]
       }
+      fixture_purge_allows: {
+        Args: { p_new: Json; p_old: Json; p_op: string }
+        Returns: boolean
+      }
       fn_grant_resource_permission: {
         Args: {
           p_expires_at?: string
@@ -107581,6 +107647,8 @@ export type Database = {
         Returns: boolean
       }
       _action_request_gone: { Args: never; Returns: string }
+      _admin_mfa_required: { Args: never; Returns: boolean }
+      _admin_operator_session: { Args: never; Returns: boolean }
       _admin_read_ensure: { Args: { p_rel: unknown }; Returns: boolean }
       _agent_spend_candidates: {
         Args: { p_agent_id: string; p_mandate_key: string; p_since: string }
@@ -108250,6 +108318,15 @@ export type Database = {
         Args: { p_channel: string; p_target: string }
         Returns: string
       }
+      _set_admin_mfa_required: {
+        Args: {
+          p_actor: string
+          p_evidence: string
+          p_reason: string
+          p_required: boolean
+        }
+        Returns: number
+      }
       _set_table_strict_class: {
         Args: {
           p_approved_on: string
@@ -108531,6 +108608,7 @@ export type Database = {
           ordinal: number
         }[]
       }
+      admin_session_state: { Args: never; Returns: Json }
       adopt_custom_fields: {
         Args: {
           p_ai_exposure_ceiling?: string
@@ -110140,11 +110218,13 @@ export type Database = {
         }
         Returns: Json
       }
+      knob_bucket: { Args: { p_feature: string }; Returns: number }
       knob_configuration: {
         Args: { p_as_of?: string; p_organization_id?: string }
         Returns: Json
       }
       knob_defaults: { Args: { p_known_version?: string }; Returns: Json }
+      knob_defaults_by_bucket: { Args: { p_buckets: number[] }; Returns: Json }
       knob_history: {
         Args: {
           p_feature: string
@@ -110207,6 +110287,7 @@ export type Database = {
         }
         Returns: Json
       }
+      knob_register_vector: { Args: never; Returns: string }
       knob_resolve: {
         Args: {
           p_feature: string
@@ -110269,6 +110350,10 @@ export type Database = {
           replayed: boolean
           value: Json
         }[]
+      }
+      knob_vector_diff: {
+        Args: { p_held: string; p_now: string }
+        Returns: number[]
       }
       knob_write_door_for: {
         Args: { p_key: string; p_organization_id?: string }

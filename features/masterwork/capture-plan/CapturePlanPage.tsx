@@ -24,7 +24,7 @@ import { MatrxDataTable, type MatrxColumnDef, type MatrxDataTableCopyConfig } fr
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import LoadingSpinner from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from "@ai-matrx/design-system";
 import {
   Select,
   SelectContent,

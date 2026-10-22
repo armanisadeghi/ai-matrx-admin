@@ -21,7 +21,7 @@
 
 import dynamic from "next/dynamic";
 
-import SuspenseLoader from "@/components/loaders/SuspenseLoader";
+import { SuspenseLoader } from "@ai-matrx/design-system";
 
 import type { MapViewProps } from "../components/TopicalMapWorkspaceBody";
 

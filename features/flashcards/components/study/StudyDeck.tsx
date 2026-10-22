@@ -60,7 +60,7 @@ import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { ContentView } from "@ai-matrx/rich-content/copy/ContentActions";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import MatrxMiniLoader from "@/components/loaders/MatrxMiniLoader";
+import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import FlashcardItem from "@/components/mardown-display/blocks/flashcards/FlashcardItem";
 import { getCardImages } from "./cardImages";
