@@ -84,6 +84,8 @@ const values: SurfaceValue[] = [
 ];
 
 export const workflowEmitManifest: SurfaceManifest = {
+  situation:
+    "They are looking at what a workflow step put on screen, titled \"{title|untitled}\" ({kind|free-form content}); the step's data is in your context.",
   surfaceName: "matrx-user/workflow",
   inheritsFrom: "matrx-default/workflows",
   client: "matrx-user",

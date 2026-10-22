@@ -542,6 +542,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const schedulesManifest: SurfaceManifest = {
+  situation:
+    "They are on their schedules page; the schedule open is \"{schedule_title|none}\" ({schedule_trigger_summary|no trigger shown}), next due {schedule_next_due_at|not set}. They can create a schedule and edit its title, description, prompt, trigger, variables and tags.",
   surfaceName: "matrx-user/schedules",
   inheritsFrom: "matrx-default/workflows",
   client: "matrx-user",

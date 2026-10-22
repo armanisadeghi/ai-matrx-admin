@@ -327,6 +327,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const workflowRunManifest: SurfaceManifest = {
+  situation:
+    "They have a run of the workflow \"{workflow_name}\" open; it says \"{run_status_label}\", with {step_count} steps, and the step working now is \"{current_step.label|none}\". They can pause, resume, stop or cancel the run, and retry or skip a step; a question the run asks them is answered on the page.",
   surfaceName: "matrx-user/workflow-run",
   inheritsFrom: "matrx-default/workflows",
   client: "matrx-user",

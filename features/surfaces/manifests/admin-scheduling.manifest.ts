@@ -622,6 +622,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminSchedulingManifest: SurfaceManifest = {
+  situation:
+    "They are in the admin scheduling console, on the {active_tab} tab: {task_total_count|an unknown number of} tasks ({task_enabled_count|unknown} enabled), {runs_last_24h_count|unknown} runs and {failures_last_24h_count|unknown} failures in the last 24 hours. They can test a cron expression and time zone.",
   surfaceName: ADMIN_SCHEDULING_SURFACE_NAME,
   inheritsFrom: "matrx-default/workflows",
   client: "matrx-admin",
