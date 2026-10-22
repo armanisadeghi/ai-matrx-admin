@@ -13,13 +13,15 @@
  * Mirrors the other singleton-window openers (e.g. `audioDevices`).
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { activateAudio } from "@/features/audio/activation";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "audioControlWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface AudioControlWindowHandle {
   close: () => void;
@@ -33,9 +35,9 @@ export function useOpenAudioControlWindow() {
     // live. AudioSystemHost also gates on this overlay's Redux flag, but the
     // explicit latch covers it without a store read.
     activateAudio();
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
+    opener.open(dispatch);
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   }, [dispatch]);
 }
@@ -44,14 +46,7 @@ export function useOpenAudioControlWindow() {
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function AudioControlWindowController(): null {
-  const open = useOpenAudioControlWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const AudioControlWindowController = hookController(useOpenAudioControlWindow);
 
 export type AudioControlWindowDefinitionData = Record<string, unknown>;
 

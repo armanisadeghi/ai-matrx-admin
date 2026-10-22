@@ -8,7 +8,7 @@
 "use client";
 
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { ClipboardFallbackDialog } from "./ClipboardFallbackDialog";
 import type { ManualCopyOptions } from "./manualCopyOpener";
 

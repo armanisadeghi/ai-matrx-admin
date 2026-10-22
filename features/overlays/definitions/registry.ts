@@ -121,6 +121,8 @@ export const APP_OVERLAYS = [
   d.provisionWindowOverlay,
   d.providerReferenceWindowOverlay,
   d.sandboxGateDialogOverlay,
+  d.valuePromptsDialogOverlay,
+  d.conversationRenameDialogOverlay,
   d.scopeMismatchDialogOverlay,
   d.cantRemoveDialogOverlay,
   d.homePickerDialogOverlay,

@@ -6,13 +6,13 @@
  * Re-exports the canonical hand-written opener (full callback-aware API
  * via the callback registry for `onIconPick`/`onClose`).
  */
-import { useEffect } from "react";
 import {
   useOpenCuratedIconPickerWindow,
   type OpenCuratedIconPickerOptions,
   type CuratedIconPickerHandle,
 } from "@/features/window-panels/windows/icons/useOpenCuratedIconPickerWindow";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
+import { hookController } from "./app-opener";
 
 export {
   useOpenCuratedIconPickerWindow,
@@ -20,17 +20,7 @@ export {
   type CuratedIconPickerHandle,
 };
 
-export function CuratedIconPickerWindowController(
-  props: OpenCuratedIconPickerOptions,
-): null {
-  const open = useOpenCuratedIconPickerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.instanceId]);
-  return null;
-}
+export const CuratedIconPickerWindowController = hookController<OpenCuratedIconPickerOptions>(useOpenCuratedIconPickerWindow);
 
 export type CuratedIconPickerWindowDefinitionData = OpenCuratedIconPickerOptions;
 

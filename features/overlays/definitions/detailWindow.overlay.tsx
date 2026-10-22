@@ -12,14 +12,16 @@
  * Singleton: opening another record retargets the same window (Notion peek).
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { dispatchThunk, useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/boot";
 import type { DetailInstanceData } from "@ai-matrx/detail";
 import { openDetailSingleton } from "@/features/window-panels/detail/openDetailSingleton";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "detailWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export type OpenDetailWindowOptions = DetailInstanceData;
 
@@ -41,7 +43,7 @@ export function useOpenDetailWindow() {
         openDetailSingleton({ data: opts, announce }),
       );
       return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
       };
     },
     [dispatch],
@@ -53,23 +55,12 @@ export function useOpenDetailWindow() {
 export function useCloseDetailWindow() {
   const dispatch = useAppDispatch();
   return useCallback(() => {
-    dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+    dispatch(opener.close());
   }, [dispatch]);
 }
 
 /** Declarative form. Renders nothing visible; opens on mount, closes on unmount. */
-export function DetailWindowController(props: OpenDetailWindowOptions): null {
-  const open = useOpenDetailWindow();
-  const listKey = props.list ? `${props.list.index}:${props.list.items.length}` : "";
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // The instance is identified by type/id/seed/list — a fresh object each
-    // render must not reopen the window.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.type, props.id, props.seed?.name, props.seed?.about, listKey]);
-  return null;
-}
+export const DetailWindowController = hookController<OpenDetailWindowOptions>(useOpenDetailWindow);
 
 export type DetailWindowDefinitionData = OpenDetailWindowOptions;
 

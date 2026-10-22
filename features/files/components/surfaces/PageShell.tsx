@@ -153,6 +153,10 @@ import { FilesRouteSelectionSync } from "./FilesRouteSelectionSync";
 import { IconRail } from "./desktop/IconRail";
 import { NavSidebar } from "./desktop/NavSidebar";
 import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
+import {
   SidebarModeProvider,
   type SidebarMode,
 } from "./desktop/SidebarModeToggle";
@@ -745,6 +749,8 @@ function PageShellDesktop({
   // See `.claude/skills/react-resizable-panels-v4` §1 "Imperative handles" and
   // the decision-tree row for "Fullscreen one panel".
   const groupRef = useGroupRef();
+  // The new app frame: the folders sidebar is the frame's ONE sidebar column (no panel of our own).
+  const frameSidebar = useFrameSidebarSlot();
   const savedLayoutRef = useRef<Layout | null>(null);
   const [previewMaximized, setPreviewMaximized] = useState(false);
   const previewMaximizedRef = useRef(false);
@@ -816,13 +822,13 @@ function PageShellDesktop({
       previewMaximizedRef.current = true;
       savedLayoutRef.current = group.getLayout();
       group.setLayout({
-        [PANEL_IDS.SIDE]: 0,
+        ...(frameSidebar ? {} : { [PANEL_IDS.SIDE]: 0 }),
         [PANEL_IDS.MAIN]: 0,
         [PANEL_IDS.PREVIEW]: 100,
       });
       setPreviewMaximized(true);
     }
-  }, [groupRef, previewMaximized, showPreviewPane]);
+  }, [groupRef, previewMaximized, showPreviewPane, frameSidebar]);
 
   return (
     <SurfaceRuntimeProvider
@@ -865,7 +871,14 @@ function PageShellDesktop({
              * full NavSidebar. Hidden during preview-maximize so it doesn't eat
              * width from the full-bleed preview. Top-padded to clear the glass
              * shell header — its buttons are static, not scrolling content. */}
-            {sidebarCollapsed && !previewMaximized && (
+            {frameSidebar ? (
+              <FrameSidebarContent>
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <NavSidebar section={section} />
+                </div>
+              </FrameSidebarContent>
+            ) : null}
+            {sidebarCollapsed && !previewMaximized && !frameSidebar && (
               <IconRail
                 section={section}
                 onExpand={expandSidebar}
@@ -883,6 +896,8 @@ function PageShellDesktop({
                * can drive its size to 0 without minSize fighting it. Normal drag
                * UX is unaffected (minSize is still respected during pointer drag,
                * with auto-collapse only at the lower bound). */}
+              {frameSidebar ? null : (
+              <>
               <ResizablePanel
                 id={PANEL_IDS.SIDE}
                 panelRef={sidebarPanelRef}
@@ -904,6 +919,8 @@ function PageShellDesktop({
                     "pointer-events-none !opacity-0",
                 )}
               />
+              </>
+              )}
 
               {/* Main — also collapsible for the same maximize-to-100 path. */}
               <ResizablePanel

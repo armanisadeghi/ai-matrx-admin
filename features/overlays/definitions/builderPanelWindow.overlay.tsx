@@ -6,10 +6,12 @@
  */
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, toggleOverlay } from "@ai-matrx/summon/open";
+import { toggleOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 export const BUILDER_PANEL_OVERLAY_ID = "builderPanelWindow" as const;
+const opener = createOpener<object>(BUILDER_PANEL_OVERLAY_ID);
 
 export interface OpenBuilderPanelOptions {
   surfaceKey?: string | null;
@@ -21,13 +23,8 @@ export function useOpenBuilderPanel() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenBuilderPanelOptions = {}) => {
-      dispatch(
-        openOverlay({
-          overlayId: BUILDER_PANEL_OVERLAY_ID,
-          data: { surfaceKey: opts.surfaceKey ?? null, tab: opts.tab ?? (opts.entryKey ? "values" : "run"), entryKey: opts.entryKey ?? null },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: BUILDER_PANEL_OVERLAY_ID })) };
+      opener.open(dispatch, { data: { surfaceKey: opts.surfaceKey ?? null, tab: opts.tab ?? (opts.entryKey ? "values" : "run"), entryKey: opts.entryKey ?? null } });
+      return { close: () => dispatch(opener.close()) };
     },
     [dispatch],
   );

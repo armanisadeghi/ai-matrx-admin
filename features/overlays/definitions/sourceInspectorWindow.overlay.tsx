@@ -12,13 +12,15 @@
  * cleanly — no callback registry needed.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "sourceInspectorWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenSourceInspectorWindowOptions {
   /** "cld_file" | "library_doc" | "note" | "code_file" | "transcript" | "scraped" */
@@ -48,10 +50,7 @@ export interface SourceInspectorWindowHandle {
 export function createSourceInspectorWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenSourceInspectorWindowOptions): SourceInspectorWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           sourceKind: opts.sourceKind,
           sourceId: opts.sourceId,
           chunkId: opts.chunkId ?? null,
@@ -64,11 +63,9 @@ export function createSourceInspectorWindowOpener(store: { dispatch: AppDispatch
           href: opts.href ?? null,
           seekMs: opts.seekMs ?? null,
           placeLabel: opts.placeLabel ?? null,
-        },
-      }),
-    );
+        } });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -82,17 +79,7 @@ export function useOpenSourceInspectorWindow() {
  * Declarative form. Renders nothing; opens the overlay on mount, closes on
  * unmount.
  */
-export function SourceInspectorWindowController(
-  props: OpenSourceInspectorWindowOptions,
-): null {
-  const open = useOpenSourceInspectorWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // Re-open when the cited source/page changes.
-  }, [open, props.sourceId, props.chunkId, props.pageNumber]);
-  return null;
-}
+export const SourceInspectorWindowController = hookController<OpenSourceInspectorWindowOptions>(useOpenSourceInspectorWindow);
 
 export type SourceInspectorWindowDefinitionData = OpenSourceInspectorWindowOptions;
 

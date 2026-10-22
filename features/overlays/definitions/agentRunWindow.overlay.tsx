@@ -11,17 +11,20 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "agentRunWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenAgentRunWindowOptions {
   /** Optional stable instance id. Omit to open an independent chat window. */
@@ -103,11 +106,7 @@ export function createAgentRunWindowOpener(store: AppStore) {
     const userId = selectUserId(state);
     const organizationId = selectOrganizationId(state);
     const resourceIdentity = opts.initialResourceIdentity ?? (userId && organizationId ? { userId, organizationId } : null);
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: {
+    opener.open(dispatch, { instanceId, data: {
           initialAgentId: opts.initialAgentId,
           initialSelectedConversationId: opts.initialSelectedConversationId,
           initialAgentName: opts.initialAgentName,
@@ -132,13 +131,11 @@ export function createAgentRunWindowOpener(store: AppStore) {
             (opts.initialResources && opts.initialResources.length > 0)
               ? Date.now()
               : undefined,
-        },
-      }),
-    );
+        } });
     return {
       instanceId,
       close: () =>
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+        dispatch(opener.close(instanceId)),
     };
   };
 }
@@ -153,28 +150,7 @@ export function useOpenAgentRunWindow() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function AgentRunWindowController(
-  props: OpenAgentRunWindowOptions,
-): null {
-  const open = useOpenAgentRunWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.instanceId,
-    props.initialAgentId,
-    props.initialSelectedConversationId,
-    props.initialAgentName,
-    props.initialDraftText,
-    props.initialVariableValues,
-    props.initialResources,
-    props.initialAutoRun,
-    props.mandateKey,
-    props.surfaceName,
-  ]);
-  return null;
-}
+export const AgentRunWindowController = hookController<OpenAgentRunWindowOptions>(useOpenAgentRunWindow);
 
 export type AgentRunWindowDefinitionData = OpenAgentRunWindowOptions;
 

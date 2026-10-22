@@ -7,7 +7,7 @@
 
 import React from "react";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { HomePickerList } from "./HomePickerList";
 import type { PickHomeRequest, PickHomeResponse } from "./homePickerOpener";

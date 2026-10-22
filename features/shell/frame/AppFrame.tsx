@@ -167,6 +167,12 @@ export interface AppFrameProps {
   onSelectPin?: (pin: FramePin) => void;
   /** The big products always in the sidebar: `off`, `top` or `bottom`. Default `bottom`. */
   bigItems?: FrameBigItems;
+  /**
+   * THE PRODUCT'S OWN NAVIGATION, given by the host (a module's menu, or the page's sidebar
+   * through the host's slot). Rendered in the sidebar body in place of the menu rows; the top
+   * row, Pinned, the big items and the footer stay. The frame's width governs it.
+   */
+  sidebarContent?: ReactNode;
   // ── the header ──
   crumbs: readonly FrameCrumb[];
   /** Only when the item can be favorited. */
@@ -445,6 +451,7 @@ export function AppFrame(props: AppFrameProps) {
     pins: props.pins,
     onSelectPin: props.onSelectPin,
     bigItems: props.bigItems ?? "bottom",
+    content: props.sidebarContent,
     bigProducts: BIG_ITEM_IDS.flatMap((id) => products.filter((p) => p.id === id)),
   };
   const goTo: GoToSearchProps = { products, families, onGo: props.onGoTo, extraEntries: props.goToEntries };

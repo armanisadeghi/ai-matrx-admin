@@ -40,6 +40,8 @@ import {
   useFramePageHeaderHost,
 } from "./framePageHeader";
 import { useFramePins } from "./useFramePins";
+import { FrameSidebarSlotContext } from "./frameSidebarSlot";
+import { useFrameProductSidebar } from "./frameProductSidebar";
 import { menuGoToEntries } from "./goToMenuEntries";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdminPerson } from "@/lib/redux/selectors/userSelectors";
@@ -213,6 +215,11 @@ export default function FrameHostImpl({
       : derivedCrumbs(product, item, home.title, pathname, go);
   const { pins, favorite } = useFramePins(pathname, crumbs[crumbs.length - 1].label);
 
+  // THE PRODUCT'S OWN SIDEBAR (owner, 2026-10-22): the page's own sidebar, else the route
+  // family's registered menu, else the route table's rows (frameProductSidebar.tsx).
+  const ProductIcon = product.icon;
+  const { slotHost, sidebarContent } = useFrameProductSidebar(pathname, <ProductIcon aria-hidden />);
+
   const actions: FrameAction[] = [
     {
       id: "copy-link",
@@ -243,6 +250,7 @@ export default function FrameHostImpl({
           pins={isAuthenticated ? pins : undefined}
           onSelectPin={(pin) => go(pin.href)}
           favorite={isAuthenticated ? favorite : undefined}
+          sidebarContent={sidebarContent}
           activeMenuItemId={item?.id}
           onSelectMenuItem={(selected) => selected.href && go(selected.href)}
           crumbs={crumbs}
@@ -274,7 +282,7 @@ export default function FrameHostImpl({
             data-matrx-frame-main=""
             data-matrx-page-scroll=""
           >
-            {children}
+            <FrameSidebarSlotContext value={slotHost}>{children}</FrameSidebarSlotContext>
           </main>
         </FrameChrome>
       </FrameSideChatHostContext>

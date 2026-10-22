@@ -11,13 +11,15 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "transcriptStudioWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenTranscriptStudioWindowOptions {
   title?: string;
@@ -32,17 +34,12 @@ export interface TranscriptStudioWindowHandle {
 export function createTranscriptStudioWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenTranscriptStudioWindowOptions = {}): TranscriptStudioWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           title: opts.title,
           activeSessionId: opts.activeSessionId,
-        },
-      }),
-    );
+        } });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -57,14 +54,7 @@ export function useOpenTranscriptStudioWindow() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function TranscriptStudioWindowController(props: OpenTranscriptStudioWindowOptions): null {
-  const open = useOpenTranscriptStudioWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.title, props.activeSessionId]);
-  return null;
-}
+export const TranscriptStudioWindowController = hookController<OpenTranscriptStudioWindowOptions>(useOpenTranscriptStudioWindow);
 
 export type TranscriptStudioWindowDefinitionData = OpenTranscriptStudioWindowOptions;
 

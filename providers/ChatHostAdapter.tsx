@@ -49,6 +49,7 @@ import { thisMachineLocalModels } from "@/features/ai-models/local/this-machine-
 import { whenEngagedLate } from "@/lib/boot/engagedLate";
 import { useMemo, type ReactNode } from "react";
 import { ChatProvider } from "@ai-matrx/chat/host/react";
+import "@/features/overlays/chatDialogPorts"; // chat's value-prompts + rename dialogs are this app's summon overlays
 import { useNextNavigation } from "@ai-matrx/chat/next/navigation";
 import type {
   ChatChromePort,

@@ -11,16 +11,18 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type {
   TaskPrePopulate,
   TaskSourceInput,
 } from "@/features/tasks/widgets/quick-create/TaskQuickCreateCore";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "taskQuickCreateWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 type TaskQuickCreateSavedHandler = (taskId: string) => void;
 let savedHandler: TaskQuickCreateSavedHandler | null = null;
@@ -49,19 +51,14 @@ export function useOpenTaskQuickCreateWindow() {
       opts: OpenTaskQuickCreateWindowOptions = {},
     ): TaskQuickCreateWindowHandle => {
       savedHandler = opts.onSaved ?? null;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+      opener.open(dispatch, { data: {
             source: opts.source,
             prePopulate: opts.prePopulate,
-          },
-        }),
-      );
+          } });
       return {
         close: () => {
           savedHandler = null;
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+          dispatch(opener.close());
         },
       };
     },
@@ -74,16 +71,7 @@ export function useOpenTaskQuickCreateWindow() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function TaskQuickCreateWindowController(
-  props: OpenTaskQuickCreateWindowOptions,
-): null {
-  const open = useOpenTaskQuickCreateWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.source, props.prePopulate]);
-  return null;
-}
+export const TaskQuickCreateWindowController = hookController<OpenTaskQuickCreateWindowOptions>(useOpenTaskQuickCreateWindow);
 
 export type TaskQuickCreateWindowDefinitionData = OpenTaskQuickCreateWindowOptions;
 

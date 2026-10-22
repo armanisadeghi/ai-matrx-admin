@@ -7,13 +7,13 @@
  * via the callback registry). The codegen stub was replaced because it
  * dropped the handler contract.
  */
-import { useEffect } from "react";
 import {
   useOpenSmartCodeEditorWindow,
   type OpenSmartCodeEditorWindowOptions,
   type SmartCodeEditorWindowHandle,
 } from "@/features/window-panels/windows/smart-code-editor/useOpenSmartCodeEditorWindow";
 import type { OverlayWire } from "./overlay-types";
+import { hookController } from "./app-opener";
 
 export {
   useOpenSmartCodeEditorWindow,
@@ -21,17 +21,7 @@ export {
   type SmartCodeEditorWindowHandle,
 };
 
-export function SmartCodeEditorWindowController(
-  props: OpenSmartCodeEditorWindowOptions,
-): null {
-  const open = useOpenSmartCodeEditorWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.windowInstanceId]);
-  return null;
-}
+export const SmartCodeEditorWindowController = hookController<OpenSmartCodeEditorWindowOptions>(useOpenSmartCodeEditorWindow);
 
 export type SmartCodeEditorWindowDefinitionData = OpenSmartCodeEditorWindowOptions;
 

@@ -8,15 +8,16 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createAddRuleCallbackGroup,
   type AddRuleWindowData,
   type AddRuleWindowHandlers,
 } from "@/features/window-panels/windows/masterwork/callbacks";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "masterworkAddRuleWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenAddRuleWindowOptions extends AddRuleWindowHandlers {
   /** The Rulebook the rule lands on. The window is meaningless without it. */
@@ -47,10 +48,10 @@ export function useOpenAddRuleWindow() {
         rulebookId: opts.rulebookId,
         defaultSection: opts.defaultSection ?? null,
       };
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
+      opener.open(dispatch, { data });
       return {
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+          dispatch(opener.close());
           dispose();
         },
       };

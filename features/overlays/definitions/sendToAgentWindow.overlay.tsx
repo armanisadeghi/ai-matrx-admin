@@ -12,12 +12,15 @@
  *   rich-document action handler, which has `dispatch` but no hooks).
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "sendToAgentWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenSendToAgentWindowOptions {
   /** The text being sent on to another agent. */
@@ -46,27 +49,14 @@ export function useOpenSendToAgentWindow() {
     (opts: OpenSendToAgentWindowOptions): SendToAgentWindowHandle => {
       dispatch(sendToAgentWindowAction(opts));
       return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
       };
     },
     [dispatch],
   );
 }
 
-export function SendToAgentWindowController(
-  props: OpenSendToAgentWindowOptions,
-): null {
-  const open = useOpenSendToAgentWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.initialContent,
-    props.initialSourceTitle,
-  ]);
-  return null;
-}
+export const SendToAgentWindowController = hookController<OpenSendToAgentWindowOptions>(useOpenSendToAgentWindow);
 
 export type SendToAgentWindowDefinitionData = OpenSendToAgentWindowOptions;
 

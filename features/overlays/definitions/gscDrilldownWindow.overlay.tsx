@@ -12,7 +12,7 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import { GSC_DEFAULT_RANGE } from "@/features/marketing/search-console/types";
 import type {
@@ -22,8 +22,10 @@ import type {
   GscRangeKey,
 } from "@/features/marketing/search-console/types";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "gscDrilldownWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenGscDrilldownWindowOptions {
   siteId: string;
@@ -72,14 +74,10 @@ export function useOpenGscDrilldownWindow() {
         dispatch(focusWindow(instanceId));
         return {
           close: () =>
-            dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+            dispatch(opener.close(instanceId)),
         };
       }
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             stackIndex: open.length,
             siteId: opts.siteId,
             siteName: opts.siteName ?? null,
@@ -90,12 +88,10 @@ export function useOpenGscDrilldownWindow() {
             customTo: opts.customTo ?? null,
             compare: opts.compare ?? "none",
             title: opts.title ?? null,
-          },
-        }),
-      );
+          } });
       return {
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],

@@ -30,7 +30,7 @@ jest.mock("@/lib/toast", () => ({
       toastCalls.push({ kind: "error", message, opts: opts as never }),
   },
 }));
-jest.mock("@/components/dialogs/value-prompts/ValuePromptsDialogHost", () => ({
+jest.mock("@/components/dialogs/value-prompts/valuePromptsOpener", () => ({
   promptForValues: async () => null,
 }));
 

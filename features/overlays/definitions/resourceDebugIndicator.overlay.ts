@@ -6,12 +6,13 @@
  * rendered only while open, dragged by summon's dock.
  */
 import { useCallback } from "react";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "resourceDebugIndicator" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenResourceDebugIndicatorOptions {
   /** The agent execution conversation whose attached resources to show. */
@@ -20,12 +21,12 @@ export interface OpenResourceDebugIndicatorOptions {
 
 /** Open (or retarget) the indicator; returns its close. */
 export function openResourceDebugIndicator(dispatch: AppDispatch, opts: OpenResourceDebugIndicatorOptions): () => void {
-  dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { conversationId: opts.conversationId } }));
-  return () => dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+  opener.open(dispatch, { data: { conversationId: opts.conversationId } });
+  return () => dispatch(opener.close());
 }
 
 export function closeResourceDebugIndicator(dispatch: AppDispatch): void {
-  dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+  dispatch(opener.close());
 }
 
 export function useOpenResourceDebugIndicator() {

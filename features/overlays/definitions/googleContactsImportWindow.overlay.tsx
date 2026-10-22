@@ -10,11 +10,13 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const CONTACTS_OVERLAY_ID = "googleContactsImportWindow" as const;
+const opener = createOpener<object>(CONTACTS_OVERLAY_ID);
 const TASKS_OVERLAY_ID = "googleTasksImportWindow" as const;
+const tasksOpener = createOpener<object>(TASKS_OVERLAY_ID);
 
 export interface GoogleImportWindowHandle {
   close: () => void;
@@ -54,18 +56,13 @@ export function useOpenGoogleContactsImport() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenGoogleContactsImportOptions): GoogleImportWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: CONTACTS_OVERLAY_ID,
-          data: {
+      opener.open(dispatch, { data: {
             organizationId: opts.organizationId ?? null,
             initialExternalId: opts.initialExternalId ?? null,
             initialView: opts.initialView ?? "contacts",
-          },
-        }),
-      );
+          } });
       return {
-        close: () => dispatch(closeOverlay({ overlayId: CONTACTS_OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
       };
     },
     [dispatch],
@@ -82,17 +79,14 @@ export function useOpenGoogleTasksImport() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenGoogleTasksImportOptions): GoogleImportWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: TASKS_OVERLAY_ID,
-          data: {
-            organizationId: opts.organizationId ?? null,
-            projectId: opts.projectId ?? null,
-          },
-        }),
-      );
+      tasksOpener.open(dispatch, {
+        data: {
+          organizationId: opts.organizationId ?? null,
+          projectId: opts.projectId ?? null,
+        },
+      });
       return {
-        close: () => dispatch(closeOverlay({ overlayId: TASKS_OVERLAY_ID })),
+        close: () => dispatch(tasksOpener.close()),
       };
     },
     [dispatch],

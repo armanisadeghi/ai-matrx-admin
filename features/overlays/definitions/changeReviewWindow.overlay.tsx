@@ -8,8 +8,10 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+
+const opener = createOpener<object>("changeReviewWindow");
 
 export interface OpenChangeReviewOptions {
   verb: "move" | "delete";
@@ -37,7 +39,7 @@ export function changeReviewOverlayData(opts: OpenChangeReviewOptions) {
 
 export function useOpenChangeReviewWindow() {
   const dispatch = useAppDispatch();
-  return useCallback((opts: OpenChangeReviewOptions) => dispatch(openOverlay(changeReviewOverlayData(opts))), [dispatch]);
+  return useCallback((opts: OpenChangeReviewOptions) => opener.open(dispatch, { data: changeReviewOverlayData(opts).data }), [dispatch]);
 }
 
 export type ChangeReviewWindowDefinitionData = OpenChangeReviewOptions;

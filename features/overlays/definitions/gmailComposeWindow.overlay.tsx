@@ -18,16 +18,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import {
-  closeOverlay,
-  openOverlay,
-  registerHandleEntry,
-  unregisterHandleEntry,
-} from "@ai-matrx/summon/open";
+import { registerHandleEntry, unregisterHandleEntry } from "@ai-matrx/summon/open";
 import type { GmailDraftedBy } from "@/features/crm/gmail/types";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "gmailComposeWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 /** What the window reports back once the send is on the timeline. */
 export interface GmailComposeSentEvent {
@@ -72,10 +69,7 @@ export function createGmailComposeWindowOpener(
       track?.add(sentCallbackId);
     }
 
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           partyId: options.partyId,
           organizationId: options.organizationId,
           partyLabel: options.partyLabel,
@@ -87,9 +81,7 @@ export function createGmailComposeWindowOpener(
           initialBody: options.initialBody ?? null,
           draftedBy: options.draftedBy ?? null,
           sentCallbackId,
-        },
-      }),
-    );
+        } });
 
     return {
       close: () => {
@@ -97,7 +89,7 @@ export function createGmailComposeWindowOpener(
           unregisterHandleEntry(sentCallbackId);
           track?.delete(sentCallbackId);
         }
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+        dispatch(opener.close());
       },
     };
   };

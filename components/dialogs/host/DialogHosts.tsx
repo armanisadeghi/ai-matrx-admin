@@ -13,7 +13,7 @@
 // `promptForValues`, `pickHome`, `shareWithPeople`, `promptScopeMismatch`,
 // `ensureRemovable`, `openConversationRename`) stay static in their own opener modules.
 // Queue-backed openers (`@ai-matrx/kit/opener`) hold a request until the body registers and
-// request the latch themselves (package-backed ones via `requestHostsOnOpen.ts`);
+// request the latch themselves (package-backed dialogs are summon overlays now);
 // the two that do not queue (file pickers, upload guard) await `ensureDialogHosts()`.
 
 import dynamic from "next/dynamic";
@@ -23,7 +23,6 @@ import {
   requestDialogHosts,
   subscribeDialogHosts,
 } from "./dialogHostsLatch";
-import "./requestHostsOnOpen";
 import { ChunkTolerant } from "@/components/errors/ChunkTolerant";
 
 const DialogHostsImpl = dynamic(() => import("./DialogHostsImpl"), {

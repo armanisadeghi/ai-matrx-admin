@@ -4,17 +4,20 @@
  * Typed, callback-aware opener for the multi-instance annotation window.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createImageAnnotationCallbackGroup,
   type ImageAnnotationWindowData,
   type ImageAnnotationWindowHandlers,
 } from "./callbacks/imageAnnotationWindow";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "imageAnnotationWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenImageAnnotationWindowOptions
   extends ImageAnnotationWindowHandlers {
@@ -66,22 +69,11 @@ export function useOpenImageAnnotationWindow() {
         overwriteSource: options.overwriteSource ?? false,
       };
 
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data,
-        }),
-      );
+      opener.open(dispatch, { instanceId, data });
 
 
       const close = () => {
-        dispatch(
-          closeOverlay({
-            overlayId: OVERLAY_ID,
-            instanceId,
-          }),
-        );
+        dispatch(opener.close(instanceId));
         dispose();
       };
 
@@ -100,25 +92,7 @@ export function useOpenImageAnnotationWindow() {
   );
 }
 
-export function ImageAnnotationWindowController(
-  props: OpenImageAnnotationWindowOptions,
-): null {
-  const open = useOpenImageAnnotationWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.windowInstanceId,
-    props.sourceFileId,
-    props.sourceUrl,
-    props.sourceFilename,
-    props.defaultFolder,
-    props.title,
-    props.overwriteSource,
-  ]);
-  return null;
-}
+export const ImageAnnotationWindowController = hookController<OpenImageAnnotationWindowOptions>(useOpenImageAnnotationWindow);
 
 export type ImageAnnotationWindowDefinitionData = OpenImageAnnotationWindowOptions;
 

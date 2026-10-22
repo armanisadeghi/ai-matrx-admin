@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SandboxPanel } from "@ai-matrx/chat/agents/components/chat/SandboxPanel";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import type { SandboxGateOptions, SandboxGateChoice } from "@/components/dialogs/sandbox-gate/sandboxGateOpener";
 
 export default function SandboxGateHostBody({ data, close }: OverlayRenderProps) {

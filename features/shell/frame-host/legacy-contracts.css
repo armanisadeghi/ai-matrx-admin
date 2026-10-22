@@ -49,3 +49,16 @@
 body:has(> matrx-header-ghost.shell-header-center) #frame-header-center > [data-frame-derived] {
   display: none;
 }
+
+/* KIND-A MENUS IN THE FRAME'S SIDEBAR (frameRouteMenu): a Large Route's registered menu is drawn
+   with the classic `.shell-nav-*` rows, whose labels only show under the classic sidebar's
+   "expanded" checkbox. In the frame the product's sidebar is always the expanded one. */
+[data-matrx-frame-host] [data-mf-region="product-nav"] .shell-nav-label {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+[data-matrx-frame-host] [data-mf-region="product-nav"] .shell-nav-external {
+  opacity: 0.6;
+}

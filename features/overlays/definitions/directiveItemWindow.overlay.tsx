@@ -15,10 +15,12 @@
 import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "directiveItemWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenDirectiveItemWindowOptions {
   /** The item. Travels through Redux, so it must be serializable. */
@@ -45,23 +47,17 @@ export function useOpenDirectiveItemWindow() {
       const instanceId =
         opts.instanceId ??
         mintInstanceId(OVERLAY_ID);
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             windowInstanceId: instanceId,
             item: opts.item,
             itemKind: opts.itemKind ?? null,
             title: opts.title,
             subtitle: opts.subtitle ?? null,
-          },
-        }),
-      );
+          } });
       return {
         instanceId,
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],

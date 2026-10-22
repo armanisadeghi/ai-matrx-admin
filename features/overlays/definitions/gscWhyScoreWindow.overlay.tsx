@@ -10,11 +10,13 @@
 
 import { useCallback } from "react";
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "gscWhyScoreWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenGscWhyScoreWindowOptions {
   siteId: string;
@@ -44,26 +46,20 @@ export function useOpenGscWhyScoreWindow() {
         dispatch(focusWindow(instanceId));
         return {
           close: () =>
-            dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+            dispatch(opener.close(instanceId)),
         };
       }
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             stackIndex: open.length,
             siteId: opts.siteId,
             siteName: opts.siteName ?? null,
             brandId: opts.brandId ?? null,
             keywordId: opts.keywordId,
             keyword: opts.keyword ?? null,
-          },
-        }),
-      );
+          } });
       return {
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch, store],

@@ -20,6 +20,13 @@ function sources(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+/** The installed `@ai-matrx/api` schema: does it carry the queue routes yet? */
+const SCHEMA = readFileSync(require.resolve("@ai-matrx/api/types").replace(/\.c?js$/, ".d.ts"), "utf8");
+const SCHEMA_HAS_QUEUE_RUN = SCHEMA.includes('"/agent-battles/{set_id}/queue-run"');
+/** The paid-door census can only name a route the installed schema has; until it carries `queue-run`
+ * it still names `/run` (see the comment there). The day it does, this file is scanned like any other. */
+const PENDING_SCHEMA = SCHEMA_HAS_QUEUE_RUN ? [] : ["features/entitlements/usage-gate/paidAiPaths.ts"];
+
 const RETIRED = [
   /agent-battles\/(?:\{[a-z_]+\}|[^"'`\s/]+)\/(?:run|cancel)\b(?!-)/,
   /agent-tests\/runs\/(?:\{[a-z_]+\}|[^"'`\s/]+)\/stream\b/,
@@ -41,6 +48,7 @@ describe("the retired battle and test-run doors have no callers", () => {
 
   it("no source names a retired route", () => {
     const hits = files.flatMap((f) => {
+      if (PENDING_SCHEMA.includes(path.relative(ROOT, f))) return [];
       const text = readFileSync(f, "utf8");
       return RETIRED.filter((re) => re.test(text)).map(() => path.relative(ROOT, f));
     });

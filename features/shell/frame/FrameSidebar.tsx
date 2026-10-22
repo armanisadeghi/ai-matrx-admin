@@ -34,6 +34,11 @@ export interface FrameSidebarProps {
   bigProducts?: readonly FrameProduct[];
   /** The host's controls pinned under the menu (settings, organization, the person). */
   footer?: ReactNode;
+  /**
+   * The product's own navigation from the host (a module menu or a page's sidebar). Replaces the
+   * menu rows and fills the body; Pinned and the big items stay. It keeps its own scroller.
+   */
+  content?: ReactNode;
 }
 
 /** A plain left click goes to the host's handler; modified clicks keep the browser's link behaviour. */
@@ -54,6 +59,7 @@ export function FrameSidebar({
   onSelectPin,
   bigItems = "off",
   bigProducts = [],
+  content,
 }: FrameSidebarProps) {
   const big = bigItems !== "off" && bigProducts.length > 0 ? (
     <BigItems products={bigProducts} currentProductId={product.id} edge={bigItems} />
@@ -67,6 +73,20 @@ export function FrameSidebar({
         <GoToSearch {...goTo} />
         <Button variant="quiet" icon={<PanelLeftClose />} aria-label={hideLabel} onClick={onHide} />
       </div>
+      {content != null ? (
+        // The product's own navigation: full-bleed, it brings its own padding and scroller.
+        <div className="mf-noscrollbar flex min-h-0 flex-1 flex-col overflow-y-auto pt-2">
+          {bigItems === "top" || pins ? (
+            <div className="shrink-0 px-2">
+              {bigItems === "top" ? big : null}
+              {pins ? <PinnedSection pins={pins} onSelectPin={onSelectPin} /> : null}
+            </div>
+          ) : null}
+          <div data-mf-region="product-nav" className="flex min-h-0 flex-1 flex-col">
+            {content}
+          </div>
+        </div>
+      ) : (
       <div className="mf-noscrollbar min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-4">
         {bigItems === "top" ? big : null}
         {pins ? <PinnedSection pins={pins} onSelectPin={onSelectPin} /> : null}
@@ -128,6 +148,7 @@ export function FrameSidebar({
           </div>
         ))}
       </div>
+      )}
       {bigItems === "bottom" ? big : null}
       {footer ? (
         <div data-mf-region="sidebar-footer" className="flex shrink-0 flex-col gap-px px-2 pt-1 pb-2">

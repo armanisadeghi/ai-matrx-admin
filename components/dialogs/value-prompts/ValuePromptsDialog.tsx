@@ -1,20 +1,9 @@
 /**
- * components/dialogs/value-prompts/ValuePromptsDialogHostBody.tsx
- *
- * Heavy implementation of the global value-prompts dialog host. Mounted
- * lazily by `ValuePromptsDialogHost.tsx` via `next/dynamic({ ssr: false })`.
- *
- * Imperative model: `promptForValues(...)` pushes a request into the opener's
- * queue and `useOpenerHost` (`@ai-matrx/kit/opener-react`) drains it one at a
- * time — the registration, queue and settle-once machinery are the package's,
- * never re-implemented here. This component renders a single dialog with one
- * input per field. Submit resolves `{ name: answer }`; dismiss resolves `null`
- * — but dismissal is blocked while any field is `required` (per the
- * ValueMapping contract: "the user cannot cancel; submit is the only way out").
- *
- * The per-request answer state is seeded through the hook's `onActivate`, which
- * runs inside the same React update that makes a request active — so no frame
- * ever shows the previous request's answers.
+ * components/dialogs/value-prompts/ValuePromptsDialog.tsx — THE value-prompts dialog body (the app's writing
+ * boxes: ProInput for one value, ProTextarea for several). Rendered as the summon overlay
+ * `valuePromptsDialog` (definitions/valuePromptsDialog.render.tsx); chat's `promptForValues` reaches it through
+ * the dialog request port the app registers (features/overlays/chatDialogPorts.ts). Submit answers
+ * `{ name: answer }`; dismiss answers `null` — blocked while any field is `required`.
  */
 
 "use client";
@@ -30,11 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useOpenerHost } from "@ai-matrx/kit/opener-react";
-import {
-  valuePromptsOpener,
-  type ValuePromptsRequest,
-} from "./valuePromptsOpener";
+import type { ValuePromptsAnswers, ValuePromptsRequest } from "@ai-matrx/chat/ui/valuePromptsOpener";
+import { useOverlayRequest, type OverlayRenderProps } from "@ai-matrx/summon/react";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ProInput } from "@/components/official/ProInput";
 
@@ -49,11 +35,22 @@ function initialAnswers(req: ValuePromptsRequest): Record<string, string> {
   return out;
 }
 
-export default function ValuePromptsDialogHostBody() {
-  const [answers, setAnswers] = React.useState<Record<string, string>>({});
-  const { request, open, settle } = useOpenerHost(valuePromptsOpener, {
-    onActivate: (next) => setAnswers(initialAnswers(next)),
-  });
+/** The `valuePromptsDialog` overlay's render: answers the request chat's opener filed through the app's port. */
+export default function ValuePromptsDialogRender({ data, close }: OverlayRenderProps) {
+  const { request, settle } = useOverlayRequest<ValuePromptsRequest, ValuePromptsAnswers>(data, close);
+  return request ? <ValuePromptsDialog request={request} settle={settle} /> : null;
+}
+
+/** THE value-prompts body. One request per mount (each ask opens the overlay afresh). */
+export function ValuePromptsDialog({
+  request,
+  settle,
+}: {
+  request: ValuePromptsRequest;
+  settle: (answers: ValuePromptsAnswers) => void;
+}) {
+  const [answers, setAnswers] = React.useState<Record<string, string>>(() => initialAnswers(request));
+  const open = true;
 
   const missingRequired = !!request?.fields.some(
     (f) => f.required && !(answers[f.name] ?? "").trim(),

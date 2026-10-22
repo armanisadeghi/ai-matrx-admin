@@ -13,13 +13,15 @@
  * note written there records where it came from.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 const OVERLAY_ID = "mandateWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 /**
  * Which pane the window opens on. Declared HERE, not in the window: an opener
@@ -48,19 +50,14 @@ export interface MandateWindowHandle {
 export function createMandateWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (opts: OpenMandateWindowOptions = {}): MandateWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           initialMandateKey: opts.initialMandateKey,
           mandateKeys: opts.mandateKeys,
           surfaceName: opts.surfaceName ?? undefined,
           initialView: opts.initialView,
-        },
-      }),
-    );
+        } });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -71,21 +68,7 @@ export function useOpenMandateWindow() {
 }
 
 /** Declarative form — opens on mount, closes on unmount. */
-export function MandateWindowController(props: OpenMandateWindowOptions): null {
-  const open = useOpenMandateWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // Key on the identity fields that change the panel, not on props identity.
-  }, [
-    open,
-    props.initialMandateKey,
-    props.surfaceName,
-    props.initialView,
-    (props.mandateKeys ?? []).join("|"),
-  ]);
-  return null;
-}
+export const MandateWindowController = hookController<OpenMandateWindowOptions>(useOpenMandateWindow);
 
 export type MandateWindowDefinitionData = OpenMandateWindowOptions;
 

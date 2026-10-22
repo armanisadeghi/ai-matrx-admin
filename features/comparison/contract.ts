@@ -12,7 +12,7 @@
  * A refusal is an `error` event `{ code, user_message, limit? }` (or a 400 before the stream opens).
  */
 
-export type FieldType = "rating" | "number" | "int" | "percent" | "money" | "text" | "hours" | "url" | "date";
+export type FieldType = "rating" | "number" | "int" | "percent" | "money" | "text" | "hours" | "url" | "date" | "distribution" | "contact" | "status" | "tags" | "reviews";
 export type Direction = "higher_better" | "lower_better" | "none";
 export type KindStatus = "live" | "coming";
 

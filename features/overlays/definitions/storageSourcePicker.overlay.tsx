@@ -2,14 +2,15 @@
 
 import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createStorageSourcePickerCallbackGroup,
   type StorageSourcePickerHandlers,
 } from "./callbacks/storageSourcePicker";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "storageSourcePicker" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenStorageSourcePickerOptions
   extends StorageSourcePickerHandlers {
@@ -23,19 +24,14 @@ export function useOpenStorageSourcePicker() {
   return useCallback(
     (options: OpenStorageSourcePickerOptions) => {
       const callbacks = createStorageSourcePickerCallbackGroup(options);
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+      opener.open(dispatch, { data: {
             callbackGroupId: callbacks.callbackGroupId,
             destinationFolderPath: options.destinationFolderPath,
             accept: options.accept ?? null,
             multiple: options.multiple ?? true,
-          },
-        }),
-      );
+          } });
       return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
         dispose: callbacks.dispose,
       };
     },

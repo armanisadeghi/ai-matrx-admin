@@ -12,17 +12,20 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, selectOpenInstances } from "@ai-matrx/summon/open";
+import { selectOpenInstances } from "@ai-matrx/summon/open";
 import { focusWindow, restoreWindow } from "@ai-matrx/summon/open";
 // (map, topic) is the identity of a panel — not the moment it was opened. The
 // format is owned there because the URL hydrator has to read it back.
 import { topicPanelInstanceId } from "@/features/marketing/seo/topical-map/panel/topicPanelInstance";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "topicalMapTopicPanel" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenTopicPanelOptions {
   mapId: string;
@@ -51,24 +54,18 @@ export function useOpenTopicPanel() {
         dispatch(focusWindow(instanceId));
         return {
           close: () =>
-            dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+            dispatch(opener.close(instanceId)),
         };
       }
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             stackIndex: open.length,
             mapId: opts.mapId,
             slug: opts.slug,
             siteId: opts.siteId ?? null,
-          },
-        }),
-      );
+          } });
       return {
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch, store],
@@ -79,16 +76,7 @@ export function useOpenTopicPanel() {
  * Declarative form. Renders nothing visible; opens the panel on mount, closes
  * it on unmount.
  */
-export function TopicalMapTopicPanelController(
-  props: OpenTopicPanelOptions,
-): null {
-  const open = useOpenTopicPanel();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.mapId, props.slug, props.siteId]);
-  return null;
-}
+export const TopicalMapTopicPanelController = hookController<OpenTopicPanelOptions>(useOpenTopicPanel);
 
 export type TopicalMapTopicPanelDefinitionData = OpenTopicPanelOptions;
 

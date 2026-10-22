@@ -17,13 +17,16 @@
  * self-handle via `conversationId` + `messageId`.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import { createFullScreenEditorCallbackGroup, disposeFullScreenEditorCallbackGroup } from "./callbacks/fullScreenEditor";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "htmlPreview" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenHtmlPreviewBridgeOptions {
   /** Optional stable instance id. Omit to spawn a fresh instance. */
@@ -66,11 +69,7 @@ export function createHtmlPreviewBridgeOpener(dispatch: ReturnType<typeof useApp
       }
 
       try {
-        dispatch(
-          openOverlay({
-            overlayId: OVERLAY_ID,
-            instanceId,
-            data: {
+        opener.open(dispatch, { instanceId, data: {
               content: opts.content,
               messageId: opts.messageId,
               conversationId: opts.conversationId,
@@ -80,9 +79,7 @@ export function createHtmlPreviewBridgeOpener(dispatch: ReturnType<typeof useApp
               showSaveButton:
                 opts.showSaveButton ?? (opts.onSave ? true : undefined),
               isAgentSystem: opts.isAgentSystem,
-            },
-          }),
-        );
+            } });
       } catch (error) {
         disposeFullScreenEditorCallbackGroup(callbackGroupId);
         throw error;
@@ -90,7 +87,7 @@ export function createHtmlPreviewBridgeOpener(dispatch: ReturnType<typeof useApp
       return {
         instanceId,
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+          dispatch(opener.close(instanceId));
           disposeFullScreenEditorCallbackGroup(callbackGroupId);
         },
       };
@@ -107,26 +104,7 @@ export function useOpenHtmlPreviewBridge() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function HtmlPreviewBridgeController(
-  props: OpenHtmlPreviewBridgeOptions,
-): null {
-  const open = useOpenHtmlPreviewBridge();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.content,
-    props.messageId,
-    props.conversationId,
-    props.title,
-    props.description,
-    props.onSave,
-    props.showSaveButton,
-    props.isAgentSystem,
-  ]);
-  return null;
-}
+export const HtmlPreviewBridgeController = hookController<OpenHtmlPreviewBridgeOptions>(useOpenHtmlPreviewBridge);
 
 export type HtmlPreviewDefinitionData = OpenHtmlPreviewBridgeOptions;
 

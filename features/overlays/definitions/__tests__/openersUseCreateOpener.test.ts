@@ -12,10 +12,10 @@
  *   4. `appOpener(…, { multi: true })` on an overlay whose definition is `instance: "single"`
  *      (read from the generated overlay-meta-index.ts, i.e. from registry.ts).
  *
- * HAND_OPENERS is the shrink-only census of openers still written by hand, each with why it was not
- * mechanically moved (callbacks: registers handlers before opening; thunk: opens through a thunk;
- * feature opener: re-exports a hand opener that lives beside its feature; custom: other open logic).
- * Moving one = keep only its real logic on top of `appOpener`/`createOpener`, delete its line.
+ * Openers with their own open logic (callback groups, thunks, computed ids) keep only that logic and open/close
+ * through `createOpener` (`opener.open(dispatch, …)`, `opener.close(id)`); their Controllers are
+ * `hookController(useOpenX)` from `../app-opener`. HAND_OPENERS is the shrink-only list of true exceptions,
+ * each with its reason.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -24,83 +24,19 @@ import { execFileSync } from "node:child_process";
 const DIR = path.resolve(__dirname, "..");
 const REPO = path.resolve(DIR, "../../..");
 
-const HAND_OPENERS: Readonly<Record<string, "callbacks" | "thunk" | "feature opener" | "custom">> = {
-  agentPickerWindow: "callbacks",
-  agentMemoryWindow: "custom",
-  builderPanelWindow: "custom",
-  aiWatchWindow: "thunk",
-  contentEditorListWindow: "feature opener",
-  agentRunWindow: "custom",
-  createBrandWindow: "callbacks",
-  audioControlWindow: "custom",
-  agentTestCasesWindow: "custom",
-  applyToSourceReview: "custom",
-  crmCreatePartyWindow: "custom",
-  contentEditorWindow: "feature opener",
-  changeReviewWindow: "custom",
-  cloudBrowserWindow: "custom",
-  contentEditorWorkspaceWindow: "feature opener",
-  createProjectWindow: "feature opener",
-  connectorConsentDialog: "custom",
-  directiveItemWindow: "custom",
-  executionStateDebug: "custom",
-  customAgentWindow: "custom",
-  copySubsetWindow: "custom",
-  curatedIconPickerWindow: "feature opener",
-  extractionCellEditorWindow: "callbacks",
-  googleContactsImportWindow: "custom",
-  detailWindow: "thunk",
-  diffViewerWindow: "custom",
-  feedbackDialog: "custom",
-  htmlPreview: "callbacks",
-  directiveReferencePickerWindow: "callbacks",
-  filePreviewWindow: "custom",
-  findReplace: "callbacks",
-  googleConnectWindow: "callbacks",
-  gmailComposeWindow: "callbacks",
-  fullScreenEditor: "callbacks",
-  gscWhyScoreWindow: "custom",
-  imageViewer: "custom",
-  imageAnnotationWindow: "callbacks",
-  googleAgendaWindow: "custom",
-  liveRunWindow: "thunk",
-  imageUploaderWindow: "feature opener",
-  provisionWindow: "custom",
-  gscDrilldownWindow: "custom",
-  impactBatchWindow: "custom",
-  hindsightFindingWindow: "custom",
-  reviewWalkWindow: "thunk",
-  knowledgeCommandBar: "callbacks",
-  liveIntegrationsWindow: "custom",
-  listenSummaryWindow: "thunk",
-  siteQuickViewWindow: "custom",
-  mandateWindow: "custom",
-  masterworkBuildWindow: "callbacks",
-  storageSourcePicker: "callbacks",
-  masterworkAddRuleWindow: "callbacks",
-  marketingMediaAssetWindow: "callbacks",
-  promptDebugIndicator: "custom",
-  resourceDebugIndicator: "custom",
-  multiFileSmartCodeEditorWindow: "feature opener",
-  surfaceAgentBindWindow: "feature opener",
-  referencePicker: "callbacks",
-  sendToAgentWindow: "custom",
-  resourcePickerWindow: "callbacks",
-  shareLinkDialog: "custom",
-  siteCommandRunWindow: "custom",
-  scraperWindow: "custom",
-  smartCodeEditorWindow: "feature opener",
-  saveToTable: "callbacks",
-  sourceInspectorWindow: "custom",
-  topicalMapWindow: "custom",
-  socialPostWindow: "custom",
-  structuredValueWindow: "custom",
-  taskQuickCreateWindow: "callbacks",
-  transcriptStudioWindow: "custom",
-  shortcutEditorWindow: "custom",
-  topicalMapTopicPanel: "custom",
-  workflowRunWindow: "custom",
-  workingDocumentWindow: "custom",
+const HAND_OPENERS: Readonly<Record<string, string>> = {
+  // action creators: callers dispatch the returned action (thunks, menus); createOpener has no open-action creator
+  aiWatchWindow: "action creator",
+  applyToSourceReview: "action creator",
+  customAgentWindow: "action creator",
+  listenSummaryWindow: "action creator",
+  sendToAgentWindow: "action creator",
+  shortcutEditorWindow: "action creator",
+  workflowRunWindow: "action creator",
+  // Controllers that are not open-on-mount/re-open-on-change
+  copySubsetWindow: "Controller opens once with its first props",
+  gmailComposeWindow: "unmount effect disposes the hook's callback handles",
+  liveRunWindow: "Controller keeps one handle across prop changes",
 };
 
 const HAND_WRITTEN = /\b(openOverlay|closeOverlay)\(|\buseEffect\(/;

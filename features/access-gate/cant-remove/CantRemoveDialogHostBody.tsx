@@ -6,7 +6,7 @@
  */
 
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
 import type { CantRemoveRequest, CantRemoveOutcome } from "@/features/access-gate/cant-remove/cantRemoveOpener";
 

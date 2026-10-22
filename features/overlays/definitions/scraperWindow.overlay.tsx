@@ -11,13 +11,15 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "scraperWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 /** Which workspace mode the scraper opens into. */
 export type ScraperWindowMode = "web" | "url" | "batch";
@@ -46,9 +48,9 @@ export function createScraperWindowOpener(store: AppStore) {
       opts.url || opts.mode
         ? { url: opts.url, mode: opts.mode ?? (opts.url ? "url" : undefined) }
         : undefined;
-    dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
+    opener.open(dispatch, { data });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -63,14 +65,7 @@ export function useOpenScraperWindow() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function ScraperWindowController(props: OpenScraperWindowOptions): null {
-  const open = useOpenScraperWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const ScraperWindowController = hookController<OpenScraperWindowOptions>(useOpenScraperWindow);
 
 export type ScraperWindowDefinitionData = OpenScraperWindowOptions;
 
