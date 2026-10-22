@@ -31,7 +31,7 @@ import {
 } from "react-icons/si";
 import { PiFileSqlBold } from "react-icons/pi";
 import { cn } from "@/lib/utils";
-import { TwoColorPythonIcon } from "./custom-icons";
+import { TwoColorPythonIcon } from "@ai-matrx/rich-content/utils/custom-icons";
 
 const DEFAULT_ICON_SIZE = 16;
 

@@ -34,7 +34,7 @@ import { createRoot } from "react-dom/client";
 
 import { createCanvasStore, selectCanvasActiveItem, type CanvasStoreBinding } from "@ai-matrx/canvas";
 import { CanvasProvider, useCanvas as useCanvasController } from "@ai-matrx/canvas/react";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import { contentOf, readArtifactItemData } from "@/features/canvas/host/artifactItem";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 

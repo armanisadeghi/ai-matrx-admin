@@ -19,7 +19,7 @@ import React, { useEffect } from "react";
 import AudioOutputBlock from "./AudioOutputBlock";
 import SpeechScriptPanel, { readPerformedScript } from "./SpeechScriptPanel";
 import { useMediaResolution } from "@ai-matrx/media/core";
-import { fileSourceToMediaRef } from "@/features/files/media-client/refs";
+import { fileSourceToMediaRef } from "@ai-matrx/rich-content/utils/media-refs";
 import { buildMediaSource, pickStr } from "@ai-matrx/rich-content/display/blocks/buildMediaSource";
 import { classifyMediaUrl } from "@/lib/media/durability";
 

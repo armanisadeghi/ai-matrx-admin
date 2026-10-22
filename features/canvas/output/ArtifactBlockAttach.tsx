@@ -21,7 +21,7 @@ import { artifactAttachOptions, attachArtifactToChat } from "./artifactAttach";
 import { ArtifactVersionHistory } from "@/features/canvas/components/ArtifactVersionHistory";
 import { isMaterializedArtifactId } from "@ai-matrx/kit/artifact-id";
 import { useOpenArtifactInCanvas } from "@/features/canvas/hooks/useOpenArtifactInCanvas";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import type { RenderedArtifactRepresentation } from "@ai-matrx/chat/agents/types/instance.types";
 
 /**

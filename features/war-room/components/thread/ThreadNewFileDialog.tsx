@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SmallCodeEditor from "@ai-matrx/rich-content/code-block/SmallCodeEditor";
-import { getFileExtension } from "@/features/code-editor/config/languages";
+import { getFileExtension } from "@ai-matrx/rich-content/utils/languages";
 import { requestUpload } from "@/features/files/upload/uploadGuardOpeners";
 import { folderForWarRoomThread } from "@/features/files/utils/folder-conventions";
 import { useAppDispatch } from "@/lib/redux/hooks";

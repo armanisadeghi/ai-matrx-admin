@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import {
   ArtifactRender,
   hasArtifactRenderer,

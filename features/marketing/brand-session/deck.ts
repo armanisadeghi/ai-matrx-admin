@@ -87,8 +87,12 @@ const ORIGIN_TAG: Record<string, string> = {
 export function choiceText(value: Json): string {
   if (typeof value === "string") return value;
   if (isJsonRecord(value)) {
-    const t = value.text;
-    if (typeof t === "string" && t.trim()) return t;
+    // Same order as the server's candidate_text (aidream brand_discovery/curate.py): the Curator's word
+    // spans are checked against those words, so the card must show exactly them.
+    for (const key of ["text", "claim", "offering"] as const) {
+      const t = value[key];
+      if (typeof t === "string" && t.trim()) return t;
+    }
     const items = value.items;
     if (Array.isArray(items)) return items.filter((x): x is string => typeof x === "string").join(" · ");
   }

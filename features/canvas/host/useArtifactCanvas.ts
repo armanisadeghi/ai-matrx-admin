@@ -17,7 +17,7 @@ import {
 } from "@ai-matrx/canvas";
 import { useCanvasIsPresented, useOptionalCanvas, useOptionalCanvasState } from "@ai-matrx/canvas/react";
 import { reportCanvasOpenDrop, titleForDrop } from "@/features/canvas/openRequest";
-import type { ArtifactDebugTrace, CanvasContent, CanvasContentType } from "@/features/canvas/canvasContent";
+import type { ArtifactDebugTrace, CanvasContent, CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import { artifactKey, artifactOpenInput, contentOf, readArtifactItemData, type ArtifactOpenOptions } from "./artifactItem";
 
 export interface ArtifactPointerInput {

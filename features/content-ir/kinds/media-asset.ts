@@ -48,7 +48,7 @@ import type { MaterializedKind } from "./kind-payload";
 import type { MediaAsset } from "./generated/kinds.generated";
 // THE identity adapters. Never duplicated, never re-sniffed here.
 import { buildMediaSource } from "@ai-matrx/rich-content/display/blocks/buildMediaSource";
-import { fileSourceToMediaRef } from "@/features/files/media-client/refs";
+import { fileSourceToMediaRef } from "@ai-matrx/rich-content/utils/media-refs";
 import { parseYouTubeUrl } from "@ai-matrx/rich-content/utils/youtube";
 
 // ---------------------------------------------------------------------------

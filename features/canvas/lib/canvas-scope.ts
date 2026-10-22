@@ -25,7 +25,7 @@ import {
   getDefaultTitle,
   titleToString,
   type CanvasContent,
-} from "@/features/canvas/canvasContent";
+} from "@ai-matrx/rich-content/utils/canvasContent";
 
 /** One open canvas tab, as the scope sees it. */
 export interface CanvasScopeItem {

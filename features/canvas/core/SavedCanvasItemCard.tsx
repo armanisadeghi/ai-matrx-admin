@@ -35,7 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { getCanvasTypeLabel } from "@/features/canvas/canvasContent";
+import { getCanvasTypeLabel } from "@ai-matrx/rich-content/utils/canvasContent";
 import type { CanvasItemSummary } from "@/features/canvas/services/canvasItemsService";
 
 /** Container-query classes — exported so the layout contract is testable. */

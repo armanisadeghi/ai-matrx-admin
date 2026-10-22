@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { useCanvas } from '@/features/canvas/hooks/useCanvas';
-import type { CanvasContent } from '@/features/canvas/canvasContent';
+import type { CanvasContent } from '@ai-matrx/rich-content/utils/canvasContent';
 
 interface CanvasButtonProps {
   content: CanvasContent;

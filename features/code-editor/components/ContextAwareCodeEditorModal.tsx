@@ -49,7 +49,7 @@ import { AgentRunner } from "@ai-matrx/chat/agents/components/smart/AgentRunner"
 import { selectHasUnsentComposerDraft } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/unsent-draft.selectors";
 import type { CanvasItemId } from "@ai-matrx/canvas";
 import { useOptionalCanvas } from "@ai-matrx/canvas/react";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import { useCanvas } from "@/features/canvas/hooks/useCanvas";
 import { openArtifactContent } from "@/features/canvas/host/useArtifactCanvas";
 import { createCanvasCallbackScope } from "@/features/canvas/liveCallbacks";
@@ -66,7 +66,7 @@ import {
   agentForPromptKey,
   type CodeEditorPromptKey,
 } from "@/features/code-editor/agent-code-editor/agents";
-import { normalizeLanguage } from "@/features/code-editor/config/languages";
+import { normalizeLanguage } from "@ai-matrx/rich-content/utils/languages";
 import {
   parseCodeEdits,
   validateEdits,

@@ -18,7 +18,7 @@ import {
   createResourceReference,
   type AgentResourceReference,
 } from "@ai-matrx/chat/agents/agent-context/resource-reference";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import { htmlPageIdFromUrl } from "@/features/cms/utils/pageUrls";
 

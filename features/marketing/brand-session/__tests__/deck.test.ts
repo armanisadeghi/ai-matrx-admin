@@ -90,6 +90,9 @@ describe("brand session deck", () => {
     expect(choiceText({ text: "Hi" })).toBe("Hi");
     expect(choiceText("Hi")).toBe("Hi");
     expect(choiceText({ items: ["a", "b"] })).toBe("a · b");
+    // Found candidates carry their words as claim or offering; never shown as raw JSON.
+    expect(choiceText({ claim: "Family owned since 1982" })).toBe("Family owned since 1982");
+    expect(choiceText({ offering: "Roof repair" })).toBe("Roof repair");
   });
 
   it("a finding is confirmed or not, through Smart Add's own answers; a name is kept as an alias", () => {

@@ -8,11 +8,11 @@
 
 import dynamic from "next/dynamic";
 import type { CanvasKindProps } from "@ai-matrx/canvas/react";
-import { useScrollFade } from "@/components/ui/scroll-fade";
+import { useScrollMaskFade } from "@ai-matrx/design-system";
 import { CanvasBody } from "@/features/canvas/core/CanvasBody";
 import { CanvasSourceView } from "@/features/canvas/core/CanvasSourceView";
 import { CanvasArtifactDebugPanel } from "@/features/canvas/components/CanvasArtifactDebugPanel";
-import { getDefaultTitle, titleToString, type ArtifactDebugTrace } from "@/features/canvas/canvasContent";
+import { getDefaultTitle, titleToString, type ArtifactDebugTrace } from "@ai-matrx/rich-content/utils/canvasContent";
 import type { CanvasType } from "@/types/canvas-social";
 import { contentOf, readArtifactItemData } from "./artifactItem";
 import { useArtifactPanel, closeArtifactPanel } from "./artifactPanels";
@@ -24,7 +24,7 @@ const CanvasShareSheet = dynamic(
 );
 
 export default function ArtifactCanvasView({ item }: CanvasKindProps) {
-  const fade = useScrollFade<HTMLDivElement>();
+  const fade = useScrollMaskFade<HTMLDivElement>();
   const panel = useArtifactPanel(item.id);
   const data = readArtifactItemData(item.data);
   if (!data) {

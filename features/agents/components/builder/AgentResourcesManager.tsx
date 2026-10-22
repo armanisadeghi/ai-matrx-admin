@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ai-matrx/design-system";
-import { ScrollFade } from "@/components/ui/scroll-fade";
+import { ScrollFade } from "@ai-matrx/design-system";
 import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
 import { ResourceAttachmentTile } from "@ai-matrx/chat/agents/components/messages-display/user/ResourceAttachmentTile";
 import { hasPeek } from "@/features/organizations/peek/kinds-list";
