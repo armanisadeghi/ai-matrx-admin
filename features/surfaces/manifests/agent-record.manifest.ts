@@ -80,6 +80,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const agentRecordManifest: SurfaceManifest = {
+  situation:
+    "They have the agent \"{agent_name|not loaded yet}\" open (version {agent_version|unknown}, running on {agent_model|no model set}). Its instructions, settings, tools and variables are in your context. If it is a copy of a template, they can reset it to the template's latest content.",
   surfaceName: AGENT_RECORD_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

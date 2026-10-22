@@ -272,6 +272,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const agentShortcutsManifest: SurfaceManifest = {
+  situation:
+    "They are in the agent shortcut library ({shortcut_count} saved shortcuts, each a one-click way to run an agent). The shortcut open in the editor is \"{shortcut_label|none}\", which runs the agent {shortcut_agent_name|not chosen yet}. They can create, organize and edit shortcuts.",
   surfaceName: "matrx-user/agent-shortcuts",
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

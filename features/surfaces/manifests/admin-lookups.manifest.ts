@@ -260,6 +260,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminLookupsManifest: SurfaceManifest = {
+  situation:
+    "They are in the tool registry lookups admin, on the {lookups_tab} table ({ui_client_count} clients, {ui_surface_count} screens, {tool_executor_count} executors). They can add or edit a row.",
   surfaceName: ADMIN_LOOKUPS_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

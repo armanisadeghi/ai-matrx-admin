@@ -71,6 +71,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const agentStudioManifest: SurfaceManifest = {
+  situation:
+    "They are in Agent Studio, the {studio_mode} way in, at the {studio_phase} step: an assistant does the job with them, then turns it into an agent they can test and improve. The agent so far is \"{studio_agent.name|not created yet}\".",
   surfaceName: "matrx-user/agent-studio",
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

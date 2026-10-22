@@ -360,6 +360,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const agentAdvancedEditorManifest: SurfaceManifest = {
+  situation:
+    "They have the advanced editor open for the agent \"{agent_name|not loaded yet}\", on its {editor_field|overview} tab. They can rewrite or add to its system instructions, change its output format, and edit its description, category and tags.",
   surfaceName: "matrx-user/agent-advanced-editor",
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

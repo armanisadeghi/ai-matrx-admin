@@ -414,6 +414,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const agentSettingsManifest: SurfaceManifest = {
+  situation:
+    "They have the settings window open for the agent \"{agent_name|not loaded yet}\", which runs on {agent_model_name|no model} with {agent_tool_count|no} tools and {agent_variable_count|no} variables. They can edit its description, category and tags.",
   surfaceName: AGENT_SETTINGS_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

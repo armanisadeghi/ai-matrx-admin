@@ -317,6 +317,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const connectionsSkillsManifest: SurfaceManifest = {
+  situation:
+    "They are in its skills editor ({skills_view_mode} view, {skills_count} skills). The skill open is \"{skill_draft_label|none}\"; they can edit its name, description, type, body and trigger phrases.",
   surfaceName: CONNECTIONS_SKILLS_SURFACE_NAME,
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

@@ -329,6 +329,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminAgentReviewItemManifest: SurfaceManifest = {
+  situation:
+    "They have the review item \"{review_title}\" open, for {review_feature} at {review_target_url}; its status is {review_status}. Its instructions and conversation are in your context; they can write feedback, then request changes or approve it.",
   surfaceName: ADMIN_AGENT_REVIEW_ITEM_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

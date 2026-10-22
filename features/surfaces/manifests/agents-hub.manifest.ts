@@ -370,6 +370,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const agentsHubManifest: SurfaceManifest = {
+  situation:
+    "They are on the agents list, showing {visible_agent_count} agents ({owned_agent_count} of their own, {shared_agent_count} shared with them) on the {ownership_tab} tab. Search: {search_query|none}. Peeked agent: {peeked_agent_name|none}. They can search, filter by category, tag or favorite, sort, and open, run or build an agent.",
   surfaceName: AGENTS_HUB_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

@@ -220,6 +220,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminSkillsManifest: SurfaceManifest = {
+  situation:
+    "They are in the admin skills registry, in the {skills_section} view; the skill open is \"{selected_skill.label|none}\". They can search and filter skills, open or create one, manage categories and ingest skills from files.",
   surfaceName: ADMIN_SKILLS_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

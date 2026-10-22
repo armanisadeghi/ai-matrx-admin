@@ -301,6 +301,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminAgentReviewManifest: SurfaceManifest = {
+  situation:
+    "They are on the Agent Review queue, in the {queue_view} view: {queue_row_count} items, {ready_for_human_count} ready for a person, {approved_count} approved. They can open an item and classify items for triage.",
   surfaceName: ADMIN_AGENT_REVIEW_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

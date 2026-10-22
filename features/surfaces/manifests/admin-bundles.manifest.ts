@@ -278,6 +278,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminBundlesManifest: SurfaceManifest = {
+  situation:
+    "They are on the admin tool bundles page, with {bundle_count} bundles listed; the bundle open is \"{selected_bundle.name|none}\" with {bundle_member_count|no} tools. They can create a bundle and edit a bundle's description.",
   surfaceName: ADMIN_BUNDLES_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

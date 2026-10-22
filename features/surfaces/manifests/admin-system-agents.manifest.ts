@@ -595,6 +595,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminSystemAgentsManifest: SurfaceManifest = {
+  situation:
+    "They are on the admin System Agents page, with {roster_count|no} system agents listed; the one open is \"{agent_name|none}\", and its definition is in your context. They can edit an agent's name, description, category and tags.",
   surfaceName: ADMIN_SYSTEM_AGENTS_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

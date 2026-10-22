@@ -214,6 +214,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const agentComparisonModelManifest: SurfaceManifest = {
+  situation:
+    "They are in a model battle: the agent \"{locked_agent.name|not chosen yet}\" answers the same request on several models side by side, so they can compare and score the answers. The shared request, variables and each model's answer are in your context; they can edit the shared request and variables.",
   surfaceName: "matrx-user/agent-comparison-model",
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

@@ -137,6 +137,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const agentBattleManifest: SurfaceManifest = {
+  situation:
+    "They are in an agent battle, mode \"{battle_mode.label|unknown}\": the columns vary {battle_mode.varies|in more than one way}. The agent every column runs is \"{battle_agent.name|picked per column or not chosen yet}\" and the saved battle is \"{battle.name|not saved yet}\". Each column's answer and scores are in your context.",
   surfaceName: "matrx-user/agent-battle",
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",

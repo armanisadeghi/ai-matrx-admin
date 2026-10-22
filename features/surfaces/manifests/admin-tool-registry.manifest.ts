@@ -605,6 +605,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminToolRegistryManifest: SurfaceManifest = {
+  situation:
+    "They are in the admin tool registry, with {tool_count|no} tools listed; the tool open is \"{tool_name|none}\". They can search and filter tools, and edit a tool's description, category and tags.",
   surfaceName: ADMIN_TOOL_REGISTRY_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-admin",

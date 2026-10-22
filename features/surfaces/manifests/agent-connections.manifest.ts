@@ -212,6 +212,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const agentConnectionsManifest: SurfaceManifest = {
+  situation:
+    "They are in Agent Connections, the workspace \"{workspace_name|untitled}\", on the {active_section} section, filtered to the {view_scope} level. They can rename the workspace and edit the welcome message teammates see when they join a shared agent.",
   surfaceName: AGENT_CONNECTIONS_SURFACE_NAME,
   inheritsFrom: "matrx-default/agents",
   client: "matrx-user",
