@@ -36,7 +36,7 @@ import { withStandardLanes } from "@/lib/list-scope/types";
 import { visibilityWords } from "@/lib/record-words";
 import Link from "next/link";
 import { Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ai-matrx/design-system/controls";
 import {
   fetchAssessmentFacets,
   fetchAssessmentLaneCounts,
@@ -143,9 +143,8 @@ function TakeCell({ row, config }: { row: AssessmentListItem; config: KindConfig
     <span className="flex items-center" onClick={(e) => e.stopPropagation()}>
       {/* Take is the row's main action: always labeled. The column reserves
           the button's width (min-w on the column), so the word never wraps. */}
-      <Button asChild variant="outline" className="shrink-0">
+      <Button asChild variant="outline" icon={<Play className="h-3.5 w-3.5" />} className="shrink-0">
         <Link href={assessmentTakeHref(config, row)} aria-label={`Take ${row.title}`}>
-          <Play className="h-3.5 w-3.5" />
           Take
         </Link>
       </Button>
@@ -495,7 +494,7 @@ export function buildAssessmentListConfig(input: {
     emptyState: {
       // Per lane, not absolute: an empty Mine can sit beside a full My Orgs.
       title: `No ${plural} here yet`,
-      description: `A ${config.noun} is a set of graded questions generated from a topic, a flashcard deck or a document.`,
+      description: "Graded questions made from a topic, a deck or a document.",
     },
   };
 }

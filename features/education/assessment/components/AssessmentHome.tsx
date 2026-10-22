@@ -15,9 +15,8 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { Building2, Plus, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Button as ControlButton } from "@ai-matrx/design-system/controls";
+import { Building2, LogIn, Plus, User } from "lucide-react";
+import { Button as ControlButton, EmptyState } from "@ai-matrx/design-system/controls";
 import { EducationToolHeader } from "@/features/education/components/EducationToolHeader";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import type { EntityListSurfaceController } from "@/lib/entity-list/components/EntityListPage";
@@ -119,16 +118,14 @@ export function AssessmentHome({ kind }: { kind: AssessmentKind }) {
         {hint ? <p className="max-w-sm text-sm text-muted-foreground">{hint}</p> : null}
         <div className="flex flex-wrap items-center justify-center gap-2">
           {doors.map((d) => (
-            <Button
+            <ControlButton
               key={d.kind}
               variant="outline"
-              onClick={() =>
-                list.setScope({ kind: d.kind })
-              }
+              icon={<d.icon className="h-4 w-4" />}
+              onClick={() => list.setScope({ kind: d.kind })}
             >
-              <d.icon className="h-4 w-4" />
               See {d.label} ({counts[d.kind]})
-            </Button>
+            </ControlButton>
           ))}
           {lane === "mine" ? createButton(true) : null}
         </div>
@@ -171,14 +168,15 @@ export function AssessmentHome({ kind }: { kind: AssessmentKind }) {
         />
       ) : authReady && !userId ? (
         <div className="flex h-full items-center justify-center px-4">
-          <div className="max-w-sm rounded-xl border border-dashed border-border p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              Sign in to see your {config.pluralLabel.toLowerCase()} and create new ones.
-            </p>
-            <Button variant="primary" asChild className="mt-4">
-              <Link href={loginHref}>Sign in</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={<LogIn />}
+            title={`Sign in to see your ${config.pluralLabel.toLowerCase()}`}
+            action={
+              <ControlButton variant="primary" asChild>
+                <Link href={loginHref}>Sign in</Link>
+              </ControlButton>
+            }
+          />
         </div>
       ) : (
         <div className="flex h-full items-center justify-center">
