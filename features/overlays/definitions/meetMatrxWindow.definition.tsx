@@ -15,6 +15,5 @@ export const meetMatrxWindowOverlay = defineOverlay<MeetMatrxWindowDefinitionDat
     restoreDefaults: {},
     windowId: "meet-matrx-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

@@ -15,6 +15,5 @@ export const runControlsWindowOverlay = defineOverlay<RunControlsWindowDefinitio
     restoreDefaults: { conversationId: null },
     windowId: "run-controls-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

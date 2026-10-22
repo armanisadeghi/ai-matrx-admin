@@ -15,7 +15,6 @@ export const executionInspectorWindowOverlay = defineOverlay<ExecutionInspectorW
     restoreDefaults: {},
     windowId: "exec-inspector-window",
     mobile: "card",
-    ephemeral: true,
   },
   link: {
     key: "exec-inspector",

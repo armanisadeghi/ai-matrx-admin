@@ -24,6 +24,5 @@ export const toolCallWindowOverlay = defineOverlay<ToolCallWindowDefinitionData>
     windowId: "tool-call-window",
     mobile: "fullscreen",
     mobileSidebarAs: "drawer",
-    ephemeral: true,
   },
 });

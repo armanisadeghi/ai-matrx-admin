@@ -20,6 +20,5 @@ export const contextItemsWindowOverlay = defineOverlay<ContextItemsWindowDefinit
     windowId: "context-items-window",
     mobile: "drawer",
     mobileSidebarAs: "drawer",
-    ephemeral: true,
   },
 });

@@ -20,6 +20,5 @@ export const surfaceContextWindowOverlay = defineOverlay<SurfaceContextWindowDef
     windowId: "surface-context-window",
     mobile: "drawer",
     mobileSidebarAs: "drawer",
-    ephemeral: true,
   },
 });

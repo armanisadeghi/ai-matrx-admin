@@ -15,6 +15,5 @@ export const agentDebugWindowOverlay = defineOverlay<AgentDebugWindowDefinitionD
     restoreDefaults: { initialAgentId: null, initialConversationId: null },
     windowId: "agent-debug-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

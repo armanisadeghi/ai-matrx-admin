@@ -19,7 +19,6 @@ export const agentVariableEditorWindowOverlay = defineOverlay<AgentVariableEdito
         },
     windowId: "agent-variable-editor-window",
     mobile: "drawer",
-    ephemeral: true,
   },
   link: {
     key: "agent_variable",

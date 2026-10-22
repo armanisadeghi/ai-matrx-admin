@@ -15,6 +15,5 @@ export const taskEditorWindowOverlay = defineOverlay<TaskEditorWindowDefinitionD
     restoreDefaults: { taskId: null },
     windowId: "task-editor-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

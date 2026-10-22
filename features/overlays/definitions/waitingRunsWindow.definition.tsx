@@ -15,6 +15,5 @@ export const waitingRunsWindowOverlay = defineOverlay<WaitingRunsWindowDefinitio
     restoreDefaults: {},
     windowId: "waiting-runs-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

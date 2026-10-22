@@ -15,6 +15,5 @@ export const workingDocumentWindowOverlay = defineOverlay<WorkingDocumentWindowD
     restoreDefaults: { conversationId: null },
     windowId: "working-document-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

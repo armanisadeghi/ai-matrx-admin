@@ -15,6 +15,5 @@ export const agentMemoryWindowOverlay = defineOverlay<AgentMemoryWindowDefinitio
     restoreDefaults: {},
     windowId: "agent-memory-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

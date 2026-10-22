@@ -15,6 +15,5 @@ export const masterworkCheckupWindowOverlay = defineOverlay<MasterworkCheckupWin
     restoreDefaults: { rulebookId: null },
     windowId: "masterwork-checkup-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

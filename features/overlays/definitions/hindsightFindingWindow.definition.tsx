@@ -20,6 +20,5 @@ export const hindsightFindingWindowOverlay = defineOverlay<HindsightFindingWindo
         },
     windowId: "hindsight-finding-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

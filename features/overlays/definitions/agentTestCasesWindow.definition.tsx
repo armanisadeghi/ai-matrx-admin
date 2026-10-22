@@ -15,6 +15,5 @@ export const agentTestCasesWindowOverlay = defineOverlay<AgentTestCasesWindowDef
     restoreDefaults: { agentId: "", conversationId: "" },
     windowId: "agent-test-cases-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

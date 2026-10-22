@@ -6,11 +6,10 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
         const data = overlayData as
           Record<string, unknown> | null | undefined;
         const tableId = typeof data?.tableId === "string" ? data.tableId : null;
-        if (!isOpen || !tableId) return <OverlayNeedsData overlayId="dataChangesWindow" onClose={close} />;
+        if (!tableId) return <OverlayNeedsData overlayId="dataChangesWindow" onClose={close} />;
         return (
           <DataChangesWindow
             isOpen

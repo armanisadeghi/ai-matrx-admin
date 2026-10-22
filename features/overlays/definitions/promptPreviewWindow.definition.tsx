@@ -15,6 +15,5 @@ export const promptPreviewWindowOverlay = defineOverlay<PromptPreviewWindowDefin
     restoreDefaults: { conversationId: "" },
     windowId: "prompt-preview-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

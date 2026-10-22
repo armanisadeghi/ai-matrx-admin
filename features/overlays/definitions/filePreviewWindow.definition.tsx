@@ -19,7 +19,6 @@ export const filePreviewWindowOverlay = defineOverlay<FilePreviewWindowDefinitio
         },
     windowId: "file-preview-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
   link: {
     key: "file_preview",

@@ -22,7 +22,7 @@ features/window-panels/
   registry/window-address-baseline.json   the address census baseline (only shrinks)
   detail/                           Detail primitive host (window, docked, page)
   components/                       EmbedSiteFrame, SidebarWindowToggle
-  lite-window/, hooks/useOverlay.ts, utils/embed-site-url.ts, docs/inventory/
+  lite-window/, utils/embed-site-url.ts, docs/inventory/
 ```
 
 Deleted by the switch (any doc that names them is stale): `OverlayController`, `catalogue.ts`, `openers/`, `lazyOverlay`, `overlaySlice`, `windowManagerSlice`, `urlSyncSlice`, `overlayDataSlice`, `WindowPanel.tsx`, `WindowTray`, `WindowTraySync.tsx`, `WindowPersistenceManager`, `windowRegistryMetadata.ts`, `windowRegistryTypes.ts`, `url-sync/initUrlHydration.ts`, `lazy-bundle-guard`, `persistence/` (the local workspace store), `popout/`, `mobile/`, `MatrxFloatingFrame`, `utils/callbackManager.ts`.

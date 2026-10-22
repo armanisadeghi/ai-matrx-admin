@@ -15,6 +15,5 @@ export const directiveItemWindowOverlay = defineOverlay<DirectiveItemWindowDefin
     restoreDefaults: { item: null, itemKind: null, title: null, subtitle: null },
     windowId: "directive-item-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

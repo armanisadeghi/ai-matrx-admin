@@ -15,6 +15,5 @@ export const hierarchyCreationWindowOverlay = defineOverlay<HierarchyCreationWin
     restoreDefaults: { entityType: null, presetIds: {} },
     windowId: "hierarchy-creation-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

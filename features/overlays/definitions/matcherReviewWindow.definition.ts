@@ -22,6 +22,5 @@ export const matcherReviewWindowOverlay = defineOverlay<MatcherReviewWindowDefin
         },
     windowId: "matcher-review-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

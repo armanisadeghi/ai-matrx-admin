@@ -26,6 +26,5 @@ export const sourceInspectorWindowOverlay = defineOverlay<SourceInspectorWindowD
         },
     windowId: "source-inspector-window",
     mobile: "fullscreen",
-    ephemeral: true,
   },
 });

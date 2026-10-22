@@ -15,6 +15,5 @@ export const listenSummaryWindowOverlay = defineOverlay<ListenSummaryWindowDefin
     restoreDefaults: {},
     windowId: "listen-summary-window",
     mobile: "card",
-    ephemeral: true,
   },
 });

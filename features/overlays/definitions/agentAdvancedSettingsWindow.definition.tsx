@@ -17,6 +17,5 @@ export const agentAdvancedSettingsWindowOverlay = defineOverlay<AgentAdvancedSet
   closesOnNavigation: true,
   window: {
     windowId: "agent-advanced-settings-window",
-    ephemeral: true,
   },
 });

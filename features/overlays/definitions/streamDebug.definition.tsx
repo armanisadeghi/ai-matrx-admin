@@ -14,6 +14,5 @@ export const streamDebugOverlay = defineOverlay<StreamDebugDefinitionData>()({
   window: {
     restoreDefaults: { conversationId: null, requestIdOverride: undefined },
     windowId: "stream-debug",
-    ephemeral: true,
   },
 });

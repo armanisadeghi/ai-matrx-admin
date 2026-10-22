@@ -15,6 +15,5 @@ export const streamDebugHistoryWindowOverlay = defineOverlay<StreamDebugHistoryW
     restoreDefaults: { initialConversationId: null },
     windowId: "stream-debug-history",
     mobile: "card",
-    ephemeral: true,
   },
 });

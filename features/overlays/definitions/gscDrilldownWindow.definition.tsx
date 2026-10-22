@@ -15,6 +15,5 @@ export const gscDrilldownWindowOverlay = defineOverlay<GscDrilldownWindowDefinit
     restoreDefaults: {},
     windowId: "gsc-drilldown-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDeepLinkArrival } from "@/lib/deep-link/useDeepLinkArrival";
-import { KEEP_FOCUS_ATTRIBUTE } from "@/components/matrx/resizable/focusOnOpen";
+import { KEEP_FOCUS_ATTRIBUTE } from "@ai-matrx/summon/lite";
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

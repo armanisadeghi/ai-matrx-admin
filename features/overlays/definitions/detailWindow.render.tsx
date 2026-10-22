@@ -7,8 +7,6 @@ import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 
 export default function OverlayRender({ data: overlayData, instanceId, close }: OverlayRenderProps) {
 
-        const isOpen = true;
-        if (!isOpen) return null;
         const data = readDetailOverlayData(overlayData);
         if (!data) return <OverlayNeedsData overlayId="detailWindow" onClose={close} />;
         return (

@@ -15,6 +15,5 @@ export const gscWhyScoreWindowOverlay = defineOverlay<GscWhyScoreWindowDefinitio
     restoreDefaults: {},
     windowId: "gsc-why-score-window",
     mobile: "drawer",
-    ephemeral: true,
   },
 });
