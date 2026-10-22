@@ -20,6 +20,13 @@ import { toast } from "@/lib/toast";
 import type { AttentionItem, RecallVerdict } from "../types";
 import { listAttentionQueue, recordRecallVerdict } from "../service";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_ATTENTION_SURFACE_NAME,
+  createCommerceAttentionScope,
+} from "@/features/surfaces/manifests/commerce-attention.manifest";
+import { attentionSurfaceRow, parseRecallVerdicts } from "../surface-writes";
 
 export function AttentionQueue() {
   const [items, setItems] = useState<AttentionItem[] | null>(null);
@@ -65,8 +72,53 @@ export function AttentionQueue() {
     }
   };
 
+  // Surface `matrx-user/commerce-attention`: the rows as shown; verdicts through the buttons' door.
+  const getScope = () =>
+    createCommerceAttentionScope({
+      queue_load_status: loadError ? "failed" : items ? "loaded" : "loading",
+      attention_count: items?.length,
+      attention_items: items?.map(attentionSurfaceRow),
+    });
+  const getWriteHandlers = () => ({
+    record_verdicts: {
+      validate: (value: unknown) => {
+        if (!items) refuseSurfaceWrite("The queue has not loaded yet.");
+        parseRecallVerdicts(value, items ?? []);
+      },
+      apply: async (value: unknown) => {
+        const plans = parseRecallVerdicts(value, items ?? []);
+        const done: string[] = [];
+        for (const plan of plans) {
+          try {
+            await recordRecallVerdict(plan.item.id, plan.verdict);
+          } catch (e: unknown) {
+            const why = e instanceof Error ? e.message : "the save failed";
+            throw new Error(
+              `Recorded ${done.length} of ${plans.length}; "${plan.item.title}" failed: ${why}. Not attempted: ${plans.length - done.length - 1}.`,
+            );
+          }
+          done.push(plan.item.id);
+          setItems((prev) => (prev ?? []).filter((i) => i.id !== plan.item.id));
+        }
+        return {
+          summary: `Recorded ${done.length} verdict${done.length === 1 ? "" : "s"}; those rows left the queue.`,
+          data: plans.map((p) => ({ id: p.item.id, verdict: p.verdict })),
+        };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_ATTENTION_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loadError)
-    return (
+    return withSurface(
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <p className="px-6 text-center text-sm text-destructive">{loadError} <ErrorAlchemyMenu error={loadError} /></p>
         <Button variant="outline" onClick={retryLoad}>
@@ -75,20 +127,20 @@ export function AttentionQueue() {
       </div>
     );
   if (!items)
-    return (
+    return withSurface(
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   if (items.length === 0)
-    return (
+    return withSurface(
       <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
         <Inbox className="h-8 w-8" />
         <p className="text-sm">Nothing needs attention.</p>
       </div>
     );
 
-  return (
+  return withSurface(
     <div className="mx-auto max-w-3xl space-y-2 p-3">
       {items.map((item) => (
         <div

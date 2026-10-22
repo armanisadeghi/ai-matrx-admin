@@ -40,6 +40,13 @@ import { listDraftQueue, reviewDraft } from "../service";
 import { ConfidenceChip, confidenceBand } from "./ConfidenceChip";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_DRAFTS_SURFACE_NAME,
+  createCommerceDraftsScope,
+} from "@/features/surfaces/manifests/commerce-drafts.manifest";
+import { draftSurfaceFields, readDraftFieldEdits, readReviewVerdict } from "../surface-writes";
 
 export function DraftReviewQueue() {
   const [items, setItems] = useState<DraftItem[] | null>(null);
@@ -87,19 +94,26 @@ export function DraftReviewQueue() {
     setEdits({});
   }, [item?.assetId]);
 
-  const submit = async (verdict: ReviewVerdict) => {
-    if (!item || busyRef.current) return;
+  // One door for the buttons and the agent's review_verdict write: throws on failure.
+  const submitNow = async (target: DraftItem, verdict: ReviewVerdict) => {
     busyRef.current = true;
     setBusy(true);
     try {
-      await reviewDraft(item, verdict, edits);
-      setItems((prev) => (prev ?? []).filter((i) => i.assetId !== item.assetId));
+      await reviewDraft(target, verdict, edits);
+      setItems((prev) => (prev ?? []).filter((i) => i.assetId !== target.assetId));
       setIndex((i) => Math.max(0, Math.min(i, (items?.length ?? 1) - 2)));
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Could not save the review.");
     } finally {
       busyRef.current = false;
       setBusy(false);
+    }
+  };
+
+  const submit = async (verdict: ReviewVerdict) => {
+    if (!item || busyRef.current) return;
+    try {
+      await submitNow(item, verdict);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Could not save the review.");
     }
   };
 
@@ -131,8 +145,95 @@ export function DraftReviewQueue() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  // Surface `matrx-user/commerce-drafts`: the draft as it stands on screen; the buttons' own door.
+  const fieldNow = (path: string) => {
+    const field = item?.fields.find((f) => f.path === path);
+    return field ? (edits[path] ?? field.value) : undefined;
+  };
+  const getScope = () =>
+    createCommerceDraftsScope({
+      queue_load_status: loadError ? "failed" : items ? "loaded" : "loading",
+      queue_count: items?.length,
+      queue_position: item ? index + 1 : undefined,
+      asset_id: item?.assetId,
+      draft_title: fieldNow("title"),
+      draft_description: item ? (fieldNow("description") ?? "") : undefined,
+      draft_fields: item ? draftSurfaceFields(item, edits) : undefined,
+      has_unsaved_edits: item
+        ? item.fields.some((f) => f.path in edits && edits[f.path] !== f.value)
+        : undefined,
+      draft_details: item
+        ? {
+            organization_id: item.organizationId,
+            confidence: item.confidence,
+            reasoning: item.reasoning,
+            notes: item.notes,
+            photo_count: item.photoFileIds.length,
+            created_at: item.createdAt,
+          }
+        : undefined,
+    });
+  const getWriteHandlers = () => ({
+    draft_field_edits: {
+      validate: (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No draft is in view.");
+        readDraftFieldEdits(item as DraftItem, value);
+      },
+      apply: (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No draft is in view.");
+        const next = readDraftFieldEdits(item as DraftItem, value);
+        setEdits((prev) => ({ ...prev, ...next }));
+        return {
+          summary: "The fields are filled in on screen. Nothing is saved until a verdict is given.",
+          data: next,
+        };
+      },
+    },
+    draft_description: {
+      validate: (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No draft is in view.");
+        if (!item?.fields.some((f) => f.path === "description")) refuseSurfaceWrite("This draft has no description field.");
+        if (typeof value !== "string") refuseSurfaceWrite("draft_description must be text.");
+      },
+      apply: (value: unknown) => {
+        if (!item?.fields.some((f) => f.path === "description")) refuseSurfaceWrite("This draft has no description field.");
+        setEdits((prev) => ({ ...prev, description: value as string }));
+        return {
+          summary: "The description is rewritten on screen. Nothing is saved until a verdict is given.",
+          data: { description: value },
+        };
+      },
+    },
+    review_verdict: {
+      validate: (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No draft is in view.");
+        readReviewVerdict(value);
+      },
+      apply: async (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No draft is in view.");
+        if (busyRef.current) refuseSurfaceWrite("A review is already being saved; try again in a moment.");
+        const verdict = readReviewVerdict(value);
+        const target = item as DraftItem;
+        await submitNow(target, verdict);
+        return {
+          summary: `Saved: the draft was given "${verdict}" and left the queue.`,
+          data: { asset_id: target.assetId, verdict },
+        };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_DRAFTS_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loadError)
-    return (
+    return withSurface(
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <p className="px-6 text-center text-sm text-destructive">{loadError} <ErrorAlchemyMenu error={loadError} /></p>
         <Button variant="outline" onClick={retryLoad}>
@@ -141,13 +242,13 @@ export function DraftReviewQueue() {
       </div>
     );
   if (!items)
-    return (
+    return withSurface(
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   if (items.length === 0)
-    return (
+    return withSurface(
       <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
         <Inbox className="h-8 w-8" />
         <p className="text-sm">No drafts awaiting review.</p>
@@ -157,7 +258,7 @@ export function DraftReviewQueue() {
 
   const band = confidenceBand(item.confidence);
 
-  return (
+  return withSurface(
     <div className="mx-auto flex h-full max-w-4xl flex-col gap-3 p-3">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>

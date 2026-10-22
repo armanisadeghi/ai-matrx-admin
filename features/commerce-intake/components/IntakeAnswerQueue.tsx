@@ -49,6 +49,12 @@ import {
   listPrimaryQrForAssets,
   skipQuestion,
 } from "../service";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_INTAKE_ANSWER_SURFACE_NAME,
+  createCommerceIntakeAnswerScope,
+} from "@/features/surfaces/manifests/commerce-intake-answer.manifest";
 
 interface QueueEntry {
   question: AssetQuestion;
@@ -127,22 +133,26 @@ export function IntakeAnswerQueue() {
     [],
   );
 
-  const submitAnswer = useCallback(
-    async (value: string) => {
-      if (!current || !value.trim()) return;
-      setBusy(true);
-      try {
-        await answerQuestion(current.question, value.trim());
-        advance({ answered: true });
-      } catch (err) {
-        console.error("[commerce-intake] answer failed", err);
-        toast.error("Could not save the answer.");
-      } finally {
-        setBusy(false);
-      }
-    },
-    [current, advance],
-  );
+  // One door for the buttons and the agent's answer_question write: throws on failure.
+  const answerNow = async (entry: QueueEntry, value: string) => {
+    setBusy(true);
+    try {
+      await answerQuestion(entry.question, value.trim());
+      advance({ answered: true });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitAnswer = async (value: string) => {
+    if (!current || !value.trim()) return;
+    try {
+      await answerNow(current, value);
+    } catch (err) {
+      console.error("[commerce-intake] answer failed", err);
+      toast.error("Could not save the answer.");
+    }
+  };
 
   const skip = useCallback(async () => {
     if (!current) return;
@@ -195,8 +205,87 @@ export function IntakeAnswerQueue() {
     })();
   }, []);
 
+  // Surface `matrx-user/commerce-intake-answer`: the question in view; answers through the buttons' door.
+  const readAnswer = (value: unknown): string => {
+    if (!current) refuseSurfaceWrite("No question is in view.");
+    if (typeof value !== "string" || !value.trim()) refuseSurfaceWrite("The answer must be non-empty text.");
+    const answer = (value as string).trim();
+    const q = (current as QueueEntry).question;
+    if (q.kind === "choice" && !q.options.some((o) => o.value === answer)) {
+      refuseSurfaceWrite(`Pick one option value: ${q.options.map((o) => `"${o.value}"`).join(", ")}.`);
+    }
+    if (q.kind === "boolean" && answer !== "yes" && answer !== "no") refuseSurfaceWrite('Answer "yes" or "no".');
+    return answer;
+  };
+  const getScope = () =>
+    createCommerceIntakeAnswerScope({
+      queue_load_status: loadError && !current ? "failed" : queue === null ? "loading" : "loaded",
+      open_question_count: queue?.length,
+      answered_count: answeredCount,
+      question_prompt: current?.question.prompt,
+      question: current
+        ? {
+            id: current.question.id,
+            prompt: current.question.prompt,
+            kind: current.question.kind,
+            options: current.question.options,
+            value_impact: current.question.valueImpact,
+            skip_count: current.question.skipCount,
+            priority: current.question.priority,
+            created_at: current.question.createdAt,
+          }
+        : undefined,
+      question_subject: current
+        ? {
+            asset_id: current.asset.id,
+            organization_id: current.asset.organizationId,
+            qr_code: current.qrCode,
+            notes: current.asset.notes,
+            pipeline_state: current.asset.pipelineState,
+            attributes: current.asset.attributes,
+          }
+        : undefined,
+      answer_draft: current ? draft : undefined,
+    });
+  const getWriteHandlers = () => ({
+    answer_draft: {
+      validate: (value: unknown) => {
+        if (!current) refuseSurfaceWrite("No question is in view.");
+        if (typeof value !== "string") refuseSurfaceWrite("answer_draft must be text.");
+      },
+      apply: (value: unknown) => {
+        setDraft(value as string);
+        return { summary: "The answer box is filled. Nothing is saved until the person presses Answer.", data: { answer: value } };
+      },
+    },
+    answer_question: {
+      validate: (value: unknown) => {
+        readAnswer(value);
+      },
+      apply: async (value: unknown) => {
+        const answer = readAnswer(value);
+        if (busy) refuseSurfaceWrite("An answer is already being saved; try again in a moment.");
+        const entry = current as QueueEntry;
+        await answerNow(entry, answer);
+        return {
+          summary: "Saved the answer; the next question is up.",
+          data: { question_id: entry.question.id, answer },
+        };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_INTAKE_ANSWER_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loadError && !current) {
-    return (
+    return withSurface(
       <ReadFailure
         error={loadError}
         what="the question queue"
@@ -206,7 +295,7 @@ export function IntakeAnswerQueue() {
   }
 
   if (queue === null) {
-    return (
+    return withSurface(
       <div className="flex justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
@@ -214,7 +303,7 @@ export function IntakeAnswerQueue() {
   }
 
   if (!current) {
-    return (
+    return withSurface(
       <div className="flex flex-col items-center gap-3 py-16 text-center">
         <CheckCircle2 className="h-10 w-10 text-primary" />
         <p className="text-base font-medium">
@@ -234,7 +323,7 @@ export function IntakeAnswerQueue() {
 
   const { question, asset, qrCode, thumbFileId } = current;
 
-  return (
+  return withSurface(
     <div className="mx-auto flex w-full max-w-lg flex-col gap-3 pb-safe">
       {loadError ? (
         <StaleDataNotice

@@ -75,6 +75,12 @@ import {
   INSTANT_ANALYSIS_MANDATE_KEY,
   useInstantAnalysis,
 } from "../hooks/useInstantAnalysis";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  createProductCaptureScope,
+  PRODUCT_CAPTURE_SURFACE_NAME,
+} from "@/features/surfaces/manifests/product-capture.manifest";
 import { useQrAutoScan } from "../hooks/useQrAutoScan";
 import { InstantProcessSheet } from "./InstantProcessSheet";
 import { NotesPanel } from "./NotesPanel";
@@ -371,7 +377,78 @@ export function CaptureScreen({
     },
   ];
 
+  // Surface `matrx-user/product-capture`: the item in view; notes and product number
+  // through the session's own doors.
+  const getScope = () =>
+    createProductCaptureScope({
+      capture_lane: instantMode ? "instant" : "standard",
+      item_id: currentItemId ?? undefined,
+      item_label: itemLabel,
+      item_code: currentItemCode ?? undefined,
+      item: currentItem
+        ? {
+            item_id: currentItem.id,
+            item_number: session.currentItemSeq,
+            code: currentItem.code,
+            code_source: currentItem.codeSource,
+            status: currentItem.status,
+            folder_path: currentItem.folderPath,
+            created_at: currentItem.createdAt,
+          }
+        : undefined,
+      photo_count: photoCount,
+      video_count: artifacts.filter((a) => a.kind === "video").length,
+      voice_note_count: artifacts.filter((a) => a.kind === "audio").length,
+      uploading_count: session.uploadingCount,
+      upload_error_count: session.errorCount,
+      transcribing_count: session.transcribingCount,
+      item_notes: session.notes,
+      instant_status: !instantMode
+        ? "off"
+        : instant.isRunning
+          ? "running"
+          : instant.error
+            ? "failed"
+            : instant.storedResult
+              ? "done"
+              : "idle",
+    });
+  const getWriteHandlers = () => ({
+    item_notes: {
+      validate: (value: unknown) => {
+        if (!session.currentItem) refuseSurfaceWrite("No item yet: take a photo first.");
+        if (typeof value !== "string") refuseSurfaceWrite("item_notes must be text.");
+      },
+      apply: (value: unknown) => {
+        if (!session.currentItem) refuseSurfaceWrite("No item yet: take a photo first.");
+        session.setNotes(value as string);
+        return {
+          summary: "The item's notes are replaced; the autosave is saving them.",
+          data: { item_id: session.currentItem?.id },
+        };
+      },
+    },
+    item_code: {
+      validate: (value: unknown) => {
+        if (!session.currentItem) refuseSurfaceWrite("No item yet: take a photo first.");
+        if (typeof value !== "string" || !value.trim()) refuseSurfaceWrite("item_code needs the product number text.");
+      },
+      apply: async (value: unknown) => {
+        if (!session.currentItem) refuseSurfaceWrite("No item yet: take a photo first.");
+        const code = (value as string).trim();
+        const saved = await session.setCode(code);
+        if (!saved) throw new Error("The product number could not be saved.");
+        return { summary: `Saved: the product number is ${code}.`, data: { item_id: session.currentItem?.id, code } };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider
+      surfaceName={PRODUCT_CAPTURE_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
     <div className="fixed inset-0 z-50 bg-black">
       <CameraCapture
         engine={host.engine}
@@ -669,6 +746,7 @@ export function CaptureScreen({
         onResumeItem={session.resumeItem}
       />
     </div>
+    </SurfaceRuntimeProvider>
   );
 }
 

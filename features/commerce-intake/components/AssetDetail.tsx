@@ -40,6 +40,12 @@ import {
   setAssetAttributes,
   setAssetNotes,
 } from "../service";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_INTAKE_ASSET_SURFACE_NAME,
+  createCommerceIntakeAssetScope,
+} from "@/features/surfaces/manifests/commerce-intake-asset.manifest";
 import { PrintLabelDialog } from "../labels/components/PrintLabelDialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ReadFailure } from "@ai-matrx/design-system";
@@ -211,8 +217,102 @@ export function AssetDetail({ assetId }: { assetId: string }) {
     }
   }, [notesDraft, adopt]);
 
+  // Surface `matrx-user/commerce-intake-asset`: the asset as shown; notes and attributes
+  // through the page's own guarded writers.
+  const readAttributes = (value: unknown): Record<string, string | null> => {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      refuseSurfaceWrite('asset_attributes: send an object like { "Brand": "Dell", "Color": null }.');
+    }
+    const out: Record<string, string | null> = {};
+    const problems: string[] = [];
+    for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
+      if (!key.trim()) problems.push("An attribute name is empty.");
+      else if (v !== null && typeof v !== "string") problems.push(`The value for "${key}" must be text or null.`);
+      else out[key.trim()] = v as string | null;
+    }
+    if (problems.length) refuseSurfaceWrite(`${problems.join(" ")} Nothing was changed.`);
+    return out;
+  };
+  const getScope = () =>
+    createCommerceIntakeAssetScope({
+      asset_id: assetId,
+      asset_load_status: loading ? "loading" : loadError ? "failed" : asset ? "loaded" : "not_found",
+      asset: asset
+        ? {
+            id: asset.id,
+            batch_id: asset.batchId,
+            organization_id: asset.organizationId,
+            tracking_mode: asset.trackingMode,
+            quantity: asset.quantity,
+            pipeline_state: asset.pipelineState,
+            composition: asset.composition,
+            qr_code: asset.qrCode,
+            created_at: asset.createdAt,
+          }
+        : undefined,
+      pipeline_state: asset?.pipelineState,
+      asset_notes: asset ? notesDraft : undefined,
+      asset_attributes: asset?.attributes,
+      identifiers: asset
+        ? identifiers.map((i) => ({
+            id: i.id,
+            kind: i.kind,
+            value: i.value,
+            is_primary: i.isPrimary,
+            replaced_at: i.replacedAt,
+          }))
+        : undefined,
+      photo_count: asset ? artifacts.filter((a) => a.kind === "photo" && !a.isDelineator).length : undefined,
+      video_count: asset ? artifacts.filter((a) => a.kind === "video").length : undefined,
+      voice_note_count: asset ? artifacts.filter((a) => a.kind === "audio").length : undefined,
+    });
+  const getWriteHandlers = () => ({
+    asset_notes: {
+      validate: (value: unknown) => {
+        if (!assetRef.current) refuseSurfaceWrite("The asset has not loaded yet.");
+        if (typeof value !== "string") refuseSurfaceWrite("asset_notes must be text.");
+      },
+      apply: async (value: unknown) => {
+        const current = assetRef.current;
+        if (!current) refuseSurfaceWrite("The asset has not loaded yet.");
+        const saved = await setAssetNotes(current as IntakeAsset, value as string);
+        adopt(saved);
+        setNotesDraft(saved.notes);
+        return { summary: "Saved the asset's notes.", data: { asset_id: saved.id, notes: saved.notes } };
+      },
+    },
+    asset_attributes: {
+      validate: (value: unknown) => {
+        if (!assetRef.current) refuseSurfaceWrite("The asset has not loaded yet.");
+        readAttributes(value);
+      },
+      apply: async (value: unknown) => {
+        const current = assetRef.current;
+        if (!current) refuseSurfaceWrite("The asset has not loaded yet.");
+        const changes = readAttributes(value);
+        const next: Record<string, string> = { ...(current as IntakeAsset).attributes };
+        for (const [key, v] of Object.entries(changes)) {
+          if (v === null) delete next[key];
+          else next[key] = v;
+        }
+        const saved = await setAssetAttributes(current as IntakeAsset, next);
+        adopt(saved);
+        return { summary: "Saved the attributes.", data: { asset_id: saved.id, attributes: saved.attributes } };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_INTAKE_ASSET_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loading) {
-    return (
+    return withSurface(
       <div className="flex justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
@@ -220,7 +320,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
   }
   if (loadError) {
     // The read itself failed — not "no such asset", and not "no identifiers".
-    return (
+    return withSurface(
       <ReadFailure
         error={loadError}
         what="this intake asset"
@@ -233,7 +333,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
     // A zero-row read is denied / deleted / never-existed / signed-out, and
     // this surface cannot tell them apart — it used to assert the second one.
     // The gate asks the platform and says the true one, with a way forward.
-    return (
+    return withSurface(
       <AccessGate
         token="commerce_intake_asset"
         id={assetId}
@@ -245,7 +345,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
   }
 
 
-  return (
+  return withSurface(
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 pb-safe">
       {/* Media strip */}
       {artifacts.length > 0 && (

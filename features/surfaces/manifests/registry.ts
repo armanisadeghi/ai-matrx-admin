@@ -361,6 +361,16 @@ import { workflowRunViewDesignManifest } from "./workflow-run-view-design.manife
 import { workflowReviewManifest } from "./workflow-review.manifest";
 import { workflowReviewIssueManifest } from "./workflow-review-issue.manifest";
 import { workflowTriggersManifest } from "./workflow-triggers.manifest";
+import { commerceAttentionManifest } from "./commerce-attention.manifest";
+import { commerceDraftsManifest } from "./commerce-drafts.manifest";
+import { commerceIntakeManifest } from "./commerce-intake.manifest";
+import { commerceIntakeAnswerManifest } from "./commerce-intake-answer.manifest";
+import { commerceIntakeAssetManifest } from "./commerce-intake-asset.manifest";
+import { commercePrinterCertifyManifest } from "./commerce-printer-certify.manifest";
+import { commerceTriageManifest } from "./commerce-triage.manifest";
+import { productCaptureManifest } from "./product-capture.manifest";
+import { productCaptureAnswerManifest } from "./product-capture-answer.manifest";
+import { productCaptureItemManifest } from "./product-capture-item.manifest";
 // W2 area: print-rag-memory
 // W2 area: core-rest
 // W2 area: route-groups
@@ -718,6 +728,16 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   workflowReviewManifest,
   workflowReviewIssueManifest,
   workflowTriggersManifest,
+  commerceAttentionManifest,
+  commerceDraftsManifest,
+  commerceIntakeManifest,
+  commerceIntakeAnswerManifest,
+  commerceIntakeAssetManifest,
+  commercePrinterCertifyManifest,
+  commerceTriageManifest,
+  productCaptureManifest,
+  productCaptureAnswerManifest,
+  productCaptureItemManifest,
   // W2 area: print-rag-memory
   // W2 area: core-rest
   // W2 area: route-groups

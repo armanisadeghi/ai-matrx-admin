@@ -50,6 +50,12 @@ import {
   getLabelTemplate,
   printCalibrationSheet,
 } from "@ai-matrx/print/labels";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_PRINTER_CERTIFY_SURFACE_NAME,
+  createCommercePrinterCertifyScope,
+} from "@/features/surfaces/manifests/commerce-printer-certify.manifest";
 import { LabelSheetPreview } from "@ai-matrx/print/react";
 
 import {
@@ -232,15 +238,86 @@ export function CertifyPrinterWizard({
     setStep(1);
   };
 
+  // Surface `matrx-user/commerce-printer-certify`: the session as shown; step 1 as a draft.
+  const readPrinterDetails = (value: unknown) => {
+    if (verdict) refuseSurfaceWrite("The verdict is already recorded; start again to change the printer.");
+    if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      refuseSurfaceWrite('printer_details_draft: send an object like { "make": "Brother", "model": "QL-820NWB" }.');
+    }
+    const problems: string[] = [];
+    const out: { make?: string; model?: string; connectionNote?: string; templateId?: string } = {};
+    for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof raw !== "string") problems.push(`"${key}" must be text.`);
+      else if (key === "make") out.make = raw;
+      else if (key === "model") out.model = raw;
+      else if (key === "connection_note") out.connectionNote = raw;
+      else if (key === "template_id") {
+        if (!getLabelTemplate(raw)) problems.push(`Unknown label stock "${raw}" — use a template_id from label_stocks.`);
+        else out.templateId = raw;
+      } else problems.push(`Unknown key "${key}".`);
+    }
+    if (problems.length) refuseSurfaceWrite(`${problems.join(" ")} Nothing was changed.`);
+    return out;
+  };
+  const getScope = () =>
+    createCommercePrinterCertifyScope({
+      certify_mode: existingId ? "recheck" : "new",
+      certification_id: existingId,
+      previous_status: previousStatus ?? undefined,
+      step,
+      printer_name: printerName || undefined,
+      printer_details: {
+        make,
+        model,
+        connection_note: connectionNote,
+        label_stock: { template_id: template.id, name: template.name, stock_code: template.stockCode },
+      },
+      label_stocks: LABEL_TEMPLATES.map((t) => ({ template_id: t.id, name: t.name, stock_code: t.stockCode })),
+      calibration_printed: printed,
+      checks: CERTIFICATION_CHECKS.map((c) => ({
+        id: c.id,
+        question: c.question(template),
+        answer: typeof answers[c.id] === "boolean" ? answers[c.id] : null,
+      })),
+      verdict: verdict ?? undefined,
+    });
+  const getWriteHandlers = () => ({
+    printer_details_draft: {
+      validate: (value: unknown) => {
+        readPrinterDetails(value);
+      },
+      apply: (value: unknown) => {
+        const next = readPrinterDetails(value);
+        if (next.make !== undefined) setMake(next.make);
+        if (next.model !== undefined) setModel(next.model);
+        if (next.connectionNote !== undefined) setConnectionNote(next.connectionNote);
+        if (next.templateId !== undefined) setTemplateId(next.templateId);
+        return {
+          summary: "Step 1 is filled in. Nothing is saved; the person prints the calibration page next.",
+          data: value,
+        };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_PRINTER_CERTIFY_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loadingExisting) {
-    return (
+    return withSurface(
       <div className="flex justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  return (
+  return withSurface(
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 pb-safe">
       {existingId && previousStatus && (
         <div className="rounded-xl border border-border bg-card px-3 py-2 text-xs text-muted-foreground">

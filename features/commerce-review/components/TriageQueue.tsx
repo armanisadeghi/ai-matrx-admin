@@ -35,6 +35,13 @@ import { VALUE_BUCKETS } from "../types";
 import { decideValueBucket, listTriageQueue } from "../service";
 import { ConfidenceChip } from "./ConfidenceChip";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_TRIAGE_SURFACE_NAME,
+  createCommerceTriageScope,
+} from "@/features/surfaces/manifests/commerce-triage.manifest";
+import { readValueBucket, triageSurfaceItem } from "../surface-writes";
 
 import { Tile } from "@ai-matrx/design-system/controls";
 const BUCKET_LABELS: Record<ValueBucket, string> = {
@@ -92,19 +99,26 @@ export function TriageQueue() {
 
   const item = items?.[index] ?? null;
 
-  const decide = async (bucket: ValueBucket) => {
-    if (!item || busyRef.current) return;
+  // One door for the bucket keys and the agent's value_bucket write: throws on failure.
+  const decideNow = async (target: TriageItem, bucket: ValueBucket) => {
     busyRef.current = true;
     setBusy(true);
     try {
-      await decideValueBucket(item, bucket);
-      setItems((prev) => (prev ?? []).filter((i) => i.assetId !== item.assetId));
+      await decideValueBucket(target, bucket);
+      setItems((prev) => (prev ?? []).filter((i) => i.assetId !== target.assetId));
       setIndex((i) => Math.max(0, Math.min(i, (items?.length ?? 1) - 2)));
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Could not save the decision.");
     } finally {
       busyRef.current = false;
       setBusy(false);
+    }
+  };
+
+  const decide = async (bucket: ValueBucket) => {
+    if (!item || busyRef.current) return;
+    try {
+      await decideNow(item, bucket);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Could not save the decision.");
     }
   };
 
@@ -132,8 +146,47 @@ export function TriageQueue() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
+  // Surface `matrx-user/commerce-triage`: the asset in view; the bucket keys' own door.
+  const getScope = () =>
+    createCommerceTriageScope({
+      queue_load_status: loadError ? "failed" : items ? "loaded" : "loading",
+      queue_count: items?.length,
+      queue_position: item ? index + 1 : undefined,
+      asset_id: item?.assetId,
+      ai_bucket: item?.aiBucket ?? undefined,
+      triage_item: item ? triageSurfaceItem(item) : undefined,
+    });
+  const getWriteHandlers = () => ({
+    value_bucket: {
+      validate: (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No asset is in view.");
+        readValueBucket(value);
+      },
+      apply: async (value: unknown) => {
+        if (!item) refuseSurfaceWrite("No asset is in view.");
+        if (busyRef.current) refuseSurfaceWrite("A decision is already being saved; try again in a moment.");
+        const bucket = readValueBucket(value);
+        const target = item as TriageItem;
+        await decideNow(target, bucket);
+        return {
+          summary: `Saved: the asset is in the ${bucket} bucket and left the queue.`,
+          data: { asset_id: target.assetId, bucket },
+        };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_TRIAGE_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (loadError)
-    return (
+    return withSurface(
       <div className="flex h-full flex-col items-center justify-center gap-3">
         <p className="px-6 text-center text-sm text-destructive">{loadError} <ErrorAlchemyMenu error={loadError} /></p>
         <Button variant="outline" onClick={retryLoad}>
@@ -142,13 +195,13 @@ export function TriageQueue() {
       </div>
     );
   if (!items)
-    return (
+    return withSurface(
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   if (items.length === 0)
-    return (
+    return withSurface(
       <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
         <Inbox className="h-8 w-8" />
         <p className="text-sm">Nothing awaiting triage.</p>
@@ -156,7 +209,7 @@ export function TriageQueue() {
     );
   if (!item) return null;
 
-  return (
+  return withSurface(
     <div className="mx-auto flex h-full max-w-3xl flex-col gap-3 p-3">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>

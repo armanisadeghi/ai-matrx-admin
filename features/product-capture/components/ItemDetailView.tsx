@@ -38,6 +38,12 @@ import {
   setItemCode,
   setItemNotes,
 } from "../service";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  createProductCaptureItemScope,
+  PRODUCT_CAPTURE_ITEM_SURFACE_NAME,
+} from "@/features/surfaces/manifests/product-capture-item.manifest";
 import { removeItemFile, uploadItemFile } from "../uploads";
 import { ProductCaptureHeader } from "./ProductCaptureHeader";
 import { MediaPager } from "./MediaPager";
@@ -248,8 +254,73 @@ export function ItemDetailView({ itemId }: { itemId: string }) {
   const audioNotes = files.filter((f) => f.kind === "audio");
   const title = item?.code ?? "Capture item";
 
+  // Surface `matrx-user/product-capture-item`: the item as shown; notes and product
+  // number through the page's own writers.
+  const getScope = () =>
+    createProductCaptureItemScope({
+      item_id: itemId,
+      item_load_status: notFound ? "not_found" : loadError != null ? "failed" : item ? "loaded" : "loading",
+      item_code: item?.code ?? undefined,
+      item_status: item?.status,
+      item: item
+        ? {
+            id: item.id,
+            organization_id: item.organizationId,
+            code: item.code,
+            code_source: item.codeSource,
+            status: item.status,
+            folder_path: item.folderPath,
+            created_at: item.createdAt,
+          }
+        : undefined,
+      item_notes: item ? notes : undefined,
+      photo_count: item ? files.filter((f) => f.kind === "photo").length : undefined,
+      video_count: item ? files.filter((f) => f.kind === "video").length : undefined,
+      voice_note_count: item ? files.filter((f) => f.kind === "audio").length : undefined,
+      uploading_count: item ? pending.length : undefined,
+    });
+  const getWriteHandlers = () => ({
+    item_notes: {
+      validate: (value: unknown) => {
+        if (!itemRef.current) refuseSurfaceWrite("The item has not loaded yet.");
+        if (typeof value !== "string") refuseSurfaceWrite("item_notes must be text.");
+      },
+      apply: async (value: unknown) => {
+        if (!itemRef.current) refuseSurfaceWrite("The item has not loaded yet.");
+        onNotesChange(value as string);
+        if (notesTimerRef.current) clearTimeout(notesTimerRef.current);
+        await flushNotes();
+        if (notesDirtyRef.current) throw new Error("The notes could not be saved; they stay in the notes box.");
+        return { summary: "Saved the item's notes.", data: { item_id: itemId } };
+      },
+    },
+    item_code: {
+      validate: (value: unknown) => {
+        if (!itemRef.current) refuseSurfaceWrite("The item has not loaded yet.");
+        if (typeof value !== "string" || !value.trim()) refuseSurfaceWrite("item_code needs the product number text.");
+      },
+      apply: async (value: unknown) => {
+        const current = itemRef.current;
+        if (!current) refuseSurfaceWrite("The item has not loaded yet.");
+        const code = (value as string).trim();
+        const saved = await setItemCode(current as CaptureItem, code, "manual");
+        adoptItem(saved);
+        return { summary: `Saved: the product number is ${code}.`, data: { item_id: saved.id, code: saved.code } };
+      },
+    },
+  });
+  const withSurface = (node: React.ReactNode) => (
+    <SurfaceRuntimeProvider
+      surfaceName={PRODUCT_CAPTURE_ITEM_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
+      {node}
+    </SurfaceRuntimeProvider>
+  );
+
   if (notFound || loadError != null) {
-    return (
+    return withSurface(
       <>
         {/* ProductCaptureHeader injects itself (RouteHeader owns the
             PageHeader portal — wrapping it again splits the center zone). */}
@@ -278,7 +349,7 @@ export function ItemDetailView({ itemId }: { itemId: string }) {
     );
   }
 
-  return (
+  return withSurface(
     <>
       <ProductCaptureHeader
         backHref="/tools/product-capture/all"

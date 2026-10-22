@@ -94,6 +94,12 @@ import {
   INTAKE_INSTANT_ANALYSIS_MANDATE_KEY,
   useInstantIntakeAnalysis,
 } from "../hooks/useInstantIntakeAnalysis";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
+import {
+  COMMERCE_INTAKE_SURFACE_NAME,
+  createCommerceIntakeScope,
+} from "@/features/surfaces/manifests/commerce-intake.manifest";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
@@ -526,7 +532,87 @@ export function IntakeCaptureScreen({
   const shutterDisabled =
     cameraBlocked || voiceActive || session.organizationId === null;
 
+  // Surface `matrx-user/commerce-intake`: the session and the item in view; notes and
+  // identifiers through the session's own doors.
+  const getScope = () =>
+    createCommerceIntakeScope({
+      capture_lane: instantMode ? "instant" : "standard",
+      capture_mode: session.captureMode,
+      batch: session.batch
+        ? {
+            id: session.batch.id,
+            label: session.batch.label,
+            status: session.batch.status,
+            capture_mode: session.batch.captureMode,
+            stream_kind: session.batch.streamKind,
+          }
+        : undefined,
+      asset_id: currentAsset?.id,
+      item_label: itemLabel,
+      item: currentAsset
+        ? {
+            asset_id: currentAsset.id,
+            item_number: session.currentAssetSeq,
+            tracking_mode: currentAsset.trackingMode,
+            quantity: currentAsset.quantity,
+            pipeline_state: currentAsset.pipelineState,
+            qr_code: currentAsset.qrCode,
+            attributes: currentAsset.attributes,
+          }
+        : undefined,
+      photo_count: photoCount,
+      video_count: artifacts.filter((a) => a.kind === "video").length,
+      voice_note_count: artifacts.filter((a) => a.kind === "audio").length,
+      uploading_count: session.uploadingCount,
+      upload_error_count: session.errorCount,
+      item_notes: session.notes,
+      instant_status: !instantMode
+        ? "off"
+        : instant.isRunning
+          ? "running"
+          : instant.error
+            ? "failed"
+            : instant.storedResult
+              ? "done"
+              : "idle",
+    });
+  const getWriteHandlers = () => ({
+    item_notes: {
+      validate: (value: unknown) => {
+        if (!session.currentAsset) refuseSurfaceWrite("No item yet: take a photo first.");
+        if (typeof value !== "string") refuseSurfaceWrite("item_notes must be text.");
+      },
+      apply: (value: unknown) => {
+        if (!session.currentAsset) refuseSurfaceWrite("No item yet: take a photo first.");
+        session.setNotes(value as string);
+        return {
+          summary: "The item's notes are replaced; the autosave is saving them.",
+          data: { asset_id: session.currentAsset?.id },
+        };
+      },
+    },
+    add_identifier: {
+      validate: (value: unknown) => {
+        if (!session.currentAsset) refuseSurfaceWrite("No item yet: take a photo first.");
+        if (typeof value !== "string" || !value.trim()) refuseSurfaceWrite("add_identifier needs the serial or tag text.");
+      },
+      apply: (value: unknown) => {
+        if (!session.currentAsset) refuseSurfaceWrite("No item yet: take a photo first.");
+        session.addManualIdentifier((value as string).trim());
+        return {
+          summary: "The identifier is being added to the item.",
+          data: { asset_id: session.currentAsset?.id, value: (value as string).trim() },
+        };
+      },
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider
+      surfaceName={COMMERCE_INTAKE_SURFACE_NAME}
+      getScope={getScope}
+      getWriteHandlers={getWriteHandlers}
+    >
     <div className="fixed inset-0 z-50 bg-black">
       {/* Full-bleed stage: viewport-crop preview, FULL-SENSOR shutter. */}
       <div className="absolute inset-0">
@@ -962,6 +1048,7 @@ export function IntakeCaptureScreen({
         </div>
       )}
     </div>
+    </SurfaceRuntimeProvider>
   );
 }
 
