@@ -12,8 +12,13 @@
 
 "use client";
 
+import { useState } from "react";
 import type { MediaRefLike } from "@ai-matrx/media";
-import { useMediaBlob, useMediaResolution } from "@ai-matrx/media/core";
+import {
+  stableRefKey,
+  useMediaBlob,
+  useMediaResolution,
+} from "@ai-matrx/media/core";
 
 export interface ImageSrcState {
   /** Loadable URL, or null while loading / when unavailable. */
@@ -29,6 +34,17 @@ export function useImageSrc(ref: MediaRefLike | null | undefined): ImageSrcState
   const needsBlob = resolution?.transport === "blob";
   const blob = useMediaBlob(needsBlob ? ref : null);
 
+  // `useMediaBlob` resets only after commit, so right after the ref changes
+  // it still holds the PREVIOUS ref's url/error. Treat its state as stale
+  // until it has visibly started loading the new ref.
+  const key = stableRefKey(ref);
+  const [seen, setSeen] = useState({ key, stale: false });
+  if (seen.key !== key) setSeen({ key, stale: true });
+  else if (seen.stale && blob.loading) setSeen({ key, stale: false });
+  const stale = seen.key !== key || seen.stale;
+  const blobUrl = stale ? null : blob.url;
+  const blobError = stale ? null : blob.error;
+
   if (!resolution) {
     return { src: null, loading: false, failed: status === "unavailable" };
   }
@@ -36,8 +52,8 @@ export function useImageSrc(ref: MediaRefLike | null | undefined): ImageSrcState
     return { src: resolution.src, loading: false, failed: false };
   }
   return {
-    src: blob.url,
-    loading: blob.loading || (!blob.url && !blob.error),
-    failed: Boolean(blob.error),
+    src: blobUrl,
+    loading: !blobUrl && !blobError,
+    failed: !blobUrl && Boolean(blobError),
   };
 }
