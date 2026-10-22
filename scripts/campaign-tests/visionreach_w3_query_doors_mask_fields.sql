@@ -57,12 +57,9 @@ begin
   insert into iam.organizations (id, name, slug, abbreviation, created_by)
   values (v_org, 'Cedar Ridge Physical Therapy', 'cedar-ridge-pt-'||substr(v_org::text,1,8), 'CRP', c_admin);
   insert into iam.memberships (organization_id, container_type, container_id, user_id, role, status) values
-    (v_org,'organization',v_org,c_admin,'owner','active'),
-    (v_org,'organization',v_org,c_dana,'member','active');
+    (v_org,'organization',v_org,c_admin,'owner','active');
   insert into platform.knob_override (feature,key,scope_kind,scope_id,organization_id,value,set_note) values
-    ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'campaign-test/visionreach_w3'),
-    ('custom','member_default_visibility','organization',v_org,v_org,'"shared_only"'::jsonb,
-     'campaign-test/visionreach_w3');
+    ('custom','system_enabled','organization',v_org,v_org,'true'::jsonb,'campaign-test/visionreach_w3');
   insert into custom.record (organization_id, table_id, data)
   values (v_org, null, jsonb_build_object('name','Cedar Ridge Physical Therapy — Front Desk')) returning id into v_home;
 

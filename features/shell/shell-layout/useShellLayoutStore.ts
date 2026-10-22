@@ -17,7 +17,6 @@
 
 import { useEffect, useState } from "react";
 import { useRecordsClient } from "@ai-matrx/records/react";
-import { readVersionNow } from "@ai-matrx/records/versions";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { RootState } from "@/lib/redux/rootReducer";
@@ -28,6 +27,7 @@ import {
   clearShellLayout,
   listShellLayoutVersions,
   previewShellLayoutVersion,
+  readShellLayoutVersionNow,
   restoreShellLayoutVersion,
   saveShellLayout,
   type ShellLayoutResult,
@@ -158,14 +158,14 @@ export function useShellLayoutStore() {
 
   const versions = async (target: ShellLayoutTarget) => {
     const row = rowOf(target);
-    return row ? listShellLayoutVersions(client, row.recordId) : ({ ok: true, data: [] } as const);
+    return row ? listShellLayoutVersions(client, row) : ({ ok: true, data: [] } as const);
   };
 
   /** The body at `version`, plus the record's version now (pass it back to `restore`). */
   const preview = async (target: ShellLayoutTarget, version: number) => {
     const row = rowOf(target);
     if (!row) return { ok: false, error: "No saved layout yet." } as const;
-    const [answer, seenVersion] = await Promise.all([previewShellLayoutVersion(client, row.recordId, version), readVersionNow(client, row.recordId)]);
+    const [answer, seenVersion] = await Promise.all([previewShellLayoutVersion(client, row, version), readShellLayoutVersionNow(client, row)]);
     return answer.ok ? ({ ok: true, data: { ...answer.data, seenVersion } } as const) : answer;
   };
 

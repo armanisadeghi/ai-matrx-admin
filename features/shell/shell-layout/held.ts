@@ -6,7 +6,7 @@
 // organization's > default; the Standard view switch and guests → default).
 
 import type { StoredShellLayout } from "./contract";
-import { bodyShellLook, resolveShellLayout, shellAccentOf, type ResolvedShellLayout } from "./resolve";
+import { bodyShellLook, bodyShowsDock, resolveShellLayout, shellAccentOf, type ResolvedShellLayout } from "./resolve";
 import type { ShellLookId } from "./looks";
 import { parseShellLayoutBody } from "./validate";
 import type { ShellAccentRef, ShellLayoutBody } from "./contract";
@@ -98,4 +98,20 @@ export function heldShellAccent(held: HeldShellLayouts, viewer: Pick<ShellViewer
   const stored = held.organizationId ? held.organizations[held.organizationId] : null;
   const organization = stored ? parseShellLayoutBody(stored.body).body : null;
   return shellAccentOf(own, organization);
+}
+
+/**
+ * Only whether the winning body carries its own Dock (same order as `heldShellLook`). The server stamps
+ * `data-show-dock` on `.shell-root` from it, so a person's customized phone dock is on the first frame;
+ * nobody else's phone changes (the dock stays hidden by default).
+ */
+export function heldShellShowsDock(held: HeldShellLayouts, viewer: Pick<ShellViewer, "isGuest">): boolean {
+  const active = held.enabled && !viewer.isGuest;
+  if (!active) return false;
+  if (held.previewBody) return bodyShowsDock(parseShellLayoutBody(held.previewBody).body);
+  if (held.standardView) return false;
+  const own = held.personAllowed !== false && held.person ? parseShellLayoutBody(held.person.body).body : null;
+  if (own) return bodyShowsDock(own);
+  const organization = held.organizationId ? held.organizations[held.organizationId] : null;
+  return organization ? bodyShowsDock(parseShellLayoutBody(organization.body).body) : false;
 }

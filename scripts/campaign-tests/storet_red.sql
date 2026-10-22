@@ -113,7 +113,6 @@ begin
     (v_open,'organization',v_open,c_dana,'member','active');
   insert into platform.knob_override (feature,key,scope_kind,scope_id,organization_id,value,set_note) values
     ('custom','system_enabled','organization',v_shared,v_shared,'true'::jsonb,'campaign-test/storet_red'),
-    ('custom','member_default_visibility','organization',v_shared,v_shared,'"shared_only"'::jsonb,'campaign-test/storet_red'),
     ('custom','system_enabled','organization',v_open,v_open,'true'::jsonb,'campaign-test/storet_red');
   insert into custom.record (organization_id, table_id, data)
   values (v_shared, null, jsonb_build_object('name','Wraithmoor Regional Museum — Main Building')) returning id into v_h1;

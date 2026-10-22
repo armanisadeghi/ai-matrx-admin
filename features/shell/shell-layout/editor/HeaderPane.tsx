@@ -52,6 +52,12 @@ function buttonIcon(b: Exclude<HeaderButton, { kind: "control" }>): ShellIconNam
 
 const KIND_WORD: Partial<Record<HeaderButton["kind"], string>> = { nav: "Page", link: "Link", launchpad: "Launchpad", mandate: "AI job" };
 
+/** The word beside a row: a `link` into the app (a page or a record added from it) is a Page, not a Link. */
+export function headerKindWord(b: HeaderButton): string | undefined {
+  if (b.kind === "link" && b.href.startsWith("/") && !b.href.startsWith("//")) return "Page";
+  return KIND_WORD[b.kind];
+}
+
 export function HeaderPane({
   buttons,
   catalog,
@@ -210,7 +216,7 @@ function HeaderRow({
         />
       )}
       <span className="min-w-0 flex-1 truncate type-body">{label}</span>
-      {KIND_WORD[b.kind] ? <span className="type-meta text-muted-foreground">{KIND_WORD[b.kind]}</span> : null}
+      {headerKindWord(b) ? <span className="type-meta text-muted-foreground">{headerKindWord(b)}</span> : null}
       {locked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-label="Always in the header" /> : null}
       <Button variant="quiet" aria-label={`Move ${label} left`} icon={<ArrowUp />} disabled={i === 0} onClick={() => onChange(moveInList(buttons, b.id, i - 1))} />
       <Button
