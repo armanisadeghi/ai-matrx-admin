@@ -83,8 +83,10 @@ function callSites(fnName: string, manifestFile: string): string[] {
 }
 
 const PACKAGE_DIST = "node_modules/@ai-matrx/chat/dist";
+// resolveContextOnOpen: a v3 context menu that resolves per-target context at
+// right-click time and launches with it (matrx-user/assistant-message emits only so).
 const MOUNT_MARKER =
-  /SurfaceRuntimeProvider|useSurfaceRuntimeRegistration|registerSurfaceRuntime|useSurfaceScopeContribution|BattleSurfaceRuntime/;
+  /SurfaceRuntimeProvider|useSurfaceRuntimeRegistration|registerSurfaceRuntime|useSurfaceScopeContribution|BattleSurfaceRuntime|resolveContextOnOpen/;
 
 /** Every JS file of the installed chat package, excluding its manifests. */
 function packageFiles(): { file: string; text: string }[] {
@@ -218,7 +220,7 @@ with code(name, readiness, n_values) as (values
 select coalesce(c.name, s.name) as surface,
        c.readiness as code_readiness, s.readiness as db_readiness,
        c.n_values as code_values,
-       (select count(*) from ui.ui_surface_value v where v.surface_name = coalesce(c.name, s.name)) as db_values,
+       (select count(*) from ui.ui_surface_value v where v.surface_name = coalesce(c.name, s.name) and v.deleted_at is null) as db_values,
        s.check_claimed_by, s.check_claimed_at,
        case when c.name is null then 'db row with no manifest'
             when s.name is null then 'never synced'
@@ -226,7 +228,7 @@ select coalesce(c.name, s.name) as surface,
 from code c full join ui.ui_surface s on s.name = c.name
 where c.name is null or s.name is null
    or c.readiness is distinct from s.readiness
-   or c.n_values <> (select count(*) from ui.ui_surface_value v where v.surface_name = c.name)
+   or c.n_values <> (select count(*) from ui.ui_surface_value v where v.surface_name = c.name and v.deleted_at is null)
 order by 1;`);
     return;
   }

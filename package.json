@@ -35,6 +35,7 @@
     "build:local": "powershell -ExecutionPolicy Bypass -File ./scripts/build-local.ps1",
     "build:types": "pnpm check:private-diagnostics && ts-node scripts/generate-manifest.ts && bash scripts/fix-encoding.sh && bash scripts/machine-guard/job.sh next-build -- next build",
     "type-check": "bash scripts/tsc-capped.sh tsc --noEmit -p tsconfig.typecheck.json",
+    "type-check:files": "node scripts/type-check-files.mjs",
     "type-check:queue:test": "python3 scripts/test_tsc_queue.py -v",
     "machine-guard:status": "python3 scripts/machine-guard/machine_guard.py status",
     "machine-guard:dry-run": "python3 scripts/machine-guard/machine_guard.py once --dry-run",
