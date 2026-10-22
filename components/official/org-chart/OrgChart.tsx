@@ -16,7 +16,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -31,7 +31,7 @@ import {
   FileDown,
   ImageDown,
 } from "lucide-react";
-import { DisclosureHeader } from "@ai-matrx/design-system/controls";
+import { Button, DisclosureHeader } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
@@ -159,6 +159,12 @@ function initialCollapsed<T>(roots: OrgChartTreeNode<T>[], fromDepth?: number): 
   return out;
 }
 
+const noSubscribe = () => () => {};
+/** False on the server and through hydration, true after: browser-only reads wait for it. */
+function useMounted() {
+  return useSyncExternalStore(noSubscribe, () => true, () => false);
+}
+
 function ControlButton({
   label,
   onClick,
@@ -171,19 +177,14 @@ function ControlButton({
   active?: boolean;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="quiet"
       title={label}
       aria-label={label}
-      aria-pressed={active}
+      pressed={active}
+      icon={children}
       onClick={onClick}
-      className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-        active && "bg-muted text-foreground",
-      )}
-    >
-      {children}
-    </button>
+    />
   );
 }
 
@@ -221,7 +222,11 @@ export function OrgChart<T>({
     initialCollapsed(roots, collapseFromDepth),
   );
   const [query, setQuery] = useState("");
-  const [matchIndex, setMatchIndex] = useState(0);
+  // The step belongs to the highlight it was made under; a new highlight starts at its first card.
+  const highlightLabel = highlight?.label ?? null;
+  const [matchStep, setMatchStep] = useState<{ label: string | null; index: number }>({ label: null, index: 0 });
+  const matchIndex = matchStep.label === highlightLabel ? matchStep.index : 0;
+  const setMatchIndex = (index: number) => setMatchStep({ label: highlightLabel, index });
   const [showMinimap, setShowMinimap] = useState(true);
   // On a phone the legend starts folded to its title, so it never covers the chart's corner;
   // once the person opens or folds it, their choice stands.
@@ -246,39 +251,29 @@ export function OrgChart<T>({
   // ── remembered view (per browser; a convenience, never state that matters) ──
   const storageKey = persistKey ? `matrx:org-chart:${persistKey}` : null;
   // The key whose saved view has been read: a new key (another chart in the same
-  // mounted component) reads ITS view before anything is written under it.
-  const loadedPersist = useRef<string | null>(null);
-  const skipNextWrite = useRef(false);
-  useEffect(() => {
-    if (!storageKey) {
-      loadedPersist.current = null; // coming back to a key reads it again
-      return;
-    }
-    if (loadedPersist.current === storageKey) return;
-    loadedPersist.current = storageKey;
-    skipNextWrite.current = true; // this pass still holds the previous view
+  // mounted component) reads ITS view before anything is written under it. Storage
+  // does not exist on the server, so the read waits until after hydration.
+  const mounted = useMounted();
+  const [viewKey, setViewKey] = useState<string | null>(null);
+  if (storageKey === null && viewKey !== null) setViewKey(null); // coming back to a key reads it again
+  if (storageKey !== null && mounted && viewKey !== storageKey) {
+    setViewKey(storageKey);
     // Storage unavailable (private window, blocked site data): start fresh.
     const saved = orgChartViews.getJSON<{ collapsed?: unknown; minimap?: unknown }>(storageKey);
-    if (!saved) {
-      setCollapsed(new Set());
-      setShowMinimap(true);
-      return;
-    }
-    if (Array.isArray(saved.collapsed)) {
-      setCollapsed(new Set(saved.collapsed.filter((k): k is string => typeof k === "string")));
-    }
-    if (typeof saved.minimap === "boolean") setShowMinimap(saved.minimap);
-  }, [storageKey]);
+    setCollapsed(
+      Array.isArray(saved?.collapsed)
+        ? new Set(saved.collapsed.filter((k): k is string => typeof k === "string"))
+        : new Set(),
+    );
+    setShowMinimap(typeof saved?.minimap === "boolean" ? saved.minimap : true);
+  }
+  const viewLoaded = storageKey === null || viewKey === storageKey;
   const collapsedKey = [...collapsed].sort().join("|");
   useEffect(() => {
-    if (!storageKey || loadedPersist.current !== storageKey) return;
-    if (skipNextWrite.current) {
-      skipNextWrite.current = false;
-      return;
-    }
+    if (!storageKey || viewKey !== storageKey) return;
     // Storage unavailable: the view simply isn't remembered.
     orgChartViews.setJSON(storageKey, { collapsed: collapsedKey ? collapsedKey.split("|") : [], minimap: showMinimap });
-  }, [storageKey, collapsedKey, showMinimap]);
+  }, [storageKey, viewKey, collapsedKey, showMinimap]);
 
   const layout = layoutOrgForest(roots, {
     ...DEFAULT_ORG_CHART_LAYOUT,
@@ -345,12 +340,6 @@ export function OrgChart<T>({
     centerOn(n.x + cardWidth / 2, n.y + cardHeight / 2, Math.max(view.zoom, 0.8));
   }, [byKey, centerOn, cardWidth, cardHeight, view.zoom]);
 
-  // A new highlight starts at its first card.
-  const highlightLabel = highlight?.label ?? null;
-  useEffect(() => {
-    if (highlightLabel) setMatchIndex(0);
-  }, [highlightLabel]);
-
   const worldRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
   const download = async (format: ChartExportFormat) => {
@@ -386,15 +375,26 @@ export function OrgChart<T>({
       return next;
     });
 
-  // Deep link / outside request: reveal, select and center a card.
-  const lastFocus = useRef<string | null>(null);
+  // Deep link / outside request: reveal during render (own state), then select and
+  // center once. Waits for the remembered view so it is not overwritten by it.
+  const [focusedKey, setFocusedKey] = useState<string | null>(null);
+  if (focusKey && focusedKey !== focusKey && viewLoaded) {
+    const path = ancestorKeys(roots, focusKey);
+    if (path) {
+      // not in the chart (yet) otherwise — try again when it loads
+      setFocusedKey(focusKey);
+      if (path.some((k) => collapsed.has(k))) {
+        const next = new Set(collapsed);
+        path.forEach((k) => next.delete(k));
+        setCollapsed(next);
+      }
+    }
+  }
   useEffect(() => {
-    if (!focusKey || lastFocus.current === focusKey) return;
-    if (!ancestorKeys(roots, focusKey)) return; // not in the chart (yet) — try again when it loads
-    lastFocus.current = focusKey;
-    pendingFocus.current = focusKey;
-    reveal(focusKey);
-  });
+    if (!focusedKey) return;
+    pendingFocus.current = focusedKey;
+    onSelect(focusedKey);
+  }, [focusedKey]);
 
   /** Keep the keyboard's card on screen. */
   const ensureVisible = (key: string) => {
@@ -457,6 +457,8 @@ export function OrgChart<T>({
   const ignoreCancel = useRef(false);
   /** Detaches a press's window listeners; run on unmount so a mid-drag unmount leaves none behind. */
   const stopDrag = useRef<(() => void) | null>(null);
+  /** The drag as the pointer handlers see it (state is for rendering only). */
+  const liveDrag = useRef<typeof drag>(null);
   useEffect(
     () => () => {
       stopDrag.current?.();
@@ -464,8 +466,6 @@ export function OrgChart<T>({
     },
     [],
   );
-  /** The drag as the pointer handlers see it (state is for rendering only). */
-  const liveDrag = useRef<typeof drag>(null);
 
   /**
    * What a release at this point means. Only open canvas inside the chart is a
@@ -695,8 +695,9 @@ export function OrgChart<T>({
       const from = visibleEnd(l.fromKey);
       const to = visibleEnd(l.toKey);
       if (!from || !to || from === to) return null;
-      const a = byKey.get(from)!;
-      const b = byKey.get(to)!;
+      const a = byKey.get(from);
+      const b = byKey.get(to);
+      if (!a || !b) return null;
       return { ...l, d: crossLinkPath(a, b, cardWidth, cardHeight), from, to };
     })
     .filter((l): l is NonNullable<typeof l> => l !== null);
@@ -846,42 +847,32 @@ export function OrgChart<T>({
                   />
                 )}
                 {onAddBelow && !drag && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
+                    icon={<Plus />}
                     onClick={() => onAddBelow(n.key)}
                     title="Add below"
                     aria-label="Add below"
                     className={cn(
-                      "absolute top-full z-10 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-muted-foreground opacity-0 shadow-sm transition-opacity hover:border-foreground/30 hover:text-foreground group-hover/oc:opacity-100 focus-visible:opacity-100",
+                      "absolute top-full z-10 -translate-y-1/2 opacity-0 transition-opacity group-hover/oc:opacity-100 focus-visible:opacity-100",
                       n.childCount > 0 ? "left-[calc(50%+1.75rem)]" : "left-1/2 -translate-x-1/2",
                       selected && "opacity-100",
                     )}
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
+                  />
                 )}
                 {n.childCount > 0 && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
+                    icon={n.collapsed ? <ChevronDown /> : <ChevronUp />}
                     onClick={() => toggle(n.key)}
                     title={n.collapsed ? `Show ${n.descendantCount} below` : "Collapse"}
                     aria-label={n.collapsed ? `Show ${n.descendantCount} below` : "Collapse"}
                     aria-expanded={!n.collapsed}
-                    className={cn(
-                      "absolute left-1/2 top-full z-10 flex h-6 -translate-x-1/2 -translate-y-1/2 items-center gap-0.5 rounded-full border border-border bg-card px-2 text-[11px] font-semibold text-muted-foreground shadow-sm transition-colors hover:border-foreground/30 hover:text-foreground",
-                      n.collapsed && "text-foreground",
-                    )}
+                    className="absolute left-1/2 top-full z-10 -translate-x-1/2 -translate-y-1/2"
                   >
-                    {n.collapsed ? (
-                      <>
-                        <ChevronDown className="h-3 w-3" />
-                        {/* read-gate-exempt: descendant count computed from the chart already on screen */}
-                        {n.descendantCount}
-                      </>
-                    ) : (
-                      <ChevronUp className="h-3 w-3" />
-                    )}
-                  </button>
+                    {/* read-gate-exempt: descendant count computed from the chart already on screen */}
+                    {n.collapsed ? n.descendantCount : undefined}
+                  </Button>
                 )}
               </div>
             );
