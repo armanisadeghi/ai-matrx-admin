@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PrimitiveTile } from "@ai-matrx/icons/domain";
 import { AlertCircle } from "lucide-react";
 import {
   MetricNavigation,
@@ -40,14 +41,19 @@ function FeaturedCard({
       data-look-surface="card"
       className="group flex flex-col rounded-2xl border border-border bg-card p-4 transition-colors hover:border-foreground/20 hover:bg-accent/40"
     >
-      <span
-        data-look-surface="icon"
-        className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-xl",
-          chipClass(cfg.color),
+      <span data-look-surface="icon" className="flex h-9 w-9 items-center justify-center">
+        {cfg.identity ? (
+          <PrimitiveTile primitive={cfg.identity} size="lg" style={{ width: 36, height: 36, borderRadius: 12 }} />
+        ) : (
+          <span
+            className={cn(
+              "flex h-9 w-9 items-center justify-center rounded-xl",
+              chipClass(cfg.color),
+            )}
+          >
+            <ShellIcon name={cfg.iconName} size={18} strokeWidth={2} />
+          </span>
         )}
-      >
-        <ShellIcon name={cfg.iconName} size={18} strokeWidth={2} />
       </span>
       <div className="mt-3">
         {loading ? (

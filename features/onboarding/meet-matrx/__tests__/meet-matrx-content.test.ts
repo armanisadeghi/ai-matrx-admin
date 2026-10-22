@@ -53,7 +53,7 @@ describe("Meet Matrx", () => {
   it("Knowledge is the one hero card, and shows its real breadth ending at who draws on it", () => {
     const featured = items.filter((i) => i.featured);
     expect(featured.map((i) => i.name)).toEqual(["Knowledge"]);
-    expect(featured[0].flow).toEqual(["Notes", "Documents", "Chats", "Web pages", "Sheets", "Research", "Tasks", "People"]);
+    expect(featured[0].flow).toEqual(["Notes", "Docs", "Chats", "Web pages", "Sheets", "Research", "Tasks", "People"]);
     expect(featured[0].flowTo).toBe("Every agent");
   });
 

@@ -31,9 +31,9 @@ describe("Use existing kinds", () => {
   it("are the registry's pickable kinds in the registry's order, Documents as one entry", () => {
     const kinds = offeredKindsFrom(sourceInputEntries(LIVE));
     expect(kinds.map((k) => k.plural)).toEqual([
-      "Files", "Notes", "Documents", "Websites", "Transcripts", "Conversations", "Tables", "Workbooks", "Saved results",
+      "Files", "Notes", "Docs", "Websites", "Transcripts", "Conversations", "Tables", "Sheets", "Saved results",
     ]);
-    const docs = kinds.find((k) => k.plural === "Documents")!;
+    const docs = kinds.find((k) => k.plural === "Docs")!;
     expect(docs.tokens).toEqual(["document", "udt_document"]);
   });
 

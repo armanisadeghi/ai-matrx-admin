@@ -78,7 +78,7 @@ export interface OfferedKind {
   token: string;
   /** Every inventory token this entry counts and lists (Documents = two); empty for own-reader kinds. */
   tokens: string[];
-  /** The entry's name ("Files", "Documents"…). */
+  /** The entry's name ("Files", "Docs"…). */
   plural: string;
   Icon: ComponentType<{ className?: string }>;
   /** Set when the kind is listed from the person's saved Sources (Websites). */
