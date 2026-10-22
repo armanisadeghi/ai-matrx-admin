@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "@/components/navigation/AppLink";
-import { ExternalLink, X } from "lucide-react";
+import { ExternalLink, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import {
   Badge,
   Button,
@@ -15,6 +15,7 @@ import { conversationHref } from "@/features/hindsight/subject-doors";
 import { TestCaseInputs } from "@/features/agents/components/samples/TestCaseInputs";
 import type { AgentVariableDeclaration } from "@/features/agents/samples/service";
 import { fetchJudgeVerdict } from "../service";
+import { agreeWithJudge } from "../agreement";
 import {
   OUTCOME_META,
   OUTCOME_STATUS_LABEL,
@@ -102,11 +103,55 @@ function JudgeOutcomeRows({ judge }: { judge: OutcomeJudgeView }) {
   );
 }
 
+/** Agree / Disagree with the judge: one click, stored on the server, attributed to the person. */
+function JudgeAgreement({ resultId, agreed }: { resultId: string; agreed: boolean | null }) {
+  const [value, setValue] = useState<boolean | null>(agreed);
+  const [saving, setSaving] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState<string | null>(null);
+  const answer = async (agree: boolean) => {
+    setSaving(agree);
+    setFailed(null);
+    try {
+      setValue(await agreeWithJudge(resultId, agree));
+    } catch (error: unknown) {
+      setFailed(error instanceof Error ? error.message : String(error));
+    } finally {
+      setSaving(null);
+    }
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="type-label">Your call</span>
+      <Button
+        variant={value === true ? "outline" : "quiet"}
+        icon={<ThumbsUp />}
+        aria-pressed={value === true}
+        disabled={saving !== null}
+        onClick={() => void answer(true)}
+      >
+        {saving === true ? "Saving…" : "Agree"}
+      </Button>
+      <Button
+        variant={value === false ? "outline" : "quiet"}
+        icon={<ThumbsDown />}
+        aria-pressed={value === false}
+        disabled={saving !== null}
+        onClick={() => void answer(false)}
+      >
+        {saving === false ? "Saving…" : "Disagree"}
+      </Button>
+      {failed ? <span className="text-destructive type-meta">{failed}</span> : null}
+    </div>
+  );
+}
+
 function JudgeSection({
   id,
+  resultId,
   outcome,
 }: {
   id: string | null;
+  resultId: string;
   outcome: OutcomeJudgeView | null;
 }) {
   const [judge, setJudge] = useState<JudgeVerdictView | null | undefined>(
@@ -165,6 +210,7 @@ function JudgeSection({
         value={judge.reasoning}
         missing={judge.reasoning ? undefined : "None given"}
       />
+      {judge.verdict ? <JudgeAgreement resultId={resultId} agreed={judge.agreed} /> : null}
     </>
   );
 }
@@ -328,6 +374,7 @@ export function ResultDetail({
         {result.judgeVerdictId || result.outcome?.judge ? (
           <JudgeSection
             id={result.judgeVerdictId}
+            resultId={result.id}
             outcome={result.outcome?.judge ?? null}
           />
         ) : null}

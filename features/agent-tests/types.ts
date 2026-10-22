@@ -205,6 +205,8 @@ export interface JudgeVerdictView {
   reasoning: string | null;
   confidence: number | null;
   model: string | null;
+  /** A person's Agree (true) / Disagree (false) on this verdict; null until someone answers. */
+  agreed: boolean | null;
 }
 
 /** POST /agent-tests/runs body (CONTRACT §4.1). */
