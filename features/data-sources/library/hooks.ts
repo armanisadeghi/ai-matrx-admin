@@ -43,10 +43,19 @@ export function usePriceText() {
 
 /** One labelled `CostDoor` row for `n` records of a source: its own points price, else its USD price (the door converts). */
 export function sourceCostRow(
-  source: Pick<LibrarySource, "pointsPerRecord" | "usd_per_record">,
+  source: Pick<LibrarySource, "pointsPerRecord" | "usd_per_record"> & Partial<Pick<LibrarySource, "recordsPerSearch" | "pointsPerSearch">>,
   n: number,
   label: string,
 ): CostDoorRow {
+  // Billed per search (a switched provider): ceil(records / per search) searches, so the estimate equals the bill.
+  if (source.recordsPerSearch && source.pointsPerSearch != null && n > 0) {
+    const searches = Math.ceil(n / source.recordsPerSearch);
+    return {
+      label,
+      points: searches * source.pointsPerSearch,
+      usd: source.usd_per_record != null ? searches * source.usd_per_record * source.recordsPerSearch : undefined,
+    };
+  }
   const own = source.pointsPerRecord != null && source.pointsPerRecord >= 0 ? Math.ceil(Number((source.pointsPerRecord * n).toFixed(6))) : undefined;
   return { label, points: own, usd: source.usd_per_record != null ? source.usd_per_record * n : undefined };
 }

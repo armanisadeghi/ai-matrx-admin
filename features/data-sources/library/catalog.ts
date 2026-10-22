@@ -30,6 +30,13 @@ export interface LibrarySource extends DataSource {
    * unpriced source falls back to). A flat default says nothing about THIS source, so a browse card never shows it.
    */
   ownPrice?: boolean;
+  /**
+   * Set when searches by filters are billed per search (a switched provider): the records one search
+   * brings and the points one search costs. The price of a fetch is ceil(records / recordsPerSearch) x
+   * pointsPerSearch, so the quote equals the bill; `pointsPerRecord` stays for older screens.
+   */
+  recordsPerSearch?: number | null;
+  pointsPerSearch?: number | null;
 }
 
 export interface LibraryGroup {
@@ -165,6 +172,8 @@ export function parseLibrary(raw: unknown): Library {
       pointsPerRecord: price.points,
       ownPrice: hasOwnPrice(s, o),
       search_filters: searchFiltersOf(s.search_filters),
+      recordsPerSearch: (num(s.records_per_search) ?? 0) > 0 ? num(s.records_per_search) : null,
+      pointsPerSearch: num(s.points_per_search),
     });
   }
   // No featured flags from the server yet: the confirmed sources are the shelf.

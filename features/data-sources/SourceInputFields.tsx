@@ -18,6 +18,7 @@ import { inputFieldsFor, searchOptions, type DataSource, type DataSourceField } 
 import { countryName, countryOptions, defaultCountry, plainField, plainOption } from "./inputWords";
 import { NameFinder } from "./NameFinder";
 import { nameFinderFor } from "./nameFinders";
+import { SearchFilters } from "./SearchFilters";
 
 export type InputMode = "link" | "search";
 
@@ -198,6 +199,9 @@ export function SourceInputFields({
           <FieldBox key={f.name} f={f} sourceKey={source.key} values={values} onValues={searchValues} onBlur={onBlur} placeholder={plain.placeholder ?? ""} homeCountry={homeCountry} countries={countries} voice />
         );
       })}
+      {current.mode === "search" && !usingTechnical && primaryFields.length > 0 && (
+        <SearchFilters source={source} values={values} onValues={searchValues} />
+      )}
       {linkIsPrimary && linkField && box(linkField, linkPlaceholder, false)}
       {hasAdvanced && (
         <div className="flex flex-col gap-3" data-advanced={advanced ? "open" : "closed"}>

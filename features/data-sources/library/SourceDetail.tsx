@@ -70,6 +70,17 @@ export function refillFromInputs(
   return { values, option };
 }
 
+/** A sentence the plain-language box read: the form opens filled with it, and runs when `run` is set. */
+export interface SourceAsk {
+  /** A new ask has a new nonce, so the form opens fresh for it. */
+  nonce: number;
+  values: Record<string, string>;
+  option: string | null;
+  run: boolean;
+  /** What the person said that this source cannot apply (said, never silently dropped). */
+  unapplied: string[];
+}
+
 export interface SourceDetailProps {
   sourceKey: string;
   initialValues?: Record<string, string>;
@@ -79,10 +90,12 @@ export interface SourceDetailProps {
   onJob?: (jobId: string | null, opts?: { replace?: boolean }) => void;
   /** Reopen a past run of another source (a task's list) — the page moves to that source. */
   onOpenRun?: (run: { id: string; sourceKey: string }) => void;
+  /** The plain-language box's reading for this source, if that is how it was opened. */
+  ask?: SourceAsk;
 }
 
 /** The source on the page: reads the library (cached) and shows the one source. */
-export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun }: SourceDetailProps) {
+export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, onOpenRun, ask }: SourceDetailProps) {
   const organizationId = useLibraryOrganizationId();
   const library = useLibrary(organizationId);
   if (library.isLoading) {
@@ -125,6 +138,7 @@ export function SourceDetail({ sourceKey, initialValues, jobId = null, onJob, on
       onJob={onJob ?? (() => {})}
       onOpenRun={onOpenRun}
       labelOf={labelOf}
+      ask={ask}
     />
   );
 }
@@ -138,6 +152,7 @@ function SourceRun({
   onJob,
   onOpenRun,
   labelOf,
+  ask,
 }: {
   source: LibrarySource;
   library: Library;
@@ -147,6 +162,7 @@ function SourceRun({
   onJob: NonNullable<SourceDetailProps["onJob"]>;
   onOpenRun?: SourceDetailProps["onOpenRun"];
   labelOf: (key: string) => string;
+  ask?: SourceAsk;
 }) {
   const key = libraryRunKey(source.key);
   const run = useRun(key);
@@ -205,12 +221,14 @@ function SourceRun({
   return (
     <div className="flex flex-col gap-6">
       <SourceForm
-        key={refill ? `run:${jobId}` : "new"}
+        key={refill ? `run:${jobId}` : ask ? `ask:${ask.nonce}` : "new"}
         source={source}
         library={library}
         organizationId={organizationId}
-        initialValues={refill?.values ?? initialValues}
-        initialOption={refill?.option ?? null}
+        initialValues={refill?.values ?? ask?.values ?? initialValues}
+        initialOption={refill?.option ?? ask?.option ?? null}
+        unapplied={refill ? [] : (ask?.unapplied ?? [])}
+        autoRun={!refill && ask?.run === true}
         busy={run.status === "running"}
         onFetch={(input, count) => {
           if (runState(key).status === "running") return;
@@ -312,6 +330,8 @@ function SourceForm({
   organizationId,
   initialValues,
   initialOption = null,
+  unapplied = [],
+  autoRun = false,
   busy,
   onFetch,
 }: {
@@ -321,6 +341,10 @@ function SourceForm({
   initialValues?: Record<string, string>;
   /** The search option a refilled run used (null = by link). */
   initialOption?: string | null;
+  /** What the person said that this source cannot apply. */
+  unapplied?: string[];
+  /** Run once as soon as the form holds a complete ask (the plain-language box). */
+  autoRun?: boolean;
   /** A run of this source is going: Get data waits for it. */
   busy: boolean;
   onFetch: (
@@ -344,6 +368,16 @@ function SourceForm({
   const settingHref = limit
     ? limitSettingHref(organizationId, limit.setting)
     : null;
+
+  // The plain-language box runs the ask once, after the inputs below have settled their own defaults.
+  const [settled, setSettled] = useState(false);
+  const autoRan = useRef(false);
+  useEffect(() => setSettled(true), []);
+  useEffect(() => {
+    if (!autoRun || !settled || autoRan.current || busy || !built.input) return;
+    autoRan.current = true;
+    onFetch(built.input, count);
+  });
 
   return (
     <form
@@ -389,6 +423,12 @@ function SourceForm({
       >
         <WhatYouGet sourceKey={source.key} fields={source.outputFields} />
       </Section>
+
+      {unapplied.length > 0 && (
+        <p className="-mt-2 text-xs text-muted-foreground" data-ask-unapplied="">
+          Not used for this source: {unapplied.join(", ")}
+        </p>
+      )}
 
       <Section title="What to enter">
         <SourceInputFields
