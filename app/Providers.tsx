@@ -131,8 +131,6 @@ import { MediaHostProvider } from "@/features/files/media-client/MediaHostProvid
 import { ConfirmDialogHost } from "@/components/dialogs/confirm/ConfirmDialogHost";
 // THE imperative dialog hosts (file pickers, upload guard, manual copy, sandbox gate, value
 // prompts, bulk Move/Share, scope mismatch, can't-remove, conversation rename) — ONE edge,
-// loaded on first engagement. See components/dialogs/host/DialogHosts.tsx.
-import { DialogHosts } from "@/components/dialogs/host/DialogHosts";
 // ONE auth sync for the whole app (authed session + guest fingerprint).
 // Guests are first-class users — without this mount their backend calls go
 // out with no X-Fingerprint-ID header and the server can't identify them.
@@ -239,7 +237,6 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                   See components/dialogs/confirm/. */}
                                           <ConfirmDialogHost />
                                           <ComingSoonClient />
-                                          <DialogHosts />
                                           {/* Agent quick-look host. `openAgentPeek(id)`
                                   from anywhere opens the canonical
                                   AgentPeekWindow; it is what fills the ONE

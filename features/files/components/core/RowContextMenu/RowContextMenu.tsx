@@ -73,7 +73,7 @@ import { useFileActions } from "@/features/files/components/core/FileActions/use
 import { useFolderActions } from "@/features/files/components/core/FileActions/useFolderActions";
 import { ShareLinkDialog } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
-import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { openFolderPicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { requestRename } from "@/features/files/components/core/RenameDialog/RenameHost";
 import {
   setClipboard,

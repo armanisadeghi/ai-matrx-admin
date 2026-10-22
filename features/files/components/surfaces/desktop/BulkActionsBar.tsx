@@ -53,7 +53,7 @@ import {
   updateFileMetadata,
   updateFolder as updateFolderThunk,
 } from "@/features/files/redux/thunks";
-import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { openFolderPicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { ingestFile } from "@/features/rag/api/ingest";
 import { clearFileDocumentCache } from "@/features/files/api/document-lookup";
 import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";

@@ -1,20 +1,29 @@
 import { parseResult, type ComparisonResult } from "../contract";
 import { attributeGrid, contactOf, hasSideBySide, hoursToday, openNow, reviewsOf, starShares, statusOf, weekOf } from "../place-facts";
 
-const at = (h: number, m = 0) => new Date(2026, 9, 23, h, m); // a Friday
+// 2026-10-23 17:00 UTC is a Friday: 10:00 in Los Angeles, 02:00 Saturday in Tokyo
+const NOW = new Date(Date.UTC(2026, 9, 23, 17, 0));
+const LA = "America/Los_Angeles";
 
-describe("hours today and open now", () => {
-  const week = weekOf({ Friday: "9 am–6 pm", Monday: "9 am–6 pm", Sunday: "Closed" })!;
-  it("today's line comes first, by the day", () => {
-    expect(hoursToday(week, at(10))).toEqual({ day: "Friday", text: "9 am–6 pm" });
-    expect(week[0][0]).toBe("Sunday");
+describe("hours today and open now, on the business's own clock", () => {
+  const week = weekOf({ days: { Friday: "9 am–6 pm", Monday: "9 am–6 pm", Sunday: "Closed", Saturday: "10 am–2 pm" }, timezone: LA })!;
+  it("today's line is the business's day, not the viewer's", () => {
+    expect(hoursToday(week, NOW)).toEqual({ day: "Friday", text: "9 am–6 pm" });
+    expect(hoursToday({ ...week, timezone: "Asia/Tokyo" }, NOW)?.day).toBe("Saturday");
+    expect(week.days[0][0]).toBe("Sunday");
   });
+  it("no zone means no today and no status, never a guess", () => {
+    const bare = weekOf({ days: { Friday: "9 am–6 pm" }, timezone: null })!;
+    expect(hoursToday(bare, NOW)).toBeNull();
+    expect(openNow("9 am–6 pm", NOW, null)).toBeNull();
+  });
+  const t = (h: number, m = 0) => new Date(Date.UTC(2026, 9, 23, h + 7, m)); // LA wall clock (PDT, UTC-7)
   it.each([
-    ["9 am–6 pm", at(10), true], ["9 am–6 pm", at(19), false], ["Closed", at(10), false],
-    ["Open 24 hours", at(3), true], ["9 am–12 pm, 2–6 pm", at(13), false], ["9 am–12 pm, 2–6 pm", at(15), true],
-    ["9–5 pm", at(10), true], ["6 pm–2 am", at(1), true],
-  ])("%s at %s -> %s", (text, now, want) => expect(openNow(text, now)).toBe(want));
-  it("says nothing for text it cannot read", () => expect(openNow("By appointment", at(10))).toBeNull());
+    ["9 am–6 pm", t(10), true], ["9 am–6 pm", t(19), false], ["Closed", t(10), false],
+    ["Open 24 hours", t(3), true], ["9 am–12 pm, 2–6 pm", t(13), false], ["9 am–12 pm, 2–6 pm", t(15), true],
+    ["9–5 pm", t(10), true], ["6 pm–2 am", t(1), true],
+  ])("%s -> %s", (text, now, want) => expect(openNow(text, now, LA)).toBe(want));
+  it("says nothing for text it cannot read", () => expect(openNow("By appointment", t(10), LA)).toBeNull());
 });
 
 describe("star counts", () => {

@@ -15,7 +15,6 @@
 // sheet definition. The worker is `features/files/cache/service-worker/src/sw.ts`; never a second one.
 
 import { useEffect } from "react";
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
 import { registerBlobCacheServiceWorker } from "@/features/files/cache/register-service-worker";
 import { resolveBaseUrl } from "@/lib/python-client";
 import { useRecordsDataSource, type RecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
@@ -82,9 +81,6 @@ export async function keepCapturePageOffline(
 
 export function useWarmOfflineCode(userId: string | null = null, sheetId: string | null = null): void {
   const dataSource = useRecordsDataSource();
-  useEffect(() => {
-    requestDialogHosts();
-  }, []);
   useEffect(() => {
     if (!sheetId) return;
     // After the page has settled, so keeping it never competes with showing it.

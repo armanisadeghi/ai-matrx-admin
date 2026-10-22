@@ -123,6 +123,8 @@ export const APP_OVERLAYS = [
   d.sandboxGateDialogOverlay,
   d.valuePromptsDialogOverlay,
   d.conversationRenameDialogOverlay,
+  d.uploadGuardDialogOverlay,
+  d.cloudFilesPickerOverlay,
   d.scopeMismatchDialogOverlay,
   d.cantRemoveDialogOverlay,
   d.homePickerDialogOverlay,

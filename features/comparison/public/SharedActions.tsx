@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Link2, RefreshCw } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
+import { copyText } from "@ai-matrx/kit/clipboard";
 
 import { toast } from "@/lib/toast";
 import { useComparisonOrganizationId } from "../hooks";
@@ -19,12 +20,10 @@ import { ComparisonRefusal, type ComparisonItemInput } from "../contract";
 export function CopyLinkButton({ path }: { path: string }) {
   const [copied, setCopied] = useState(false);
   async function copy() {
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}${path}`);
+    // the kit door owns the write and the failure message
+    if (await copyText(`${window.location.origin}${path}`, { failureMessage: "Could not copy the link" })) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1800);
-    } catch {
-      toast.error("Could not copy the link");
     }
   }
   return (

@@ -41,6 +41,7 @@ import { AdminUserRef } from "@/features/admin/users/components/AdminUserRef";
 import { USERS_ADMIN_LOCATION } from "@/features/admin/users/constants";
 import type {
   AdminOrganizationDirectory,
+  AdminOrganizationKind,
   AdminOrganizationMembershipRow,
   AdminOrganizationRow,
   AdminUserRow,
@@ -87,6 +88,13 @@ interface MemberDisplayRow extends AdminOrganizationMembershipRow {
 
 const ROLE_OPTIONS: OrgRole[] = ["owner", "admin", "member"];
 
+const KIND_LABEL: Record<AdminOrganizationKind, string> = {
+  real: "Real",
+  guests: "Guests",
+  tests: "Tests",
+  empty: "Empty",
+};
+
 export function OrganizationsAdminClient() {
   const { askReason, reasonDialog } = useReasonPrompt();
   const router = useRouter();
@@ -98,7 +106,8 @@ export function OrganizationsAdminClient() {
   // Plan allowances matrix links here for Enterprise's custom values).
   const planAudienceFilter = searchParams.get("plan");
 
-  const [showGuestWorkspaces, setShowGuestWorkspaces] = useState(false);
+  // How many organizations the table's Kind filter leaves in view (the table reports its filtered rows).
+  const [shownCount, setShownCount] = useState<number | null>(null);
   const [directory, setDirectory] = useState<AdminOrganizationDirectory | null>(
     null,
   );
@@ -202,13 +211,6 @@ export function OrganizationsAdminClient() {
       .filter((membership) => membership.user_id === focusedUserId)
       .map((membership) => membership.organization_id),
   );
-  // A guest (anonymous visitor) owns an auto-created workspace. Those are
-  // hidden unless the admin asks for them, or is looking at that very guest.
-  const guestUserIds = new Set(
-    users.filter((user) => user.is_anonymous).map((user) => user.id),
-  );
-  const isGuestWorkspace = (organization: AdminOrganizationRow): boolean =>
-    organization.created_by !== null && guestUserIds.has(organization.created_by);
   const orgPlanAudience = (organizationId: string): string | null => {
     const planId = orgPlans.get(organizationId)?.plan_id;
     return planId ? (planByKey.get(planId)?.audience ?? null) : (defaultPlan?.audience ?? null);
@@ -216,9 +218,24 @@ export function OrganizationsAdminClient() {
   const visibleOrganizations = (directory?.organizations ?? []).filter(
     (organization) =>
       (!planAudienceFilter || orgPlanAudience(organization.id) === planAudienceFilter) &&
-      (!focusedUserId || membershipOrganizationIds.has(organization.id)) &&
-      (showGuestWorkspaces || Boolean(focusedUserId) || !isGuestWorkspace(organization)),
+      (!focusedUserId || membershipOrganizationIds.has(organization.id)),
   );
+
+  const hiddenByFilter =
+    shownCount === null ? 0 : Math.max(0, visibleOrganizations.length - shownCount);
+  // The Kind filter opens on the admin default (knob admin_organizations.default_kind). Not when the
+  // admin arrived for one person's organizations or one organization (?user= / ?org=): those show all.
+  const openingKind = directory?.defaultKind ?? "all";
+  const initialKindFilter =
+    openingKind === "all" || focusedUserId || requestedOrganizationId
+      ? undefined
+      : {
+          kind: {
+            kind: "select" as const,
+            value: KIND_LABEL[openingKind],
+            values: [KIND_LABEL[openingKind]],
+          },
+        };
 
   // The organization shown is the one the admin PICKED — from the URL (`?org=`)
   // or by opening a row in the table beside this panel. Nothing pre-picks the
@@ -427,6 +444,16 @@ export function OrganizationsAdminClient() {
       cell: (organization) =>
         organization.is_system ? <Badge variant="outline">System</Badge> : null,
       width: 90,
+    },
+    {
+      // Who is in it (iam.organization_kind). One-at-a-time filter; the opening value is the
+      // admin_organizations.default_kind knob. Clearing it shows every kind.
+      id: "kind",
+      header: "Kind",
+      accessorFn: (organization) => KIND_LABEL[organization.kind],
+      filter: "select",
+      filterSingle: true,
+      width: 80,
     },
     {
       id: "plan",
@@ -682,25 +709,20 @@ export function OrganizationsAdminClient() {
               <p className="text-xs text-muted-foreground">
                 <UntrustedCount
                   read={directoryRead}
-                  label="Visible organizations"
-                  value={visibleOrganizations.length}
+                  label="Shown organizations"
+                  value={shownCount ?? visibleOrganizations.length}
                 />{" "}
-                visible of{" "}
+                shown
+                {directory && hiddenByFilter > 0 ? ` · ${hiddenByFilter} hidden by filter` : ""}
+                {" · "}
                 <UntrustedCount
                   read={directoryRead}
                   label="Organizations"
                   value={directory?.organizations.length ?? 0}
-                />
+                />{" "}
+                total
               </p>
             </div>
-            <Button
-              variant={showGuestWorkspaces ? "outline" : "outline"}
-              aria-pressed={showGuestWorkspaces}
-              title="Show guest workspaces"
-              onClick={() => setShowGuestWorkspaces((on) => !on)}
-            >
-              Guests
-            </Button>
             <Button
               icon={loading ? (
                 <Loader2 className="animate-spin" />
@@ -763,7 +785,10 @@ export function OrganizationsAdminClient() {
               ]}
             >
             <MatrxDataTable
+              key={directory ? "ready" : "loading"}
               urlState={{ id: "organizations", selectedRow: false }}
+              {...(initialKindFilter ? { initialColumnFilters: initialKindFilter } : {})}
+              onViewChange={(rows) => setShownCount(rows.length)}
               data={visibleOrganizations}
               columns={organizationColumns}
               getRowId={(organization) => organization.id}

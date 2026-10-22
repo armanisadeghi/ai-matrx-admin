@@ -1,3 +1,2 @@
 /** Moved into @ai-matrx/chat (package-local); this path stays as a shim for app importers. */
 export * from "@ai-matrx/chat/ui/valuePromptsOpener";
-import "@/features/overlays/chatDialogPorts"; // chat asks the app's summon overlay through its port

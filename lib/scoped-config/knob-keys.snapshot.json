@@ -904,7 +904,6 @@
 ["agents.live_plan","enabled"],
 ["agents.live_plan","max_steps"],
 ["agents.live_plan","nudge_after_tool_calls"],
-["agents.matrix_battle","cell_concurrency"],
 ["agents.matrix_battle","cell_max_attempts"],
 ["agents.memory","context_instructions"],
 ["agents.memory","context_preamble"],

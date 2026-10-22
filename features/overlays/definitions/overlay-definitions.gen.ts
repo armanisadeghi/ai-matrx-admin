@@ -61,6 +61,7 @@ export { characterCounterWindowOverlay } from "./characterCounterWindow.definiti
 export { chatDebugWindowOverlay } from "./chatDebugWindow.definition";
 export { clipboardFallbackDialogOverlay } from "./clipboardFallbackDialog.definition";
 export { cloudBrowserWindowOverlay } from "./cloudBrowserWindow.definition";
+export { cloudFilesPickerOverlay } from "./cloudFilesPicker.definition";
 export { cloudFilesWindowOverlay } from "./cloudFilesWindow.definition";
 export { codeEditorWindowOverlay } from "./codeEditorWindow.definition";
 export { codeFileManagerWindowOverlay } from "./codeFileManagerWindow.definition";
@@ -228,6 +229,7 @@ export { topicalMapTopicPanelOverlay } from "./topicalMapTopicPanel.definition";
 export { topicalMapWindowOverlay } from "./topicalMapWindow.definition";
 export { transcriptStudioWindowOverlay } from "./transcriptStudioWindow.definition";
 export { transcriptionCleanupOverlay } from "./transcriptionCleanup.definition";
+export { uploadGuardDialogOverlay } from "./uploadGuardDialog.definition";
 export { userPreferencesOverlay } from "./userPreferences.definition";
 export { userPreferencesWindowOverlay } from "./userPreferencesWindow.definition";
 export { userSearchWindowOverlay } from "./userSearchWindow.definition";

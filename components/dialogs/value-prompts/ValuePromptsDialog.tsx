@@ -1,8 +1,8 @@
 /**
  * components/dialogs/value-prompts/ValuePromptsDialog.tsx — THE value-prompts dialog body (the app's writing
  * boxes: ProInput for one value, ProTextarea for several). Rendered as the summon overlay
- * `valuePromptsDialog` (definitions/valuePromptsDialog.render.tsx); chat's `promptForValues` reaches it through
- * the dialog request port the app registers (features/overlays/chatDialogPorts.ts). Submit answers
+ * `valuePromptsDialog` (definitions/valuePromptsDialog.render.tsx); chat's `promptForValues` opens it through its windows
+ * port (CHAT_WINDOWS.valuePromptsDialog) and awaits summon's requestOverlay; the app renders its own body, not chat's. Submit answers
  * `{ name: answer }`; dismiss answers `null` — blocked while any field is `required`.
  */
 
@@ -35,7 +35,7 @@ function initialAnswers(req: ValuePromptsRequest): Record<string, string> {
   return out;
 }
 
-/** The `valuePromptsDialog` overlay's render: answers the request chat's opener filed through the app's port. */
+/** The `valuePromptsDialog` overlay's render: answers the request chat's `promptForValues` filed. */
 export default function ValuePromptsDialogRender({ data, close }: OverlayRenderProps) {
   const { request, settle } = useOverlayRequest<ValuePromptsRequest, ValuePromptsAnswers>(data, close);
   return request ? <ValuePromptsDialog request={request} settle={settle} /> : null;

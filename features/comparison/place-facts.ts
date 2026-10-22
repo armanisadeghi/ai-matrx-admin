@@ -38,18 +38,36 @@ export function starShares(value: unknown): StarShares | null {
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-export function weekOf(value: unknown): [string, string][] | null {
+export interface Week { days: [string, string][]; timezone: string | null }
+
+/** The week and the business's own IANA zone. Accepts the bare {day: text} an earlier run sent (no zone). */
+export function weekOf(value: unknown): Week | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const rows = Object.entries(value as Record<string, unknown>).filter(([, v]) => typeof v === "string") as [string, string][];
-  if (!rows.length) return null;
-  return rows.sort((a, b) => DAYS.indexOf(a[0]) - DAYS.indexOf(b[0]) || 0);
+  const o = value as Record<string, unknown>;
+  const raw = o.days && typeof o.days === "object" ? (o.days as Record<string, unknown>) : o;
+  const days = Object.entries(raw).filter(([, v]) => typeof v === "string") as [string, string][];
+  if (!days.length) return null;
+  const tz = typeof o.timezone === "string" && o.timezone ? o.timezone : null;
+  return { days: days.sort((a, b) => DAYS.indexOf(a[0]) - DAYS.indexOf(b[0])), timezone: tz };
 }
 
-/** Today's line from the week, by the viewer's clock ("Friday", "9 am–6 pm"); null when the week has no such day. */
-export function hoursToday(week: [string, string][], now: Date): { day: string; text: string } | null {
-  const day = DAYS[now.getDay()];
-  const hit = week.find(([d]) => d.toLowerCase() === day.toLowerCase());
-  return hit ? { day, text: hit[1] } : null;
+/** The weekday and minutes-of-day on the business's wall clock; null without a zone (no guess) or if the zone is unknown. */
+export function clockIn(now: Date, timezone: string | null): { day: string; at: number } | null {
+  if (!timezone) return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, weekday: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(now);
+    const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+    return { day: get("weekday"), at: Number(get("hour")) * 60 + Number(get("minute")) };
+  } catch {
+    return null;
+  }
+}
+
+/** Today's line by the business's own clock ("Friday", "9 am–6 pm"); null without a zone or the day. */
+export function hoursToday(week: Week, now: Date): { day: string; text: string } | null {
+  const c = clockIn(now, week.timezone);
+  const hit = c ? week.days.find(([d]) => d.toLowerCase() === c.day.toLowerCase()) : undefined;
+  return c && hit ? { day: c.day, text: hit[1] } : null;
 }
 
 function minutes(token: string, fallbackMeridiem: string | null): { m: number; mer: string | null } | null {
@@ -63,14 +81,16 @@ function minutes(token: string, fallbackMeridiem: string | null): { m: number; m
 }
 
 /**
- * Open now / Closed from a day's text ("9 am–6 pm", "9 am–12 pm, 2–6 pm", "Closed", "Open 24 hours").
+ * Open now / Closed on the business's clock, from a day's text ("9 am–6 pm", "9 am–12 pm, 2–6 pm", "Closed", "Open 24 hours").
  * null when the text is not a clean time range: we say nothing rather than guess.
  */
-export function openNow(text: string, now: Date): boolean | null {
+export function openNow(text: string, now: Date, timezone: string | null): boolean | null {
   const t = text.trim().toLowerCase();
   if (t === "closed") return false;
   if (/^open 24 hours?$/.test(t)) return true;
-  const at = now.getHours() * 60 + now.getMinutes();
+  const clock = clockIn(now, timezone);
+  if (!clock) return null;
+  const at = clock.at;
   let any = false;
   for (const part of t.split(",")) {
     const sides = part.split(/\s*(?:–|—|-|to)\s*/).map((s) => s.trim().replace(/[  ]/g, " "));
