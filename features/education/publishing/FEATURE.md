@@ -52,4 +52,8 @@ is no status column. **Writes** go only through `is_super_admin()`-gated SECURIT
 Open: grounded guide drafting waits on a requested `education.learn_doc_draft` mandate (not yet
 declared) returning strict `EduSection[]`; it stays a draft until the admin publishes.
 
+## Change Log
+
+- page-pass 2026-10-22: `/education/learn` type promotional, posture sharp after Stripe Guides; index now emits `matrx-user/education-learn` (LearnIndexSurface + learnIndexSurfaceScope, guide_library_xml bundle) and mounts its right-click menu; guide titles wrap to two lines instead of truncating; no always-"Live" pill or repeated section heading; signed-in visitors no longer get the "Start studying free" pitch; the published-list read is bounded at 8 s.
+
 Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/education/STATE.md — read it before touching this feature in ANY repo.

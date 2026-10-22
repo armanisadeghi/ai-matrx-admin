@@ -13,6 +13,8 @@ jest.mock("../bodies/LaunchpadLinkWidget", () => ({ LaunchpadLinkWidget: () => n
 jest.mock("../bodies/AppPageWidget", () => ({ AppPageWidget: () => null }));
 jest.mock("../bodies/DashboardWidget", () => ({ DashboardWidget: () => null }));
 jest.mock("../bodies/BoardItemWidget", () => ({ BoardItemWidget: () => null }));
+jest.mock("../bodies/KindWidget", () => ({ KindWidget: () => null }));
+jest.mock("../bodies/SpacePageWidget", () => ({ SpacePageWidget: () => null }));
 
 import { BOARD_SECTIONS } from "@/features/board/items/types";
 import { LAUNCHPAD_WIDGET_CATALOG, describeLaunchpadWidget } from "../catalog";
@@ -37,6 +39,11 @@ describe("launchpad widget registry", () => {
     expect(z.defaultH).toBeLessThanOrEqual(z.maxH ?? Infinity);
     expect(typeof spec.describe(spec.defaultConfig)).toBe("string");
     for (const f of spec.fields) expect(f.key).toMatch(/^[a-zA-Z]+$/);
+  });
+
+  it("never asks a person to type an id: every *Id field is a picker", () => {
+    const raw = LAUNCHPAD_WIDGET_CATALOG.flatMap((s) => s.fields.filter((f) => /Id$/.test(f.key) && !f.picker).map((f) => `${s.type}.${f.key}`));
+    expect(raw).toEqual([]);
   });
 
   it("names an unknown widget instead of dropping it", () => {

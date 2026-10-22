@@ -8,8 +8,6 @@
 import { InfoHint } from "@/components/official/InfoHint";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import AdvancedMenu from "@/components/official/AdvancedMenu";
-import { AuthGateDialog } from "@/components/dialogs/AuthGateDialog";
-import { EmailInputDialog } from "@/components/dialogs/EmailInputDialog";
 import { TableChooser } from "@/features/unified-data/hub/TableChooser";
 import { FileResourceChip } from "@/features/files/components/preview/FileResourceChip";
 import { ConnectorMark } from "@/features/connectors/ConnectorMark";
@@ -36,8 +34,6 @@ export const baseSlotImpls = {
   InfoHint,
   ErrorAlchemyMenu,
   AdvancedMenu,
-  AuthGateDialog,
-  EmailInputDialog,
   TableChooser,
   FileResourceChip,
   ConnectorMark,

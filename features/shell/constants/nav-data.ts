@@ -1189,7 +1189,8 @@ export const primaryNavItems: ShellNavItem[] = [
         id: "intelligence.mandates",
         label: "Mandates",
         href: "/mandates/list-preview",
-        iconName: "Plug",
+        iconName: "BrainCircuit",
+        color: "red",
         description: "The jobs in the app your agents and workflows do, and which one does each",
         profileMenu: true,
         dashboard: true,
@@ -1278,7 +1279,7 @@ export const primaryNavItems: ShellNavItem[] = [
     section: "primary",
     profileMenu: true,
     dashboard: true,
-    description: "Everything you and your agents remember, searchable",
+    description: "What you and your agents remember",
     color: "amber",
     children: [
       {

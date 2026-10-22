@@ -27,15 +27,16 @@ import type {
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
+import {
+  CONVERSATION_LIST_GROUPS,
+  CONVERSATION_LIST_VALUES,
+  CONVERSATION_LIST_WRITE_TARGETS,
+} from "./_ai-work-conversation-list.manifest";
+
+export const AI_WORK_CONVERSATIONS_SURFACE_NAME = "matrx-user/ai-work-conversations";
 
 const groups: SurfaceValueGroup[] = [
-  {
-    key: "listing",
-    label: "Conversation listing",
-    sortOrder: 100,
-    description:
-      "What the conversations table is currently showing — scope, audience, search, and counts.",
-  },
+  ...CONVERSATION_LIST_GROUPS,
   {
     key: "conversation",
     label: "Open conversation",
@@ -52,51 +53,8 @@ const groups: SurfaceValueGroup[] = [
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
-  // ── Listing ───────────────────────────────────────────────────────────
-  {
-    name: "list_scope",
-    label: "List scope",
-    description:
-      'Which access scope the table is showing: "mine", "my-orgs", "shared", or "public". Populated on the list route; empty on the detail route.',
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 10,
-    sortOrder: 100,
-    group: "listing",
-  },
-  {
-    name: "audience_filter",
-    label: "Audience filter",
-    description:
-      '"your-work", "internal-machine-runs", or "everything" — the audience door above the table, which writes the ordinary conversation_type filter. Populated on the list route only.',
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 20,
-    sortOrder: 110,
-    group: "listing",
-  },
-  {
-    name: "list_search",
-    label: "Search text",
-    description:
-      "The user's current search string over conversations. Empty when they have not searched, and on the detail route.",
-    valueType: "string",
-    alwaysAvailable: false,
-    typicalCharCount: 40,
-    sortOrder: 120,
-    group: "listing",
-  },
-  {
-    name: "visible_conversation_count",
-    label: "Visible conversation count",
-    description:
-      "How many conversation rows the current page of the table is showing. Populated on the list route; absent on the detail route.",
-    valueType: "number",
-    alwaysAvailable: false,
-    typicalCharCount: 4,
-    sortOrder: 130,
-    group: "listing",
-  },
+  // ── Listing (the list route; shared with /work) ──────────────────────
+  ...CONVERSATION_LIST_VALUES,
 
   // ── Open conversation ─────────────────────────────────────────────────
   {
@@ -181,23 +139,24 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const aiWorkConversationsManifest: SurfaceManifest = {
-  surfaceName: "matrx-user/ai-work-conversations",
+  surfaceName: AI_WORK_CONVERSATIONS_SURFACE_NAME,
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
     "Browse and inspect every accessible conversation, native or mirrored.",
-  readiness: "stub",
+  readiness: "partial",
   readinessNote:
-    "Vocabulary declared 2026-08-17 to close an undeclared route family (/work/conversations and its detail route). Not yet audited against the entity-list config and provenance panel, and no runtime emitter is wired.",
+    "page-pass 2026-10-22: the list route emits the conversation_list bundle and rows (conversationListSurface.ts) with list_view / update_conversations / delete_conversations. The detail route's Open conversation and Provenance values are still not emitted; nothing probed live yet.",
   label: "AI Work Conversations",
   urlPattern: "/work/conversations",
   intro: `<surface_intro>
 You are on the AI Work conversations view: the browse-and-inspect surface over every conversation the user can access, from any source — native AI Matrx runs and mirrored coding-provider sessions alike. This is not a live chat; it is the record.
-On the list route the Conversation listing group describes what the table is showing. On the detail route the Open conversation group identifies one conversation and the Provenance group says which system produced it.
+On the list route read conversation_list first: the page on screen, with ids. While conversations_loaded is false the list is loading (or load_error explains a failure) — never say the person has none. The list opens on the "chat" bucket; say so when a bucket, lane or search narrows it, and use list_view to reach rows that are not showing. update_conversations renames or favorites, delete_conversations moves to Trash; a new conversation is started at /work/new, not here. On the detail route the Open conversation group identifies one conversation and the Provenance group says which system produced it.
 Respect is_continuable: a mirrored provider conversation is read-only here, so never offer to continue or reply to it. Respect title_source too — a title the sync layer generated is not something the user wrote.
 </surface_intro>`,
   groups,
+  writeTargets: CONVERSATION_LIST_WRITE_TARGETS,
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
 

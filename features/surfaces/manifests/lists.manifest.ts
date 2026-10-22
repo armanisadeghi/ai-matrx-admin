@@ -1,52 +1,18 @@
 /**
- * Surface manifest — Custom lists (`matrx-user/pick-lists`).
+ * Surface manifest — a pick list's own page (`matrx-user/pick-lists`).
  *
- * The ROUTE home of a custom list: `/pick-lists/[id]`, rendered by
- * `ListDetailClient` with `asRoute` — the canonical deep link a share button
- * copies and every list card navigates to. (`/pick-lists` itself is a static
- * landing page with no list state; see "WHERE THIS MOUNTS" below.)
+ * WHERE THIS MOUNTS: `/pick-lists/[id]` → `StoreListPage` mounts
+ * `<SurfaceRuntimeProvider surfaceName="matrx-user/pick-lists">` around both views, with the scope
+ * built by `features/data-tables/pick-lists/pickListPageScope.ts` from the list the page already
+ * read (one read, shared by the Choices view and the scope). In the Table view the store's table
+ * page mounts `matrx-user/data-tables` INSIDE it, so there the deeper table surface answers (the
+ * registry resolves deepest-first) — the right surface for a grid.
  *
- * WHY THIS IS THE SAME SURFACE AS `matrx-user/pick-list-manager`, NOT A RIVAL.
- * The floating List Manager window renders the SAME `ListDetailClient` in its
- * detail pane, over the same rows, driving the same server actions
- * (`updateListAction`, `addItemAction`). They are two MOUNTS of one editable
- * state — a window openable anywhere, and a route you can link to. So this
- * surface deliberately reuses list-manager's vocabulary rather than inventing
- * one: the write targets below are imported from
- * `features/data-tables/pick-lists/surface-write-targets.ts`, the single definition BOTH
- * manifests use, and the handlers come from the single builder both mounts
- * call. list-manager shipped first and its names win; nothing here renames or
- * redesigns them. Two target sets over the same fields would be a defect, so
- * there is only one set.
- *
- * WHERE THIS MOUNTS, precisely — this surface used to be `readiness: "stub"`
- * with NO runtime emitter at all, and the emitter is the thing that was
- * missing:
- *
- *   - `/pick-lists/[id]` → `ListDetailClient asRoute` mounts
- *     `<SurfaceRuntimeProvider surfaceName="matrx-user/pick-lists">` with the live
- *     scope AND the write handlers. This is the only mount.
- *   - `/pick-lists` (index) → `PickListsLanding` inside `MarketingPageShell`:
- *     a static explainer with no list open and nothing authored. It mounts
- *     NOTHING, and should not — a landing page owns no editable state.
- *   - Inside the List Manager window, `ListDetailClient` is rendered WITHOUT
- *     `asRoute`, so it registers nothing there. That gate is load-bearing:
- *     the surface registry resolves DEEPEST-first, so an ungated provider
- *     would register below `matrx-user/pick-list-manager` and shadow the shipped
- *     window surface entirely.
- *
- * NOT WRITABLE HERE, ON PURPOSE (see the shared targets module for the full
- * reasoning): deleting a list or an item and bulk-clearing are never targets
- * at any policy — the agent proposes, the human presses the button in
- * `DeleteConfirmDialog`. Visibility (`list_visibility`) is permission-shaped
- * and stays human-only. Editing an existing item IS writable, as
- * `update_list_item` — it landed in the shared module so both mounts gained it
- * in one change.
- *
- * Writes additionally require OWNERSHIP: a list reached through a shared link
- * renders read-only, and the handler refuses rather than attempting a write
- * the database would reject. `list_is_owner` is emitted so an agent can check
- * before proposing anything.
+ * SAME TARGETS AS THE LIST MANAGER WINDOW (`matrx-user/pick-list-manager`): both import
+ * `LIST_SURFACE_WRITE_TARGETS` and build handlers with `buildListSurfaceWriteHandlers`, so an agent
+ * meets one vocabulary for one list. Removing a choice ARCHIVES it (`delete_list_items`), exactly as
+ * the page's own Archive button does; a list is never deleted from here. Visibility stays
+ * human-only (a permission change, not a content edit).
  */
 
 import type {
@@ -83,7 +49,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "active_list_id",
     label: "Active list ID",
     description:
-      "UUID of the list open at this route — the `[id]` segment of /pick-lists/[id]. Always present: the route 404s without a readable list.",
+      "UUID of the list open at this route — the `[id]` segment of /pick-lists/[id]. Always present.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 36,
@@ -95,7 +61,7 @@ const surfaceSpecific: SurfaceValue[] = [
     label: "Active list name",
     description: "Name of the list open at this route.",
     valueType: "string",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 80,
     sortOrder: 310,
     group: "active_list",
@@ -115,7 +81,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "active_list_url",
     label: "Link to this list",
     description:
-      "The canonical deep link to the list open at this route (…/pick-lists/<id>) — exactly what the header's Copy link button puts on the clipboard. Use it when writing a reference to this list somewhere else.",
+      "The path of the list open at this route (/pick-lists/<id>). Use it when writing a reference to this list somewhere else.",
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 60,
@@ -128,7 +94,7 @@ const surfaceSpecific: SurfaceValue[] = [
     description:
       "Number of items in the list open at this route. Zero when the list is empty.",
     valueType: "number",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 5,
     sortOrder: 325,
     group: "active_list",
@@ -139,7 +105,7 @@ const surfaceSpecific: SurfaceValue[] = [
     description:
       "Number of distinct group headings the items are filed under, counting \"Ungrouped\". Zero when the list is empty.",
     valueType: "number",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 3,
     sortOrder: 326,
     group: "active_list",
@@ -150,7 +116,7 @@ const surfaceSpecific: SurfaceValue[] = [
     description:
       "ISO-8601 timestamp of when this list was created. Not shown on the page; available for an agent that needs to reason about age.",
     valueType: "string",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     autoContext: false,
     typicalCharCount: 30,
     sortOrder: 327,
@@ -177,7 +143,7 @@ const surfaceSpecific: SurfaceValue[] = [
       // vocabulary this page emits, and the two cannot drift.
       `Who can reach this list: one of ${LIST_VISIBILITY_ENUM_TEXT}. "public" is readable by anyone, "authenticated" by any signed-in user, "private" by the owner alone. Read-only here — changing visibility is a permission change and stays human-only.`,
     valueType: "string",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 14,
     sortOrder: 330,
     group: "active_list",
@@ -186,11 +152,55 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "list_is_owner",
     label: "Viewer owns this list",
     description:
-      "True when the signed-in viewer owns this list. False when they reached it through a shared link — the page is read-only then and every write target refuses, so check this before proposing an edit.",
+      "True when the signed-in viewer created this list. Edits follow the viewer's access to the list, not ownership alone: when the store refuses a write, the refusal is reported back to you.",
     valueType: "boolean",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 5,
     sortOrder: 335,
+    group: "active_list",
+  },
+
+  {
+    name: "list_view",
+    label: "Page view",
+    description:
+      'Which view of the list is showing: "choices" (one editable row per choice) or "table" (the list as a store table, where the data-tables surface answers).',
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 7,
+    sortOrder: 301,
+    group: "active_list",
+  },
+  {
+    name: "list_load_state",
+    label: "List load state",
+    description:
+      'Whether the list has been read: "loading", "ready" or "error". Every list value below is absent until "ready".',
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 7,
+    sortOrder: 302,
+    group: "active_list",
+  },
+  {
+    name: "list_load_error",
+    label: "List load error",
+    description: 'Why the list could not be read — the same message the page shows. Present only when list_load_state is "error".',
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 160,
+    sortOrder: 303,
+    group: "active_list",
+  },
+  {
+    name: "pick_list_bundle",
+    label: "Pick list (up front)",
+    description:
+      "The list as one XML bundle: name, visibility, description and every choice (id, label, group, hint, description; first 60). Read this first; all_items holds every choice.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 4000,
+    sortOrder: 304,
     group: "active_list",
   },
 
@@ -201,7 +211,7 @@ const surfaceSpecific: SurfaceValue[] = [
     description:
       "Array of { id, label, description, help_text, group } for every item in the list. Empty array when the list has no items.",
     valueType: "array",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 3000,
     sortOrder: 360,
     group: "list_items",
@@ -212,7 +222,7 @@ const surfaceSpecific: SurfaceValue[] = [
     description:
       "Object keyed by group name, each value an array of items in that group — the same items as all_items in their grouped shape. Ungrouped items file under \"Ungrouped\".",
     valueType: "object",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 3000,
     autoContext: false,
     sortOrder: 370,
@@ -224,7 +234,7 @@ const surfaceSpecific: SurfaceValue[] = [
     description:
       'The group headings of this list, in the order they are rendered — the exact strings to reuse for an item\'s `group`. Includes "Ungrouped" when ungrouped items exist. Empty array when the list has no items.',
     valueType: "array",
-    alwaysAvailable: true,
+    alwaysAvailable: false,
     typicalCharCount: 120,
     sortOrder: 355,
     group: "list_items",
@@ -233,7 +243,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "selected_item_id",
     label: "Focused item ID",
     description:
-      "ID of the item the user is pointing at: the one open in the Edit Item dialog, or the one they just right-clicked to open the context menu. Absent when neither is true.",
+      "ID of the choice the person last put the cursor in on the Choices view. Absent when none.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 36,
@@ -244,7 +254,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "selected_item_label",
     label: "Focused item label",
     description:
-      "Label of the focused item (open in the Edit Item dialog, or right-clicked). Absent when there is no focused item.",
+      "Label of the focused choice. Absent when there is no focused choice.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 120,
@@ -255,7 +265,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "selected_item_description",
     label: "Focused item description",
     description:
-      "Description of the focused item (open in the Edit Item dialog, or right-clicked). Absent when there is no focused item, or it has no description.",
+      "Description of the focused choice. Absent when there is no focused choice, or it has no description.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 500,
@@ -270,22 +280,23 @@ export const listsManifest: SurfaceManifest = {
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
-    "Custom lists organizer",
+    "A pick list's own page (/pick-lists/<id>): its name, description and choices; add, edit and archive choices, rename and re-describe the list.",
   readiness: "partial",
   readinessNote:
-    "surface-check 2026-08-22 (checklist v1): registration, values, write targets, context menu and text inputs all pass and are DB-synced; the original three write targets were live-verified with a real agent run. Still `partial` for two honest reasons: the new update_list_item target has not yet been exercised end-to-end in a live run, and header/mobile/theme were checked statically only. The /pick-lists index is a static landing page and deliberately emits nothing, so values here describe the detail route only.",
-  label: "Lists",
+    "page-pass 2026-10-22: the route page now mounts this surface (it mounted nothing before), with the up-front bundle, load state, focused choice and delete_list_items (archive). Not yet proven with a live agent run on this route (probe pending the release carrying the window hooks); phone and dark looked at statically.",
+  label: "Pick list",
   urlPattern: "/pick-lists/[id]",
   intro: `<surface_intro>
-You are on the ROUTE page for ONE custom list (/pick-lists/[id]) — its name, description, and items, grouped under headings. Everything you can see is in active_list_* and all_items / items_grouped.
+You are on ONE pick list's page (/pick-lists/[id]): a named set of choices people pick from in dropdowns, forms and agent variables. Read pick_list_bundle first; all_items has every choice with its id. If list_load_state is not "ready", the list has not been read yet (or list_load_error says why) and there is nothing to edit.
 
-You can WRITE to this list through apply_surface_write: rename it, rewrite its description, add items, or edit one existing item in place (update_list_item, by the item's id from all_items — that is also how an item moves to another group). There is no draft here — each of those saves to the database as soon as the user approves, so propose the exact values you intend before applying, and read all_items first so you never re-add something that is already there.
+Changes go through these targets; each saves to the database once the person approves:
+- active_list_name / active_list_description — rename the list or replace its description.
+- add_list_items — add choices (array); read all_items first so nothing is added twice.
+- update_list_item — change ONE choice by id (label, description, help_text, group).
+- delete_list_items — archive choices by id (array). Archived choices stay restorable and records that hold one keep it.
+You cannot delete the list itself or change who can see it (list_visibility); describe that and let the person do it.
 
-Two things you cannot do, by design. You cannot delete the list or any item, and you cannot bulk-clear it — removal stays a human gesture, so describe what you would remove and let the user press the button. You cannot change list_visibility either; who can reach a list is a permission decision, not a content edit.
-
-Check list_is_owner before proposing an edit. When it is false the viewer arrived through a shared link, the page is read-only, and every write will be refused.
-
-This is the same list state as the List Manager window (matrx-user/pick-list-manager) and offers the same write targets under the same names — the window is that state's other home.
+list_view "table" means the person is on the Table view, where the data-tables surface answers for the grid.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(
@@ -306,22 +317,25 @@ export interface ListsItemEntry {
 
 /**
  * Type-safe payload helper — the "a UI cannot lie" enforcement.
- * Required keys ↔ every `alwaysAvailable: true` value above. The detail route
- * always has a list open (it 404s otherwise), so far more is guaranteed here
- * than on the List Manager window, where nothing need be selected.
+ * Required keys ↔ every `alwaysAvailable: true` value above; every list value
+ * is optional because it is omitted until the list has been read.
  */
 export function createListsScope(values: {
   active_list_id: string;
-  active_list_name: string;
   active_list_url: string;
-  active_list_item_count: number;
-  active_list_group_count: number;
-  active_list_created_at: string;
-  list_visibility: string;
-  list_is_owner: boolean;
-  all_items: ListsItemEntry[];
-  items_grouped: Record<string, unknown>;
-  list_group_names: string[];
+  list_view: "choices" | "table";
+  list_load_state: "loading" | "ready" | "error";
+  list_load_error?: string;
+  pick_list_bundle?: string;
+  active_list_name?: string;
+  active_list_item_count?: number;
+  active_list_group_count?: number;
+  active_list_created_at?: string;
+  list_visibility?: string;
+  list_is_owner?: boolean;
+  all_items?: ListsItemEntry[];
+  items_grouped?: Record<string, unknown>;
+  list_group_names?: string[];
   active_list_description?: string;
   active_list_updated_at?: string;
   selected_item_id?: string;

@@ -11,6 +11,10 @@
  *
  * Curated groups (band 0-899):
  *   capture_session  What the user has captured in this visit
+ *   capture_library  The captures list under the studio (every saved capture)
+ *
+ * Emitter: `features/media-capture/cameraSurfaceScope.ts` (page-pass
+ * 2026-10-22), mounted by `CameraPage`.
  */
 
 import type {
@@ -29,7 +33,25 @@ const groups: SurfaceValueGroup[] = [
     sortOrder: 100,
     description: "What the user has captured and saved during this visit.",
   },
+  {
+    key: "capture_library",
+    label: "Captures library",
+    sortOrder: 200,
+    description: "Every capture the person has saved, as listed under the studio.",
+  },
 ];
+
+export interface CaptureRow {
+  file_id: string;
+  file_name: string;
+  kind: "photo" | "video" | "audio";
+  updated_at: string | null;
+}
+
+export interface CaptureFilterOption {
+  id: "all" | "photo" | "video" | "audio";
+  label: string;
+}
 
 const surfaceSpecific: SurfaceValue[] = [
   {
@@ -65,6 +87,71 @@ const surfaceSpecific: SurfaceValue[] = [
     sortOrder: 120,
     group: "capture_session",
   },
+  {
+    name: "captures_status",
+    label: "Captures load status",
+    description:
+      '"loading", "loaded" or "error". When "error" the captures list failed to load and the person sees a retry — do not report counts or rows. Always populated.',
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 7,
+    sortOrder: 200,
+    group: "capture_library",
+  },
+  {
+    name: "captures_overview",
+    label: "Captures overview",
+    description:
+      "Compact XML of the captures list as shown: totals per kind and the newest captures under the current filter (file_id, name, kind, updated), capped at 40 rows with the remainder counted. Absent until the list has loaded.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 3500,
+    inlineUpTo: 4000,
+    sortOrder: 205,
+    group: "capture_library",
+  },
+  {
+    name: "capture_counts",
+    label: "Capture counts",
+    description:
+      "Saved captures per kind: { all, photo, video, audio } — the numbers on the filter tabs. Absent until the list has loaded; zeros when the person has none.",
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 60,
+    sortOrder: 210,
+    group: "capture_library",
+  },
+  {
+    name: "capture_rows",
+    label: "Shown captures",
+    description:
+      "Every capture shown under the current filter, newest first: { file_id, file_name, kind, updated_at }. Absent until loaded; [] when none.",
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 4000,
+    sortOrder: 220,
+    group: "capture_library",
+  },
+  {
+    name: "capture_filter",
+    label: "Captures filter",
+    description: 'Which kind the captures list shows: "all", "photo", "video" or "audio". Always populated.',
+    valueType: "string",
+    alwaysAvailable: true,
+    typicalCharCount: 5,
+    sortOrder: 230,
+    group: "capture_library",
+  },
+  {
+    name: "capture_filter_options",
+    label: "Captures filter options",
+    description: "The filter choices as { id, label } — the values capture_filter accepts.",
+    valueType: "array",
+    alwaysAvailable: true,
+    typicalCharCount: 120,
+    sortOrder: 240,
+    group: "capture_library",
+  },
 ];
 
 export const cameraManifest: SurfaceManifest = {
@@ -74,24 +161,45 @@ export const cameraManifest: SurfaceManifest = {
   executionMode: "python-stream",
   description:
     "Photograph or record something and save it into files.",
-  readiness: "stub",
+  readiness: "partial",
   readinessNote:
-    "Narrow vocabulary declared 2026-08-17 to close the undeclared /camera route. Capture settings and device state are not declared, and no runtime emitter is wired.",
+    "Runtime emitter, page menu and the capture_filter target wired by page-pass 2026-10-22 (live probe pending release). Not declared: the studio's mode (photo/video/audio), chosen devices and camera permission state, which live inside CaptureStudio. A capture itself has no agent twin (it needs the person's device); rename/move/share/delete of a capture stay on the file menu with no write target.",
   label: "Camera",
   urlPattern: "/camera",
   intro: `<surface_intro>
 You are on the Camera: where the user photographs or records something and saves it into their files.
 capture_count and last_capture_file_id describe what has been saved during this visit — before the first save there is nothing to work with, and you should say so rather than assume an image exists.
 A capture is always referred to by its file_id; resolve bytes from the id rather than from any URL you were handed.
+Below the studio the page lists every saved capture: captures_overview summarizes it, capture_rows has the shown rows, capture_counts the totals. If captures_status is "error" the list did not load — say so. Use capture_filter to switch the list between all, photos, videos and audio. You cannot take, rename or delete a capture from here.
 </surface_intro>`,
-  groups,
+  groups: [...groups, { key: "navigation", label: "View", sortOrder: 300 }],
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
+  writeTargets: [
+    {
+      name: "capture_filter",
+      label: "Filter captures",
+      description:
+        'Switches the captures list to one kind. Value is one id from capture_filter_options: "all", "photo", "video" or "audio". Anything else is refused. No capture changes.',
+      valueType: "string",
+      mode: "ui",
+      applyPolicy: "auto",
+      updatesValue: "capture_filter",
+      group: "navigation",
+      sortOrder: 100,
+    },
+  ],
 };
 
 /** Type-safe payload helper — required keys mirror `alwaysAvailable: true`. */
 export function createCameraScope(values: {
   capture_count: number;
   studio_open: boolean;
+  captures_status: "loading" | "loaded" | "error";
+  capture_filter: CaptureFilterOption["id"];
+  capture_filter_options: CaptureFilterOption[];
+  captures_overview?: string;
+  capture_counts?: { all: number; photo: number; video: number; audio: number };
+  capture_rows?: CaptureRow[];
   selection?: string;
   context?: Record<string, unknown>;
   last_capture_file_id?: string;

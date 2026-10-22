@@ -104,6 +104,8 @@ describe("the small words, from data", () => {
     expect(grainNoun("one row per ingest run (a note, file, transcript, page or document read into knowledge)")).toBe("ingest run");
     expect(grainNoun("one row per workflow run (archived runs are not counted)")).toBe("workflow run");
     expect(grainNoun("one row per hour for each organization, person, agent, provider, model")).toBe("hour");
+    // night walk 2026-10-22: "1,186 tool call the res" — the noun stops before "the"
+    expect(grainNoun("one row per tool call the re-fetch report counts (local, agent and external tools, not archived)")).toBe("tool call");
     expect(pluralNoun("execution", 1026)).toBe("executions");
     expect(pluralNoun("entry", 2)).toBe("entries");
   });

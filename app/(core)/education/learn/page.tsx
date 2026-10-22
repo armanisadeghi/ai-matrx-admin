@@ -11,6 +11,8 @@ import {
 } from "@/features/education/constants";
 import { BookOpen } from "lucide-react";
 import type { EduSection } from "@/features/education/types";
+import { LearnIndexSurface } from "@/features/education/publishing/components/LearnIndexSurface";
+import type { LearnGuideLibraryRow } from "@/features/surfaces/manifests/education-learn.manifest";
 
 // ISR: the index reflects the published set, revalidated on publish via tag.
 export const revalidate = 3600;
@@ -26,17 +28,22 @@ export const metadata = createRouteMetadata("/education", {
 
 export default async function EducationLearnPage() {
   const docs = await listPublishedLearnDocs();
+  const guides: LearnGuideLibraryRow[] = docs.map((d) => ({
+    title: d.title,
+    summary: d.summary,
+    href: eduHref("learn", d.slug),
+    subject: d.subject ?? null,
+    updated: d.updated,
+  }));
+  // No section heading: the hero already names the page, and the grid is the
+  // offer. No status pill: every guide here is published, so it never varies.
   const sections: EduSection[] = [
     {
       kind: "status-cards",
-      heading: "Study guides & explainers",
-      subheading:
-        "Clear, comprehensive content on the topics you're studying — free to read, easy to turn into flashcards, quizzes, and audio.",
-      cards: docs.map((d) => ({
-        title: d.title,
-        description: d.summary,
-        status: "live" as const,
-        href: eduHref("learn", d.slug),
+      cards: guides.map((g) => ({
+        title: g.title,
+        description: g.summary,
+        href: g.href,
         icon: BookOpen,
       })),
     },
@@ -47,15 +54,18 @@ export default async function EducationLearnPage() {
         workspaceHref={EDU_WORKSPACE_HREF}
         workspaceLabel={EDU_WORKSPACE_LABEL}
       />
-      <EduHero
-        eyebrow="AI Matrx Education"
-        eyebrowIcon={BookOpen}
-        title="Study guides"
-        titleAccent="that actually teach"
-        description="In-depth, free explainers on the subjects and exams you're tackling — then study them with the full AI Matrx toolkit."
-        primary={{ label: "Start studying free", href: eduHref() }}
-      />
-      <SectionRenderer sections={sections} />
+      <LearnIndexSurface guides={guides}>
+        <EduHero
+          eyebrow="AI Matrx Education"
+          eyebrowIcon={BookOpen}
+          title="Study guides"
+          titleAccent="that actually teach"
+          description="In-depth, free explainers on the subjects and exams you're tackling — then study them with the full AI Matrx toolkit."
+          primary={{ label: "Start studying free", href: eduHref() }}
+          primarySignedIn={null}
+        />
+        <SectionRenderer sections={sections} />
+      </LearnIndexSurface>
     </MarketingPageShell>
   );
 }

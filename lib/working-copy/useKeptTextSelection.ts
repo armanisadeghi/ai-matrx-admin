@@ -20,6 +20,10 @@ import { useAppStore } from "@/lib/redux/hooks";
 import { personIsTypingElsewhere } from "@/lib/dom/focus-guard";
 import { getKeptTextSelection, workingCopySelectionKept } from "./workingCopySlice";
 
+/** How long a view whose field mounts a beat after it (a deferred/lazy pane) is waited for. */
+const FIELD_WAIT_MS = 16;
+const FIELD_WAIT_TRIES = 120;
+
 export function useKeptTextSelection(
   key: string | null,
   ref: RefObject<HTMLTextAreaElement | HTMLInputElement | null>,
@@ -28,24 +32,40 @@ export function useKeptTextSelection(
   const store = useAppStore();
   useLayoutEffect(() => {
     if (!key || !active) return undefined;
-    const el = ref.current;
-    if (!el) return undefined;
-    const kept = getKeptTextSelection(store.getState(), key);
-    if (
-      kept &&
-      kept.end <= el.value.length &&
-      (el.selectionStart !== kept.start || el.selectionEnd !== kept.end) &&
-      !personIsTypingElsewhere(el)
-    ) {
-      el.setSelectionRange(kept.start, kept.end, kept.direction);
-    }
+    let el: HTMLTextAreaElement | HTMLInputElement | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let tries = 0;
+    const attach = (node: HTMLTextAreaElement | HTMLInputElement) => {
+      el = node;
+      const kept = getKeptTextSelection(store.getState(), key);
+      if (
+        kept &&
+        kept.end <= node.value.length &&
+        (node.selectionStart !== kept.start || node.selectionEnd !== kept.end) &&
+        !personIsTypingElsewhere(node)
+      ) {
+        node.setSelectionRange(kept.start, kept.end, kept.direction);
+      }
+    };
+    // The field can mount after this effect runs (a pane the host renders a beat later than the
+    // mode flag that turned `active` on): with no element yet, wait for it instead of keeping
+    // nothing for the whole life of this view.
+    const find = () => {
+      const node = ref.current;
+      if (node) return attach(node);
+      if (++tries < FIELD_WAIT_TRIES) timer = setTimeout(find, FIELD_WAIT_MS);
+    };
+    find();
     return () => {
+      if (timer) clearTimeout(timer);
+      const node = el;
+      if (!node) return;
       store.dispatch(
         workingCopySelectionKept({
           key,
-          start: el.selectionStart ?? 0,
-          end: el.selectionEnd ?? 0,
-          direction: el.selectionDirection ?? "none",
+          start: node.selectionStart ?? 0,
+          end: node.selectionEnd ?? 0,
+          direction: node.selectionDirection ?? "none",
         }),
       );
     };

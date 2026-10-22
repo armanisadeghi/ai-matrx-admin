@@ -53,6 +53,8 @@ const SURFACE_NAME = "matrx-user/education-practice-oral";
 /** The focus is the topic, so "Just a topic" is not offered as a Source. */
 const PRACTICE_SOURCE_KINDS: readonly SourceInputKindId[] =
   ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
+/** Practice works FROM a deck, so Use existing offers Decks here (and only on screens that ask). */
+const PRACTICE_EXTRA_KINDS = ["fc_set"] as const;
 /** The designer needs the text up front. */
 const PRACTICE_SOURCE_DELIVERIES = ["direct"] as const;
 /** The name a pasted passage written by the assistant is filed under. */
@@ -365,6 +367,7 @@ export function PracticeSetup({
           title="Sources"
           purpose="your practice session"
           kinds={PRACTICE_SOURCE_KINDS}
+          extraKinds={PRACTICE_EXTRA_KINDS}
           deliveries={PRACTICE_SOURCE_DELIVERIES}
         />
       </CreateStep>

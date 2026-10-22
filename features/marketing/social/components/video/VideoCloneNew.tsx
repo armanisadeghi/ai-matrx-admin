@@ -11,6 +11,7 @@
  * variants grid after generating.
  */
 
+import { ReferencePlayer } from "./ReferencePlayer";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -226,7 +227,7 @@ function ReferencePanel({ postId }: { postId: string }) {
       </div>
       <div className="mx-auto w-full max-w-[18rem] overflow-hidden rounded-lg bg-muted" style={{ aspectRatio: "9 / 16" }}>
         {url ? (
-          <video src={url} controls playsInline className="h-full w-full object-contain" />
+          <ReferencePlayer src={url} className="h-full w-full outline-none" />
         ) : video.isPending || (settling && !video.data) ? (
           <div className="h-full w-full animate-pulse" aria-label="Loading video" />
         ) : (

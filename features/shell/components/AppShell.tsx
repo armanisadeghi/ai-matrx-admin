@@ -84,7 +84,7 @@ export default async function AppShell({
   const cookieStore = await cookies();
   const chatHome = shellChatHome(pathname, isAuthenticated);
   const chatCookie = isAuthenticated ? cookieStore.get(canvasChatCookieName(chatHome.layoutId))?.value : undefined;
-  const chatInitial = chatCookie === undefined ? null : parseCanvasChatCookie(chatCookie, true);
+  const chatInitial = chatCookie === undefined ? null : parseCanvasChatCookie(chatCookie, false);
   const [chatWidth, composerMode] = isAuthenticated
     ? await Promise.all([readSidePanelWidth(CANVAS_PANEL_IDS.chat, CANVAS_CHAT_SIZES), readComposerModeCookie()])
     : [undefined, null];

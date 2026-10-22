@@ -9,8 +9,9 @@
  * exists to delete.
  *
  * So the builder owns ONE reduction: the panels of a screen are an ORDERED
- * LIST, each with a width; the pure packer below flows them left-to-right and
- * wraps, deriving every x/y. Alignment stops being something a person can get
+ * LIST, each with a width; the ONE grid engine (design-system GridCanvas line
+ * mode, through `surface/grid.ts`) flows them left-to-right and wraps,
+ * deriving every x/y — the same flow the run page draws. Alignment stops being something a person can get
  * wrong — the grid is always tidy because nothing else is expressible.
  *
  * Heights are the one thing the packer does not invent: an authored height is
@@ -23,6 +24,7 @@
  */
 
 import { GRID_COLUMNS, type Readout, type RunSurfaceConfig } from "../surface/config";
+import { packScreenLines, stepScreenPanel } from "../surface/grid";
 
 // ── Size vocabulary ─────────────────────────────────────────────────────────
 
@@ -95,40 +97,6 @@ export function panelsOfScreen(
   return config.readouts.filter((r) => screenIdOf(r, config) === screenId);
 }
 
-// ── The packer ──────────────────────────────────────────────────────────────
-
-/**
- * Flow an ordered list of panels across the 24-column grid: each panel takes
- * its own width, panels sit side by side until the row is full, then wrap. A
- * row's height is its tallest panel, so rows can never interleave.
- *
- * Deterministic and total: the same order always produces the same grid.
- */
-export function packScreen(panels: readonly Readout[]): Readout[] {
-  const packed: Readout[] = [];
-  let cursorX = 0;
-  let rowTop = 0;
-  let rowHeight = 0;
-  for (const panel of panels) {
-    const w = Math.min(GRID_COLUMNS, Math.max(1, Math.round(panel.pos.w)));
-    const h = Math.max(1, Math.round(panel.pos.h));
-    if (cursorX + w > GRID_COLUMNS && cursorX > 0) {
-      rowTop += rowHeight;
-      cursorX = 0;
-      rowHeight = 0;
-    }
-    packed.push({ ...panel, pos: { x: cursorX, y: rowTop, w, h } });
-    cursorX += w;
-    rowHeight = Math.max(rowHeight, h);
-    if (cursorX >= GRID_COLUMNS) {
-      rowTop += rowHeight;
-      cursorX = 0;
-      rowHeight = 0;
-    }
-  }
-  return packed;
-}
-
 /**
  * Re-derive every position in the document from the readout array's ORDER,
  * screen by screen. Screens are independent grids — each starts at row 0,
@@ -142,7 +110,8 @@ export function repack(config: RunSurfaceConfig): RunSurfaceConfig {
     config.pages.length === 0 ? [null] : config.pages.map((p) => p.id);
   const byId = new Map<string, Readout>();
   for (const screen of screens) {
-    for (const panel of packScreen(panelsOfScreen(config, screen))) {
+    // The ONE grid engine flows each screen (GridCanvas line mode, `surface/grid.ts`).
+    for (const panel of packScreenLines(panelsOfScreen(config, screen))) {
       byId.set(panel.id, panel);
     }
   }
@@ -188,13 +157,10 @@ export function movePanel(
     return panel ? screenIdOf(panel, config) : null;
   })();
   const siblings = panelsOfScreen(config, screen);
-  const index = siblings.findIndex((r) => r.id === panelId);
-  const target = index + direction;
-  if (index < 0 || target < 0 || target >= siblings.length) return config;
-
-  const reorderedSiblings = [...siblings];
-  const [moved] = reorderedSiblings.splice(index, 1);
-  reorderedSiblings.splice(target, 0, moved);
+  if (!siblings.some((r) => r.id === panelId)) return config;
+  // One step in reading order is the engine's (`stepLines`); the first or last panel stays put.
+  const reorderedSiblings = stepScreenPanel(siblings, panelId, direction);
+  if (reorderedSiblings.every((r, n) => r.id === siblings[n]!.id)) return config;
 
   // Rebuild the whole array, substituting this screen's slots in new order.
   let cursor = 0;

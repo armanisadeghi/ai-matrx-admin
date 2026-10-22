@@ -55,7 +55,7 @@ at the end). Each answer = one `study_attempt` via `gradeSpokenAnswer` -> `study
   Paste text tile. Start sends `set.resolve()` (server reads decks as Q/A cards) through
   `data/practiceSources.ts` (60k-char budget, equal shares, cut said aloud). Lineage: the chosen
   `SourceSet` + names ride `study_session.settings.source_set/source_names`; `source_set_id` = the deck.
-  No `study_session -> source` association pair is registered (platform.association_types), so no edge.
+  Use existing offers Decks on this screen only (`extraKinds=["fc_set"]`; the global list stays the nine). When the session opens, `data/recordPracticeLineage.ts` writes a `study_session --source--> <Source>` edge per chosen Source (pairs registered in platform.association_types, provenance only).
   The assistant's `deck_id` / `source_text` writes go through the same Source input (deck + pasted can combine).
 - The setup form opts into `matrx-touch-targets`. Runs reuse sibling source-feature tags
   (`education-assessment*`, `education-tutor`); add `education-spoken-practice*` when `features/agents` is next touched.

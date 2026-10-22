@@ -1,9 +1,10 @@
 "use client";
 
+import { primitiveLeading } from "./primitive-leading";
 import { useEffect, useState } from "react";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
 import { isOpenStatus } from "@/features/tasks/constants/status";
-import { Loader2, FolderKanban, ChevronDown } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/utils/cn";
 import { useProjectsWithTasks } from "@/features/tasks/hooks/useTaskManager";
@@ -333,6 +334,7 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
             {matchedTasks.map((task) => (
               <PickerRow
                 key={task.id}
+                leading={primitiveLeading("tasks")}
                 label={<span className={cn(task.status === "completed" && "text-muted-foreground")}>{task.title}</span>}
                 trailing={<span className={cn(CHIP_CLASS, "bg-blue-500/15 text-blue-600 dark:text-blue-400")}>{task.status}</span>}
                 onClick={() => onSelect({ type: "task", data: task })}
@@ -346,8 +348,7 @@ export function TasksResourcePicker({ onBack, onSelect }: TasksResourcePickerPro
           return (
             <PickerRow
               key={project.id}
-              icon={FolderKanban}
-              iconClassName="text-blue-600 dark:text-blue-500"
+              leading={primitiveLeading("tasks")}
               label={project.name}
               secondary={`${incomplete > 0 ? `${incomplete} pending` : "All complete"} · ${total} total`}
               chevron

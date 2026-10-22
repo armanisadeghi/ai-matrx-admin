@@ -7,7 +7,7 @@
  * makes the pictures and voice, and the same studio takes it from there (preview, render, variants, download).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -83,7 +83,8 @@ function standInUrl(i: number): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
+/** Plays the format from its first frame; `onLength` hands the true clip length (seconds) to the caller once the preview resolves. */
+function FormatPlayer({ id, className, onLength }: { id: FormatId; className?: string; onLength?: (seconds: number) => void }) {
   useVideoFonts();
   const { organizationId } = useSocials();
   const preview = useQuery({
@@ -92,6 +93,14 @@ function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
     enabled: Boolean(organizationId),
     staleTime: 10 * 60_000,
   });
+  const length = useMemo(() => {
+    const doc = preview.data?.composition as unknown as Composition | undefined;
+    const r = doc ? resolveComposition(doc) : null;
+    return r?.ok ? r.timeline.frameCount / r.timeline.fps : null;
+  }, [preview.data]);
+  useEffect(() => {
+    if (length != null) onLength?.(length);
+  }, [length, onLength]);
   if (preview.isPending) return <div className={cn("animate-pulse rounded-lg bg-muted", className)} style={{ aspectRatio: "9 / 16" }} aria-label="Loading preview" />;
   if (preview.isError) return <ErrorAlchemyMenu error={preview.error} operation="load the format preview" />;
   const doc = preview.data.composition as unknown as Composition;
@@ -109,7 +118,7 @@ function FormatPlayer({ id, className }: { id: FormatId; className?: string }) {
   });
   return (
     <div className={className}>
-      <VideoPlayer input={programInputFromComposition(doc, resolved.timeline)} mediaUrls={mediaUrls} initialFrame={Math.floor(resolved.timeline.frameCount * 0.62)} hideTranscript />
+      <VideoPlayer input={programInputFromComposition(doc, resolved.timeline)} mediaUrls={mediaUrls} hideTranscript />
     </div>
   );
 }
@@ -146,28 +155,33 @@ export function VideoFormatNew() {
   );
 }
 
+function GalleryCard({ f, base }: { f: FormatInfo; base: string }) {
+  const [length, setLength] = useState<number | null>(null);
+  // The player sits beside the link, never inside it: a button nested in an anchor navigates instead of playing.
+  return (
+    <div className="flex flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-3">
+      <FormatPlayer id={f.id} onLength={setLength} className="mx-auto w-full max-w-[15rem] overflow-hidden rounded-md" />
+      <Link href={`${base}/formats?format=${f.id}`} data-clickable className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="type-label text-foreground">{f.label}</span>
+          <span className="type-meta ml-auto text-muted-foreground">{length != null ? `${Math.round(length)}s` : `~${f.approxSeconds}s`}</span>
+        </div>
+        <span className="type-meta text-muted-foreground">{f.summary}</span>
+        <div className="flex flex-wrap gap-1">
+          {f.components.slice(0, 3).map((c) => (
+            <Badge key={c}>{c}</Badge>
+          ))}
+        </div>
+      </Link>
+    </div>
+  );
+}
+
 function Gallery({ formats, base }: { formats: FormatInfo[]; base: string }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {formats.map((f) => (
-        <Link
-          key={f.id}
-          href={`${base}/formats?format=${f.id}`}
-          data-clickable
-          className="flex flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-3"
-        >
-          <FormatPlayer id={f.id} className="mx-auto w-full max-w-[15rem] overflow-hidden rounded-md" />
-          <div className="flex items-center gap-2">
-            <span className="type-label text-foreground">{f.label}</span>
-            <span className="type-meta ml-auto text-muted-foreground">{`~${f.approxSeconds}s`}</span>
-          </div>
-          <span className="type-meta text-muted-foreground">{f.summary}</span>
-          <div className="flex flex-wrap gap-1">
-            {f.components.slice(0, 3).map((c) => (
-              <Badge key={c}>{c}</Badge>
-            ))}
-          </div>
-        </Link>
+        <GalleryCard key={f.id} f={f} base={base} />
       ))}
     </div>
   );

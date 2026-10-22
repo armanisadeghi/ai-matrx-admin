@@ -8,7 +8,8 @@
 //     Its Topic tile alone runs the topic generator (no citations); any picked
 //     Source runs THE one question generator over the server-resolved set
 //     (`useAssessmentGeneration` → `/sources/resolve` → cited questions +
-//     a lineage edge per Source). A flashcard deck is one more Source (fc_set).
+//     a lineage edge per Source). A flashcard deck is one more Source (Use
+//     existing → Decks, an fc_set read on the server as its cards).
 //   • Style and details: count, difficulty, depth, question types, exam type,
 //     time limit (timed kinds), instructions — kept across a reload too.
 // Generation is metered via useEntitlement — the remaining count shows BEFORE
@@ -37,8 +38,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { EntitlementMeter } from "@/features/entitlements/components/EntitlementMeter";
-import { fcService } from "@/features/flashcards/data/fcService";
-import type { FcSetRow } from "@/features/flashcards/data/types";
 import { FLASHCARD_SOURCE_DELIVERIES } from "@/features/flashcards/data/generateDeckFromSources";
 import { SourceInput } from "@/features/resource-manager/source-input/components/SourceInput";
 import { useSourceSet } from "@/features/resource-manager/source-input/useSourceSet";
@@ -73,7 +72,6 @@ import { KIND_CONFIG, type KindConfig } from "../kindConfig";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
-import { ReadFailure } from "@ai-matrx/design-system";
 
 const FIELD = "text-base"; // 16px+ prevents iOS zoom-on-focus
 
@@ -151,8 +149,6 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
   const [examType, setExamType] = useState(seedExamType);
   const [timeLimitMin, setTimeLimitMin] = useState(defaultTime);
   const [userRequest, setUserRequest] = useState("");
-  const [decks, setDecks] = useState<FcSetRow[] | null>(null);
-  const [decksError, setDecksError] = useState<string | null>(null);
   const keep = (fields: AssessmentStyleDraft) => styleDraft.patch({ ...fields });
 
   // Never lose input: the style answers come back after a reload, said out
@@ -208,23 +204,6 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
 
   const busy = isGenerating || isNavigating;
   const Icon = config.icon;
-
-  // Deck list for "Add a flashcard deck" (lazy — only when that menu opens).
-  const loadDecks = async () => {
-    if (decks) return;
-    const res = await fcService.listDecks();
-    // A failed read is said, never "You have no decks yet" (RC-B12).
-    if (res.error) {
-      setDecksError(res.error);
-      return;
-    }
-    setDecksError(null);
-    setDecks(res.data ?? []);
-  };
-  const addDeck = (id: string) => {
-    const deck = decks?.find((d) => d.id === id);
-    if (deck && !set.hasRef("fc_set", deck.id)) set.addReady(deckSourceDraft(deck));
-  };
 
   const toggleType = (t: QuestionType) => {
     const next = new Set(types);
@@ -408,7 +387,7 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
       getWriteHandlers={getSurfaceWriteHandlers}
     >
     <div className="min-h-full w-full bg-textured">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-6 sm:py-8">
         {/* Header */}
         <div className="flex items-center gap-3">
           <Button
@@ -465,44 +444,6 @@ export function AssessmentCreate({ kind }: { kind: AssessmentKind }) {
               purpose={`your ${config.noun}`}
               deliveries={FLASHCARD_SOURCE_DELIVERIES}
             />
-            <div className="flex flex-col gap-1.5">
-              {decksError ? (
-                <ReadFailure
-                  error={decksError}
-                  what="your flashcard decks"
-                  onRetry={() => void loadDecks()}
-                  className="m-0"
-                />
-              ) : (
-                <Select
-                  value=""
-                  onOpenChange={(open) => open && void loadDecks()}
-                  onValueChange={addDeck}
-                >
-                  <SelectTrigger className={FIELD} aria-label="Add a flashcard deck">
-                    <SelectValue placeholder="Add a flashcard deck" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {decks === null ? (
-                      <SelectItem value="__loading" disabled>
-                        Loading decks…
-                      </SelectItem>
-                    ) : decks.length === 0 ? (
-                      <SelectItem value="__none" disabled>
-                        No decks yet
-                      </SelectItem>
-                    ) : (
-                      decks.map((d) => (
-                        <SelectItem key={d.id} value={d.id} disabled={set.hasRef("fc_set", d.id)}>
-                          {d.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
             {styleDraft.didRestore ? (
               <WizardDraftRestored
                 what="your style and details"

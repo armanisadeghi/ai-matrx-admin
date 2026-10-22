@@ -7,13 +7,19 @@
  * gate, lifted utils, audio helpers, color tables. This lane compares file
  * CONTENT, so a new copy fails the release gate whatever it is called.
  *
- * HOW. Every tracked .ts/.tsx file is normalized (comments, import lines,
+ * HOW. Every tracked .ts/.tsx/.js/.mjs/.cjs/.jsx file is normalized (comments, import lines,
  * `export … from` lines, whitespace and blank lines stripped). Files under 20
  * normalized lines are ignored — which is also why a pure re-export door and a
  * one-to-two-line option-binding wrapper are never findings. Candidates come
  * from an inverted index of sampled token shingles (never all-pairs), are
  * confirmed by exact shingle Jaccard, then by a line-level LCS ratio. A pair at
  * >= 0.80 is a finding.
+ *
+ * GENERATED FILES (`*.generated.*`) ARE IN, but only ever compared against other generated
+ * files (a generated twin of a generated file is a finding; a generated file never matches a
+ * hand-written one). `examples/`, demos, tests, `.d.ts` and files under 20 normalized lines
+ * stay out BY DESIGN. Only `<pkg>/src/**` is package source in the pool, so a generated twin
+ * must sit under a package `src/` to be seen.
  *
  * MODES (register `contentLane.mode`, the key being absent = lane off):
  *   app-vs-packages  — this repo's files vs package SOURCE in a sibling checkout
@@ -50,7 +56,7 @@ const SAMPLE_MOD = 4;
 const MAX_POSTING = 60;
 
 const SKIP_PATH =
-  /(^|\/)(node_modules|dist|build|coverage|demo|demos|examples|__tests__|__mocks__|jest|\.next[^/]*|\.turbo|\.ignored_[^/]*)\/|\.(test|spec)\.[cm]?[tj]sx?$|\.generated\.[tj]sx?$|\.d\.ts$|(^|\/)(jest|vitest)[^/]*\.(setup|config)\.[tj]s$|(^|\/)(jest|vitest)\.setup/;
+  /(^|\/)(node_modules|dist|build|coverage|demo|demos|examples|__tests__|__mocks__|jest|\.next[^/]*|\.turbo|\.ignored_[^/]*)\/|\.(test|spec)\.[cm]?[tj]sx?$|\.min\.[cm]?js$|\.d\.ts$|(^|\/)(jest|vitest)[^/]*\.(setup|config)\.[tj]s$|(^|\/)(jest|vitest)\.setup/;
 
 /** Source without comments, import lines, `export … from` lines, blank lines. */
 export function normalize(source) {
@@ -94,8 +100,11 @@ export function normalize(source) {
     .filter(Boolean);
 }
 
+const SOURCE_EXT = /\.(tsx?|[cm]?jsx?)$/;
+const isGenerated = (path) => /\.generated\.[^/]+$/.test(path);
+
 export function isCandidatePath(path, excludePrefixes = []) {
-  if (!/\.tsx?$/.test(path)) return false;
+  if (!SOURCE_EXT.test(path)) return false;
   if (SKIP_PATH.test(path)) return false;
   return !excludePrefixes.some((p) => path.startsWith(p) || path.includes(`/${p}`));
 }
@@ -180,6 +189,7 @@ export function findContentPairs({ left, right = null, crossPackage = false, dif
       if (crossPackage && (ri <= li || g.pkg === f.pkg)) continue;
       if (!crossPackage && g.path === f.path) continue;
       if (differentPkg && g.pkg === f.pkg) continue;
+      if (isGenerated(f.path) !== isGenerated(g.path)) continue;
       const lo = Math.min(f.n, g.n);
       const hi = Math.max(f.n, g.n);
       if ((2 * lo) / (lo + hi) < THRESHOLD) continue;
@@ -200,7 +210,7 @@ function crossKey(a, b) {
 }
 
 /**
- * Tracked .ts/.tsx files of a checkout with their INDEX content, read in ONE
+ * Tracked source files of a checkout with their INDEX content, read in ONE
  * `git cat-file --batch` stream (18k files in ~6s; opening them one by one took
  * over a minute on a busy Mac). The lane judges what is tracked/staged, which
  * is what the release gate ships; an unstaged edit is not seen until `git add`.
@@ -213,9 +223,9 @@ function foreignEnv(foreign) {
   return env;
 }
 
-/** [{ path, hash }] of tracked .ts/.tsx index entries passing `keep`. */
+/** [{ path, hash }] of tracked source index entries passing `keep`. */
 function trackedRows(dir, keep, { foreign = false } = {}) {
-  return execFileSync("git", ["ls-files", "-s", "-z", "--", "*.ts", "*.tsx"], {
+  return execFileSync("git", ["ls-files", "-s", "-z", "--", "*.ts", "*.tsx", "*.js", "*.mjs", "*.cjs", "*.jsx"], {
     cwd: dir,
     env: foreignEnv(foreign),
     encoding: "utf8",
@@ -261,7 +271,7 @@ function trackedSources(dir, keep, opts = {}) {
     .sort((x, y) => (x.path < y.path ? -1 : 1));
 }
 
-const CACHE_FILE = join(tmpdir(), "content-lane-pool-cache-v1.json");
+const CACHE_FILE = join(tmpdir(), "content-lane-pool-cache-v2.json");
 
 /**
  * The write-time pool, prepared once and remembered by blob hash (content-addressed, so it is
@@ -502,8 +512,16 @@ export function selfTestContentLane({ sampleSource = null } = {}) {
   const pruned = pruneStaleText('  { "pair": "gone|gone2", "reason": "r" },\n  { "pair": "x|y", "reason": "r" }\n', ["gone|gone2"]);
   if (pruned.removed !== 1 || pruned.text.includes("gone")) fail("--prune-stale did not remove exactly the stale line");
   // 7. skip rules
-  if (isCandidatePath("a/b.test.ts") || isCandidatePath("demo/a.ts") || isCandidatePath("x/dist/a.ts") || isCandidatePath("a/b.generated.ts")) fail("a skipped path was a candidate");
-  if (!isCandidatePath("a/b.tsx")) fail("a normal path was skipped");
+  if (isCandidatePath("a/b.test.ts") || isCandidatePath("demo/a.ts") || isCandidatePath("examples/a.ts") || isCandidatePath("x/dist/a.ts") || isCandidatePath("a/b.d.ts")) fail("a skipped path was a candidate");
+  if (!isCandidatePath("a/b.tsx") || !isCandidatePath("a/b.mjs") || !isCandidatePath("a/b.js") || !isCandidatePath("a/b.generated.ts")) fail("a normal, .js/.mjs or generated path was skipped");
+  // 7b. generated twins: caught against another generated file, never against a hand-written one
+  r = findContentPairs({ crossPackage: true, left: [{ path: "a/src/keys.generated.ts", pkg: "a", src: body }, { path: "b/src/keys.generated.ts", pkg: "b", src: body }] });
+  if (r.length !== 1) fail("a planted generated twin was NOT reported");
+  r = findContentPairs({ crossPackage: true, left: [{ path: "a/src/keys.generated.ts", pkg: "a", src: body }, { path: "b/src/keys.ts", pkg: "b", src: body }] });
+  if (r.length) fail("a generated file was compared against a hand-written one");
+  // 7c. a .mjs twin is seen (the lane used to read .ts/.tsx only)
+  r = findContentPairs({ left: [{ path: "scripts/copy.mjs", pkg: "app", src: copy }], right: [{ path: "sharing/src/real.mjs", pkg: "sharing", src: body }] });
+  if (r.length !== 1) fail("a planted .mjs twin was NOT reported");
   // 8. write-time --files mode: a planted copy is reported; a censused pair, a door, an unrelated file, a same-package file are not
   const poolPkg = [{ path: "sharing/src/real.ts", pkg: "sharing", src: body }];
   let w = findFileCopies({ mode: "app-vs-packages", files: [{ path: "features/x/copy.ts", src: copy }], pool: poolPkg });
@@ -520,7 +538,7 @@ export function selfTestContentLane({ sampleSource = null } = {}) {
   w = findFileCopies({ mode: "cross-package", files: [{ path: "b/src/2.ts", src: copy }], pool: [{ path: "a/src/1.ts", pkg: "a", src: body }], censusKeys: new Set(["a/src/1.ts|b/src/2.ts"]) });
   if (w.length) fail("--files: a censused cross-package pair was reported");
   if (findFileCopies({ mode: "cross-package", files: [{ path: "scripts/x.ts", src: copy }], pool: [{ path: "a/src/1.ts", pkg: "a", src: body }] }).length) fail("--files: a non-package file was compared in cross-package mode");
-  console.log("check:package-twins content lane self-test PASSED (copy reported; unrelated, door, wrapper, same-package not; stale census named and prunable; --files mode reports a copy, skips censused/door/unrelated).");
+  console.log("check:package-twins content lane self-test PASSED (copy reported, incl. a .mjs twin and a generated twin; unrelated, door, wrapper, same-package, generated-vs-handwritten not; stale census named and prunable; --files mode reports a copy, skips censused/door/unrelated).");
 }
 
 // ── CLI: `node scripts/content-lane.mjs --files <paths...> | --self-test` ────

@@ -22,6 +22,9 @@ export const LEARN_DOCS_TAG = "education-learn-docs";
 /** Revalidate window for the ISR fallback (a publish busts sooner via the tag). */
 const LEARN_REVALIDATE_SECONDS = 3600;
 
+/** Bound on the published-list read every learn render and metadata call makes. */
+const LEARN_READ_TIMEOUT_MS = 8000;
+
 async function fetchPublishedRows(): Promise<LearnDocRow[]> {
   const sb = getScriptSupabaseClient();
   const { data, error } = await sb
@@ -33,7 +36,10 @@ async function fetchPublishedRows(): Promise<LearnDocRow[]> {
     .select(LEARN_DOC_PUBLIC_SELECT)
     .eq("published_to_web", true)
     .is("deleted_at", null)
-    .order("content_updated_at", { ascending: false, nullsFirst: false });
+    .order("content_updated_at", { ascending: false, nullsFirst: false })
+    // A server render never waits on the database without a limit: a hung
+    // read throws (ISR keeps serving the last good page) instead of a 504.
+    .abortSignal(AbortSignal.timeout(LEARN_READ_TIMEOUT_MS));
   if (error) {
     throw new Error(`[learn_doc] published list failed: ${error.message}`);
   }

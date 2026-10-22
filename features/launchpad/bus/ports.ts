@@ -11,7 +11,7 @@
 import type { LaunchpadBinding, LaunchpadDoc } from "@/features/shell/shell-layout/contract";
 
 /** The value kinds a port carries. */
-export type PageValueKind = "record" | "file" | "text" | "rows";
+export type PageValueKind = "record" | "file" | "text" | "rows" | "shape";
 
 /** One chosen platform record (entity token + id), with the words a person reads. */
 export interface PageRecordValue {
@@ -34,11 +34,15 @@ export interface PageRowsValue {
   rows: { id: string; label: string }[];
 }
 
+/** A value of a registered kind: a JSON object carrying its `__kind` (kept whole — never stripped). */
+export type PageShapeValue = Record<string, unknown> & { __kind: string };
+
 export interface PageValueOf {
   record: PageRecordValue;
   file: PageFileValue;
   text: string;
   rows: PageRowsValue;
+  shape: PageShapeValue;
 }
 
 export interface LaunchpadPort {
@@ -54,6 +58,8 @@ const FEEDS: Record<PageValueKind, readonly PageValueKind[]> = {
   file: ["file", "record"],
   text: ["text", "record", "file"],
   rows: ["rows"],
+  // A record or text that IS a kind value (an Applet's record carrying `__kind`, JSON text of one) feeds a shape.
+  shape: ["shape", "record", "text"],
 };
 
 export function canFeed(from: PageValueKind, to: PageValueKind): boolean {
@@ -69,6 +75,8 @@ const isObj = (v: unknown): v is Record<string, unknown> => typeof v === "object
  */
 export function coercePageValue<K extends PageValueKind>(value: unknown, from: PageValueKind, to: K): PageValueOf[K] | undefined {
   if (value === undefined || value === null) return undefined;
+  // A shape input draws only what really carries a kind, whatever fed it.
+  if (to === "shape") return (canFeed(from, to) ? asShapeValue(value) : undefined) as PageValueOf[K] | undefined;
   if (from === to) return value as PageValueOf[K];
   if (!canFeed(from, to)) return undefined;
   if (to === "text") {
@@ -82,6 +90,19 @@ export function coercePageValue<K extends PageValueKind>(value: unknown, from: P
     return { file_id: value.id, label: typeof value.label === "string" ? value.label : "File" } as PageValueOf[K];
   }
   return undefined;
+}
+
+/** The value as a kind value: an object carrying a string `__kind`, or JSON text of one; else `undefined`. */
+export function asShapeValue(value: unknown): PageShapeValue | undefined {
+  let v = value;
+  if (typeof v === "string") {
+    try {
+      v = JSON.parse(v);
+    } catch {
+      return undefined;
+    }
+  }
+  return isObj(v) && typeof v.__kind === "string" && v.__kind ? (v as PageShapeValue) : undefined;
 }
 
 /** `widgetId\u0000key` — one address on the bus. */

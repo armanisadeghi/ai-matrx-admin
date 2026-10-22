@@ -1,7 +1,8 @@
 "use client";
 
+import { primitiveLeading } from "./primitive-leading";
 import { useEffect, useState } from "react";
-import { Loader2, FileText } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { listAccessibleDocuments } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentRow } from "@ai-matrx/office/core";
@@ -66,7 +67,7 @@ export function DocumentsResourcePicker({
         search={
           <PickerSearchField
             ref={searchInputRef}
-            placeholder="Search documents"
+            placeholder="Search docs"
             value={searchQuery}
             onChange={setSearchQuery}
           />
@@ -84,14 +85,13 @@ export function DocumentsResourcePicker({
           </div>
         ) : filteredDocuments.length === 0 ? (
           <PickerEmpty>
-            {searchQuery ? "No documents found" : "No documents yet"}
+            {searchQuery ? "No docs found" : "No docs yet"}
           </PickerEmpty>
         ) : (
           filteredDocuments.map((document) => (
             <PickerRow
               key={document.id}
-              icon={FileText}
-              iconClassName="text-primary"
+              leading={primitiveLeading("docs")}
               label={document.document_name}
               trailing={
                 <span className="shrink-0 text-xs tabular-nums text-muted-foreground">

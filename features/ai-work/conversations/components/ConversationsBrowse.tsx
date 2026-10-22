@@ -13,6 +13,26 @@ import { conversationListConfig } from "../listConfig";
 import type { ConversationBrowseRow } from "../types";
 import { ConversationAudienceFilter } from "./ConversationAudienceFilter";
 import { SyncStateIndicator } from "./SyncStatePanel";
+import {
+  buildConversationListWriteHandlers,
+  buildConversationsPageScope,
+  buildWorkOverviewScope,
+} from "../conversationListSurface";
+import { AI_WORK_SURFACE_NAME } from "@/features/surfaces/manifests/ai-work.manifest";
+import { AI_WORK_CONVERSATIONS_SURFACE_NAME } from "@/features/surfaces/manifests/ai-work-conversations.manifest";
+
+// One list, two routes: /work (embedded) answers as the AI Work overview,
+// /work/conversations as its own surface. Same values, same writes.
+const OVERVIEW_SURFACE = {
+  surfaceName: AI_WORK_SURFACE_NAME,
+  getScope: buildWorkOverviewScope,
+  getWriteHandlers: buildConversationListWriteHandlers,
+};
+const CONVERSATIONS_SURFACE = {
+  surfaceName: AI_WORK_CONVERSATIONS_SURFACE_NAME,
+  getScope: buildConversationsPageScope,
+  getWriteHandlers: buildConversationListWriteHandlers,
+};
 
 export function ConversationsBrowse({
   embedded = false,
@@ -23,6 +43,7 @@ export function ConversationsBrowse({
     <EntityListPage<ConversationBrowseRow>
       config={conversationListConfig}
       clearsShellHeader={!embedded}
+      surface={embedded ? OVERVIEW_SURFACE : CONVERSATIONS_SURFACE}
       notice={(list) => (
         <div className="space-y-1.5">
           {embedded && <AiWorkDestinationNavigation list={list} />}

@@ -25,12 +25,20 @@ import type {
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MATRX_WEB_APP_EXECUTOR } from "@ai-matrx/chat/surfaces/executor";
+import {
+  CONVERSATION_LIST_GROUPS,
+  CONVERSATION_LIST_VALUES,
+  CONVERSATION_LIST_WRITE_TARGETS,
+} from "./_ai-work-conversation-list.manifest";
+
+export const AI_WORK_SURFACE_NAME = "matrx-user/ai-work";
 
 const groups: SurfaceValueGroup[] = [
+  ...CONVERSATION_LIST_GROUPS,
   {
     key: "work_route",
     label: "Hub route",
-    sortOrder: 100,
+    sortOrder: 50,
     description: "Which of the AI Work hub routes the user is currently on.",
   },
   {
@@ -50,6 +58,8 @@ const groups: SurfaceValueGroup[] = [
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
+  // ── The overview (/work) is the conversations list ──────────────────
+  ...CONVERSATION_LIST_VALUES,
   {
     name: "work_route",
     label: "Hub route",
@@ -58,7 +68,7 @@ const surfaceSpecific: SurfaceValue[] = [
     valueType: "string",
     alwaysAvailable: true,
     typicalCharCount: 12,
-    sortOrder: 100,
+    sortOrder: 80,
     group: "work_route",
   },
   {
@@ -109,23 +119,25 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const aiWorkManifest: SurfaceManifest = {
-  surfaceName: "matrx-user/ai-work",
+  surfaceName: AI_WORK_SURFACE_NAME,
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",
   description:
     "AI Work hub: the overview directory, Saved Requests, and connections.",
-  readiness: "stub",
+  readiness: "partial",
   readinessNote:
-    "Baseline vocabulary declared 2026-08-17 to close an undeclared Tier-1 route family (/work, /work/requests, /work/connections). Not yet audited field-by-field against each page, and no runtime emitter is wired.",
+    "page-pass 2026-10-22: /work (the overview) renders the conversations list and emits work_route plus the conversation_list bundle and rows, with list_view / update_conversations / delete_conversations (conversationListSurface.ts). /work/requests and /work/connections still emit nothing; nothing probed live yet.",
   label: "AI Work Hub",
   urlPattern: "/work",
   intro: `<surface_intro>
 You are on the AI Work hub: the user's front door for finding, continuing, and organizing AI work without knowing which subsystem owns it. It composes existing platform capabilities — it owns no conversation store, scheduler, or provider bridge of its own.
-Three routes share this surface: the overview directory, the caller's Saved Requests, and the connections page that states which execution destinations are genuinely available. Read work_route first; the other groups are populated only on the route that loads them.
+Three routes share this surface: the overview (/work — the person's conversations list), the caller's Saved Requests, and the connections page. Read work_route first; the other groups are populated only on the route that loads them.
+On the overview read conversation_list first: the page on screen, with ids. While conversations_loaded is false the list is loading (or load_error explains a failure) — never say the person has none. The list opens on the "chat" bucket; use list_view to reach other rows. update_conversations renames or favorites, delete_conversations moves to Trash.
 Starting a new run happens on a different surface (the composer at /work/new), and browsing conversations on another still — do not assume their values are present here.
 </surface_intro>`,
   groups,
+  writeTargets: CONVERSATION_LIST_WRITE_TARGETS,
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
 };
 
@@ -139,6 +151,7 @@ export interface AiWorkSavedRequestSummaryEntry {
 /** Type-safe payload helper — required keys mirror `alwaysAvailable: true`. */
 export function createAiWorkScope(values: {
   work_route: "overview" | "requests" | "connections";
+  conversations_loaded?: boolean;
   selection?: string;
   context?: Record<string, unknown>;
   saved_request_count?: number;

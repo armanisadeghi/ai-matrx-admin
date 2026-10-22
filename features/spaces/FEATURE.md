@@ -47,6 +47,10 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- `2026-10-22` — **A Space page as a launchpad widget.** New fence door `embed/SpaceWidget.tsx` (`SpaceWidgetBody`: the
+  same `RecordBodySpaceImpl` editor + autosave behind one dynamic edge; `SpacePagePicker`: the store's own `search("")`),
+  added to `check-spaces-fence` ENTRY_POINTS (custom-experience lane W).
+
 - `2026-10-22` — **One catalog read per tab.** `listSpaceTemplates` reads `custom.space_templates` once per tab for the plain catalog (in-flight shared, failures forgotten); an `installedIn` read is shared while in flight and never kept. The board start dialog had asked ~13 times on one open. Per-pack reads stay one per pack (`readSpaceTemplate`, cached per tab).
 
 - 2026-10-21 — CLOSE-TPL. **The Notion keys, the phone toolbar, and the ••• menu's missing rows.** B7: `editor/notion-keys.ts`
