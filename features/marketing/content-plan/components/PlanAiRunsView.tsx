@@ -30,7 +30,7 @@ import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIde
 import { usePlanAiRun, usePlanAiRuns } from "../hooks/usePlanAiRuns";
 import { planAiRunSummary } from "../format";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 
 const STATUS_TONE: Record<string, string> = {
   completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
@@ -52,8 +52,6 @@ export function PlanAiRunsView({
   /** Open the page a per-page run was made for (THE DOOR LAW). */
   onOpenNode: (nodeId: string) => void;
 }) {
-  const { format: formatCostDisplay, unit, rate: costRate } = useCostDisplay();
-  const money = (cost: number): string => (!cost ? "" : formatCostDisplay(cost));
   const runs = usePlanAiRuns(siteId);
   const [openRunId, setOpenRunId] = useState<string | null>(null);
   const detail = usePlanAiRun(siteId, openRunId);
@@ -84,7 +82,7 @@ export function PlanAiRunsView({
                 size="icon"
                 label="AI runs"
                 human={() =>
-                  (runs.data ?? []).map((run) => planAiRunSummary(run, costRate, unit)).join("\n")
+                  (runs.data ?? []).map((run) => planAiRunSummary(run)).join("\n")
                 }
                 json={() => runs.data ?? []}
                 agent={() => {
@@ -227,18 +225,21 @@ export function PlanAiRunsView({
                   {run.error || run.headline}
                 </span>
                 <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                  {money(run.totalCost)} {when(run.createdAt)}
+                  {when(run.createdAt)}
                 </span>
               </button>
 
               {/* Per-run pair. The row header is a <button>, so this sits
                 OUTSIDE it — nesting a button inside a button is invalid, and
                 CopyButtons already stops propagation. */}
-              <div className="flex items-center justify-end px-3 pb-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/run:opacity-100">
+              <div className="flex items-center justify-end gap-1 px-3 pb-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/run:opacity-100">
+                {run.totalCost ? (
+                  <CostDoor usd={run.totalCost} label="Usage" iconOnly />
+                ) : null}
                 <CopyButtons
                   size="xs"
                   label={`AI run — ${run.kindLabel}`}
-                  human={() => planAiRunSummary(run, costRate, unit)}
+                  human={() => planAiRunSummary(run)}
                   json={() => (open && detail.data ? detail.data : run)}
                   agent={() => ({
                     kind: "plan_ai_run",
@@ -255,7 +256,7 @@ export function PlanAiRunsView({
                         ? undefined
                         : "This run is collapsed; open it to include the complete request and result.",
                     },
-                    summary: planAiRunSummary(run, costRate, unit),
+                    summary: planAiRunSummary(run),
                     attributes: {
                       run_id: run.runId,
                       kind: run.kind,

@@ -30,12 +30,12 @@ export function estimateLabel(s: EstimateSummary): string {
   return s.reused > 0 ? `${s.toMake} to make · ${s.reused} reused` : `${s.toMake} to make`;
 }
 
-/** The line that tells the person when the studio stops to ask: "Asks before spending over 20,000 points". Null when the setting is unknown. */
+/** The line that tells the person when the studio stops to ask: "Asks before large spends". Null when the setting is unknown. */
 export function confirmLine(est: Pick<EstimateAnswer, "confirm_over_points">): string | null {
   const pts = est.confirm_over_points;
   if (pts == null) return null;
   if (pts <= 0) return "Asks before every generation";
-  return `Asks before spending over ${Math.round(pts).toLocaleString("en-US")} points`;
+  return "Asks before large spends";
 }
 
 export interface OutputRow {

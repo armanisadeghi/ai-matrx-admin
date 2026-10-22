@@ -41,6 +41,7 @@ import {
 import { openWorkflowRunWindowAction } from "@/features/overlays/definitions/workflowRunWindow.overlay";
 import { useBuilderFeed } from "@/hooks/useBuilderFeed";
 import { getJson, postNdjson } from "@/lib/python-client";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import {
@@ -597,8 +598,13 @@ export function BrandOfferingsPanel({ brand }: Props) {
       if (quote.points > 0) {
         const ok = await confirm({
           title: "Refresh products & services",
-          description: `Up to ${formatCount(quote.points)} points: ${quote.paid_sources.map((p) => p.source).join(", ")}.`,
-          confirmLabel: `Spend up to ${formatCount(quote.points)} points`,
+          description: (
+            <>
+              {quote.paid_sources.map((p) => p.source).join(", ")}.{" "}
+              <CostDoor points={quote.points} prefix="up to " />
+            </>
+          ),
+          confirmLabel: "Refresh",
         });
         if (!ok) return;
       }

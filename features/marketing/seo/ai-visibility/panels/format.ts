@@ -11,8 +11,6 @@
 // server left null) reads "Not measured yet"; `campaign_response` with no
 // pre-registered design reads "Not set up". Neither is ever "0%".
 
-import { type CostUnit } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
 import { AI_VISIBILITY_ENGINES } from "../types";
 import type {
   DesignPerformer,
@@ -26,7 +24,6 @@ import type {
   PanelMetricKey,
   QaDecision,
 } from "./types";
-import { currentCostUnit } from "@/components/cost/costUnit";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 
 function humanize(code: string): string {
@@ -394,15 +391,6 @@ export function formatComparison(comparison: PairedComparison): string {
     ? ` (${points(comparison.interval.low)} to ${points(comparison.interval.high)})`
     : "";
   return `${scope}: ${points(comparison.change)} points${interval}`;
-}
-
-export function formatWaveCost(
-  value: number | null | undefined,
-  rate: number | null,
-  unit: CostUnit = currentCostUnit(),
-): string | null {
-  if (value === null || value === undefined || Number.isNaN(value)) return null;
-  return formatCost(value, { rate, unit });
 }
 
 export interface AidedPivotRow {

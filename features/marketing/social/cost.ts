@@ -17,7 +17,9 @@
  *   otherwise the shared confirm dialog naming the points.
  */
 
+import { createElement, Fragment, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { shouldWarnAboutCost } from "@/components/cost/costTier";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
@@ -60,6 +62,16 @@ export function formatPointsAlways(usd: number | null, toPoints: (usd: number) =
   return `≈ ${Math.max(1, Math.ceil(points)).toLocaleString("en-US")} points`;
 }
 
+/** A confirm body: the caller's sentence, then the price behind the quiet Cost door (never printed). */
+function costDescription(description: string | undefined, usd: number | null): ReactNode {
+  return createElement(
+    Fragment,
+    null,
+    description ? `${description} ` : null,
+    createElement(CostDoor, { usd, prefix: "about " }),
+  );
+}
+
 export function useSocialSpend(organizationId: string | null | undefined) {
   const { format, toPoints } = useCostDisplay();
   const costs = useQuery({
@@ -98,7 +110,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     if (!words) return true;
     return confirm({
       title: dialog.title,
-      description: [dialog.description, `Uses ${words.replace(/^≈ /, "about ")}.`].filter(Boolean).join(" "),
+      description: costDescription(dialog.description, actionUsd(costs.data, action, count)),
       confirmLabel: dialog.confirmLabel,
     });
   }
@@ -118,7 +130,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
   ): Promise<boolean> {
     const words = formatPointsCost(postsUsd(costs.data, platform, count), display);
     if (!words) return true;
-    return confirm({ title: dialog.title, description: `Uses ${words.replace(/^≈ /, "about ")}.`, confirmLabel: dialog.confirmLabel });
+    return confirm({ title: dialog.title, description: costDescription(undefined, postsUsd(costs.data, platform, count)), confirmLabel: dialog.confirmLabel });
   }
 
   return { confirmCostText, pointsText, agentCostText, confirmSpend, confirmPosts, postsTotalText };
@@ -156,14 +168,15 @@ export async function confirmSocialSpendNow(
   const { currentCostUnit } = await import("@/components/cost/costUnit");
   const rate = currentPointsRate();
   const unit = currentCostUnit();
-  const words = formatPointsCost(actionUsd(await costsNow(), action, count), {
+  const usd = actionUsd(await costsNow(), action, count);
+  const words = formatPointsCost(usd, {
     format: (usd) => formatCost(usd, { unit, rate }),
     toPoints: (usd) => usdToPoints(usd, { rate }),
   });
   if (!words) return true;
   return confirm({
     title: dialog.title,
-    description: [dialog.description, `Uses ${words.replace(/^≈ /, "about ")}.`].filter(Boolean).join(" "),
+    description: costDescription(dialog.description, usd),
     confirmLabel: dialog.confirmLabel,
   });
 }

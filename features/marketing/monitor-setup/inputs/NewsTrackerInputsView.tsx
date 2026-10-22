@@ -21,7 +21,7 @@ import {
 import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 
-import { Cost } from "@/components/cost/Cost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useTrackerInputs, type NewsTrackerInputs } from "./data";
@@ -127,9 +127,9 @@ function Body({ tracker }: { tracker: NewsTrackerInputs }) {
           <dd>{tracker.runs30d}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">AI cost 30d</dt>
+          <dt className="text-muted-foreground">AI usage 30d</dt>
           <dd>
-            <Cost usd={tracker.cost30dUsd} />
+            <CostDoor usd={tracker.cost30dUsd} label="Usage" />
           </dd>
         </div>
         <div>

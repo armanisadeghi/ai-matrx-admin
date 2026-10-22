@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { extractErrorMessage } from "@/utils/errors";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { siteProviderStatuses } from "@/features/marketing/lib/site-status";
@@ -133,7 +133,6 @@ function PeriodPreviewCard({ period }: { period: IntakeBundlePeriodPreview }) {
 export function SiteIntakeWizard() {
   const { site } = useMarketingSite();
   const dispatch = useAppDispatch();
-  const { format: formatCostDisplay } = useCostDisplay();
   const queryClient = useQueryClient();
   const organizationId = site.organization_id ?? null;
 
@@ -661,10 +660,13 @@ export function SiteIntakeWizard() {
                 {applyResult.classify_estimate.unclassified_keywords.toLocaleString()}{" "}
                 keywords remain machine-unclassified platform-wide (~
                 {applyResult.classify_estimate.batches} batches
-                {applyResult.classify_estimate.est_cost_usd != null
-                  ? `, ≈${formatCostDisplay(applyResult.classify_estimate.est_cost_usd)}`
-                  : ""}
                 ) — the nightly classifier sweeps them under your boundaries.
+                {applyResult.classify_estimate.est_cost_usd != null ? (
+                  <>
+                    {" "}
+                    <CostDoor usd={applyResult.classify_estimate.est_cost_usd} prefix="~" />
+                  </>
+                ) : null}
               </p>
             ) : null}
             <div className="mt-2 flex gap-2">
