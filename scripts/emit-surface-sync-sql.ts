@@ -178,14 +178,20 @@ export function emitSurfaceSyncSql({
     }), ...guides].filter(Boolean).join("\n\n");
 }
 
+/** Columns the direct check never compares (governance and provenance). */
+const CHECK_NOT_COMPARED = new Set(["organization_id", "visibility", "synced_by", "synced_from"]);
+
 /**
  * Cloud `--check` (2026-10-22): a read-only SELECT that returns one row per
  * problem for the selected surfaces — nothing returned means the DB mirror
  * matches the code. Run it through the Supabase MCP where the direct-Postgres
- * `sync-surface-manifests-direct.ts --check` cannot run. It compares the
- * surface's content_hash (it covers every manifest field), every keyed child
- * row (missing, archived, or live but no longer declared), and each guide's
- * skill hash. The direct check additionally EXPLAINs the sync statements.
+ * `sync-surface-manifests-direct.ts --check` cannot run. It compares what that
+ * check compares: every column the sync writes on the surface row and on each
+ * keyed child row (`to_jsonb(row)->column` against the planned value, so key
+ * order inside JSON never matters), rows missing or archived, rows live but no
+ * longer declared — in EVERY keyed table, including ones the plan has no rows
+ * for — and each guide's skill hash. Not covered: the direct check's EXPLAIN
+ * of every sync statement against the live schema.
  */
 export function emitSurfaceCheckSql({
   surfaceNames = [],
@@ -200,26 +206,58 @@ export function emitSurfaceCheckSql({
     syncedFrom: "check",
   });
   const L = (v: unknown) => sqlLiteral(String(v));
+  const J = (v: Record<string, unknown>) => {
+    const compared = Object.fromEntries(
+      Object.entries(v)
+        .filter(([column]) => !CHECK_NOT_COMPARED.has(column))
+        .map(([column, value]) => [column, value ?? null]),
+    );
+    return `${sqlLiteral(JSON.stringify(compared))}::jsonb`;
+  };
   const names = manifests.map((m) => L(m.surfaceName)).join(", ");
   const parts: string[] = [];
-  for (const surface of plan.surfaces) {
-    const hash = (surface.update as Record<string, unknown>).content_hash;
-    parts.push(`SELECT ${L(surface.name)} AS surface, 'ui_surface row missing, archived or out of date (content_hash)' AS problem
-WHERE NOT EXISTS (SELECT 1 FROM ui.ui_surface WHERE name = ${L(surface.name)} AND deleted_at IS NULL AND is_active AND content_hash = ${L(hash)})`);
-  }
-  for (const { table, conflict, rows } of plan.tables as Array<{ table: string; conflict: readonly string[]; rows: Array<Record<string, unknown>> }>) {
+  // Each expected set is written once, as a CTE, and read by every clause.
+  const ctes: string[] = [];
+  const surfaceValues = plan.surfaces
+    .map((surface) => `(${L(surface.name)}, ${J(surface.update as Record<string, unknown>)})`)
+    .join(",\n  ");
+  ctes.push(`exp_surface(name, expected) AS (VALUES ${surfaceValues})`);
+  parts.push(`SELECT e.name AS surface, 'ui_surface row missing, archived or inactive' AS problem
+FROM exp_surface e
+WHERE NOT EXISTS (SELECT 1 FROM ui.ui_surface s WHERE s.name = e.name AND s.deleted_at IS NULL AND s.is_active IS TRUE)`);
+  parts.push(`SELECT e.name, 'ui_surface.' || kv.key || ' differs' AS problem
+FROM exp_surface e
+JOIN ui.ui_surface s ON s.name = e.name AND s.deleted_at IS NULL
+CROSS JOIN LATERAL jsonb_each(e.expected) AS kv
+WHERE to_jsonb(s) -> kv.key IS DISTINCT FROM kv.value`);
+  const planTables = plan.tables as Array<{ table: string; rows: Array<Record<string, unknown>> }>;
+  for (const [index, [table, conflict]] of Object.entries(plan.keys as Record<string, readonly string[]>).entries()) {
+    const rows = planTables.find((t) => t.table === table)?.rows ?? [];
     const keyCols = conflict.join(", ");
-    const keyExpr = conflict.map((c) => `coalesce(${c}::text, '')`).join(" || '/' || ");
-    const expected = rows.length
-      ? `VALUES ${rows.map((r) => `(${conflict.map((c) => L(r[c] ?? "")).join(", ")})`).join(",\n  ")}`
-      : `SELECT ${conflict.map((c) => `NULL::text AS ${c}`).join(", ")} WHERE false`;
-    parts.push(`SELECT e.surface_name, '${table}: ' || ${keyExpr.replace(/coalesce\((\w+)/g, "coalesce(e.$1")} || ' missing or archived' AS problem
-FROM (${expected}) AS e(${keyCols})
-WHERE NOT EXISTS (SELECT 1 FROM ${table} t WHERE ${conflict.map((c) => `t.${c}::text = e.${c}`).join(" AND ")} AND t.deleted_at IS NULL)`);
-    parts.push(`SELECT t.surface_name, '${table}: ' || ${keyExpr.replace(/coalesce\((\w+)/g, "coalesce(t.$1")} || ' is live but no longer declared' AS problem
+    const keyLabel = (alias: string) => conflict.map((c) => `coalesce(${alias}.${c}::text, '')`).join(" || '/' || ");
+    const match = conflict.map((c) => `t.${c}::text = e.${c}`).join(" AND ");
+    const cte = `exp_${index}`;
+    ctes.push(
+      rows.length
+        ? `${cte}(${keyCols}, expected) AS (VALUES ${rows.map((r) => `(${conflict.map((c) => L(r[c] ?? "")).join(", ")}, ${J(r)})`).join(",\n  ")})`
+        : `${cte}(${keyCols}, expected) AS (SELECT ${conflict.map(() => "NULL::text").join(", ")}, NULL::jsonb WHERE false)`,
+    );
+    const expected = cte;
+    const alias = "AS e";
+    if (rows.length) {
+      parts.push(`SELECT e.surface_name, '${table}: ' || ${keyLabel("e")} || ' missing or archived' AS problem
+FROM ${expected} ${alias}
+WHERE NOT EXISTS (SELECT 1 FROM ${table} t WHERE ${match} AND t.deleted_at IS NULL)`);
+      parts.push(`SELECT e.surface_name, '${table}: ' || ${keyLabel("e")} || ' ' || kv.key || ' differs' AS problem
+FROM ${expected} ${alias}
+JOIN ${table} t ON ${match} AND t.deleted_at IS NULL
+CROSS JOIN LATERAL jsonb_each(e.expected) AS kv
+WHERE to_jsonb(t) -> kv.key IS DISTINCT FROM kv.value`);
+    }
+    parts.push(`SELECT t.surface_name, '${table}: ' || ${keyLabel("t")} || ' is live but no longer declared' AS problem
 FROM ${table} t
 WHERE t.surface_name IN (${names}) AND t.deleted_at IS NULL AND t.declared_by = 'code'
-  AND NOT EXISTS (SELECT 1 FROM (${expected}) AS e(${keyCols}) WHERE ${conflict.map((c) => `t.${c}::text = e.${c}`).join(" AND ")})`);
+  AND NOT EXISTS (SELECT 1 FROM ${expected} ${alias} WHERE ${match})`);
   }
   for (const manifest of manifests) {
     if (!manifest.guide) continue;
@@ -227,7 +265,7 @@ WHERE t.surface_name IN (${names}) AND t.deleted_at IS NULL AND t.declared_by = 
     parts.push(`SELECT ${L(manifest.surfaceName)}, 'guide skill ${surfaceGuideSkillId(manifest.surfaceName)} missing or stale' AS problem
 WHERE (SELECT count(*) FROM skill.definition WHERE skill_id = ${L(surfaceGuideSkillId(manifest.surfaceName))} AND organization_id = ${L(organizationId)} AND deleted_at IS NULL AND is_active AND config->>'source_hash' = ${L(hash)}) <> 1`);
   }
-  return `-- Read-only. No rows = the DB mirror matches the code.\n${parts.join("\nUNION ALL\n")};`;
+  return `-- Read-only. No rows = the DB mirror matches the code.\nWITH ${ctes.join(",\n")}\n${parts.join("\nUNION ALL\n")};`;
 }
 
 function main() {
