@@ -71,14 +71,12 @@ export function useDataFetchJob(jobId: string | null) {
  * (a run from before they were kept shows the whole table, as it always did). Pure.
  */
 export function runRowFilter(job: Pick<FetchJobRow, "key_column" | "metadata"> | null | undefined): RecordFilter | null {
-  const meta = job?.metadata && typeof job.metadata === "object" ? (job.metadata as { row_keys?: unknown; row_key_field?: unknown }) : null;
-  // The store's filter reads the field KEY ("place_id"), which the server wrote beside the keys; the
-  // job's key_column is the column's NAME ("Place Id") and the store refuses it as a filter key.
-  const field = typeof meta?.row_key_field === "string" ? meta.row_key_field : null;
-  const keys = meta?.row_keys;
-  if (!field || !Array.isArray(keys) || keys.length === 0) return null;
+  const column = job?.key_column;
+  const meta = job?.metadata;
+  const keys = meta && typeof meta === "object" ? (meta as { row_keys?: unknown }).row_keys : null;
+  if (!column || !Array.isArray(keys) || keys.length === 0) return null;
   // The store reads a list as "is either" on any column; its TS type only names the scalar forms.
-  return { [field]: keys } as unknown as RecordFilter;
+  return { [column]: keys } as unknown as RecordFilter;
 }
 
 /** True when the job names a key column but has stored no keys yet (a run still filling). */

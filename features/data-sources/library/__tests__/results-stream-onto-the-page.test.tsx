@@ -194,8 +194,8 @@ test("a reload onto a run refills the form with what that run asked", () => {
 
 test("the grid shows only the rows of the run on view, though runs share one table", () => {
   // Two runs of one source wrote the same table; each job carries the keys of its own rows.
-  jobRows.A = job("A", { table_id: "shared", key_column: "Place Id", metadata: { row_key_field: "place_id", row_keys: ["p1", "p2", "p3"] } });
-  jobRows.B = job("B", { table_id: "shared", key_column: "Place Id", metadata: { row_key_field: "place_id", row_keys: ["p9"] } });
+  jobRows.A = job("A", { table_id: "shared", key_column: "place_id", metadata: { row_keys: ["p1", "p2", "p3"] } });
+  jobRows.B = job("B", { table_id: "shared", key_column: "place_id", metadata: { row_keys: ["p9"] } });
   const filterOf = () => (host.querySelector('[data-testid="located-table"]') as HTMLElement).getAttribute("data-filter");
 
   search = "source=google_maps_place&job=A";
@@ -211,7 +211,7 @@ test("the grid shows only the rows of the run on view, though runs share one tab
 });
 
 test("a run still filling with no stored rows yet holds the skeleton, never the whole shared table", () => {
-  jobRows.C = job("C", { status: "fetching", table_id: "shared", key_column: "Place Id", metadata: {} });
+  jobRows.C = job("C", { status: "fetching", table_id: "shared", key_column: "place_id", metadata: {} });
   search = "source=google_maps_place&job=C";
   render();
   expect(host.querySelector('[data-testid="located-table"]')).toBeNull();

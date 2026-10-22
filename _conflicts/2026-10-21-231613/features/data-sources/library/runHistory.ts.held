@@ -1,0 +1,214 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/data-sources/library/runHistory.ts
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/data-sources/library/runHistory.ts
+  Both grew from the same COMMON version: commit 978a9683ab, 2026-10-21 23:18.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-21 22:41  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-21 23:29  5f51070eec  collected by the sync; the edit itself happened at or before this time
+    2026-10-21 23:18  c093f1a400  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-21 23:23  62285858d0  "Data library: the inline grid shows only the run on view"
+  GITHUB's latest change is 41m AFTER LOCAL's latest change.
+
+SIZE: common version 131 lines, LOCAL 156 lines, GITHUB 154 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 21 lines and removed 1 lines.
+  GITHUB added 19 lines and removed 1 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 14 of the 19 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | const column = job?.key_column;
+      | const meta = job?.metadata;
+      | const keys = meta && typeof meta === "object" ? (meta as { row_keys?: unknown }).row_keys : null;
+      | if (!column || !Array.isArray(keys) || keys.length === 0) return null;
+      | return { [column]: keys } as unknown as RecordFilter;
+  GITHUB has 14 of the 21 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | const meta = job?.metadata && typeof job.metadata === "object" ? (job.metadata as { row_keys?: unknown; row_key_field?: unknown }) : null;
+      | // The store's filter reads the field KEY ("place_id"), which the server wrote beside the keys; the
+      | // job's key_column is the column's NAME ("Place Id") and the store refuses it as a filter key.
+      | const field = typeof meta?.row_key_field === "string" ? meta.row_key_field : null;
+      | const keys = meta?.row_keys;
+      | if (!field || !Array.isArray(keys) || keys.length === 0) return null;
+      | return { [field]: keys } as unknown as RecordFilter;
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 62285858d0c6:'features/data-sources/library/runHistory.ts') <(git show 5f51070eec3c:'features/data-sources/library/runHistory.ts')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show 5f51070eec3c:'features/data-sources/library/runHistory.ts'
+  GITHUB: git show 62285858d0c6:'features/data-sources/library/runHistory.ts'
+
+---------------- LOCAL VERSION BELOW ----------------
+"use client";
+
+/**
+ * The library's fetch runs, read client-direct from `scraper.data_fetch_job` under RLS (the row the
+ * server writes as the run moves: status, then the table it fills, then the counts). Three reads:
+ *
+ * - `useDataFetchJob(id)` — one run, re-read every few seconds while it is open, so the page learns
+ *   the table the moment the server names it and the rows can fill inline as they land;
+ * - `useOpenJob(sourceKey)` — the newest open run of a source, for reconnecting after a reload;
+ * - `usePastRuns(sourceKeys)` — the earlier runs of a source (or every source of a task), newest first.
+ */
+
+import { useQuery } from "@tanstack/react-query";
+import type { RecordFilter } from "@ai-matrx/records";
+
+import { createClient } from "@/utils/supabase/client";
+
+export const OPEN_STATUSES = ["queued", "fetching", "waiting_for_provider", "storing"] as const;
+
+export const isOpenStatus = (status: string | null | undefined): boolean =>
+  !!status && (OPEN_STATUSES as readonly string[]).includes(status);
+
+export interface FetchJobRow {
+  id: string;
+  source_key: string;
+  status: string;
+  table_id: string | null;
+  table_name: string | null;
+  rows_created: number;
+  rows_updated: number;
+  inputs: unknown;
+  max_records: number;
+  error: string | null;
+  created_at: string;
+  finished_at: string | null;
+  /** The table's key column and, in `metadata.row_keys`, the keys of the rows THIS run stored. */
+  key_column: string | null;
+  metadata: unknown;
+}
+
+const JOB_COLUMNS =
+  "id, source_key, status, table_id, table_name, rows_created, rows_updated, inputs, max_records, error, created_at, finished_at, key_column, metadata";
+
+const POLL_OPEN_MS = 3000;
+
+export const fetchJobKey = (jobId: string | null) => ["data-sources", "job-row", jobId] as const;
+export const pastRunsKey = (sourceKeys: readonly string[]) => ["data-sources", "past-runs", [...sourceKeys].sort().join(",")] as const;
+export const PAST_RUNS_PREFIX = ["data-sources", "past-runs"] as const;
+
+const jobs = () => createClient().schema("scraper").from("data_fetch_job");
+
+/** One run's row; re-read while it is open (the table appears mid-run, the counts at the end). */
+export function useDataFetchJob(jobId: string | null) {
+  return useQuery({
+    queryKey: fetchJobKey(jobId),
+    queryFn: async (): Promise<FetchJobRow | null> => {
+      const { data, error } = await jobs().select(JOB_COLUMNS).eq("id", jobId ?? "").maybeSingle();
+      if (error) throw error;
+      return (data as FetchJobRow | null) ?? null;
+    },
+    enabled: Boolean(jobId),
+    refetchInterval: (q) => (isOpenStatus((q.state.data as FetchJobRow | null | undefined)?.status) ? POLL_OPEN_MS : false),
+    staleTime: 0,
+  });
+}
+
+/**
+ * The grid filter that shows only this run's rows: every run of a source writes one shared table, so
+ * the rows are told apart by the keys the server recorded on the job. A list value is "is either" to
+ * the store's filter (a record holding any of the keys). Null when the job has no keys to filter by
+ * (a run from before they were kept shows the whole table, as it always did). Pure.
+ */
+export function runRowFilter(job: Pick<FetchJobRow, "key_column" | "metadata"> | null | undefined): RecordFilter | null {
+  const meta = job?.metadata && typeof job.metadata === "object" ? (job.metadata as { row_keys?: unknown; row_key_field?: unknown }) : null;
+  // The store's filter reads the field KEY ("place_id"), which the server wrote beside the keys; the
+  // job's key_column is the column's NAME ("Place Id") and the store refuses it as a filter key.
+  const field = typeof meta?.row_key_field === "string" ? meta.row_key_field : null;
+  const keys = meta?.row_keys;
+  if (!field || !Array.isArray(keys) || keys.length === 0) return null;
+  // The store reads a list as "is either" on any column; its TS type only names the scalar forms.
+  return { [field]: keys } as unknown as RecordFilter;
+}
+
+/** True when the job names a key column but has stored no keys yet (a run still filling). */
+export const runHasNoRowsYet = (job: Pick<FetchJobRow, "key_column" | "metadata" | "status"> | null | undefined): boolean =>
+  Boolean(job?.key_column) && runRowFilter(job) === null && isOpenStatus(job?.status);
+
+/** The newest open fetch of this source (read under RLS), for reconnect after a reload. */
+export function useOpenJob(sourceKey: string) {
+  return useQuery({
+    queryKey: ["data-sources", "open-job", sourceKey],
+    queryFn: async (): Promise<string | null> => {
+      const since = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await jobs()
+        .select("id")
+        .eq("source_key", sourceKey)
+        .in("status", [...OPEN_STATUSES])
+        .gte("created_at", since)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return (data as { id?: string } | null)?.id ?? null;
+    },
+    staleTime: 0,
+  });
+}
+
+const PAST_RUNS_LIMIT = 50;
+
+/** Earlier runs of these sources, newest first (what RLS lets this person read). */
+export function usePastRuns(sourceKeys: readonly string[]) {
+  return useQuery({
+    queryKey: pastRunsKey(sourceKeys),
+    queryFn: async (): Promise<FetchJobRow[]> => {
+      const { data, error } = await jobs()
+        .select(JOB_COLUMNS)
+        .in("source_key", [...sourceKeys])
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(PAST_RUNS_LIMIT);
+      if (error) throw error;
+      return (data as FetchJobRow[] | null) ?? [];
+    },
+    enabled: sourceKeys.length > 0,
+    staleTime: 15_000,
+  });
+}
+
+/** What the run asked for, in the person's own words ("plumbers · Austin, TX"). Pure. */
+export function inputsText(inputs: unknown): string {
+  const sets = Array.isArray(inputs) ? inputs : inputs && typeof inputs === "object" ? [inputs] : [];
+  const words: string[] = [];
+  for (const set of sets) {
+    if (!set || typeof set !== "object") continue;
+    for (const v of Object.values(set as Record<string, unknown>)) {
+      if (typeof v === "string" && v.trim()) words.push(v.trim());
+      else if (typeof v === "number" && Number.isFinite(v)) words.push(String(v));
+    }
+  }
+  return words.join(" · ");
+}
+
+/** The run's plain status word. */
+export function runStatusLabel(status: string): string {
+  if (status === "done") return "Done";
+  if (status === "failed" || status === "error" || status === "refused") return "Failed";
+  if (status === "cancelled") return "Stopped";
+  if (status === "queued") return "Queued";
+  if (status === "fetching") return "Fetching";
+  if (status === "waiting_for_provider") return "Waiting";
+  if (status === "storing") return "Saving";
+  if (isOpenStatus(status)) return "Running";
+  return status;
+}

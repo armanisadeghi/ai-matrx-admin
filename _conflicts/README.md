@@ -31,6 +31,8 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-21-231613/features/data-sources/library/__tests__/results-stream-onto-the-page.test.tsx.held — LOCAL latest 2026-10-21 23:09; GITHUB latest 2026-10-21 23:23; LOCAL lacks 3 of GITHUB's 19 new lines; GITHUB lacks 3 of LOCAL's 19 new lines; recover: git show 5f51070eec:'features/data-sources/library/__tests__/results-stream-onto-the-page.test.tsx' / 62285858d0:'features/data-sources/library/__tests__/results-stream-onto-the-page.test.tsx'
+- _conflicts/2026-10-21-231613/features/data-sources/library/runHistory.ts.held — LOCAL latest 2026-10-21 22:41; GITHUB latest 2026-10-21 23:23; LOCAL lacks 5 of GITHUB's 19 new lines; GITHUB lacks 7 of LOCAL's 21 new lines; recover: git show 5f51070eec:'features/data-sources/library/runHistory.ts' / 62285858d0:'features/data-sources/library/runHistory.ts'
 
 ## Resolution log
 - 2026-10-21 23:xx PDT — Claude release-health lane resolved `_conflicts/2026-10-21-222849/pnpm-lock.yaml.held` by keeping the live lockfile: the held side has no package version newer than live and no package live lacks; live then moved on via `pnpm sync:matrx-packages` (6259328bac, 71c105b338). Verified `check:matrx-packages --duplicates` 33 packages once each. Owner: none needed (lockfile).
