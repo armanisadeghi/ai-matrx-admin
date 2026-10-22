@@ -58,6 +58,10 @@ import {
   installAdminLane,
 } from "@/utils/supabase/adminLane";
 import {
+  installMovedFunctionList,
+  noticeIfFunctionMoved,
+} from "@/lib/diagnostics/movedFunctionNotice";
+import {
   installBrowserReadDeadline,
   isBrowserReadDeadlineError,
 } from "@/utils/supabase/browserReadDeadline";
@@ -496,6 +500,14 @@ function wrapBuilder<T extends object>(builder: T, ctx: ChainContext): T {
                     ) {
                       captureResult(ctx, res as PostgrestLikeResult, caller);
                     }
+                    // A moved database function (stale bundle): add the Reload
+                    // notice. Additive only; the error still reaches the caller.
+                    if (ctx.operation === "rpc") {
+                      void noticeIfFunctionMoved(
+                        ctx.relation,
+                        (res as PostgrestLikeResult).error,
+                      );
+                    }
                   }
                 } catch {
                   /* capture must never break the caller */
@@ -660,6 +672,18 @@ export function wrapClientForCapture<T>(client: T): T {
   // send time from the current path — /administration/** rides the lane,
   // every user page does not. Rule and reasons: utils/supabase/adminLane.ts.
   installAdminLane(target, browserAdminLaneOpen);
+
+  // The moved-function list is read through the RAW client (never this proxy,
+  // so it cannot capture or recurse), lazily on the first PGRST202.
+  installMovedFunctionList(() =>
+    (
+      target as unknown as {
+        schema: (n: string) => { rpc: (f: string) => PromiseLike<{ data?: unknown; error?: unknown }> };
+      }
+    )
+      .schema("platform")
+      .rpc("public_moved_functions"),
+  );
 
   return new Proxy(target, {
     get(target, prop, receiver) {
