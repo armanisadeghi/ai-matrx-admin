@@ -26,6 +26,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { displayLabel, humanizeIdentifier } from "@ai-matrx/kit/text-case";
+import { KIND_KEY } from "@ai-matrx/content-ir";
 import type { OfferedValue } from "../provision-shapes";
 import {
   sourceWords,
@@ -55,7 +56,7 @@ function shapeText(shape: unknown): string {
   if (Array.isArray(shape)) return `list of ${shapeText(shape[0]) || "items"}`;
   if (typeof shape === "object") {
     return Object.entries(shape as Record<string, unknown>)
-      .filter(([k]) => k !== "__kind")
+      .filter(([k]) => k !== KIND_KEY)
       .map(([k, v]) => `${k}: ${typeof v === "string" ? v : "object"}`)
       .join(", ");
   }
