@@ -90,6 +90,8 @@ const values: SurfaceValue[] = [
 ];
 export const commerceLabelBatchManifest: SurfaceManifest = {
   surfaceName: COMMERCE_LABEL_BATCH_SURFACE_NAME,
+  situation:
+    "They are on one label print batch ({batch_id}), with {codes_loaded_count} label codes loaded and {processed_codes_count} matching the codes table's current view.",
   inheritsFrom: "matrx-default/commerce",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
