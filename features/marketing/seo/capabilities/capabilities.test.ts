@@ -23,7 +23,7 @@ describe("siteSeoCapabilities", () => {
     );
     expect(
       siteScoped.every((item) =>
-        /^\/marketing\/brand-1\/(websites|seo)\/site-1(\/|\?|$)/.test(
+        /^\/marketing\/brands\/brand-1\/(websites|seo)\/site-1(\/|\?|$)/.test(
           item.destination,
         ),
       ),

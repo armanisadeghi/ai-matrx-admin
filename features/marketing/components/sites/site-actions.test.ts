@@ -158,7 +158,7 @@ describe("buildSiteMenu", () => {
     select(entry(config, "delete"));
 
     expect(onOpenWorkspace).toHaveBeenCalledWith(
-      "/marketing/brand-1/websites/site-1",
+      "/marketing/brands/brand-1/websites/site-1",
     );
     expect(onQuickView).toHaveBeenCalledWith(site);
     expect(onEditSite).toHaveBeenCalledWith(site);

@@ -34,7 +34,7 @@ async function unpark() {
   await sleep(4000);
 }
 async function openPressRoom(query = "") {
-  const url = `${ORIGIN}/marketing/${BRAND}/pr${query}`;
+  const url = `${ORIGIN}/marketing/brands/${BRAND}/pr${query}`;
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 300000 });
   await unpark();
   if (page.url().includes("__dev-walk")) await page.goto(url, { waitUntil: "domcontentloaded", timeout: 300000 });

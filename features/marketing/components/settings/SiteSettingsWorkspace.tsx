@@ -292,16 +292,14 @@ export function SiteSettingsWorkspace() {
             addressPrefix={`${sitePath.slice(0, sitePath.lastIndexOf("/"))}/`}
             currentKey={marketingSeg(site)}
             previousKeys={site.previous_slugs ?? []}
-            // `/marketing/brands/<brand>/websites/<site>` — the site key sits at index 5,
-            // so a site keyed like its brand never renames the brand segment.
-            segmentSearchFrom={5}
             rename={(nextKey) =>
               renameSiteSlug(site.id, brandId, nextKey)
             }
             onRenamed={() => {
               void queryClient.invalidateQueries({ queryKey: ["marketing"] });
             }}
-            segmentSearchFrom={3}
+            // `/marketing/brands/<brand>/websites/<site>`: the site key sits at index 5.
+            segmentSearchFrom={5}
           />
 
           {/* 🚨 ONE RECORD, TWO RENDERS — the same `web.site.settings->'crm_fold'`

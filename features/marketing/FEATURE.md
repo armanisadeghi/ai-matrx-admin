@@ -53,7 +53,7 @@ declaration by `SimpleBoxForm`, with "Use this site's top N" from the ranked key
 
 ## The owner's story sitting (brand discovery wave 2, 2026-10-22)
 
-`/marketing/[brandId]/identity/story` (Identity room "Your story"; crumb entry in `MarketingBrandCrumb`). Any signed-in member who can open the brand answers the owner story questions there, one per screen, typed or spoken, on the Question Desk's shared answer bar in its `story` seat (`features/question-desk/FEATURE.md` § Seats). `features/marketing/owner-sitting/service.ts`: a sitting is an `interview.decision_interview` (source `brand_discovery.owner_sitting`, the BRAND's organization, `settings.brand_id` / `room: "owner"` / `follow_through: false`, addressed to the person) whose questions are copied from the owner question bank (`decision_interview` source `brand_discovery.owner_question_bank`, system org `39c38960…`, archived; three questions seeded 2026-10-22 from CONCEPT.md until the next-question picker exists), skipping slugs already asked; an open sitting is resumed, never doubled. The last answer closes the sitting and starts aidream's `brand_discovery_owner_room` system run (subject `brand:<id>`, inputs `brand_id` + `interview_id`) in its floating window; its detective files what the owner said as `web.brand_testimony` in the owner room — testimony, never facts or choices. Raw answers stay on the interview rows (no custom table). Test: `features/question-desk/__tests__/story-seat.test.tsx`.
+`/marketing/brands/[brandId]/identity/story` (Identity room "Your story"; crumb entry in `MarketingBrandCrumb`). Any signed-in member who can open the brand answers the owner story questions there, one per screen, typed or spoken, on the Question Desk's shared answer bar in its `story` seat (`features/question-desk/FEATURE.md` § Seats). `features/marketing/owner-sitting/service.ts`: a sitting is an `interview.decision_interview` (source `brand_discovery.owner_sitting`, the BRAND's organization, `settings.brand_id` / `room: "owner"` / `follow_through: false`, addressed to the person) whose questions are copied from the owner question bank (`decision_interview` source `brand_discovery.owner_question_bank`, system org `39c38960…`, archived; three questions seeded 2026-10-22 from CONCEPT.md until the next-question picker exists), skipping slugs already asked; an open sitting is resumed, never doubled. The last answer closes the sitting and starts aidream's `brand_discovery_owner_room` system run (subject `brand:<id>`, inputs `brand_id` + `interview_id`) in its floating window; its detective files what the owner said as `web.brand_testimony` in the owner room — testimony, never facts or choices. Raw answers stay on the interview rows (no custom table). Test: `features/question-desk/__tests__/story-seat.test.tsx`.
 
 ## Internal Authority Router
 
@@ -64,7 +64,7 @@ future leaf remembering to opt into scrolling. This invariant is enforced
 repo-wide by `pnpm check:scroll-chain:strict`, which follows route layouts into
 their directly imported client shells.
 
-`/marketing/[brandKey]/seo/[siteKey]/authority` is the site-wide
+`/marketing/brands/[brandKey]/seo/[siteKey]/authority` is the site-wide
 authority-flow workspace. It combines the existing backlink intelligence,
 crawler link graph/Link Score, GSC demand and SEO Juice, page roles, keyword
 mapping, content plans, and cannibalization evidence. It never computes a
@@ -103,11 +103,11 @@ owner's words carried forward through every regeneration). It was site-only,
 server-only, fed from name+domain+description and read by nothing but the
 classifier — the "big overarching plan" Arman kept asking for, buried.
 
-- **Brand strategy** (`/marketing/[brandId]/identity/strategy`, a Brand Home
+- **Brand strategy** (`/marketing/brands/[brandId]/identity/strategy`, a Brand Home
   room): the business facts — what it does, who it serves, each service line
   with its OWN footprint. Built from the brand, every site's crawl, and the
   research report.
-- **Site brief** (`/marketing/[brandId]/content/plan/[siteId]/brief`, the plan
+- **Site brief** (`/marketing/brands/[brandId]/content/plan/[siteId]/brief`, the plan
   workspace's seventh view): what THIS website is for — which service lines it
   carries, who it is for, what it must win, its shape. READS the brand strategy,
   never restates it. Built from the crawl, Search Console, the keyword library,
@@ -143,7 +143,7 @@ Tree" artifact):
   nav, the landing, and metadata: `brands` (roster, + `brands/new-website`),
   `reports{,/cost,/ranks}`, `operations/{connections,automations,approvals,data-quality}`,
   `tools{,/youtube}`.
-- **BRAND workspace** — everything else, under `/marketing/[brandId]`.
+- **BRAND workspace** — everything else, under `/marketing/brands/[brandId]`.
   `MARKETING_BRAND_SECTIONS` (`lib/brand-sections.ts`) declares its 17 sections:
   `identity/*` (the brand home — media, knowledge, offerings, guidelines,
   audience), `websites/[siteId]/*` (INVENTORY: pages, structure, sitemaps,
@@ -251,7 +251,7 @@ attached to a route that no longer says "coming soon").
 
 ## AI citation reverse engineer (2026-08-11)
 
-**The ONE home is `/marketing/[brandId]/seo/[siteId]/ai-visibility`** (the old
+**The ONE home is `/marketing/brands/[brandId]/seo/[siteId]/ai-visibility`** (the old
 `/marketing/ai-visibility` is a redirect shim; `/marketing/ai-visibility/runs/[runId]`
 stays as the shared-run door). A user supplies the
 exact buyer question and chooses ChatGPT, Claude, Gemini, and/or Perplexity. Work
@@ -314,18 +314,18 @@ belongs to that industry. Site-level pack recommendations require the current
 **The URL hierarchy is brand-first.** Canonical entity paths come ONLY from `features/marketing/lib/routes.ts` (`marketingRoutes`) — never hand-built.
 
 - `/marketing/brands` — brand portfolio (the anchor list, agency plane).
-- `/marketing/[brandKey]` — brand cockpit: identity, website properties with connection chips, social properties, confirmed business facts, brand asset library, pending-review count. (`/marketing/brands/[brandId]` is the legacy shim.)
-- `/marketing/[brandKey]/inbox` — brand-wide review inbox for
+- `/marketing/brands/[brandKey]` — brand cockpit: identity, website properties with connection chips, social properties, confirmed business facts, brand asset library, pending-review count. (`/marketing/brands/[brandId]` is the legacy shim.)
+- `/marketing/brands/[brandKey]/inbox` — brand-wide review inbox for
   discovered assets, properties, and business facts. The former
   `/marketing/brands/[brandId]/discovery` and site-level `/discovery` URLs redirect here.
 - `/marketing/operations/capabilities` — shared SEO measurement catalog. Its website
   selector chooses where evidence doors open; it does not render a duplicate
   site workspace. (`/marketing/capabilities` is the legacy shim.)
-- `/marketing/[brandKey]/websites/[siteKey]/**` — website INVENTORY: every
+- `/marketing/brands/[brandKey]/websites/[siteKey]/**` — website INVENTORY: every
   registered mode in `MARKETING_WEBSITE_SECTIONS` (`lib/route-sections.ts`) —
   pages, structure, sitemaps, media, crawls, settings — nested under its brand
   and appearing in the shared `EntityModeHeader`/mode rail.
-  `/marketing/[brandKey]/seo/[siteKey]/**` — the SEO PRACTICE: every mode in
+  `/marketing/brands/[brandKey]/seo/[siteKey]/**` — the SEO PRACTICE: every mode in
   `MARKETING_SEO_SECTIONS` (keywords, rankings, search-console, audit,
   findings, analysis, coverage, performance, changes, backlinks, links,
   authority, valuation, ai-visibility, growth-loop, automations,
@@ -383,7 +383,7 @@ belongs to that industry. Site-level pack recommendations require the current
   crawl scope patterns, budget, behavior, and lifecycle stage as DRAFTS the user
   still saves (handlers in `components/settings/crawl-policy-writes.ts`);
   visibility and delete are deliberately human-only.
-- `/marketing/[brandKey]/seo/[siteKey]/context` — the site's context: every fact `seo_site`
+- `/marketing/brands/[brandKey]/seo/[siteKey]/context` — the site's context: every fact `seo_site`
   `context` gives an agent, read direct from its store (active `marketing.initiative` for the
   brand, `web.page` roles, current `seo.competitor` with ignored counted, the brand
   `web.voice_fingerprint`), each section opening its own editor (initiatives, pages,
@@ -395,7 +395,7 @@ belongs to that industry. Site-level pack recommendations require the current
   the model receives (`agent-view.ts` mirrors `tool_output_text`), its size against
   `seo.site.context_max_bytes`, the notices and each part's "none recorded" note. Code:
   `seo/site-context/`.
-- `/marketing/[brandKey]/seo/[siteKey]/reports` + "Saved SEO reports" on `/marketing/reports` —
+- `/marketing/brands/[brandKey]/seo/[siteKey]/reports` + "Saved SEO reports" on `/marketing/reports` —
   saved SEO reports (`chat.artifact`, `source_system='seo_report'`; summary columns only,
   never the body) with per-job version history (`canvas.canvas_items` by `source_id`); each
   opens in the existing viewer `/artifacts/[id]` (a version by its canvas item id). The site
@@ -451,7 +451,7 @@ compact robots guidance, and doors to the related public audit tools.
 - `web.property` — one presence of a brand (website / instagram / facebook / x / tiktok / youtube / linkedin / pinterest / google_business_profile); a website property points at its `web.site`.
 - `web.brand_asset` / `web.business_fact` — human-confirmed brand truth (logos, social-card imagery, phones, faxes, addresses, homepage identity); `brand_asset.file_id` → canonical `files.files`. Allowed domain types and their UI labels live only in `features/marketing/types.ts`; discovery and manual editors consume those registries rather than maintaining partial lists. The legacy database column is named `kind`, but these are domain row subtypes, not Content-IR Shape kinds; user-facing controls call them **Type**. Kind `portal` is a LINK asset (press kit / brand media portal URL in `source_url`, no file) — managed in the Media workspace Sources view, rendered as a link tile in the Library. **One primary per (brand, kind) is a DB invariant** — the `_single_primary` trigger demotes live siblings before the write lands and a partial unique index backstops races; never demote siblings in app code. A primary logo/favicon/og_image/twitter_image with a public `source_url` syncs the brand identity columns via the `_sync_brand_identity` trigger; file-only assets never write identity URLs (identity URLs are the brand's own public URLs, never our storage).
 - `web.discovered_item` — machine-written review inbox (`pending → confirmed | dismissed`), URL-deduped per brand for idempotent re-discovery; `resolved_property_id` / `resolved_asset_id` / `resolved_fact_id` record the promotion target.
-- **Local & Listings layer** (`/marketing/[brandKey]/locations` portfolio; canonical detail `/marketing/[brandKey]/locations/[locationId]` (`brandLocation` in `lib/routes.ts`); workspace `features/marketing/local/LocalListingsWorkspace.tsx`): `web.business_location` — component of `web_brand`, the canonical NAP+ profile of one physical/service location (structured address, phone, geo, schema.org `business_type`, jsonb `opening_hours`/`special_hours`/`attributes`/`identifiers`); `web.listing_publisher` — the shared system registry of directory publishers (research-seeded and agent-grown under the system org; WS7 intake contract in `common-docs/systems/marketing/local-listings/PLAN.md`: tier, `api_access`, `api_notes`, `citation_weight`, `manage_url`; cross-repo research SoR `common-docs/systems/marketing/local-listings/RESEARCH.md`); `web.location_listing` — component of location, one row per (location, publisher) with status (`unknown … claimed`), `listing_url`, observed NAP payload, and audit columns. Pure engines in `lib/local-listings-audit.ts` (normalized per-field NAP verdicts — street synonyms/phone/URL formatting never count as mismatches; `citation_weight`-weighted coverage; profile-gap list with the WHY per field) and `lib/local-business-jsonld.ts` (LocalBusiness JSON-LD generated from the canonical profile — it cannot drift from the record). Working labels pending the naming ruling; `location`/`publisher` were deliberately NOT used as bare table names (`seo.location` and `web.provider` hold different roles, db-rules §1a).
+- **Local & Listings layer** (`/marketing/brands/[brandKey]/locations` portfolio; canonical detail `/marketing/brands/[brandKey]/locations/[locationId]` (`brandLocation` in `lib/routes.ts`); workspace `features/marketing/local/LocalListingsWorkspace.tsx`): `web.business_location` — component of `web_brand`, the canonical NAP+ profile of one physical/service location (structured address, phone, geo, schema.org `business_type`, jsonb `opening_hours`/`special_hours`/`attributes`/`identifiers`); `web.listing_publisher` — the shared system registry of directory publishers (research-seeded and agent-grown under the system org; WS7 intake contract in `common-docs/systems/marketing/local-listings/PLAN.md`: tier, `api_access`, `api_notes`, `citation_weight`, `manage_url`; cross-repo research SoR `common-docs/systems/marketing/local-listings/RESEARCH.md`); `web.location_listing` — component of location, one row per (location, publisher) with status (`unknown … claimed`), `listing_url`, observed NAP payload, and audit columns. Pure engines in `lib/local-listings-audit.ts` (normalized per-field NAP verdicts — street synonyms/phone/URL formatting never count as mismatches; `citation_weight`-weighted coverage; profile-gap list with the WHY per field) and `lib/local-business-jsonld.ts` (LocalBusiness JSON-LD generated from the canonical profile — it cannot drift from the record). Working labels pending the naming ruling; `location`/`publisher` were deliberately NOT used as bare table names (`seo.location` and `web.provider` hold different roles, db-rules §1a).
 - `web.site` — managed website (site-scoped access root). `root_url` is the exact canonical homepage identity. Carries `brand_id`, user-editable identity (`description`, `logo_url`, `favicon_url`, `og_image_url` — the brand's own public URLs, never our storage), and `initialized_at` + `initialization` jsonb written by the scraper initialize command.
 - `web.page` — canonical URL plus user-owned intent; never captured content. **The anchor registry: every source (sitemap, GSC, crawl, links, manual) upserts rows here and stamps evidence; source coverage disagreements are the intelligence layer.** Multiple live rows may share a path when scheme/host/query differs, so homepage-only reads match `site_id + url = site.root_url`, never `path = '/'`. **Uniqueness is `page_site_id_url_hash_key` (UNIQUE `(site_id, url_hash)`)** — a duplicate URL is therefore ALWAYS cross-site, never an upsert bug. **The registry deliberately holds non-HTML URLs** (images, json, xml, pdf) because a sitemap listing them is itself a finding; they are classified, not excluded — see the two page-registry invariants below.
 - `web.sitemap` — one discovered sitemap document (kind index/urlset, parent, status, counts, freshness, fetch_error). Upsert arbiter: unique (site_id, url) NULLS NOT DISTINCT.
@@ -833,7 +833,7 @@ availability, this site's worth in points, and nothing from `seo.topic`.
 - Architecture: `docs/MARKETING_SITE_PLATFORM_PLAN.md` and `docs/MARKETING_SITE_ROUTE_ARCHITECTURE.md`.
 - Cross-repo VISION making web/marketing the proving ground for the platform sharing experience (presentation shares, collaboration shares, share-as-growth-engine): /Users/armanisadeghi/code/common-docs/systems/account/sharing/VISION.md — read it before building any marketing share surface. Data-layer model: /Users/armanisadeghi/code/common-docs/systems/platform/access/SHARING_MODEL.md.
 - Cross-repo Google OAuth verification inventory, scope decisions, cleanup register, and submission gates: `../common-docs/systems/integrations/google/FEATURE.md`. Read it before changing Google scopes, clients, consent-screen configuration, or reviewer-facing flows.
-- Cross-repo local-listings research (publisher/aggregator API accessibility + verified platform state): /Users/armanisadeghi/code/common-docs/systems/marketing/local-listings/RESEARCH.md — read it before touching the shipped Local & Listings section at `/marketing/[brandKey]/locations` (`marketing.local` fulfilled and deleted 2026-08-18).
+- Cross-repo local-listings research (publisher/aggregator API accessibility + verified platform state): /Users/armanisadeghi/code/common-docs/systems/marketing/local-listings/RESEARCH.md — read it before touching the shipped Local & Listings section at `/marketing/brands/[brandKey]/locations` (`marketing.local` fulfilled and deleted 2026-08-18).
 - Cross-repo Public Relations node (what the PR market can actually be resold, why press releases are under 2% of AI citations vs earned media's 84%, and the ruling that our PR product is mostly the existing outreach system re-framed): /Users/armanisadeghi/code/common-docs/systems/marketing/public-relations/STATE.md (verified state), /Users/armanisadeghi/code/common-docs/systems/marketing/public-relations/projects/public-relations/PLAN.md (forward proposal), and RESEARCH.md — read all three before building any PR surface, and before adding any release-distribution destination.
 
 ## Doctrine compliance
@@ -848,6 +848,7 @@ The site/page/crawl foundation, direct live-crawl controls, dedicated technical-
 
 ## Change log
 
+- `2026-10-22` — **The brand workspace moved to `/marketing/brands/<brand>/…` (Arman: "Instead of /marketing/some-brand it should be marketing/brands/some-brand/").** All 161 pages `git mv`'d from `app/(core)/marketing/[brandId]/**` to `app/(core)/marketing/brands/[brandId]/**`. Old addresses: `/marketing/<brand>/…` is a next.config 308 to the same page (`utils/next-config/marketingBrandRedirects.js`, static first segments read from disk, listed LAST so explicit `/marketing/*` redirects win; guard `marketingBrandRedirects.test.ts` maps every moved page through Next's own matcher); the pre-agency `/marketing/brands/<brand>/{sites,assets,discovery,local}/…` forward from `brands/[brandId]/[...legacy]` (any other unknown section is a 404, never a self-redirect). Collision rule: a brand key never equals a static `/marketing/brands` child (`all`, `new`, `new-website`, `offerings`, `smart-add`) nor a static `/marketing` segment (`MARKETING_RESERVED_SEGMENTS`; aidream twin `services/web_slugs.py`); no live brand collided. ONE builder + ONE parser in `lib/keys.ts`: `marketingBrandPath()` (behind every `marketingRoutes` brand builder) and `parseMarketingBrandPath()` (sidebar context, route metadata, brand crumb, brand switch, plan view, site branch, the module layout's guest branch); hand-built `/marketing/${seg}` strings in 18 files now call `marketingRoutes`. `@ai-matrx/chat` `surfaceFromPathname` reads the new shape (aidream 829d51266ef).
 - `2026-10-22` — **Readiness panel lists every condition; owner sitting is single.** `BrandResearchReadiness` shows a loading skeleton, an error with Try again, and per condition a Met / Missing / Not measured badge with its one door (`confirm_identity` → Smart Add enrich, `review_results` → Smart Add validate, `owner_questions` → `marketingRoutes.brandOwnerStory`, `crawl_site` → the brand's websites); a key with no door shows no button. `owner-sitting/service.ts` shares one in-flight open per person+brand and resumes on 23505 from the new unique index `interview.decision_interview_one_open_owner_sitting` (two loads had made two sittings 188 ms apart). `BrandPicker` gains `labelHidden`.
 - 2026-10-22 — **The brand session (deck).** `/marketing/[brandId]/identity/session` ("Decide" on the brand header): the canonical swipe deck bound to `brand-session/useBrandSessionDeck.ts`; findings confirm through Smart Add's `persistAnswer`, candidates through the new person-signed `web.brand_choice_decide` (single-value supersession, undo restores), long-press words through `web.brand_choice_correct`. See `brand-session/FEATURE.md`.
 - 2026-10-22 — **The owner's story sitting.** `/marketing/[brandId]/identity/story` on the Question Desk's shared answer bar (story seat); the last answer starts the `brand_discovery_owner_room` run. See § The owner's story sitting.

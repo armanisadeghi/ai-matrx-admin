@@ -18,8 +18,8 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 
 it("the site's SEO branch has a Reports section and route", () => {
   expect(MARKETING_SEO_SECTIONS.map((s) => s.slug)).toContain("reports");
-  expect(marketingRoutes.siteReports("acme", "acme-com")).toBe("/marketing/acme/seo/acme-com/reports");
-  expect(marketingRoutes.site("acme", "acme-com", "/reports")).toBe("/marketing/acme/seo/acme-com/reports");
+  expect(marketingRoutes.siteReports("acme", "acme-com")).toBe("/marketing/brands/acme/seo/acme-com/reports");
+  expect(marketingRoutes.site("acme", "acme-com", "/reports")).toBe("/marketing/brands/acme/seo/acme-com/reports");
   expect(renderToStaticMarkup(<SiteReportsRoute />)).toContain("site reports");
 });
 

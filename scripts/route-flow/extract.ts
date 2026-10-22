@@ -635,9 +635,9 @@ function main() {
       if (hit) addEdge({ from: id, to: hit.route, kind: "sidebar", confidence: "pattern", via: `registry: ${m.name ?? m.label ?? m.href}` });
     }
   };
-  registry("sidebar:marketing/brand-sections", "/marketing/brands/[brandId]", listMarketingBrandModeGroups(`/marketing/${HELPER_ARG}`));
-  registry("sidebar:marketing/website-sections", "/marketing/brands/[brandId]/websites/[siteId]", listMarketingWebsiteModeGroups(`/marketing/${HELPER_ARG}/websites/${HELPER_ARG}`));
-  registry("sidebar:marketing/seo-sections", "/marketing/brands/[brandId]/seo/[siteId]", listMarketingSeoModeGroups(`/marketing/${HELPER_ARG}/seo/${HELPER_ARG}`));
+  registry("sidebar:marketing/brand-sections", "/marketing/brands/[brandId]", listMarketingBrandModeGroups(`/marketing/brands/${HELPER_ARG}`));
+  registry("sidebar:marketing/website-sections", "/marketing/brands/[brandId]/websites/[siteId]", listMarketingWebsiteModeGroups(`/marketing/brands/${HELPER_ARG}/websites/${HELPER_ARG}`));
+  registry("sidebar:marketing/seo-sections", "/marketing/brands/[brandId]/seo/[siteId]", listMarketingSeoModeGroups(`/marketing/brands/${HELPER_ARG}/seo/${HELPER_ARG}`));
 
   // per-agent tab bar (lives in @ai-matrx/chat; evaluated, not parsed)
   for (const base of ["/agents", "/administration/agents/system-agents/agents"]) {

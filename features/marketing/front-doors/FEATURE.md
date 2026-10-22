@@ -37,7 +37,7 @@ second console and must be cut back to doors.
 | `OutreachFrontDoor.tsx` | Campaign / queue / mailbox counts + the five Chasebox queues + recent confirmed wins |
 | `MonitoringFrontDoor.tsx` | The four site-scoped monitoring views |
 | `EmailFrontDoor.tsx` | Lane B email (mailbox, templates, sequences) + per-org template libraries |
-| `BrandScopedOutreach.tsx` / `BrandScopedEmail.tsx` / `BrandScopedMonitoring.tsx` | The brand-workspace mounts: bind the canonical door to `useMarketingBrand()` and pass the brand down. The pages under `/marketing/[brandId]/**` mount THESE, never the bare door |
+| `BrandScopedOutreach.tsx` / `BrandScopedEmail.tsx` / `BrandScopedMonitoring.tsx` | The brand-workspace mounts: bind the canonical door to `useMarketingBrand()` and pass the brand down. The pages under `/marketing/brands/[brandId]/**` mount THESE, never the bare door |
 
 ## Invariants
 
@@ -48,7 +48,7 @@ second console and must be cut back to doors.
   the scope the Chasebox itself opens on. A front door that counted a wider
   scope than the destination would lie by arithmetic.
 - 🚨 **Scope honesty part two: the brand is the tenant, and what cannot be
-  scoped says so.** A front door mounted inside `/marketing/<brand>/**` scopes
+  scoped says so.** A front door mounted inside `/marketing/brands/<brand>/**` scopes
   everything the data model lets it scope — websites carry `brand_id`, so the
   site picker and every site-scoped door see only that brand's sites
   (`useFrontDoorSite(brandId)`); sending identities carry an org, so the

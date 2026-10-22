@@ -1,7 +1,7 @@
 ---
 type: Feature
 title: "Social Intelligence UI (marketing/social)"
-description: "The Socials section at /marketing/[brandId]/socials: data layer, standards components, Accounts, account detail, post detail (SI-07a), Outliers + watchlists, KPIs + goals + benchmark, the Analytics social panel and the agency roll-up (SI-07b1 / SI-08)."
+description: "The Socials section at /marketing/brands/[brandId]/socials: data layer, standards components, Accounts, account detail, post detail (SI-07a), Outliers + watchlists, KPIs + goals + benchmark, the Analytics social panel and the agency roll-up (SI-07b1 / SI-08)."
 tags: [marketing, social, ui]
 timestamp: 2026-10-09
 ---
@@ -12,7 +12,7 @@ Product truth: `common-docs/systems/marketing/social/` (VISION, UI-SPEC = the bl
 Server contract: `aidream/aidream/services/social/FEATURE.md`. Built by lane SI-07a; SI-07b (Studio, Swipe, Outliers)
 and SI-07c (Ads, KPIs) fill the other tabs and **build on the modules listed here — never a second copy**.
 
-## Routes (`app/(core)/marketing/[brandId]/socials/`)
+## Routes (`app/(core)/marketing/brands/[brandId]/socials/`)
 
 | Route | Renders |
 |---|---|
@@ -201,7 +201,7 @@ platform, handle:
 | `best_multiple_30d`, `best_post_id_30d` | numeric, uuid \| null | Highest outlier multiple among posts of the last 30 days |
 | `last_refreshed_at` | timestamptz | Profile's last refresh |
 
-Row click → `/marketing/[brandId]/socials/[platform]/[tracked_account_id]` when tracked; external icon → `url`.
+Row click → `/marketing/brands/[brandId]/socials/[platform]/[tracked_account_id]` when tracked; external icon → `url`.
 
 **Built (2026-10-09):** `readBrandSocialAccounts` / `useBrandSocialAccounts` + `brandSocialRowToAccountRow` (mappers) are the one read. The Overview
 "Social profiles" card (`components/brands/BrandSocialProfilesCard.tsx`) renders them; Socials → Accounts (`readAccountRows`) is that same list plus
@@ -286,4 +286,4 @@ Each collection's menu has Link to / Unlink from this brand (`setCollectionBrand
 - Chinese platforms: Xiaohongshu (accounts + notes), Douyin (accounts), WeChat (official accounts) are Tools in the catalog; Weibo has none, so its chip says so in words and makes no call. A re-opened address (`?calls=`) shows the same paid answers with no second charge; the screen requests the rich-content host on open so those answers draw as their kinds.
 - Saving rows: each social kind declares `x-table-order` / `x-table-hide`, so a saved posts table reads Posted, Account, Caption, Views, Likes… without ids and music. Known and not this feature's: the save dialog creates a small "<column> choices" table for each column it types as a choice.
 
-**Change Log: video starting formats 2026-10-17 (VC-09).** Socials -> Videos has a **New video** button (`VideosTab`) to `/marketing/[brandId]/socials/videos/formats`: the format gallery (each of the six formats played live by the engine from the server's `GET /video-director/formats/{id}/preview` sample) and, with `?format=<id>`, the format's brief (about, product, the format's own inputs, presenter, hook line, "write it for me" / "I wrote it"). Plan streams `POST /video-director/from-format` (`video/formats.ts`, `components/video/VideoFormatNew.tsx`), shows the script lines, notes and the estimate; Generate uses the same generation door and then opens the project in the studio (preview, render, variants, download). Own footage is not offered here yet.
+**Change Log: video starting formats 2026-10-17 (VC-09).** Socials -> Videos has a **New video** button (`VideosTab`) to `/marketing/brands/[brandId]/socials/videos/formats`: the format gallery (each of the six formats played live by the engine from the server's `GET /video-director/formats/{id}/preview` sample) and, with `?format=<id>`, the format's brief (about, product, the format's own inputs, presenter, hook line, "write it for me" / "I wrote it"). Plan streams `POST /video-director/from-format` (`video/formats.ts`, `components/video/VideoFormatNew.tsx`), shows the script lines, notes and the estimate; Generate uses the same generation door and then opens the project in the studio (preview, render, variants, download). Own footage is not offered here yet.

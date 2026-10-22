@@ -38,7 +38,7 @@ function labels(canEdit: boolean, extra: Partial<Parameters<typeof postCardMenuR
   const rows = postCardMenuRows({
     post,
     brand: { seg: "titanium-marketing", organizationId: "org-1" },
-    accountHref: "/marketing/titanium-marketing/socials/tiktok/acc-1",
+    accountHref: "/marketing/brands/titanium-marketing/socials/tiktok/acc-1",
     canEdit,
     copyText: async () => true,
     queryClient: new QueryClient(),

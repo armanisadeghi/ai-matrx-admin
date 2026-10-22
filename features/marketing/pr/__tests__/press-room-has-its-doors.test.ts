@@ -12,7 +12,7 @@ import { join } from "node:path";
 
 import { pressRoomDoors } from "../PressRoomDoors";
 
-const PAGE = join(__dirname, "..", "..", "..", "..", "app", "(core)", "marketing", "[brandId]", "pr", "page.tsx");
+const PAGE = join(__dirname, "..", "..", "..", "..", "app", "(core)", "marketing", "brands", "[brandId]", "pr", "page.tsx");
 
 test("the Press Room page renders its doors in the header", () => {
   expect(readFileSync(PAGE, "utf8")).toMatch(/<PressRoomHeader\b/);
@@ -20,7 +20,7 @@ test("the Press Room page renders its doors in the header", () => {
 
 test("the doors are the brand PR calendar and the media-list board", () => {
   expect(pressRoomDoors("all-green").map((d) => [d.label, d.href])).toEqual([
-    ["PR calendar", "/marketing/all-green/planning/calendar"],
+    ["PR calendar", "/marketing/brands/all-green/planning/calendar"],
     ["Media lists", "/crm/outreach-lists"],
   ]);
 });

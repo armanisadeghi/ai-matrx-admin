@@ -4,7 +4,7 @@ Product truth: `common-docs/projects/outside-skill-packs/BRIEFS-STRATEGY-AND-ORG
 `NEWS-ENGINE-SPEC.md` §12 (Lane G). This file is local mechanics only.
 
 **One editor for both lenses** (coverage: who writes about us; opportunity: news we can join), one record
-(`seo.coverage_tracker`). Route: `/marketing/[brandId]/intelligence/monitoring/setup` (`?tracker=` edits,
+(`seo.coverage_tracker`). Route: `/marketing/brands/[brandId]/intelligence/monitoring/setup` (`?tracker=` edits,
 `?site=` preselects the website) via `marketingRoutes.brandMonitorSetup`. Opened from the brand's Monitoring
 front door ("News monitor" door) and from a site's Coverage tab ("Set up monitoring" / "Edit monitor").
 

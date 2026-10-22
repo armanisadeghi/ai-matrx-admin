@@ -2,7 +2,7 @@
 
 **Status:** live (Plane A + Plane C). Google-native PLAN §4.11, unit U-M3.
 
-**Routes / mounts:** `/marketing/[brandId]/analytics` (the panel, under the
+**Routes / mounts:** `/marketing/brands/[brandId]/analytics` (the panel, under the
 Google Analytics list) · overlay `brandChannelWindow` (the same panel in a
 window) · `/detail/web_youtube_video/<id>` (one video as a record).
 

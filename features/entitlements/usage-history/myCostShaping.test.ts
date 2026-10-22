@@ -71,11 +71,11 @@ describe("my cost: where a charge opens", () => {
   const base = { feature: "social_data", linkKind: "external_api", linkId: null, conversationId: null };
   it("a social charge opens the account it was for", () => {
     const r = { ...base, subjectKind: "account" as const, subjectPlatform: "tiktok", subjectId: "p-1", subjectBrandId: "b-1" };
-    expect(chargeHref(r)).toBe("/marketing/b-1/socials/tiktok/p-1");
-    expect(chargeLink(r)).toEqual({ href: "/marketing/b-1/socials/tiktok/p-1", label: "Open" });
+    expect(chargeHref(r)).toBe("/marketing/brands/b-1/socials/tiktok/p-1");
+    expect(chargeLink(r)).toEqual({ href: "/marketing/brands/b-1/socials/tiktok/p-1", label: "Open" });
   });
   it("a social charge opens the post it was for", () => {
-    expect(chargeHref({ ...base, subjectKind: "post", subjectPlatform: "instagram", subjectId: "post-1", subjectBrandId: "b-1" })).toBe("/marketing/b-1/socials/post/post-1");
+    expect(chargeHref({ ...base, subjectKind: "post", subjectPlatform: "instagram", subjectId: "post-1", subjectBrandId: "b-1" })).toBe("/marketing/brands/b-1/socials/post/post-1");
   });
   it("without a recorded subject it falls back to the list, and says so", () => {
     expect(chargeLink(base)).toEqual({ href: "/marketing/social", label: "All social", hint: expect.any(String) });

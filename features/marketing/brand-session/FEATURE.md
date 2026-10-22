@@ -9,7 +9,7 @@ Product truth: common-docs `projects/brand-discovery/PLAN.md` § The flow step 4
 
 ## What it is
 
-`/marketing/[brandId]/identity/session` (`marketingRoutes.brandSession`; "Decide" on the brand header and its
+`/marketing/brands/[brandId]/identity/session` (`marketingRoutes.brandSession`; "Decide" on the brand header and its
 phone menu). The whole screen is the card: the canonical `@ai-matrx/design-system/swipe-deck` `SwipeDeck`, bound
 through a `SwipeDeckBinding` (`useBrandSessionDeck`). A screen the design session builds binds the same way:
 `binding` in, `snapshot` out.

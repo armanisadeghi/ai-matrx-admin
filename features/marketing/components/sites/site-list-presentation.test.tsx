@@ -110,7 +110,7 @@ describe("site list presentation", () => {
     ).toBe(false);
     expect(
       SITE_LIST_COLUMNS.find((spec) => spec.id === "name")?.column.href?.(row),
-    ).toBe("/marketing/brand-1/websites/site-1");
+    ).toBe("/marketing/brands/brand-1/websites/site-1");
   });
 
   it("keeps the phone summary, touch targets, and table-owned actions", () => {
@@ -130,7 +130,7 @@ describe("site list presentation", () => {
     expect(html).toContain("active");
     expect(html).toContain("Canonical site actions");
     expect(html).toContain("min-h-11");
-    expect(html).toContain("/marketing/brand-1/websites/site-1");
+    expect(html).toContain("/marketing/brands/brand-1/websites/site-1");
   });
 
   /*

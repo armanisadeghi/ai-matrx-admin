@@ -45,7 +45,7 @@ describe("a Socials row click never opens the raw-fields inspector", () => {
 
 describe("an account always opens its route", () => {
   it("links a stored profile to /socials/<platform>/<profileId> and an unstored one to nothing", () => {
-    expect(accountHref("data-destruction", { platform: "youtube", profileId: "p1" })).toBe("/marketing/data-destruction/socials/youtube/p1");
+    expect(accountHref("data-destruction", { platform: "youtube", profileId: "p1" })).toBe("/marketing/brands/data-destruction/socials/youtube/p1");
     expect(accountHref("data-destruction", { platform: "x", profileId: null })).toBeNull();
   });
 
@@ -101,10 +101,10 @@ describe("no marketing table opens the generic record window", () => {
 describe("an untracked account still opens its route", () => {
   it("falls back to the property page, so every account row and name links", () => {
     expect(brandAccountHref("data-destruction", { platform: "x", profileId: null, propertyId: "prop1" })).toBe(
-      "/marketing/data-destruction/socials/x/prop1",
+      "/marketing/brands/data-destruction/socials/x/prop1",
     );
     expect(brandAccountHref("data-destruction", { platform: "x", profileId: "p1", propertyId: "prop1" })).toBe(
-      "/marketing/data-destruction/socials/x/p1",
+      "/marketing/brands/data-destruction/socials/x/p1",
     );
   });
 
