@@ -159,6 +159,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const tableSettingsManifest: SurfaceManifest = {
   surfaceName: TABLE_SETTINGS_SURFACE_NAME,
+  situation:
+    "They have a data table's settings window open, where they edit its columns, its details and its row actions (one-click buttons on every row). Unsaved changes and any reasons the row action being edited cannot be saved yet are in your context. You can change the table's details and the row action being edited.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

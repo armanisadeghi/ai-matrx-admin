@@ -213,6 +213,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const scopeDetailManifest: SurfaceManifest = {
   surfaceName: SCOPE_DETAIL_SURFACE_NAME,
+  situation:
+    "They have one scope open: {scope_name|not loaded yet}, with {context_items_filled|some} of {context_items_total|its} fields filled in; every field and its value is in your context. They can rename it, rewrite its description and fill in or change its field values.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

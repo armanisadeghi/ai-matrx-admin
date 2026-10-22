@@ -115,6 +115,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const quickDataManifest: SurfaceManifest = {
   surfaceName: QUICK_DATA_SURFACE_NAME,
+  situation:
+    "They have the quick data window open, a picker over their {table_count} data tables, so they can look at one without leaving what they were doing. The table shown is {selected_table_name|none yet}.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

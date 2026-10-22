@@ -276,6 +276,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const listsManifest: SurfaceManifest = {
   surfaceName: "matrx-user/pick-lists",
+  situation:
+    "They have a pick list open: {active_list_name|name not loaded yet}, with {active_list_item_count|no} choices, shown in the {list_view} view. They can rename it, rewrite its description, and add, edit or archive its choices.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

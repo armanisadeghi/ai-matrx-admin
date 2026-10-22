@@ -177,6 +177,8 @@ const writeTargets = LIST_SURFACE_WRITE_TARGETS;
 
 export const listManagerManifest: SurfaceManifest = {
   surfaceName: "matrx-user/pick-list-manager",
+  situation:
+    "They have the list manager window open, with {list_count} lists in the sidebar and {active_list_name|no list} open, holding {active_list_item_count|no} items. They can rename the open list, rewrite its description, and add, edit or remove its items.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

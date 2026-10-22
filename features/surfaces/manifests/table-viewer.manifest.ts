@@ -139,6 +139,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const tableViewerManifest: SurfaceManifest = {
   surfaceName: TABLE_VIEWER_SURFACE_NAME,
+  situation:
+    "They have the table viewer window open, showing {table_title|a table} at full size: {table_row_count} rows under the columns {table_headers}. It is a copy of a table from elsewhere in the app, so nothing here is saved; the whole table is in your context.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

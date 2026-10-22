@@ -223,6 +223,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const contextItemsManifest: SurfaceManifest = {
   surfaceName: CONTEXT_ITEMS_SURFACE_NAME,
+  situation:
+    "On the context items page they see every field defined across their organizations, grouped by organization and scope type; the values each scope holds are not here. They can add fields and change a field's wording, category, tags or status note.",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
   executionMode: "python-stream",

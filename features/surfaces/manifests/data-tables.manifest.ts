@@ -430,6 +430,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const dataTablesManifest: SurfaceManifest = {
   surfaceName: "matrx-user/data-tables",
+  situation:
+    "They have a table open: {table_name|name not loaded yet}, with {row_count|an unknown number of} rows. The cell in focus is {current_column_name|none} on row {current_row_label|none}. They can search, filter, sort and edit cells; you can change a cell's value or the table's description.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,

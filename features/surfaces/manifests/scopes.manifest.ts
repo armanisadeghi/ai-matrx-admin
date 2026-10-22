@@ -386,6 +386,8 @@ const surfaceSpecific: SurfaceValue[] = [
 
 export const scopesManifest: SurfaceManifest = {
   surfaceName: SCOPES_SURFACE_NAME,
+  situation:
+    "They are in scopes, where they shape the dimensions their work is organized by: scope types (like Client), the scopes on each (one client) and the fields each one fills in. In view: {scope_type_count|some} scope types, {scope_count|some} scopes and {context_item_count|some} fields across {organization_count|their} organizations.",
   inheritsFrom: "matrx-default/data",
   client: "matrx-user",
   executor: MATRX_WEB_APP_EXECUTOR,
