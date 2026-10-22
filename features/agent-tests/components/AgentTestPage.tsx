@@ -229,6 +229,7 @@ export function TestRunPanel({
   seat,
   onOpenRun,
   onSettled,
+  onRunChanged,
   stacked = false,
 }: {
   runId: string;
@@ -238,6 +239,8 @@ export function TestRunPanel({
   onOpenRun: (id: string) => void;
   /** Called when a live run stops being live (its results are final). */
   onSettled?: () => void;
+  /** The run's own row moved (status or counts): the runs list beside it re-reads too. */
+  onRunChanged?: () => void;
   stacked?: boolean;
 }) {
   const [runRead, rereadRun] = useRead<TestRunView | null>(
@@ -256,15 +259,25 @@ export function TestRunPanel({
   const status =
     runRead.state === "ready" ? (runRead.data?.status ?? null) : null;
   const live = status !== null && runStatusMeta(status).live;
+  const runChanged = useEffectEvent(() => onRunChanged?.());
   const reread = useEffectEvent(() => {
     rereadRun();
     rereadResults();
+    runChanged();
   });
   const settled = useEffectEvent(() => onSettled?.());
   // Counts, status and each verdict arrive over realtime (`useRunChanges`): no polling. A live
   // run is also picked back up by link and rejoined (replay, then follow), so a reload mid-run
   // reattaches; when that stream ends the run is final and the page reads it once more.
-  useRunChanges({ scope: "run-panel", runId, onRun: rereadRun, onResults: rereadResults });
+  useRunChanges({
+    scope: "run-panel",
+    runId,
+    onRun: () => {
+      rereadRun();
+      runChanged();
+    },
+    onResults: rereadResults,
+  });
   // The run stops being live (seen over realtime or by the stream): its results are final.
   const wasLive = useRef(false);
   useEffect(() => {
@@ -337,6 +350,7 @@ export function TestRunPanel({
                   await cancelRun(runId);
                   rereadRun();
                   rereadResults();
+                  runChanged();
                 }, "The run did not stop.")
               }
             >
@@ -550,6 +564,7 @@ export function AgentTestPage({
               cases={cases}
               declarations={declarations}
               seat={seat}
+              onRunChanged={rereadRuns}
               onOpenRun={(id) => {
                 rereadRuns();
                 openRun(id);
