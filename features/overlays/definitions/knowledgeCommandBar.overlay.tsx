@@ -16,13 +16,14 @@
 import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import { createKnowledgeCommandBarCallbackGroup } from "./callbacks/knowledgeCommandBar";
 import type { KnowledgeAttachTarget } from "@/features/knowledge/command-bar/attachTarget";
 import type { KnowledgeCommand } from "@/features/knowledge/command-bar/commands";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "knowledgeCommandBar" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenKnowledgeCommandBarOptions {
   /** Pre-filled search text. */
@@ -61,9 +62,9 @@ export function createKnowledgeCommandBarOpener(store: { dispatch: AppDispatch }
       initialText: opts.initialText ?? null,
       primaryAction: opts.primaryAction ?? "open",
     };
-    dispatch(openOverlay({ overlayId: OVERLAY_ID, data }));
+    opener.open(dispatch, { data });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }

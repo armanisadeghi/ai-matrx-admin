@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "agentTestCasesWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenAgentTestCasesWindowOptions {
   agentId: string;
@@ -22,42 +23,18 @@ export function useOpenAgentTestCasesWindow() {
   return (
     options: OpenAgentTestCasesWindowOptions,
   ): AgentTestCasesWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           agentId: options.agentId,
           conversationId: options.conversationId,
-        },
-      }),
-    );
+        } });
 
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
 
-export function AgentTestCasesWindowController({
-  agentId,
-  conversationId,
-}: OpenAgentTestCasesWindowOptions): null {
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: { agentId, conversationId },
-      }),
-    );
-    return () => {
-      dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
-    };
-  }, [agentId, conversationId, dispatch]);
-
-  return null;
-}
+export const AgentTestCasesWindowController = hookController<OpenAgentTestCasesWindowOptions>(useOpenAgentTestCasesWindow);
 
 export type AgentTestCasesWindowDefinitionData = OpenAgentTestCasesWindowOptions;
 

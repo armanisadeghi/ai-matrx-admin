@@ -7,7 +7,6 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createExtractionCellEditorCallbackGroup,
   extractionCellEditorInstanceId,
@@ -15,8 +14,10 @@ import {
   type ExtractionCellEditorTargetInput,
 } from "@/features/page-extraction/data-review/extractionCellEditorCallbacks";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "extractionCellEditorWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export type OpenExtractionCellEditorOptions = ExtractionCellEditorTargetInput & {
   callbackGroupId?: string;
@@ -54,11 +55,7 @@ export function useOpenExtractionCellEditor(
         opts.rowId,
         opts.columnKey,
       );
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: opts.readOnly ? {
+      opener.open(dispatch, { instanceId, data: opts.readOnly ? {
             rowId: opts.rowId,
             columnKey: opts.columnKey,
             columnLabel: opts.columnLabel,
@@ -78,13 +75,11 @@ export function useOpenExtractionCellEditor(
             currentPayload: opts.currentPayload,
             callbackGroupId:
               opts.callbackGroupId ?? groupFor().callbackGroupId,
-          },
-        }),
-      );
+          } });
       return {
         instanceId,
         close: () =>
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],

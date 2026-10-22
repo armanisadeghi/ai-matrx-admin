@@ -49,6 +49,10 @@
 // auditPackageGraph below) — and every NAMED import in it must be in that
 // <dep>'s runtime exports (the 2026-10-18 formatShortcut/addressText renames).
 //   node scripts/check-matrx-imports.mjs --packages   # the package graph only (sync:matrx-packages' adoption gate)
+//   node scripts/check-matrx-imports.mjs --lock [--ref REF]  # LOCKFILE mode: judge the code in REF (default: the
+//     index) against the @ai-matrx versions the LOCKFILE in REF names — fetched from npm when they are not what is
+//     installed. A lockfile-only adoption installs nothing, so the installed-package check above is blind to it
+//     (2026-10-21: 689c27aa4d adopted chat 0.8.307, which dropped setDebrief; two Vercel releases failed).
 //
 // Exit codes: 0 clean · 1 an import names something the installed package does
 //             not ship · 2 the script itself could not run — never a silent pass.
@@ -67,6 +71,7 @@ import {
   readdirSync,
   realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
@@ -288,8 +293,8 @@ function indexText(root, rel) {
 }
 
 /** Index blobs for many paths through ONE git process (a process per file takes minutes). */
-function indexBlobs(root, rels) {
-  const out = spawnSync("git", ["cat-file", "--batch"], { cwd: root, input: rels.map((r) => `:${r}\n`).join(""), maxBuffer: 1024 * 1024 * 1024 }).stdout;
+function indexBlobs(root, rels, prefix = ":") {
+  const out = spawnSync("git", ["cat-file", "--batch"], { cwd: root, input: rels.map((r) => `${prefix}${r}\n`).join(""), maxBuffer: 1024 * 1024 * 1024 }).stdout;
   const map = new Map();
   let pos = 0;
   for (const rel of rels) {
@@ -319,6 +324,112 @@ export function stagedAudit(root, staged) {
   const files = rels.filter((f) => SOURCE_EXT.test(f)).map((f) => join(root, f));
   const blobs = indexBlobs(root, files.map((f) => relative(root, f).split(sep).join("/")));
   return audit(root, { files, readText: (file) => blobs.get(relative(root, file).split(sep).join("/")) ?? null, graph: widen, narrowed: !widen });
+}
+
+const LOCK_DIRECT = /^\s+'(@ai-matrx\/[a-z0-9._-]+)':\n\s+specifier: .+\n\s+version: (\d[^(\s'"]*)/gm;
+
+/** { "@ai-matrx/x": "1.2.3" } — the DIRECT @ai-matrx versions a pnpm-lock.yaml's first importer names. */
+export function lockedDirectVersions(lockText) {
+  const out = {};
+  for (const m of lockText.matchAll(LOCK_DIRECT)) if (!(m[1] in out)) out[m[1]] = m[2];
+  // Packages only other packages depend on (agents, api, ...) still have to sit beside them, or the
+  // package-graph half reports them "not installed": the highest locked version stands in.
+  const cmp = (a, b) => a.localeCompare(b, undefined, { numeric: true });
+  for (const m of lockText.matchAll(/^\s+'(@ai-matrx\/[a-z0-9._-]+)@(\d[^(':\s]*)/gm)) {
+    if (m[1] in out) continue;
+    const best = out[`\0${m[1]}`];
+    if (!best || cmp(m[2], best) > 0) out[`\0${m[1]}`] = m[2];
+  }
+  for (const k of Object.keys(out)) {
+    if (!k.startsWith("\0")) continue;
+    if (!(k.slice(1) in out)) out[k.slice(1)] = out[k];
+    delete out[k];
+  }
+  return out;
+}
+
+/** Fetch one package version from npm into a cache dir; returns its extracted directory. */
+export function fetchFromNpm(name, version) {
+  // The path must contain "node_modules": a package outside one reads as workspace SOURCE and is skipped.
+  const cache = join(tmpdir(), "matrx-lock-pack-cache", "node_modules", `${name}@${version}`);
+  if (existsSync(join(cache, "package", "package.json"))) return join(cache, "package");
+  mkdirSync(cache, { recursive: true });
+  const r = spawnSync("npm", ["pack", `${name}@${version}`, "--pack-destination", cache, "--silent"], { encoding: "utf8", timeout: 180000 });
+  const tgz = readdirSync(cache).find((f) => f.endsWith(".tgz"));
+  if (r.status !== 0 || !tgz) {
+    rmSync(cache, { recursive: true, force: true });
+    throw new Error(`could not fetch ${name}@${version} from npm (${(r.stderr || r.stdout || "no output").trim().split("\n").pop()})`);
+  }
+  const x = spawnSync("tar", ["-xzf", join(cache, tgz), "-C", cache], { encoding: "utf8" });
+  if (x.status !== 0) {
+    rmSync(cache, { recursive: true, force: true });
+    throw new Error(`could not unpack ${name}@${version}: ${x.stderr}`);
+  }
+  return join(cache, "package");
+}
+
+/**
+ * LOCKFILE MODE (--lock). Judges the code in `ref` ("" = the index) against the @ai-matrx versions the
+ * pnpm-lock.yaml in the same ref names. Installed copies are used where the version matches; any other
+ * version is fetched (`fetch(name, version)` -> extracted dir). The tree is rebuilt in a scratch dir so
+ * the checkout's node_modules is never touched. A finding names file, package, version and the export.
+ */
+export function lockAudit(root, { ref = "", fetch = fetchFromNpm } = {}) {
+  root = resolve(root);
+  const prefix = ref ? `${ref}:` : ":";
+  const lockText = indexBlobs(root, ["pnpm-lock.yaml"], prefix).get("pnpm-lock.yaml");
+  if (lockText == null) throw new Error(`no pnpm-lock.yaml in ${ref || "the index"}`);
+  const locked = lockedDirectVersions(lockText);
+  const rels = (ref ? gitLines(root, ["ls-tree", "-r", "-z", "--name-only", ref]) : gitLines(root, ["ls-files", "-z", "--cached"])).filter((f) => SOURCE_EXT.test(f));
+  const blobs = indexBlobs(root, rels, prefix);
+  const t0 = Date.now();
+  const tmp = realpathSync(mkdtempSync(join(tmpdir(), "matrx-lock-audit-")));
+  try {
+    const scope = join(tmp, "node_modules", "@ai-matrx");
+    mkdirSync(scope, { recursive: true });
+    const swapped = [];
+    for (const [name, version] of Object.entries(locked)) {
+      const installed = join(root, "node_modules", name);
+      let have = null;
+      try {
+        have = JSON.parse(readFileSync(join(installed, "package.json"), "utf8")).version;
+      } catch {
+        /* not installed */
+      }
+      const dest = join(scope, name.slice(SCOPE.length));
+      if (have === version) symlinkSync(realpathSync(installed), dest);
+      else {
+        symlinkSync(fetch(name, version), dest);
+        swapped.push(`${name} ${have ?? "(not installed)"} -> ${version}`);
+      }
+    }
+    // Packages the lockfile does not version (workspace links, `link:`) stay as installed.
+    for (const n of existsSync(join(root, "node_modules", "@ai-matrx")) ? readdirSync(join(root, "node_modules", "@ai-matrx")) : []) {
+      const dest = join(scope, n);
+      if (!existsSync(dest)) symlinkSync(realpathSync(join(root, "node_modules", "@ai-matrx", n)), dest);
+    }
+    const T = (label) => process.env.MATRX_LOCK_TIMING && console.error(`[lock timing] ${label} ${Date.now() - t0}ms`);
+    T("packages ready");
+    const files = [];
+    for (const [rel, text] of blobs) {
+      if (text == null || !text.includes(SCOPE)) continue;
+      const f = join(tmp, rel);
+      mkdirSync(dirname(f), { recursive: true });
+      writeFileSync(f, text);
+      files.push(f);
+    }
+    clearPackageResolution();
+    runtimeCache.clear();
+    // The package-to-package graph is not judged here: installed copies are linked in place, so their
+    // siblings are the INSTALLED ones and the report would be noise. `--packages` is that gate.
+    const result = audit(tmp, { files, graph: false });
+    T("audit done");
+    clearPackageResolution();
+    runtimeCache.clear();
+    return { ...result, swapped, locked: Object.keys(locked).length };
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
 }
 
 export function audit(root, { only = null, files: given = null, readText = null, graph: wantGraph = null, narrowed = null } = {}) {
@@ -1097,6 +1208,40 @@ function selfTest() {
       f = staged("pnpm-lock.yaml");
       if (!f.some((x) => x.name === "createKindValidator" && x.file === join("lib", "committed.ts")))
         failures.push(`STAGED RED: a lockfile bump that breaks a committed file was not refused: ${JSON.stringify(f)}`);
+
+      // ── LOCKFILE MODE (--lock): a lockfile-ONLY adoption installs nothing, so the checks above stay green
+      // against the old install. The lockfile's own versions are fetched (here: a stand-in) and judged.
+      const lockText = (v) => `lockfileVersion: '9.0'\n\nimporters:\n\n  .:\n    dependencies:\n      '@ai-matrx/content-ir':\n        specifier: latest\n        version: ${v}(react@19.0.0)\n`;
+      const side = join(tmp, "lock-side");
+      const fetched = [];
+      const fakeFetch = (name, version) => {
+        fetched.push(`${name}@${version}`);
+        writePkg(side, version, version !== "0.18.6");
+        return join(side, "node_modules", "@ai-matrx", "content-ir");
+      };
+      writePkg(repo, "0.19.0", true); // INSTALLED: ships createKindValidator
+      writeFileSync(join(repo, "pnpm-lock.yaml"), lockText("0.18.6"));
+      git("add", "pnpm-lock.yaml");
+      fresh();
+      let lr = lockAudit(repo, { fetch: fakeFetch });
+      if (!lr.findings.some((x) => x.name === "createKindValidator" && x.version === "0.18.6" && x.file === join("lib", "committed.ts")))
+        failures.push(`LOCK RED: a lockfile-only adoption of a version that dropped an export was not refused (installed copy still has it): ${JSON.stringify(lr.findings)}`);
+      if (JSON.stringify(fetched) !== JSON.stringify(["@ai-matrx/content-ir@0.18.6"]))
+        failures.push(`LOCK: the locked version was not the one judged: ${JSON.stringify(fetched)}`);
+      writeFileSync(join(repo, "pnpm-lock.yaml"), lockText("0.19.0"));
+      git("add", "pnpm-lock.yaml");
+      fetched.length = 0;
+      fresh();
+      lr = lockAudit(repo, { fetch: fakeFetch });
+      if (lr.findings.length) failures.push(`LOCK GREEN: a lockfile naming the installed version was refused: ${JSON.stringify(lr.findings)}`);
+      if (fetched.length) failures.push(`LOCK GREEN: a version that is already installed was fetched anyway: ${JSON.stringify(fetched)}`);
+      // The committed lockfile (HEAD), not the index, when --ref says so.
+      git("commit", "-qm", "lock 0.19.0");
+      writeFileSync(join(repo, "pnpm-lock.yaml"), lockText("0.18.6"));
+      git("add", "pnpm-lock.yaml");
+      fresh();
+      lr = lockAudit(repo, { ref: "HEAD", fetch: fakeFetch });
+      if (lr.findings.length) failures.push(`LOCK --ref: the index lockfile was judged instead of the ref's: ${JSON.stringify(lr.findings)}`);
     }
   } finally {
     rmSync(tmp, { recursive: true, force: true });
@@ -1106,7 +1251,7 @@ function selfTest() {
     for (const f of failures) console.error(`  - ${f}`);
     return 1;
   }
-  console.log("check-matrx-imports --self-test OK — RED on a missing export, subpath, wildcard subpath with no shipped file, runtime-only gap, uninstalled package, a broken package-to-package import (subpath and renamed name) a require()/import()/export-* specifier, an unresolvable self-referencing `export *` and an uncounted unreadable import; GREEN once shipped.");
+  console.log("check-matrx-imports --self-test OK — RED on a missing export, subpath, wildcard subpath with no shipped file, runtime-only gap, uninstalled package, a broken package-to-package import (subpath and renamed name) a require()/import()/export-* specifier, an unresolvable self-referencing `export *` and an uncounted unreadable import and a lockfile-only adoption (--lock) of a version that dropped an export; GREEN once shipped.");
   return 0;
 }
 
@@ -1114,7 +1259,15 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   let code;
   try {
     if (process.argv.includes("--self-test")) code = selfTest();
-    else if (process.argv.includes("--packages")) {
+    else if (process.argv.includes("--lock")) {
+      const argv = process.argv.slice(2);
+      const arg = (flag, dflt) => (argv.includes(flag) ? argv[argv.indexOf(flag) + 1] : dflt);
+      const root = arg("--root", join(dirname(fileURLToPath(import.meta.url)), ".."));
+      const ref = arg("--ref", "");
+      const result = lockAudit(root, { ref });
+      console.error(`[matrx-imports --lock] ${ref || "index"}: lockfile names ${result.locked} @ai-matrx package(s); judged against ${result.swapped.length ? result.swapped.join(", ") : "the installed versions"}.`);
+      code = report(result);
+    } else if (process.argv.includes("--packages")) {
       // Package-to-package only (sync:matrx-packages' adoption gate): every @ai-matrx specifier and
       // every named import inside node_modules/@ai-matrx/*/dist must resolve against the installed sibling.
       const argv = process.argv.slice(2);

@@ -12,11 +12,9 @@
  * - `<SurfaceContextInspectorController />` — declarative wrapper.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "surfaceContextInspector" as const;
 
@@ -34,52 +32,23 @@ export interface SurfaceContextInspectorHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createSurfaceContextInspectorOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (
-    opts: OpenSurfaceContextInspectorOptions,
-  ): SurfaceContextInspectorHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+const opener = appOpener<OpenSurfaceContextInspectorOptions>(OVERLAY_ID, {
+  data: (opts: OpenSurfaceContextInspectorOptions) => ({
           surfaceName: opts.surfaceName,
           scope: opts.scope ?? {},
           isEditable: opts.isEditable,
           preferRuntime: opts.preferRuntime === true,
-        },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+        }),
+});
 
-export function useOpenSurfaceContextInspector() {
-  const store = useAppStore();
-  return useMemo(() => createSurfaceContextInspectorOpener(store), [store]);
-}
+export const createSurfaceContextInspectorOpener = opener.forStore;
+
+export const useOpenSurfaceContextInspector = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens on mount, closes on unmount.
  */
-export function SurfaceContextInspectorController(
-  props: OpenSurfaceContextInspectorOptions,
-): null {
-  const open = useOpenSurfaceContextInspector();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.surfaceName,
-    props.scope,
-    props.isEditable,
-    props.preferRuntime,
-  ]);
-  return null;
-}
+export const SurfaceContextInspectorController = opener.Controller;
 
 export type SurfaceContextInspectorDefinitionData = OpenSurfaceContextInspectorOptions;
 

@@ -8,10 +8,8 @@
  * keywords keeps that view while they run discovery beside it (P25).
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "siteDiscoveryWindow" as const;
 
@@ -23,26 +21,16 @@ export interface OpenSiteDiscoveryWindowOptions {
   siteLabel?: string | null;
 }
 
-export function useOpenSiteDiscoveryWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenSiteDiscoveryWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenSiteDiscoveryWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenSiteDiscoveryWindowOptions) => ({
             siteId: options.siteId,
             brandId: options.brandId ?? "",
             organizationId: options.organizationId ?? "",
             siteLabel: options.siteLabel ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenSiteDiscoveryWindow = opener.useOpen;
 
 export type SiteDiscoveryWindowDefinitionData = OpenSiteDiscoveryWindowOptions;
 

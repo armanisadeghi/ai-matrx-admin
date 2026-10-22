@@ -259,6 +259,7 @@ export function parseRows(lines, classes = loadRowClasses(), { mint = false } = 
       // Everything but a declared repo-only row takes a DB slot (unclassified too).
       needsDb: classes[id]?.class !== "repo-only",
       timeoutSeconds: LONG_ROWS.test(`${label} ${cmd}`) ? LONG_ROW_SECONDS : TIMEOUT_FLOOR_SECONDS,
+      heavy: LONG_ROWS.test(`${label} ${cmd}`),
     });
   }
   return rows;
@@ -550,13 +551,31 @@ class Gate {
  * `scans` (optional, an object) is filled with `{ <check>: <item lines> }` for every row whose run
  * printed exactly one end-of-scan marker matching the item lines it printed.
  */
-export async function runRows(rows, { workers = DEFAULT_WORKERS, dbWorkers = DEFAULT_DB_WORKERS, timeout, scans, metrics } = {}) {
-  const pool = new Gate(Math.max(1, workers));
+/**
+ * Whether a heavy row (type-check, the whole jest suite, the browser sandbox) must run ALONE.
+ * True when memory, not the default, chose the pool size: on GitHub's 16 GB runner two workers
+ * still ran two heavy rows side by side — run 39725397144 (v0.4.3431, 2026-10-22) climbed to
+ * 15.7 GB used + 11.3 GB swap and the runner was shut down (exit 143) before any finding was
+ * written. A workstation keeps the full pool and never serializes.
+ */
+export function heavyRowsAlone({ workers, memBytes = totalmem() } = {}) {
+  return workers > 1 && Math.floor(memBytes / (WORKER_MEMORY_GIB * 1024 ** 3)) < DEFAULT_WORKERS;
+}
+
+export async function runRows(rows, { workers = DEFAULT_WORKERS, dbWorkers = DEFAULT_DB_WORKERS, timeout, scans, metrics, heavyAlone = heavyRowsAlone({ workers }) } = {}) {
+  const size = Math.max(1, workers);
+  const pool = new Gate(size);
   const db = new Gate(Math.max(1, dbWorkers));
+  // One heavy row at a time collects every pool slot; light rows hold one and always release,
+  // so the collector cannot deadlock.
+  const heavyLane = new Gate(1);
   const findings = [];
   await Promise.all(
     rows.map(async (row) => {
-      await pool.acquire();
+      const slots = heavyAlone && row.heavy ? size : 1;
+      if (slots > 1) await heavyLane.acquire();
+      for (let i = 0; i < slots; i += 1) await pool.acquire();
+      if (slots > 1) heavyLane.release();
       if (row.needsDb) await db.acquire();
       try {
         findings.push(...(await runRow(row, timeout, scans, metrics)));
@@ -572,7 +591,7 @@ export async function runRows(rows, { workers = DEFAULT_WORKERS, dbWorkers = DEF
         });
       } finally {
         if (row.needsDb) db.release();
-        pool.release();
+        for (let i = 0; i < slots; i += 1) pool.release();
       }
     }),
   );

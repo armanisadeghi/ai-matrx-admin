@@ -145,10 +145,8 @@ non-member no).
 
 ## Server side (aidream)
 
-- `POST /agent-testing/agents/{agent_id}/tests` (super-admin) runs approved
-  samples through `run_one_agent`; results persist under
-  `metadata.agent_test_results` (separate key from the mandate bench's
-  `test_bench_results`). Core: `aidream/services/agent_testing/service.py`.
+- The `/agent-testing` batch runner (and `agent_testing/service.py`) is retired: stored cases run
+  through the Agent Evaluation runner (`POST /agent-tests/runs/live`, `aidream/services/agent_tests/`).
 - **Auto-capture**: successful plain `run_one_agent` head runs self-capture as
   `source='captured'` candidates until the knob
   `agent_exemplars.auto_capture_target` is met

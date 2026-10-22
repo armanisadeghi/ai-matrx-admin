@@ -12,11 +12,15 @@ import { ErrorNotice, RecordId } from "@ai-matrx/design-system";
 import { Badge, PropertyRow } from "@ai-matrx/design-system/controls";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { createClient } from "@/utils/supabase/client";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { noticeTabHref } from "@/lib/notice-open/openFromNotice";
 import { FACTORY_BASE_PATH } from "./FactoryBuildsPage";
-import { buildRecordOf, type AgentBuildRecordView } from "../build-record";
+import { buildPageHref, buildRecordOf, type AgentBuildRecordView } from "../build-record";
 
 export function AgentBuildRecord({ agentId }: { agentId: string }) {
+  // Admin POWER is true only inside the admin section; on the Studio (a member's page) everyone gets their own page.
+  const isAdmin = useAppSelector(selectIsAdmin);
   const [state, setState] = useState<{ id: string; record: AgentBuildRecordView | null; error: unknown } | null>(null);
   useEffect(() => {
     let live = true;
@@ -47,7 +51,7 @@ export function AgentBuildRecord({ agentId }: { agentId: string }) {
         value={<Badge tone={record.outcomeTone}>{humanizeIdentifier(record.outcome) || record.outcome}</Badge>}
         meta={
           record.buildId ? (
-            <RecordId value={record.buildId} label="Build" href={noticeTabHref(`${FACTORY_BASE_PATH}/${record.buildId}`)} />
+            <RecordId value={record.buildId} label="Build" href={noticeTabHref(buildPageHref(record.buildId, isAdmin, FACTORY_BASE_PATH))} />
           ) : null
         }
       />

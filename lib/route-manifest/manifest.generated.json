@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1580,
+  "routeCount": 1582,
   "routes": [
     {
       "pattern": "/",
@@ -4693,6 +4693,16 @@
       "pattern": "/marketing/[brandId]/identity/offerings",
       "status": "live",
       "source": "app/(core)/marketing/[brandId]/identity/offerings/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/identity/session",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/identity/session/page.tsx"
+    },
+    {
+      "pattern": "/marketing/[brandId]/identity/story",
+      "status": "live",
+      "source": "app/(core)/marketing/[brandId]/identity/story/page.tsx"
     },
     {
       "pattern": "/marketing/[brandId]/identity/strategy",

@@ -57,7 +57,7 @@ entity only when the fixed person-or-business rules are weak — a judgment that
 | Concern | Where |
 |---|---|
 | Battle row | `agent.cmp_comparison_sets`, `metadata.mode = "matrix"` (the server runner reads it) + `metadata.smart_add_bench` (brand, searches, results, frozen stances, truth) |
-| Cells | `agent.cmp_comparison_entries` via `/agent-battles/{set}/run`: item rows × Jev, batch rows × holder / reference (`model.cellsToRun`; batches queue first) |
+| Cells | `agent.cmp_comparison_entries` via `/agent-battles/{set}/queue-run`: item rows × Jev, batch rows × holder / reference (`model.cellsToRun`; batches queue first) |
 | Jev's answers | the decision answer store (`platform.judge_verdict`, `loadJevAnswers`) by run conversation |
 | Truth | `smart_add_bench.truth` (guarded merge) AND a human label on Jev's `stance` answer (`labelConversations`) so it feeds `/agents/<id>/answers/calibration` |
 | Mapping | today's labels → ours / about us / not us by `web.brand_relation_kind.stance` (frozen at run time); `needs_person` / `maybe` = can't tell |

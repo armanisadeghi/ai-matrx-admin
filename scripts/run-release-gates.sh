@@ -1003,6 +1003,10 @@ if $STRICT; then
         # policies/cursor-law.md. Baseline ratchet: exits 1 only on a NEW site; advisory here.
         "Disabled state turns pointer events off (swallows the cursor)|pnpm check:cursor-law"
         "Cursor law guard self-test|pnpm check:cursor-law:self-test"
+        # THE CONTROL SHAPE LAW (Arman 2026-10-20/21): pill/glass controls, hand-rolled field focus
+        # rings, a frame around a self-framed component. Baseline ratchet; advisory here.
+        "Control shape drift (pill, glass, focus ring, double frame)|pnpm check:control-shape"
+        "Control shape guard self-test|pnpm check:control-shape:self-test"
         # HOVER TRIGGER SCOPE — a hover card / tooltip / popover opens from the thing it is
         # about, never from a container that also holds buttons or fields (Arman, 2026-10-14:
         # the Smart Add source card dropped over the next question while he aimed at Yes).
@@ -1810,6 +1814,10 @@ else
         # policies/cursor-law.md. Baseline ratchet: exits 1 only on a NEW site; advisory here.
         "Disabled state turns pointer events off (swallows the cursor)|pnpm check:cursor-law"
         "Cursor law guard self-test|pnpm check:cursor-law:self-test"
+        # THE CONTROL SHAPE LAW (Arman 2026-10-20/21): pill/glass controls, hand-rolled field focus
+        # rings, a frame around a self-framed component. Baseline ratchet; advisory here.
+        "Control shape drift (pill, glass, focus ring, double frame)|pnpm check:control-shape"
+        "Control shape guard self-test|pnpm check:control-shape:self-test"
         "Hover card or tooltip opens from a container holding buttons|pnpm check:hover-trigger-scope"
         "Hover trigger scope guard self-test|pnpm check:hover-trigger-scope:self-test"
         # ALCHEMY DOORS (ALC-20) — raw clipboard, hand-built downloads, direct format libraries,

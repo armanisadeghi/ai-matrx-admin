@@ -92,6 +92,7 @@ import { useWorkflowRun } from "../../hooks/useWorkflowRun";
 import { useFloatingWorkflowRun } from "../../floating/useFloatingWorkflowRun";
 import {
   selectNodeAggregate,
+  selectRunInput,
   selectRunStatus,
 } from "../../redux/workflow-runs.selectors";
 import { runIsOver } from "../../types";
@@ -101,6 +102,7 @@ import type { WorkflowDefinitionLike } from "../../trigger-points";
 import { InterruptCard, InvocationBody, PHASE_LABEL, PhaseIcon } from "../readout-parts";
 import {
   describeWorkflowSteps,
+  relabelStepsForRun,
   familyNoun,
   humanizeKind,
   type NodeFamily,
@@ -161,7 +163,8 @@ export default function WorkflowRunBoardView({
   definition,
   workflowName,
 }: WorkflowRunBoardViewProps) {
-  const steps = describeWorkflowSteps(definition);
+  const runInput = useAppSelector(selectRunInput(runId));
+  const steps = relabelStepsForRun(describeWorkflowSteps(definition), runInput);
   const stepLabels: Record<string, string> = {};
   for (const step of steps) stepLabels[step.nodeId] = step.label;
 

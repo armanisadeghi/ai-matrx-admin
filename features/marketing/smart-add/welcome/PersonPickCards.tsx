@@ -55,7 +55,8 @@ function PersonFacts({ person, large }: { person: PersonGroup; large?: boolean }
       >
         {person.name}
       </span>
-      {person.line ? <span className="truncate text-base text-foreground">{person.line}</span> : null}
+      {/* Wraps at words (two lines at most), never cut inside a word (live 2026-10-21: "Innoviva Specialty Th..."). */}
+      {person.line ? <span className="line-clamp-2 break-normal text-base text-foreground">{person.line}</span> : null}
       {person.place ? (
         <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
           <MapPin aria-hidden className="size-4 shrink-0" />
@@ -212,7 +213,7 @@ export function PersonPickCards({
               variant="quiet"
               hero
               icon={<X aria-hidden />}
-              pressed={narrowing}
+              aria-expanded={narrowing}
               onClick={() => setNarrowing((v) => !v)}
               data-testid="welcome-person-no"
             >
@@ -220,10 +221,12 @@ export function PersonPickCards({
             </Button>
           </div>
         ) : (
+          // Opens the field (aria-expanded), never a toggle in a set: `pressed` dropped its ink to muted grey on the grey
+          // card in dark mode (live 2026-10-21).
           <Button
             variant="quiet"
             className="self-start"
-            pressed={narrowing}
+            aria-expanded={narrowing}
             meta={more > 0 ? `${more} more` : undefined}
             onClick={() => setNarrowing((v) => !v)}
             data-testid="welcome-none-of-these"

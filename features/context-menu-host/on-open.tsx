@@ -20,7 +20,10 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 // adminDebug action in the same reduction): the same toggle Matrx 2 binds.
 import { selectIsDebugMode, toggleDebugMode } from "@ai-matrx/chat/host/prefs";
 import { selectIsSuperAdmin, selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
-import { selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, selectIsOverlayOpen, toggleOverlay } from "@ai-matrx/summon/open";
+import { selectIsCreator } from "@/lib/redux/selectors/userSelectors";
+import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
+import { selectOrgById } from "@/features/agent-context/redux/organizationsSlice";
 import { openCompareWithBase, selectHasCompareBase, setCompareBase } from "@ai-matrx/chat/agents/redux/diff-compare/diff-compare.slice";
 import { selectActiveScopeIds } from "@/features/scopes/redux/selectors/active-context";
 import { useOpenListenSummaryWindow } from "@/features/overlays/definitions/listenSummaryWindow.overlay";
@@ -55,7 +58,17 @@ function useAppContextMenuBindings(): ContextMenuHostBindings {
   const shareModalWindow = useOpenShareModalWindow();
   const surfaceInspector = useOpenSurfaceContextInspector();
   const promptDebugIndicator = useOpenPromptDebugIndicator();
+  // Org Admin: the ACTIVE organization's admin pages, only for its owner or admin (the role is on the
+  // organization record already loaded — no fetch).
+  const activeOrgId = useAppSelector(selectOrganizationId);
+  const activeOrgRole = useAppSelector((state) => (activeOrgId ? selectOrgById(state, activeOrgId)?.role : undefined));
+  const orgAdminHref = activeOrgId && (activeOrgRole === "owner" || activeOrgRole === "admin") ? `/organizations/${activeOrgId}/admin` : null;
   return {
+    isCreator: useAppSelector(selectIsCreator),
+    openCreatorHub: () => {
+      dispatch(openOverlay({ overlayId: "creatorHub" }));
+    },
+    orgAdminHref,
     isAdminDebugger: useAppSelector(selectIsSuperAdminDebugger),
     hasAdminPower: useAppSelector(selectIsSuperAdmin),
     isDebugMode: useAppSelector(selectIsDebugMode),

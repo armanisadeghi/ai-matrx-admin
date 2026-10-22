@@ -570,3 +570,6 @@ export function productById(id: string): FrameProduct | undefined {
 export const DEFAULT_GRID_FAVORITES: readonly string[] = [
   "chat", "memory", "workspace", "docs", "drive", "data", "crm", "intelligence", "meet",
 ];
+
+/** The big products that can sit in the sidebar all the time (the "Big items" option). */
+export const BIG_ITEM_IDS: readonly string[] = ["chat", "memory", "intelligence", "docs", "crm", "code"];

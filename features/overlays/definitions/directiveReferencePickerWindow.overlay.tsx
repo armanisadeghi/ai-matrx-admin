@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createDirectiveReferencePickerCallbackGroup,
   type DirectiveReferencePickerHandlers,
@@ -10,8 +10,11 @@ import {
 } from "@/features/window-panels/windows/admin/directive-reference-picker/callbacks";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "directiveReferencePickerWindow";
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenDirectiveReferencePickerOptions extends DirectiveReferencePickerHandlers {
   entityToken: EntityTypeToken;
@@ -38,7 +41,7 @@ export function useOpenDirectiveReferencePickerWindow() {
     ): DirectiveReferencePickerHandle => {
       const instanceId =
         options.instanceId ??
-        `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        mintInstanceId(OVERLAY_ID);
       const { callbackGroupId, dispose } =
         createDirectiveReferencePickerCallbackGroup({
           onPicked: options.onPicked,
@@ -54,13 +57,13 @@ export function useOpenDirectiveReferencePickerWindow() {
         fieldKey: options.fieldKey,
         title: options.title,
       };
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
+      opener.open(dispatch, { instanceId, data });
 
       const detach = () => {
         dispose();
       };
       const close = () => {
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+        dispatch(opener.close(instanceId));
         detach();
       };
       return { close, dispose: detach };
@@ -69,25 +72,7 @@ export function useOpenDirectiveReferencePickerWindow() {
   );
 }
 
-export function DirectiveReferencePickerWindowController(
-  options: OpenDirectiveReferencePickerOptions,
-): null {
-  const open = useOpenDirectiveReferencePickerWindow();
-  const { entityToken, fieldKey, title, instanceId, onPicked, onWindowClose } =
-    options;
-  useEffect(() => {
-    const handle = open({
-      entityToken,
-      fieldKey,
-      title,
-      instanceId,
-      onPicked,
-      onWindowClose,
-    });
-    return handle.close;
-  }, [open, entityToken, fieldKey, title, instanceId, onPicked, onWindowClose]);
-  return null;
-}
+export const DirectiveReferencePickerWindowController = hookController<OpenDirectiveReferencePickerOptions>(useOpenDirectiveReferencePickerWindow);
 
 export type DirectiveReferencePickerWindowDefinitionData = OpenDirectiveReferencePickerOptions;
 

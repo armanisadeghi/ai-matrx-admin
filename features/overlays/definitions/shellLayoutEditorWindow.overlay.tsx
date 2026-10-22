@@ -3,12 +3,11 @@
 /**
  * Opener for the `shellLayoutEditorWindow` overlay — "Edit sidebar…", "Customize header…", "Customize dock…"
  * (custom-experience). `useOpenShellLayoutEditor()({ region, target, organizationId })`.
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
+
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "shellLayoutEditorWindow" as const;
 
@@ -20,21 +19,11 @@ export interface OpenShellLayoutEditorOptions {
   organizationId?: string | null;
 }
 
-export function useOpenShellLayoutEditor() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenShellLayoutEditorOptions = {}) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { region: opts.region ?? "sidebar", target: opts.target ?? "person", organizationId: opts.organizationId ?? null },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenShellLayoutEditorOptions>(OVERLAY_ID, {
+  data: (opts: OpenShellLayoutEditorOptions = {}) => ({ region: opts.region ?? "sidebar", target: opts.target ?? "person", organizationId: opts.organizationId ?? null }),
+});
+
+export const useOpenShellLayoutEditor = opener.useOpen;
 
 export type ShellLayoutEditorWindowDefinitionData = Record<string, unknown>;
 

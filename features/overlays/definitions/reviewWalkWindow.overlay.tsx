@@ -12,15 +12,18 @@
  * - `<ReviewWalkWindowController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay } from "@ai-matrx/summon/open";
 import type { WalkUnitKind } from "@/features/review-walk/types";
 import {
   REVIEW_WALK_OVERLAY_ID,
   openReviewWalk,
 } from "@/features/review-walk/openReviewWalk";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
+
+const opener = createOpener<object>(REVIEW_WALK_OVERLAY_ID);
 
 export interface OpenReviewWalkWindowOptions {
   unitKind: WalkUnitKind;
@@ -46,25 +49,14 @@ export function useOpenReviewWalkWindow() {
       const instanceId = dispatch(openReviewWalk(opts));
       return {
         close: () =>
-          dispatch(
-            closeOverlay({ overlayId: REVIEW_WALK_OVERLAY_ID, instanceId }),
-          ),
+          dispatch(opener.close(instanceId)),
       };
     },
     [dispatch],
   );
 }
 
-export function ReviewWalkWindowController(
-  props: OpenReviewWalkWindowOptions,
-): null {
-  const open = useOpenReviewWalkWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.unitKind, props.unitId, props.agentId, props.agentName]);
-  return null;
-}
+export const ReviewWalkWindowController = hookController<OpenReviewWalkWindowOptions>(useOpenReviewWalkWindow);
 
 export type ReviewWalkWindowDefinitionData = OpenReviewWalkWindowOptions;
 

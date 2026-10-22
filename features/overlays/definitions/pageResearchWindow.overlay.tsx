@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "pageResearchWindow" as const;
 
@@ -31,27 +29,17 @@ export interface OpenPageResearchWindowOptions {
   orgId?: string | null;
 }
 
-export function useOpenPageResearchWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenPageResearchWindowOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenPageResearchWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenPageResearchWindowOptions) => ({
             nodeId: options.nodeId,
             siteId: options.siteId ?? "",
             pageLabel: options.pageLabel ?? "",
             primaryKeyword: options.primaryKeyword ?? "",
             orgId: options.orgId ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenPageResearchWindow = opener.useOpen;
 
 export type PageResearchWindowDefinitionData = OpenPageResearchWindowOptions;
 

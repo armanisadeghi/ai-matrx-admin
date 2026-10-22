@@ -8,13 +8,11 @@
  * - `<AgentToastOverlayController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "agentToastOverlay" as const;
 
@@ -30,43 +28,18 @@ export interface AgentToastOverlayHandle {
   close: () => void;
 }
 
-export function useOpenAgentToastOverlay() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenAgentToastOverlayOptions): AgentToastOverlayHandle => {
-      const instanceId = opts.instanceId ?? `agentToastOverlay-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
-            conversationId: opts.conversationId,
-            index: opts.index,
-          },
-        }),
-      );
-      return {
-        instanceId,
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenAgentToastOverlayOptions>(OVERLAY_ID, {
+  multi: true,
+});
+
+export const useOpenAgentToastOverlay = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function AgentToastOverlayController(props: OpenAgentToastOverlayOptions): null {
-  const open = useOpenAgentToastOverlay();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.conversationId, props.index]);
-  return null;
-}
+export const AgentToastOverlayController = opener.Controller;
 
 export type AgentToastOverlayDefinitionData = OpenAgentToastOverlayOptions;
 

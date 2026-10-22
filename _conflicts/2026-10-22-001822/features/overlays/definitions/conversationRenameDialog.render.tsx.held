@@ -1,0 +1,60 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/overlays/definitions/conversationRenameDialog.render.tsx
+Why held:  both sides changed the same code
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/overlays/definitions/conversationRenameDialog.render.tsx
+  Both grew from the same COMMON version: commit 21705a03d9, 2026-10-22 00:18.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-22 00:09  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-22 00:35  b46fe20366  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-22 00:22  b66817f51f  "overlays: finish the opener + chat dialog slice the sweeper half-pushed (f85aebcf59): regenerate the overlay index for valuePromptsDialog/conversationRenameDialog, rename render types from the exported props, find-bar test reads createOpener actions"
+  GITHUB's latest change is 12m AFTER LOCAL's latest change.
+
+SIZE: common version 0 lines, LOCAL 4 lines, GITHUB 14 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 3 lines and removed 0 lines.
+  GITHUB added 10 lines and removed 0 lines.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+  LOCAL has 1 of the 10 lines GITHUB added.
+    Lines GITHUB added that LOCAL does NOT have:
+      | // Chat's rename body (the canonical TextInputDialog writing through renameConversationTitle), answering the
+      | // request chat's opener filed through the app's port.
+      | ConversationRenameDialog,
+      | type ConversationRenameDialogProps,
+      | } from "@ai-matrx/chat/agents/components/conversation-actions/rename/ConversationRenameDialogHostImpl";
+      | import { useOverlayRequest, type OverlayRenderProps } from "@ai-matrx/summon/react";
+      | export default function ConversationRenameDialogRender({ data, close }: OverlayRenderProps) {
+      | const { request, settle } = useOverlayRequest<NonNullable<ConversationRenameDialogProps["request"]>, boolean>(data, close);
+      | return <ConversationRenameDialog request={request} open={request !== null} onSettle={settle} />;
+  GITHUB has 1 of the 3 lines LOCAL added.
+    Lines LOCAL added that GITHUB does NOT have:
+      | // Chat's rename body; chat opens this overlay through its windows port and awaits summon's requestOverlay.
+      | export { default } from "@ai-matrx/chat/window-panels/overlays/conversationRenameDialog.render";
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 8ab228d7f1b1:'features/overlays/definitions/conversationRenameDialog.render.tsx') <(git show b46fe2036677:'features/overlays/definitions/conversationRenameDialog.render.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show b46fe2036677:'features/overlays/definitions/conversationRenameDialog.render.tsx'
+  GITHUB: git show 8ab228d7f1b1:'features/overlays/definitions/conversationRenameDialog.render.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+"use client";
+
+// Chat's rename body; chat opens this overlay through its windows port and awaits summon's requestOverlay.
+export { default } from "@ai-matrx/chat/window-panels/overlays/conversationRenameDialog.render";

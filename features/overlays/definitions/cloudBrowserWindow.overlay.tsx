@@ -7,13 +7,15 @@
  * - `<CloudBrowserWindowController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { CLOUD_BROWSER_OVERLAY_ID } from "@/features/cloud-browser/constants";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = CLOUD_BROWSER_OVERLAY_ID;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenCloudBrowserWindowOptions {
   initialProfileId?: string | null;
@@ -27,30 +29,16 @@ export function useOpenCloudBrowserWindow() {
   const dispatch = useAppDispatch();
   return useCallback(
     (opts: OpenCloudBrowserWindowOptions = {}): CloudBrowserWindowHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { initialProfileId: opts.initialProfileId ?? null },
-        }),
-      );
+      opener.open(dispatch, { data: { initialProfileId: opts.initialProfileId ?? null } });
       return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+        close: () => dispatch(opener.close()),
       };
     },
     [dispatch],
   );
 }
 
-export function CloudBrowserWindowController(
-  props: OpenCloudBrowserWindowOptions,
-): null {
-  const open = useOpenCloudBrowserWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialProfileId]);
-  return null;
-}
+export const CloudBrowserWindowController = hookController<OpenCloudBrowserWindowOptions>(useOpenCloudBrowserWindow);
 
 export type CloudBrowserWindowDefinitionData = OpenCloudBrowserWindowOptions;
 

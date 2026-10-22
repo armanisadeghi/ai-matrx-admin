@@ -4,14 +4,16 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createCreateBrandCallbackGroup,
   type CreateBrandWindowHandlers,
 } from "@/features/window-panels/windows/marketing/callbacks";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "createBrandWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export type OpenCreateBrandWindowOptions = CreateBrandWindowHandlers;
 
@@ -30,16 +32,16 @@ export function useOpenCreateBrandWindow() {
 
   return useCallback(
     (options: OpenCreateBrandWindowOptions = {}): CreateBrandWindowHandle => {
-      const instanceId = `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const instanceId = mintInstanceId(OVERLAY_ID);
       const { callbackGroupId, dispose } = createCreateBrandCallbackGroup(options);
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data: { callbackGroupId } }));
+      opener.open(dispatch, { instanceId, data: { callbackGroupId } });
       const detach = () => {
         dispose();
       };
       return {
         instanceId,
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+          dispatch(opener.close(instanceId));
           detach();
         },
         dispose: detach,

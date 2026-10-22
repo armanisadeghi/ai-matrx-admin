@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
+import { closeOverlay, openOverlay, mintInstanceId } from "@ai-matrx/summon/boot";
 import {
   createUserSearchCallbackGroup,
   type UserSearchHandlers,
@@ -47,7 +47,7 @@ export function useOpenUserSearchWindow() {
   ): UserSearchWindowHandle => {
     const instanceId =
       options.instanceId ??
-      `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      mintInstanceId(OVERLAY_ID);
     let handleRef: HandleRef | null = null;
     const { callbackGroupId, dispose } = createUserSearchCallbackGroup({
       onSelected: options.onSelected,

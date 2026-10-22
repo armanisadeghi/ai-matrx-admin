@@ -6,13 +6,11 @@
  * - `useOpenAssistsWindow()` — imperative hook; returns a handle with `close()`.
  * - `<AssistsWindowController />` — declarative: mount to open, unmount to close.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "assistsWindow" as const;
 
@@ -20,24 +18,11 @@ export interface AssistsWindowHandle {
   close: () => void;
 }
 
-export function useOpenAssistsWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback((): AssistsWindowHandle => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  }, [dispatch]);
-}
+const opener = appOpener(OVERLAY_ID);
 
-export function AssistsWindowController(): null {
-  const open = useOpenAssistsWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenAssistsWindow = opener.useOpen;
+
+export const AssistsWindowController = opener.Controller;
 
 export type AssistsWindowDefinitionData = Record<string, unknown>;
 

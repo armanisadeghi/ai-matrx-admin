@@ -235,7 +235,7 @@ attributable to this page in analytics.
 ## Change Log
 
 - 2026-10-03 — **Matrix mode** (`/agents/battle/matrix`, `modes/matrix/`): a base plus rows × columns
-  of patches, every cell a real server run (aidream `/agent-battles/{id}/run|cancel`), results grid
+  of patches, every cell a real server run (aidream `/agent-battles/{id}/queue-run|queue-cancel`, on the work queue), results grid
   with totals/averages/deltas and the tools vs no-tools break-even. Saves write only the set row;
   cells are server-owned entries. Mechanics in [MODES.md](./MODES.md) § Matrix.
 

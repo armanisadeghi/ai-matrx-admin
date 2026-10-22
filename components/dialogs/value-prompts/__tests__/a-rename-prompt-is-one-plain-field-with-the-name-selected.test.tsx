@@ -7,8 +7,8 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 
-import ValuePromptsDialogHostBody from "../ValuePromptsDialogHostBody";
-import { promptForValues } from "../valuePromptsOpener";
+import { ValuePromptsDialog } from "../ValuePromptsDialog";
+import type { ValuePromptsRequest } from "../valuePromptsOpener";
 
 // The Pro boxes need the app's store (mic, agents); the host's own choice of box is what is under test.
 jest.mock("@/components/official/ProInput", () => ({
@@ -20,19 +20,18 @@ jest.mock("@/components/official/ProTextarea", () => ({
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-async function open(fields: Parameters<typeof promptForValues>[0]["fields"]) {
+async function open(fields: ValuePromptsRequest["fields"]) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const root = createRoot(host);
-  await act(async () => {
-    root.render(<ValuePromptsDialogHostBody />);
+  let settle!: (answers: Record<string, string> | null) => void;
+  const answer = new Promise<Record<string, string> | null>((resolve) => {
+    settle = resolve;
   });
-  let answer: Promise<Record<string, string> | null>;
   await act(async () => {
-    answer = promptForValues({ title: "Rename", submitLabel: "Rename", fields });
-    await new Promise((r) => setTimeout(r, 50));
+    root.render(<ValuePromptsDialog request={{ title: "Rename", submitLabel: "Rename", fields }} settle={settle} />);
   });
-  return { answer: answer!, root };
+  return { answer, root };
 }
 
 it("Rename is one single-line field, the name selected, Enter confirms, no filler sentence", async () => {

@@ -22,10 +22,10 @@
  *     self-handles via `editMessage` (plain "Edit content").
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createFullScreenEditorCallbackGroup,
   disposeFullScreenEditorCallbackGroup,
@@ -33,8 +33,11 @@ import {
 } from "./callbacks/fullScreenEditor";
 import type { EditorPrimaryAction } from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "fullScreenEditor" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 interface OpenFullScreenMarkdownEditorBridgeOptionsBase {
   /** Optional stable instance id. Omit to spawn a fresh instance. */
@@ -87,7 +90,7 @@ export function createFullScreenMarkdownEditorBridgeOpener(store: AppStore) {
   ): FullScreenMarkdownEditorBridgeHandle => {
     const instanceId =
       opts.instanceId ??
-      `fullScreenEditor-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      mintInstanceId(OVERLAY_ID);
 
     // Register a callback group only when the caller wants to be told about
     // the save. Plain "edit content" callers pass conversationId+messageId
@@ -108,11 +111,7 @@ export function createFullScreenMarkdownEditorBridgeOpener(store: AppStore) {
     }
 
     try {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
+      opener.open(dispatch, { instanceId, data: {
             content: opts.content,
             mode: opts.mode,
             conversationId: opts.conversationId,
@@ -126,9 +125,7 @@ export function createFullScreenMarkdownEditorBridgeOpener(store: AppStore) {
             showSaveButton: opts.showSaveButton,
             showCopyButton: opts.showCopyButton,
             primaryActions: opts.primaryActions,
-          },
-        }),
-      );
+          } });
     } catch (error) {
       disposeFullScreenEditorCallbackGroup(callbackGroupId);
       throw error;
@@ -138,7 +135,7 @@ export function createFullScreenMarkdownEditorBridgeOpener(store: AppStore) {
       instanceId,
       callbackGroupId,
       close: () => {
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+        dispatch(opener.close(instanceId));
         disposeFullScreenEditorCallbackGroup(callbackGroupId);
       },
     };
@@ -154,32 +151,7 @@ export function useOpenFullScreenMarkdownEditorBridge() {
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function FullScreenMarkdownEditorBridgeController(
-  props: OpenFullScreenMarkdownEditorBridgeOptions,
-): null {
-  const open = useOpenFullScreenMarkdownEditorBridge();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // Callback handler identity does not justify a reopen (matches the
-    // image-uploader controller). Re-open only on the structural inputs.
-  }, [
-    open,
-    props.instanceId,
-    props.content,
-    props.mode,
-    props.conversationId,
-    props.messageId,
-    props.tabs,
-    props.initialTab,
-    props.analysisData,
-    props.title,
-    props.description,
-    props.showSaveButton,
-    props.showCopyButton,
-  ]);
-  return null;
-}
+export const FullScreenMarkdownEditorBridgeController = hookController<OpenFullScreenMarkdownEditorBridgeOptions>(useOpenFullScreenMarkdownEditorBridge);
 
 /** Which message a full-screen edit belongs to (moved from the app's summon overlay state). */
 export type FullScreenEditorMode =

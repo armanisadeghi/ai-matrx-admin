@@ -873,12 +873,9 @@ function TruncateRow({
                 />
               </div>
               <div className="flex gap-1.5 flex-shrink-0">
-                <button
-                  onClick={() => onApplyStub(entry.pathStr, localNote)}
-                  className="px-2 py-1 bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded text-xs flex items-center gap-1"
-                >
-                  <PackageX size={10} /> Replace with stub
-                </button>
+                <ControlButton variant="danger" onClick={() => onApplyStub(entry.pathStr, localNote)} icon={<PackageX />}>
+                  Replace with stub
+                </ControlButton>
                 {stubbed && (
                   <button
                     onClick={() => onRemoveStub(entry.pathStr)}
@@ -923,12 +920,9 @@ function TruncateRow({
               />
             </div>
             <div className="flex gap-1.5 flex-shrink-0">
-              <button
-                onClick={() => onApplyStub(entry.pathStr, localNote)}
-                className="px-2 py-1 bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded text-xs flex items-center gap-1"
-              >
-                <PackageX size={10} /> Replace with stub
-              </button>
+              <ControlButton variant="danger" onClick={() => onApplyStub(entry.pathStr, localNote)} icon={<PackageX />}>
+                Replace with stub
+              </ControlButton>
               {stubbed && (
                 <button
                   onClick={() => onRemoveStub(entry.pathStr)}

@@ -15,11 +15,13 @@ function entry(label: string, trail: string[] = [], extra: Partial<MenuSearchEnt
 
 describe("menu search index", () => {
   it("indexes every top-level item and every child at every level", () => {
-    const labels = new Set(index.map((e) => e.label));
+    // A destination reachable from two homes is ONE entry (href + label, case-insensitive: the
+    // index keeps the shallowest home's casing), so labels compare without case.
+    const labels = new Set(index.map((e) => e.label.toLocaleLowerCase()));
     for (const item of primaryNavItems) {
-      expect(labels.has(item.label)).toBe(true);
+      expect(labels.has(item.label.toLocaleLowerCase())).toBe(true);
       for (const child of expandNavChildren(item.children)) {
-        expect(labels.has(child.label)).toBe(true);
+        expect(labels.has(child.label.toLocaleLowerCase())).toBe(true);
       }
     }
   });

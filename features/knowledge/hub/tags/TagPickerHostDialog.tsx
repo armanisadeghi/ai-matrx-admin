@@ -7,7 +7,7 @@
 
 import React from "react";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { TagDialog } from "./TagDialog";
 import type { PickTagRequest, PickTagResponse } from "./tagPickerOpener";
 import { useHubTags } from "./useHubTags";

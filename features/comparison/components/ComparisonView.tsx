@@ -16,11 +16,16 @@ import { Badge, Tile } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+
 import { cn } from "@/lib/utils";
 
 import type { CompareField, ComparedItem, ComparisonResult } from "../contract";
+import { comparisonCopyProps } from "../copy";
 import { barFraction, comparedItems, fieldGroups, isNumeric, headlineOf, leadsPhrase, verdictOf, whyLine } from "../verdict";
+import { hasSideBySide, isCardOnly, isRich } from "../place-facts";
 import { ItemLogo } from "./ItemLogo";
+import { ClosedFlag, ReviewsDisclosure, RichField } from "./PlaceFacts";
 
 export interface ComparisonViewProps {
   result: ComparisonResult;
@@ -42,33 +47,37 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
   const groups = fieldGroups(result.fields);
   const leader = verdict.leader;
   const headline = headlineOf(result);
+  const title = !leader ? "Nothing to compare yet"
+    : verdict.tie ? "A tie at the top"
+    : (headline?.lead ?? leader.name);
+  const reading = !leader ? ""
+    : verdict.tie ? `${compared.filter((i) => i.rank === 1).map((i) => i.name).join(" and ")} are level`
+    : (headline?.rest ?? leadsPhrase(verdict));
 
   return (
     <div className="space-y-8">
-      {/* ── the verdict ───────────────────────────────────────── */}
-      <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          {leader ? (
-            <ItemLogo name={leader.name} logoUrl={leader.logo_url} website={leader.website} size={64}
-              fill={isPhoto(result.kind)} />
-          ) : null}
-          <div className="min-w-0">
-            <div className="type-label mb-1 flex items-center gap-1.5">
-              <Trophy className="h-3.5 w-3.5 text-primary" aria-hidden />
-              {result.kind_label}
-            </div>
-            <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
-              {leader ? (
-                verdict.tie ? <>A tie at the top</>
-                  : headline ? <>{headline.lead} <span className="text-muted-foreground">{headline.rest}</span></>
-                  : <>{leader.name} <span className="text-muted-foreground">{leadsPhrase(verdict)}</span></>
-              ) : (
-                <>Nothing to compare yet</>
-              )}
-            </h1>
+      {/* ── the verdict: a media object, the picture spans the whole text block ── */}
+      <section className={cn("grid items-start gap-y-0.5", leader ? "grid-cols-[auto_minmax(0,1fr)] gap-x-4 sm:grid-cols-[auto_minmax(0,1fr)_auto]" : "grid-cols-[minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_auto]")}>
+        {leader ? (
+          <div className="col-start-1 row-span-3 row-start-1 h-full min-h-20 w-28 self-stretch overflow-hidden rounded-xl border border-border sm:w-44">
+            <ItemLogo name={leader.name} logoUrl={leader.logo_url} website={leader.website} size={56}
+              fill={isPhoto(result.kind)} cover />
           </div>
+        ) : null}
+        <div className={cn("type-label flex items-center gap-1.5", leader && "col-start-2")}>
+          <Trophy className="h-3.5 w-3.5 text-primary" aria-hidden />
+          {result.kind_label}
         </div>
-        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+        <h1 className={cn("truncate text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl", leader && "col-start-2")} title={title}>
+          {title}
+        </h1>
+        {reading ? (
+          <p className={cn("type-secondary line-clamp-2 text-muted-foreground", leader && "col-start-2")} title={reading}>{reading}</p>
+        ) : null}
+        <div className="col-span-full row-start-4 mt-3 flex flex-wrap items-center gap-2 sm:col-span-1 sm:col-start-[-2] sm:row-start-2 sm:mt-0 sm:justify-end sm:self-center">
+          {compared.length > 0 ? <CopyButtons size="sm" {...comparisonCopyProps(result)} /> : null}
+          {actions}
+        </div>
       </section>
 
       {/* ── the contenders ────────────────────────────────────── */}
@@ -78,7 +87,7 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
         aria-label="Ranked"
       >
         {result.items.map((item) => (
-          <ContenderCard key={item.item_id} item={item} primary={primary} kind={result.kind}
+          <ContenderCard key={item.item_id} item={item} primary={primary} kind={result.kind} result={result}
             factsHref={factsHref} onPick={onPick} />
         ))}
       </section>
@@ -86,13 +95,19 @@ export function ComparisonView({ result, factsHref, actions, onPick }: Compariso
       {/* ── field by field, grouped by source (a company's facets each get their own group) ── */}
       {compared.length > 0 ? groups.map((g) => {
         const numeric = g.fields.filter(isNumeric);
-        const text = g.fields.filter((f) => !isNumeric(f));
+        const rich = g.fields.filter((f) => isRich(f) && hasSideBySide(f, result));
+        const text = g.fields.filter((f) => !isNumeric(f) && !isRich(f) && !isCardOnly(f));
         return (
           <div key={g.key || "own"} className="space-y-3">
             {g.label ? <FacetHeading result={result} facetKey={g.key} label={g.label} /> : null}
             {numeric.length > 0 ? (
               <section className="grid gap-3 md:grid-cols-2" aria-label={g.label || "Field by field"}>
                 {numeric.map((f) => <FieldCard key={f.key} field={f} result={result} />)}
+              </section>
+            ) : null}
+            {rich.length > 0 ? (
+              <section className="grid gap-3 md:grid-cols-2" aria-label={`${g.label || "Place"} facts`}>
+                {rich.map((f) => <RichField key={f.key} field={f} result={result} />)}
               </section>
             ) : null}
             {text.length > 0 ? <DetailsTable fields={text} items={compared} label={g.label || "Details"} /> : null}
@@ -172,8 +187,8 @@ function SourceLine({ basis, className }: { basis: string; className?: string })
   return <span className={cn("type-meta block truncate text-muted-foreground", className)} title={basis}>{basis}</span>;
 }
 
-function ContenderCard({ item, primary, kind, factsHref, onPick }: {
-  item: ComparedItem; primary: CompareField | null; kind: string;
+function ContenderCard({ item, primary, kind, result, factsHref, onPick }: {
+  item: ComparedItem; primary: CompareField | null; kind: string; result: ComparisonResult;
   factsHref?: (item: ComparedItem) => string | null; onPick?: (item: ComparedItem, pick: string) => void;
 }) {
   const failed = Boolean(item.error);
@@ -185,24 +200,20 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
   return (
     <article
       className={cn(
-        "relative flex min-w-[15rem] snap-start flex-col gap-3 rounded-xl border bg-card p-4 sm:min-w-0",
+        "relative flex min-w-[15rem] snap-start flex-col overflow-hidden rounded-xl border bg-card sm:min-w-0",
         lead ? "border-primary ring-1 ring-primary" : "border-border",
       )}
     >
-      <div className="flex items-start justify-between gap-2">
-        <ItemLogo name={item.name} logoUrl={item.logo_url} website={item.website} size={44} fill={isPhoto(kind)} />
-        <div className="flex items-center gap-1.5">
-        {item.source_label ? <Badge>{item.source_label}</Badge> : null}
+      <div className="relative aspect-[4/3] w-full">
+        <ItemLogo name={item.name} logoUrl={item.logo_url} website={item.website} size={72} fill={isPhoto(kind)} cover />
         {!failed && !choosing && item.rank > 0 ? (
-          <span className={cn("flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-sm font-semibold tabular-nums",
-            lead ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground")}
-          aria-label={`Rank ${item.rank}`}>
-            {item.rank}
-          </span>
+          <Badge tone={lead ? "primary" : "neutral"} className="absolute left-2 top-2" aria-label={`Rank ${item.rank}`}>{item.rank}</Badge>
         ) : null}
-        </div>
+        {item.source_label ? <Badge className="absolute right-2 top-2">{item.source_label}</Badge> : null}
+        <ClosedFlag item={item} />
       </div>
 
+      <div className="flex flex-1 flex-col gap-3 p-4">
       <div className="min-w-0">
         <div className="truncate text-base font-semibold text-foreground" title={item.name}>{item.name}</div>
         {item.website ? (
@@ -230,6 +241,8 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
       {!failed && !choosing && pv?.basis ? <SourceLine basis={pv.basis} /> : null}
       {!failed && !choosing && item.thin_sample ? <div><Badge tone="warning">{item.thin_sample}</Badge></div> : null}
 
+      {!failed && !choosing ? <ReviewsDisclosure item={item} /> : null}
+
       <div className="mt-auto flex items-center gap-3 pt-1">
         {facts ? (
           <OutboundLink href={facts} className="type-secondary inline-flex items-center gap-1 text-primary hover:underline">
@@ -241,6 +254,8 @@ function ContenderCard({ item, primary, kind, factsHref, onPick }: {
             <ExternalLink className="h-3.5 w-3.5" aria-hidden /> Source
           </OutboundLink>
         ) : null}
+        {!failed && !choosing ? <CopyButtons size="xs" className="ml-auto" {...comparisonCopyProps(result, item.item_id)} /> : null}
+      </div>
       </div>
     </article>
   );
@@ -260,8 +275,8 @@ function FieldCard({ field, result }: { field: CompareField; result: ComparisonR
           const v = it.values[field.key];
           const frac = barFraction(field, v?.value, result);
           return (
-            <li key={it.item_id} className="grid grid-cols-[1.25rem_minmax(0,6rem)_minmax(2rem,1fr)_auto] items-center gap-2.5 sm:grid-cols-[1.25rem_minmax(0,9rem)_1fr_auto]">
-              <ItemLogo name={it.name} logoUrl={it.logo_url} website={it.website} size={20} fill={isPhoto(result.kind)} />
+            <li key={it.item_id} className="grid grid-cols-[1.75rem_minmax(0,6rem)_minmax(2rem,1fr)_auto] items-center gap-2.5 sm:grid-cols-[1.75rem_minmax(0,9rem)_1fr_auto]">
+              <ItemLogo name={it.name} logoUrl={it.logo_url} website={it.website} size={28} fill={isPhoto(result.kind)} />
               <span className="type-body truncate text-foreground" title={it.name}>{it.name}</span>
               <span className="h-2 overflow-hidden rounded-full bg-muted" title={v?.basis || undefined}>
                 {frac !== null ? (

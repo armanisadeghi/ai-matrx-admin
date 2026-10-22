@@ -28,11 +28,12 @@ import { useEffect, useRef, useMemo } from "react";
 
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 import { openLiveRunWindowAction, type OpenLiveRunWindowOptions } from "./liveRunWindow.action";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "liveRunWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 // The options and the plain action live in liveRunWindow.action.ts (import them from there): a
 // caller that only dispatches the action never keeps this module's openers and controllers.
@@ -62,7 +63,7 @@ export function createLiveRunWindowOpener(store: AppStore) {
         push();
       },
       close: () =>
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
+        dispatch(opener.close(instanceId)),
     };
   };
 }

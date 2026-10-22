@@ -11,14 +11,16 @@
  * Hand-maintained opener — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "feedbackDialog" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 /**
  * What the report is ABOUT, when the person opened it from a specific thing —
@@ -86,17 +88,12 @@ export interface FeedbackWindowHandle {
 export function createFeedbackWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenFeedbackWindowOptions = {}): FeedbackWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           title: opts.title,
           subject: opts.subject,
-        },
-      }),
-    );
+        } });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -111,16 +108,7 @@ export function useOpenFeedbackWindow() {
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function FeedbackWindowController(
-  props: OpenFeedbackWindowOptions,
-): null {
-  const open = useOpenFeedbackWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.title]);
-  return null;
-}
+export const FeedbackWindowController = hookController<OpenFeedbackWindowOptions>(useOpenFeedbackWindow);
 
 export type FeedbackDialogDefinitionData = OpenFeedbackWindowOptions;
 

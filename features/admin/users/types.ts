@@ -130,7 +130,11 @@ export interface AdminOrganizationRow {
   member_count: number;
   owner_count: number;
   admin_count: number;
+  /** Who is in it (iam.organization_kind): an engaged person, only guests, only test/unconfirmed accounts, or nobody. */
+  kind: AdminOrganizationKind;
 }
+
+export type AdminOrganizationKind = "real" | "guests" | "tests" | "empty";
 
 /** One active canonical organization membership. */
 export interface AdminOrganizationMembershipRow {
@@ -145,6 +149,8 @@ export interface AdminOrganizationMembershipRow {
 export interface AdminOrganizationDirectory {
   organizations: AdminOrganizationRow[];
   memberships: AdminOrganizationMembershipRow[];
+  /** The list's opening kind (knob admin_organizations.default_kind): a kind, or "all". */
+  defaultKind: AdminOrganizationKind | "all";
 }
 
 /** Per-user AI usage & cost rollup (chat.admin_user_usage_rollup). */

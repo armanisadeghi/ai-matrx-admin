@@ -14,17 +14,20 @@
  * its id travels in the overlay data.
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createAgentPickerCallbackGroup,
   type AgentPickerHandlers,
   type AgentPickerWindowData,
 } from "@/features/window-panels/windows/agents/agent-picker-callbacks";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "agentPickerWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenAgentPickerWindowOptions extends AgentPickerHandlers {
   /** Window title. Defaults to "Select Agent". */
@@ -52,7 +55,7 @@ export function useOpenAgentPickerWindow() {
     (options: OpenAgentPickerWindowOptions = {}): AgentPickerWindowHandle => {
       const instanceId =
         options.instanceId ??
-        `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        mintInstanceId(OVERLAY_ID);
       const { callbackGroupId, dispose } = createAgentPickerCallbackGroup({
         ...(options.onPicked ? { onPicked: options.onPicked } : {}),
         onWindowClose: (e) => {
@@ -65,11 +68,11 @@ export function useOpenAgentPickerWindow() {
         title: options.title ?? null,
         activeAgentId: options.activeAgentId ?? null,
       };
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
+      opener.open(dispatch, { instanceId, data });
       return {
         instanceId,
         close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+          dispatch(opener.close(instanceId));
           dispose();
         },
       };
@@ -78,16 +81,7 @@ export function useOpenAgentPickerWindow() {
   );
 }
 
-export function AgentPickerWindowController(
-  props: OpenAgentPickerWindowOptions,
-): null {
-  const open = useOpenAgentPickerWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.instanceId, props.title, props.activeAgentId]);
-  return null;
-}
+export const AgentPickerWindowController = hookController<OpenAgentPickerWindowOptions>(useOpenAgentPickerWindow);
 
 export type AgentPickerWindowDefinitionData = OpenAgentPickerWindowOptions;
 

@@ -6,13 +6,14 @@
  * rendered only while open, dragged by summon's dock.
  */
 import { useCallback } from "react";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/boot";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
 import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "promptDebugIndicator" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenPromptDebugIndicatorOptions {
   /** What the prompt resolved to (selected text, context, variables, metadata). */
@@ -21,12 +22,12 @@ export interface OpenPromptDebugIndicatorOptions {
 
 /** Open (or retarget) the indicator; returns its close. */
 export function openPromptDebugIndicator(dispatch: AppDispatch, opts: OpenPromptDebugIndicatorOptions): () => void {
-  dispatch(openOverlay({ overlayId: OVERLAY_ID, data: { debugData: opts.debugData } }));
-  return () => dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+  opener.open(dispatch, { data: { debugData: opts.debugData } });
+  return () => dispatch(opener.close());
 }
 
 export function closePromptDebugIndicator(dispatch: AppDispatch): void {
-  dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+  dispatch(opener.close());
 }
 
 export function useOpenPromptDebugIndicator() {

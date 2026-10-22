@@ -9,10 +9,8 @@
  * back to the parent through that shared store, not a callback.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "dictionarySelectorWindow" as const;
 
@@ -25,33 +23,12 @@ export interface DictionarySelectorHandle {
   close: () => void;
 }
 
-export function useOpenDictionarySelectorWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenDictionarySelectorOptions): DictionarySelectorHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: { surfaceKey: opts.surfaceKey },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenDictionarySelectorOptions>(OVERLAY_ID);
+
+export const useOpenDictionarySelectorWindow = opener.useOpen;
 
 /** Declarative form — open on mount, close on unmount. */
-export function DictionarySelectorWindowController(
-  props: OpenDictionarySelectorOptions,
-): null {
-  const open = useOpenDictionarySelectorWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.surfaceKey]);
-  return null;
-}
+export const DictionarySelectorWindowController = opener.Controller;
 
 export type DictionarySelectorWindowDefinitionData = OpenDictionarySelectorOptions;
 

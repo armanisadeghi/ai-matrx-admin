@@ -11,8 +11,9 @@ import { useEffect, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
-import { describeWorkflowSteps } from "../components/run/node-presentation";
-import { selectRunSurface } from "../redux/workflow-runs.selectors";
+import { describeWorkflowSteps, relabelStepsForRun } from "../components/run/node-presentation";
+import { lookStepTitle } from "../../records-tool-display/lookActions";
+import { selectRunInput, selectRunSurface } from "../redux/workflow-runs.selectors";
 import { loadRunSurface } from "../surface/run-surface.thunk";
 
 export function useRunStepLabels(
@@ -22,6 +23,7 @@ export function useRunStepLabels(
   const dispatch = useAppDispatch();
   const hasSupplied = Object.keys(supplied).length > 0;
   const surface = useAppSelector(selectRunSurface(runId));
+  const runInput = useAppSelector(selectRunInput(runId));
 
   useEffect(() => {
     if (hasSupplied || surface) return;
@@ -31,11 +33,15 @@ export function useRunStepLabels(
 
   const definition = surface?.definition;
   return useMemo(() => {
-    if (hasSupplied || !definition) return supplied;
+    if (hasSupplied || !definition) {
+      // A late notion_sync look says what it does even when the opener handed over the import's step name.
+      const title = lookStepTitle(runInput);
+      return title && "import" in supplied ? { ...supplied, import: title } : supplied;
+    }
     const labels: Record<string, string> = {};
-    for (const step of describeWorkflowSteps(definition)) {
+    for (const step of relabelStepsForRun(describeWorkflowSteps(definition), runInput)) {
       labels[step.nodeId] = step.label;
     }
     return labels;
-  }, [hasSupplied, definition, supplied]);
+  }, [hasSupplied, definition, supplied, runInput]);
 }

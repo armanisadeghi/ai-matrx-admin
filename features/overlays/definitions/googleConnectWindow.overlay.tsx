@@ -12,14 +12,15 @@
 import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createGoogleConnectCallbackGroup,
   type GoogleConnectWindowHandlers,
 } from "./callbacks/googleConnectWindow";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "googleConnectWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenGoogleConnectOptions extends GoogleConnectWindowHandlers {
   /** One line saying why, e.g. "to attach a doc to this message". */
@@ -50,10 +51,7 @@ export function createGoogleConnectWindowOpener(store: { dispatch: AppDispatch }
             onWindowClose: options.onWindowClose,
           })
         : null;
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           reason: options?.reason ?? null,
           mode: options?.mode ?? "workspace",
           initialConnectionId: options?.initialConnectionId ?? null,
@@ -62,15 +60,13 @@ export function createGoogleConnectWindowOpener(store: { dispatch: AppDispatch }
           accept: options?.accept ?? null,
           multiple: options?.multiple ?? true,
           callbackGroupId: callbacks?.callbackGroupId ?? null,
-        },
-      }),
-    );
+        } });
     const dispose = () => {
       callbacks?.dispose();
     };
     return {
       close: () => {
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+        dispatch(opener.close());
         dispose();
       },
       dispose,

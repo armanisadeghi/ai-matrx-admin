@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-22T00:44:29.887Z",
+  "generated_at": "2026-10-22T03:38:37.537Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -391,6 +391,24 @@
       "filename": "20261021233000_closelink_c_a_snapshot_link_keeps_its_copy.sql",
       "checksum": "864222c90a73472e9bfe1b770be82c53a4ec606b721a836ee455babf557c0af5",
       "applied_at": "2026-10-22 00:34:47.995509+00"
+    },
+    "migrations/campaign/20261021234000_closelink_d_a_link_can_carry_access.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021234000_closelink_d_a_link_can_carry_access.sql",
+      "checksum": "2e59a01c58789912e0b6981fac776a8e3ea714c0dc821b1e55a146ccf24da9b6",
+      "applied_at": "2026-10-22 01:14:10.356478+00"
+    },
+    "migrations/campaign/20261021235000_closelink_e_a_refused_link_says_why.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021235000_closelink_e_a_refused_link_says_why.sql",
+      "checksum": "efb46ef950fe6b3ae630ec468417fbfee5c21096ac46a24f7f57065fafda62d2",
+      "applied_at": "2026-10-22 01:20:35.352518+00"
+    },
+    "migrations/campaign/20261021236000_closelink_f_a_tables_homes_are_named.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261021236000_closelink_f_a_tables_homes_are_named.sql",
+      "checksum": "00da574a150a3de6e6bb22efaca15167d8b114702fe0db3bda29cff9c08d5857",
+      "applied_at": "2026-10-22 01:26:09.721629+00"
     },
     "migrations/campaign/20261021240000_readspeed5_a_the_refresh_door_works_out_values_in_the_compute_lane.sql": {
       "source": "matrx-frontend",
@@ -7321,6 +7339,12 @@
       "filename": "portalbind_the_portal_accept_doors_are_reachable.sql",
       "checksum": "fd7963e8fd91aaf8c7b0597260b24e68f07fa7fb7c3206130d8a7690244f4b36",
       "applied_at": "2026-09-21 22:29:57.273243+00"
+    },
+    "migrations/campaign/portalx_a_a_portal_lets_clients_sign_up_sign_in_their_way_and_hear_of_comments.sql": {
+      "source": "matrx-frontend",
+      "filename": "portalx_a_a_portal_lets_clients_sign_up_sign_in_their_way_and_hear_of_comments.sql",
+      "checksum": "7a39199579aa621af9e51c0b63d1b27079393b5e649158894221e671cc4157e9",
+      "applied_at": "2026-10-22 01:30:32.067518+00"
     },
     "migrations/campaign/postmovedoors_a_the_last_older_doors_answer_from_the_store.sql": {
       "source": "matrx-frontend",

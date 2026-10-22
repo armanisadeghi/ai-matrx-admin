@@ -1,10 +1,8 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { MessageRole } from "@/features/message-templates/types/message-templates-db";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "quickMessageTemplateSaveWindow" as const;
 
@@ -14,31 +12,11 @@ export interface OpenQuickMessageTemplateSaveWindowOptions {
   defaultRole?: MessageRole;
 }
 
-export function useOpenQuickMessageTemplateSaveWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenQuickMessageTemplateSaveWindowOptions) => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID, data: options }));
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenQuickMessageTemplateSaveWindowOptions>(OVERLAY_ID);
 
-export function QuickMessageTemplateSaveWindowController(
-  props: OpenQuickMessageTemplateSaveWindowOptions,
-): null {
-  const open = useOpenQuickMessageTemplateSaveWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => {
-      handle.close();
-    };
-  }, [open, props.initialContent, props.defaultName, props.defaultRole]);
-  return null;
-}
+export const useOpenQuickMessageTemplateSaveWindow = opener.useOpen;
+
+export const QuickMessageTemplateSaveWindowController = opener.Controller;
 
 export type QuickMessageTemplateSaveWindowDefinitionData = OpenQuickMessageTemplateSaveWindowOptions;
 

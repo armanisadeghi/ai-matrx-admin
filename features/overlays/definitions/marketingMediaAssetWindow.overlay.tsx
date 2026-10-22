@@ -4,14 +4,16 @@
 
 import { useEffect, useRef } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { mintInstanceId } from "@ai-matrx/summon/open";
 import {
   createMarketingMediaAssetCallbackGroup,
   type MarketingMediaAssetWindowHandlers,
 } from "./callbacks/marketingMediaAssetWindow";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "marketingMediaAssetWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenMarketingMediaAssetWindowOptions extends MarketingMediaAssetWindowHandlers {
   siteId: string;
@@ -39,7 +41,7 @@ export function useOpenMarketingMediaAssetWindow() {
     let releaseGroup = () => {};
     const instanceId =
       options.windowInstanceId ??
-      `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      mintInstanceId(OVERLAY_ID);
     const { callbackGroupId, dispose } = createMarketingMediaAssetCallbackGroup(
       {
         ...options,
@@ -51,22 +53,16 @@ export function useOpenMarketingMediaAssetWindow() {
       },
     );
 
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: {
+    opener.open(dispatch, { instanceId, data: {
           callbackGroupId,
           siteId: options.siteId,
           assetSrc: options.assetSrc,
-        },
-      }),
-    );
+        } });
 
     releaseGroup = dispose;
 
     const close = () => {
-      dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+      dispatch(opener.close(instanceId));
       dispose();
     };
     const detach = () => {

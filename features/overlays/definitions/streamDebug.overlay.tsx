@@ -8,13 +8,11 @@
  * - `<StreamDebugFloatingController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "streamDebug" as const;
 
@@ -29,41 +27,16 @@ export interface StreamDebugFloatingHandle {
   close: () => void;
 }
 
-export function useOpenStreamDebugFloating() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenStreamDebugFloatingOptions): StreamDebugFloatingHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            conversationId: opts.conversationId,
-            defaultPosition: opts.defaultPosition,
-            requestIdOverride: opts.requestIdOverride,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenStreamDebugFloatingOptions>(OVERLAY_ID);
+
+export const useOpenStreamDebugFloating = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function StreamDebugFloatingController(props: OpenStreamDebugFloatingOptions): null {
-  const open = useOpenStreamDebugFloating();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.conversationId, props.defaultPosition, props.requestIdOverride]);
-  return null;
-}
+export const StreamDebugFloatingController = opener.Controller;
 
 export type StreamDebugDefinitionData = OpenStreamDebugFloatingOptions;
 

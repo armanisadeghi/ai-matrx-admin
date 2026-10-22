@@ -9,13 +9,15 @@
  *   unmount to close.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppStore } from "@/lib/redux/hooks";
 import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "agentMemoryWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface AgentMemoryWindowHandle {
   close: () => void;
@@ -25,9 +27,9 @@ export interface AgentMemoryWindowHandle {
 export function createAgentMemoryWindowOpener(store: AppStore) {
   const dispatch = store.dispatch;
   return (): AgentMemoryWindowHandle => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID, data: {} }));
+    opener.open(dispatch, { data: {} });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -41,14 +43,7 @@ export function useOpenAgentMemoryWindow() {
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function AgentMemoryWindowController(): null {
-  const open = useOpenAgentMemoryWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const AgentMemoryWindowController = hookController(useOpenAgentMemoryWindow);
 
 export type AgentMemoryWindowDefinitionData = Record<string, unknown>;
 

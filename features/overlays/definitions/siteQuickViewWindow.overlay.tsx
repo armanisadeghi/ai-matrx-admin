@@ -10,13 +10,15 @@
  * `features/window-panels/windows/marketing/SiteQuickViewWindow.tsx`.
  */
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "siteQuickViewWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenSiteQuickViewWindowOptions {
   siteId: string;
@@ -28,16 +30,11 @@ export interface OpenSiteQuickViewWindowOptions {
 export function createSiteQuickViewWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (options: OpenSiteQuickViewWindowOptions) => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           siteId: options.siteId,
           siteLabel: options.siteLabel ?? "",
-        },
-      }),
-    );
-    return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
+        } });
+    return { close: () => dispatch(opener.close()) };
   };
 }
 
@@ -47,18 +44,7 @@ export function useOpenSiteQuickViewWindow() {
 }
 
 /** Declarative form — lifecycle = mount/unmount. */
-export function SiteQuickViewWindowController(
-  props: OpenSiteQuickViewWindowOptions,
-): null {
-  const open = useOpenSiteQuickViewWindow();
-  useEffect(() => {
-    const handle = open({ siteId: props.siteId, siteLabel: props.siteLabel });
-    return () => {
-      handle.close();
-    };
-  }, [open, props.siteId, props.siteLabel]);
-  return null;
-}
+export const SiteQuickViewWindowController = hookController<OpenSiteQuickViewWindowOptions>(useOpenSiteQuickViewWindow, (props: OpenSiteQuickViewWindowOptions) => ({ siteId: props.siteId, siteLabel: props.siteLabel }));
 
 export type SiteQuickViewWindowDefinitionData = OpenSiteQuickViewWindowOptions;
 

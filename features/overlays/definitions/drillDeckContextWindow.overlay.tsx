@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "drillDeckContextWindow" as const;
 
@@ -14,32 +12,14 @@ export interface DrillDeckContextWindowHandle {
 }
 
 /** Open the singleton Drill Deck Surface-A WindowPanel. */
-export function useOpenDrillDeckContextWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (
-      _options: OpenDrillDeckContextWindowOptions = {},
-    ): DrillDeckContextWindowHandle => {
-      dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenDrillDeckContextWindowOptions>(OVERLAY_ID, {
+  data: () => ({}),
+});
+
+export const useOpenDrillDeckContextWindow = opener.useOpen;
 
 /** Declarative form: mount to open, unmount to close. */
-export function DrillDeckContextWindowController(
-  _props: OpenDrillDeckContextWindowOptions,
-): null {
-  const open = useOpenDrillDeckContextWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const DrillDeckContextWindowController = opener.Controller;
 
 export type DrillDeckContextWindowDefinitionData = OpenDrillDeckContextWindowOptions;
 

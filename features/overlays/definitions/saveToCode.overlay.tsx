@@ -8,13 +8,11 @@
  * - `<QuickSaveCodeDialogController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "saveToCode" as const;
 
@@ -32,45 +30,18 @@ export interface QuickSaveCodeDialogHandle {
   close: () => void;
 }
 
-export function useOpenQuickSaveCodeDialog() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenQuickSaveCodeDialogOptions): QuickSaveCodeDialogHandle => {
-      const instanceId = opts.instanceId ?? `saveToCode-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId,
-          data: {
-            initialContent: opts.initialContent,
-            initialLanguage: opts.initialLanguage,
-            suggestedName: opts.suggestedName,
-            defaultFolderId: opts.defaultFolderId,
-          },
-        }),
-      );
-      return {
-        instanceId,
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId })),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenQuickSaveCodeDialogOptions>(OVERLAY_ID, {
+  multi: true,
+});
+
+export const useOpenQuickSaveCodeDialog = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function QuickSaveCodeDialogController(props: OpenQuickSaveCodeDialogOptions): null {
-  const open = useOpenQuickSaveCodeDialog();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialContent, props.initialLanguage, props.suggestedName, props.defaultFolderId]);
-  return null;
-}
+export const QuickSaveCodeDialogController = opener.Controller;
 
 export type SaveToCodeDefinitionData = OpenQuickSaveCodeDialogOptions;
 

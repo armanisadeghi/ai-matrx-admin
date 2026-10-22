@@ -8,14 +8,11 @@
  * - `<AgentInterfaceVariationsWindowController />` — declarative wrapper. Mount to open,
  *   unmount to close. Equivalent ergonomics to rendering a normal component.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "agentInterfaceVariationsWindow" as const;
 
@@ -28,41 +25,18 @@ export interface AgentInterfaceVariationsWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createAgentInterfaceVariationsWindowOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (opts: OpenAgentInterfaceVariationsWindowOptions = {}): AgentInterfaceVariationsWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
-          agentId: opts.agentId,
-        },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+const opener = appOpener<OpenAgentInterfaceVariationsWindowOptions>(OVERLAY_ID);
 
-export function useOpenAgentInterfaceVariationsWindow() {
-  const store = useAppStore();
-  return useMemo(() => createAgentInterfaceVariationsWindowOpener(store), [store]);
-}
+export const createAgentInterfaceVariationsWindowOpener = opener.forStore;
+
+export const useOpenAgentInterfaceVariationsWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount. Use this when a caller wants to express overlay
  * state declaratively (the way they'd render a normal component).
  */
-export function AgentInterfaceVariationsWindowController(props: OpenAgentInterfaceVariationsWindowOptions): null {
-  const open = useOpenAgentInterfaceVariationsWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.agentId]);
-  return null;
-}
+export const AgentInterfaceVariationsWindowController = opener.Controller;
 
 export type AgentInterfaceVariationsWindowDefinitionData = OpenAgentInterfaceVariationsWindowOptions;
 

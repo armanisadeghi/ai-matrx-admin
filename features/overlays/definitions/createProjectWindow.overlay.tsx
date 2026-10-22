@@ -9,13 +9,13 @@
  * Also exposes `<CreateProjectWindowController />` for the declarative form,
  * matching the convention every other opener uses.
  */
-import { useEffect } from "react";
 import {
   useOpenCreateProjectWindow,
   type OpenCreateProjectWindowOptions,
   type CreateProjectWindowHandle,
 } from "@/features/window-panels/windows/projects/useOpenCreateProjectWindow";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
+import { hookController } from "./app-opener";
 
 export {
   useOpenCreateProjectWindow,
@@ -23,17 +23,7 @@ export {
   type CreateProjectWindowHandle,
 };
 
-export function CreateProjectWindowController(
-  props: OpenCreateProjectWindowOptions,
-): null {
-  const open = useOpenCreateProjectWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.instanceId]);
-  return null;
-}
+export const CreateProjectWindowController = hookController<OpenCreateProjectWindowOptions>(useOpenCreateProjectWindow);
 
 export type CreateProjectWindowDefinitionData = OpenCreateProjectWindowOptions;
 

@@ -7,6 +7,7 @@ import { toast } from "@/lib/toast";
 import { coppaService } from "@/features/education/compliance/coppaService";
 import { useAgeDeclarationContent } from "@/features/education/compliance/components/AgeDeclarationDialog";
 import { markAskedThisSession } from "@/features/education/compliance/FirstSignInAgeGateMount";
+import { rememberAgeNotNow } from "@/features/education/compliance/ageNotNow";
 import type { AgeBand } from "@/features/education/compliance/types";
 
 /** True when the account still owes the age question (signed in, no band yet). */
@@ -19,7 +20,8 @@ export async function ageStillNeeded(): Promise<boolean> {
 /**
  * The age question as its own step of the sign-up welcome: same wording and over/under-18 split as the popup it
  * replaces here (useAgeDeclarationContent), one heading, "Not now" always available (the question is a nudge: the
- * account is not blocked, and a skip is asked again next session on any other surface).
+ * account is not blocked). "Not now" is kept on the account (ageNotNow.ts), so later visits skip this step and the
+ * popup elsewhere holds off too, until it runs out; the band stays undeclared and the education gate still asks.
  */
 export function WelcomeAgeStep({ needed, onDone }: { needed: boolean | null; onDone: () => void }) {
   const [saving, setSaving] = useState<AgeBand | null>(null);
@@ -71,6 +73,10 @@ export function WelcomeAgeStep({ needed, onDone }: { needed: boolean | null; onD
           onClick={() => {
             markAskedThisSession();
             onDone();
+            // Kept on the account so the next visit skips the step; a failed write only says so (they moved on).
+            void rememberAgeNotNow().then((error) => {
+              if (error) toast.error(`Could not save your choice: ${error}`);
+            });
           }}
         >
           Not now

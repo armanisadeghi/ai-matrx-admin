@@ -5,15 +5,20 @@ import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 import type {
   AdminOrganizationDirectory,
+  AdminOrganizationKind,
   AdminOrganizationMembershipRow,
   AdminOrganizationRow,
 } from "@/features/admin/users/types";
 import type { OrgRole } from "@/features/organizations/types";
+import { readEffectiveKnobOnServer } from "@/lib/scoped-config/effectiveKnobs.server";
 import { readAllRows } from "@ai-matrx/data/db";
+// The leaf entry, not the root barrel: the root is a client module, so on the server its
+// DEFAULT_ARCHIVE_FILTER is a reference object, never "active" — the list silently returned
+// every archived organization (4,062 rows; 382 are open).
 import {
   DEFAULT_ARCHIVE_FILTER,
   type ArchiveFilterValue,
-} from "@ai-matrx/design-system";
+} from "@ai-matrx/design-system/archive-filter";
 
 /**
  * Load every organization and active organization membership for super-admin views.
@@ -31,10 +36,12 @@ export async function loadAdminOrganizationDirectory(
   // (and throws rather than return a short list), so the directory is never silently truncated.
   let organizations_: Awaited<ReturnType<typeof readOrganizations>>;
   let memberships_: Awaited<ReturnType<typeof readMemberships>>;
+  let kinds_: Awaited<ReturnType<typeof readKinds>>;
   try {
-    [organizations_, memberships_] = await Promise.all([
+    [organizations_, memberships_, kinds_] = await Promise.all([
       readOrganizations(admin, archiveFilter),
       readMemberships(admin),
+      readKinds(admin),
     ]);
   } catch (error) {
     throw new Error(
@@ -82,6 +89,9 @@ export async function loadAdminOrganizationDirectory(
     countsByOrganization.set(row.organization_id, counts);
   }
 
+  const kindByOrganization = new Map(
+    kinds_.map((row) => [row.organization_id, row.kind as AdminOrganizationKind]),
+  );
   const organizations: AdminOrganizationRow[] = (
     organizationsResult.data ?? []
   ).map((row) => {
@@ -104,10 +114,11 @@ export async function loadAdminOrganizationDirectory(
       member_count: counts.members,
       owner_count: counts.owners,
       admin_count: counts.admins,
+      kind: kindByOrganization.get(row.id) ?? "tests",
     };
   });
 
-  return { organizations, memberships };
+  return { organizations, memberships, defaultKind: await readDefaultKind() };
 }
 
 /** Mutate one canonical organization membership through the audited DB RPC. */
@@ -158,6 +169,42 @@ function readOrganizations(
     },
     { label: "iam.organizations (admin directory)" },
   );
+}
+
+type KindRow = { organization_id: string; kind: string };
+
+// iam.organization_kind is newer than types/database.types.ts (run `pnpm db-types` to drop this cast).
+function readKinds(admin: ReturnType<typeof createAdminClient>) {
+  const iam = admin.schema("iam") as unknown as {
+    from: (view: string) => {
+      select: (columns: string, options: { count: "exact" }) => {
+        order: (column: string, options: { ascending: boolean }) => {
+          range: (from: number, to: number) => PromiseLike<{
+            data: KindRow[] | null;
+            count: number | null;
+            error: { message: string } | null;
+          }>;
+        };
+      };
+    };
+  };
+  return readAllRows<KindRow>(
+    ({ from, to }) =>
+      iam
+        .from("organization_kind")
+        .select("organization_id, kind", { count: "exact" })
+        .order("organization_id", { ascending: true })
+        .range(from, to),
+    { label: "iam.organization_kind (admin directory)" },
+  );
+}
+
+/** Knob admin_organizations.default_kind; an unanswered read opens on "real" (the knob's registered default). */
+async function readDefaultKind(): Promise<AdminOrganizationDirectory["defaultKind"]> {
+  const value = await readEffectiveKnobOnServer({ feature: "admin_organizations", key: "default_kind" });
+  return value === "all" || value === "guests" || value === "tests" || value === "empty" || value === "real"
+    ? value
+    : "real";
 }
 
 function readMemberships(admin: ReturnType<typeof createAdminClient>) {

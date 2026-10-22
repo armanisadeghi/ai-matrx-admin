@@ -117,7 +117,10 @@ jobs:
           # skipped every later step (its post steps too), so an artifact alone would not survive
           # the failure it is meant to explain. The loop writes to the step log, never to the tee'd
           # release stdout the verdict parses.
-          ( while sleep 20; do echo "[mem] $(date -u +%T) $(free -m | awk '/^Mem:/{m="used_mb="$3" available_mb="$7} /^Swap:/{s=" swap_used_mb="$3} END{print m s}')"; done ) 2>&1 | tee tmp/checks/memory.log &
+          # Each line also names the two largest processes: runs 39725397144 and 39725908971 died at
+          # 15.7 GB + 11.3 GB swap with nothing naming the row that held it (MATRX_CHECK_ID is in
+          # every row's environment; the command line names the check).
+          ( while sleep 20; do echo "[mem] $(date -u +%T) $(free -m | awk '/^Mem:/{m="used_mb="$3" available_mb="$7} /^Swap:/{s=" swap_used_mb="$3} END{print m s}') top:$(ps -eo rss=,args= --sort=-rss | head -2 | awk '{r=$1; $1=""; printf " [%d MB%s]", r/1024, substr($0,1,90)}')"; done ) 2>&1 | tee tmp/checks/memory.log &
           set -o pipefail
           bash scripts/release.sh --no-migrate --with-checks | tee "$RUNNER_TEMP/hosted-release.stdout"
       - name: Verdict — pushed, live, and every after-phase finding

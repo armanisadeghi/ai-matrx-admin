@@ -139,3 +139,18 @@ export interface FrameHeaderTool {
   /** Default `"menu"`: on a phone the tool is an item in the "…" menu. */
   phone?: "show" | "menu";
 }
+
+/**
+ * One of the person's own pinned pages or records, shown in the sidebar's Pinned section. The
+ * host maps its favourites to this; the frame never stores pins itself.
+ */
+export interface FramePin {
+  id: string;
+  label: string;
+  /** A real link; a plain click calls `onSelectPin` instead when the sidebar has one. */
+  href: string;
+  icon?: LucideIcon;
+}
+
+/** Where the big products (Chat, Memory, Intelligence …) always sit in the sidebar. Playground A/B. */
+export type FrameBigItems = "off" | "top" | "bottom";

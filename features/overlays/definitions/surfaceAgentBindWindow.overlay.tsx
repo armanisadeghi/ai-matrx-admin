@@ -7,13 +7,13 @@
  * `onBound` / `onWindowClose`).
  */
 
-import { useEffect } from "react";
 import {
   useOpenSurfaceAgentBindWindow,
   type OpenSurfaceAgentBindWindowOptions,
   type SurfaceAgentBindWindowHandle,
 } from "@/features/window-panels/windows/surfaces/useOpenSurfaceAgentBindWindow";
 import type { OverlayWire, UntypedOverlayWire } from "./overlay-types";
+import { hookController } from "./app-opener";
 
 export {
   useOpenSurfaceAgentBindWindow,
@@ -21,17 +21,7 @@ export {
   type SurfaceAgentBindWindowHandle,
 };
 
-export function SurfaceAgentBindWindowController(
-  props: OpenSurfaceAgentBindWindowOptions,
-): null {
-  const open = useOpenSurfaceAgentBindWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, props.surfaceName, props.instanceId]);
-  return null;
-}
+export const SurfaceAgentBindWindowController = hookController<OpenSurfaceAgentBindWindowOptions>(useOpenSurfaceAgentBindWindow);
 
 export type SurfaceAgentBindWindowDefinitionData = OpenSurfaceAgentBindWindowOptions;
 

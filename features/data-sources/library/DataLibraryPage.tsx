@@ -8,13 +8,15 @@
  * "Browse all sources" is the secondary door to the full catalog — search, group chips, the shelf,
  * and the huge single-store collections as one compact searchable list.
  *
- * A source opens in the `dataSourceWindow` panel (`SourceDetail`), which runs the same fetch as the
- * board. `?source=<key>` opens one on arrival (a pasted address fills a field); nothing fetches
- * until Get data. Members see points only (each source's own price); dollars only through
+ * A source opens ON THIS PAGE (`?source=<key>`, `SourceDetail`): the search, then its results
+ * streaming in right below it as the person's own custom table, then the earlier runs. A task is
+ * `?task=<id>` (its sources, then the earlier runs of all of them); a run shown is `&job=<id>`, so a
+ * reload re-attaches to it. `&field=<name>&value=<text>` (a pasted address) fills a field; nothing
+ * fetches until Get data. Members see points only (each source's own price); dollars only through
  * `useCostDisplay`'s rule.
  */
 
-import { createElement, useEffect, useRef, useState } from "react";
+import { createElement, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ArrowLeft, ChevronRight, Database, SearchX, ShieldCheck, Wrench } from "lucide-react";
@@ -24,7 +26,6 @@ import { Badge, Button, Chip, ChipSet, DisclosureHeader, EmptyState, RegionSkele
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatCount } from "@ai-matrx/kit/format";
 
-import { useOpenDataSourceWindow } from "@/features/overlays/definitions/dataSourceWindow.overlay";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,8 @@ import {
   plainIssue,
 } from "./catalog";
 import { GroupMark } from "./groupMark";
+import { PastRuns } from "./PastRuns";
+import { SourceDetail } from "./SourceDetail";
 import { LIBRARY_TASKS, resolveTask, resolveTasks, type ResolvedTask } from "./tasks";
 import { useLibrary, useLibraryOrganizationId, usePriceText } from "./hooks";
 import { GiveToAgentDialog } from "./tools/GiveToAgentDialog";
@@ -49,7 +52,24 @@ import { ToolPage } from "./tools/ToolPage";
 import { ToolsHome } from "./tools/ToolsHome";
 import { foldForSearch } from "./tools/people/entityOffers";
 
-type View = { kind: "home" } | { kind: "browse" } | { kind: "task"; id: string };
+type View = { kind: "home" } | { kind: "browse" };
+
+/** Move this page's own address (`?task=`, `?source=`, `&job=`) without a navigation. */
+function useLibraryAddress() {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  return (next: Record<string, string | null>, opts?: { replace?: boolean }) => {
+    const p = new URLSearchParams(params.toString());
+    for (const [key, value] of Object.entries(next)) {
+      if (value === null) p.delete(key);
+      else p.set(key, value);
+    }
+    const text = p.toString();
+    const href = text ? `${pathname}?${text}` : pathname;
+    if (opts?.replace) replaceAddressWithoutNavigating(href);
+    else pushAddressWithoutNavigating(href);
+  };
+}
 
 /**
  * The page opens on the data library's task home, exactly as it always has ("nothing should have
@@ -163,32 +183,64 @@ function DataSourcesDoor({ onOpen }: { onOpen: () => void }) {
 
 function LibraryBody({ library }: { library: Library }) {
   const [view, setView] = useState<View>({ kind: "home" });
-  const openSource = useOpenDataSourceWindow();
-
-  // `?source=<key>` (a link from anywhere): open that source once.
+  const router = useRouter();
   const params = useSearchParams();
-  const opened = useRef<string | null>(null);
-  const linked = params.get("source");
+  const go = useLibraryAddress();
+
+  const sourceKey = params.get("source");
+  const taskId = params.get("task");
+  const jobId = params.get("job");
   // `&field=<name>&value=<text>` (a pasted address): that field starts filled; nothing is fetched until Get data.
   const linkedField = params.get("field") ?? "url";
   const linkedValue = params.get("value");
-  useEffect(() => {
-    if (linked && opened.current !== linked && library.sources.some((s) => s.key === linked)) {
-      opened.current = linked;
-      openSource(linked, linkedValue ? { [linkedField]: linkedValue } : undefined);
-    }
-  }, [linked, linkedField, linkedValue, library.sources, openSource]);
+
+  const openSource = (key: string) => go({ source: key, job: null, field: null, value: null });
+  const openRun = (r: { id: string; sourceKey: string }) => go({ source: r.sourceKey, job: r.id, field: null, value: null });
+  const leaveSource = () =>
+    window.history.length > 1 ? router.back() : go({ source: null, job: null, field: null, value: null }, { replace: true });
 
   const openTask = (resolved: ResolvedTask) => {
     // One source answers the job: skip the picker and go straight into it.
-    if (resolved.all.length === 1) openSource(resolved.all[0].key);
-    else setView({ kind: "task", id: resolved.task.id });
+    if (resolved.all.length === 1) go({ task: resolved.task.id, source: resolved.all[0].key, job: null });
+    else go({ task: resolved.task.id, source: null, job: null });
   };
 
-  const task = view.kind === "task" ? LIBRARY_TASKS.find((t) => t.id === view.id) : undefined;
+  const source = sourceKey ? library.sources.find((s) => s.key === sourceKey) : undefined;
+  if (source) {
+    return (
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 pb-12 pt-4" data-source-page={source.key}>
+        <div className="flex items-center gap-2">
+          <Button variant="quiet" onClick={leaveSource} icon={<ArrowLeft className="h-4 w-4" />}>
+            Back
+          </Button>
+        </div>
+        <SourceDetail
+          sourceKey={source.key}
+          initialValues={linkedValue ? { [linkedField]: linkedValue } : undefined}
+          jobId={jobId}
+          onJob={(id, opts) => go({ job: id }, opts)}
+          onOpenRun={openRun}
+        />
+      </div>
+    );
+  }
+
+  const task = taskId ? LIBRARY_TASKS.find((t) => t.id === taskId) : undefined;
   const resolved = task ? resolveTask(library, task) : null;
   if (resolved && resolved.all.length > 0) {
-    return <TaskView resolved={resolved} onOpen={openSource} onHome={() => setView({ kind: "home" })} onBrowse={() => setView({ kind: "browse" })} />;
+    return (
+      <TaskView
+        resolved={resolved}
+        library={library}
+        onOpen={openSource}
+        onOpenRun={openRun}
+        onHome={() => go({ task: null, source: null, job: null })}
+        onBrowse={() => {
+          setView({ kind: "browse" });
+          go({ task: null, source: null, job: null });
+        }}
+      />
+    );
   }
   if (view.kind === "browse") {
     return <BrowseAllSources library={library} onHome={() => setView({ kind: "home" })} onOpen={openSource} />;
@@ -315,15 +367,20 @@ function TaskCard({ resolved, onOpen }: { resolved: ResolvedTask; onOpen: () => 
 
 function TaskView({
   resolved,
+  library,
   onOpen,
+  onOpenRun,
   onHome,
   onBrowse,
 }: {
   resolved: ResolvedTask;
+  library: Library;
   onOpen: (key: string) => void;
+  onOpenRun: (run: { id: string; sourceKey: string }) => void;
   onHome: () => void;
   onBrowse: () => void;
 }) {
+  const labelOf = (key: string) => library.sources.find((s) => s.key === key)?.label ?? key;
   const { task, confirmed, more } = resolved;
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-4">
@@ -369,6 +426,8 @@ function TaskView({
       {confirmed.length === 0 && more.length === 0 && (
         <EmptyState icon={<SearchX className="h-5 w-5" />} title="Nothing here yet" line="Browse every source instead." />
       )}
+
+      <PastRuns sourceKeys={resolved.all.map((s) => s.key)} labelOf={labelOf} showSource onOpen={onOpenRun} />
     </div>
   );
 }

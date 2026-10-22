@@ -9,11 +9,8 @@
  *   unmount to close.
  */
 
-import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "systemInstructionWindow" as const;
 
@@ -26,44 +23,17 @@ export interface SystemInstructionWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createSystemInstructionWindowOpener(store: AppStore) {
-  const dispatch = store.dispatch;
-  return (
-    opts: OpenSystemInstructionWindowOptions,
-  ): SystemInstructionWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
-          conversationId: opts.conversationId,
-        },
-      }),
-    );
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  };
-}
+const opener = appOpener<OpenSystemInstructionWindowOptions>(OVERLAY_ID);
 
-export function useOpenSystemInstructionWindow() {
-  const store = useAppStore();
-  return useMemo(() => createSystemInstructionWindowOpener(store), [store]);
-}
+export const createSystemInstructionWindowOpener = opener.forStore;
+
+export const useOpenSystemInstructionWindow = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount,
  * closes it on unmount.
  */
-export function SystemInstructionWindowController(
-  props: OpenSystemInstructionWindowOptions,
-): null {
-  const open = useOpenSystemInstructionWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.conversationId]);
-  return null;
-}
+export const SystemInstructionWindowController = opener.Controller;
 
 export type SystemInstructionWindowDefinitionData = OpenSystemInstructionWindowOptions;
 

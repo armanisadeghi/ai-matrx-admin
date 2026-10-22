@@ -10,16 +10,29 @@
 # files from <tree-ish> into a scratch folder (no node_modules) and runs
 #   pnpm install --frozen-lockfile --lockfile-only --ignore-scripts
 #
-# USAGE  bash scripts/lockfile-frozen.sh <tree-ish>
+# THE REMEDY (2026-10-21, merge d65df2aca6): a CLEAN git merge can pair them wrongly with no conflict
+# at all. The merge base's lockfile carried an @univerjs/sheets importer entry its package.json did not
+# declare; GitHub deleted those three lines (c21a102caf), the local side declared the dependency in
+# package.json (71c105b338) and left the lines alone, so git kept GitHub's deletion and LOCAL's
+# package.json line: each parent passed, the merge failed, and sync-main stopped every push. With
+# --write OUT a refused tree is regenerated in the same scratch folder (`pnpm install --lockfile-only`,
+# which keeps every existing resolution and resolves only what package.json changed), judged frozen
+# again, and the repaired lockfile is written to OUT.
+#
+# USAGE  bash scripts/lockfile-frozen.sh <tree-ish> [--write OUT]
 # EXIT   0 the lockfile satisfies package.json (or no pnpm lockfile in that tree)
 #        1 pnpm refused it (ERR_PNPM_OUTDATED_LOCKFILE etc.): stderr = pnpm's own words
 #        2 could not judge (no pnpm, or pnpm failed for a non-lockfile reason such as no network)
+#        3 (--write only) refused, and the regenerated lockfile at OUT passes the frozen check
 # Callers: scripts/release.sh (release tree) and scripts/sync-main.py (HEAD, before every push).
 # Guard: scripts/__tests__/lockfile-frozen.test.ts.
 set -uo pipefail
 
 TREE="${1:-}"
-[[ -n "$TREE" ]] || { echo "usage: bash scripts/lockfile-frozen.sh <tree-ish>" >&2; exit 2; }
+WRITE=""
+[[ "${2:-}" == "--write" ]] && WRITE="${3:-}"
+[[ -n "$TREE" ]] || { echo "usage: bash scripts/lockfile-frozen.sh <tree-ish> [--write OUT]" >&2; exit 2; }
+[[ "${2:-}" != "--write" || -n "$WRITE" ]] || { echo "--write needs an output path" >&2; exit 2; }
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "not inside a git repository" >&2; exit 2; }
 git -C "$REPO_ROOT" cat-file -e "$TREE:pnpm-lock.yaml" 2>/dev/null || exit 0
 command -v pnpm >/dev/null 2>&1 || { echo "pnpm is not installed" >&2; exit 2; }
@@ -47,6 +60,14 @@ rc=$?
 [[ $rc -eq 0 ]] && exit 0
 if grep -qE 'ERR_PNPM_(OUTDATED_LOCKFILE|LOCKFILE_CONFIG_MISMATCH|BROKEN_LOCKFILE)' "$OUT"; then
     grep -E 'ERR_PNPM|specifiers|lockfile|package.json' "$OUT" | head -12 >&2
+    if [[ -n "$WRITE" ]] && ! grep -q 'ERR_PNPM_BROKEN_LOCKFILE' "$OUT"; then
+        FIX="$WORK/.fix"
+        if (cd "$WORK" && MATRX_INSTALL_GATE_DISABLE=1 timeout 300 pnpm install --lockfile-only --ignore-scripts) >"$FIX" 2>&1 \
+           && (cd "$WORK" && MATRX_INSTALL_GATE_DISABLE=1 timeout 120 pnpm install --frozen-lockfile --lockfile-only --ignore-scripts) >>"$FIX" 2>&1; then
+            cp "$WORK/pnpm-lock.yaml" "$WRITE" && exit 3
+        fi
+        echo "regenerating the lockfile did not produce one pnpm accepts: $(tail -3 "$FIX" | tr '\n' ' ')" >&2
+    fi
     exit 1
 fi
 echo "pnpm could not judge (exit $rc): $(tail -3 "$OUT" | tr '\n' ' ')" >&2

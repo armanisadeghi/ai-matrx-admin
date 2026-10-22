@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import type { AppDispatch } from "@/lib/redux/store";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { PartyKind } from "@/features/crm/types";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "crmCreatePartyWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenCrmCreatePartyWindowOptions {
   initialKind?: PartyKind;
@@ -26,18 +28,13 @@ export function createCrmCreatePartyWindowOpener(store: { dispatch: AppDispatch 
   return (
     options: OpenCrmCreatePartyWindowOptions = {},
   ): CrmCreatePartyWindowHandle => {
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        data: {
+    opener.open(dispatch, { data: {
           initialKind: options.initialKind,
           initialOrgId: options.initialOrgId,
           initialName: options.initialName,
-        },
-      }),
-    );
+        } });
     return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+      close: () => dispatch(opener.close()),
     };
   };
 }
@@ -47,16 +44,7 @@ export function useOpenCrmCreatePartyWindow() {
   return useMemo(() => createCrmCreatePartyWindowOpener({ dispatch }), [dispatch]);
 }
 
-export function CrmCreatePartyWindowController(
-  props: OpenCrmCreatePartyWindowOptions,
-): null {
-  const open = useOpenCrmCreatePartyWindow();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [open, props.initialKind, props.initialOrgId, props.initialName]);
-  return null;
-}
+export const CrmCreatePartyWindowController = hookController<OpenCrmCreatePartyWindowOptions>(useOpenCrmCreatePartyWindow);
 
 export type CrmCreatePartyWindowDefinitionData = OpenCrmCreatePartyWindowOptions;
 

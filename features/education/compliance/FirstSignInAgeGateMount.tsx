@@ -27,9 +27,10 @@
 // exists to move people out of the undeclared state, not to unblock them —
 // which is exactly why it must never be modal-feeling or hard to escape.
 //
-// DISMISSAL. Closing it writes nothing and blocks nothing; we simply do not ask
-// again for the rest of this tab session (sessionStorage), and ask again on the
-// next one. The band is never left permanently NULL with no way back: the
+// DISMISSAL. Closing it blocks nothing and declares nothing. Since 2026-10-22 the
+// "Not now" is kept on the ACCOUNT for AGE_NOT_NOW_DAYS (ageNotNow.ts, the same
+// user_metadata carrier as the welcome steps), so no other tab, browser or visit
+// asks until it runs out; before that it lived only in this tab session. The band is never left permanently NULL with no way back: the
 // per-action gate still offers the same prompt inside education AI, and
 // /education/family can always set it. Deliberately no "don't ask again" —
 // COPPA declaration is not a preference to opt out of.
@@ -63,6 +64,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 import { coppaService } from "./coppaService";
 import { useAiComplianceGate } from "./useAiComplianceGate";
+import { ageNotNowInSession, rememberAgeNotNow } from "./ageNotNow";
+import { toast } from "@/lib/toast";
 
 /** Ask at most once per tab session; a new session asks again. */
 const SESSION_KEY = "matrx.age_band_prompt.asked.v1";
@@ -135,6 +138,11 @@ export function FirstSignInAgeGateMount() {
     // A floating card with "Not now", never a modal over the page (Arman, 2026-10-17; feedback 6818af69).
     declarationPresentation: "nudge",
     enabled: settled && !onPortal && !onWelcome && !askedAtMount && !declared,
+    // "Not now" is kept on the account (ageNotNow.ts): no other tab, browser or visit asks until it runs out.
+    onDeclarationDismissed: () =>
+      void rememberAgeNotNow().then((error) => {
+        if (error) toast.error(`Could not save your choice: ${error}`);
+      }),
   });
   const { loading, gate: verdict, promptDeclarationIfNeeded, reload } = gate;
   // The silent signup-metadata apply is tried at most once per mount.
@@ -177,6 +185,9 @@ export function FirstSignInAgeGateMount() {
       }
       if (cancelled) return;
       markAskedThisSession();
+      // Their "Not now" on this account is still in force (any tab, any browser, /welcome's step included).
+      if (await ageNotNowInSession()) return;
+      if (cancelled) return;
       promptDeclarationIfNeeded();
     })();
 

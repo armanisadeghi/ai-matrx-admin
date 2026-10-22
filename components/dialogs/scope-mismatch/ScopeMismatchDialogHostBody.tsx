@@ -28,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
-import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import { useOverlayRequest } from "@ai-matrx/summon/react";
 import type {
   ScopeMismatchChoice,
   ScopeMismatchDisplayItem,

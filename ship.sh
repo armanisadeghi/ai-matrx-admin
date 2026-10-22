@@ -19,6 +19,9 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 export RELEASE_STAGE_CALLER_PWD="$PWD"
+# THE RELEASE PATH IS NEVER BLOCKED (Arman 2026-09-24 / 10-02 / 10-21): every git hook the sync and release
+# pushes run reads this and REPORTS its failures (banner + agent mail) instead of refusing the push.
+export MATRX_RELEASE_PATH=1
 
 NOTE="sync and release"
 if [[ $# -gt 0 && "$1" != --* ]]; then
@@ -34,13 +37,23 @@ if $DRY_RUN; then
     echo "ship.sh: --dry-run, so the sync was skipped (it commits and pushes for real)."
     SYNC_RC=0
 else
-    python3 "$ROOT/scripts/sync-main.py"
-    SYNC_RC=$?
+    SYNC_LOG=$(mktemp "${TMPDIR:-/tmp}/ship-sync.XXXXXX")
+    python3 "$ROOT/scripts/sync-main.py" 2>&1 | tee "$SYNC_LOG"
+    SYNC_RC=${PIPESTATUS[0]}
     if [[ $SYNC_RC -ne 0 ]]; then
+        # A failed sync NEVER skips the release (Arman 2026-10-02: "NOTHING SHOULD EVER STOP IT"; until
+        # 2026-10-21 this line said "release skipped" and the web app went six hours without a release).
+        # The sync held this checkout's local commits for a reason it printed above (a merge in progress,
+        # a lockfile the build cannot install), so the release ships GitHub's main WITHOUT them, and the
+        # reason screams to the ship-all lanes.
         echo ""
-        echo "ship.sh: the sync did not finish (exit $SYNC_RC; its reason is printed above), release skipped"
-        exit "$SYNC_RC"
+        echo "ship.sh: the sync did not finish (exit $SYNC_RC; its reason is printed above). Releasing origin/main anyway, without this checkout's unpushed commits."
+        python3 "$HOME/code/matrx-ship/scripts/release-scream.py" --repo matrx-frontend --where "ship.sh sync" \
+            --check "sync-main did not push (exit $SYNC_RC)" \
+            --detail "$(grep -E 'SYNC STOPPED|NOT PUSHED|PUSH REFUSED|REFUSED' "$SYNC_LOG" | tail -3)" || true
+        export RELEASE_REMOTE_MAIN_ONLY=1
     fi
+    rm -f "$SYNC_LOG"
 fi
 
 # ── 2. release ───────────────────────────────────────────────────────────────

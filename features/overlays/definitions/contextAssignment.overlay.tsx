@@ -12,11 +12,10 @@
  * - `<ContextAssignmentController />` — declarative wrapper.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/open";
 import type { EntityTypeToken } from "@ai-matrx/associations";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "contextAssignment" as const;
 
@@ -36,51 +35,15 @@ export interface ContextAssignmentHandle {
   close: () => void;
 }
 
-export function useOpenContextAssignment() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenContextAssignmentOptions): ContextAssignmentHandle => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          instanceId: opts.instanceId,
-          data: { subject: opts.subject },
-        }),
-      );
-      return {
-        close: () =>
-          dispatch(
-            closeOverlay({
-              overlayId: OVERLAY_ID,
-              instanceId: opts.instanceId,
-            }),
-          ),
-      };
-    },
-    [dispatch],
-  );
-}
+const opener = appOpener<OpenContextAssignmentOptions>(OVERLAY_ID);
+
+export const useOpenContextAssignment = opener.useOpen;
 
 /**
  * Declarative form. Renders nothing visible; opens the overlay on mount, closes
  * it on unmount.
  */
-export function ContextAssignmentController(
-  props: OpenContextAssignmentOptions,
-): null {
-  const open = useOpenContextAssignment();
-  useEffect(() => {
-    const handle = open(props);
-    return () => handle.close();
-  }, [
-    open,
-    props.instanceId,
-    props.subject.entityType,
-    props.subject.entityId,
-    props.subject.title,
-  ]);
-  return null;
-}
+export const ContextAssignmentController = opener.Controller;
 
 export type ContextAssignmentDefinitionData = OpenContextAssignmentOptions;
 

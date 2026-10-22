@@ -68,6 +68,7 @@ export function AgentDriftReportHeader({
               }
               onClick={onRefresh}
               label="Refresh report"
+              variant="transparent"
               disabled={loading}
             />
         ) : undefined

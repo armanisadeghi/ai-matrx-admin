@@ -23,6 +23,10 @@ import { PanelControlProvider } from "@/features/resizable-panels/PanelControlPr
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { MobilePanelShell } from "@/features/shell/components/header/templates/MobilePanelShell";
 import { AgentConnectionsSidebar } from "./AgentConnectionsSidebar";
+import {
+  FrameSidebarContent,
+  useFrameSidebarSlot,
+} from "@/features/shell/frame-host/frameSidebarSlot";
 import { AgentConnectionsHeaderControls } from "./AgentConnectionsHeaderControls";
 import { AgentConnectionsNavProvider } from "./AgentConnectionsNavContext";
 import { AGENT_CONNECTIONS_BASE, segmentToSection } from "../routing";
@@ -170,6 +174,8 @@ export function AgentConnectionsRouteShell({
       {children}
     </div>
   );
+  // The new app frame: the sections list is the frame's ONE sidebar column.
+  const inFrame = useFrameSidebarSlot();
 
   return (
     <SurfaceRuntimeProvider
@@ -184,6 +190,16 @@ export function AgentConnectionsRouteShell({
         <AgentConnectionsNavProvider mode="route">
           <MobilePanelShell
             desktop={
+              inFrame ? (
+                <>
+                  <FrameSidebarContent>
+                    <div className="flex min-h-0 flex-1 flex-col">
+                      <AgentConnectionsSidebar basePath={AGENT_CONNECTIONS_BASE} />
+                    </div>
+                  </FrameSidebarContent>
+                  {mainPane}
+                </>
+              ) : (
               <ClientGroup
                 id={GROUP_ID}
                 groupKey={GROUP_KEY}
@@ -212,6 +228,7 @@ export function AgentConnectionsRouteShell({
                   {mainPane}
                 </Panel>
               </ClientGroup>
+              )
             }
             main={mainPane}
             panels={[

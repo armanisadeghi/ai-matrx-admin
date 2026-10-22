@@ -6985,10 +6985,6 @@
    "file": "features/window-panels/windows/data-sources/DataChangesWindow.tsx",
    "pending": true
   },
-  "window:features/window-panels/windows/data-sources/DataSourceWindow.tsx": {
-   "file": "features/window-panels/windows/data-sources/DataSourceWindow.tsx",
-   "pending": true
-  },
   "window:features/window-panels/windows/detail/DetailWindow.tsx": {
    "file": "features/window-panels/windows/detail/DetailWindow.tsx",
    "host": true

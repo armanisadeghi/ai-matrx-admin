@@ -22,7 +22,7 @@ import {
 import { BASELINE_VALUES } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { SURFACE_INDEX } from "@/features/surfaces/manifests/generated/surface-index.generated";
 import { loadSurfaceBodyRecord } from "@/features/surfaces/manifests/surface-body-loader";
-import { getSurfaceSection } from "@/features/surfaces/manifests/surface-section";
+import { getRoutePageName, getSurfaceSection } from "@/features/surfaces/manifests/surface-section";
 
 registerSurfaceManifests(
   createIndexedSurfaceSource({
@@ -30,6 +30,7 @@ registerSurfaceManifests(
     baselineValues: Object.values(BASELINE_VALUES),
     loadBody: loadSurfaceBodyRecord,
     getSurfaceSection,
+    getRoutePageName,
   }),
 );
 

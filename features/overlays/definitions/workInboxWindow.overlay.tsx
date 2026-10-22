@@ -6,13 +6,11 @@
  * - `useOpenWorkInboxWindow()` — imperative hook; returns a handle with `close()`.
  * - `<WorkInboxWindowController />` — declarative: mount to open, unmount to close.
  *
- * Hand-maintained opener — see features/overlays/FEATURE.md.
+ * Declared through appOpener (summon createOpener) — see features/overlays/FEATURE.md.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "workInboxWindow" as const;
 
@@ -20,24 +18,11 @@ export interface WorkInboxWindowHandle {
   close: () => void;
 }
 
-export function useOpenWorkInboxWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback((): WorkInboxWindowHandle => {
-    dispatch(openOverlay({ overlayId: OVERLAY_ID }));
-    return {
-      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-    };
-  }, [dispatch]);
-}
+const opener = appOpener(OVERLAY_ID);
 
-export function WorkInboxWindowController(): null {
-  const open = useOpenWorkInboxWindow();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const useOpenWorkInboxWindow = opener.useOpen;
+
+export const WorkInboxWindowController = opener.Controller;
 
 export type WorkInboxWindowDefinitionData = Record<string, unknown>;
 

@@ -37,6 +37,16 @@ export const ONBOARDING_METADATA_KEY = "onboarding_completed" as const;
  */
 export const WELCOME_ROUTE = "/welcome";
 
+/**
+ * The funnel's target, carrying the request's whole query (`?panels=welcome-found&org=…` from a notice link, any
+ * other link param): a link opened on /dashboard by someone not yet onboarded still opens its window on /welcome.
+ * `search` is the request's `?…` string (proxy header `x-search-params`), with or without the `?`.
+ */
+export function welcomeRedirectHref(search: string | null | undefined): string {
+  const q = (search ?? "").replace(/^\?/, "");
+  return q ? `${WELCOME_ROUTE}?${q}` : WELCOME_ROUTE;
+}
+
 type MetadataCarrier =
   | {
       user_metadata?: Record<string, unknown> | null;

@@ -1,9 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
+import { appOpener } from "./app-opener";
 
 const OVERLAY_ID = "socialCardAnalyzerWindow" as const;
 
@@ -22,14 +20,8 @@ export interface OpenSocialCardWindowOptions {
   cardType?: string;
 }
 
-export function useOpenSocialCardWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options: OpenSocialCardWindowOptions = {}) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
+const opener = appOpener<OpenSocialCardWindowOptions>(OVERLAY_ID, {
+  data: (options: OpenSocialCardWindowOptions = {}) => ({
             url: options.url ?? "",
             title: options.title ?? "",
             description: options.description ?? "",
@@ -37,14 +29,10 @@ export function useOpenSocialCardWindow() {
             siteName: options.siteName ?? "",
             ogType: options.ogType ?? "",
             cardType: options.cardType ?? "",
-          },
-        }),
-      );
-      return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
-    },
-    [dispatch],
-  );
-}
+          }),
+});
+
+export const useOpenSocialCardWindow = opener.useOpen;
 
 export type SocialCardAnalyzerWindowDefinitionData = OpenSocialCardWindowOptions;
 

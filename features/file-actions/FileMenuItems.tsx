@@ -27,7 +27,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
-import { promptForValues } from "@/components/dialogs/value-prompts/ValuePromptsDialogHost";
+import { promptForValues } from "@/components/dialogs/value-prompts/valuePromptsOpener";
 import type { FileDownload } from "./types";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 import { useEditorMenuClass } from "@/components/editor-chrome/editor-menu-surface";

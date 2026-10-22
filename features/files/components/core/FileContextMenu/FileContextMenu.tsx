@@ -82,7 +82,7 @@ import {
   moveFile as moveFileThunk,
   uploadFiles as uploadFilesThunk,
 } from "@/features/files/redux/thunks";
-import { openFolderPicker } from "@/features/files/components/pickers/CloudFilesPickerHost";
+import { openFolderPicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { FileInfoDialog } from "@/features/files/components/core/FileInfo/FileInfoDialog";

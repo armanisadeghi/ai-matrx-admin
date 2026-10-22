@@ -17,15 +17,17 @@
 
 import { useContext, useEffect, useState } from "react";
 import { ReactReduxContext } from "react-redux";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
+import { openOverlay } from "@ai-matrx/summon/open";
 import {
   registerCopySubsetSession,
   releaseCopySubsetSession,
 } from "@/components/agent-copy/copy-subset/session";
 import type { CopySubsetSource } from "@/components/agent-copy/copy-subset/types";
 import type { OverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
 
 const OVERLAY_ID = "copySubsetWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface OpenCopySubsetWindowOptions<T> {
   source: CopySubsetSource<T>;
@@ -58,21 +60,15 @@ export function useOpenCopySubsetWindow() {
     }
     const session = registerCopySubsetSession(opts.source);
     const instanceId = opts.instanceId ?? session.id;
-    dispatch(
-      openOverlay({
-        overlayId: OVERLAY_ID,
-        instanceId,
-        data: {
+    opener.open(dispatch, { instanceId, data: {
           sessionId: session.id,
           title: opts.title ?? opts.source.label,
-        },
-      }),
-    );
+        } });
     return {
       instanceId,
       sessionId: session.id,
       close: () => {
-        dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
+        dispatch(opener.close(instanceId));
         releaseCopySubsetSession(session.id);
       },
     };

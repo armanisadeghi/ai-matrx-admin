@@ -68,6 +68,9 @@
 # (scripts/sync-main.py) — every saved file goes live, by design (Arman,
 # 2026-09-24; common-docs policies/shared-checkout.md).
 set -euo pipefail
+# THE RELEASE PATH IS NEVER BLOCKED (Arman 2026-10-02): scripts/githooks/pre-push reads this and REPORTS its
+# failures on the release push (banner + agent mail) instead of refusing it.
+export MATRX_RELEASE_PATH=1
 
 RELEASE_LOCK_HELD=false
 
@@ -468,8 +471,11 @@ ship_guard_twins() {  # $1 = the temporary index (lockfile repairs already appli
         1)
             echo "--- lockfile-twins ---" >&2; tail -20 "$err" >&2
             rm -f "$out" "$err"
-            ship_finding "ERROR" "Lockfile" "pnpm-lock.yaml on $REMOTE/$BRANCH holds two versions of one @ai-matrx package and the remedy could not fix it — release NOT pushed" "pnpm sync:matrx-packages, commit the lockfile, release again"
-            fail "pnpm-lock.yaml in the release tree has @ai-matrx twins that Vercel's postinstall (check-matrx-packages.mjs --duplicates) refuses, and pnpm update -r \"@ai-matrx/*\" --depth Infinity could not collapse them — every build would fail, so nothing was pushed. Run: bash scripts/lockfile-twins.sh origin/main --out /tmp/l ; then pnpm sync:matrx-packages, commit the lockfile, and release again."
+            # REPORT ONLY (Arman 2026-10-02 / 10-21): twins are a quality finding, never a stop. Vercel's
+            # postinstall reports them too (package.json), so the release builds and ships with them.
+            ship_finding "ERROR" "Lockfile" "pnpm-lock.yaml on $REMOTE/$BRANCH holds two versions of one @ai-matrx package and the remedy could not fix it — RELEASED ANYWAY" "pnpm sync:matrx-packages, commit the lockfile"
+            [[ -f "$HOME/code/matrx-ship/scripts/release-scream.py" ]] && python3 "$HOME/code/matrx-ship/scripts/release-scream.py" --repo matrx-frontend --where "release.sh twins guard" \
+                --check "@ai-matrx twins in pnpm-lock.yaml" --detail "the remedy could not collapse them; released anyway. Run pnpm sync:matrx-packages and commit the lockfile." || true
             ;;
         *)
             ship_finding "WARNING" "Lockfile" "Twins guard could not judge the release lockfile (exit $rc: $(tail -1 "$err")) — not checked" "node scripts/check-matrx-packages.mjs --duplicates"
@@ -734,6 +740,12 @@ if [[ "$RELEASE_PHASE" == "ship" ]]; then
     ship_mark "fetched $REMOTE/$BRANCH"
 
     SHIP_LOCAL_HEAD=$(git rev-parse HEAD)
+    # ship.sh sets RELEASE_REMOTE_MAIN_ONLY=1 when its sync failed: the sync held the local commits for a
+    # reason (printed and screamed there), so GitHub's main ships without them — never no release at all.
+    if [[ "${RELEASE_REMOTE_MAIN_ONLY:-0}" == "1" && -z "$WHILE_PAUSED_SHA" ]]; then
+        ship_finding "ERROR" "Git" "The sync did not push this checkout's local commits — released $REMOTE/$BRANCH without ${SHIP_LOCAL_HEAD:0:9}" "python3 scripts/sync-main.py"
+        SHIP_LOCAL_HEAD="$(git rev-parse "$REMOTE/$BRANCH")"
+    fi
 
     # This checkout's commits that are not on origin yet (the --ship commit,
     # other sessions' unpushed work) ride along. If they conflict, main ships.

@@ -11,6 +11,9 @@ export interface GoToEntry extends SearchableEntry {
   productId: string;
 }
 
+/** The group the host's own menu entries (`extras`) are listed under. */
+export const MENU_GO_TO_PRODUCT_ID = "menu";
+
 /** What else a person calls a product. Names are searched first; these catch the other words. */
 export const PRODUCT_SYNONYMS: Readonly<Record<string, readonly string[]>> = {
   home: ["dashboard", "today", "start", "launchpad"],
@@ -93,6 +96,11 @@ export function buildGoToIndex(
       });
     }
   }
-  for (const entry of extras) push(entry);
+  // A page the frame already lists (same address and name) is not listed twice under "App menu".
+  const listed = new Set(out.map((e) => `${e.href}\u0000${e.label.toLocaleLowerCase()}`));
+  for (const entry of extras) {
+    if (listed.has(`${entry.href}\u0000${entry.label.toLocaleLowerCase()}`)) continue;
+    push(entry);
+  }
   return out;
 }

@@ -20,7 +20,15 @@ import { createRoot, type Root } from "react-dom/client";
 
 const dispatched: Array<{ type: string; overlayId?: string; data?: { callbackGroupId?: string } }> = [];
 jest.mock("@/lib/redux/hooks", () => ({
-  useAppDispatch: () => (a: never) => dispatched.push(a),
+  // Openers dispatch summon's createOpener actions; the mocked summon/open creators below cover the rest.
+  useAppDispatch: () => (a: { type: string; payload?: object }) =>
+    dispatched.push(
+      a.type === "overlays/openOverlay"
+        ? ({ type: "open", ...a.payload } as never)
+        : a.type === "overlays/closeOverlay"
+          ? ({ type: "close", ...a.payload } as never)
+          : (a as never),
+    ),
   useAppSelector: () => false,
 }));
 jest.mock("@ai-matrx/summon/open", () => ({

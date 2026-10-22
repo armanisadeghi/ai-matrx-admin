@@ -10,13 +10,15 @@
  */
 
 import type { GoogleAgendaWindowLaunchData } from "@/features/google-workspace/calendar/window-types";
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { UntypedOverlayWire } from "./overlay-types";
+import { createOpener } from "@ai-matrx/summon/opener";
+import { hookController } from "./app-opener";
 
 const OVERLAY_ID = "googleAgendaWindow" as const;
+const opener = createOpener<object>(OVERLAY_ID);
 
 export interface GoogleAgendaWindowHandle {
   close: () => void;
@@ -25,19 +27,12 @@ export interface GoogleAgendaWindowHandle {
 export function useOpenGoogleAgenda() {
   const dispatch = useAppDispatch();
   return useCallback((data?: GoogleAgendaWindowLaunchData): GoogleAgendaWindowHandle => {
-    dispatch(openOverlay(data ? { overlayId: OVERLAY_ID, data } : { overlayId: OVERLAY_ID }));
-    return { close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })) };
+    opener.open(dispatch, data ? { data } : undefined);
+    return { close: () => dispatch(opener.close()) };
   }, [dispatch]);
 }
 
-export function GoogleAgendaWindowController() {
-  const open = useOpenGoogleAgenda();
-  useEffect(() => {
-    const handle = open();
-    return () => handle.close();
-  }, [open]);
-  return null;
-}
+export const GoogleAgendaWindowController = hookController(useOpenGoogleAgenda);
 
 export type GoogleAgendaWindowDefinitionData = Record<string, unknown>;
 
