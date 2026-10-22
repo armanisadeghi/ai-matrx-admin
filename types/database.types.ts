@@ -16179,7 +16179,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -16222,7 +16221,6 @@ export type Database = {
           id?: string
           is_archived?: boolean | null
           is_favorited?: boolean | null
-          is_public?: boolean | null
           last_accessed_at?: string | null
           metadata?: Json
           organization_id: string
@@ -16265,7 +16263,6 @@ export type Database = {
           id?: string
           is_archived?: boolean | null
           is_favorited?: boolean | null
-          is_public?: boolean | null
           last_accessed_at?: string | null
           metadata?: Json
           organization_id?: string
@@ -16758,7 +16755,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -16810,7 +16806,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -16862,7 +16857,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -16914,7 +16908,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -16973,7 +16966,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -17030,7 +17022,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -17094,7 +17085,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -17155,7 +17145,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -17217,7 +17206,6 @@ export type Database = {
           id: string
           is_archived: boolean | null
           is_favorited: boolean | null
-          is_public: boolean | null
           last_accessed_at: string | null
           metadata: Json
           organization_id: string
@@ -19997,7 +19985,6 @@ export type Database = {
           updated_at: string
           updated_by: string | null
           version: number
-          visibility: Database["platform"]["Enums"]["visibility"]
           watching: boolean
           workflow_run_id: string | null
         }
@@ -20043,7 +20030,6 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
           watching?: boolean
           workflow_run_id?: string | null
         }
@@ -20089,7 +20075,6 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
           watching?: boolean
           workflow_run_id?: string | null
         }
@@ -55640,7 +55625,7 @@ export type Database = {
           validates_job_id?: string | null
           variable_mapping?: Json
           version?: number
-          visibility: Database["platform"]["Enums"]["visibility"]
+          visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
           agent_id?: string | null
@@ -58454,7 +58439,6 @@ export type Database = {
           updated_at: string
           updated_by: string | null
           version: number
-          visibility: Database["platform"]["Enums"]["visibility"]
         }
         Insert: {
           created_at?: string
@@ -58473,7 +58457,6 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Update: {
           created_at?: string
@@ -58492,7 +58475,6 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number
-          visibility?: Database["platform"]["Enums"]["visibility"]
         }
         Relationships: [
           {
@@ -98313,7 +98295,6 @@ export type Database = {
           evaluator_name: string | null
           gender: string | null
           id: string
-          is_public: boolean | null
           job_offer_date: string | null
           large_employer: boolean
           metadata: Json
@@ -98346,7 +98327,6 @@ export type Database = {
           evaluator_name?: string | null
           gender?: string | null
           id?: string
-          is_public?: boolean | null
           job_offer_date?: string | null
           large_employer?: boolean
           metadata?: Json
@@ -98379,7 +98359,6 @@ export type Database = {
           evaluator_name?: string | null
           gender?: string | null
           id?: string
-          is_public?: boolean | null
           job_offer_date?: string | null
           large_employer?: boolean
           metadata?: Json
@@ -118348,15 +118327,26 @@ export type Database = {
             }
             Returns: Json
           }
-      lifecycle_file_custody_checkpoint: {
-        Args: {
-          p_complete: boolean
-          p_created_at: string
-          p_file_id: string
-          p_run_id: string
-        }
-        Returns: undefined
-      }
+      lifecycle_file_custody_checkpoint:
+        | {
+            Args: {
+              p_complete: boolean
+              p_created_at: string
+              p_file_id: string
+              p_run_id: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_complete: boolean
+              p_created_at: string
+              p_file_id: string
+              p_run_id: string
+              p_source_kind: string
+            }
+            Returns: undefined
+          }
       lifecycle_file_custody_finalize_delete: {
         Args: { p_file_id: string; p_operation_id: string }
         Returns: boolean
@@ -118373,10 +118363,9 @@ export type Database = {
         Args: { p_detail: Json; p_run_id: string }
         Returns: undefined
       }
-      lifecycle_file_custody_scan_cursor: {
-        Args: { p_run_id: string }
-        Returns: Json
-      }
+      lifecycle_file_custody_scan_cursor:
+        | { Args: { p_run_id: string }; Returns: Json }
+        | { Args: { p_run_id: string; p_source_kind: string }; Returns: Json }
       lifecycle_file_custody_selector: { Args: never; Returns: Json }
       lifecycle_hot_reference_scan: {
         Args: never
@@ -140025,7 +140014,6 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
-          is_public: boolean | null
           metadata: Json
           min_content_chars: number | null
           min_real_content_chars: number | null
@@ -140045,7 +140033,6 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          is_public?: boolean | null
           metadata?: Json
           min_content_chars?: number | null
           min_real_content_chars?: number | null
@@ -140065,7 +140052,6 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          is_public?: boolean | null
           metadata?: Json
           min_content_chars?: number | null
           min_real_content_chars?: number | null
@@ -140358,7 +140344,6 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
-          is_public: boolean | null
           metadata: Json
           min_content_chars: number | null
           min_real_content_chars: number | null
@@ -140377,7 +140362,6 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          is_public?: boolean | null
           metadata?: Json
           min_content_chars?: number | null
           min_real_content_chars?: number | null
@@ -140396,7 +140380,6 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
-          is_public?: boolean | null
           metadata?: Json
           min_content_chars?: number | null
           min_real_content_chars?: number | null
@@ -170026,7 +170009,6 @@ export type Database = {
           description: string | null
           document_name: string
           id: string
-          is_public: boolean
           metadata: Json
           organization_id: string
           original_file_id: string | null
@@ -170053,7 +170035,6 @@ export type Database = {
           description?: string | null
           document_name: string
           id?: string
-          is_public?: boolean
           metadata?: Json
           organization_id: string
           original_file_id?: string | null
@@ -170080,7 +170061,6 @@ export type Database = {
           description?: string | null
           document_name?: string
           id?: string
-          is_public?: boolean
           metadata?: Json
           organization_id?: string
           original_file_id?: string | null
@@ -170156,7 +170136,6 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           id: string
-          is_public: boolean
           metadata: Json
           organization_id: string
           original_file_id: string | null
@@ -170183,7 +170162,6 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
-          is_public?: boolean
           metadata?: Json
           organization_id: string
           original_file_id?: string | null
@@ -170210,7 +170188,6 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           id?: string
-          is_public?: boolean
           metadata?: Json
           organization_id?: string
           original_file_id?: string | null
