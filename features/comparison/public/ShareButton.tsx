@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ExternalLink, Share2 } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
+import { copyText } from "@ai-matrx/kit/clipboard";
 
 import { del, getJson, postJson } from "@/lib/python-client";
 import { toast } from "@/lib/toast";
@@ -53,8 +54,7 @@ export function ShareButton() {
       const made = asLink(data);
       if (!made) throw new Error("no link");
       setLink(made);
-      await navigator.clipboard.writeText(`${window.location.origin}${made.path}`).catch(() => undefined);
-      toast.success("Link copied");
+      await copyText(`${window.location.origin}${made.path}`, { successMessage: "Link copied" });
     } catch {
       toast.error("Could not share this comparison");
     } finally {

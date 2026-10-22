@@ -23,7 +23,7 @@ import { ItemLogo } from "./ItemLogo";
 
 const isPhoto = (kind: string) => kind === "local_business" || kind === "products" || kind === "social_accounts";
 
-/** The viewer's clock, read after mount so the server render and the first client render agree. */
+/** The time, read after mount so the server render and the first client render agree. */
 function useNow(): Date | null {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => { setNow(new Date()); }, []);
@@ -96,21 +96,21 @@ function HoursRow({ item, field, kind, now }: { item: ComparedItem; field: Compa
   const v = item.values[field.key];
   const week = weekOf(v?.value);
   const today = week && now ? hoursToday(week, now) : null;
-  const status = today && now ? openNow(today.text, now) : null;
+  const status = today && now && week ? openNow(today.text, now, week.timezone) : null;
   return (
     <li className="space-y-1">
       <Who item={item} kind={kind} />
       {week ? (
         <>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pl-[2.375rem]">
-            {today ? <span className="type-body text-foreground">Today {today.text}</span> : <span className="type-body text-muted-foreground">—</span>}
+            {today ? <span className="type-body text-foreground">Today {today.text}</span> : null}
             {status !== null ? <Badge tone={status ? "success" : "neutral"}>{status ? "Open now" : "Closed"}</Badge> : null}
           </div>
           <div className="pl-[2.375rem]">
             <DisclosureHeader open={open} onClick={() => setOpen((o) => !o)} title="Full week" />
             {open ? (
               <dl className="mt-1 grid grid-cols-[6rem_1fr] gap-x-3 gap-y-0.5">
-                {week.map(([d, t]) => (
+                {week.days.map(([d, t]) => (
                   <div key={d} className="contents">
                     <dt className={cn("type-secondary", today?.day === d ? "text-foreground" : "text-muted-foreground")}>{d}</dt>
                     <dd className="type-secondary text-foreground">{t}</dd>
