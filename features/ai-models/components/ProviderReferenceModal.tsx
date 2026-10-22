@@ -1,10 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import ReactDOM from "react-dom";
+import React, { useState, useEffect } from "react";
 import {
-  X,
-  GripVertical,
   ExternalLink,
   RefreshCw,
   ChevronDown,
@@ -15,13 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { AiProvider, ProviderModelEntry } from "../types";
+import { aiModelService } from "../service";
+import { WindowPanel } from "@ai-matrx/summon/window";
 import AppLink from "@/components/navigation/AppLink";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
-type Position = { x: number; y: number };
-
 type Props = {
-  providers: AiProvider[];
   onClose: () => void;
 };
 
@@ -246,141 +242,98 @@ function ProviderTab({ provider }: { provider: AiProvider }) {
   );
 }
 
-export default function ProviderReferenceModal({ providers, onClose }: Props) {
-  const [activeProviderId, setActiveProviderId] = useState<string>(
-    providers[0]?.id ?? "",
-  );
-  const [position, setPosition] = useState<Position>(() => {
-    // Right side of screen, vertically centered — computed up front so the
-    // first painted frame is already in place.
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const modalW = 520;
-    const modalH = Math.min(600, h * 0.75);
-    return { x: w - modalW - 24, y: (h - modalH) / 2 };
-  });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef<{
-    mx: number;
-    my: number;
-    px: number;
-    py: number;
-  } | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      dragStart.current = {
-        mx: e.clientX,
-        my: e.clientY,
-        px: position.x,
-        py: position.y,
-      };
-      setIsDragging(true);
-    },
-    [position],
-  );
+/**
+ * The Provider Reference window (summon overlay `providerReferenceWindow`, opened from the AI Models
+ * page). Loads the provider list itself, so a reload of the same tab brings it back with its data.
+ */
+export default function ProviderReferenceModal({ onClose }: Props) {
+  const [providers, setProviders] = useState<AiProvider[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [activeProviderId, setActiveProviderId] = useState<string>("");
 
   useEffect(() => {
-    if (!isDragging) return undefined;
-
-    const onMove = (e: MouseEvent) => {
-      if (!dragStart.current) return;
-      const dx = e.clientX - dragStart.current.mx;
-      const dy = e.clientY - dragStart.current.my;
-      setPosition({
-        x: dragStart.current.px + dx,
-        y: dragStart.current.py + dy,
+    let live = true;
+    aiModelService
+      .fetchProviders()
+      .then((rows) => {
+        if (!live) return;
+        setProviders(rows);
+        setActiveProviderId((cur) => cur || rows[0]?.id || "");
+      })
+      .catch((err: unknown) => {
+        if (!live) return;
+        console.error("Failed to load AI providers", err);
+        setLoadError("Could not load providers.");
       });
-    };
-
-    const onUp = () => {
-      setIsDragging(false);
-      dragStart.current = null;
-    };
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
     return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
+      live = false;
     };
-  }, [isDragging]);
+  }, []);
 
   const activeProvider =
-    providers.find((p) => p.id === activeProviderId) ?? providers[0];
+    providers?.find((p) => p.id === activeProviderId) ?? providers?.[0];
 
-  const modal = (
-    <div
-      ref={modalRef}
-      style={{
-        position: "fixed",
-        left: position.x,
-        top: position.y,
-        width: 520,
-        height: "min(600px, 75dvh)",
-        zIndex: 9999,
-      }}
-      className="flex flex-col bg-card border rounded-lg shadow-2xl overflow-hidden"
-    >
-      {/* Drag handle / header */}
-      <div
-        onMouseDown={onMouseDown}
-        className={`flex items-center gap-2 px-3 py-2 bg-muted/60 border-b cursor-grab select-none shrink-0 ${isDragging ? "cursor-grabbing" : ""}`}
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-        <span className="text-sm font-semibold flex-1">Provider Reference</span>
-        <Button
-          asChild
-          variant="quiet"
-        >
+  return (
+    <WindowPanel
+      id="provider-reference-window"
+      overlayId="providerReferenceWindow"
+      title="Provider Reference"
+      onClose={onClose}
+      width={520}
+      height={600}
+      minWidth={380}
+      minHeight={320}
+      bodyClassName="flex min-h-0 flex-1 flex-col overflow-hidden p-0"
+      actionsRight={
+        <Button asChild variant="quiet">
           <AppLink href="/administration/ai/ai-models/provider-sync">
             <RefreshCw className="h-3 w-3 mr-1" />
             Sync
           </AppLink>
         </Button>
-        <button
-          onClick={onClose}
-          className="h-6 w-6 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-
-      {/* Provider tabs */}
-      <div className="flex items-center gap-0 border-b overflow-x-auto shrink-0 bg-background">
-        {providers.map((p) => {
-          const hasCache = p.provider_models_cache != null;
-          const isActive = p.id === activeProviderId;
-          return (
-            <button
-              key={p.id}
-              onClick={() => setActiveProviderId(p.id)}
-              className={`px-3 py-1.5 text-xs shrink-0 border-b-2 transition-colors whitespace-nowrap ${
-                isActive
-                  ? "border-primary text-foreground font-medium"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {p.name ?? p.id}
-              {hasCache && (
-                <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Content */}
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="p-3">
-          {activeProvider && <ProviderTab provider={activeProvider} />}
+      }
+    >
+      {loadError ? (
+        <div className="flex items-center gap-2 p-3 text-xs text-destructive">
+          <AlertCircle className="h-3.5 w-3.5" />
+          {loadError}
         </div>
-      </ScrollArea>
-    </div>
-  );
+      ) : !providers ? (
+        <div className="p-3 text-xs text-muted-foreground">Loading…</div>
+      ) : (
+        <>
+          {/* Provider tabs */}
+          <div className="flex items-center gap-0 border-b overflow-x-auto shrink-0 bg-background">
+            {providers.map((p) => {
+              const hasCache = p.provider_models_cache != null;
+              const isActive = p.id === activeProvider?.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setActiveProviderId(p.id)}
+                  className={`px-3 py-1.5 text-xs shrink-0 border-b-2 transition-colors whitespace-nowrap ${
+                    isActive
+                      ? "border-primary text-foreground font-medium"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {p.name ?? p.id}
+                  {hasCache && (
+                    <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-  if (typeof window === "undefined") return null;
-  return ReactDOM.createPortal(modal, document.body);
+          {/* Content */}
+          <ScrollArea className="flex-1 min-h-0">
+            <div className="p-3">
+              {activeProvider && <ProviderTab provider={activeProvider} />}
+            </div>
+          </ScrollArea>
+        </>
+      )}
+    </WindowPanel>
+  );
 }

@@ -6,13 +6,15 @@
 // person's tags. It only answers which tag; the caller files the records.
 
 import React from "react";
-import { useOpenerHost } from "@ai-matrx/kit/opener-react";
+import type { OverlayRenderProps } from "@ai-matrx/summon/react";
+import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
 import { TagDialog } from "./TagDialog";
-import { tagPickerOpener } from "./tagPickerOpener";
+import type { PickTagRequest, PickTagResponse } from "./tagPickerOpener";
 import { useHubTags } from "./useHubTags";
 
-export function TagPickerHostDialog() {
-  const { open, shown, settle } = useOpenerHost(tagPickerOpener);
+export function TagPickerHostDialog({ data, close: closeOverlay }: Pick<OverlayRenderProps, "data" | "close">) {
+  const { request: shown, settle } = useOverlayRequest<PickTagRequest, PickTagResponse>(data, closeOverlay);
+  const open = shown !== null;
   const tags = useHubTags(open);
   return (
     <TagDialog

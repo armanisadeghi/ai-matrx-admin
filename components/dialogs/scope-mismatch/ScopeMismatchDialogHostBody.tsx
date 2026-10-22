@@ -27,12 +27,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
-import { useOpenerHost } from "@ai-matrx/kit/opener-react";
+import type { OverlayRenderProps } from "@ai-matrx/summon/react";
+import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
 import type {
   ScopeMismatchChoice,
   ScopeMismatchDisplayItem,
 } from "@/features/scopes/utils/scopeMismatch";
-import { scopeMismatchOpener } from "./scopeMismatchOpener";
+import type { ScopeMismatchRequest } from "@/components/dialogs/scope-mismatch/scopeMismatchOpener";
 
 function ScopeSetList({
   heading,
@@ -83,8 +84,9 @@ function ScopeSetList({
   );
 }
 
-export default function ScopeMismatchDialogHostBody() {
-  const { request, open, settle } = useOpenerHost(scopeMismatchOpener);
+export default function ScopeMismatchDialogHostBody({ data, close }: OverlayRenderProps) {
+  const { request, settle } = useOverlayRequest<ScopeMismatchRequest, ScopeMismatchChoice>(data, close);
+  const open = request !== null;
 
   const resolveWith = React.useCallback(
     (choice: ScopeMismatchChoice) => settle(choice),

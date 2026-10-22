@@ -29,11 +29,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SandboxPanel } from "@ai-matrx/chat/agents/components/chat/SandboxPanel";
-import { useOpenerHost } from "@ai-matrx/kit/opener-react";
-import { sandboxGateOpener } from "./sandboxGateOpener";
+import type { OverlayRenderProps } from "@ai-matrx/summon/react";
+import { useOverlayRequest } from "@/features/overlays/useOverlayRequest";
+import type { SandboxGateOptions, SandboxGateChoice } from "@/components/dialogs/sandbox-gate/sandboxGateOpener";
 
-export default function SandboxGateHostBody() {
-  const { request, open, settle } = useOpenerHost(sandboxGateOpener);
+export default function SandboxGateHostBody({ data, close }: OverlayRenderProps) {
+  const { request, settle } = useOverlayRequest<SandboxGateOptions, SandboxGateChoice>(data, close);
+  const open = request !== null;
 
   // Any dismiss (Esc / backdrop / X) is a cancel — never a silent send.
   const handleOpenChange = React.useCallback(
