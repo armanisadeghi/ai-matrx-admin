@@ -10,7 +10,7 @@
  * page DECLARES. Four items (best-effort static reads — the limits are listed below):
  *
  *   no-declared-trail|<page>         a (core) page whose page file, its layouts and the files they
- *                                    import (two hops) use no page-top template and declare no trail
+ *                                    import (three hops) use no page-top template and declare no trail
  *                                    (RecordPageHeader, EntityModeHeader, CrumbTrailHeader,
  *                                    DerivedBreadcrumb, EntityListPage, useDeclareFrameCrumbs …). In
  *                                    the frame it still gets the address-derived trail, but its record
@@ -28,7 +28,8 @@
  *
  * EXEMPT only by Arman's word, in the file: `// crumb-doors-exempt: Arman <date> <quote>`.
  *
- * LIMITS (static, best-effort): imports are followed two hops and only through `@/`, `./`, `../`
+ * LIMITS (static, best-effort): imports are followed three hops; a template counts only where it is
+ * RENDERED or CALLED (a name in a comment or a type is not a use) and only through `@/`, `./`, `../`
  * specifiers; a template rendered deeper, or through a registry or dynamic import, reads as
  * "no-declared-trail". Trail literals built in a variable (`const trail = …`) are not read;
  * `right=` content that is a status (no action) is still flagged — move it to `entityStatus`.
@@ -75,8 +76,16 @@ export function remedyForKey(key) {
   return RULES[String(key).split("|")[0]]?.fix ?? null;
 }
 
-const TEMPLATE_NAMES =
-  /\b(RecordPageHeader|EntityModeHeader|CrumbTrailHeader|DerivedBreadcrumb|EntityListPage|RouteTreeBreadcrumbHeader|useDeclareFrameCrumbs|ModuleLanding)\b/;
+const TEMPLATE_LIST =
+  "RecordPageHeader|EntityModeHeader|CrumbTrailHeader|DerivedBreadcrumb|EntityListPage|RouteTreeBreadcrumbHeader|useDeclareFrameCrumbs|ModuleLanding";
+/**
+ * A template is USED — rendered (`<RecordPageHeader`) or called (`useDeclareFrameCrumbs(`) — never
+ * merely named: a comment ("the EntityListPage shell's TRow") or a type (`type EntityListPage`) in a
+ * file three hops away used to clear a page that declares nothing (hop-depth 3 review, 2026-10-22).
+ */
+const TEMPLATE_USE = new RegExp(`<(${TEMPLATE_LIST})[\\s/><]|\\b(${TEMPLATE_LIST})\\(`);
+const stripComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
+const usesTemplate = (text) => TEMPLATE_USE.test(stripComments(text));
 const OUT_OF_SCOPE = /(^|\/)node_modules\/|\.(test|spec)\.tsx?$|\/__tests__\/|^app\/\((dev|lab|public|popup)\)\/|\/demos?\/|^scripts\//;
 const PAGE_FILE = /^app\/\(core\)\/(.+\/)?page\.tsx$/;
 
@@ -221,7 +230,7 @@ function reachesTemplate(root, file, hops, seen = new Set()) {
   if (seen.has(file)) return false;
   seen.add(file);
   const text = read(root, file);
-  if (TEMPLATE_NAMES.test(text) || EXEMPT.test(text)) return true;
+  if (usesTemplate(text) || EXEMPT.test(text)) return true;
   if (hops === 0) return false;
   for (const m of text.matchAll(/from\s+["']([^"']+)["']/g)) {
     const target = resolveImport(root, file, m[1]);
@@ -230,6 +239,8 @@ function reachesTemplate(root, file, hops, seen = new Set()) {
   return false;
 }
 
+/** Import hops followed from a page and its layouts (owner decision 2026-10-22: 3 — HR shells sit three deep). */
+const HOPS = 3;
 const JSX = /<>|(?:^|[^\w$.])<[A-Za-z][\w.:-]*(?=[\s/>])/m;
 /** A page whose body is only a server redirect renders nothing: no header to declare. */
 export function isRedirectOnly(text) {
@@ -237,7 +248,7 @@ export function isRedirectOnly(text) {
   return /\b(redirect|permanentRedirect)\(/.test(code) && !JSX.test(code);
 }
 
-/** no-declared-trail: the page, or any layout above it, reaches a template within two hops. */
+/** no-declared-trail: the page, or any layout above it, reaches a template within HOPS hops. */
 export function pageDeclaresTrail(root, pageFile) {
   const dirs = posix.dirname(pageFile).split("/");
   const files = [pageFile];
@@ -245,7 +256,7 @@ export function pageDeclaresTrail(root, pageFile) {
     const layout = `${dirs.slice(0, i).join("/")}/layout.tsx`;
     if (existsSync(join(root, layout))) files.push(layout);
   }
-  return files.some((f) => reachesTemplate(root, f, 2));
+  return files.some((f) => reachesTemplate(root, f, HOPS));
 }
 
 function listFiles(root) {
@@ -267,7 +278,7 @@ export function collect({ root = ROOT, paths = null } = {}) {
     const text = read(root, file);
     for (const site of scanSource(file, text)) add(site.rule, file, site);
     if (PAGE_FILE.test(file) && !EXEMPT.test(text) && !isRedirectOnly(text) && !pageDeclaresTrail(root, file)) {
-      add("no-declared-trail", file, { rule: "no-declared-trail", line: 1, what: "no page-top template within two hops" });
+      add("no-declared-trail", file, { rule: "no-declared-trail", line: 1, what: "no page-top template within three hops" });
     }
   }
   return [...byKey.values()].sort((a, b) => a.key.localeCompare(b.key));
@@ -352,6 +363,16 @@ function selfTest() {
       // RED: a redirect guard in front of a real body is still a page.
       "app/(core)/forms/guarded/page.tsx":
         'import { redirect } from "next/navigation";\nexport default function P() { if (Math.random()) redirect("/login");\n  return (\n    <>\n      <div>Forms</div>\n    </>\n  ); }\n',
+      // GREEN: a template three hops down (page → shell → sub-shell → the shell that renders it).
+      "app/(core)/hr/people/page.tsx": 'import { People } from "@/features/hr/People";\nexport default function P() { return <People />; }\n',
+      "features/hr/People.tsx": 'import { SubShell } from "./SubShell";\nexport function People() { return <SubShell />; }\n',
+      "features/hr/SubShell.tsx": 'import { Shell } from "./Shell";\nexport function SubShell() { return <Shell />; }\n',
+      "features/hr/Shell.tsx": 'import { useDeclareFrameCrumbs } from "@/features/shell/frame-host/framePageHeader";\nexport function Shell() { useDeclareFrameCrumbs([]); return null; }\n',
+      // GREEN: a generic list shell (`<EntityListPage<Row>`).
+      "app/(core)/rows/page.tsx": 'import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";\nexport default function P() { return <EntityListPage<{ id: string }> config={{}} />; }\n',
+      // RED: a template only NAMED (comment, type) in an imported file is not a header.
+      "app/(core)/labels/page.tsx": 'import { Labels } from "@/features/labels/Labels";\nexport default function P() { return <Labels />; }\n',
+      "features/labels/Labels.tsx": '// The EntityListPage shell\'s TRow lives in types.\nimport type { EntityListPage } from "./types";\nexport function Labels() { return <div />; }\n',
       // GREEN: exempt by Arman's word.
       "app/(core)/kiosk-like/page.tsx": '// crumb-doors-exempt: Arman 2026-10-22 "no header on this one"\nexport default function P() { return <div />; }\n',
     };
@@ -365,6 +386,7 @@ function selfTest() {
       "dead-crumb|features/forms/FormRecord.tsx",
       "no-declared-trail|app/(core)/forms/bare/page.tsx",
       "no-declared-trail|app/(core)/forms/guarded/page.tsx",
+      "no-declared-trail|app/(core)/labels/page.tsx",
       "record-without-siblings|features/forms/FormRecord.tsx",
     ];
     const ok = JSON.stringify(keys) === JSON.stringify(want);
