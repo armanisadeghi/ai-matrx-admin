@@ -442,7 +442,8 @@ function parseItem(v: unknown): ComparedItem {
   for (const [k, val] of Object.entries(obj(o.values))) values[k] = parseValue(val);
   return {
     item_id: str(o.item_id),
-    item_index: num(o.item_index),
+    // absent on results saved before items carried their position: left absent, never guessed as 0
+    item_index: typeof o.item_index === "number" && Number.isFinite(o.item_index) ? o.item_index : undefined,
     name: str(o.name) || "Unnamed",
     rank: num(o.rank),
     source_key: str(o.source_key),

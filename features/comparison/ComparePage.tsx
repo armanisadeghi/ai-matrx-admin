@@ -307,9 +307,9 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   function facetConfirm(runId: string): FacetConfirm {
     return {
       runId,
-      price: (item, facet) => getConfirmPrice(runId, item.item_index ?? 0, facet, { organizationId }),
+      price: (item, facet) => getConfirmPrice(runId, item, facet, { organizationId }),
       answer: async (item, facet, answer) => {
-        const state = await answerConfirm(runId, item.item_index ?? 0, facet, answer, { organizationId });
+        const state = await answerConfirm(runId, item, facet, answer, { organizationId });
         if (state.result) setResult(state.result);
       },
     };
