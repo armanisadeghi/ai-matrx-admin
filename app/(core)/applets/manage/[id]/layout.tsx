@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { getApplet } from "@/lib/applets/data";
+import { appletHasContent } from "@/features/applets/types";
 import { AppletHydratorServer } from "@/features/applets/route/AppletHydratorServer";
 import { AppletSurfaceRuntime } from "@/features/applets/route/AppletSurfaceRuntime";
 
@@ -39,7 +40,7 @@ export default async function AppletIdLayout({
   // code, settings, versions) opens as its build. A row that is not there falls through to the
   // page's own not-found.
   const app = await getApplet(id).catch(() => null);
-  if (app && !app.entry) redirect(`/applets/build/${app.id}`);
+  if (app && !appletHasContent(app)) redirect(`/applets/build/${app.id}`);
   return (
     <>
       {/* Hydrate the applet row into Redux for every sub-route. Streamed in

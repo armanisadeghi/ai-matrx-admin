@@ -7,6 +7,7 @@
 // ============================================================================
 
 import type { AppletSource as RecordSource, NewTableDeclaration } from "@ai-matrx/applets";
+import { layoutOf } from "@ai-matrx/applets/platform";
 
 import type { Database, Json } from "@/types/database.types";
 
@@ -147,6 +148,19 @@ export function appletSources(app: Pick<AppletDefinition, "sources">): AppletSou
     }
     return [];
   });
+}
+
+/** The stock layout an Applet declares (CONTRACTS v2.12), read the package's one way; `{}`/absent = none. */
+export function appletDeclaresLayout(layoutConfig: Json | null | undefined): boolean {
+  return layoutOf(layoutConfig ?? {}) !== null;
+}
+
+/**
+ * Whether an Applet has something to run: its code (an entry) or a declared stock layout. A layout Applet has no
+ * entry and is never "not built" (the same rule as `app.applet_has_content`).
+ */
+export function appletHasContent(row: { entry: string | null; layout_config?: Json | null }): boolean {
+  return Boolean(row.entry) || appletDeclaresLayout(row.layout_config);
 }
 
 /** The code files an Applet carries (`files` column, name → source). */
