@@ -60,12 +60,16 @@ export default function PrivacyTab() {
   const handleAutoRagChange = (next: boolean) => {
     void autoRag
       .setEnabled(next)
-      .then(() =>
-        toast.success(
-          next
-            ? "Auto knowledge-graph enabled"
-            : "Auto knowledge-graph disabled",
-        ),
+      .then((effective) =>
+        effective === next
+          ? toast.success(
+              next
+                ? "Auto knowledge-graph enabled"
+                : "Auto knowledge-graph disabled",
+            )
+          : // The organization's rung overruled this one and the switch did NOT
+            // move. Saying "enabled" here would be a control that lies.
+            toast.info("Your organization keeps this off"),
       )
       .catch((err) =>
         toastWriteFailure(err, {
@@ -140,10 +144,13 @@ export default function PrivacyTab() {
       <SettingsSection title="Knowledge Graph" icon={Lightbulb}>
         <SettingsSwitch
           label="Auto knowledge-graph"
-          description="Finds links in notes, tasks and files; you accept each one."
+          description="In this organization: finds links you then accept."
           checked={autoRag.enabled}
           onCheckedChange={handleAutoRagChange}
-          disabled={autoRag.loading || autoRag.saving}
+          // `canChange` is false with no signed-in person or no organization to
+          // write the rung for. Leaving it pressable let someone turn a switch
+          // that wrote nothing and still be told it saved.
+          disabled={autoRag.loading || autoRag.saving || !autoRag.canChange}
           last
         />
       </SettingsSection>

@@ -225,6 +225,18 @@ const COMPUTED_REFS: Record<string, string> = {
   "../aidream/apps/shared/chat/src/agents/identity/new-agent-model.ts":
     "the chat package's twin of the agentBuilderService read: resolveNewAgentModelId asks exactly " +
     "NEW_AGENT_DEFAULT_MODEL_KNOB (`agents.model_prefs` / `new_agent_default_model`; live row, migration 1512)",
+  "../aidream/apps/shared/chat/src/agents/routing/model-access.ts":
+    "reads the pair straight out of its own declared CONFIDENTIAL_KNOBS table — " +
+    "`chat.confidential` / `require_own_hardware`, a live row (boolean, default false, " +
+    "organization-overridable), the same shape as the other table-backed entries here",
+  "features/kg-suggestions/hooks/useAutoRagPreference.ts":
+    "reads its own declared AUTO_RAG_KNOB constant from features/kg-suggestions/autoRagKnobs.ts, " +
+    "the pair `knowledge` / `auto_rag_enabled`, which is a row in the knob snapshot",
+  "features/organizations/hooks/useOrgAutoRagPreference.ts":
+    "reads the same file's AUTO_RAG_KNOB and SUGGESTION_SWEEPS_KNOB constants — the pairs " +
+    "`knowledge` / `auto_rag_enabled` and `knowledge` / `suggestion_sweeps_enabled`, both rows in " +
+    "the knob snapshot. ONE home for both addresses on purpose: a hand-typed second copy of a " +
+    "register key is how a rename becomes a control that governs nothing",
   "components/rich-content/prose/remote-image-policy.tsx":
     "one read per authorship at `rich_content.remote_images` / `autoload_${authorship}`; every " +
     "authorship in REMOTE_IMAGE_DEFAULTS is proven seeded by the 'remote images' case below",
