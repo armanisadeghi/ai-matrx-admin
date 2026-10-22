@@ -29,6 +29,7 @@ const TABLES: Record<string, unknown[]> = {
     },
   ],
 };
+TABLES.files = [{ id: "2f070109-9488-47f6-b96b-d6afff2d805e", mime_type: "text/plain" }];
 const ANSWERS = [{ content: [{ type: "text", text: "ERROR: missing sender" }] }];
 
 jest.mock("@/utils/supabase/client", () => ({
@@ -74,7 +75,8 @@ describe("a run saved as a test case keeps the person's turn and its file", () =
     const row = inserted[0] as { user_input: string | null; metadata: { input_content: Array<Record<string, unknown>> } };
     expect(row.user_input).toBe("Now write the SMS for the customer in the attached note.");
     const file = row.metadata.input_content.find((p) => p.type === "media");
-    expect(file).toMatchObject({ type: "media", file_id: "2f070109-9488-47f6-b96b-d6afff2d805e" });
+    // Same part Add case stores (fileRefPart): kind, file_id and mime_type, never missing the type.
+    expect(file).toMatchObject({ type: "media", kind: "document", file_id: "2f070109-9488-47f6-b96b-d6afff2d805e", mime_type: "text/plain" });
     expect(JSON.stringify(row.metadata.input_content)).not.toMatch(/https?:/);
   });
 });
