@@ -116,8 +116,11 @@ export function evaluateIndexability(
   const noindex = tokens.includes("noindex") || tokens.includes("none");
   const nofollow = tokens.includes("nofollow") || tokens.includes("none");
   const redirectHops = Math.max(0, input.redirectChain.length - 1);
-  // Self-canonical means the canonical names ANY address this page was
-  // reached by: the final URL, the requested URL, or a redirect hop.
+  // Self-canonical means the canonical names the requested URL or the final
+  // URL (the stored one, or the redirect chain's LAST hop). An intermediate
+  // hop is NOT this page: a canonical naming it points at a redirect (Python
+  // `evaluate_indexability`, same rule).
+  const lastHop = input.redirectChain[input.redirectChain.length - 1];
   const canonicalMatches =
     input.canonicalUrl && input.finalUrl
       ? Boolean(
@@ -125,7 +128,7 @@ export function evaluateIndexability(
             input.canonicalUrl,
             input.finalUrl,
             input.requestedUrl ?? null,
-            ...input.redirectChain.map((hop) => hop?.url ?? null),
+            lastHop?.url ?? null,
           ),
         )
       : null;

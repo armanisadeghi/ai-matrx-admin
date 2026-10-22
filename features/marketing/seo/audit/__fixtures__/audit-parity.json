@@ -791,10 +791,14 @@
         "noindex": false,
         "nofollow": false,
         "canonical_url": "http://ex.com/start",
-        "canonical_matches": true,
+        "canonical_matches": false,
         "redirect_hops": 1,
         "final_url": "https://ex.com/page",
         "issues": [
+          {
+            "severity": "warning",
+            "message": "Canonical points elsewhere (http://ex.com/start) — Google may index that URL instead"
+          },
           {
             "severity": "warning",
             "message": "URL redirects through 1 hop(s) before resolving"
