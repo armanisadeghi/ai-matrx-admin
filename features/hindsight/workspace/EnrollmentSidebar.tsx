@@ -31,7 +31,7 @@ import { PendingExamplesPanel } from "../components/PendingExamplesPanel";
 import { ReviewProgress } from "../components/ReviewProgress";
 import { fmtDate } from "../components/tokens";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { Cost } from "@/components/cost/Cost";
+import { CostDoor } from "@/components/cost/CostDoor";
 
 function ReviewTimelineRow({
   review,
@@ -78,12 +78,6 @@ function ReviewTimelineRow({
         {review.example_count === 1 ? "run" : "runs"}
         {findingsCount > 0 &&
           ` · ${findingsCount} proposal${findingsCount === 1 ? "" : "s"}`}
-        {review.total_cost != null && (
-          <>
-            {" · "}
-            <Cost usd={review.total_cost} />
-          </>
-        )}
       </div>
     </button>
   );
@@ -217,10 +211,10 @@ export function EnrollmentSidebar({
         />
 
         <div className="text-[11px] text-muted-foreground">
-          Spent <Cost usd={detail.spend.total_cost} /> across{" "}
           {detail.spend.review_count}{" "}
           {detail.spend.review_count === 1 ? "review" : "reviews"} · last review{" "}
-          {fmtDate(enrollment.last_review_at)}
+          {fmtDate(enrollment.last_review_at)}{" "}
+          <CostDoor usd={detail.spend.total_cost} label="Usage" />
         </div>
 
         <div>

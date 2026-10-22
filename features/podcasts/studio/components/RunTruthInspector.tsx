@@ -24,7 +24,7 @@
 
 import { useEffect, useEffectEvent, useState } from "react";
 import { StaleDataNotice } from "@ai-matrx/design-system";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
+import { CostDoor } from "@/components/cost/CostDoor";
 import {
   AlertCircle,
   ChevronDown,
@@ -151,7 +151,6 @@ function JsonBlock({
 }
 
 function StageCard({ stage }: { stage: Row }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   const key = String(stage.stage_key ?? "?");
   const status = String(stage.status ?? "");
   const failed = status === "failed";
@@ -188,7 +187,6 @@ function StageCard({ stage }: { stage: Row }) {
         </span>
         <span className="ml-auto flex items-center gap-2 text-[10px] text-muted-foreground">
           {dur && <span>{dur}</span>}
-          {cost != null && <span>{formatCostDisplay(cost)}</span>}
         </span>
       </button>
       {open && (
@@ -211,7 +209,10 @@ function StageCard({ stage }: { stage: Row }) {
             <span className="text-[10px] font-semibold uppercase text-muted-foreground">
               Output
             </span>
-            <CopyButton text={pretty(output)} label="Stage output" />
+            <span className="flex items-center gap-2">
+              <CostDoor usd={cost} label="Usage" />
+              <CopyButton text={pretty(output)} label="Stage output" />
+            </span>
           </div>
           <pre className="max-h-80 overflow-auto rounded-md border border-border bg-background/60 px-2 py-1.5 text-[11px] leading-relaxed text-muted-foreground">
             {output == null ? "(no output)" : pretty(output)}
@@ -243,7 +244,6 @@ export function RunTruthInspector({
   studioRunId,
   episodeId,
 }: RunTruthInspectorProps) {
-  const { format: formatCostDisplay } = useCostDisplay();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -423,7 +423,7 @@ export function RunTruthInspector({
                 </span>
                 {runDuration && <span>duration: {runDuration}</span>}
                 {totalCost != null && (
-                  <span>cost: {formatCostDisplay(totalCost)}</span>
+                  <CostDoor usd={totalCost} label="Usage" />
                 )}
                 <span className="font-mono">
                   run: {truth.resolvedAgentRunId ?? "not assigned yet"}

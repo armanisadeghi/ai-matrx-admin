@@ -18,7 +18,7 @@ import { ReaderDetails, detailDate } from "@/features/rich-document/reader/Reade
 import { readableTitle } from "@/features/rich-document/reader/ReaderLibrary";
 import { ReadFailure, Skeleton } from "@ai-matrx/design-system";
 import { AiModelRef } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
-import { Cost } from "@/components/cost/Cost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useFloatingLiveRun } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -61,7 +61,7 @@ function AnalysisDetails({
             { label: "Written", value: detailDate(analysis.created_at) },
             !!analysis.model_id && { label: "Model", value: <AiModelRef modelId={analysis.model_id} showIcon={false} disableNavigation /> },
             !!usage && { label: "Tokens", value: usage.totalTokens.toLocaleString() },
-            usage?.costUsd != null && usage.costUsd > 0 && { label: "Cost", value: <Cost usd={usage.costUsd} short /> },
+            usage?.costUsd != null && usage.costUsd > 0 && { label: "Usage", value: <CostDoor usd={usage.costUsd} iconOnly /> },
           ],
         },
         {
@@ -71,7 +71,7 @@ function AnalysisDetails({
             { label: "With content", value: totals.withContent },
             totals.empty > 0 && { label: "Empty", value: totals.empty },
             totals.failed > 0 && { label: "Failed", value: totals.failed },
-            { label: "Cost", value: <Cost usd={totals.totalCost} short /> },
+            { label: "Usage", value: <CostDoor usd={totals.totalCost} iconOnly /> },
             { label: "Tokens", value: tokensShort(totals.totalTokens) },
           ],
         },

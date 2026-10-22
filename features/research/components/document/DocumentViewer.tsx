@@ -35,7 +35,7 @@ import { deriveReadiness } from "../../readiness";
 // Actions / Export / Convert still work via the DOM-content fallback). The
 // wrapper is the lightweight shell (imported statically); MenuContent
 // lazy-loads on first open.
-import { Cost } from "@/components/cost/Cost";
+import { CostDoor } from "@/components/cost/CostDoor";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { downloadFile } from "@ai-matrx/kit/download";
 
@@ -253,13 +253,13 @@ export default function DocumentViewer({ defaultLayout }: { defaultLayout?: Layo
           ],
         },
         {
-          title: "Cost",
+          title: "Usage",
           rows: docTokenUsage
             ? [
                 { label: "Input", value: `${docTokenUsage.inputTokens.toLocaleString()} tokens` },
                 docTokenUsage.cachedInputTokens > 0 && { label: "Cached", value: `${docTokenUsage.cachedInputTokens.toLocaleString()} tokens` },
                 { label: "Output", value: `${docTokenUsage.outputTokens.toLocaleString()} tokens` },
-                docTokenUsage.costUsd != null && { label: "Cost", value: <Cost usd={docTokenUsage.costUsd} short /> },
+                docTokenUsage.costUsd != null && { label: "Usage", value: <CostDoor usd={docTokenUsage.costUsd} iconOnly /> },
               ]
             : [],
         },
