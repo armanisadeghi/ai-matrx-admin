@@ -46,11 +46,12 @@
 // `pnpm sync:matrx-packages` (or `pnpm update "@ai-matrx/<pkg>" --latest`) and
 // commit pnpm-lock.yaml — the next release carries it.
 
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 import { emitItem, endItems } from "./checks/items.mjs";
 
@@ -136,6 +137,28 @@ function installedVersion(name) {
   }
 }
 
+// One download attempt may take this long (body included); a stalled CDN object gets a fresh
+// attempt instead of failing the whole check. v0.4.3445-3447 each died UNMEASURED on one 60s
+// abort while every tarball downloads in ~4s on a healthy line (2026-10-22).
+const DOWNLOAD_TIMEOUT_MS = 120_000;
+const DOWNLOAD_ATTEMPTS = 3;
+const execFileAsync = promisify(execFile);
+
+async function download(url, label) {
+  let lastErr;
+  for (let attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) });
+      if (!res.ok) throw new Error(`${label}: npm answered ${res.status} for ${url}`);
+      return Buffer.from(await res.arrayBuffer());
+    } catch (err) {
+      lastErr = err;
+      if (attempt < DOWNLOAD_ATTEMPTS) await new Promise((r) => setTimeout(r, 2000 * attempt));
+    }
+  }
+  throw new Error(`${label}: download failed ${DOWNLOAD_ATTEMPTS}x (${url}): ${lastErr?.name ?? ""} ${lastErr?.message ?? lastErr}`);
+}
+
 /** Fetch `<name>@<version>` from npm into the cache; returns the directory to resolve FROM. */
 async function lockedCopy(name, version) {
   const bare = name.slice(SCOPE.length);
@@ -143,14 +166,14 @@ async function lockedCopy(name, version) {
   const pkgDir = join(base, "node_modules", "@ai-matrx", bare);
   if (existsSync(join(pkgDir, "package.json"))) return base;
   const url = `${REGISTRY}/${name}/-/${bare}-${version}.tgz`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(60_000) });
-  if (!res.ok) throw new Error(`${name}@${version}: npm answered ${res.status} for ${url}`);
+  const bytes = await download(url, `${name}@${version}`);
   const tmp = `${pkgDir}.tmp-${process.pid}`;
   rmSync(tmp, { recursive: true, force: true });
   mkdirSync(tmp, { recursive: true });
   const tgz = join(tmp, "..", `${bare}-${version}-${process.pid}.tgz`);
-  writeFileSync(tgz, Buffer.from(await res.arrayBuffer()));
-  execFileSync("tar", ["-xzf", tgz, "-C", tmp, "--strip-components=1"]);
+  writeFileSync(tgz, bytes);
+  // Async, so the other downloads in the batch keep draining while this one extracts.
+  await execFileAsync("tar", ["-xzf", tgz, "-C", tmp, "--strip-components=1"]);
   rmSync(tgz, { force: true });
   rmSync(pkgDir, { recursive: true, force: true });
   renameSync(tmp, pkgDir);
@@ -179,6 +202,40 @@ function fileAt(rev, path) {
   return gitOk(["show", `${rev}:${path}`]);
 }
 
+/**
+ * Every path's content at rev in ONE `git cat-file --batch` (null = absent). A `git show` per
+ * file cost ~0.3s each in this checkout, so a 1,300-file range ran past 8 minutes.
+ */
+function filesAt(rev, paths) {
+  const out = new Map();
+  if (rev === null) {
+    for (const p of paths) out.set(p, fileAt(null, p));
+    return out;
+  }
+  const r = spawnSync("git", ["cat-file", "--batch"], {
+    cwd: REPO_ROOT,
+    input: paths.map((p) => `${rev}:${p}`).join("\n") + "\n",
+    maxBuffer: 2 * 1024 * 1024 * 1024,
+  });
+  if (r.status !== 0) throw new Error(`git cat-file --batch failed: ${r.stderr?.toString() ?? r.error}`);
+  const buf = r.stdout;
+  let pos = 0;
+  for (const p of paths) {
+    const nl = buf.indexOf(10, pos);
+    const header = buf.subarray(pos, nl).toString("utf8");
+    pos = nl + 1;
+    const m = header.match(/^\S+ (\S+) (\d+)$/);
+    if (!m) {
+      out.set(p, null); // "<object> missing"
+      continue;
+    }
+    const size = Number(m[2]);
+    out.set(p, m[1] === "blob" ? buf.subarray(pos, pos + size).toString("utf8") : null);
+    pos += size + 1;
+  }
+  return out;
+}
+
 // ── The check ────────────────────────────────────────────────────────────────
 /**
  * @param {{ rev: string|null, files: string[], lockText: string }} input
@@ -188,9 +245,10 @@ function fileAt(rev, path) {
 export async function checkApiUsage({ rev, files, lockText }) {
   const roots = [];
   const contents = new Map();
-  for (const rel of files) {
-    if (!SOURCE_EXT.test(rel) || rel.endsWith(".d.ts")) continue;
-    const text = fileAt(rev, rel);
+  const sources = files.filter((rel) => SOURCE_EXT.test(rel) && !rel.endsWith(".d.ts"));
+  const texts = filesAt(rev, sources);
+  for (const rel of sources) {
+    const text = texts.get(rel);
     if (text === null || !text.includes(SCOPE)) continue;
     const abs = join(REPO_ROOT, rel);
     contents.set(abs, text);
