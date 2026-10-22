@@ -7,10 +7,13 @@
  * reviewed → removed, the order kept, the draft written — then a fresh page
  * (new store, same saved draft) brings the picks back.
  *
- * Only the transport is faked (`postJson`); every reducer is real.
+ * Only the transport is faked (`serverApi.call`); every reducer is real.
  */
-const postJson = jest.fn();
-jest.mock("@/lib/python-client", () => ({ postJson: (...args: unknown[]) => postJson(...args) }));
+const serverCall = jest.fn();
+jest.mock("@/lib/api/server-api", () => ({
+  ...jest.requireActual("@/lib/api/server-api"),
+  serverApi: { call: (...args: unknown[]) => serverCall(...args) },
+}));
 
 import { configureStore } from "@reduxjs/toolkit";
 import { createSourceRef, createSourceSet, type SourceManifest } from "@ai-matrx/agents/sources";
@@ -48,7 +51,7 @@ const manifest = (id: string): SourceManifest => ({
   model_context_tokens: null,
 });
 
-beforeEach(() => postJson.mockReset());
+beforeEach(() => serverCall.mockReset());
 
 it("drives the real runtime through Redux and reads it back", async () => {
   const store = makeTestStore();
@@ -68,7 +71,7 @@ it("drives the real runtime through Redux and reads it back", async () => {
   expect((resources[pending]!.source as { input?: unknown }).input).toBeUndefined();
 
   // The measurement reaches the card (Redux `preview`) and the total.
-  postJson.mockResolvedValueOnce({ data: manifest(DOC) });
+  serverCall.mockResolvedValueOnce(manifest(DOC));
   await set.manifest();
   expect(store.getState().instanceResources.byConversationId[KEY]![pending]!.preview).toMatchObject({
     default_form: "clean",

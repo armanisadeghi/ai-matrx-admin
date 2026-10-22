@@ -178,9 +178,62 @@ export function emitSurfaceSyncSql({
     }), ...guides].filter(Boolean).join("\n\n");
 }
 
+/**
+ * Cloud `--check` (2026-10-22): a read-only SELECT that returns one row per
+ * problem for the selected surfaces — nothing returned means the DB mirror
+ * matches the code. Run it through the Supabase MCP where the direct-Postgres
+ * `sync-surface-manifests-direct.ts --check` cannot run. It compares the
+ * surface's content_hash (it covers every manifest field), every keyed child
+ * row (missing, archived, or live but no longer declared), and each guide's
+ * skill hash. The direct check additionally EXPLAINs the sync statements.
+ */
+export function emitSurfaceCheckSql({
+  surfaceNames = [],
+  organizationId,
+}: Pick<EmitSurfaceSyncSqlOptions, "surfaceNames" | "organizationId">): string {
+  if (!isUuidShape(organizationId)) {
+    throw new Error("--organization-id must be a UUID");
+  }
+  const manifests = selectedManifests([...new Set(surfaceNames)]);
+  const plan = planManifestSync(toPackageResolved(manifests, getRawManifest), {
+    organizationId,
+    syncedFrom: "check",
+  });
+  const L = (v: unknown) => sqlLiteral(String(v));
+  const names = manifests.map((m) => L(m.surfaceName)).join(", ");
+  const parts: string[] = [];
+  for (const surface of plan.surfaces) {
+    const hash = (surface.update as Record<string, unknown>).content_hash;
+    parts.push(`SELECT ${L(surface.name)} AS surface, 'ui_surface row missing, archived or out of date (content_hash)' AS problem
+WHERE NOT EXISTS (SELECT 1 FROM ui.ui_surface WHERE name = ${L(surface.name)} AND deleted_at IS NULL AND is_active AND content_hash = ${L(hash)})`);
+  }
+  for (const { table, conflict, rows } of plan.tables as Array<{ table: string; conflict: readonly string[]; rows: Array<Record<string, unknown>> }>) {
+    const keyCols = conflict.join(", ");
+    const keyExpr = conflict.map((c) => `coalesce(${c}::text, '')`).join(" || '/' || ");
+    const expected = rows.length
+      ? `VALUES ${rows.map((r) => `(${conflict.map((c) => L(r[c] ?? "")).join(", ")})`).join(",\n  ")}`
+      : `SELECT ${conflict.map((c) => `NULL::text AS ${c}`).join(", ")} WHERE false`;
+    parts.push(`SELECT e.surface_name, '${table}: ' || ${keyExpr.replace(/coalesce\((\w+)/g, "coalesce(e.$1")} || ' missing or archived' AS problem
+FROM (${expected}) AS e(${keyCols})
+WHERE NOT EXISTS (SELECT 1 FROM ${table} t WHERE ${conflict.map((c) => `t.${c}::text = e.${c}`).join(" AND ")} AND t.deleted_at IS NULL)`);
+    parts.push(`SELECT t.surface_name, '${table}: ' || ${keyExpr.replace(/coalesce\((\w+)/g, "coalesce(t.$1")} || ' is live but no longer declared' AS problem
+FROM ${table} t
+WHERE t.surface_name IN (${names}) AND t.deleted_at IS NULL AND t.declared_by = 'code'
+  AND NOT EXISTS (SELECT 1 FROM (${expected}) AS e(${keyCols}) WHERE ${conflict.map((c) => `t.${c}::text = e.${c}`).join(" AND ")})`);
+  }
+  for (const manifest of manifests) {
+    if (!manifest.guide) continue;
+    const hash = surfaceGuideSourceHash(readSurfaceGuide(manifest.guide));
+    parts.push(`SELECT ${L(manifest.surfaceName)}, 'guide skill ${surfaceGuideSkillId(manifest.surfaceName)} missing or stale' AS problem
+WHERE (SELECT count(*) FROM skill.definition WHERE skill_id = ${L(surfaceGuideSkillId(manifest.surfaceName))} AND organization_id = ${L(organizationId)} AND deleted_at IS NULL AND is_active AND config->>'source_hash' = ${L(hash)}) <> 1`);
+  }
+  return `-- Read-only. No rows = the DB mirror matches the code.\n${parts.join("\nUNION ALL\n")};`;
+}
+
 function main() {
   const surfaceNames: string[] = [];
   let organizationId: string | undefined;
+  let checkOnly = false;
   const args = process.argv.slice(2);
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -193,6 +246,10 @@ function main() {
       index += 1;
       continue;
     }
+    if (arg === "--check") {
+      checkOnly = true;
+      continue;
+    }
     if (arg.startsWith("--surface=")) {
       surfaceNames.push(arg.slice(10));
       continue;
@@ -203,8 +260,15 @@ function main() {
     }
     throw new Error(`Unknown argument: ${arg}`);
   }
-  if (!organizationId) throw new Error("--organization-id is required");
-  console.log(emitSurfaceSyncSql({ surfaceNames, organizationId }));
+  if (!organizationId)
+    throw new Error(
+      "--organization-id is required: the system org, from `select organization_id from iam.system_orgs where key = 'system'` (run it through the Supabase MCP in a cloud session)",
+    );
+  console.log(
+    checkOnly
+      ? emitSurfaceCheckSql({ surfaceNames, organizationId })
+      : emitSurfaceSyncSql({ surfaceNames, organizationId }),
+  );
 }
 
 if (process.argv[1]?.endsWith("emit-surface-sync-sql.ts")) main();

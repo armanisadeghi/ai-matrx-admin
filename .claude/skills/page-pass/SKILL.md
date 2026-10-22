@@ -138,6 +138,8 @@ session, never you.
 | Server | none needed to look; `pnpm preview:start` (the ONE shared server, `http://<session>.localhost:3001`) only for a rapid fix-and-look loop on UI you are changing right now | **none** — a container cannot run a dev server and a type check together |
 | Look and prove | `TMPDIR=/tmp/pl-<you> pnpm page:look --route <route> --commit <sha>` against `https://aimatrx.com` (admin routes are served from `https://manage.aimatrx.com` — check the commit there) after the release carrying your commit (about hourly; exit 3 = not live yet — work on something else) | same |
 | Agent surface proof | `TMPDIR=/tmp/pp-<you> pnpm surface:probe --surface <name> --route <route> --commit <sha> --out <file>` (a window/dialog surface: add `--open 'SELECTOR=>TEXT'` so it is opened before the read) (+ `--agent '<request>'` for write targets) | same |
+| Sync a manifest's DB mirror | `pnpm exec tsx scripts/sync-surface-manifests-direct.ts --surface <name>`, then the same with `--check` | no direct-Postgres credentials: `pnpm -s exec tsx scripts/emit-surface-sync-sql.ts --surface <name> --organization-id <system org> > /tmp/<you>.sql` (the system org: `select organization_id from iam.system_orgs where key = 'system'`), run the file through the Supabase MCP wrapped in `begin;` … `commit;`, then the same command with `--check` added — its SELECT must return no rows |
+| Type check | `pnpm type-check` | `pnpm type-check:files <your files or dirs>` |
 | A view you cannot see | `deferred-visual` with the exact step | same |
 
 **Both lanes:**
@@ -160,9 +162,14 @@ session, never you.
   (six at a time, ~3 min) and prints CLEAN / FINDINGS / ERROR per check for
   YOUR files only; red on other files is not yours. The per-area check lists
   below say what each covers.
-- Type check: `pnpm type-check` (TypeScript 7, whole repo, ~30 s; the machine-wide
-  queue folds your call into any other waiting one). Never a focused tsconfig and
-  never a direct compiler call — both bypass the queue and cannot be shared.
+- Type check, local lane: `pnpm type-check` (TypeScript 7, whole repo, ~30 s; the
+  machine-wide queue folds your call into any other waiting one).
+  Cloud lane: `pnpm type-check:files <your files or dirs>` — the whole-repo check
+  needs more than a container's 15 GB and is killed (exit 137, measured
+  2026-10-22); this checks your files, every file importing them, and every
+  module augmentation, through the same queue, in ~1 min. CI's `type-check` job
+  stays the whole-repo gate. Never a hand-made focused tsconfig and never a
+  direct compiler call — both bypass the queue.
   Errors in files you didn't touch are not yours; list them.
 - **Every commit parses.** Before each commit run `pnpm -s check:parse` (~20s, whole tree; red outside your files is not yours) — a quote inside a string once broke a manifest on main between two commits. Committing early never means committing unparsed.
 - **Commit right after each coherent edit, before running checks** — a sync sweeps the shared

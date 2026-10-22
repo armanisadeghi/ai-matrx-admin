@@ -182,7 +182,6 @@ import {
   PopoverContent,
 } from "@ai-matrx/design-system";
 import { MicButton } from "@/components/audio/MicButton";
-import { useOpenAudioDevices } from "@/features/overlays/definitions/audioDevices";
 import { supabase } from "@/utils/supabase/client";
 import type { SessionContextItem } from "@/features/transcript-studio/types";
 import { VoiceTroubleshootingModal } from "@/features/audio/components/VoiceTroubleshootingModal";
@@ -247,6 +246,7 @@ import {
   intentTakesTheKey,
 } from "@ai-matrx/kit/composer-keys";
 import { useMediaQuery } from "@ai-matrx/kit/media-query";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 const FILL_HEIGHT_REGEX =
   /(?:^|\s)(h-full|h-dvh|flex-1|grow|inset-0|min-h-0)(?:\s|$)/;
@@ -660,7 +660,9 @@ export const ProTextarea = React.forwardRef<
       [],
     );
     const coarsePointer = useMediaQuery("(pointer: coarse)");
-    const openAudioDevices = useOpenAudioDevices();
+    const openAudioDevices = useLazyAppOpener("audioControlWindow", () =>
+      import("@/features/overlays/definitions/audioDevices").then((m) => m.createAudioDevicesOpener),
+    );
     const generatedId = useId();
     const inputId = idProp ?? (floatingLabel ? generatedId : undefined);
     const [isFocused, setIsFocused] = useState(false);
@@ -1450,7 +1452,7 @@ export const ProTextarea = React.forwardRef<
     const fieldClassName = cn(
       hero
         ? "flex w-full border border-border bg-card px-5 pt-4 pb-3 text-base leading-7 text-foreground placeholder:text-muted-foreground shadow-[0_1px_2px_rgb(0_0_0/0.05),0_12px_32px_-12px_rgb(0_0_0/0.22)] transition-[border-color,box-shadow] duration-200"
-        : "flex w-full border border-border bg-card px-3 py-2 text-sm shadow-sm placeholder:text-neutral-500 dark:placeholder:text-neutral-400",
+        : "flex w-full border border-border bg-card px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground",
       // The pinned stats bar is desktop-only (see its render below),
       // so the flat bottom edge that pairs with it is sm+ only too.
       showPinnedTextStatsBar
@@ -1461,7 +1463,7 @@ export const ProTextarea = React.forwardRef<
           ? "rounded-2xl"
           : "rounded-md",
       // THE FIELD FOCUS (Arman 2026-10-21): border takes the ring + the one halo token, hero included.
-      "focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/18",
+      "focus-visible:outline-none focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15",
       "disabled:cursor-not-allowed disabled:opacity-50",
       fillHeight ? "min-h-0 flex-1 resize-none overflow-y-auto" : "resize-y",
       // Auto-grow disables the manual resize handle. Use overflow-y-auto

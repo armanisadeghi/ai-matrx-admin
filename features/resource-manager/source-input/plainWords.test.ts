@@ -29,11 +29,14 @@ it("the Files picker's filter bar says plain words at a readable size", () => {
   const options = [...list.matchAll(/label: "([^"]+)"/g)].map((m) => m[1]!);
   expect(options.length).toBeGreaterThan(5);
   for (const label of options) expect({ label, jargon: JARGON.test(label) }).toEqual({ label, jargon: false });
+  // The kit now lives in @ai-matrx/chat; its PickerSelect IS the design-system Select,
+  // whose text size is the control scale's label size (13px), not a hand-set class.
   const kit = readFileSync(
-    join(__dirname, "../resource-picker/ResourcePickerSubViewHeader.tsx"),
+    require.resolve("@ai-matrx/chat/utils/resource-picker/ResourcePickerSubViewHeader"),
     "utf8",
   );
-  const select = kit.slice(kit.indexOf("export function PickerSelect"), kit.indexOf("/** The scroll area"));
-  expect(select).toMatch(/text-sm/);
-  expect(select).not.toMatch(/text-\[(9|10|11)px\]/);
+  const select = kit.slice(kit.indexOf("function PickerSelect"), kit.indexOf("function PickerViewBody"));
+  expect(select).toMatch(/Select,/);
+  expect(kit).toMatch(/import \{[^}]*\bSelect\b[^}]*\} from "@ai-matrx\/design-system\/controls"/);
+  expect(select).not.toMatch(/text-\[(9|10|11)px\]|text-xs/);
 });

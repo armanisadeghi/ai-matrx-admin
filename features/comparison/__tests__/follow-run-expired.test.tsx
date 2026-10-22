@@ -12,6 +12,9 @@ jest.mock("@/lib/python-client", () => ({
   requestRaw: jest.fn(),
 }));
 jest.mock("@ai-matrx/api", () => ({ parseMatrxNdjsonResponse: jest.fn() }));
+// ShareButton goes through the one server client, which builds itself from the whole @ai-matrx/api at load;
+// this page never shares, so the client is a stand-in (the mock above only offers the stream parser).
+jest.mock("@/lib/api/server-api", () => ({ serverApi: { call: jest.fn() }, callOptionsFrom: jest.fn(() => ({})) }));
 jest.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams("run=gone-run") }));
 jest.mock("@/features/shell/components/header/templates/RecordPageHeader", () => ({ RecordPageHeader: () => null }));
 jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({ replaceAddressWithoutNavigating: jest.fn() }));

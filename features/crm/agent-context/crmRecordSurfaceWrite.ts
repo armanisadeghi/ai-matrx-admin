@@ -402,3 +402,27 @@ export function parseTaskDraft(value: unknown): ParsedTaskDraft {
     dueDate: optionalDate(target, "due_date", input.due_date) ?? undefined,
   };
 }
+
+/**
+ * The edge that files an agent-created task under THIS record. The registered
+ * direction is party -> task (platform.association_types); task -> party is
+ * refused by the database and leaves an orphaned task (feedback 6b14bbff).
+ */
+export function taskAttachEdge(partyId: string, taskId: string, orgId: string) {
+  return {
+    sourceType: "party",
+    sourceId: partyId,
+    targetType: "task",
+    targetId: taskId,
+    orgId,
+  } as const;
+}
+
+/** The refusal when the task exists but the attach failed — names the task id. */
+export function taskAttachFailureMessage(
+  task: { id: string; title: string },
+  partyName: string,
+  error: string | null | undefined,
+): string {
+  return `Task "${task.title}" (id ${task.id}) was created but could not be attached to ${partyName}: ${error ?? "unknown error"}. The task exists unattached; attach it or delete it.`;
+}

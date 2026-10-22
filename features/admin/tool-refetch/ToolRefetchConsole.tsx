@@ -506,7 +506,8 @@ export function ToolDetail({
           pagination: {
             queryKey: `tool-refetch:${toolName}:${win}`,
             rows,
-            loading: detail.isPending,
+            // Rows already loaded stay the answer while the next window fetches: "loading" means none yet.
+            loading: detail.isPending && rows.length === 0,
             isFetchingNextPage: detail.isFetching && pages > 1,
             error: detail.error instanceof Error ? detail.error : null,
             hasNextPage:

@@ -133,6 +133,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const abort = useRef<AbortController | null>(null);
   // The run THIS tab started: its own stream is already following it, so the address must not start a second reader.
   const ownRun = useRef<string | null>(null);
+  const [canConfirm, setCanConfirm] = useState(false); // only the run's owner answers "Is this them?"
 
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -154,6 +155,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       organizationId,
       signal: ctrl.signal,
       onRunState: (s) => {
+        setCanConfirm(Boolean(s.can_confirm));
         setRunKind(s.kind);
         setProgress((cur) => mergeRunProgress(cur, s.items));
         setIdentities(s.items.map((i) => ({ name: i.label, logoUrl: i.logoUrl, website: i.website })));
@@ -243,7 +245,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
         organizationId,
         signal: ctrl.signal,
         discovery: record,
-        onRunId: (runId) => { ownRun.current = runId; setRunInAddress(runId); },
+        onRunId: (runId) => { ownRun.current = runId; setCanConfirm(true); setRunInAddress(runId); },
         onProgress: (p) => setProgress((cur) => applyProgress(cur, p)),
         onRunState: (s) => setProgress((cur) => mergeRunProgress(cur, s.items)),
         onDropped: () => setRecovering(true),
@@ -322,7 +324,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
           result={result}
           factsHref={(i) => (i.table_id ? `/data/${i.table_id}` : null)}
           onPick={pick}
-          onConfirm={confirmRunId ? facetConfirm(confirmRunId) : undefined}
+          onConfirm={confirmRunId && canConfirm ? facetConfirm(confirmRunId) : undefined}
           actions={<><ShareButton /><Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button></>}
         />
         {savedRunId ? (

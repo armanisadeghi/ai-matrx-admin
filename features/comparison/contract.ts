@@ -246,6 +246,8 @@ export interface ComparisonRunState {
   created_at: string | null;
   finished_at: string | null;
   resuming: boolean;
+  /** True only for the run's owner, the one person who may answer "Is this them?". */
+  can_confirm?: boolean;
 }
 
 export type LookupStatus = "found" | "choose" | "not_found";
@@ -565,6 +567,7 @@ export function parseRunState(raw: unknown): ComparisonRunState | null {
     created_at: strOrNull(o.created_at),
     finished_at: strOrNull(o.finished_at),
     resuming: bool(o.resuming),
+    can_confirm: bool(o.can_confirm),
   };
 }
 
