@@ -634,7 +634,7 @@ function CompactList({
                     onClick={() => onOpen(s.key)}
                     title={s.label}
                     end={
-                      <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span className="type-meta flex items-center gap-1.5 text-muted-foreground">
                         {s.confirmed && <ShieldCheck className="h-3.5 w-3.5 text-success" aria-label="Confirmed" />}
                         <ChevronRight className="h-3.5 w-3.5" />
                       </span>

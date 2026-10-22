@@ -156,6 +156,31 @@ describe("an unsettled ask offers choices and a way out", () => {
     expect(plan?.run).toBe(true);
     expect(planFor(library, "company-reviews", fresno)).toBeNull();
   });
+  it("never runs an ask that dropped a filter (review I-3); offers a source that takes them all", () => {
+    // Faster provider off: beds and the price cap cannot be applied, so the plan stops instead of running.
+    const offOnly = planFor(parseLibrary({ sources: [wire([])] }), "homes-for-sale", fresno);
+    expect(offOnly?.fill.complete).toBe(true);
+    expect(offOnly?.fill.unapplied).toEqual(["3 beds", "Under $600k"]);
+    expect(offOnly?.run).toBe(false);
+    expect(offOnly?.alternative).toBeNull();
+    // A second homes source that takes every filter is offered (and runs once chosen).
+    const both = parseLibrary({ sources: [{ ...wire([]), verified_live: true }, { ...wire(FILTERS), key: "realtor_international", label: "Realtor homes" }] });
+    const plan = planFor(both, "homes-for-sale", fresno);
+    expect(plan?.source.key).toBe("realtor_international"); // the source with the filters is picked first
+    const picked = planFor(parseLibrary({ sources: [{ ...wire(FILTERS), key: "realtor_international", label: "Realtor homes", known_issue: null }, wire([])] }), "homes-for-sale", fresno);
+    expect(picked?.run).toBe(true);
+  });
+  it("offers the alternative when the picked source drops filters", () => {
+    const rent = parseAskReading({ text: "homes for rent in Fresno CA", task: "homes", card_id: "homes-for-sale", confidence: "clear", place: "Fresno CA", filters: { status: "for_rent" }, alternatives: [], chips: [{ key: "place", label: "Fresno CA" }, { key: "status", label: "For rent" }] });
+    const placeOnly = { key: "realtor_international", label: "Realtor homes", group: "Real estate", verified_live: true, input: { kind: "keyword", fields: [{ name: "location", label: "l", required: true }] }, search_filters: [] };
+    const plan = planFor(parseLibrary({ sources: [placeOnly, { ...wire([]), verified_live: false }] }), "homes-for-sale", rent);
+    expect(plan?.source.key).toBe("realtor_international");
+    expect(plan?.fill.unapplied).toEqual(["For rent"]);
+    expect(plan?.run).toBe(false);
+    expect(plan?.alternative?.source.key).toBe("zillow_listing");
+    expect(plan?.alternative?.fill.values).toEqual({ location: "Fresno CA", listingCategory: "House for rent" });
+    expect(plan?.alternative?.run).toBe(true);
+  });
 });
 
 describe("a source billed per search quotes ceil(records / per search) x price", () => {

@@ -18,6 +18,8 @@ import { formatDurationMs } from "@ai-matrx/kit/format";
 import { createClient } from "@/utils/supabase/client";
 import { operationFailed } from "@/utils/errors";
 
+import { useLibrary, useLibraryOrganizationId } from "./hooks";
+
 /** The new doors are not in the generated types yet: one narrow, named shape for them. */
 type UntypedRpc = {
   rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
@@ -65,15 +67,34 @@ export function speedsByKey(rows: readonly SpeedRow[] | null | undefined): Recor
 
 export const typicalSpeedsKey = ["data-sources", "typical-speeds"] as const;
 
-/** Every source's usual speed, in ONE read shared by the cards and the runs (a small list: sources with runs). */
+/**
+ * The sources this organization searches through a switched provider (the server lists that provider's filters
+ * on them, `search_filters`). Their usual speed is that provider's; every other source's is the standard one's —
+ * an organization on the standard provider never reads the switched provider's seconds (review I-5). Pure.
+ */
+export function switchedKeys(sources: readonly { key: string; search_filters?: readonly string[] | null }[] | null | undefined): string[] {
+  return (sources ?? []).filter((s) => (s.search_filters ?? []).length > 0).map((s) => s.key).sort();
+}
+
+/** The door's arguments for this organization's providers. Pure. */
+export function typicalSpeedArgs(switched: readonly string[]): { p_source_keys: null; p_switched_keys: string[] } {
+  return { p_source_keys: null, p_switched_keys: [...switched] };
+}
+
+/** Every source's usual speed for this organization's providers, in ONE read shared by the cards and the runs. */
 export function useTypicalSpeeds() {
+  const organizationId = useLibraryOrganizationId();
+  const library = useLibrary(organizationId);
+  const switched = switchedKeys(library.data?.sources);
   return useQuery({
-    queryKey: typicalSpeedsKey,
+    queryKey: [...typicalSpeedsKey, switched.join(",")],
     queryFn: async (): Promise<Record<string, SourceSpeed>> => {
-      const { data, error } = await scraperRpc().rpc("data_fetch_typical_speed", { p_source_keys: null });
+      const { data, error } = await scraperRpc().rpc("data_fetch_typical_speed", typicalSpeedArgs(switched));
       if (error) throw operationFailed("read how long data sources usually take", error);
       return speedsByKey(data as SpeedRow[] | null);
     },
+    // Wait for the library: until it says which provider runs, no figure is better than the wrong one.
+    enabled: Boolean(library.data),
     staleTime: 5 * 60_000,
   });
 }

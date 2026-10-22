@@ -7,7 +7,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { act } from "react-dom/test-utils";
 
-import { durationWords, roughDurationWords, speedsByKey, stageTimeline, tookWords, usuallyWords } from "../runTiming";
+import { durationWords, roughDurationWords, speedsByKey, stageTimeline, switchedKeys, tookWords, typicalSpeedArgs, usuallyWords } from "../runTiming";
 import { providerName, SourceMethodTag, UnderTheHood } from "../UnderTheHood";
 
 describe("how long a fetch took, in plain words", () => {
@@ -29,6 +29,14 @@ describe("how long a fetch took, in plain words", () => {
     ]);
     expect(Object.keys(map)).toEqual(["a"]);
     expect(map.a).toEqual({ typicalMs: 51_924, p95Ms: 301_918, runs: 30 });
+  });
+
+  it("asks for the usual speed of THIS organization's provider (review I-5)", () => {
+    // Standard provider everywhere: no source is switched, so Zillow's figure is the standard provider's runs only.
+    expect(typicalSpeedArgs(switchedKeys([{ key: "zillow_listing", search_filters: [] }, { key: "g" }]))).toEqual({ p_source_keys: null, p_switched_keys: [] });
+    // The switched organization reads the switched provider's runs for the sources it lists filters on.
+    expect(switchedKeys([{ key: "zillow_listing", search_filters: ["status"] }, { key: "g", search_filters: null }])).toEqual(["zillow_listing"]);
+    expect(switchedKeys(undefined)).toEqual([]);
   });
 
   it("lays the stages out in order with the time each took", () => {
