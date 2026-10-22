@@ -31,7 +31,7 @@ The `(admin)` group admits any admin level. That is deliberate and it is not a h
 **Hooks**
 - `useQuestionDeskKnobs()` — the four `question_desk` knobs, ladder-resolved, with an honest `failed` state.
 - `useInterviewQuestions(interviewId)` — the rows plus realtime.
-- `useAnswerDraft(questionId)` — the own-words draft in `localStorage`.
+- `useAnswerDraft(interviewId, questionId)` — the own-words draft on the server: the person's own `users.user_surface_state` row (feature `question_desk_draft`, key `<interview>:<question>`), through `lib/surface-state/userSurfaceState.ts` (the door Smart Add's `runMemory` uses too).
 - `useDictationAudio(questionId)` — the `cld_files` id of the recording behind a spoken answer, plus `questionRecordingOrigin()`, the stamp that ties a recording to its question.
 - `useReadAloud(parts)` — R / Esc through the platform voice.
 
@@ -66,7 +66,7 @@ Voice, speed and language are NOT here — they come from the existing tiered `l
 
 **1. Answering with one key.** `1` / `2` / `3` on the interview screen → `record(question, verdict, null, "keystroke")` → `saveAnswer` writes `verdict`, `answered_at`, `answered_by`, `status='answered'` in ONE guarded update → the row comes back, `applyRow` merges it, the saved line offers an Undo for as long as the `question_desk.undo_window_ms` knob says (30 s by default), and the screen advances to the next OPEN question.
 
-**2. Answering in his own words.** `W` opens the box (an effect focuses it after the commit — see gotchas), every keystroke persists the draft under `qd.draft.<questionId>`, `⌘/Ctrl+Enter` saves. The text goes to the row **exactly as typed**. An empty save is refused on screen with *"Write something first, or use one of the buttons."* and never reaches the database.
+**2. Answering in his own words.** `W` opens the box (an effect focuses it after the commit — see gotchas), every keystroke persists the draft on the server (debounced 800 ms; flushed on question change, unmount and a hidden page; never written before the saved draft is read; retired when the answer saves — typing never writes the answer, so it never marks a question answered or starts a sitting's run), `⌘/Ctrl+Enter` saves. The text goes to the row **exactly as typed**. An empty save is refused on screen with *"Write something first, or use one of the buttons."* and never reaches the database.
 
 **3. Answering out loud.** The mic is `ProTextarea`'s, so the level glow, the live streaming transcript, the device menu, the troubleshooting modal and the "you are still recording" protection all come with the field. `V` (or the "Answer by voice" button) opens the box, focuses it, and **starts the microphone** through the field's `startDictation()` handle — the person just talks. `Esc` stops the microphone first and only closes the box on a second press, because a transcript still on its way needs the box to land in. If the field refuses to start, its sentence appears in the action bar instead. When the transcript lands, `onTranscriptionComplete` marks the draft as spoken, so the save writes `answer_source='voice'` instead of `'typed'`. When the recorder's upload lands, `dictationAudioRegistry` announces the `cld_files` id (matched by the `RecordingOriginProvider` stamp around the box) and the save writes it to `answer_audio_file_id`; when the upload FAILS the screen says so and offers the retry, and the answer still saves without the audio.
 
@@ -134,7 +134,7 @@ Voice, speed and language are NOT here — they come from the existing tiered `l
 |---|---|---|---|
 | QD-L2-1 | The list is `MatrxDataTable` + `ArchiveFilter` driven directly, not `<EntityListPage>` | the shell needs a `qd_list_scoped` / `qd_list_scope_counts` RPC pair, which only a migration can create — outside this lane | one RPC migration plus a `listConfig`; the columns and row actions move across unchanged |
 | QD-L2-2 | Counts come from ONE grouped read of the questions' status columns, capped at 2,000 rows, and the screen SAYS when the cap was hit | three `count(*)` head requests per interview is an N+1 that grows with the list | a counts RPC later |
-| QD-L2-3 | Own-words drafts live in `localStorage` under `qd.draft.<questionId>` | it survives a refresh and a closed tab with no write to the row | a server-side draft column later; nothing to migrate |
+| QD-L2-3 | Own-words drafts live in `users.user_surface_state` (feature `question_desk_draft`), never on the question row | a reload, a closed tab and another device restore them, and the CAS `version` on the question never moves while typing | — |
 | QD-L2-4 | The Undo window is the `question_desk.undo_window_ms` knob (30 s default), read with no code fallback | an undo offered after its sentence is gone is a control nobody can find, and how long is a preference, not taste | change the knob row |
 
 ---
@@ -146,6 +146,8 @@ Built 2026-09-12 as lane L2 of the Question Desk campaign, then re-worked the sa
 ---
 
 ## Change log
+
+- `2026-10-22` — **Answer drafts on the server.** `useAnswerDraft` moved from `localStorage` to the person's `users.user_surface_state` row per interview + question (restored on reload and on another device, retired on save; the answer row is untouched while typing). Guard: `__tests__/answer-draft-server.test.tsx` (red against the localStorage hook).
 
 - `2026-10-22` — **Story seat: no admin lookup, no legend.** The respondent-email lookup (`get_user_emails_by_ids`, platform-admin only) runs only on the admin seat when the reader is not the respondent; a person answering their own sitting no longer gets a 403 per load. The story seat shows no key caps and no mic helper line (owner direction: no on-screen instructions for this flow). Answer drafts are still per-browser (localStorage); a server-side draft needs a home that does not bump the CAS `version` (open item).
 
