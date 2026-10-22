@@ -13,7 +13,11 @@ function fakeClient(organizationId: string) {
   made.push(c);
   return c;
 }
-jest.mock("@ai-matrx/records/core", () => ({ createRecordsClient: (config: { organizationId: string }) => fakeClient(config.organizationId) }));
+jest.mock("@ai-matrx/records/core", () => ({
+  createRecordsClient: (config: { organizationId: string }) => fakeClient(config.organizationId),
+  clientInOrganization: (client: { organizationId: string }, organizationId: string | null | undefined) =>
+    !organizationId || organizationId === client.organizationId ? client : fakeClient(organizationId),
+}));
 jest.mock("@ai-matrx/records/react", () => ({ removeAppRow: jest.fn(), upsertAppRow: jest.fn() }));
 jest.mock("@ai-matrx/records/versions", () => ({
   readVersionNow: async (client: { recordHeaders: (a: unknown) => Promise<{ data: Array<{ version: number }> }> }, id: string) =>

@@ -17,7 +17,7 @@
 import { useEffect, useRef, useState } from "react";
 import { listAppRows, removeAppRow, upsertAppRow, useRecordsClient, useTypedTable, type RecordHistoryEntry } from "@ai-matrx/records/react";
 import { readVersionNow } from "@ai-matrx/records/versions";
-import { clientInOrganization } from "@/lib/records/clientInOrganization";
+import { clientInOrganization } from "@ai-matrx/records/core";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { toast } from "@/lib/toast";

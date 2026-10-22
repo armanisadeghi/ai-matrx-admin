@@ -7,7 +7,7 @@
 //
 // Sizes are 12-column grid units with 24px rows (GridCanvas): w 3 = a quarter of the desktop width,
 // h 10 ≈ 240px. The Start widgets' old s / m / l are w 3 / 6 / 12 (`START_SIZE_WIDTH`).
-import { AppWindow, CalendarDays, Clock, Compass, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks } from "lucide-react";
+import { AppWindow, BarChart3, CalendarDays, Clock, Compass, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks, StickyNote } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { METRIC_CARDS } from "@/features/dashboard/constants/metricCards";
 import { USER_LAUNCHPAD_DESTINATIONS } from "../catalog";
@@ -172,6 +172,35 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
       { key: "selected", label: "Selected row", kind: "record" },
       { key: "rows", label: "Shown rows", kind: "rows" },
     ],
+  },
+  {
+    // records-ui's dashboard blocks, folded into the one registry (lane U): the table's own DashboardCanvas.
+    type: "records_dashboard",
+    label: "Dashboard",
+    icon: BarChart3,
+    section: "data",
+    sizes: { defaultW: 12, defaultH: 22, minW: 4, minH: 10 },
+    defaultConfig: {},
+    fields: [
+      { key: "tableId", label: "Table", picker: "dataTable" },
+      { key: "dashboardId", label: "Dashboard" },
+    ],
+    describe: (c) => (configText(c, "tableId") ? "A dashboard of one of your tables" : "Dashboard (no table chosen)"),
+    href: (c) =>
+      configText(c, "tableId")
+        ? `/data/${configText(c, "tableId")}${configText(c, "dashboardId") ? `?dashboard=${configText(c, "dashboardId")}` : ""}`
+        : null,
+  },
+  {
+    // Every Board item type, placeable as a widget (lane U): the config is the reference a board tile holds.
+    type: "board_item",
+    label: "Board item",
+    icon: StickyNote,
+    section: "work",
+    sizes: { defaultW: 6, defaultH: 16, minW: 3, minH: 6 },
+    defaultConfig: {},
+    fields: [{ key: "itemType", label: "Item", picker: "boardItem" }],
+    describe: (c) => configText(c, "title") || (configText(c, "id") ? "Board item" : "Board item (none chosen)"),
   },
   {
     type: "applet",
