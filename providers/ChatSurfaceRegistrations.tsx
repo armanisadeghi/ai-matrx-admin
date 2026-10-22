@@ -26,6 +26,8 @@ import "@/features/chat-context-bodies/registerContextBodies";
 // The data tools' renderers (records, dataset): rows as a table, writes as a line with a door.
 import "@/features/records-tool-display/registerDataToolRenderers";
 import { registerSurfaceIntelligence } from "@ai-matrx/chat/surfaces/runtime/intelligence";
+import { registerShellValueSource } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { organizationShellValues } from "@/features/surfaces/utils/module-values";
 import {
   IntelligenceIndicator,
   declaredKeysForRoute,
@@ -50,5 +52,7 @@ export function ChatSurfaceRegistrations(): null {
   // Unsent remark chips are kept server-side (platform.block_states), never in the browser.
   const store = useAppStore();
   useEffect(() => registerBlockStateRemarkDurability(store), [store]);
+  // Module values (W1): every page under a module surface gets the active organization from Redux.
+  useEffect(() => registerShellValueSource(organizationShellValues(() => store.getState())), [store]);
   return null;
 }
