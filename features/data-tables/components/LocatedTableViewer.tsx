@@ -16,6 +16,7 @@
  */
 
 import type { ObjectAction } from "@ai-matrx/records-ui/object-actions";
+import type { RecordFilter } from "@ai-matrx/records";
 import { NO_ADDRESS, UnifiedTableBody, useUnifiedTable } from "@/features/unified-data/table-page/UnifiedTable";
 
 type ViewerProps = {
@@ -24,12 +25,18 @@ type ViewerProps = {
   actionExtensions?: readonly ObjectAction[];
   /** A PREVIEW (the tables picker): read-only, through the records-ui `rights` port. */
   readOnly?: boolean;
+  /**
+   * Narrow the grid to the rows this question admits, in the store's one filter shape (the same
+   * `filter` the table page takes off its address). Left out, the whole table. A library run passes
+   * its own row keys here so the page shows that run's rows, not every run's.
+   */
+  filter?: RecordFilter | null;
 };
 
-export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false }: ViewerProps) {
+export function LocatedTableViewer({ tableId, actionExtensions, readOnly = false, filter = null }: ViewerProps) {
   const mount = useUnifiedTable({
     tableId,
-    address: NO_ADDRESS,
+    address: filter ? { ...NO_ADDRESS, filter } : NO_ADDRESS,
     ...(actionExtensions ? { actionExtensions } : {}),
     readOnly,
   });

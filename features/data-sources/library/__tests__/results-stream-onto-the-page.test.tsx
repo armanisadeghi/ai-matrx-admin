@@ -25,8 +25,8 @@ jest.mock("@/lib/url-state/addressWithoutNavigating", () => ({
 }));
 // The heavy grid: stands in as a marker carrying the table id it was asked to draw.
 jest.mock("next/dynamic", () => () =>
-  function LocatedTableStandIn(props: { tableId: string }) {
-    return <div data-testid="located-table" data-table={props.tableId} />;
+  function LocatedTableStandIn(props: { tableId: string; filter?: unknown }) {
+    return <div data-testid="located-table" data-table={props.tableId} data-filter={props.filter ? JSON.stringify(props.filter) : ""} />;
   },
 );
 jest.mock("@ai-matrx/design-system/data-table", () => ({
@@ -190,4 +190,30 @@ test("a reload onto a run refills the form with what that run asked", () => {
   render();
   const seen = mockSourceInputValues.at(-1);
   expect(seen).toEqual({ url: "https://maps.example/place/1" });
+});
+
+test("the grid shows only the rows of the run on view, though runs share one table", () => {
+  // Two runs of one source wrote the same table; each job carries the keys of its own rows.
+  jobRows.A = job("A", { table_id: "shared", key_column: "place_id", metadata: { row_keys: ["p1", "p2", "p3"] } });
+  jobRows.B = job("B", { table_id: "shared", key_column: "place_id", metadata: { row_keys: ["p9"] } });
+  const filterOf = () => (host.querySelector('[data-testid="located-table"]') as HTMLElement).getAttribute("data-filter");
+
+  search = "source=google_maps_place&job=A";
+  render();
+  expect(JSON.parse(filterOf() ?? "")).toEqual({ place_id: ["p1", "p2", "p3"] });
+
+  // Switching to the other past run switches the filter.
+  act(() => root.unmount());
+  root = createRoot(host);
+  search = "source=google_maps_place&job=B";
+  render();
+  expect(JSON.parse(filterOf() ?? "")).toEqual({ place_id: ["p9"] });
+});
+
+test("a run still filling with no stored rows yet holds the skeleton, never the whole shared table", () => {
+  jobRows.C = job("C", { status: "fetching", table_id: "shared", key_column: "place_id", metadata: {} });
+  search = "source=google_maps_place&job=C";
+  render();
+  expect(host.querySelector('[data-testid="located-table"]')).toBeNull();
+  expect(host.querySelector("[data-results-coming]")).not.toBeNull();
 });
