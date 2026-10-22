@@ -25,7 +25,7 @@
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
-import { PdfAnnotationLayer, type AnnotationLayerMode, type PdfRegion, type PendingDraw } from "@ai-matrx/media/viewers/pdf";
+import { PdfAnnotationLayer, type AnnotationLayerMode, type PdfRegion, type PendingDraw } from "@ai-matrx/media/viewers";
 import { LabelPicker } from "./LabelPicker";
 import { useLabelCatalog } from "@/features/file-analysis/hooks/useLabelCatalog";
 import * as Api from "@/features/file-analysis/api/file-analysis";
