@@ -7,6 +7,7 @@
 import type { AgentPayloadInput } from "@ai-matrx/alchemy/operate";
 
 import type { ComparedItem, ComparisonResult } from "./contract";
+import { reviewsOf } from "./place-facts";
 import { comparedItems, headlineOf, verdictOf, whyLine, isNumeric } from "./verdict";
 
 /** The items a copy covers: every contender, or the one named. */
@@ -17,6 +18,16 @@ function pick(result: ComparisonResult, itemId?: string): ComparedItem[] {
 function shown(item: ComparedItem, key: string): string {
   const v = item.values[key];
   return v && v.display !== "—" ? v.display : "—";
+}
+
+/** A contender's sample reviews as readable lines: the text itself, not a count. */
+function reviewLines(item: ComparedItem, key: string): string[] {
+  const r = reviewsOf(item.values[key]?.value);
+  if (!r) return [];
+  return [
+    ...r.top.map((t) => `${[t.rating !== null ? `${t.rating}★` : null, t.by, t.date ? t.date.slice(0, 10) : null].filter(Boolean).join(" · ")}: ${t.text}`),
+    ...r.snippets.map((q) => q),
+  ];
 }
 
 const cell = (s: string) => s.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
@@ -40,6 +51,11 @@ export function comparisonMarkdown(result: ComparisonResult, itemId?: string): s
     out.push("");
     for (const f of result.fields) {
       const v = it.values[f.key];
+      if (f.type === "reviews") {
+        const lines = reviewLines(it, f.key);
+        if (lines.length) out.push(`- **${f.label}:**`, ...lines.map((l) => `  - ${l}`));
+        continue;
+      }
       out.push(`- **${f.label}:** ${shown(it, f.key)}${v?.basis ? ` (${v.basis})` : ""}`);
     }
     return out.join("\n");
@@ -47,8 +63,14 @@ export function comparisonMarkdown(result: ComparisonResult, itemId?: string): s
   const line = verdictLine(result);
   if (line) out.push("", line);
   out.push("", `| Field | ${items.map((i) => cell(i.name)).join(" | ")} |`, `| --- | ${items.map(() => "---").join(" | ")} |`);
-  for (const f of result.fields) {
+  for (const f of result.fields.filter((x) => x.type !== "reviews")) {
     out.push(`| ${cell(f.label)} | ${items.map((i) => cell(shown(i, f.key))).join(" | ")} |`);
+  }
+  for (const f of result.fields.filter((x) => x.type === "reviews")) {
+    for (const i of items) {
+      const lines = reviewLines(i, f.key);
+      if (lines.length) out.push("", `## ${f.label}: ${i.name}`, ...lines.map((l) => `- ${l}`));
+    }
   }
   for (const i of items) if (i.error) out.push("", `${i.name}: ${i.error}`);
   return out.join("\n");

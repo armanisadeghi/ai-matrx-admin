@@ -31,7 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-22-000052/features/comparison/components/ComparisonView.tsx.held — LOCAL latest 2026-10-22 00:05; GITHUB latest 2026-10-22 00:09; LOCAL lacks 2 of GITHUB's 32 new lines; GITHUB lacks 10 of LOCAL's 40 new lines; recover: git show f85aebcf59:'features/comparison/components/ComparisonView.tsx' / 690edc1361:'features/comparison/components/ComparisonView.tsx'
 - _conflicts/2026-10-22-001822/features/overlays/definitions/conversationRenameDialog.render.tsx.held — LOCAL latest 2026-10-22 00:09; GITHUB latest 2026-10-22 00:22; LOCAL lacks 9 of GITHUB's 10 new lines; GITHUB lacks 2 of LOCAL's 3 new lines; recover: git show b46fe20366:'features/overlays/definitions/conversationRenameDialog.render.tsx' / 8ab228d7f1:'features/overlays/definitions/conversationRenameDialog.render.tsx'
 
 ## Resolution log
@@ -82,3 +81,4 @@ Its files stay as they are.
 - 2026-10-19 00:3x PDT — Claude ship-all (657db786) resolved `_conflicts/2026-10-19-002058/features/spaces/templates/packs/general-contractor-projects.pack.json.held` by keeping live: GITHUB (e36e3390221, REWORK lane db806665, 00:08) is newer and lacks 0 of LOCAL's 521 new lines, so LOCAL (00:06) adds nothing. Owner: db806665, no action needed.
 - 2026-10-19 PDT — Claude ship-all lane resolved `_conflicts/2026-10-19-052753/pnpm-lock.yaml.held` by keeping the live lockfile: every difference is an @ai-matrx version where live is newer (chat 0.8.221, coding-sessions 0.3.337, data 0.29.73, office 0.8.21); no non-Matrx differences. Verified `check-matrx-packages.mjs --duplicates` (33 at npm latest, once each), `pnpm install --frozen-lockfile --lockfile-only` exit 0.
 - 2026-10-19 10:3x PDT — Claude ship-all (c036beb6) resolved `_conflicts/2026-10-19-102255/migrations/LEDGER.json.held` by keeping live: all 1925 entries of both LOCAL (e737146160) and GITHUB (0b42d3adb0) are in live with identical checksums. Owner: none needed (generated ledger).
+- 2026-10-22 PDT — Claude compare-results-polish lane resolved `_conflicts/2026-10-22-000052/features/comparison/components/ComparisonView.tsx.held` by merging LOCAL's call sites (PlaceFacts imports, rich/text split, RichField, ClosedFlag, ReviewsDisclosure, Badge rank) into the live file, keeping every GITHUB line; guarded by `features/comparison/__tests__/place-view.test.tsx` (fails without the mount). Owner: none needed.
