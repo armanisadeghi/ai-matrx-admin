@@ -5,19 +5,18 @@
  * resort when `navigator.clipboard` refuses to write (restricted iframe,
  * embedded browser, permission policy, non-HTTPS). Mirrors
  * `confirmDialogOpener.ts` exactly: zero React, statically importable
- * from anywhere, calls made before the host hydrates queue up and show
- * as soon as the host is alive.
+ * from anywhere. The dialog is the summon overlay `clipboardFallbackDialog`;
+ * asks queue one at a time in `requestOverlay`.
  *
  * The contract with callers: a copy that lands here has NOT happened.
  * Never toast "Copied" and never flip a copied state — the dialog puts
  * the text in front of the user, selected, and the copy is theirs.
  *
- * See `ClipboardFallbackHost.tsx` for the slim shell that mounts the
- * host, and `copy-commands.ts` → `copyContent` for the ONE
+ * See `copy-commands.ts` → `copyContent` for the ONE
  * copy primitive that routes its terminal failure here.
  */
 
-import { requestDialogHosts } from "@/components/dialogs/host/dialogHostsLatch";
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 
 export interface ManualCopyOptions {
   /** The text the user needs on their clipboard. */
@@ -26,33 +25,11 @@ export interface ManualCopyOptions {
   description?: string;
 }
 
-interface HostController {
-  show: (opts: ManualCopyOptions) => void;
-}
-
-let host: HostController | null = null;
-const queue: ManualCopyOptions[] = [];
-
-/** @internal Called by `ClipboardFallbackHostBody` on mount. */
-export function _registerManualCopyHost(controller: HostController): void {
-  host = controller;
-  while (queue.length > 0) controller.show(queue.shift()!);
-}
-
-/** @internal Called by `ClipboardFallbackHostBody` on unmount. */
-export function _unregisterManualCopyHost(controller: HostController): void {
-  if (host === controller) host = null;
-}
-
 /**
  * Put text in front of the user for a manual Cmd/Ctrl+C. Fire-and-forget:
  * there is nothing to await, because whether the user copies is theirs.
  */
 export function showManualCopy(opts: ManualCopyOptions): void {
   if (!opts.text) return;
-  if (host) host.show(opts);
-  else {
-    queue.push(opts);
-    requestDialogHosts();
-  }
+  void requestOverlay<ManualCopyOptions, void>("clipboardFallbackDialog", opts, { cancel: undefined });
 }

@@ -1,7 +1,5 @@
-import {
-  _registerManualCopyHost,
-  _unregisterManualCopyHost,
-} from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
+jest.mock("@/features/overlays/requestOverlay", () => ({ requestOverlay: jest.fn(() => Promise.resolve()) }));
+import { requestOverlay } from "@/features/overlays/requestOverlay";
 import { copyReferenceFence } from "@/features/matrx-envelope/referenceClipboard";
 
 describe("copyReferenceFence", () => {
@@ -16,9 +14,6 @@ describe("copyReferenceFence", () => {
   });
 
   it("opens the manual-copy path with the exact fence when clipboard access is blocked", async () => {
-    const show = jest.fn();
-    const host = { show };
-    _registerManualCopyHost(host);
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { writeText: jest.fn().mockRejectedValue(new Error("blocked")) },
@@ -27,8 +22,6 @@ describe("copyReferenceFence", () => {
 
     const fence = '```matrx\n{"__kind":"directive_v1_reference_agent"}\n```';
     await expect(copyReferenceFence(fence)).resolves.toBe(false);
-    expect(show).toHaveBeenCalledWith({ text: fence });
-
-    _unregisterManualCopyHost(host);
+    expect(requestOverlay).toHaveBeenCalledWith("clipboardFallbackDialog", { text: fence }, { cancel: undefined });
   });
 });

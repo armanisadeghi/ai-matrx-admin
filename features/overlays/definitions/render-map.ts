@@ -67,6 +67,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   changeReviewWindow: () => import("./changeReviewWindow.render"),
   characterCounterWindow: () => import("./characterCounterWindow.render"),
   chatDebugWindow: () => import("./chatDebugWindow.render"),
+  clipboardFallbackDialog: () => import("./clipboardFallbackDialog.render"),
   cloudBrowserWindow: () => import("./cloudBrowserWindow.render"),
   cloudFilesWindow: () => import("./cloudFilesWindow.render"),
   codeEditorWindow: () => import("./codeEditorWindow.render"),
