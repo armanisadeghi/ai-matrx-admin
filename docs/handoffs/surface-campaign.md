@@ -15,7 +15,7 @@ vision: []
 looking at, so an AI agent launched there sees it. It also removes the platform gaps that stopped the
 last attempt.
 
-**Seen from his seat:** on any page, the header button "Agents for this page" → "Surface Context"
+**Seen from his seat:** on any page, the header button "Agents for this page" → "This page"
 names the page and lists its live values. His review inbox gets one row per finished batch.
 
 ## Vision — Arman's words

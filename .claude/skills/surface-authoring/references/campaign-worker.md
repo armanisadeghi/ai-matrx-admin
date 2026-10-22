@@ -18,7 +18,7 @@ ASSIGNMENT
 
 A **surface** is a page or window that publishes named live values ("what the user is looking at")
 so an AI agent launched there can see them. Your job, for each surface: while a user is on it, the
-Surface Context window (header button "Agents for this page" → "Surface Context") names the surface
+"This page" window (header button "Agents for this page" → "This page"; formerly "Surface Context") names the surface
 and shows every piece of data the page loads as a supplied value. Nothing is invented, nothing is
 undeclared, and it is proven in the real UI with real data.
 
