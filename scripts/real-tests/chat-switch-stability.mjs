@@ -333,7 +333,7 @@ try {
   await sleep(800);
   steps.push(await measure(page, "New chat", "toNew", {
     targetIsConversation: false,
-    action: () => page.locator('button[aria-label="New chat"]').first().click(),
+    action: () => page.locator('button[aria-label="New chat"], nav[aria-label="Conversations"] a[href="/chat/new"]').first().click(),
   }));
   await sleep(2500);
   const target = await nextTarget();
