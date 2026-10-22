@@ -9,7 +9,7 @@
 
 import { isAssociationsRpcErr } from "@ai-matrx/associations";
 import { associationsService } from "@/features/scopes/service/associationsService";
-import { forkSharedResource } from "@/utils/permissions/shareLinks";
+import { forkSharedResource } from "@ai-matrx/sharing/core";
 import { fcService } from "./fcService";
 import { EDGE_ROLE, type FcSetRow } from "./types";
 

@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/tooltip";
 import { Share2, Globe } from "lucide-react";
 import { cn } from "@/utils/cn";
-import { useSharingStatus } from "@/utils/permissions/hooks";
-import type { ResourceType } from "@/utils/permissions/types";
-import { ShareModal } from "./ShareModal";
+import { useSharingStatus } from "@ai-matrx/sharing/react";
+import type { ResourceType } from "@ai-matrx/sharing/core";
+import { ShareModal } from "@ai-matrx/sharing/react";
 
 interface ShareButtonProps {
   resourceType: ResourceType;

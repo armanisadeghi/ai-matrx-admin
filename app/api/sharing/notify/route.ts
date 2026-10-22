@@ -13,7 +13,7 @@ import { createClient } from "@/utils/supabase/server";
 import { isRfc4122Uuid } from "@ai-matrx/kit/uuid";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { getResourceDetails } from "@/features/sharing/service/sharedResourceDetails";
-import { getResourceTypeLabel } from "@/utils/permissions/registry";
+import { getResourceTypeLabel } from "@ai-matrx/sharing/core";
 import {
   accountEmail,
   actorName,

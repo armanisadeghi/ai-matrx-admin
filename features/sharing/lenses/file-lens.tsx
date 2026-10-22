@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import { shareUrls } from "@/features/files/handler/utils/python-base";
 import { formatFileSize } from "@/features/files/utils/format";
 import { signUpHref } from "@/utils/auth/auth-destination";

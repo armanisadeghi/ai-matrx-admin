@@ -16,7 +16,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collection-write-targets";
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { EDUCATION_LIBRARY_COMMUNITY_SURFACE_NAME } from "@/features/surfaces/manifests/education-library-community.manifest";
-import { forkSharedResource } from "@/utils/permissions/shareLinks";
+import { forkSharedResource } from "@ai-matrx/sharing/core";
 import {
   buildCommunityLibraryScope,
   deckSuggestionWriteHandler,

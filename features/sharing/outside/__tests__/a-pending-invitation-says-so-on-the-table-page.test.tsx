@@ -19,7 +19,7 @@ import { createRoot } from "react-dom/client";
 
 const TABLE = "9d41c2e7-5b3a-4f08-a6d1-2c7e8f90b3a5";
 const mockPending = jest.fn();
-jest.mock("../outsideShareService", () => ({
+jest.mock("@ai-matrx/sharing/core", () => ({
   __esModule: true,
   myPendingTableInvitations: () => mockPending(),
 }));

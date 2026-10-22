@@ -52,7 +52,7 @@ import { readMembershipRows } from "@ai-matrx/auth/organizations";
 import {
   satisfiesPermissionLevel,
   type PermissionLevel,
-} from "@/utils/permissions/types";
+} from "@ai-matrx/sharing/core";
 
 /** MAIN's canonical permission level. */
 export type CmsAccessLevel = PermissionLevel;

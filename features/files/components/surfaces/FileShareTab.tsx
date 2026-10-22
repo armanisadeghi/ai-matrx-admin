@@ -48,9 +48,9 @@ import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganiza
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { ShareLinkDialogBody } from "@/features/files/components/core/ShareLinkDialog/ShareLinkDialog";
 import { PermissionsDialogBody } from "@/features/files/components/core/PermissionsDialog/PermissionsDialog";
-import { useSharing } from "@/utils/permissions/hooks";
+import { useSharing } from "@ai-matrx/sharing/react";
 import { useOwnerLabel } from "@/features/files/hooks/useOwnerLabel";
-import { RowControls } from "@/features/sharing/components/RowControls";
+import { RowControls } from "@ai-matrx/sharing/react";
 
 export interface FileShareTabProps {
   fileId: string;

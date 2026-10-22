@@ -5,7 +5,7 @@ import {
   countWords,
   findCurrentHeading,
 } from "@/features/notes/utils/markdown-headings";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 import {
   xmlElement,
   xmlList,

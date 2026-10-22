@@ -17,7 +17,7 @@
 import { storeDoors } from "@ai-matrx/records/core";
 
 import { supabase } from "@/utils/supabase/client";
-import { createShareLink } from "@/utils/permissions/shareLinks";
+import { createShareLink } from "@ai-matrx/sharing/core";
 
 export interface ViewLink {
   id: string;

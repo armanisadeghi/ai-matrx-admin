@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/utils/supabase/server";
-import { getShareableResource } from "@/utils/permissions/registry";
-import { PUBLIC_LANE_TYPES, publicLaneSelect } from "@/utils/permissions/publicLane";
+import { getShareableResource } from "@ai-matrx/sharing/core";
+import { PUBLIC_LANE_TYPES, publicLaneSelect } from "@ai-matrx/sharing/core";
 // The public card shape is owned by the flashcards feature (both public lanes
 // read it).
 import type {

@@ -139,7 +139,7 @@ const ChangeDiff = lazySlot("ChangeDiff", SlotLoadingBlock);
 
 const ShareModal = dynamic(
   () =>
-    import("@/features/sharing/components/ShareModal").then((m) => ({
+    import("@ai-matrx/sharing/react").then((m) => ({
       default: m.ShareModal,
     })),
   { ssr: false },

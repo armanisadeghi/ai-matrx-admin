@@ -576,7 +576,7 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
     ensureOrganizationContext: (options) =>
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       require("@/lib/organizations/ensureOrgId").ensureOrgId(options?.organizationId ?? null),
-    shareLinks: lazy("@/utils/permissions/shareLinks"),
+    shareLinks: lazy("@ai-matrx/sharing/core"),
     notify: {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       success: (message, options) => require("@/lib/toast").toast.success(message, options),
@@ -597,4 +597,44 @@ if (typeof globalThis.CSS === "undefined" || typeof globalThis.CSS?.escape !== "
   if (perf && typeof perf.measure !== "function") {
     (perf as { measure: (name: string) => undefined }).measure = () => undefined;
   }
+}
+
+/**
+ * ── The sharing host (@ai-matrx/sharing/core) ─────────────────────────────────
+ * The app wires it in `providers/SharingHost.tsx`. Here every member is required at CALL
+ * time, so a suite's `jest.mock("@/utils/supabase/client")` (or call-api, active org,
+ * ensureOrgId) is what the share service and share links call — exactly as when they
+ * lived in the app.
+ */
+{
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { configureSharing } = require("@ai-matrx/sharing/core") as typeof import("@ai-matrx/sharing/core");
+  configureSharing({
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    client: () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const m = require("@/utils/supabase/client");
+      // The copies the package replaced read the `supabase` singleton; a suite's mock of it answers here.
+      return m.supabase ?? m.createClient();
+    },
+    callServer: (call) =>
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("@/lib/redux/store-singleton").getStoreSingleton().dispatch(require("@/lib/api/call-api").callApi(call)),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    getActiveOrgId: () => require("@/lib/organizations/activeOrg").getActiveOrgId(),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    ensureOrgId: (organizationId) => require("@/lib/organizations/ensureOrgId").ensureOrgId(organizationId ?? null),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    isKnownEntity: (token) => Boolean(require("@/features/scopes/registry/entityRegistry").tryGetEntityInfo(token)),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    resolveEntityHref: (token, id) => require("@ai-matrx/records-ui/entity-doors").resolveEntityDoors(token, id).href,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { configureShareSheetUi } = require("@ai-matrx/sharing/react") as typeof import("@ai-matrx/sharing/react");
+  configureShareSheetUi({
+    // The web's InfoHint, as providers/SharingHost.tsx hands it in.
+    InfoHint: (props) =>
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      require("react").createElement(require("@ai-matrx/design-system/controls").InfoHint, props),
+  });
 }

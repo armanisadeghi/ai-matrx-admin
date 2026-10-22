@@ -15,7 +15,7 @@ import { PublicHeaderActionsPortal } from "@/components/matrx/PublicHeaderAction
 import {
   isForkable,
   type ResolvedShareToken,
-} from "@/utils/permissions/shareLinks";
+} from "@ai-matrx/sharing/core";
 import { DuplicateToEditButton } from "@/features/sharing/components/DuplicateToEditButton";
 import {
   resolveShareLens,

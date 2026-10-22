@@ -3861,20 +3861,6 @@
     },
     {
       "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/hooks.ts",
-      "line": 92,
-      "column": 1,
-      "symbol": "useResourcePermissions",
-      "lines": 38,
-      "title": "useResourcePermissions appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported hook with 38 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
-    },
-    {
-      "repository": "matrx-frontend",
       "detector": "react-component-unmounted",
       "file": "components/matrx/buttons/MarkdownCopyButton.tsx",
       "line": 24,
@@ -4348,20 +4334,6 @@
       "intent": "an exported hook with 31 implementation line(s)",
       "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
       "feature": "hooks"
-    },
-    {
-      "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/hooks.ts",
-      "line": 546,
-      "column": 1,
-      "symbol": "useSharedWithMe",
-      "lines": 31,
-      "title": "useSharedWithMe appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported hook with 31 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
     },
     {
       "repository": "aidream",
@@ -5034,20 +5006,6 @@
       "intent": "an exported service with 25 implementation line(s)",
       "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
       "feature": "lib"
-    },
-    {
-      "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/hooks.ts",
-      "line": 140,
-      "column": 1,
-      "symbol": "usePermissionCheck",
-      "lines": 25,
-      "title": "usePermissionCheck appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported hook with 25 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
     },
     {
       "repository": "matrx-frontend",
@@ -7850,48 +7808,6 @@
       "feature": "providers"
     },
     {
-      "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/hooks.ts",
-      "line": 172,
-      "column": 1,
-      "symbol": "useCanEdit",
-      "lines": 12,
-      "title": "useCanEdit appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported hook with 12 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
-    },
-    {
-      "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/hooks.ts",
-      "line": 191,
-      "column": 1,
-      "symbol": "useCanAdmin",
-      "lines": 12,
-      "title": "useCanAdmin appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported hook with 12 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
-    },
-    {
-      "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/service.ts",
-      "line": 955,
-      "column": 1,
-      "symbol": "batchShareWithUsers",
-      "lines": 12,
-      "title": "batchShareWithUsers appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported service with 12 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
-    },
-    {
       "repository": "aidream",
       "detector": "export-unimported",
       "file": "aidream/services/rag/access.py",
@@ -9346,20 +9262,6 @@
       "intent": "an exported service with 7 implementation line(s)",
       "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
       "feature": "lib"
-    },
-    {
-      "repository": "matrx-frontend",
-      "detector": "export-unimported",
-      "file": "utils/permissions/service.ts",
-      "line": 857,
-      "column": 1,
-      "symbol": "isResourceOwner",
-      "lines": 7,
-      "title": "isResourceOwner appears unfinished — it is built but has no runtime consumer",
-      "evidence": "no runtime import resolves to this exported hook, service, or producer; tests and re-export barrels do not count",
-      "intent": "an exported service with 7 implementation line(s)",
-      "remains": "wire the runtime consumer it was built for, then prove a real page, action, producer, or workflow reaches it",
-      "feature": "utils"
     },
     {
       "repository": "aidream",

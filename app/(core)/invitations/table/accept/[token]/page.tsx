@@ -59,7 +59,7 @@ import {
   acceptOutsideShare,
   peekTableShare,
   type TableSharePeek,
-} from "@/features/sharing/outside/outsideShareService";
+} from "@ai-matrx/sharing/core";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 type Opened = Awaited<ReturnType<typeof acceptOutsideShare>>;

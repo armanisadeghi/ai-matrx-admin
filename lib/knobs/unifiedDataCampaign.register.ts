@@ -182,7 +182,7 @@ export const CAMPAIGN_STORE_TABLES: readonly string[] = [
  *   · `types/database.types.ts`, `features/matrx-envelope/catalog-nouns.generated.ts`,
  *     `features/settings/universal/knobDatabaseConsumers.generated.ts` —
  *     GENERATED schema descriptions. They name the tables; they reach nothing.
- *   · `utils/permissions/registry.ts` — declares the resource types so the
+ *   · `@ai-matrx/sharing src/core/registry.ts` — declares the resource types so the
  *     access layer can answer about them. A declaration, not a read.
  *   · `lib/coming-soon/registry.ts`, `features/hr/FEATURE.md` — prose mentions.
  *   · `migrations/*.sql` — DDL, governed by the migration runner and its
@@ -721,18 +721,6 @@ export const ENTRY_POINTS: readonly CampaignEntryPoint[] = [
     //    organization. The plumber's customer, the lab's collaborator at another
     //    university. All three files reach the store only through the six
     //    custom.table_share_outside* doors, which read the switch themselves.
-    {
-        id: "outside-share-service",
-        file: "features/sharing/outside/outsideShareService.ts",
-        kind: "door_gated",
-        why: "The client half of SHARE-OUT. It calls custom.table_share_outside, _invite, _resend, _revoke and _accept and decides nothing itself — each of those doors calls custom.assert_store_door and custom.assert_client_may_reach / _may_open / _may_change for the organization the table belongs to, so the switch is read one layer down, in the store, for the right organization. It holds the one schema('custom') cast for this feature and nothing widens it.",
-    },
-    {
-        id: "outside-share-panel",
-        file: "features/sharing/outside/OutsideSharePanel.tsx",
-        kind: "door_gated",
-        why: "The Share dialog's outside-lane section. It draws only what custom.table_share_outside answered (lane_open, may_invite, may_open_lane, my_level, levels), so no control is live when the door behind it would refuse; it reaches the store only through features/sharing/outside/outsideShareService.ts, whose doors read the switch.",
-    },
     {
         id: "outside-share-accept-page",
         file: "app/(core)/invitations/table/accept/[token]/page.tsx",

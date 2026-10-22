@@ -46,7 +46,7 @@ import {
   getOrganizationMembers,
 } from "@/features/organizations/service";
 import { revokeOrgShare } from "@/utils/permissions/orgModeration";
-import { getResourceSharePath } from "@/utils/permissions/registry";
+import { getResourceSharePath } from "@ai-matrx/sharing/core";
 import {
   listableTokens,
   resolveEntityToken,

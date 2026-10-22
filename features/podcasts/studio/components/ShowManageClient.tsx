@@ -41,7 +41,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { SearchEngineIndexedSwitch } from "@/features/sharing/indexed/SearchEngineIndexedSwitch";
+import { SearchEngineIndexedSwitch } from "@ai-matrx/sharing/react";
 import { Skeleton } from "@ai-matrx/design-system";
 import {
   Select,

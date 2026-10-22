@@ -15,7 +15,7 @@
  */
 
 import type { ToolLifecycleEntry } from "@ai-matrx/chat/agents/types/request.types";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { previewResult } from "@ai-matrx/chat/tool-call-visualization/utils/cxToolCallToLifecycleEntry";
 

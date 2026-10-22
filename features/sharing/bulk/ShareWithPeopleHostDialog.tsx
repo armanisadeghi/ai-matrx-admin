@@ -11,8 +11,8 @@ import React, { useRef } from "react";
 import type { OverlayRenderProps } from "@ai-matrx/summon/react";
 import { useOverlayRequest } from "@ai-matrx/summon/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ShareWithUserTab } from "@/features/sharing/components/tabs/ShareWithUserTab";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import { ShareWithUserTab } from "@ai-matrx/sharing/react";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 import type { ShareWithPeopleRequest, ShareWithPeopleResponse } from "./shareWithPeopleOpener";
 
 export function ShareWithPeopleHostDialog({ data, close: closeOverlay }: Pick<OverlayRenderProps, "data" | "close">) {

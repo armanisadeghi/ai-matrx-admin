@@ -29,7 +29,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { podcastService } from "@/features/podcasts/service";
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import type { PcDisplayMode } from "@/features/podcasts/types";
 import { episodeHref } from "../constants";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";

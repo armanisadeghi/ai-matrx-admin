@@ -43,7 +43,7 @@ import { formatFileSize } from "@/features/files/utils/format";
 import { getFilePreviewProfile } from "@/features/files/utils/file-types";
 import { useFileDocument } from "@/features/files/hooks/useFileDocument";
 import { FileRagStatusChip } from "@/features/rag/components/FileRagStatusChip";
-import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
+import { AccessSummaryPanel } from "@ai-matrx/sharing/react";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import type { Visibility } from "@/features/files/types";
 import {

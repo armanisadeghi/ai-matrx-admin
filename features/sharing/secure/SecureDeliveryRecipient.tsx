@@ -33,7 +33,7 @@ import {
   type SecureDeliveryPage,
   SecureDeliveryRefusal,
   viewSecureDelivery,
-} from "./secureDeliveryService";
+} from "@ai-matrx/sharing/core";
 
 type Phase =
   | { kind: "loading" }

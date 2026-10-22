@@ -1,6 +1,6 @@
 // A SENTENCE A PERSON READS NEVER NAMES AN ACCESS LEVEL IN RAW WORDS (AT-SWEEP-3, 2026-10-19).
 // The ladder's words wherever a person reads it are View, Comment, Edit and Full access (common-docs vocabulary;
-// utils/permissions/levels.ts). RED on the prior bytes: ShareModal said "You need Admin on this ..." and "what the Admin
+// @ai-matrx/sharing src/core/levels.ts). RED on the prior bytes: ShareModal said "You need Admin on this ..." and "what the Admin
 // level means (viewer < commenter < editor < admin)"; the note summary said "shared at viewer level". GREEN now.
 // The package half of this guard lives in aidream apps/shared/records-ui (a-refusal-never-says-a-raw-access-level).
 import { readdirSync, readFileSync, statSync } from "node:fs";

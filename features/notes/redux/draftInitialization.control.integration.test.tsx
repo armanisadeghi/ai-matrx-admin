@@ -147,7 +147,7 @@ function chain(result: unknown) {
  * `mockReturnValueOnce` queue this replaced was a forcing-function defect. A
  * mounted editor reads `workbench.notes` on a timeline of its own — the share
  * surface's `useIsOwner` → `resolveResourceOwnership`
- * (`utils/permissions/service.ts`) fires one `select("created_by")` from an
+ * (`@ai-matrx/sharing src/core/service.ts`) fires one `select("created_by")` from an
  * effect — so under the full battery's workers it lands before, between, or
  * after the clicks the test drives. Every answer after it shifted by one, and
  * the suite read `remote N+2` where it expected `remote N+1` or the reverse:

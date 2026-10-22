@@ -27,7 +27,7 @@ import {
 } from "@/features/marketing/seo/keyword-research/data/shared-metrics";
 import { GenericRenderer } from "@/features/sharing/lenses/default-renderers";
 import { resolveShareSourceSurface } from "@/features/sharing/lenses/source-surface";
-import type { ResolvedShareToken } from "@/utils/permissions/shareLinks";
+import type { ResolvedShareToken } from "@ai-matrx/sharing/core";
 import type { KeywordResearchArtifact } from "@ai-matrx/agents/generated/stream-events";
 
 function SharedKeywordResearch({

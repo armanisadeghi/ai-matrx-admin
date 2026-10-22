@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import type { RootState } from "@/lib/redux/store";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { AgentActionModal } from "./AgentActionModal";
 import { AgentSneakPeekModal } from "./AgentSneakPeekModal";
 import { ComingSoonModal } from "./ComingSoonModal";

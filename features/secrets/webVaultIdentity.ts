@@ -3,7 +3,7 @@
 /**
  * THE website's "Confirm it's you" for `@ai-matrx/vault`, shared by every web
  * surface that shows or sends a secret: the Vault workspace (`WebVault`) and
- * the secure-link sender (`features/sharing/secure/SecureLinkPanel.tsx`). One
+ * the secure-link sender (`@ai-matrx/sharing src/react/sheet/SecureLinkPanel.tsx`). One
  * identity, one gate (`IdentityGate` / `useConfirmed` from the package) —
  * Google, password or an emailed code, whichever the account uses.
  */

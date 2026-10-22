@@ -10,7 +10,7 @@
 "use client";
 
 import { pythonShareUrl } from "@/features/files/handler/utils/python-base";
-import { createShareLink } from "@/utils/permissions/shareLinks";
+import { createShareLink } from "@ai-matrx/sharing/core";
 
 const IMAGE_RE = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
 const OWN_RE = /^matrx-file:([0-9a-f-]+)(?:#\d+x\d+)?$/i;

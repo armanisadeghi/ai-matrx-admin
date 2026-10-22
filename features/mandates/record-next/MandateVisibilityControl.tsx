@@ -18,7 +18,7 @@
 import { useState } from "react";
 import { Globe, Lock, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { invalidateMandateCache } from "@ai-matrx/chat/mandates/service";
 import { mandateDisplayName } from "@/features/mandates/mandate-words";
 import type { MandateWorkspaceData } from "@/features/mandates/workspace/useMandateWorkspaceData";

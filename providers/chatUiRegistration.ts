@@ -374,7 +374,7 @@ registerChatUi({
   bookmarksToReferenceDirectives: Host_bookmarksToReferenceDirectives,
 });
 
-import { ensureOrgAvailability as Host_ensureOrgAvailability } from "@/utils/permissions/service";
+import { ensureOrgAvailability as Host_ensureOrgAvailability } from "@ai-matrx/sharing/core";
 registerChatUi({
   ensureOrgAvailability: Host_ensureOrgAvailability,
 });

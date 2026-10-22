@@ -14,10 +14,7 @@ import { join } from "node:path";
 const ROOT = join(__dirname, "..", "..", "..");
 const DIALOGS = [
   "features/sharing/components/ShareButton.tsx",
-  "features/sharing/components/ShareModal.tsx",
   "features/sharing/components/RecordStoreShareSurface.tsx",
-  "features/sharing/components/ShareLinkPanel.tsx",
-  "features/sharing/components/PermissionsList.tsx",
 ];
 
 /** Lines that draw a key as text: the words, or a `field_name` interpolated between tags. */
