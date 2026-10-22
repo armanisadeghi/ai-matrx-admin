@@ -26,3 +26,13 @@ test("never fires when the watchdog is off (local agent builds)", async () => {
   const result = await runNext(process.execPath, compiles, { watchdog: false, stallMs: 50 });
   assert.deepEqual(result, { code: 0, stalled: false });
 });
+
+test("matches an end-of-compile line split across two pipe reads", async () => {
+  // Two separate writes, 100 ms apart, so the line reaches the parent in two chunks.
+  const split = [
+    "-e",
+    "console.log('Creating an optimized production build ...'); process.stdout.write('✓ Compiled succ'); setTimeout(() => { process.stdout.write('essfully in 7.4min\\n'); setTimeout(() => {}, 900); }, 100);",
+  ];
+  const result = await runNext(process.execPath, split, { watchdog: true, stallMs: 600 });
+  assert.deepEqual(result, { code: 0, stalled: false });
+});

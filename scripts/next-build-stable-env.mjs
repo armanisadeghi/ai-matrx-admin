@@ -27,7 +27,8 @@ export function stableEnv(env) {
 // measured 6.1-10.3 min (2026-10-22); 17 leaves the retry room inside the 45-minute cap.
 const COMPILE_STALL_MINUTES = 17;
 const COMPILE_STARTED = /Creating an optimized production build/;
-const COMPILE_ENDED = /Compiled successfully|Failed to compile|Build error occurred|Turbopack build failed/;
+// Any line Next prints only once the compile is over ends the clock (page data / static pages too).
+const COMPILE_ENDED = /Compiled successfully|Failed to compile|Build error occurred|Turbopack build failed|Collecting page data|Generating static pages/;
 
 export function runNext(cmd, args, { watchdog, stallMs = COMPILE_STALL_MINUTES * 60_000 }) {
   return new Promise((resolve) => {
@@ -35,10 +36,13 @@ export function runNext(cmd, args, { watchdog, stallMs = COMPILE_STALL_MINUTES *
     const child = spawn(cmd, args, { stdio: ["inherit", "pipe", "pipe"], env: stableEnv(process.env), detached: watchdog });
     let timer = null;
     let stalled = false;
+    // The last few hundred characters carry over, so a line split across two pipe reads still matches.
+    let tail = "";
     const watch = (chunk, out) => {
       out.write(chunk);
       if (!watchdog) return;
-      const text = chunk.toString();
+      const text = tail + chunk.toString();
+      tail = text.slice(-300);
       if (!timer && COMPILE_STARTED.test(text)) {
         timer = setTimeout(() => {
           stalled = true;
