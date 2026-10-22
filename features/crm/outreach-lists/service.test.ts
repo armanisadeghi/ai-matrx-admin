@@ -121,8 +121,11 @@ describe("fetchOutreachList", () => {
       error: { message: "gateway failed", code: "PGRST500" },
     };
 
-    await expect(fetchOutreachList(LIST_ID)).rejects.toThrow(
-      "gateway failed (PGRST500)",
-    );
+    // The engine's code rides ON the error (lib/failure/postgrestError.ts), never
+    // glued into the sentence a screen prints.
+    await expect(fetchOutreachList(LIST_ID)).rejects.toMatchObject({
+      message: "gateway failed",
+      code: "PGRST500",
+    });
   });
 });
