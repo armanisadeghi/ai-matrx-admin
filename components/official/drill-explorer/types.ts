@@ -292,6 +292,11 @@ export interface DrillExplorerProps {
    */
   surfaceName?: string | undefined;
   /**
+   * A STABLE ID FOR THE ADDRESS: given, the group search lives at `table.<id>.gq`, so a link or a reload
+   * reopens it filtered. Each host names its own.
+   */
+  urlStateId?: string | undefined;
+  /**
    * WHAT THE EXPLORER SHOWS, for the host's Copy for AI: called with the open question and its answers
    * each time they change (the same facts the Explain button hands its agent).
    */
