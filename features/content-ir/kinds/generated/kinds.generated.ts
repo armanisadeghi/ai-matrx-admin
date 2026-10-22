@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1715 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1716 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "33bc1eb9c875";
+export const KIND_REGISTRY_FINGERPRINT = "2ead353dc84c";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -14822,6 +14822,47 @@ export interface AgentFactoryInstructions {
    * Every input name the user message places — the guard checks it equals the contract's inputs.
    */
   placed_variables: string[];
+}
+
+/**
+ * The LOCKED job the proof judge scores both blind answers against (``agent_factory.proof_review``'s
+ * ``goal_spec``). Never the goal spec the candidate was written from: the baseline never saw that spec, so
+ * scoring both against it would be circular (``agent_factory.pipeline._judge_variables``).
+ *  *
+ *  * Kind `agent_factory_judging_rubric` (registry v1).
+ */
+export interface AgentFactoryJudgingRubric {
+  /**
+   * The backing mandate's goal, else the request's purpose.
+   */
+  job: string;
+  /**
+   * How the judge reads this rubric.
+   */
+  note?: string;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "agent_factory_judging_rubric";
+  /**
+   * The locked output kind, when one is chosen.
+   */
+  output_kind?: string | null;
+  /**
+   * The locked output schema: the contract.
+   */
+  output_schema?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  /**
+   * The person's own words for the format.
+   */
+  requested_format?: string | null;
+  required_output_keys?: string[];
+  downstream_rules_enforced_in_code?: string[];
 }
 
 /**
@@ -67049,6 +67090,7 @@ export type GeneratedKindSlug =
   | "agent_factory_build"
   | "agent_factory_contract"
   | "agent_factory_instructions"
+  | "agent_factory_judging_rubric"
   | "agent_factory_proof_review"
   | "agent_factory_tool_choice"
   | "agent_foundry_report"
@@ -68767,6 +68809,7 @@ export interface KindPayloadBySlug {
   "agent_factory_build": AgentFactoryBuild;
   "agent_factory_contract": AgentFactoryContract;
   "agent_factory_instructions": AgentFactoryInstructions;
+  "agent_factory_judging_rubric": AgentFactoryJudgingRubric;
   "agent_factory_proof_review": AgentFactoryProofReview;
   "agent_factory_tool_choice": AgentFactoryToolChoice;
   "agent_foundry_report": AgentFoundryReport;
@@ -70489,6 +70532,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "agent_factory_build",
   "agent_factory_contract",
   "agent_factory_instructions",
+  "agent_factory_judging_rubric",
   "agent_factory_proof_review",
   "agent_factory_tool_choice",
   "agent_foundry_report",
