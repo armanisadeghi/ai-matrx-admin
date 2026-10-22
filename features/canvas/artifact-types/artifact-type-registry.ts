@@ -14,7 +14,7 @@
  */
 
 import { isTableKind } from "@ai-matrx/records/table-kind";
-import type { CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 
 export type ArtifactPersistenceStrategy = "custom" | "generic" | "none";
 

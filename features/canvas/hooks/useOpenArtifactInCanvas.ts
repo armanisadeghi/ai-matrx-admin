@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { reportCanvasOpenDrop } from "@/features/canvas/openRequest";
 import { useCanvasOpenGuard } from "./useCanvasOpenGuard";
-import type { ArtifactDebugTrace, CanvasContentType } from "@/features/canvas/canvasContent";
+import type { ArtifactDebugTrace, CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import { useArtifactCanvasActions } from "@/features/canvas/host/useArtifactCanvas";
 import {
   ensureArtifactPersisted,

@@ -23,7 +23,7 @@
 
 import { KIND_KEY } from "@ai-matrx/content-ir";
 
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import {
   buildDocumentCanvasContent,
   documentCanvasSourceId,

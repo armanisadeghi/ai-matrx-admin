@@ -43,7 +43,7 @@ import {
   isPersistableCanvasType,
   getDefaultTitle,
   type CanvasContent,
-} from "@/features/canvas/canvasContent";
+} from "@ai-matrx/rich-content/utils/canvasContent";
 import { CanvasBody } from "@/features/canvas/core/CanvasBody";
 import { useArtifactCanvas } from "@/features/canvas/host/useArtifactCanvas";
 import { canvasItemSourceId } from "@/features/canvas/host/canvasSources";

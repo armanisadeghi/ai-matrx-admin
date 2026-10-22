@@ -12,7 +12,7 @@
  * the same content from it.
  */
 
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 
 import type { MapWorkspaceScreen } from "../useMapWorkspaceParams";
 

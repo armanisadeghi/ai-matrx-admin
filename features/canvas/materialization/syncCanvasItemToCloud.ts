@@ -24,7 +24,7 @@ import {
   ensureArtifactPersisted,
   type EnsureArtifactResult,
 } from "@/features/canvas/materialization/ensureArtifactPersisted";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 
 export interface SyncCanvasItemInput {
   content: CanvasContent;

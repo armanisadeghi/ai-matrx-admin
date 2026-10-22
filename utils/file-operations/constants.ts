@@ -46,7 +46,7 @@ import { GrDocumentTxt } from "react-icons/gr";
 
 // Phase 11 — DirectoryTree was deleted. TwoColorPythonIcon now lives under
 // features/code/styles (same implementation).
-import { TwoColorPythonIcon } from "@/features/code/styles/custom-icons";
+import { TwoColorPythonIcon } from "@ai-matrx/rich-content/utils/custom-icons";
 
 // Phase 11 — matrxSystemIcons was deleted with DirectoryTree. We stub the
 // subset actually used below with icons that are already imported in this

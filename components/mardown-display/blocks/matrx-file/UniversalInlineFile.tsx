@@ -30,7 +30,7 @@ import { downloadUrl } from "@ai-matrx/kit/download";
 import { useFile } from "@/features/files/handler/hooks/useFile";
 import { useMediaResolution } from "@ai-matrx/media/core";
 import { formatFileSize } from "@ai-matrx/kit/format";
-import { fileSourceToMediaRef } from "@/features/files/media-client/refs";
+import { fileSourceToMediaRef } from "@ai-matrx/rich-content/utils/media-refs";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { FileIcon } from "@ai-matrx/media/react";
 import { PreviewerSwitch } from "@/features/files/components/core/FilePreview/PreviewerSwitch";

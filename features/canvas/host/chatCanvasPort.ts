@@ -28,7 +28,7 @@ import type {
   ChatCanvasTabRef,
   ChatCanvasView,
 } from "@ai-matrx/chat/host";
-import type { CanvasContent, CanvasContentType } from "@/features/canvas/canvasContent";
+import type { CanvasContent, CanvasContentType } from "@ai-matrx/rich-content/utils/canvasContent";
 import { reportCanvasOpenDrop, titleForDrop } from "@/features/canvas/openRequest";
 import { readArtifactPointerId } from "@ai-matrx/kit/artifact-id";
 import { readArtifactItemData, contentOf } from "./artifactItem";

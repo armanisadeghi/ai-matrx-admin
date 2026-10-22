@@ -24,7 +24,7 @@ import { classifyGscAccessFailure } from "@/features/marketing/google/gsc-proper
 import Link from "next/link";
 import { Compass, History, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollFade } from "@/components/ui/scroll-fade";
+import { ScrollFade } from "@ai-matrx/design-system";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { MarketingWorkspaceNav } from "@/features/marketing/components/shared/MarketingWorkspaceNav";
 import { InlineQueryError } from "@/features/marketing/components/shared/MarketingUi";

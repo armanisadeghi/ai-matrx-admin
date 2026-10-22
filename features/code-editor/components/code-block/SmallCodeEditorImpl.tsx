@@ -27,8 +27,8 @@ import CodeEditorLoading from "@ai-matrx/rich-content/code-block/CodeEditorLoadi
 import type { editor } from "monaco-editor";
 import { configureMonaco } from "../../config/monaco-config";
 import { CodeEditorContextMenu } from "../CodeEditorContextMenu";
-import { getFileExtension } from "@/features/code-editor/config/languages";
-import { resolveMonacoEditorTheme } from "@/features/code-editor/config/syntax-themes";
+import { getFileExtension } from "@ai-matrx/rich-content/utils/languages";
+import { resolveMonacoEditorTheme } from "@ai-matrx/rich-content/utils/syntax-themes";
 
 // LOAD MARKER (heavy: must never load before the person engages) — read by the page-load trace; no import, no build edge.
 if (typeof window !== "undefined") performance.mark("load:heavy:Monaco small editor");

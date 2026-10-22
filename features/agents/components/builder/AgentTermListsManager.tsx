@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@ai-matrx/design-system";
-import { ScrollFade } from "@/components/ui/scroll-fade";
+import { ScrollFade } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
 import {
   attachTermList,

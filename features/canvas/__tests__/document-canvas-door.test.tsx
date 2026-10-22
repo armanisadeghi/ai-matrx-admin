@@ -69,7 +69,7 @@ import {
   getDefaultTitle,
   isPersistableCanvasType,
   type CanvasContent,
-} from "@/features/canvas/canvasContent";
+} from "@ai-matrx/rich-content/utils/canvasContent";
 import { canvasTypeHasSource } from "@/features/canvas/core/canvasSource";
 import {
   readToolResultCanvasOffer,

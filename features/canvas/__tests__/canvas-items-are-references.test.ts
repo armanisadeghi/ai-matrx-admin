@@ -18,7 +18,7 @@
 
 import type { CanvasController } from "@ai-matrx/canvas";
 import { buildCanvasScope } from "@/features/canvas/lib/canvas-scope";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import {
   canvasItemContentHandler,
   newestOwnVersion,

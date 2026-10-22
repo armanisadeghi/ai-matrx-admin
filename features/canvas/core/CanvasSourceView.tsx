@@ -19,7 +19,7 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 
 import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
-import type { CanvasContent } from "@/features/canvas/canvasContent";
+import type { CanvasContent } from "@ai-matrx/rich-content/utils/canvasContent";
 import {
   isMaterializedArtifactId,
   readArtifactPointerId,

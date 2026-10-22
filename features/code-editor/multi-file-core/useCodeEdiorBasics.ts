@@ -15,7 +15,7 @@ import { CodeFile } from "./types";
 import {
   mapLanguageForMonaco,
   getMonacoFileExtension,
-} from "@/features/code-editor/config/languages";
+} from "@ai-matrx/rich-content/utils/languages";
 import { downloadFile } from "@ai-matrx/kit/download";
 
 interface UseCodeEditorBasicsProps {

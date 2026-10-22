@@ -33,7 +33,7 @@ import {
   logSpecialVariablesUsage,
   type CodeEditorContext,
 } from "@/features/code-editor/utils/specialVariables";
-import { normalizeLanguage } from "@/features/code-editor/config/languages";
+import { normalizeLanguage } from "@ai-matrx/rich-content/utils/languages";
 import {
   agentForPromptKey,
   type CodeEditorPromptKey,

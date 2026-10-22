@@ -51,7 +51,7 @@ import {
   agentForPromptKey,
   type CodeEditorPromptKey,
 } from "@/features/code-editor/agent-code-editor/agents";
-import { normalizeLanguage } from "@/features/code-editor/config/languages";
+import { normalizeLanguage } from "@ai-matrx/rich-content/utils/languages";
 import {
   parseCodeEdits,
   validateEdits,

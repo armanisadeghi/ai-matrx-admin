@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Database, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollFade } from "@/components/ui/scroll-fade";
+import { ScrollFade } from "@ai-matrx/design-system";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type {
   MatrxColumnDef,
