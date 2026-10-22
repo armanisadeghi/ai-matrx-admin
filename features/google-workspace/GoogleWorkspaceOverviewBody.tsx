@@ -174,6 +174,15 @@ function GoogleWorkspaceOverviewBodyContent({
     ) {
       return;
     }
+    if (capabilityKey === "youtube_analytics") {
+      // YouTube must use the shared isolated-consent planner, never a
+      // cumulative capability upgrade beside an account's other grants.
+      openConsent({
+        initialConnectionId: connection.id,
+        initialProductKeys: ["youtube"],
+      });
+      return;
+    }
     const request = buildGoogleReconnectRequest(
       connection,
       requiredScopes,
@@ -648,15 +657,17 @@ function CapabilityCatalog({
                       ? `Enabling ${capability.title}…`
                       : `Enable ${capability.title}`}
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => onEnableCapability(capability, true)}
-                    disabled={authorizationActionDisabled}
-                  >
-                    {busy === redirectBusyKey
-                      ? "Opening Google…"
-                      : "Continue in this tab"}
-                  </Button>
+                  {capability.key !== "youtube_analytics" ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => onEnableCapability(capability, true)}
+                      disabled={authorizationActionDisabled}
+                    >
+                      {busy === redirectBusyKey
+                        ? "Opening Google…"
+                        : "Continue in this tab"}
+                    </Button>
+                  ) : null}
                 </div>
               ) : capability.rollout_phase === "available" &&
                 (capability.key === "drive_files" ||
