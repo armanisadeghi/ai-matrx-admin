@@ -24,7 +24,7 @@ let selected: string | null = null;
 jest.mock("@ai-matrx/chat/host/canvas", () => ({
   useChatCanvasTab: () => ({ isAvailable: true, isVisible: selected !== null, selected, toggle }),
 }));
-jest.mock("@/features/files/components/preview/FileResourceChip", () => ({ FileResourceChip: () => null }));
+jest.mock("@ai-matrx/media/files/engine/components/preview/FileResourceChip", () => ({ FileResourceChip: () => null }));
 
 import { SmartAgentResourceChips } from "@ai-matrx/chat/agents/components/inputs/resources/SmartAgentResourceChips";
 

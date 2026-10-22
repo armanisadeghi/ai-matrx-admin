@@ -107,7 +107,6 @@ function RawHookDemo() {
       if (result.success && result.text) setResults(prev => [result.text, ...prev]);
     },
     onError: (err) => toast.error('Hook error', { description: err }),
-    streaming: true,
   });
 
   const formatTime = (s: number) => formatDurationSeconds(s, { style: 'clock' });

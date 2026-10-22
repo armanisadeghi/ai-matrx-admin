@@ -12,9 +12,9 @@
  * Per C22 this module INJECTS identity values only — zero catch-and-
  * reinterpret, zero validation, zero retry logic:
  *
- *   - credentials        — the Redux token/fingerprint, read fresh per call;
- *   - the byte bases     — `resolveFilesBaseUrl` (+ the main base for the
- *                          session cookie, which is per-host);
+ *   - identity + routing — `createFiles({ api: serverApi, credentials:
+ *                          serverApiCredentials })`: the website's one API
+ *                          client decides the byte host and session bases;
  *   - metadata           — the Redux file store (`selectFileById` +
  *                          `ensureCloudFileFields`), so resolution and the
  *                          store never disagree;
@@ -32,9 +32,8 @@
 import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { ORGANIZATION_REQUIRED_CODE } from "@ai-matrx/auth/organizations";
 import type { DurableSrc, MediaClient, MediaRef } from "@ai-matrx/media";
-import type { CredentialsPort, MatrxCredential } from "@ai-matrx/data";
+import { createFiles } from "@ai-matrx/files";
 import {
-  createMatrxFilesClient,
   type FileMetadata,
   type FileMetadataPort,
   type FilesDiagnosticsEvent,
@@ -43,12 +42,8 @@ import {
   type MediaUploadOptions,
   type MediaUploadResult,
 } from "@ai-matrx/files/client";
-import { resolveBaseUrl, resolveFilesBaseUrl } from "@/lib/python-client";
 import { getStoreSingleton } from "@/lib/redux/store-singleton";
-import {
-  selectAccessToken,
-  selectFingerprintId,
-} from "@/lib/redux/slices/userSlice";
+import { serverApi, serverApiCredentials } from "@/lib/api/server-api";
 import {
   peekSelectedOrganizationId,
   waitForOrganizationAdmission,
@@ -71,22 +66,6 @@ import {
 } from "@/features/files/hooks/blob-cache";
 import { requestUpload } from "@/features/files/upload/uploadGuardOpeners";
 import type { AppDispatch } from "@/lib/redux/store";
-
-// --- injected identity -----------------------------------------------------
-
-/** The app's Redux-backed credential source — read fresh per call. */
-const credentials: CredentialsPort = {
-  get: async (): Promise<MatrxCredential | null> => {
-    const store = getStoreSingleton();
-    if (!store) return null;
-    const state = store.getState();
-    const accessToken = selectAccessToken(state);
-    if (accessToken) return { kind: "user", accessToken };
-    const fingerprintId = selectFingerprintId(state);
-    if (fingerprintId) return { kind: "guest", fingerprintId };
-    return null;
-  },
-};
 
 /**
  * Organization admission is transport identity, not file metadata — so it is
@@ -360,14 +339,15 @@ function resetUnresolvedOrganizationReport(): void {
 
 // --- the ONE client --------------------------------------------------------
 
-export const mediaFilesClient: MatrxFilesClient<DurableSrc> =
-  createMatrxFilesClient<DurableSrc>({
-    credentials,
-    filesBaseUrl: () => resolveFilesBaseUrl(),
-    // Cookies are per-host: the main backend and the standalone files host
-    // both serve durable byte URLs, so the session lands on BOTH.
-    sessionBases: [() => resolveBaseUrl(), () => resolveFilesBaseUrl()],
-    fetchImpl: filesFetch,
+// The package's own durable-ref client, built by `createFiles` over THE website's `@ai-matrx/api`
+// client (`serverApi`) and its credential port: the byte host is wherever serverApi routes the files
+// deployment (its server toggle included) and the session cookie lands on every deployment the
+// contract says mints `POST /files/session`. This module adds only the app's stores and admission.
+export const mediaFilesClient: MatrxFilesClient<DurableSrc> = createFiles({
+  api: serverApi,
+  credentials: serverApiCredentials,
+  fetchImpl: filesFetch,
+  client: {
     diagnostics,
     metadata,
     blobCache: {
@@ -378,7 +358,8 @@ export const mediaFilesClient: MatrxFilesClient<DurableSrc> =
     },
     largeUploadTransport,
     uploadMany,
-  });
+  },
+}).client;
 
 /** The same instance through `@ai-matrx/media`'s port — the assignment is the
  * compile-time proof; no cast, no adapter body. */
