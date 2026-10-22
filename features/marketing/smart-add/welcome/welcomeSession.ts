@@ -115,13 +115,37 @@ export function testLoginUser(t: TestLogin): User {
   } as User;
 }
 
+/** Business words that stand alone ("Inc", "LLC", "Studio"). "Co" is NOT here: see COMPANY_CO. */
 const COMPANY_WORDS =
-  /\b(inc|llc|ltd|corp|co|company|group|studio|studios|agency|labs?|partners|associates|consulting|solutions|media|bank|university|college|school|hospital|clinic|foundation|tv|news)\b\.?/i;
+  /\b(inc|llc|ltd|corp|company|group|studio|studios|agency|labs?|partners|associates|consulting|solutions|media|bank|university|college|school|hospital|clinic|foundation|tv|news)\b\.?/i;
+
+/** "Co" is a business word only as "Co." (with its period) or "& Co" / "and Co"; a bare "CO" is Colorado. */
+const COMPANY_CO = /\bco\./i;
+const COMPANY_AND_CO = /(?:&|\band)\s*co\b/i;
+
+/** US states, DC, territories and Canadian provinces: the code or the name that closes a "City, State" line. */
+const REGION_CODES =
+  "al ak az ar ca co ct de dc fl ga hi id il in ia ks ky la me md ma mi mn ms mo mt ne nv nh nj nm ny nc nd oh ok or pa ri sc sd tn tx ut vt va wa wv wi wy pr gu vi as mp ab bc mb nb nl ns nt nu on pe qc sk yt";
+const REGION_NAMES =
+  "alabama alaska arizona arkansas california colorado connecticut delaware florida georgia hawaii idaho illinois indiana iowa kansas kentucky louisiana maine maryland massachusetts michigan minnesota mississippi missouri montana nebraska nevada new-hampshire new-jersey new-mexico new-york north-carolina north-dakota ohio oklahoma oregon pennsylvania rhode-island south-carolina south-dakota tennessee texas utah vermont virginia washington west-virginia wisconsin wyoming alberta british-columbia manitoba new-brunswick newfoundland nova-scotia ontario prince-edward-island quebec saskatchewan";
+const REGIONS = new Set([...REGION_CODES.split(" "), ...REGION_NAMES.split(" ")]);
+
+/** "Fort Collins, CO" / "Portland, Oregon" / "Austin, TX, USA": a place with its state after a comma. */
+export function looksLikePlace(text: string): boolean {
+  const parts = text.split(",").map((p) => p.trim().replace(/\.$/, ""));
+  if (parts.length < 2 || parts.length > 3 || parts.some((p) => !p)) return false;
+  let last = parts[parts.length - 1].toLowerCase();
+  if (parts.length === 3 && /^(usa|us|united states|canada)$/.test(last)) last = parts[1].toLowerCase();
+  return REGIONS.has(last.replace(/\s+/g, "-"));
+}
 
 /** "None of these" → the typed value as the person's company (it reads like one) or city (everything else). */
 export function narrowAs(text: string): { city: string } | { company: string } {
   const t = text.trim().replace(/\s+/g, " ");
-  return COMPANY_WORDS.test(t) || /\.[a-z]{2,}$/i.test(t) ? { company: t } : { city: t };
+  const head = t.split(",")[0];
+  if (looksLikePlace(t) && !COMPANY_WORDS.test(head) && !COMPANY_CO.test(head)) return { city: t };
+  const company = COMPANY_WORDS.test(t) || COMPANY_CO.test(t) || COMPANY_AND_CO.test(t) || /\.[a-z]{2,}$/i.test(t);
+  return company ? { company: t } : { city: t };
 }
 
 /** Hosts that are never a business someone owns: mail, link-in-bio, blog and store platforms, socials. */
