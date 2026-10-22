@@ -9,7 +9,7 @@
 import { removeAppRow, upsertAppRow, type RecordHistoryEntry, type useRecordsClient } from "@ai-matrx/records/react";
 import { readVersionNow } from "@ai-matrx/records/versions";
 import { orgLayoutSlot, personLayoutSlot, type ShellLayoutBody, type StoredShellLayout } from "./contract";
-import { clientInOrganization } from "@/lib/records/clientInOrganization";
+import { clientInOrganization } from "@ai-matrx/records/core";
 import { shellLayoutTable } from "./shellLayout.typed-table";
 import { parseShellLayoutBody, serializeShellLayoutBody } from "./validate";
 import type { ShellLayoutTarget } from "./shellLayoutSlice";
