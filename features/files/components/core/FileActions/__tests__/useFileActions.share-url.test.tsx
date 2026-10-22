@@ -15,19 +15,21 @@ const copyText = jest.fn<Promise<boolean>, [string]>();
 const showManualCopy = jest.fn();
 jest.mock("@ai-matrx/kit/clipboard", () => ({ useClipboard: () => ({ copyText }) }));
 jest.mock("@ai-matrx/kit/download", () => ({ downloadFile: jest.fn() }));
-jest.mock("@/components/dialogs/clipboard-fallback/manualCopyOpener", () => ({
+jest.mock("@ai-matrx/media/files/engine/host/ui", () => ({
+  ...jest.requireActual("@ai-matrx/media/files/engine/host/ui"),
+  copyNotify: jest.fn(),
   showManualCopy: (...a: unknown[]) => showManualCopy(...a),
 }));
-jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
+jest.mock("@ai-matrx/kit/notify", () => ({ ...jest.requireActual("@ai-matrx/kit/notify"), toast: { error: jest.fn(), success: jest.fn() } }));
 const file = { id: "f1", fileName: "a.png", visibility: "private", publicUrl: null, source: { kind: "cloud" } };
-jest.mock("@/lib/redux/hooks", () => ({
+jest.mock("@ai-matrx/media/files/engine/redux/hooks", () => ({
   useAppDispatch: () => (action: { type: string }) => ({
     unwrap: async () => (action.type === "getFileUrl" ? { url: "https://signed.example/a.png" } : {}),
   }),
   useAppSelector: (selector: (s: unknown) => unknown) => selector({}),
   useAppStore: () => ({ getState: () => ({}) }),
 }));
-jest.mock("@/features/files/redux/thunks", () => ({
+jest.mock("@ai-matrx/media/files/engine/redux/thunks", () => ({
   createShareLink: () => ({ type: "createShareLink" }),
   deleteFile: () => ({ type: "deleteFile" }),
   getFileUrl: () => ({ type: "getFileUrl" }),
@@ -37,21 +39,21 @@ jest.mock("@/features/files/redux/thunks", () => ({
   restoreVersion: () => ({ type: "restoreVersion" }),
   updateFileMetadata: () => ({ type: "updateFileMetadata" }),
 }));
-jest.mock("@/features/files/redux/virtual-thunks", () => ({
+jest.mock("@ai-matrx/media/files/engine/redux/virtual-thunks", () => ({
   deleteAny: jest.fn(),
   moveAny: jest.fn(),
   renameAny: jest.fn(),
 }));
-jest.mock("@/features/files/redux/selectors", () => ({
+jest.mock("@ai-matrx/media/files/engine/redux/selectors", () => ({
   selectFileById: () => file,
   selectActiveShareLinksForResource: () => [{ permissionLevel: "viewer", shareToken: "tok123" }],
 }));
-jest.mock("@/features/files/virtual-sources/path", () => ({ isSyntheticId: () => false }));
-jest.mock("@/features/files/api/files", () => ({ getFile: jest.fn(), downloadFile: jest.fn() }));
-jest.mock("@/features/files/handler/utils/python-base", () => ({
+jest.mock("@ai-matrx/media/files/engine/virtual-sources/path", () => ({ isSyntheticId: () => false }));
+jest.mock("@ai-matrx/media/files/engine/api/files", () => ({ getFile: jest.fn(), downloadFile: jest.fn() }));
+jest.mock("@ai-matrx/media/files/engine/handler/utils/python-base", () => ({
   pythonShareUrl: (token: string) => `https://py.example/share/${token}`,
 }));
-jest.mock("@/features/files/redux/converters", () => ({ apiFileRecordToCloudFile: jest.fn() }));
+jest.mock("@ai-matrx/media/files/engine/redux/converters", () => ({ apiFileRecordToCloudFile: jest.fn() }));
 
 import { useFileActions, type FileActionHandlers } from "../useFileActions";
 

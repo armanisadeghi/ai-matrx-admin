@@ -122,6 +122,22 @@ export interface SignalSummaryView {
   sources: string[];
 }
 
+/**
+ * A withheld story's reason, as a person reads it. The server writes it in plain words — brand
+ * safety's `describe` ("Death or injury: “killed”", "Not checked for safety: we can't read Greek
+ * yet") is the ONE place a safety flag becomes words; nothing here maps codes. A run recorded
+ * before that wrote flag codes ("unreviewed_language:greek script"): those never render, the line
+ * says the run is older instead.
+ */
+const RAW_SAFETY_CODE = /\b(hard_safety_term|unreviewed_language|profile_exclusion):/;
+export const OLDER_RUN_SAFETY_DETAIL =
+  "Withheld for brand safety. This run is older than plain reasons; run it again to see why.";
+
+export function plainSafetyDetail(detail: string | null | undefined): string | null {
+  if (!detail) return null;
+  return RAW_SAFETY_CODE.test(detail) ? OLDER_RUN_SAFETY_DETAIL : detail;
+}
+
 export function readSignalSummaries(value: unknown): SignalSummaryView[] {
   return records(value).map((s) => ({
     id: str(s.signal_id),
@@ -131,12 +147,12 @@ export function readSignalSummaries(value: unknown): SignalSummaryView[] {
       str(s.pre_gate_reason) ||
       (isRecord(s.withheld) ? str(s.withheld.reason) : "") ||
       null,
-    rationale:
+    rationale: plainSafetyDetail(
       str(s.rationale) ||
-      str(s.pre_gate_rationale) ||
-      (isRecord(s.withheld) ? str(s.withheld.detail) : "") ||
-      str(s.detail) ||
-      null,
+        str(s.pre_gate_rationale) ||
+        (isRecord(s.withheld) ? str(s.withheld.detail) : "") ||
+        str(s.detail),
+    ),
     // Each address once: a URL list keys its links, and an engine list can repeat an address.
     urls: [...new Set(strings(s.evidence_urls).length ? strings(s.evidence_urls) : strings(s.urls))],
     sources: strings(s.sources),
@@ -218,7 +234,7 @@ export function readSetAsideItems(diagnostics: Record<string, unknown>, reasons:
       id: str(i.id),
       title: str(i.title),
       reason: str(i.reason) || null,
-      rationale: str(i.detail) || null,
+      rationale: plainSafetyDetail(str(i.detail)),
       // An item can name one address several times (one per source that saw it): each once.
       urls: [...new Set(strings(i.urls))],
       sources: [],

@@ -110,7 +110,8 @@ export function landingOptions(entries: readonly { key: string; title: string; o
     { value: DEFAULT_LANDING, label: "Dashboard" },
     ...entries.map((e) =>
       e.owner === "org"
-        ? { value: `${ORG_LANDING_PREFIX}${e.key}`, label: e.title, description: "Organization" }
+        ? // A native option shows no description, so the tag is part of the visible label.
+          { value: `${ORG_LANDING_PREFIX}${e.key}`, label: `${e.title} · Organization` }
         : { value: e.key, label: e.title },
     ),
   ];

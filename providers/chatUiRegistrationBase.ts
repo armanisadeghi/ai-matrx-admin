@@ -12,7 +12,7 @@
 //   · AnswerValueView → AnswerValueSlot: text draws at once; a structured value loads the kind
 //     stack through the kind front door's existing lazy edge (a static AnswerValueView here put
 //     the content-ir component registry in every route's first load).
-//   · EditableContextMenu, MicrophoneIconButton, MicDeviceMenu — the composer on /chat/new.
+//   · EditableContextMenu — the composer on /chat/new.
 //   · ConnectorPromptHost — NewChatGreeting draws it above the composer on first paint.
 //   · NonEditableContextMenu, SearchGroup (+ its trigger) — wrappers: a loading state would hide
 //     their `children` (the SSR'd conversation, a toolbar's contents).
@@ -116,24 +116,18 @@ const lazySlot = lazySlotsFrom(() =>
 const ErrorAlchemyMenu = lazySlot("ErrorAlchemyMenu", SlotLoadingGlyph);
 const AdvancedMenu = lazySlot("AdvancedMenu");
 const TableChooser = lazySlot("TableChooser", SlotLoadingControl);
-const FileResourceChip = lazySlot("FileResourceChip", SlotLoadingInline);
 const ConnectorMark = lazySlot("ConnectorMark", SlotLoadingGlyphSmall);
 const AttachedResourcesSection = lazySlot("AttachedResourcesSection", SlotLoadingBlock);
 const WebpageSnapshotView = lazySlot("WebpageSnapshotView", SlotLoadingPanel);
 const MessageFilesStrip = lazySlot("MessageFilesStrip");
 const RulebookNudge = lazySlot("RulebookNudge");
 const NegativeVerdictFollowUp = lazySlot("NegativeVerdictFollowUp");
-const SpeakerButton = lazySlot("SpeakerButton", SlotLoadingGlyph);
 const GmailReviewCard = lazySlot("GmailReviewCard", SlotLoadingBlock);
 const ShareButton = lazySlot("ShareButton", SlotLoadingGlyph);
 const ReviewAnswersLink = lazySlot("ReviewAnswersLink");
 const RecordChangeApprovalCard = lazySlot("RecordChangeApprovalCard", SlotLoadingBlock);
 const BackgroundRunCard = lazySlot("BackgroundRunCard", SlotLoadingBlock);
 const SystemInstructionModal = lazySlot("SystemInstructionModal");
-const FileRagBadge = lazySlot("FileRagBadge");
-const MediaAttachmentThumbnail = lazySlot("MediaAttachmentThumbnail", SlotLoadingGlyph);
-const UnifiedImageBlockRenderer = lazySlot("UnifiedImageBlockRenderer", SlotLoadingBlock);
-const TranscriptionLoader = lazySlot("TranscriptionLoader", SlotLoadingInline);
 const PdfNamedSurfaceSwitcher = lazySlot("PdfNamedSurfaceSwitcher", SlotLoadingControl);
 const ChangeDiff = lazySlot("ChangeDiff", SlotLoadingBlock);
 
@@ -182,35 +176,21 @@ const ResourcePickerWindow = dynamic(
   { ssr: false },
 );
 
-import { MicrophoneIconButton } from "@/features/audio/components/MicrophoneIconButton";
-import { MicDeviceMenu } from "@/components/audio/MicDeviceMenu";
 import { resolvePdfSurfaceIds } from "@/features/pdf/hooks/usePdfSurfaceLinks";
 import {
   SearchGroup,
   SearchGroupTrigger,
 } from "@/components/icons/SearchToolbar";
-import { useFileDocument } from "@/features/files/hooks/useFileDocument";
-import { useFileResourceFamily } from "@/features/files/hooks/useFileResourceFamily";
-import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
-import { useRecordAndTranscribe } from "@/features/audio/hooks/useRecordAndTranscribe";
+// The chat package imports the shared voice controls directly; this installs the app's side of them (recorder, device choice, toast, dialogs).
+import "@/features/audio/voiceInputPorts";
 import { requestScribeAudioSeek } from "@/features/transcript-studio/state/scribeAudioBus";
 import { readListRpc } from "@/lib/entity-list/readListRpc";
 
 registerChatUi({
-  FileRagBadge,
-  MediaAttachmentThumbnail,
-  UnifiedImageBlockRenderer,
-  MicrophoneIconButton,
-  TranscriptionLoader,
-  MicDeviceMenu,
   PdfNamedSurfaceSwitcher,
   ChangeDiff,
   SearchGroup,
   SearchGroupTrigger,
-  useFileDocument,
-  useFileResourceFamily,
-  useFileActions,
-  useRecordAndTranscribe,
   requestScribeAudioSeek,
   resolvePdfSurfaceIds,
   readListRpc,
@@ -236,7 +216,6 @@ registerChatUi({
   MessageFilesStrip,
   RulebookNudge,
   NegativeVerdictFollowUp,
-  SpeakerButton,
   GmailReviewCard,
   ShareButton,
   ShareModal,
@@ -251,7 +230,6 @@ registerChatUi({
   EditableContextMenu,
   NonEditableContextMenu,
   TableChooser,
-  FileResourceChip,
   ConnectorMark,
   confirm,
   useTablesEverywhere,
