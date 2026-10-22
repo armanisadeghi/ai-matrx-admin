@@ -10,6 +10,7 @@ Each case can fail: with the handlers removed, case 1 leaves the folder and the 
 """
 import importlib.util
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -52,6 +53,7 @@ class TrialCleanup(unittest.TestCase):
             f.write("{}")
         subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
         self.env = dict(os.environ, TMPDIR=self.tmp)
+        self.addCleanup(shutil.rmtree, self.tmp, True)
 
     def start(self, mode):
         p = subprocess.Popen([sys.executable, "-c", CHILD, self.repo, mode], stdout=subprocess.PIPE, text=True, env=self.env)
@@ -117,10 +119,11 @@ class CloneCopy(unittest.TestCase):
             f.write("x" * 10000)
         os.symlink("sub/a.txt", os.path.join(self.repo, "link"))
         subprocess.run(["git", "add", "."], cwd=self.repo, check=True)
+        self.addCleanup(shutil.rmtree, self.tmp, True)
 
     def test_clone_path_runs_on_apfs(self):
         sm = load()
-        sm._CLONE_STATS.update(cloned=0, fallback=0)
+        sm._CLONE_STATS.update(cloned=0, fallback=0, calls=0)
         old = os.getcwd()
         try:
             tmp, rels = sm.make_trial_tree(self.repo)
@@ -132,7 +135,7 @@ class CloneCopy(unittest.TestCase):
             self.assertTrue(os.path.islink(os.path.join(tmp, "link")))
             if sys.platform == "darwin":
                 self.assertEqual(sm._CLONE_STATS["fallback"], 0, "an APFS clone was refused: %r" % sm._CLONE_STATS)
-                self.assertEqual(sm._CLONE_STATS["cloned"], len(rels))
+                self.assertEqual(sm._CLONE_STATS["cloned"], 2, "sub/ is one folder clone, link one file clone")
         finally:
             sm.drop_trial_tree(tmp)
 
@@ -142,6 +145,91 @@ class CloneCopy(unittest.TestCase):
         tmp, rels = sm.make_trial_tree(self.repo)
         try:
             self.assertEqual(open(os.path.join(tmp, "sub", "a.txt")).read(), "x" * 10000)
+        finally:
+            sm.drop_trial_tree(tmp)
+
+
+class FolderClone(unittest.TestCase):
+    """The trial tree is cloned a FOLDER at a time, never file by file (2026-10-22: one clonefile() per
+    file over ~38k files took ~16 minutes under load and starved every other sync of the lock), and
+    still holds exactly the trial files: nothing git ignores, every tracked and untracked file."""
+
+    def setUp(self):
+        self.tmp = os.path.realpath(tempfile.mkdtemp(prefix="trial-folder-test-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.repo = os.path.join(self.tmp, "repo")
+        r = self.repo
+        for a in (["init", "-q", r], ["-C", r, "config", "user.email", "t@t"], ["-C", r, "config", "user.name", "t"]):
+            subprocess.run(["git", *a], check=True)
+
+        def put(rel, text="x"):
+            os.makedirs(os.path.dirname(os.path.join(r, rel)) or r, exist_ok=True)
+            with open(os.path.join(r, rel), "w") as f:
+                f.write(text)
+
+        put(".gitignore", "node_modules/\n*.log\n.env\n")
+        for i in range(300):                       # a big clean folder: must be ONE clone
+            put("app/route%d/page%d.tsx" % (i % 30, i), "page %d" % i)
+        put("lib/a.ts")
+        put("lib/debug.log")                       # ignored file beside tracked ones
+        put("lib/deep/b.ts")
+        put("node_modules/pkg/index.js")           # ignored folder
+        put("pkg/node_modules/x/y.js")             # ignored folder below a tracked one
+        put("pkg/package.json", "{}")
+        put("pkg/src/c.ts")
+        put(".env", "SECRET=1")
+        subprocess.run(["git", "-C", r, "add", "."], check=True)
+        put("app/untracked.ts")                    # untracked, not ignored: a trial file
+        put("README.md", "dirty")                  # untracked at the top
+
+    def tree(self, root):
+        got = set()
+        for d, dirs, files in os.walk(root):
+            for f in files:
+                got.add(os.path.relpath(os.path.join(d, f), root))
+        return got
+
+    def test_folders_clone_whole_and_the_tree_is_exact(self):
+        sm = load()
+        sm._CLONE_STATS.update(cloned=0, fallback=0, calls=0)
+        real, asked = sm.clone_files, []
+
+        def counting(s, d, units):
+            asked.extend(units)
+            return real(s, d, units)
+
+        sm.clone_files = counting
+        tmp, rels = sm.make_trial_tree(self.repo)
+        self.assertIsNotNone(tmp, rels)
+        try:
+            got = self.tree(tmp) - {sm.TRIAL_OWNER}
+            self.assertEqual(got, set(rels), "the trial tree is not exactly the trial files")
+            for ignored in ("lib/debug.log", "node_modules/pkg/index.js", "pkg/node_modules/x/y.js", ".env"):
+                self.assertNotIn(ignored, got)
+            self.assertIn("app/untracked.ts", got)
+            with open(os.path.join(tmp, "app/route7/page7.tsx")) as f:
+                self.assertEqual(f.read(), "page 7")
+            # app/ (301 files) is one unit; the rest: .gitignore, README.md, lib/a.ts, lib/deep,
+            # pkg/package.json, pkg/src. A per-file copy asks for 300+.
+            self.assertLessEqual(len(asked), 8, "the trial tree was cloned file by file: %d clones" % len(asked))
+            if sys.platform == "darwin":
+                self.assertEqual(sm._CLONE_STATS["fallback"], 0, sm._CLONE_STATS)
+        finally:
+            sm.drop_trial_tree(tmp)
+
+    def test_refused_folder_clone_still_makes_the_exact_tree(self):
+        sm = load()
+        real = sm.clone_files
+        calls = []
+
+        def refuse_folders(s, d, units):
+            calls.append(list(units))
+            return list(units) if len(calls) == 1 else real(s, d, units)
+
+        sm.clone_files = refuse_folders
+        tmp, rels = sm.make_trial_tree(self.repo)
+        try:
+            self.assertEqual(self.tree(tmp) - {sm.TRIAL_OWNER}, set(rels))
         finally:
             sm.drop_trial_tree(tmp)
 

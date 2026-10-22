@@ -222,9 +222,12 @@ export function useEducationSources(surfaceKey: string, options: UseEducationSou
    * filled in (citations open the real file only through its file id) and a
    * sentence for each Source left out or stood in for.
    */
-  const resolveChosen = async (): Promise<ChosenSources & { resolved: ResolvedSourceSet; notes: string[] }> => {
+  const resolveChosen = async (
+    /** `targetModelId`: read inside that model's real window (the server's budget). */
+    resolveOptions?: { targetModelId?: string },
+  ): Promise<ChosenSources & { resolved: ResolvedSourceSet; notes: string[] }> => {
     const picked = begin();
-    const resolving = set.resolve();
+    const resolving = set.resolve(resolveOptions);
     resolving.catch(() => undefined);
     const resolved = await backfillFileIds(await resolving);
     return { ...picked, resolved, notes: notesOf(resolved) };

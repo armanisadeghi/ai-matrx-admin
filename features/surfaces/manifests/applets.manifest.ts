@@ -427,6 +427,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const appletsManifest: SurfaceManifest = {
+  situation:
+    "They are in Applets, with {listed_app_count|no} applets in their list; the one open is \"{app_name|none}\" ({app_status|no status}), on its {active_view|overview} page. They can edit its name, tagline, description, category and tags.",
   surfaceName: APPLETS_SURFACE_NAME,
   inheritsFrom: "matrx-default/applets",
   client: "matrx-user",

@@ -46,8 +46,8 @@ import {
   DEFAULT_PROMPTS,
   PROMPT_COUNT_OPTIONS,
 } from "../constants";
-import { practiceDesignerModelId } from "../data/designerModel";
 import { practiceSourceFromResolved } from "../data/practiceSources";
+import { practiceDesignerModelId } from "../data/designerModel";
 import {
   publishPracticeSetupSnapshot,
   type PracticeSetupSnapshot,
@@ -287,7 +287,8 @@ export function PracticeSetup({
         if (ready.length > 0) {
           let read;
           try {
-            read = await sources.resolveChosen();
+            // Inside the designer model's real window (the server's budget).
+            read = await sources.resolveChosen({ targetModelId: await practiceDesignerModelId(mode) });
           } catch (e) {
             toast.error(e instanceof Error ? e.message : "Your sources could not be read. Try again.");
             return;

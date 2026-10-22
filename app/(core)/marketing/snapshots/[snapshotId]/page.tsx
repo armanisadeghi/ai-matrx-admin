@@ -8,6 +8,7 @@ import { createClient } from "@/utils/supabase/server";
 import { webDb } from "@/utils/supabase/webDb";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { RecordId } from "@ai-matrx/design-system";
+import { displayId } from "@ai-matrx/design-system/record-id-format";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 
@@ -97,7 +98,7 @@ export default async function MarketingSnapshotPage({
             <ShareButton
               resourceType="web_snapshot"
               resourceId={snapshot.id}
-              resourceName={snapshot.final_url || `Page capture ${snapshot.id.slice(0, 8)}`}
+              resourceName={snapshot.final_url || `Page capture ${displayId(snapshot.id)}`}
             />
           </header>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

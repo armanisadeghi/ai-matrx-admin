@@ -155,6 +155,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const visionInterviewManifest: SurfaceManifest = {
+  situation:
+    "They are in the vision interview \"{session_title|not loaded yet}\": six named roles question their vision statement round by round. It is on round {current_round|1}, at the {session_stage|first} stage. The vision statement, open questions and holes are in your context.",
   surfaceName: "matrx-user/vision-interview",
   inheritsFrom: "matrx-default/masterwork",
   client: "matrx-user",

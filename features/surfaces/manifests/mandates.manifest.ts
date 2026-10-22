@@ -312,6 +312,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const mandatesManifest: SurfaceManifest = {
+  situation:
+    "They are on the admin mandates list: {mandate_count} jobs the platform's system agents do, with their health. The one open is \"{selected_mandate.label|none}\" (health: {selected_mandate_health|not shown}). They can open a mandate and draft an example answer for it.",
   surfaceName: MANDATES_SURFACE_NAME,
   inheritsFrom: "matrx-default/intelligence",
   client: "matrx-admin",

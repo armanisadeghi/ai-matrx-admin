@@ -146,6 +146,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const reportsManifest: SurfaceManifest = {
+  situation:
+    "They are in Reports, with {report_title|the list of reports} open. When a report is open, its findings and totals are in your context; they can open a report and change its view.",
   surfaceName: "matrx-user/reports",
   inheritsFrom: "matrx-default/intelligence",
   client: "matrx-user",

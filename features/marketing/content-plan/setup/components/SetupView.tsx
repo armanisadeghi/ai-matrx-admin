@@ -991,7 +991,7 @@ export function SetupView() {
           family_key: family.key,
           family_label: family.label,
           family_route: family.route,
-          target_count: String(target),
+          target_count: target,
         };
         if (family.materialize === "pages") {
           if ((stagedNames[family.key]?.length ?? 0) > 0) continue;
@@ -1002,7 +1002,7 @@ export function SetupView() {
           });
           const outcome = await agents.nameFamily("user", family.key, {
             ...commonVariables,
-            existing_names: (planDerivedNames[family.key] ?? []).join("\n"),
+            existing_names: planDerivedNames[family.key] ?? [],
             guidance,
           });
           const labels = outcome.names.map((item) => item.label);
@@ -1028,7 +1028,7 @@ export function SetupView() {
           });
           const outcome = await agents.nameFamily("user", family.key, {
             ...commonVariables,
-            existing_names: "",
+            existing_names: [],
             guidance:
               `These are ARTICLE TITLES for the ${family.label} section at ${family.route} — ` +
               "each one is a publishable piece, not a navigation page. Titles should reflect " +
@@ -1114,8 +1114,8 @@ export function SetupView() {
         family_key: family.key,
         family_label: family.label,
         family_route: family.route,
-        target_count: String(counts[family.key] ?? family.count),
-        existing_names: (names[family.key] ?? []).join("\n"),
+        target_count: counts[family.key] ?? family.count,
+        existing_names: names[family.key] ?? [],
         guidance: "",
       });
       setNames(
@@ -1262,8 +1262,8 @@ export function SetupView() {
         family_key: family.key,
         family_label: family.label,
         family_route: family.route,
-        target_count: String(counts[family.key] ?? family.count),
-        existing_names: (topics[family.key] ?? []).join("\n"),
+        target_count: counts[family.key] ?? family.count,
+        existing_names: topics[family.key] ?? [],
         guidance:
           `These are ARTICLE TITLES for the ${family.label} section at ${family.route} — ` +
           "each one is a publishable piece, not a navigation page. Titles should reflect " +

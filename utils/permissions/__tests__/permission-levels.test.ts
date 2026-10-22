@@ -237,7 +237,8 @@ const CENSUS_SITES = [
   "features/notes/redux/notes.types.ts",
   "features/messaging/types.ts",
   "../aidream/apps/shared/chat/src/public-chat/types/cx-tables.ts",
-  "features/access-gate/service/accessRequests.ts",
+  // accessRequests.ts left the census 2026-10-22: it is a re-export of @ai-matrx/data/access, whose
+  // ladder is the canonical one (data/src/access/permissionLevels.ts).
   "features/access-gate/service/accessDeniedContext.ts",
 ] as const;
 

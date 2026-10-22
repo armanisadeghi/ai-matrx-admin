@@ -25,6 +25,8 @@ import { AskTutorButton } from "@/features/education/tutor/components/AskTutorBu
 import type { TutorStudyContext } from "@/features/education/tutor/sourceScope";
 import { VerifyAgainstSourceButton } from "@/features/education/trust/components/VerifyAgainstSourceButton";
 import type { TrustEnvelope } from "@/features/education/trust/types";
+import { SourceCitations } from "@/features/education/trust/components/SourceCitations";
+import { nodeCitationOf } from "../nodeCitations";
 import { parseDiagramJSON } from "@ai-matrx/rich-content/display/blocks/diagram/parseDiagramJSON";
 import type {
   DiagramData,
@@ -103,11 +105,12 @@ function NodePanel({
   node: DiagramNode;
   studyContext?: TutorStudyContext;
   /** The map's TrustEnvelope — a linked node card is verified against ITS cited
-   *  sources (nodes carry no per-node citations of their own). */
+   *  sources. A node that traced to a passage also shows its own citation. */
   mapTrust: TrustEnvelope | null | undefined;
   onClose: () => void;
 }) {
   const card = nodeCard(node);
+  const nodeCitation = nodeCitationOf(node);
   const seed = { ...seedForNode(node), ...(studyContext ? { studyContext } : {}) };
   // The node's detail is the page's canvas tab (one per map view); a click on
   // another node renames the tab and brings it forward.
@@ -144,6 +147,10 @@ function NodePanel({
             <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3 text-xs text-muted-foreground">
               This idea groups several cards — ask the tutor to unpack it.
             </div>
+          )}
+
+          {nodeCitation && (
+            <SourceCitations trust={{ citations: [nodeCitation], confidence: "grounded" }} label="From the source" />
           )}
 
           <AskTutorButton

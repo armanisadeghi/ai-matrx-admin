@@ -108,7 +108,7 @@ export function fetchWithGuestChallenge(base: typeof fetch = fetch): typeof fetc
     // The session door always mints; ask for a token only when the server would read it.
     if (Date.now() < failedUntil || Date.now() < modeOffUntil) return base(input, init);
     const fresh = lastPolicy && Date.now() - lastPolicyAt < lastPolicy.recheck_seconds * 1000;
-    const policy = fresh ? lastPolicy : await readPolicy(BACKEND_URLS.production, null);
+    const policy = fresh ? lastPolicy : await readPolicy(BACKEND_URLS.production ?? "", null);
     if (!policy || policy.mode === "off") return base(input, init);
     const token = await getTurnstileToken(policy.token_wait_ms);
     if (!token) {
@@ -254,7 +254,7 @@ export async function ensureGuestIdentity(options: { fresh?: boolean; baseUrl?: 
   }
   readyFingerprint ??= readStoredReady();
   if (fingerprint && readyFingerprint === fingerprint) return true;
-  const baseUrl = (options.baseUrl ?? BACKEND_URLS.production).replace(/\/+$/, "");
+  const baseUrl = (options.baseUrl ?? BACKEND_URLS.production ?? "").replace(/\/+$/, "");
   minting ??= mintOnce(baseUrl, fingerprint).finally(() => {
     minting = null;
   });

@@ -330,6 +330,10 @@ export default function SurfaceContextWindow({
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, 8);
 
+  // A value's human name: its declared label, else the key made readable — never the raw key.
+  const valueLabel = (key: string) =>
+    declared.find((value) => value.name === key)?.label ?? humanizeIdentifier(key);
+
   const presentation = statusPresentation(live.status);
   const liveRuntimeFailed = live.status === "error";
   const actionCount = wiredTargets.length + availableHere.available.length + clientTools.length;
@@ -432,7 +436,6 @@ export default function SurfaceContextWindow({
                 />
               );
             }}
-            renderRowTrail={(row) => <code className="text-xs">{row.key}</code>}
           />
         ) : filteredItems.length === 0 ? (
           <EmptyState
@@ -457,13 +460,6 @@ export default function SurfaceContextWindow({
                   line={supplied_ ? previewValue(raw) : "Not available"}
                   onPress={() => setOpenKey(expanded ? null : item.key)}
                   expanded={expanded}
-                  trailing={
-                    isAdmin ? (
-                      <code className="hidden max-w-[40%] shrink-0 truncate text-xs text-muted-foreground sm:block">
-                        {item.key}
-                      </code>
-                    ) : null
-                  }
                 >
                   <div className="space-y-2 bg-muted/15 px-3 pb-3 pt-1">
                     {hasValue(raw) ? (
@@ -530,7 +526,6 @@ export default function SurfaceContextWindow({
               <ListRow
                 key={`${entry.surfaceName}:${entry.target.name}`}
                 title={entry.target.label}
-                line={entry.target.name}
                 trailing={
                   <Badge tone={unwiredTargets.includes(entry) ? "destructive" : "neutral"}>
                     {unwiredTargets.includes(entry) ? "No handler" : "Other view"}
@@ -745,7 +740,7 @@ export default function SurfaceContextWindow({
               {availableHere.loaded && topMissingKeys.length > 0 ? (
                 <span
                   className="text-amber-600 dark:text-amber-400"
-                  title={topMissingKeys.map(([key, count]) => `${key}: unlocks ${count}`).join("\n")}
+                  title={topMissingKeys.map(([key, count]) => `${valueLabel(key)}: unlocks ${count}`).join("\n")}
                 >
                   {missingKeyTally.size} keys short
                 </span>
@@ -753,13 +748,6 @@ export default function SurfaceContextWindow({
             </>
           ) : null}
         </div>
-      }
-      footerRight={
-        isAdmin && surfaceName ? (
-          <code className="max-w-[260px] truncate font-mono text-xs text-muted-foreground">
-            {surfaceName}
-          </code>
-        ) : null
       }
     >
       <div className="shrink-0 px-2">

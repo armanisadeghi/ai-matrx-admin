@@ -194,6 +194,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminHindsightManifest: SurfaceManifest = {
+  situation:
+    "They are in Hindsight, the platform's self-review console; the subject open is \"{enrollment_display_name|none}\" (a {enrollment_subject_kind|subject}), with {pending_example_count|no} runs for the next review. Its open findings and review summaries are in your context.",
   surfaceName: ADMIN_HINDSIGHT_SURFACE_NAME,
   inheritsFrom: "matrx-default/intelligence",
   client: "matrx-admin",

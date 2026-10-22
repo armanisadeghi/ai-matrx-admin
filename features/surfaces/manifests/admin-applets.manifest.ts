@@ -758,6 +758,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminAppletsManifest: SurfaceManifest = {
+  situation:
+    "They are in the applets admin, on its {admin_section} page: {dashboard_total_apps|an unknown number of} applets, {dashboard_published_count|unknown} published. They can edit an applet's name, tagline, description, category and tags, and edit categories.",
   surfaceName: ADMIN_APPLETS_SURFACE_NAME,
   inheritsFrom: "matrx-default/applets",
   client: "matrx-admin",

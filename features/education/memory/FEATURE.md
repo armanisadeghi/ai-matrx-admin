@@ -30,7 +30,7 @@ out, an optional memory palace, and an opt-in per-card "Give me a memory aid" hi
   schema + `pnpm shape:emit` + `MemoryAidBlock`, never a column). Render through the canonical
   `MemoryAidBlock` / `MemoryHintBlock`; never hand-render either shape.
 - The agent returns structure, not trust: the `TrustEnvelope` is built from the known source
-  (`buildSourceTrust` / `resolveDeckAudioSource`; deck → `grounded`, topic → `inferred`). Never
+  (`buildSourceTrust`; deck → `grounded`, topic → `inferred`). Never
   persist `trust: null` for a grounded source.
 - `memory_palace.applicable=false` (empty theme/loci) when the material doesn't warrant one; never
   force a palace.

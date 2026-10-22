@@ -38,19 +38,30 @@ export interface ComparisonViewProps {
   onPick?: (item: ComparedItem, pick: string) => void;
   /** Answers "Is this them?" for a facet page that only resembles the company; absent = the line is read-only. */
   onConfirm?: FacetConfirm;
+  /** The way out when nothing could be compared (another kind, edit the names); absent = none offered. */
+  wayOut?: ReactNode;
 }
 
 /** Kinds whose picture is a photo (a place, a product, an avatar) and fills its square. */
 const isPhoto = (kind: string) => kind === "local_business" || kind === "products" || kind === "social_accounts";
 
-export function ComparisonView({ result, factsHref, actions, onPick, onConfirm }: ComparisonViewProps) {
+/** The title when no one leads: compared side by side (no rating to rank by), or honestly nothing found. */
+export function noLeaderTitle(result: ComparisonResult): string {
+  if (comparedItems(result).length > 0) return "Side by side";
+  if (result.kind === "companies_reviews" && result.items.length > 0 && result.items.every((i) => i.error)) {
+    return "We couldn't find public data for these companies";
+  }
+  return "Nothing to compare yet";
+}
+
+export function ComparisonView({ result, factsHref, actions, onPick, onConfirm, wayOut }: ComparisonViewProps) {
   const verdict = verdictOf(result);
   const compared = comparedItems(result);
   const primary = result.fields.find((f) => f.is_primary) ?? null;
   const groups = fieldGroups(result.fields);
   const leader = verdict.leader;
   const headline = headlineOf(result);
-  const title = !leader ? "Nothing to compare yet"
+  const title = !leader ? noLeaderTitle(result)
     : verdict.tie ? "A tie at the top"
     : (headline?.lead ?? leader.name);
   const reading = !leader ? ""
@@ -71,7 +82,7 @@ export function ComparisonView({ result, factsHref, actions, onPick, onConfirm }
           <Trophy className="h-3.5 w-3.5 text-primary" aria-hidden />
           {result.kind_label}
         </div>
-        <h1 className={cn("truncate text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl", leader && "col-start-2")} title={title}>
+        <h1 className={cn("text-balance break-words text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl", leader && "col-start-2")} title={title}>
           {title}
         </h1>
         {reading ? (
@@ -82,6 +93,8 @@ export function ComparisonView({ result, factsHref, actions, onPick, onConfirm }
           {actions}
         </div>
       </section>
+
+      {compared.length === 0 && wayOut ? <div className="flex flex-wrap gap-2">{wayOut}</div> : null}
 
       {/* ── the contenders ────────────────────────────────────── */}
       <section
@@ -250,6 +263,7 @@ function ContenderCard({ item, primary, kind, result, factsHref, onPick }: {
         </div>
       )}
       {!failed && !choosing && pv?.basis ? <SourceLine basis={pv.basis} /> : null}
+      {!failed && !choosing && item.source_error && item.source_error !== pv?.basis ? <SourceLine basis={item.source_error} /> : null}
       {!failed && !choosing && item.thin_sample ? <div><Badge tone="warning">{item.thin_sample}</Badge></div> : null}
 
       {!failed && !choosing ? <ReviewsDisclosure item={item} /> : null}

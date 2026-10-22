@@ -408,6 +408,8 @@ const clientTools: SurfaceClientTool[] = [
 ];
 
 export const masterworkRulebookManifest: SurfaceManifest = {
+  situation:
+    "They have the rulebook \"{rulebook_name}\" open ({rulebook_status}, version {rulebook_version}): {rule_counts.approved|no} approved rules, {rule_counts.draft|no} drafts, {rule_counts.total|no} in all; the rule open in the editor, if any, is in your context. They can draft a rule for review, search rules and decide checkup items.",
   surfaceName: MASTERWORK_RULEBOOK_SURFACE_NAME,
   inheritsFrom: "matrx-default/masterwork",
   client: "matrx-user",

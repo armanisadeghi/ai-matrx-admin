@@ -409,6 +409,8 @@ const surfaceSpecific: SurfaceValue[] = [
 ];
 
 export const adminReportingManifest: SurfaceManifest = {
+  situation:
+    "They are in the admin reporting area, on its {reporting_section} page (events, the report catalog, and scoreboards for dead ends, unwired pieces, lint debt, check findings and performance). What that page shows is in your context.",
   surfaceName: ADMIN_REPORTING_SURFACE_NAME,
   inheritsFrom: "matrx-default/intelligence",
   client: "matrx-admin",

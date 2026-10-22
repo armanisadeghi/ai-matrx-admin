@@ -75,7 +75,12 @@ export interface MemoryAidBlockProps {
   serverData?: unknown;
   className?: string;
   controls?: MemoryAidControls;
+  /** Where an item came from (its citation chips), drawn under the item; the host owns what it cites. */
+  cite?: MemoryItemCite;
 }
+
+/** Renders the citation of one item (null / nothing = uncited). */
+export type MemoryItemCite = (kind: MemoryItemKind, item: unknown) => React.ReactNode;
 
 export type MemoryItemKind = "mnemonic" | "analogy" | "locus";
 
@@ -91,6 +96,7 @@ export default function MemoryAidBlock({
   serverData,
   className,
   controls,
+  cite,
 }: MemoryAidBlockProps) {
   const { aid, isComplete } = readMemoryAidData(serverData);
   const empty =
@@ -119,9 +125,9 @@ export default function MemoryAidBlock({
         </p>
       )}
 
-      <MnemonicsSection mnemonics={aid.mnemonics} controls={controls} />
-      <AnalogiesSection analogies={aid.analogies} controls={controls} />
-      <MemoryPalaceSection palace={aid.memory_palace} controls={controls} />
+      <MnemonicsSection mnemonics={aid.mnemonics} controls={controls} cite={cite} />
+      <AnalogiesSection analogies={aid.analogies} controls={controls} cite={cite} />
+      <MemoryPalaceSection palace={aid.memory_palace} controls={controls} cite={cite} />
 
       {!isComplete && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -135,7 +141,7 @@ export default function MemoryAidBlock({
 
 // ── Exported section parts — compose these, never re-render a slice by hand ──
 
-export function MnemonicsSection({ mnemonics, controls }: { mnemonics: Mnemonic[]; controls?: MemoryAidControls }) {
+export function MnemonicsSection({ mnemonics, controls, cite }: { mnemonics: Mnemonic[]; controls?: MemoryAidControls; cite?: MemoryItemCite }) {
   if (mnemonics.length === 0 && !controls) return null;
   // A brand-new mnemonic starts with empty text, and the coercer that builds
   // `mnemonics` from raw data drops an item with no device/target (correctly —
@@ -170,6 +176,7 @@ export function MnemonicsSection({ mnemonics, controls }: { mnemonics: Mnemonic[
                 <RichContentInline source={m.explanation} />
               </p>
             )}
+            {cite?.("mnemonic", m)}
             </>}
           </div>
         ))}
@@ -183,7 +190,7 @@ export function MnemonicsSection({ mnemonics, controls }: { mnemonics: Mnemonic[
   );
 }
 
-export function AnalogiesSection({ analogies, controls }: { analogies: Analogy[]; controls?: MemoryAidControls }) {
+export function AnalogiesSection({ analogies, controls, cite }: { analogies: Analogy[]; controls?: MemoryAidControls; cite?: MemoryItemCite }) {
   if (analogies.length === 0 && !controls) return null;
   // Same "Add" fix as mnemonics: a fresh blank analogy is coerced out of
   // `analogies`, so its editor needs an appended slot, not a map index.
@@ -217,6 +224,7 @@ export function AnalogiesSection({ analogies, controls }: { analogies: Analogy[]
                 <RichContentInline source={a.mapping} />
               </p>
             )}
+            {cite?.("analogy", a)}
             </>}
           </div>
         ))}
@@ -230,7 +238,7 @@ export function AnalogiesSection({ analogies, controls }: { analogies: Analogy[]
   );
 }
 
-export function MemoryPalaceSection({ palace, controls }: { palace: MemoryPalace; controls?: MemoryAidControls }) {
+export function MemoryPalaceSection({ palace, controls, cite }: { palace: MemoryPalace; controls?: MemoryAidControls; cite?: MemoryItemCite }) {
   if ((!palace.applicable || palace.loci.length === 0) && !controls) return null;
   // Same "Add" fix as mnemonics/analogies: a fresh blank stop is coerced out
   // of `palace.loci`, so its editor needs an appended slot, not a map index.
@@ -279,6 +287,7 @@ export function MemoryPalaceSection({ palace, controls }: { palace: MemoryPalace
                     <RichContentInline source={l.image} />
                   </p>
                 )}
+                {cite?.("locus", l)}
               </div>
               {controls && <ItemActions kind="locus" index={i} controls={controls} />}
               </>}

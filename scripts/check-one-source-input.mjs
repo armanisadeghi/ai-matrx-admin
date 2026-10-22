@@ -57,8 +57,6 @@ const ASSOC_IMPORT = /import\s*\{[^}]*\bUniversalAssociationPicker\b[^}]*\}\s*fr
 const KNOWN_LOCAL = new Set([
   "features/transcript-studio/components/columns/AudioImportDialog.tsx",
   "app/(core)/transcripts/new/page.tsx",
-  "features/marketing/seo/topical-map/start/startMapSources.ts",
-  "features/marketing/seo/topical-map/start/StartMapScreen.tsx",
 ]);
 const EDU_CLASS = /(^|\/)features\/education\/classes\//;
 

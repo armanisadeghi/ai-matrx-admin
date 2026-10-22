@@ -20,6 +20,12 @@ describe("the live podcast create page uses the one Source input", () => {
     expect(FORM).toContain("body.source_set = sourceSet.toSourceSet()");
   });
 
+  it("lets typed words and picked Sources combine, with the editable text of the Sources", () => {
+    expect(FORM).toContain("useResolvedSourceText(sourceSet");
+    expect(FORM).toContain("source_text_supplied = true");
+    expect(FORM).toContain("Text from your sources");
+  });
+
   it("never resolves a source in the browser", () => {
     expect(FORM).not.toMatch(/SourceResolverPanel|useSourceResolvers|file_urls|\bSOURCE_OPTIONS\b/);
   });

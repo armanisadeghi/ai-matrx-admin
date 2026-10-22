@@ -32,11 +32,13 @@ export interface SurfaceFleetMetricRow {
   write_targets: number;
   patchable_targets: number;
   write_target_names: string[];
+  /** The surface's OWN situation is set (an inherited one never counts). */
   situation_present: boolean;
-  situation_source: "own" | "inherited" | null;
+  situation_source: "own" | "inherited" | "none";
   situation_from: string | null;
   last_run_at: string | null;
   runs_30d: number;
+  /** The latest probe's `last_check.status` ("pass" / "fail"), null when never probed. */
   probe_result: string | null;
   probe_checked_at: string | null;
   supply_refreshed_at: string | null;

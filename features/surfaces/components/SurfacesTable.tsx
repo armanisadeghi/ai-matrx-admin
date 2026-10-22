@@ -393,7 +393,7 @@ function allSurfaceColumns(
     {
       id: "situation",
       header: "Situation",
-      helpText: "Whether agents are told the situation on this page, set here or inherited from a parent.",
+      helpText: "Own: set on this page. Inherited: only a parent's. Only Own counts toward readiness.",
       accessorFn: (row) => {
         const metric = m(row);
         if (!metric) return null;
@@ -401,7 +401,7 @@ function allSurfaceColumns(
           ? "Own"
           : metric.situation_source === "inherited"
             ? "Inherited"
-            : "Missing";
+            : "None";
       },
       format: { id: "choice" },
       width: 96,

@@ -67,10 +67,9 @@ import type { AssessmentItemRow, AssessmentRow, QuestionType } from "../data/typ
 import { kindConfigFor } from "./kindConfig";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { STUDY_FROM_DECK_KINDS } from "@/features/education/create/studyFromDeck";
 /** The top-up never offers "Just a topic": the questions come from material. */
 const TOPUP_KINDS: readonly SourceInputKindId[] = ALL_SOURCE_KIND_IDS.filter((k) => k !== "topic");
-/** Decks stay pickable here (per screen — the global Use existing list is the nine approved kinds). */
-const TOPUP_EXTRA_KINDS = ["fc_set"] as const;
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   multiple_choice: "Multiple choice",
@@ -418,7 +417,7 @@ function AddMoreQuestionsDialog({
         title="Sources"
         purpose="the new questions"
         kinds={TOPUP_KINDS}
-        extraKinds={TOPUP_EXTRA_KINDS}
+        extraKinds={STUDY_FROM_DECK_KINDS}
         required
         deliveries={FLASHCARD_SOURCE_DELIVERIES}
         attachTo={{ entityType: "assessment", entityId: assessment.id, label: assessment.title }}

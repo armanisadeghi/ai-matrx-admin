@@ -10,6 +10,8 @@ const clinicNotes = {
   write_targets: 3,
   handled_targets: 3,
   situation_present: true,
+  situation_source: "own" as const,
+  probe_result: "pass",
 };
 
 describe("deriveFleetReadiness", () => {
@@ -20,7 +22,7 @@ describe("deriveFleetReadiness", () => {
   it("drops to partial on any one gap", () => {
     expect(deriveFleetReadiness({ ...clinicNotes, values_supplied: 11 })).toBe("partial");
     expect(deriveFleetReadiness({ ...clinicNotes, handled_targets: 2 })).toBe("partial");
-    expect(deriveFleetReadiness({ ...clinicNotes, situation_present: false })).toBe("partial");
+    expect(deriveFleetReadiness({ ...clinicNotes, situation_present: false, situation_source: "none" })).toBe("partial");
   });
 
   it("never counts an unmeasured handler as handled", () => {
@@ -36,5 +38,18 @@ describe("deriveFleetReadiness", () => {
       deriveFleetReadiness({ ...clinicNotes, values_declared_on: 0, values_supplied: 0 }),
     ).toBe("unproven");
     expect(deriveFleetReadiness(undefined)).toBe("unproven");
+  });
+});
+
+describe("readiness needs a passing probe and the page's OWN situation (review B1, B2)", () => {
+  it("a failed or missing probe is never Ready", () => {
+    expect(deriveFleetReadiness({ ...clinicNotes, probe_result: "fail" })).toBe("partial");
+    expect(deriveFleetReadiness({ ...clinicNotes, probe_result: null })).toBe("partial");
+  });
+
+  it("an inherited module sentence is not the page's situation", () => {
+    expect(
+      deriveFleetReadiness({ ...clinicNotes, situation_present: true, situation_source: "inherited" }),
+    ).toBe("partial");
   });
 });

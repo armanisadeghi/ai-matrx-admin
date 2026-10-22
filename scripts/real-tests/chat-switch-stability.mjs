@@ -51,6 +51,11 @@ async function signedInContext(browser) {
         const p = await ctx.newPage();
         try {
           await p.goto(url, { waitUntil: "load", timeout: 420000 });
+          // The preview parks an idle walk (`/__dev-walk?parked=1`): resume it, as a person would.
+          if (p.url().includes("/__dev-walk")) {
+            await p.getByRole("button", { name: /resume/i }).first().click({ timeout: 30000 }).catch(() => {});
+            await p.waitForURL((u) => !u.pathname.startsWith("/__dev-walk"), { timeout: 300000 });
+          }
         } finally {
           await p.close();
         }

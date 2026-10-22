@@ -180,6 +180,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const mandateWorkspaceManifest: SurfaceManifest = {
+  situation:
+    "They have the mandate \"{mandate_label|not loaded yet}\" open; its output must be a {mandate_output_kind|plain answer}, and its saved goal is in your context. They can draft a new goal.",
   surfaceName: MANDATE_WORKSPACE_SURFACE_NAME,
   inheritsFrom: "matrx-default/intelligence",
   client: "matrx-admin",

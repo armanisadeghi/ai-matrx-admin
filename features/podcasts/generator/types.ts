@@ -115,6 +115,10 @@ export interface PodcastGenerateRequest {
    *  clean text (aidream `resolve_source_set`), joins it after `input_data`, and
    *  links each Source to the finished episode. */
   source_set?: SourceSet;
+  /** True when `input_data` already carries the picked Sources' text as the person
+   *  edited it: the server still links each Source to the episode but does not read
+   *  them again. */
+  source_text_supplied?: boolean;
 
   // Style — the single discriminator the backend honors.
   podcast_type: PodcastType;
@@ -295,7 +299,16 @@ export interface AudioStreamEndEvent {
   sample_rate: number;
 }
 
+/** What happened to the picked Sources: one was cut to its chosen size, or an
+ *  episode link did not land (labels). Sent just before `podcast_complete`. */
+export interface PodcastSourcesEvent {
+  type: "podcast_sources";
+  truncated: boolean;
+  unlinked: string[];
+}
+
 export type PodcastDataEvent =
+  | PodcastSourcesEvent
   | PodcastRunEvent
   | PodcastStageStartedEvent
   | PodcastStageEvent
@@ -364,6 +377,8 @@ export interface PodcastRunState {
    *  instant the backend's compose step lands (live) or rebuilt from the durable
    *  run record. Null until composed (or when there wasn't enough media). */
   officialVideoUrl: string | null;
+  /** The picked Sources' state, when the server had something to say (live only). */
+  sourcesNotice?: { truncated: boolean; unlinked: string[] } | null;
   audioUrl: string | null;
   /** Durable file_id for `audioUrl`, when the backend reports one (from
    *  `audio_stream_end`) — the ONLY thing safe to persist long-term (see
