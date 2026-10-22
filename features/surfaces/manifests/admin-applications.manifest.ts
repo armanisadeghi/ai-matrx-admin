@@ -472,6 +472,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 ];
 
 export const adminApplicationsManifest: SurfaceManifest = {
+  situation:
+    "They are in the Applications admin hub, on its {active_tab} tab, managing the apps the platform ships. Installations below the minimum version: {fleet_below_minimum_total|shown on Overview}. That tab's rows are in your context. You can draft the notice for the app open in the settings editor ({config_editor_app|none open}).",
   surfaceName: ADMIN_APPLICATIONS_SURFACE_NAME,
   inheritsFrom: "matrx-default/apps",
   client: "matrx-admin",

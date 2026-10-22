@@ -307,6 +307,8 @@ const writeTargets: SurfaceWriteTarget[] = [
   },
 ];
 export const adminSyncFleetManifest: SurfaceManifest = {
+  situation:
+    "They are on the Sync fleet admin page, watching folder-sync health across the platform: {sync_mapping_count} synced folders; {over_quota_count} over quota ({accounts_over_quota} accounts), {stalled_count} stopped, {degraded_count} degraded, {behind_count} with silent devices. No folder paths are shown. They can search each health table.",
   surfaceName: ADMIN_SYNC_FLEET_SURFACE_NAME,
   inheritsFrom: "matrx-default/apps",
   client: "matrx-admin",
