@@ -1,4 +1,4 @@
-import { openOverlay } from "@ai-matrx/summon/boot";
+import { openOverlay, mintInstanceId } from "@ai-matrx/summon/boot";
 import type { OverlayId } from "@ai-matrx/summon/open";
 // Plain-data metadata only (id / instance / windowId), fetched on the first click: the shell's nav
 // reaches this file on every route, and the index (every overlay's row, 27 KB) is first-load weight
@@ -53,7 +53,7 @@ export function activateToolsGridTile(
       return;
     }
     const strategy = tile.instanceStrategy ?? (entry.instance === "multi" ? "fresh-per-click" : "singleton-default");
-    const instanceId = strategy === "fresh-per-click" ? `${entry.window?.windowId ?? entry.id}-${Date.now()}` : undefined;
+    const instanceId = strategy === "fresh-per-click" ? mintInstanceId(entry.id) : undefined;
     ctx.dispatch(
       openOverlay({
         overlayId: entry.id as OverlayId,
