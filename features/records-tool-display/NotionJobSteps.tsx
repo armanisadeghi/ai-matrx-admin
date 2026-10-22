@@ -15,7 +15,7 @@
  * reading lives in `backgroundRun.ts` (`notionJobSteps`, tested); this file only draws and sends.
  */
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { AlertTriangle, Check, CircleDashed, CircleSlash, Pause } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { Button, Select } from "@ai-matrx/design-system/controls";
@@ -70,10 +70,7 @@ export function NotionJobSteps({ run, runId, view, stageIndex, renderReport }: N
   const card = isLook && view.phase === "finished" ? readChoiceCard(lookOutput) : null;
 
   // The import this job runs: the look's own start (`run_id`), or the one this card's answer started.
-  const [startedHere, setStartedHere] = useState<string | null>(null);
-  useEffect(() => {
-    if (isLook) setStartedHere(readNext(runId));
-  }, [isLook, runId]);
+  const [startedHere, setStartedHere] = useState<string | null>(() => (isLook ? readNext(runId) : null));
   const nextRunId = isLook ? startedRunOf(lookOutput) ?? startedHere : null;
   useWorkflowRun(nextRunId);
   const nextRun = useAppSelector((state) => (nextRunId ? selectRunState(nextRunId)(state) : null));
@@ -88,10 +85,14 @@ export function NotionJobSteps({ run, runId, view, stageIndex, renderReport }: N
   const at = isLook ? ratchet.stageIndex : stageIndex;
 
   // Counts each stage last showed while this card watched (a done step keeps its number).
-  const remembered = useRef<Record<number, { current: number | null; total: number | null }>>({});
+  // Adjusted during render (like the ratchet), so a new count and its row land in the same paint.
+  const [remembered, setRemembered] = useState<Record<number, { current: number | null; total: number | null }>>({});
   const sample = importView?.sample;
   if (sample && sample.stageIndex != null && !sample.waiting && (sample.current != null || sample.total != null)) {
-    remembered.current[sample.stageIndex] = { current: sample.current, total: sample.total };
+    const kept = remembered[sample.stageIndex];
+    if (!kept || kept.current !== sample.current || kept.total !== sample.total) {
+      setRemembered({ ...remembered, [sample.stageIndex]: { current: sample.current, total: sample.total } });
+    }
   }
 
   const [choices, setChoices] = useState<Record<string, string>>({});
@@ -132,7 +133,7 @@ export function NotionJobSteps({ run, runId, view, stageIndex, renderReport }: N
     run: importView,
     runInput: importRun?.input ?? null,
     stageIndex: at,
-    remembered: remembered.current,
+    remembered,
   });
 
   return (
