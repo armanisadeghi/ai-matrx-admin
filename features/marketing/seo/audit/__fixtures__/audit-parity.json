@@ -1,4 +1,5 @@
 {
+  "_readme": "GENERATED — do not hand-edit. Source of truth: matrx_scraper/audit_metrics.py. Regenerate with .venv/bin/python packages/matrx-scraper/scripts/generate_audit_metrics_parity_fixture.py from the aidream repo root.",
   "social": [
     {
       "input": {
@@ -646,6 +647,157 @@
           {
             "severity": "warning",
             "message": "URL redirects through 2 hop(s) before resolving"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "/page",
+        "redirect_chain": [],
+        "final_url": "https://ex.com/page"
+      },
+      "output": {
+        "ok": true,
+        "verdict": "indexable",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "/page",
+        "canonical_matches": true,
+        "redirect_hops": 0,
+        "final_url": "https://ex.com/page",
+        "issues": []
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "//ex.com/page",
+        "redirect_chain": [],
+        "final_url": "https://ex.com/page"
+      },
+      "output": {
+        "ok": true,
+        "verdict": "indexable",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "//ex.com/page",
+        "canonical_matches": true,
+        "redirect_hops": 0,
+        "final_url": "https://ex.com/page",
+        "issues": []
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "https://other.com/page",
+        "redirect_chain": [],
+        "final_url": "https://ex.com/page"
+      },
+      "output": {
+        "ok": false,
+        "verdict": "check",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "https://other.com/page",
+        "canonical_matches": false,
+        "redirect_hops": 0,
+        "final_url": "https://ex.com/page",
+        "issues": [
+          {
+            "severity": "warning",
+            "message": "Canonical points elsewhere (https://other.com/page) — Google may index that URL instead"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "/other",
+        "redirect_chain": [],
+        "final_url": "https://ex.com/page"
+      },
+      "output": {
+        "ok": false,
+        "verdict": "check",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "/other",
+        "canonical_matches": false,
+        "redirect_hops": 0,
+        "final_url": "https://ex.com/page",
+        "issues": [
+          {
+            "severity": "warning",
+            "message": "Canonical points elsewhere (/other) — Google may index that URL instead"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "https://ex.com/old-page",
+        "redirect_chain": [],
+        "final_url": "https://ex.com/page",
+        "requested_url": "https://ex.com/old-page"
+      },
+      "output": {
+        "ok": true,
+        "verdict": "indexable",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "https://ex.com/old-page",
+        "canonical_matches": true,
+        "redirect_hops": 0,
+        "final_url": "https://ex.com/page",
+        "issues": []
+      }
+    },
+    {
+      "input": {
+        "http_status": 200,
+        "meta_robots": null,
+        "canonical_url": "http://ex.com/start",
+        "redirect_chain": [
+          {
+            "url": "http://ex.com/start",
+            "status": 301
+          },
+          {
+            "url": "https://ex.com/page",
+            "status": 200
+          }
+        ],
+        "final_url": "https://ex.com/page"
+      },
+      "output": {
+        "ok": false,
+        "verdict": "check",
+        "http_status": 200,
+        "noindex": false,
+        "nofollow": false,
+        "canonical_url": "http://ex.com/start",
+        "canonical_matches": true,
+        "redirect_hops": 1,
+        "final_url": "https://ex.com/page",
+        "issues": [
+          {
+            "severity": "warning",
+            "message": "URL redirects through 1 hop(s) before resolving"
           }
         ]
       }

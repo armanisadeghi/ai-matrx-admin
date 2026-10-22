@@ -5,8 +5,15 @@
  * implementation (`aidream packages/matrx-scraper/matrx_scraper/
  * audit_metrics.py`). This test proves the TypeScript evaluators produce
  * identical facts, flags, and issue strings. If it fails, one side changed
- * without the other — fix BOTH in the same unit of work and regenerate the
- * fixture (see the section-canonicalization skill).
+ * without the other — fix BOTH in the same unit of work and regenerate:
+ *
+ *   .venv/bin/python packages/matrx-scraper/scripts/generate_audit_metrics_parity_fixture.py
+ *
+ * ONE HOME: aidream `packages/matrx-scraper/tests/__fixtures__/audit-parity.json`
+ * (drift-tested there by `test_audit_metrics_parity_fixture.py`). The file
+ * here is the vendored copy the generator writes alongside it. When the
+ * sibling aidream checkout exists (or `MATRX_AIDREAM_ROOT` names one), this
+ * test replays the aidream home and fails if the vendored copy differs.
  */
 
 import {
@@ -22,7 +29,19 @@ import {
   urlQualityToStored,
   socialInputFromRawTags,
 } from "./stored";
-import parity from "./__fixtures__/audit-parity.json";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import vendored from "./__fixtures__/audit-parity.json";
+
+/** The one home of the expected answers, when an aidream checkout is present. */
+const AIDREAM_HOME = join(
+  process.env.MATRX_AIDREAM_ROOT ?? join(__dirname, "../../../../../aidream"),
+  "packages/matrx-scraper/tests/__fixtures__/audit-parity.json",
+);
+const aidreamHome: unknown = existsSync(AIDREAM_HOME)
+  ? JSON.parse(readFileSync(AIDREAM_HOME, "utf-8"))
+  : null;
+const parity = aidreamHome ?? vendored;
 
 interface SocialCase {
   input: { og: Record<string, unknown>; twitter: Record<string, unknown> };
@@ -39,6 +58,7 @@ interface IndexabilityCase {
     canonical_url: string | null;
     redirect_chain: { url: string; status: number | null }[];
     final_url: string | null;
+    requested_url?: string | null;
   };
   output: Record<string, unknown>;
 }
@@ -48,7 +68,7 @@ interface UrlQualityCase {
   output: Record<string, unknown>;
 }
 
-const fixture = parity as {
+const fixture = parity as unknown as {
   social: SocialCase[];
   headings: HeadingsCase[];
   indexability: IndexabilityCase[];
@@ -56,6 +76,13 @@ const fixture = parity as {
 };
 
 describe("page-audit TS ↔ Python parity", () => {
+  (aidreamHome ? it : it.skip)(
+    "the vendored fixture is the aidream home (regenerate if not)",
+    () => {
+      expect(vendored).toEqual(aidreamHome);
+    },
+  );
+
   it("fixtures are non-trivial", () => {
     expect(fixture.social.length).toBeGreaterThanOrEqual(5);
     expect(fixture.headings.length).toBeGreaterThanOrEqual(5);
@@ -102,6 +129,7 @@ describe("page-audit TS ↔ Python parity", () => {
           canonicalUrl: testCase.input.canonical_url,
           redirectChain: testCase.input.redirect_chain,
           finalUrl: testCase.input.final_url,
+          requestedUrl: testCase.input.requested_url ?? null,
         }),
       );
       expect(ts).toEqual(testCase.output);
