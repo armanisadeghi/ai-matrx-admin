@@ -43,15 +43,10 @@ export interface AgentPickerWindowHandle {
 
 export function useOpenAgentPickerWindow() {
   const dispatch = useAppDispatch();
-  const disposersRef = useRef<Set<() => void>>(new Set());
 
-  useEffect(() => {
-    const disposers = disposersRef.current;
-    return () => {
-      for (const dispose of disposers) dispose();
-      disposers.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return useCallback(
     (options: OpenAgentPickerWindowOptions = {}): AgentPickerWindowHandle => {
@@ -63,10 +58,8 @@ export function useOpenAgentPickerWindow() {
         onWindowClose: (e) => {
           options.onWindowClose?.(e);
           dispose();
-          disposersRef.current.delete(dispose);
         },
       });
-      disposersRef.current.add(dispose);
       const data: AgentPickerWindowData = {
         callbackGroupId,
         title: options.title ?? null,
@@ -78,7 +71,6 @@ export function useOpenAgentPickerWindow() {
         close: () => {
           dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
           dispose();
-          disposersRef.current.delete(dispose);
         },
       };
     },

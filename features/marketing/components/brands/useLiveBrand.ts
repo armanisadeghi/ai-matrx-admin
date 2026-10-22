@@ -9,9 +9,10 @@
  * (`["marketing", "brand", <id>, …]`) stale, coalesced, so a run saving fifty rows costs one refetch per query, never
  * fifty (rule 2). No write ever follows an event, so there is no echo loop to suppress (rule 1): this person's own
  * edits only cause the same refetch their mutation already asked for. A dropped socket refetches once (backfill).
+ * A pending refetch is cleared on unmount and on a brand change.
  */
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { defineChannelNamespace } from "@ai-matrx/data/realtime";
@@ -39,6 +40,15 @@ export function useLiveBrand(brandId: string | null) {
       void queryClient.invalidateQueries({ queryKey: [...marketingKeys.root, "brand", brandId] });
     }, COALESCE_MS);
   };
+
+  // A pending refetch never outlives the page or the brand it was gathered for.
+  useEffect(
+    () => () => {
+      if (pending.current) clearTimeout(pending.current);
+      pending.current = null;
+    },
+    [brandId],
+  );
 
   const byBrand = brandId ? `brand_id=eq.${brandId}` : "";
   useChannel(

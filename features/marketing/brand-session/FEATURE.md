@@ -30,22 +30,30 @@ doors (a choice answer taken back = `retract`).
 
 ## The database doors (made 2026-10-22 through the Supabase MCP; `platform.client_callable_door` rows)
 
-- `web.brand_choice_decide` — SECURITY DEFINER. Refuses no `auth.uid()`, a declared `agent`/`system` actor tier
-  (`platform.declared_actor_tier()`, i.e. `x-matrx-actor-tier`), and anyone without editor access to the brand.
-  `lead`/`support` → chosen + placement; `not_us` → declined; `not_sure` → parked; `retract` → open (and every row
-  this one superseded is chosen again, its `superseded_by` edge soft-deleted); `withdraw` → soft-deletes the
+- `web.brand_choice_decide` — SECURITY DEFINER. Refuses no `auth.uid()`, any actor tier but `user`
+  (`platform.declared_actor_tier()`: a person's browser is `user`; `x-matrx-actor-tier: agent|system` and a server
+  write carrying the person's claims but declaring nothing are refused), and anyone without editor access to the
+  brand. Takes a per-(brand, element) transaction advisory lock before any row lock, so two people deciding the same
+  element never both end chosen.
+  `lead`/`support` → chosen + placement; `not_us` → declined; `not_sure` → parked; `retract` → open. Whenever a
+  chosen row stops being chosen (retract, or re-placed to `not_us` / `not_sure`) every row it superseded is chosen
+  again, its `superseded_by` edge soft-deleted; `withdraw` → soft-deletes the
   person's OWN `said` row. Single-value elements (`platform.categories.metadata.cardinality` `single`, or
   `single_per_subject` per `about` target) supersede the earlier chosen row in the same transaction with a
   `superseded_by` edge. A word remark (`value.part_of`) never supersedes. Cooperates with the trigger
   `brand_choice_person_decides` (decided_by is always the signed-in person, restores included).
-- `web.brand_choice_correct` — the person's own words (origin `said`) for the same element, `grew_from` + `about`
+- Trigger `brand_choice_person_decides` (`web._brand_choice_person_decides`) refuses the same tiers on a direct
+  write of `decision` chosen/declined or a chosen row's `placement`.
+- `web.brand_choice_correct` — refuses any tier but `user`, same as decide; the person's own words (origin `said`) for the same element, `grew_from` + `about`
   copied, optionally placed at once via `decide`.
 - `web.brand_choice_propose` — an OPEN `ai` candidate; never decides (an agent may call it; it must name its system).
 - Edge type registered: `web_brand_choice --grew_from--> web_brand_choice`.
 - Proof: `__tests__/brand_choice_doors.rollback.sql` (a DO block that ends in `ROLLED_BACK_GREEN`; run it with the
   Supabase MCP). Red before the doors existed (`42883 function does not exist`), green after: job refused, agent
   refused, stranger refused, person chose, single-value superseded, many-value kept both, undo restored, parked and
-  declined, word correction, rewording superseded, withdraw own words only.
+  declined, word correction, rewording superseded, withdraw own words only. Cases 12-16 (review 2026-10-22) were
+  red on the old bodies and green after: undeclared server refused (door + trigger), agent direct write refused,
+  browser person passes (role authenticated, PostgREST headers), undo on re-place, element lock held.
 
 ## Live refresh
 

@@ -26,7 +26,14 @@ function codeFilesStore() {
 }
 const codeThunks = () => import("@/features/code-files/redux/thunks");
 const codeApi = async () => (await import("@/features/code-files/service/codeFilesApi")).CodeFilesAPI;
-const summaryOf = (f: { id: string; name: string; folder_id: string | null; language: string }): CodeFileSummary => ({ id: f.id, name: f.name, folderId: f.folder_id, language: f.language });
+// A locked file (is_readonly) says so: the chat's code editor window opens it read-only and never saves it.
+const summaryOf = (f: { id: string; name: string; folder_id: string | null; language: string; is_readonly?: boolean | null }): CodeFileSummary => ({
+  id: f.id,
+  name: f.name,
+  folderId: f.folder_id,
+  language: f.language,
+  ...(f.is_readonly === true ? { readOnly: true } : {}),
+});
 
 registerChatUi({
   codeFilesCreate: async ({ folderId, ...input }: MessageCodeFileInput) => {

@@ -34,22 +34,12 @@ export interface ImageAnnotationWindowHandle {
   dispose: () => void;
 }
 
-type HandleRef = {
-  instanceId: string;
-  dispose: () => void;
-};
-
 export function useOpenImageAnnotationWindow() {
   const dispatch = useAppDispatch();
-  const handlesRef = useRef<Set<HandleRef>>(new Set());
 
-  useEffect(() => {
-    const handles = handlesRef.current;
-    return () => {
-      for (const handle of handles) handle.dispose();
-      handles.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return useCallback(
     (
@@ -58,8 +48,14 @@ export function useOpenImageAnnotationWindow() {
       const instanceId =
         options.windowInstanceId ??
         `${OVERLAY_ID}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const { callbackGroupId, dispose } =
-        createImageAnnotationCallbackGroup(options);
+      // The window closing itself releases its group (the window owns it).
+      const { callbackGroupId, dispose } = createImageAnnotationCallbackGroup({
+        ...options,
+        onWindowClose: (event) => {
+          options.onWindowClose?.(event);
+          dispose();
+        },
+      });
       const data: ImageAnnotationWindowData = {
         callbackGroupId,
         sourceFileId: options.sourceFileId ?? null,
@@ -78,8 +74,6 @@ export function useOpenImageAnnotationWindow() {
         }),
       );
 
-      const handleRef: HandleRef = { instanceId, dispose };
-      handlesRef.current.add(handleRef);
 
       const close = () => {
         dispatch(
@@ -89,12 +83,10 @@ export function useOpenImageAnnotationWindow() {
           }),
         );
         dispose();
-        handlesRef.current.delete(handleRef);
       };
 
       const detach = () => {
         dispose();
-        handlesRef.current.delete(handleRef);
       };
 
       return {

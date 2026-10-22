@@ -34,20 +34,19 @@ export function useOpenExtractionCellEditor(
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
 
-  const groupRef = useRef<ReturnType<
-    typeof createExtractionCellEditorCallbackGroup
-  > | null>(null);
-
-  useEffect(() => {
-    groupRef.current = createExtractionCellEditorCallbackGroup({
+  // The opened window owns its callback group: one per open, released when the window closes
+  // itself — never dropped when this hook's component unmounts (a menu or sheet that opened the
+  // editor unmounts first; an-opened-window-owns-its-callback-group.test.ts).
+  const groupFor = () => {
+    const group = createExtractionCellEditorCallbackGroup({
       onSaved: (e) => handlersRef.current?.onSaved?.(e),
-      onWindowClose: (e) => handlersRef.current?.onWindowClose?.(e),
+      onWindowClose: (e) => {
+        handlersRef.current?.onWindowClose?.(e);
+        group.dispose();
+      },
     });
-    return () => {
-      groupRef.current?.dispose();
-      groupRef.current = null;
-    };
-  }, []);
+    return group;
+  };
 
   return useCallback(
     (opts: OpenExtractionCellEditorOptions): ExtractionCellEditorHandle => {
@@ -67,7 +66,7 @@ export function useOpenExtractionCellEditor(
             value: opts.value,
             readOnly: true,
             callbackGroupId:
-              opts.callbackGroupId ?? groupRef.current?.callbackGroupId ?? null,
+              opts.callbackGroupId ?? groupFor().callbackGroupId,
           } : {
             rowId: opts.rowId,
             columnKey: opts.columnKey,
@@ -78,7 +77,7 @@ export function useOpenExtractionCellEditor(
             writeKey: opts.writeKey,
             currentPayload: opts.currentPayload,
             callbackGroupId:
-              opts.callbackGroupId ?? groupRef.current?.callbackGroupId ?? null,
+              opts.callbackGroupId ?? groupFor().callbackGroupId,
           },
         }),
       );

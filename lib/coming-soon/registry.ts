@@ -1061,21 +1061,6 @@ export const COMING_SOON: Record<string, ComingSoonEntry> = {
       "SPEC-UI-IA §3.11. Reporting reads across every pillar, so it is deliberately last: a report over half the pillars would be a number nobody could defend.",
     surfaces: ["/hr/reports", "HR nav — Reports", "HR home — Reports card"],
   },
-  "commerce.store-connect-oauth": {
-    id: "commerce.store-connect-oauth",
-    label: "Connect eBay store",
-    owner: "commerce-review",
-    promise:
-      "Authorize your eBay store so listings, orders and inventory sync into the commerce pipeline.",
-    stage: "building",
-    // W11 ships the connect flow's UI shell; W6 of the ebay-store-management
-    // build owns the OAuth routes (authorize redirect + callback + the
-    // account-deletion endpoint) that fill it. Until those land, the Connect
-    // button is an honest tracked promise, not a dead click.
-    blockedBy:
-      "W6's eBay OAuth routes (authorize + callback) are in flight on the aidream side (common-docs/systems/commerce/ebay/projects/ebay-store-management/PLAN.md).",
-    surfaces: ["/commerce/stores/connect — Connect eBay store"],
-  },
   "mandates.fix-output-mismatch-with-ai": {
     id: "mandates.fix-output-mismatch-with-ai",
     label: "Fix with AI",

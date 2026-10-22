@@ -25,22 +25,12 @@ export interface DirectiveReferencePickerHandle {
   dispose: () => void;
 }
 
-interface HandleRef {
-  instanceId: string;
-  dispose: () => void;
-}
-
 export function useOpenDirectiveReferencePickerWindow() {
   const dispatch = useAppDispatch();
-  const handlesRef = useRef<Set<HandleRef>>(new Set());
 
-  useEffect(() => {
-    const handles = handlesRef.current;
-    return () => {
-      for (const handle of handles) handle.dispose();
-      handles.clear();
-    };
-  }, []);
+  // The opened window owns its callback group (it releases it on close / its own window-close
+  // event); this hook never drops it on unmount — a menu or sheet that opened the window unmounts
+  // first (an-opened-window-owns-its-callback-group.test.ts).
 
   return useCallback(
     (
@@ -52,7 +42,11 @@ export function useOpenDirectiveReferencePickerWindow() {
       const { callbackGroupId, dispose } =
         createDirectiveReferencePickerCallbackGroup({
           onPicked: options.onPicked,
-          onWindowClose: options.onWindowClose,
+          // The window closing itself releases its group (the window owns it).
+          onWindowClose: (...args: Parameters<NonNullable<DirectiveReferencePickerHandlers["onWindowClose"]>>) => {
+            options.onWindowClose?.(...args);
+            dispose();
+          },
         });
       const data: DirectiveReferencePickerWindowData = {
         callbackGroupId,
@@ -62,11 +56,8 @@ export function useOpenDirectiveReferencePickerWindow() {
       };
       dispatch(openOverlay({ overlayId: OVERLAY_ID, instanceId, data }));
 
-      const handleRef: HandleRef = { instanceId, dispose };
-      handlesRef.current.add(handleRef);
       const detach = () => {
         dispose();
-        handlesRef.current.delete(handleRef);
       };
       const close = () => {
         dispatch(closeOverlay({ overlayId: OVERLAY_ID, instanceId }));
