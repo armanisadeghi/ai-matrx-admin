@@ -317,6 +317,8 @@ const writeTargets: SurfaceWriteTarget[] = [
 
 export const adminMcpServersManifest: SurfaceManifest = {
   surfaceName: ADMIN_MCP_SERVERS_SURFACE_NAME,
+  situation:
+    "As a platform admin they are in the MCP servers console, the platform-wide list of {mcp_server_count} connectable tool servers. Open: {selected_server_slug|no server}, on its {selected_server_active_tab|first} tab, with {server_connected_user_count|no} people connected. You can draft a new server for them to add.",
   inheritsFrom: "matrx-default/integrations",
   client: "matrx-admin",
   executor: MATRX_WEB_APP_EXECUTOR,
