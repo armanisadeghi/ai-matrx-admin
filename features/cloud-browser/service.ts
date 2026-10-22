@@ -354,7 +354,8 @@ function mapProfile(
 function mapEgress(value: Json | undefined): RunEgress | null {
   const egress = jsonObject(value ?? null);
   const kind = egress.kind;
-  if (kind !== "residential" && kind !== "datacenter") return null;
+  if (kind !== "residential" && kind !== "datacenter" && kind !== "paid_proxy")
+    return null;
   const name = egress.device_name;
   return { kind, deviceName: typeof name === "string" ? name : null };
 }
