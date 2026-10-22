@@ -127,6 +127,8 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "provisionWindow", label: "Provision", instance: "single", window: { windowId: "provision-window", mobile: "fullscreen" } },
   { id: "providerReferenceWindow", label: "Provider Reference", instance: "single", window: { windowId: "provider-reference-window", mobile: "fullscreen" } },
   { id: "sandboxGateDialog", label: "Sandbox unavailable", instance: "single" },
+  { id: "valuePromptsDialog", label: "Values needed", instance: "single" },
+  { id: "conversationRenameDialog", label: "Rename conversation", instance: "single" },
   { id: "scopeMismatchDialog", label: "Scope mismatch", instance: "single" },
   { id: "cantRemoveDialog", label: "Can't remove", instance: "single" },
   { id: "homePickerDialog", label: "Move to", instance: "single" },
