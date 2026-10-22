@@ -25,7 +25,7 @@ export function LearnIndexSurface({
   return (
     <SurfaceRuntimeProvider surfaceName={EDUCATION_LEARN_SURFACE_NAME} getScope={getScope}>
       <NonEditableContextMenu
-        sourceFeature="education-learn"
+        sourceFeature="education-flashcards"
         surfaceName={EDUCATION_LEARN_SURFACE_NAME}
         menuVersion={1}
         getApplicationScope={getScope}
