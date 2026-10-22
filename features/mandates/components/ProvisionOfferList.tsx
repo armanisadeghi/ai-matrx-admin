@@ -32,6 +32,8 @@ import {
   type OfferedValue,
 } from "../provision-shapes";
 import { humanizeIdentifier, displayLabel } from "@ai-matrx/kit/text-case";
+import type { ProvisionProof, ValuePlacement } from "../provision-proof";
+import { ProvisionValueGroups } from "./ProvisionValueGroups";
 
 export interface ProvisionOfferListProps {
   /** Presentation accepts incomplete declarations without inventing runtime facts. */
@@ -43,6 +45,9 @@ export interface ProvisionOfferListProps {
   pinnedContext?: readonly string[];
   className?: string;
   declarationOnly?: boolean;
+  /** The latest proof run; with it (or with declared packages) values render grouped with real samples. */
+  proof?: ProvisionProof | null;
+  placements?: Record<string, ValuePlacement>;
 }
 
 export function ProvisionOfferList({
@@ -50,9 +55,18 @@ export function ProvisionOfferList({
   pinnedContext = [],
   className,
   declarationOnly = false,
+  proof = null,
+  placements = {},
 }: ProvisionOfferListProps) {
   if (values.length === 0) {
     return <PropertyRow label="Offered values" value="None" />;
+  }
+  if (!declarationOnly && (proof || Object.keys(placements).length > 0)) {
+    return (
+      <div className={cn("min-w-0", className)}>
+        <ProvisionValueGroups values={values} proof={proof} placements={placements} />
+      </div>
+    );
   }
   const showRequired = values.some(
     (value) => typeof value.required === "boolean",

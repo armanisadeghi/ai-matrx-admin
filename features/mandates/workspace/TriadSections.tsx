@@ -255,6 +255,8 @@ export function TriadInputSection({
           <ProvisionOfferList
             values={data.offer.values}
             pinnedContext={data.pinnedContext}
+            proof={data.offer.proof}
+            placements={data.offer.placements}
           />
         ) : editing ? (
           <div className="space-y-2">
