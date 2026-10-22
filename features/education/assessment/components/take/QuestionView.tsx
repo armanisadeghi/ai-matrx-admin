@@ -88,10 +88,10 @@ export function QuestionView({
       </div>
 
       {/* Prompts carry markdown + math (a chemistry item's \(H_2O\)); the
-          inline level renders them as phrasing content inside the <p>. */}
-      <p className="mt-2 text-lg font-medium leading-snug text-foreground">
+          the wrapper is a div: a block math or table the renderer emits must never land inside a <p> (hydration error). */}
+      <div className="mt-2 text-lg font-medium leading-snug text-foreground">
         <RichContent level="inline" source={item.prompt} />
-      </p>
+      </div>
 
       {/* Answer capture */}
       <div className="mt-4">
