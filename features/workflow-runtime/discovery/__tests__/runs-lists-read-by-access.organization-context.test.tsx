@@ -53,6 +53,7 @@ jest.mock("../useRunAnnouncements", () => ({
 
 import { useRunsList } from "../useRunsList";
 import { useWaitingRuns } from "../useWaitingRuns";
+import { WAITING_DEBOUNCE_MS } from "../waitingRunsStore";
 
 function Probe() {
   useRunsList();
@@ -67,8 +68,10 @@ async function mount() {
   await act(async () => {
     root.render(<Probe />);
   });
+  // The waiting-runs store debounces a mount's ask into one read
+  // (da993a547: one GET /runs/waiting per page) — let it fire.
   await act(async () => {
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, WAITING_DEBOUNCE_MS + 100));
   });
   return {
     rerender: async () => {
