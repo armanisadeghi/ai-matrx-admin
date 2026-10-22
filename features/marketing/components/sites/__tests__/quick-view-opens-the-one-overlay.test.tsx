@@ -84,7 +84,8 @@ jest.mock("@/components/ui/confirm-dialog", () => ({
   ConfirmDialog: () => null,
 }));
 
-jest.mock("@/features/access-gate/components/GovernedActionDialog", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   GovernedActionDialog: () => null,
 }));
 

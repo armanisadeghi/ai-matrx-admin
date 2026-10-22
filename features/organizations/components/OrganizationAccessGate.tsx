@@ -25,7 +25,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { resolveAccessGateSlug } from "@/features/access-gate/service/accessDeniedContext";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 

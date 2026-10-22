@@ -36,7 +36,7 @@ import {
 import { useRouter } from "next/navigation";
 import { LucideIcon } from "lucide-react";
 import { useCanvasItem } from "@/features/canvas/hooks/useCanvasItem";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ArtifactRenderDynamic as ArtifactRender } from "@/features/canvas/artifact-types/ArtifactRenderDynamic";
 import { hasArtifactRenderer } from "@/features/canvas/artifact-types/artifact-renderer-keys";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";

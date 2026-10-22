@@ -27,7 +27,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { History } from "lucide-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { CardLoading } from "@/components/matrx/LoadingComponents";

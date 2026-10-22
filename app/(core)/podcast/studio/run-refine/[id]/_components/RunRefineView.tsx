@@ -55,7 +55,7 @@ import { ElapsedTimer } from "@/features/podcasts/generator/components/ElapsedTi
 import { episodeHref } from "@/features/podcasts/generator/constants";
 import { useStageDisplay } from "@/features/podcasts/generator/useStageDisplay";
 import { useStudioRun } from "@/features/podcasts/studio/runs/useStudioRun";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RunRecoveryBannerFor } from "@/features/podcasts/studio/components/RunRecoveryBanner";
 import { SourceSummaryPanel } from "@/features/podcasts/studio/components/SourceSummaryPanel";
 import type { PodcastRunState } from "@/features/podcasts/generator/types";

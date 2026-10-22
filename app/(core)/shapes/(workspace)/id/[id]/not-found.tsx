@@ -5,7 +5,7 @@
 // never existed), the canonical access gate says which.
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function ShapeIdUnavailable() {
   const params = useParams();

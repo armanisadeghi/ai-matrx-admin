@@ -47,7 +47,8 @@ jest.mock("@ai-matrx/chat/agents/conversation-export/load-full-history", () => (
 jest.mock("@ai-matrx/chat/agents/redux/execution-system/messages/messages.slice", () => ({
   setVisibleGroupLimit: (p: unknown) => ({ type: "setVisibleGroupLimit", payload: p }),
 }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: ({ token }: { token: string }) => <div data-testid="gate">{token}</div>,
 }));
 // The transcript as the real display draws it: one wrapper per group, tagged

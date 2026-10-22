@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 /** An empty UUID read is ambiguous; only the access service may classify it. */

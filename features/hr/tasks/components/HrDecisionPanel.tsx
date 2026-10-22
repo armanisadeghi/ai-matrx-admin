@@ -33,7 +33,7 @@ import {
 } from "@/features/hr/tasks/service";
 import { HR_NOT_PROVIDED } from "@/features/hr/constants";
 import { hrTasksHref } from "@/features/hr/routes";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { HrAccessDenied } from "@/features/hr/shared/HrAccessDenied";
 import {
     HrEmployerSubstitutionNotice,

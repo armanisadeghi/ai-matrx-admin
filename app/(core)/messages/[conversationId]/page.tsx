@@ -21,7 +21,7 @@ import { ConversationPane } from "@/features/messaging/components/ConversationPa
 import { MessagesThreadHeader } from "@/features/messaging/components/shell/MessagesThreadHeader";
 import { useMessagesSurfaceScope } from "@/features/messaging/lib/useMessagesSurfaceScope";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function ConversationPage() {
   const params = useParams();

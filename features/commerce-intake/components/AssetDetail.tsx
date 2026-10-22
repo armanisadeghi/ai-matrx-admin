@@ -18,7 +18,7 @@ import { Camera, FileAudio, Loader2, QrCode, RotateCw, Video } from "lucide-reac
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { CaptureThumb } from "@/features/media-capture/components/CaptureThumb";
 import { FileRightClickMenu } from "@/features/files/components/core/FileContextMenu/FileRightClickMenu";
 import { openFilePreview } from "@/features/files/components/preview/openFilePreview";

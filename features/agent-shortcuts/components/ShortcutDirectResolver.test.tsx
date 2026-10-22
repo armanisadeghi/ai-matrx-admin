@@ -24,7 +24,8 @@ jest.mock("@/utils/supabase/client", () => ({ supabase: {} }));
 // The failure branch renders the canonical <AccessGate>, whose resolver pulls
 // the live data layer at import time; these tests cover the wrong-address
 // branch, which never reaches the gate.
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: ({ token, id }: { token: string; id: string }) => (
     <div data-access-gate={token}>{id}</div>
   ),

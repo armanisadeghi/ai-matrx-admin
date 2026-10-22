@@ -96,7 +96,8 @@ jest.mock("next/navigation", () => ({
 // read hint exactly as the real one does: a transient fault on a Library the
 // person owns comes back `ok` ("you do have access — try again"). A plain
 // function, so the suite's resetAllMocks cannot strip it.
-jest.mock("@/features/access-gate/service/accessDeniedContext", () => ({
+jest.mock("@ai-matrx/data/access", () => ({
+  ...jest.requireActual("@ai-matrx/data/access"),
     fetchAccessDeniedContext: async (
         token: string,
         _id: string,
@@ -130,6 +131,10 @@ import sourceLibraryReducer, { syncEvent, syncRequested } from "../redux/sourceL
 import appContextReducer from "@/lib/redux/slices/appContextSlice";
 import { LibraryPage } from "../components/LibraryPage";
 import { MediaApiError } from "../api";
+import { configureAccessUiForTests } from "@/tests/helpers/configureAccessUiForTests";
+
+// The access screens refuse to guess a sign-in link, a person or a toast: give them the web's own, as boot does.
+configureAccessUiForTests();
 
 function mediaError(message: string, code: string, status?: number) {
     return new MediaApiError({ message, code, remedy: null, retryable: false }, status);

@@ -33,7 +33,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxMiniLoader } from "@ai-matrx/design-system";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import CardFaceBlock from "@/components/mardown-display/blocks/flashcards/CardFaceBlock";
 import { AskTutorButton } from "@/features/education/tutor/components/AskTutorButton";

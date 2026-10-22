@@ -17,7 +17,7 @@
 import { use, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
 import { useSite } from "@/features/marketing/data/hooks";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

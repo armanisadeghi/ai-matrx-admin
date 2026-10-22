@@ -2,7 +2,7 @@
 import { getAgent } from "@/lib/agents/data";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RunsTable } from "@/features/mandates/run-history/RunsTable";
 
 // Every run of this agent — through any mandate or used directly — on the one

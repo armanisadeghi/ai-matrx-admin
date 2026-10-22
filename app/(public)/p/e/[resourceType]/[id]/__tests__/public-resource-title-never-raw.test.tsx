@@ -21,7 +21,8 @@ const RESOURCE = {
 
 jest.mock("../../../loadPublicResource", () => ({ loadPublicResource: async () => RESOURCE }));
 jest.mock("@/lib/seo/search-engine-indexed.server", () => ({ searchEngineRobots: async () => ({ index: false }) }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 jest.mock("@/components/matrx/PublicHeaderActionsPortal", () => ({ PublicHeaderActionsPortal: () => null }));
 jest.mock("@/features/sharing/components/DuplicateToEditButton", () => ({ DuplicateToEditButton: () => null }));
 jest.mock("@/features/flashcards/components/public/PublicFlashcardDeck", () => ({

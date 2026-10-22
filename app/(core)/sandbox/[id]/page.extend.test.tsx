@@ -33,7 +33,8 @@ jest.mock("@/features/code/views/sandboxes/SandboxDiagnosticsPanel", () => ({ Sa
 jest.mock("@/components/agent-copy/CopyButtons", () => ({ CopyButtons: () => null }));
 // The error menu reads the surface registry, which this test replaces with a partial sandboxes manifest.
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 jest.mock("@/hooks/sandbox/use-time-remaining", () => ({ useTimeRemaining: (expiresAt: string | null) => ({ text: `time:${expiresAt}`, seconds: 3600 }) }));
 jest.mock("@/lib/sandbox/format", () => ({ sandboxDisplayName: () => "Sandbox", sandboxInstanceSummary: () => "" }));
 jest.mock("@/lib/sandbox/status", () => ({ STATUS_BADGE_VARIANT: { ready: "default" }, STATUS_LABELS: { ready: "Ready" }, getEffectiveStatus: () => "ready" }));

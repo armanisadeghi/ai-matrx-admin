@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { NoteWorkspace } from "@/features/notes/components/NoteWorkspace";
 import { selectNoteById } from "@/features/notes/redux/selectors";
 import { fetchNoteContent } from "@/features/notes/redux/thunks";

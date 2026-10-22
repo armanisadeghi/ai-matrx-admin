@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getAgent } from "@/lib/agents/data";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { AgentTestPage } from "@/features/agent-tests/components/AgentTestPage";
 
 export const metadata = { title: "System Agent Tests | Admin" };

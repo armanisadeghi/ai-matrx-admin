@@ -16,7 +16,7 @@
 import type { ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 import { SuspenseLoader } from "@ai-matrx/design-system";
 

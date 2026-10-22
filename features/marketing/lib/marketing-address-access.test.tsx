@@ -50,7 +50,8 @@ it.each([MarketingBrandLayout, MarketingWebsiteLayout])(
   },
 );
 
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: () => null,
 }));
 import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";

@@ -74,7 +74,7 @@ import {
 import { MergeCardsDialog } from "./MergeCardsDialog";
 import { toast } from "@/lib/toast";
 import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton, Button as SurfaceButton, } from "@ai-matrx/design-system";
 import {

@@ -15,7 +15,7 @@ import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
 import type { AppDispatch, RootState } from "@/lib/redux/store";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { AgentConversationDisplay } from "@ai-matrx/chat/agents/components/messages-display/AgentConversationDisplay";
 import { hydrateConversationForReading } from "@ai-matrx/chat/agents/components/messages-display/hydrateConversationForReading";
 import { loadFullConversationHistory } from "@ai-matrx/chat/agents/conversation-export/load-full-history";

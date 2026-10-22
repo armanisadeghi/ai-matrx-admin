@@ -7,7 +7,7 @@
 // platform which of those it actually is and offers the way forward.
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function QuickMathProblemUnavailable() {
   const params = useParams();

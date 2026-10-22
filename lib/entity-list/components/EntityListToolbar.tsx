@@ -49,7 +49,7 @@ import type {
   EntityScopeCounts,
 } from "../types";
 import type { ListScope } from "@/lib/list-scope/types";
-import { HiddenByMeButton } from "@/features/access-gate/components/HiddenByMeButton";
+import { HiddenByMeButton } from "@ai-matrx/sharing/access/react";
 import { EntityFilterPanel } from "./EntityFilterPanel";
 import { EntityColumnPicker } from "./EntityColumnPicker";
 import { ReservedSlot } from "./ReservedSlot";

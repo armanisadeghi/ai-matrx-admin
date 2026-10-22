@@ -13,7 +13,7 @@ import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons
 import { Badge, Button, PropertyRow } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { workflowRunPermalinkHref } from "@/features/workflow-runtime/browse/workflowActionRegistry";
 
 import { issueEventOf, reviewCategoryLabel, type ReviewIssueRow } from "../model";

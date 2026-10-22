@@ -27,7 +27,7 @@ import {
   ReadFailure,
   type ArchiveFilterValue,
 } from "@ai-matrx/design-system";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import {
   fetchAgentContractHead,

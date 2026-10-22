@@ -49,7 +49,7 @@ import { RichCopySplit } from "@ai-matrx/chat/agent-copy/RichCopySplit";
 import { PlainTextView } from "@ai-matrx/rich-content/copy/ContentActions";
 import { usePlainView } from "@ai-matrx/rich-content/copy/content-view-store";
 import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { DocumentRulebookNotice } from "@/features/masterwork/components/DocumentRulebookNotice";
 import { canActOn } from "@/features/access-gate/service/canActOn";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

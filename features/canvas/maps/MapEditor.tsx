@@ -26,7 +26,7 @@ import {
 } from "@ai-matrx/rich-content/display/blocks/diagram/parseDiagramJSON";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

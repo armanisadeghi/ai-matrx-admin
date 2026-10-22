@@ -12,7 +12,7 @@ import type { JsonObject } from "@/types/json";
 export const ORG_MODULE_CUSTOM_VALUE_ADD_ACTION = "org_module_custom_value.add";
 export const ORG_CHANGE_POLICY_SET_ACTION = "org_change_policy.set";
 /**
- * The generic `RequestAccess` ask (features/access-gate/components/RequestAccess.tsx):
+ * The generic `RequestAccess` ask (`RequestAccess` in @ai-matrx/sharing/access/react):
  * the admin makes the change through "Open setting", then marks it done here.
  * There is no write to replay — the payload is context, never an instruction.
  */

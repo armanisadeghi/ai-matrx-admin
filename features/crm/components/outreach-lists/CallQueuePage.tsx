@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { isRecordUnavailableError } from "@/lib/records/recordUnavailable";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/utils/datetime";

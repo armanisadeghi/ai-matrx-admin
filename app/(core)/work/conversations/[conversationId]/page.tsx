@@ -1,5 +1,5 @@
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ProviderConversationHeader } from "@/features/ai-work/components/ProviderConversationHeader";
 import { ProviderConversationTranscript } from "@/features/ai-work/components/ProviderConversationTranscript";
 import { MatrxConversationDetail } from "@/features/ai-work/conversations/components/MatrxConversationDetail";

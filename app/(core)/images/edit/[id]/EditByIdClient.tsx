@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFileName } from "@/features/files/redux/selectors";
 import { useMediaResolution } from "@ai-matrx/media/core";

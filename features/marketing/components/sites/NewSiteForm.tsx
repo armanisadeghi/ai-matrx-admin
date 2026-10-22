@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 import { useActiveOrganizationPicker } from "@/features/organizations/hooks/useActiveOrganizationPicker";

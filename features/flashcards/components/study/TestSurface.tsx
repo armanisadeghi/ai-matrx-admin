@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { useQuizStudy } from "../../data/useQuizStudy";

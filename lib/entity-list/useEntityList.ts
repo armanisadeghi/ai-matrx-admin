@@ -10,7 +10,7 @@
 // never overwrite a newer one. That class of bug is invisible until a user
 // types fast on a slow connection and the list settles on the wrong results.
 
-import { useHiddenByMe } from "@/features/access-gate/hooks/useHiddenByMe";
+import { useHiddenByMe } from "@ai-matrx/sharing/access/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ListViewPrefs } from "@/lib/redux/preferences/userPreferencesSlice";
 import { useAppSelector } from "@/lib/redux/hooks";

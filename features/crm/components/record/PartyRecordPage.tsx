@@ -37,7 +37,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { Button } from "@/components/ui/button";
 import { AssociationCard } from "@ai-matrx/associations/react";
 import { PrimaryEntityProvider } from "@ai-matrx/associations/react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

@@ -48,7 +48,7 @@ import {
 } from "../hooks/usePreferredDefaultEditorMode";
 import { NoteEditorCore, isRichEditorMode, type EditorMode } from "./NoteEditorCore";
 import type { RichEditorController } from "@ai-matrx/rich-content/editor/editor/RichEditor";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useNoteWorkingCopy } from "../hooks/useNoteWorkingCopy";
 import { noteWorkingCopy } from "../utils/noteLiveContent";
 import { useKeptTextSelection } from "@/lib/working-copy/useKeptTextSelection";

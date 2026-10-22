@@ -4,7 +4,7 @@
 // through the canonical access gate. See ./intelligenceGo.ts for the lanes.
 
 import { redirect } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { createClient } from "@/utils/supabase/server";
 import { crossDeploymentHref } from "@/lib/deployment/surfaces";
 import { resolveIntelligenceId } from "./resolveIntelligenceId";

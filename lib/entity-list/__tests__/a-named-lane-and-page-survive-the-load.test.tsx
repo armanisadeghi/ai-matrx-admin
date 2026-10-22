@@ -62,6 +62,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { EntityListPage } from "../components/EntityListPage";
 import { EMPTY_FACETS, type EntityListQuery } from "../types";
 import type { EntityListConfig } from "../config";
+import { configureAccessUiForTests } from "@/tests/helpers/configureAccessUiForTests";
+
+// The access screens refuse to guess a sign-in link, a person or a toast: give them the web's own, as boot does.
+configureAccessUiForTests();
 
 interface Row {
   id: string;

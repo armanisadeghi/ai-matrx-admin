@@ -34,7 +34,7 @@ import {
 } from "@ai-matrx/meet/react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import type { MeetingPart } from "@/features/board/items/meeting-items.logic";
 import { ActionItemsSection } from "@/features/meet/components/record/ActionItemsSection";
 import { meetingPartText, publishMeetingPartText } from "@/features/board/items/meeting-part-text";

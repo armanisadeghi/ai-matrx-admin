@@ -15,7 +15,7 @@ import { Button, PropertyRow, RegionSkeleton } from "@ai-matrx/design-system/con
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import type { ProvisionSnapshot } from "@/features/provision-window/data";
 import { extractErrorMessage } from "@/utils/errors";

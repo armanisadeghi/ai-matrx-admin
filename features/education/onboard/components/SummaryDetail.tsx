@@ -23,7 +23,7 @@ import { SourceCitations } from "@/features/education/trust/components/SourceCit
 import { VerifyAgainstSourceButton } from "@/features/education/trust/components/VerifyAgainstSourceButton";
 import { coerceTrustEnvelope } from "@/features/education/trust/types";
 import { MadeFromSource } from "@/features/education/convert/MadeFromSource";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { studyMediaService } from "@/features/education/media/service";
 import type { StudyMediaRow } from "@/features/education/media/types";
 import { downloadTextFile } from "../export/download";

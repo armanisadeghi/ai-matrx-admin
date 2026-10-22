@@ -110,7 +110,8 @@ jest.mock("next/dynamic", () => () =>
     return <textarea readOnly value={props.value} data-testid="editor-view" />;
   },
 );
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/features/files/components/surfaces/FileViewerControlsContext", () => ({
   useFileViewerControls: () => null,

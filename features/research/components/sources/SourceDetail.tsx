@@ -3,7 +3,7 @@
 import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { useState, useCallback, useMemo, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import {
   ExternalLink,
   RefreshCw,

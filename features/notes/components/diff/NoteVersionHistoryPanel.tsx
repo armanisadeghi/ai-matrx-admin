@@ -29,7 +29,7 @@ import type { NoteVersion } from "@/features/text-diff/types";
 import type { Note } from "@/features/notes/types";
 import { selectNoteById } from "@/features/notes/redux/selectors";
 import { fetchNoteContent, refetchNoteContent } from "@/features/notes/redux/thunks";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { analyzeDiff } from "@/features/notes/utils/diffAnalysis";
 import { NoteDiffViewer } from "./NoteDiffViewer";
 import {

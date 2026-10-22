@@ -46,7 +46,7 @@ import {
 import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { ProjectReferencesPanel } from "@/features/projects/components/ProjectReferencesPanel";
 import { ProjectDetails } from "@/features/projects/components/ProjectDetails";

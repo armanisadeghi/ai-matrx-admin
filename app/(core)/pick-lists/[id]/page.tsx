@@ -3,7 +3,7 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import { ListChecks } from "lucide-react";
 import { ModuleSignInGate } from "@/features/auth/components/module-landing/ModuleSignInGate";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { createClient } from "@/utils/supabase/server";
 import { getServerAuth } from "@/utils/supabase/getServerAuth";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";

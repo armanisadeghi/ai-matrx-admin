@@ -77,7 +77,8 @@ jest.mock("@/features/pdf-extractor/studio/PdfStudioReader", () => ({
 jest.mock("@ai-matrx/rich-content/levels/RichContent", () => ({ RichContent: () => null }));
 jest.mock("@/features/sources/SaveSourcePanel", () => ({ SaveSourcePanel: () => null }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 jest.mock("@/components/ui/drawer", () => ({
   Drawer: () => null,
   DrawerContent: () => null,

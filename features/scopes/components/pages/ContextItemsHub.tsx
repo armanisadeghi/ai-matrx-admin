@@ -58,7 +58,7 @@ import {
 } from "@/features/scopes/redux/contextItemCatalog";
 import { selectTreeError } from "@/features/scopes/redux/selectors/tree";
 import { StaleDataNotice } from "@ai-matrx/design-system";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ContextItemAddForm } from "./ContextItemAddForm";
 import { EditContextItemSheet } from "./EditContextItemSheet";
 import { useOpenContextItemsWindow } from "@/features/overlays/definitions/contextItemsWindow.overlay";

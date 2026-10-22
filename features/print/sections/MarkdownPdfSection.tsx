@@ -23,7 +23,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
 import { EditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { SectionShell } from "@/features/print/components/shared";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { resolvePlatformReferences } from "@/features/print/document/platformReferences";
 import { printDocumentPdfPages, renderDocumentPdfPages } from "@/features/print/document/pdfPages";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

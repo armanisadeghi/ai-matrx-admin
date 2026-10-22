@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (widgets) inside a record or scope, not the record page; the record's own page carries the section
 import { getAgent } from "@/lib/agents/data";
 import { AgentWidgetsPage } from "@/features/agents/components/widgets/AgentWidgetsPage";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 
 export default async function AgentWidgetsRoute({

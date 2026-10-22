@@ -148,7 +148,7 @@ import {
   PagePlanContextCard,
   readPlanContextFromCache,
 } from "@/features/marketing/components/pages/cards/PagePlanContextCard";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 
 // THE NAMING LAW: canonical labels for every declared surface value + group —

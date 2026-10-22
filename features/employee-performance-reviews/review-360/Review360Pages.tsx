@@ -4,7 +4,7 @@
 // halves side by side once both are in), and a respondent's own half in the existing editor.
 
 import { hrPerformanceHref, hrPerformanceReviewHref } from "@/features/hr/routes";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

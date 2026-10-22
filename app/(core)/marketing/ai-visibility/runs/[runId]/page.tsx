@@ -1,6 +1,6 @@
 // record-view: seo_collection_run
 import { notFound } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { CollectionRunView } from "@/features/marketing/seo/ai-visibility/CollectionRunView";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { createClient } from "@/utils/supabase/server";

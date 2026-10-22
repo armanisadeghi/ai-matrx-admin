@@ -87,7 +87,7 @@ import {
   useOpenMobilePanel,
 } from "@/features/shell/components/header/templates/MobilePanelShell";
 import { buildRagDataStoresContextData } from "@/features/rag/agent-context/buildRagDataStoresContextData";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { pushAddressOrNavigate } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { UntrustedCount, displayId } from "@ai-matrx/design-system";

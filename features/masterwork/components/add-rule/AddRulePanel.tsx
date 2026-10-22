@@ -30,7 +30,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { LoadingSpinner } from "@ai-matrx/design-system";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { MasterworkDictationOrigin } from "@/features/masterwork/MasterworkDictationOrigin";
 import { LiveRunDisplay } from "@ai-matrx/chat/agents/components/live-run/LiveRunDisplay";
 import type { RuleImproveResult } from "../../agent-context/ruleImprove";

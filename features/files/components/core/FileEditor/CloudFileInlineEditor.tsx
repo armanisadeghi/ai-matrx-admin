@@ -36,7 +36,7 @@ import {
   fileWorkingCopy,
   storeFileDraft,
 } from "@/features/files/redux/working-copy";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import {
   useFileViewerControls,
   type FileViewerControlsApi,

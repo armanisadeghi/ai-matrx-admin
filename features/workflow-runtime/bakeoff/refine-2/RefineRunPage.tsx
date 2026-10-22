@@ -31,7 +31,7 @@ import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ElapsedTime } from "@/components/official-candidate/elapsed-time/ElapsedTime";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 import { useWorkflowRun } from "../../hooks/useWorkflowRun";
 import { useWorkflowRunControls } from "../../hooks/useWorkflowRunControls";

@@ -18,7 +18,7 @@ import { HrPageState } from "@/features/hr/shared/HrStates";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import { toast } from "@/lib/toast";
 import { useAfterCreateOpenAccessSetup } from "@/features/access-setup/afterCreate";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { hrPerformanceHref } from "@/features/hr/routes";
 
 import { CalibrationTab } from "./CalibrationTab";

@@ -14,7 +14,7 @@
 import { useEffect, useState } from "react";
 import { Archive, ArchiveRestore, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RequestAccess } from "@/features/access-gate/components/RequestAccess";
+import { RequestAccess } from "@ai-matrx/sharing/access/react";
 import { saveAgentField } from "@/features/agents/redux/builder-write.thunks";
 import { setWorkflowFlag } from "@/features/workflow-runtime/browse/service";
 import { useAppDispatch } from "@/lib/redux/hooks";

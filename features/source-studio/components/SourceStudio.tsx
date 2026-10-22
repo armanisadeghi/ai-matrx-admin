@@ -72,7 +72,7 @@ import {
 } from "@/components/ui/drawer";
 import { useMediaQuery } from "@ai-matrx/kit/media-query";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { buildRagViewerContextData } from "@/features/rag/agent-context/buildRagViewerContextData";
 import { useLibraryDoc } from "@/features/rag/hooks/useLibrary";

@@ -22,7 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminFeature } from "@/lib/redux/selectors/userSelectors";
 
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
 import { useSurfaceWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";

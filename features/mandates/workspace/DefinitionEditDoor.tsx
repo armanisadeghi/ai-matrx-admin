@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdmin } from "@/lib/redux/slices/userSlice";
 import { crossDeploymentHref } from "@/lib/deployment/surfaces";
-import { RequestAccess } from "@/features/access-gate/components/RequestAccess";
+import { RequestAccess } from "@ai-matrx/sharing/access/react";
 import { adminMandateRecordHref } from "@/features/mandates/admin-routes";
 import type { MandateWorkspaceData } from "./useMandateWorkspaceData";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";

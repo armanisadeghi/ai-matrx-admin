@@ -98,7 +98,8 @@ jest.mock("@/features/rag/components/library/DocumentSearch", () => ({
   DocumentSearchSummary: () => null,
   SearchResultsList: () => null,
 }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: () => <div>access-gate</div>,
 }));
 jest.mock("@/features/overlays/definitions/diffViewerWindow.overlay", () => ({

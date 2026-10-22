@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Star } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { TemplateArchiveButton } from "@/features/agents/agent-creators/templates/TemplateArchiveButton";
 import { UseTemplateButton } from "@/features/agents/agent-creators/templates/UseTemplateButton";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";

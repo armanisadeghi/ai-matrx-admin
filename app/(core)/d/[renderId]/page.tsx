@@ -35,7 +35,7 @@
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { use, useEffect, useState } from "react";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RichDocument } from "@ai-matrx/rich-content/rich-document/RichDocument";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { createClient } from "@/utils/supabase/client";

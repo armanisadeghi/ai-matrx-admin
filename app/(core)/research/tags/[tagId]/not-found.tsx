@@ -5,7 +5,7 @@
 // deleted, someone else's), the canonical access gate says which it is.
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function ResearchTagUnavailable() {
   const params = useParams();

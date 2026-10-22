@@ -3,7 +3,7 @@
 import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RunsTable } from "@/features/mandates/run-history/RunsTable";
 
 export const metadata = { title: "System Agent Runs | Admin" };

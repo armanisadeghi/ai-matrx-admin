@@ -33,10 +33,7 @@ import type { OfferedValue } from "@/features/mandates/provision-shapes";
 import { useOpenAgentContentWindow } from "@/features/overlays/definitions/agentAdvancedEditorWindow.overlay";
 import { buildHolderDraftBrief } from "./holder-draft-brief";
 import type { HolderDraft } from "./ScopeHolderBar";
-import {
-  RequestAccess,
-  type RequestAccessTarget,
-} from "@/features/access-gate/components/RequestAccess";
+import { RequestAccess, type RequestAccessTarget } from "@ai-matrx/sharing/access/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { outputConstraintsOf } from "@/features/mandates/workspace/definition-output";

@@ -27,7 +27,7 @@ import {
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { CrawlSurfaceProvider } from "@/features/marketing/lib/scopes/crawl-surface";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Chip } from "@ai-matrx/design-system/controls";
 
 const REPORT_ICONS: Record<CrawlReportKey, LucideIcon> = {

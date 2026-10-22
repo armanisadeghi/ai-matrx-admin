@@ -8,7 +8,7 @@ import {
   getResearchIntentsServer,
 } from "@/features/research/service/server";
 import { IntentBadge } from "@/features/research/components/shared/IntentBadge";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { IntelligenceIndicator } from "@/features/mandates/feature-intelligence/IntelligenceIndicator";
 import { ROLE_MANDATE_KEYS } from "@/features/research/components/agents/constants";
 import ResearchTopicShell from "./ResearchTopicShell";

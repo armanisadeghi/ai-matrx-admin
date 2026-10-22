@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { isEmbedQuery } from "@/features/spaces/embed/pureDoors";
 import { PublicSpace } from "@/features/spaces/public/PublicSpace";
 import {

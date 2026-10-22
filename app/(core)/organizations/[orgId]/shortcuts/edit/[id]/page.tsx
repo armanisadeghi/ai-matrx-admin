@@ -19,7 +19,7 @@ import { useAgentShortcuts } from "@/features/agent-shortcuts/hooks/useAgentShor
 import type { AgentShortcut } from "@/features/agent-shortcuts/types";
 import { useOrgShortcutsContext } from "../../OrgShortcutsContext";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 const SCOPE = "organization" as const;
 
 export default function OrgEditShortcutPage({

@@ -27,7 +27,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CircleAlert, RefreshCw } from "lucide-react";
 import PageHeader from "@/features/shell/components/header/PageHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { EntityListPage } from "@/lib/entity-list/components/EntityListPage";
 import { Button } from "@ai-matrx/design-system";

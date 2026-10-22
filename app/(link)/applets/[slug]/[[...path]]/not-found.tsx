@@ -4,7 +4,7 @@
 // access answer says which — no such app, or one they have no access to — never an invented reason.
 
 import { useParams } from "next/navigation";
-import { SlugAccessGate } from "@/features/access-gate/components/SlugAccessGate";
+import { SlugAccessGate } from "@ai-matrx/sharing/access/react";
 
 const TOKENS = ["app"] as const;
 

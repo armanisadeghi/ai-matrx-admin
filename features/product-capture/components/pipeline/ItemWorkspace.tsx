@@ -12,7 +12,7 @@ import React from "react";
 import Link from "next/link";
 import { Camera, ExternalLink, Loader2 } from "lucide-react";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Button } from "@/components/ui/button";
 import KindInstanceRender from "@/features/content-ir/studio/components/KindInstanceRender";
 

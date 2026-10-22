@@ -38,7 +38,7 @@ import {
   Globe,
 } from "lucide-react";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
