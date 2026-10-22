@@ -9,21 +9,12 @@
 
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
-import { registerShellValueSource } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import type { ReactNode } from "react";
 
-import { hrShellValues } from "@/features/surfaces/utils/module-values";
 import { HrRuntimeContext, useHrContextResolver } from "./useHrContext";
 
 export function HrProvider({ children }: { children: ReactNode }) {
   const value = useHrContextResolver();
-  // The HR module's values (employer, persona, scope) for every surface under it, from this one
-  // resolution — no second `hr_my_context` read (surface declarations W1 §1a).
-  const latest = useRef(value);
-  useEffect(() => {
-    latest.current = value;
-  }, [value]);
-  useEffect(() => registerShellValueSource(hrShellValues(() => latest.current)), []);
   return (
     <HrRuntimeContext.Provider value={value}>{children}</HrRuntimeContext.Provider>
   );
