@@ -1,6 +1,6 @@
 import type { ResolvedSource } from "@ai-matrx/agents/sources";
 import { chunksOfSources, chunksOfText, groundedTextWithChunks, groundedTextOf } from "../groundedMaterial";
-import { bestChunkFor, citationForChunk, citationForItem } from "../chunkCitations";
+import { bestChunkFor, citationForChunk, citationForItem, stripChunkMarkers, stripChunkMarkersDeep } from "../chunkCitations";
 
 function src(label: string, text: string, extra: Partial<ResolvedSource> = {}): ResolvedSource {
   return {
@@ -61,5 +61,45 @@ describe("chunk citations", () => {
       src("B.pdf", "### Chunk b:1 (page 9)\nEpsilon zeta eta theta.", { file_id: "fb", processed_document_id: "pb" }),
     ]);
     expect(citationForChunk(chunks[1]!)).toMatchObject({ fileId: "fb", documentId: "pb", page: 9 });
+  });
+});
+
+describe("chunk citations: choosing the right passage", () => {
+  const mk = (id: string, page: number, text: string) => ({
+    id, page, text,
+    source: { fileId: "f1", documentId: "pd1", url: null, title: "Bio.pdf", recordKind: null },
+  }) as import("../groundedMaterial").GroundedChunk;
+
+  const intro = mk("pd1:1", 2, "The Krebs cycle is a famous pathway. Students often meet the cycle early in a biology course.");
+  const detail = mk("pd1:9", 14, "Overview of respiration in cells. The Krebs cycle runs in the mitochondrial matrix and oxidizes acetyl-CoA to carbon dioxide, producing NADH and FADH2. Glycolysis happens earlier in the cytoplasm.");
+
+  it("a short label that fits two passages stays uncited", () => {
+    expect(bestChunkFor("Krebs cycle", [intro, detail])).toBeNull();
+  });
+
+  it("picks the true match even when it is the second passage", () => {
+    const m = mk("pd1:1", 3, "Cells divide through mitosis. The cell cycle has several phases and checkpoints.");
+    const c = citationForItem({}, "Krebs cycle oxidizes acetyl-CoA producing NADH in the mitochondrial matrix", [m, intro, detail])!;
+    expect(c.sourceId).toBe("pd1:9");
+    expect(c.page).toBe(14);
+  });
+
+  it("the excerpt is the matching sentence, not the passage start", () => {
+    const c = citationForItem({}, "Krebs cycle oxidizes acetyl-CoA producing NADH in the mitochondrial matrix", [intro, detail])!;
+    expect(c.excerpt).toContain("oxidizes acetyl-CoA");
+    expect(c.excerpt).not.toContain("Overview of respiration");
+  });
+
+  it("a longer item that two passages hold equally stays uncited", () => {
+    const a = mk("a", 1, "Photosynthesis converts light energy into chemical energy in chloroplasts.");
+    const b = mk("b", 2, "Photosynthesis converts light energy into chemical energy within chloroplasts too.");
+    expect(bestChunkFor("Photosynthesis converts light energy in chloroplasts", [a, b])).toBeNull();
+  });
+});
+
+describe("grounding markers never leak into generated text", () => {
+  it("strips marker text from strings, deeply", () => {
+    expect(stripChunkMarkers("Golgi ### Chunk pd1:3 (page 4) packages proteins")).toBe("Golgi packages proteins");
+    expect(stripChunkMarkersDeep({ a: ["### Chunk x:1\nHi"], b: { c: "ok" } })).toEqual({ a: ["Hi"], b: { c: "ok" } });
   });
 });

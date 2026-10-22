@@ -39,6 +39,10 @@ the database. A `42P01` is invisible to the human it happens to — the agent ab
 success in prose. Nothing in this file told that agent to wait, because this file assumes the
 lights are off.
 
+## Before you drop, rename or alter ANY object: ask the live tool, not an index
+
+`cd aidream && .venv/bin/python scripts/db_object_references.py <schema.object>...` answers "does anything read, write or alter this?" across every repo, the installed `@ai-matrx` dist and the live DB text, in seconds (verdict clear / hold / unknown; `--plpgsql-check` for the rollback dry-run). Home doc: `common-docs/systems/architecture/database/FEATURE.md` § 11. No hand-written analyst index is ever kept; it goes stale.
+
 ## Is this change fixing something broken? If not, it waits.
 
 A wanted change that nothing is failing on — a redundant column, a dead enum value, a name that

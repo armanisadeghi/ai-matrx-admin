@@ -40,6 +40,7 @@ import { useStyleDraft } from "@/features/education/create/useStyleDraft";
 import { generationSourceWrite } from "@/features/education/create/generationSourceWrite";
 import { linkMadeFrom, madeFromConfig } from "@/features/education/create/madeFrom";
 import { citeMemoryAid } from "../itemCitations";
+import { stripChunkMarkersDeep } from "@/features/education/create/chunkCitations";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useGenerateMemoryAid } from "../useGenerateMemoryAid";
 import { memoryAidCounts } from "../types";
@@ -117,13 +118,16 @@ export function MemoryNew() {
   async function makeAids(saving: () => Promise<void>) {
     const prepared = await sources.prepare();
     if (prepared.notes.length) toast.info(prepared.notes.join(" "));
-    const payload = await generate(
-      {
-        source_content: prepared.content,
-        title: prepared.title,
-        focus: sources.focusLine(focus),
-      },
-      "user",
+    // The generator reads `### Chunk` markers; none of that text belongs in a saved aid.
+    const payload = stripChunkMarkersDeep(
+      await generate(
+        {
+          source_content: prepared.content,
+          title: prepared.title,
+          focus: sources.focusLine(focus),
+        },
+        "user",
+      ),
     );
     const title = payload.title || prepared.title;
     // Past this point the save may land even if this page never hears back.
