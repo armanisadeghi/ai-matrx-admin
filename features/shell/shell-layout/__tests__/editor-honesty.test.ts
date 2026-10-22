@@ -48,7 +48,9 @@ describe("#6 and #12 in the editor", () => {
   const src = read("features/shell/shell-layout/editor/ShellLayoutEditor.tsx");
   it("a locked member (organization layout present) has no Save and no live preview", () => {
     expect(src).toMatch(/const locked = target === "person" && !allowed && store\.organization !== null;/);
-    expect(src).toMatch(/disabled=\{locked \|\|/);
+    // No Save at all under the lock (round 2 #8: a disabled Save was still shown), only the reason line.
+    expect(src).toMatch(/\{locked \? null : \(\s*<Button variant="primary"/);
+    expect(src).toContain("Saving is off while your organization's layout is in use");
     expect(src).toMatch(/dirty && !locked \?/);
   });
   it("org Reset to standard and the members switch confirm with a toast", () => {

@@ -318,9 +318,12 @@ export function ShellLayoutEditor({
             Discard
           </Button>
         ) : null}
-        <Button variant="primary" disabled={locked || !dirty || checked.problems.length > 0 || store.saving} onClick={() => void save()}>
-          {store.saving ? "Saving…" : "Save"}
-        </Button>
+        {/* Locked: no Save at all (a disabled one reads as "something is wrong"); the line beside says why. */}
+        {locked ? null : (
+          <Button variant="primary" disabled={!dirty || checked.problems.length > 0 || store.saving} onClick={() => void save()}>
+            {store.saving ? "Saving…" : "Save"}
+          </Button>
+        )}
       </div>
     </div>
   );
