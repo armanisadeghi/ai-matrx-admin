@@ -329,6 +329,54 @@ const surfaceSpecific: SurfaceValue[] = [
     group: "scan_unavailable",
     sortOrder: 750,
   },
+  {
+    name: "active_scope",
+    label: "Active scope summary (not applicable here)",
+    description:
+      "Inherited from PDF Extractor. The scanner has no extractor document view or template editor, so it never emits this.",
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 90,
+    autoContext: false,
+    group: "scan_unavailable",
+    sortOrder: 760,
+  },
+  {
+    name: "document_summary",
+    label: "Document summary (not applicable here)",
+    description:
+      "Inherited from PDF Extractor. The scanner has no extractor document view or template editor, so it never emits this.",
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 220,
+    autoContext: false,
+    group: "scan_unavailable",
+    sortOrder: 770,
+  },
+  {
+    name: "extraction_template_editor",
+    label: "Template editor state (not applicable here)",
+    description:
+      "Inherited from PDF Extractor. The scanner has no extractor document view or template editor, so it never emits this.",
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 120,
+    autoContext: false,
+    group: "scan_unavailable",
+    sortOrder: 780,
+  },
+  {
+    name: "extraction_template_draft",
+    label: "Extraction template draft (not applicable here)",
+    description:
+      "Inherited from PDF Extractor. The scanner has no extractor document view or template editor, so it never emits this.",
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 220,
+    autoContext: false,
+    group: "scan_unavailable",
+    sortOrder: 790,
+  },
 ];
 
 /**

@@ -91,6 +91,7 @@ const groups: SurfaceValueGroup[] = [
     description:
       "The user-configured custom output slots and the active slot's wiring.",
   },
+  { key: "parent_unavailable", label: "Not populated here", sortOrder: 900 },
 ];
 
 const surfaceSpecific: SurfaceValue[] = [
@@ -440,6 +441,78 @@ const surfaceSpecific: SurfaceValue[] = [
     typicalCharCount: 1,
     sortOrder: 610,
     group: "session",
+  },
+  {
+    name: "active_scope_kind",
+    label: "Active scope kind (not applicable here)",
+    description:
+      "Inherited from Transcripts. The cleanup studio works on raw text, not a saved segmented transcript, so it never emits this.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 10,
+    autoContext: false,
+    sortOrder: 900,
+    group: "parent_unavailable",
+  },
+  {
+    name: "editor_mode",
+    label: "Editor mode (not applicable here)",
+    description:
+      "Inherited from Transcripts. The cleanup studio works on raw text, not a saved segmented transcript, so it never emits this.",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 10,
+    autoContext: false,
+    sortOrder: 910,
+    group: "parent_unavailable",
+  },
+  {
+    name: "has_video",
+    label: "Has video source (not applicable here)",
+    description:
+      "Inherited from Transcripts. The cleanup studio works on raw text, not a saved segmented transcript, so it never emits this.",
+    valueType: "boolean",
+    alwaysAvailable: false,
+    typicalCharCount: 5,
+    autoContext: false,
+    sortOrder: 920,
+    group: "parent_unavailable",
+  },
+  {
+    name: "segment_count",
+    label: "Segment count (not applicable here)",
+    description:
+      "Inherited from Transcripts. The cleanup studio works on raw text, not a saved segmented transcript, so it never emits this.",
+    valueType: "number",
+    alwaysAvailable: false,
+    typicalCharCount: 4,
+    autoContext: false,
+    sortOrder: 930,
+    group: "parent_unavailable",
+  },
+  {
+    name: "speaker_count",
+    label: "Speaker count (not applicable here)",
+    description:
+      "Inherited from Transcripts. The cleanup studio works on raw text, not a saved segmented transcript, so it never emits this.",
+    valueType: "number",
+    alwaysAvailable: false,
+    typicalCharCount: 2,
+    autoContext: false,
+    sortOrder: 940,
+    group: "parent_unavailable",
+  },
+  {
+    name: "speaker_list",
+    label: "Speakers (not applicable here)",
+    description:
+      "Inherited from Transcripts. The cleanup studio works on raw text, not a saved segmented transcript, so it never emits this.",
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 200,
+    autoContext: false,
+    sortOrder: 950,
+    group: "parent_unavailable",
   },
 ];
 
