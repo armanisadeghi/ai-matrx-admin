@@ -32,6 +32,7 @@ import {
   ImageDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { toast } from "@/lib/toast";
 import { exportChart, type ChartExportFormat } from "./exportChart";
 import {
@@ -221,6 +222,11 @@ export function OrgChart<T>({
   const [query, setQuery] = useState("");
   const [matchIndex, setMatchIndex] = useState(0);
   const [showMinimap, setShowMinimap] = useState(true);
+  // On a phone the legend starts folded to its title, so it never covers the chart's corner;
+  // once the person opens or folds it, their choice stands.
+  const isMobile = useIsMobile();
+  const [legendChoice, setLegendChoice] = useState<boolean | null>(null);
+  const legendOpen = legendChoice ?? !isMobile;
   const { view, viewport, touched, smooth, fitTo, centerOn, zoomBy, panBy, handlers, cancelGesture } =
     usePanZoom(viewportRef);
   // Controlled when the caller passes onSelectionChange; otherwise the chart keeps its own.
@@ -545,9 +551,11 @@ export function OrgChart<T>({
       const moved = cur.moved || Math.hypot(ev.clientX - cur.ox, ev.clientY - cur.oy) > 4;
       liveDrag.current = { ...cur, x: ev.clientX, y: ev.clientY, target, accept, moved };
       setDrag(liveDrag.current);
-      // Nudge the canvas when the card is carried to an edge.
+      // Nudge the canvas when the card is carried to an edge — never while it is
+      // over the chart's own chrome (toolbar, legend), which sits along the edges.
       const rect = viewportRef.current?.getBoundingClientRect();
-      if (rect) {
+      const overChrome = Boolean((document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null)?.closest("[data-no-pan]"));
+      if (rect && !overChrome) {
         const edge = 36;
         const dx = ev.clientX < rect.left + edge ? 14 : ev.clientX > rect.right - edge ? -14 : 0;
         const dy = ev.clientY < rect.top + edge ? 14 : ev.clientY > rect.bottom - edge ? -14 : 0;
@@ -1001,9 +1009,18 @@ export function OrgChart<T>({
             className="absolute bottom-3 left-3 z-20 max-w-[calc(100%-1.5rem)] rounded-lg border border-border bg-card/95 px-3 py-2 shadow-sm backdrop-blur sm:max-w-xs"
             data-no-pan
           >
-            <div className="mb-1 hidden type-meta font-semibold uppercase tracking-wide text-muted-foreground sm:block">
+            <button
+              type="button"
+              aria-expanded={legendOpen}
+              onClick={() => setLegendChoice(!legendOpen)}
+              className={cn(
+                "type-meta font-semibold uppercase tracking-wide text-muted-foreground",
+                legendOpen && "mb-1",
+              )}
+            >
               Links
-            </div>
+            </button>
+            {legendOpen && (
             <ul className="space-y-1.5">
               {kindsInUse.map(([k, kind]) => (
                 <li key={k} className="flex items-start gap-2">
@@ -1028,6 +1045,7 @@ export function OrgChart<T>({
                 </li>
               ))}
             </ul>
+            )}
           </div>
         )}
 

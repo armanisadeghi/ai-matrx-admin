@@ -13,7 +13,7 @@
 
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAgentById, } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
+import { useAgentSummaryRow } from "@ai-matrx/chat/agents/identity/agent-identity";
 import {
   selectOrgPositions,
   selectOrgPositionsStatus,
@@ -146,7 +146,9 @@ export interface BoxIdentity {
 export type SeatStage = "noted" | "defined" | "staffed" | "retired";
 
 export function useBoxIdentity(type: OrgBoxType, id: string): BoxIdentity {
-  const agent = useAppSelector((s) => (type === "agent" ? selectAgentById(s, id) : undefined));
+  // The agent catalog is the one holder of agent names (the old Redux record no
+  // longer carries them); an agent outside the viewer's list is searched for.
+  const agent = useAgentSummaryRow(type === "agent" ? id : null, { load: true });
   const agentsStatus = useAgentCatalogStatus();
   const positions = useAppSelector(selectOrgPositions);
   const positionsStatus = useAppSelector(selectOrgPositionsStatus);
