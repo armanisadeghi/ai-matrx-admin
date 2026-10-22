@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { cardStampFields, checkPack, choiceColorFindings } from "../template-pack-check";
+import { cardAmountFields, cardStampFields, checkPack, choiceColorFindings, meViewSeedFinding } from "../template-pack-check";
 import { relativeWindowDays, resolvePackBlocks, type SpaceTemplatePack } from "../template-pack";
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/projects-and-tasks.pack.json"), "utf8")) as SpaceTemplatePack;
@@ -252,5 +252,58 @@ describe("cards end with no unlabeled stamp date (ADVERSARIAL-5 F9)", () => {
     (table.fields as unknown as Array<Record<string, unknown>>).splice(1, 0, { key: "added_at", label: "Added", parityType: "created_time" });
     projectsDb(p).views = [{ id: "view-board", name: "Board", layout: "kanban", groupField: "status" }];
     expect(checkPack(p).some((f) => f.at.endsWith("views[0].hiddenFields") && f.says.includes("added_at"))).toBe(true);
+  });
+});
+
+describe("cards never show an amount the reader cannot place (ADVERSARIAL-7 F2)", () => {
+  const fields = [
+    { key: "name", label: "Household", parityType: "text" },
+    { key: "stage", label: "Stage", parityType: "select" },
+    { key: "utility", label: "Utility", parityType: "select" },
+    { key: "bill", label: "Average electric bill (USD)", parityType: "currency" },
+    { key: "amount", label: "Amount (USD)", parityType: "currency" },
+    { key: "spent", label: "Spent (USD)", parityType: "rollup" },
+  ];
+  const keys = (v: Record<string, unknown>) => cardAmountFields(fields, v).map((f) => f.key);
+  it("flags a standing amount, two amounts side by side, and a rolled-up total", () => {
+    expect(keys({ layout: "kanban", groupField: "stage", hiddenFields: ["amount", "spent"] })).toEqual(["bill"]);
+    expect(keys({ layout: "kanban", groupField: "stage", hiddenFields: ["bill"] })).toEqual(["amount", "spent"]);
+    expect(keys({ layout: "gallery", hiddenFields: ["bill", "amount"] })).toEqual(["spent"]);
+  });
+  it("accepts the card's own amount alone, a hidden amount, and a grid", () => {
+    expect(keys({ layout: "kanban", groupField: "stage", hiddenFields: ["bill", "spent"] })).toEqual([]);
+    expect(keys({ layout: "kanban", groupField: "stage", hiddenFields: ["bill", "amount", "spent"] })).toEqual([]);
+    expect(keys({ layout: "grid" })).toEqual([]);
+  });
+  it("the checker reports it at the view's hiddenFields", () => {
+    const p = fresh();
+    const table = p.spec.tables.find((t) => t.token === projectsDb(p).source.table)!;
+    (table.fields as unknown as Array<Record<string, unknown>>).splice(1, 0, { key: "budget", label: "Budget (USD)", parityType: "currency", unit: "USD", format: "currency", sensitivity: "confidential", contextPolicy: "include" });
+    projectsDb(p).views = [{ id: "view-board", name: "Board", layout: "kanban", groupField: "status" }];
+    expect(checkPack(p).some((f) => f.at.endsWith("views[0].hiddenFields") && f.says.includes("budget"))).toBe(true);
+  });
+});
+
+describe('a "My" view has a seed row for whoever installs (ADVERSARIAL-7 F1)', () => {
+  const table = (rows: Array<Record<string, unknown>>) => ({
+    fields: [{ key: "name" }, { key: "status" }, { key: "owner", parityType: "member" }, { key: "added_by", parityType: "created_by" }],
+    rows: rows.map((values) => ({ values })),
+  });
+  it("flags a me view no seed row matches", () => {
+    expect(meViewSeedFinding(table([{ status: "Open" }, { status: "Done" }]), { me: ["owner"] })).toMatch(/opens empty/);
+    expect(meViewSeedFinding(table([{ status: "Done", owner: "@installer" }]), { me: ["owner"], anyOf: { status: ["Open"] } })).toMatch(/opens empty/);
+    expect(meViewSeedFinding(table([{ status: "Done", owner: "@installer" }]), { me: ["owner"], filters: { status: "Open" } })).toMatch(/opens empty/);
+  });
+  it("accepts a matching @installer row, and a created-by field (every seed row is the installer's)", () => {
+    expect(meViewSeedFinding(table([{ status: "Open", owner: "@installer" }]), { me: ["owner"], anyOf: { status: ["Open"] } })).toBeNull();
+    expect(meViewSeedFinding(table([{ status: "Open" }]), { me: ["added_by"] })).toBeNull();
+    expect(meViewSeedFinding(table([{ status: "Open" }]), { name: "All" })).toBeNull();
+  });
+  it("holds for every committed pack (the checker runs it on every block and store view)", () => {
+    const dir = join(__dirname, "../../../features/spaces/templates/packs");
+    const bad = readdirSync(dir)
+      .filter((f) => f.endsWith(".pack.json"))
+      .flatMap((f) => checkPack(JSON.parse(readFileSync(join(dir, f), "utf8"))).filter((x) => x.at.endsWith(".me")).map((x) => `${f}: ${x.at}`));
+    expect(bad).toEqual([]);
   });
 });
