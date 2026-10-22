@@ -21,7 +21,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { Input } from "@ai-matrx/design-system/controls";
 import { MatrxMiniLoader } from "@ai-matrx/design-system";
 import PageHeader from "@/features/shell/components/header/PageHeader";

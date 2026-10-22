@@ -62,7 +62,7 @@ import { SandboxConsole } from "@/components/sandbox/SandboxConsole";
 import type { SandboxConsoleEntry } from "@/components/sandbox/SandboxConsole";
 import { SandboxDiagnosticsPanel } from "@/features/code/views/sandboxes/SandboxDiagnosticsPanel";
 import { buildAgentPayload } from "@ai-matrx/alchemy/core";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createSandboxesScope } from "@/features/surfaces/manifests/sandboxes.manifest";
 import {

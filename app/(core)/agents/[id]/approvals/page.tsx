@@ -4,7 +4,7 @@
 import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { OrgSubjectApprovals } from "@/features/admin/spend-approvals/OrgSubjectApprovals";
 
 export const metadata = { title: "Agent Approvals" };

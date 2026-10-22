@@ -32,7 +32,7 @@ import {
   MetricCell,
   SectionCard,
 } from "@/features/marketing/components/shared/MarketingUi";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 import { displayId } from "@ai-matrx/design-system";

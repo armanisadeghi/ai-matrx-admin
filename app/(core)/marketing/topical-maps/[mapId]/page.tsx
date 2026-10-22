@@ -21,7 +21,7 @@ import { InfoHint } from "@ai-matrx/design-system/controls";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { marketingSeg } from "@/features/marketing/lib/keys";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { TopicalMapDoorBody } from "@/features/marketing/seo/topical-map/door/TopicalMapDoorBody";

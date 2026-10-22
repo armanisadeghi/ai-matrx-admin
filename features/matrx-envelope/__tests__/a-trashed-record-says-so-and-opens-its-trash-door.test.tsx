@@ -38,7 +38,8 @@ const openItem = jest.fn();
 jest.mock("@/features/item-presentation/useOpenItemPresentation", () => ({
   useOpenItemPresentation: () => openItem,
 }));
-jest.mock("@/features/access-gate/components/AccessDenied", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessDenied: ({ token, id }: { token: string; id: string }) => (
     <div data-testid="trash-door">
       {token}:{id}

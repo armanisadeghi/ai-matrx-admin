@@ -53,7 +53,7 @@ import {
 } from "@/lib/redux/selectors/userSelectors";
 import { resolveLibraryOrgId } from "@/lib/organizations/systemOrg";
 import { LibraryPublishPanel } from "@/features/rag/components/library/LibraryPublishPanel";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { AssistStrip } from "@/features/assists/components/AssistStrip";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";

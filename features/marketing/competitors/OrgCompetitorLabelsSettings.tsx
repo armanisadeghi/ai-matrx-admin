@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/lib/toast";
 import { SettingAnchor } from "@/features/settings/doors/SettingAnchor";
-import { SettingAccessGate } from "@/features/access-gate/components/SettingAccessGate";
+import { SettingAccessGate } from "@ai-matrx/sharing/access/react";
 import { ORG_MODULE_CUSTOM_VALUE_ADD_ACTION } from "@/features/messaging/actions/settingRequestActionRegistry";
 import {
   addOrgModuleCustomValue,

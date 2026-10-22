@@ -82,7 +82,7 @@ import {
   loadFailedFailure,
   readMandateAddress,
 } from "@/features/mandates/mandate-address";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate, RequestAccess } from "@ai-matrx/sharing/access/react";
 import { useMandateHolder } from "@ai-matrx/chat/mandates/useMandateHolder";
 import { MANDATE_WORKSPACE_SURFACE_NAME } from "@/features/surfaces/manifests/mandate-workspace.manifest";
 import { normalizeTransferJson } from "@ai-matrx/alchemy/operate";
@@ -125,7 +125,6 @@ import {
   OwnerDefinitionEditor,
   useDefinitionRights,
 } from "./OwnerDefinitionEditor";
-import { RequestAccess } from "@/features/access-gate/components/RequestAccess";
 import {
   visibleRecordTabs,
   type RecordTab,

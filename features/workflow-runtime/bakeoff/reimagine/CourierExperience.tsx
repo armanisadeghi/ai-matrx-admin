@@ -26,7 +26,7 @@ import { CircleSlash } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { CardLoading } from "@/components/matrx/LoadingComponents";
 
 import { useWorkflowRun } from "@/features/workflow-runtime/hooks/useWorkflowRun";

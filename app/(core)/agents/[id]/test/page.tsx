@@ -1,7 +1,7 @@
 // record-view: none — a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section
 import { Suspense } from "react";
 import { getAgent } from "@/lib/agents/data";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { AgentTestPage } from "@/features/agent-tests/components/AgentTestPage";
 
 // The agent's test cases, test runs and their results (Agent Evaluation P1).

@@ -13,7 +13,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { favoriteId, usePinned } from "@/components/favorites/usePinned";
 import { PinButton } from "@/components/favorites/PinButton";
-import { useAccessStates } from "@/features/access-gate/hooks/useAccessStates";
+import { useAccessStates } from "@ai-matrx/sharing/access/react";
 import { searchItemsAsPerson } from "@/features/board/tools/search-items";
 import { configText, type LaunchpadWidgetBodyProps } from "../types";
 import { WidgetList, type WidgetRow } from "../frame";

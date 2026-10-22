@@ -246,7 +246,7 @@ registerChatUi({
   AnswerTextPreview: Host_AnswerTextPreview,
 });
 
-import { AccessGate as Host_AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate as Host_AccessGate } from "@ai-matrx/sharing/access/react";
 registerChatUi({
   AccessGate: Host_AccessGate,
 });

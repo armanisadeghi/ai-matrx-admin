@@ -26,7 +26,7 @@ import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceR
 import { HR_PAY_PERIOD_SURFACE, createHrPayPeriodScope } from "@/features/surfaces/manifests/hr-pay-period.manifest";
 import { useState } from "react";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { hrTimePeriodsHref } from "@/features/hr/routes";
 import { useHrContext } from "@/features/hr/shared/useHrContext";
 import { ExportRunList } from "@/features/hr/exports/components/ExportRunList";

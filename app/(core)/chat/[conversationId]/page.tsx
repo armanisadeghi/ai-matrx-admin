@@ -7,8 +7,7 @@ import { conversationIdOrNull } from "@ai-matrx/chat/agents/utils/conversation-r
 import { ChatConversationRoom } from "@ai-matrx/chat/agents/components/chat/ChatConversationRoom";
 import { DEFAULT_NEW_CHAT_MANDATE_KEY } from "@ai-matrx/chat/agents/components/chat/chat-quick-actions.config";
 import { ChatConversationWarmup } from "@/components/warmup/ChatConversationWarmup";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import { ServerReadRecheck } from "@/features/access-gate/components/ServerReadRecheck";
+import { AccessGate, ServerReadRecheck } from "@ai-matrx/sharing/access/react";
 import { ChatRoomSkeleton } from "@ai-matrx/chat/agents/components/chat/ChatRoomSkeleton";
 import { mandateDisplaySeed } from "@ai-matrx/agents/mandates";
 import { ChatRunHeader } from "@ai-matrx/chat/agents/components/chat/ChatRunHeader";

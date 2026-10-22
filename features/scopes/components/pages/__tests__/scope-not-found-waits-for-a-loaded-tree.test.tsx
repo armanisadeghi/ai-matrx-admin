@@ -31,7 +31,8 @@ jest.mock("@ai-matrx/design-system", () => ({
   ...jest.requireActual("@ai-matrx/design-system"),
   ReadFailure: ({ what }: { what: string }) => <div>Could not load {what}</div>,
 }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => <div>access gate</div> }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => <div>access gate</div> }));
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { ScopeNotFound } = require("../ScopeNotFound");

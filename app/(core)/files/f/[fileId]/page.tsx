@@ -18,7 +18,7 @@
  */
 
 import { redirect } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { createClient } from "@/utils/supabase/server";
 import { filesDb } from "@/features/files/filesDb";
 import { SingleFileShell } from "@/features/files/components/surfaces/single-file/SingleFileShell";

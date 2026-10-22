@@ -5,7 +5,7 @@
 // not published; everyone else gets the canonical access answer.
 
 import { useParams } from "next/navigation";
-import { SlugAccessGate } from "@/features/access-gate/components/SlugAccessGate";
+import { SlugAccessGate } from "@ai-matrx/sharing/access/react";
 
 const TOKENS = ["document"] as const;
 

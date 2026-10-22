@@ -9,7 +9,7 @@ export const MODEL_DETAIL_PANEL_KEY = "ai-model-detail";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowUpRight } from "lucide-react";
 import AiModelDetailPanel from "../components/AiModelDetailPanel";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { aiModelService } from "../service";
 import type { AiModel, AiProvider } from "../types";

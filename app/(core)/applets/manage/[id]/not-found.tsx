@@ -7,7 +7,7 @@
 // instead of a hand-written "doesn't exist or you don't have permission".
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function AppletManageUnavailable() {
   const params = useParams();

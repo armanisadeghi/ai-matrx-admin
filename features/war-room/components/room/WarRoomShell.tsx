@@ -25,7 +25,7 @@ import dynamic from "next/dynamic";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { closeAllWatches } from "@/features/war-room/redux/watchSlice";
 import { RoomRecordingController } from "@/features/war-room/components/room/RoomRecordingController";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import {
   selectSessionById,
   selectThreadsStatusForRoom,

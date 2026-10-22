@@ -6,11 +6,13 @@
  * shared DialogContent and reads the close button out of the DOM instead —
  * which is what the app ships, wherever the implementation lives.
  *
+ * The dialog itself (GovernedActionDialog) now lives in @ai-matrx/sharing/access/react, whose own
+ * suite pins its DialogContent class; what stays here is the app-only half: the globals.css floor
+ * probe and the app's shared DialogContent.
+ *
  * jsdom has no layout engine, so the responsive geometry is pinned as the
  * class seam; live Browser evidence supplies the viewport proof.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -37,18 +39,6 @@ describe("GovernedActionDialog responsive contract", () => {
   });
 
   it("enforces the shared 44px touch floor for every dialog action", () => {
-    const dialog = readFileSync(
-      join(__dirname, "GovernedActionDialog.tsx"),
-      "utf8",
-    );
-    const globals = readFileSync(
-      join(__dirname, "../../../app/globals.css"),
-      "utf8",
-    );
-
-    expect(dialog).toContain(
-      '<DialogContent className="matrx-touch-targets sm:max-w-xl">',
-    );
     expect(touchFloorRing()).toEqual({ found: true, belowLgOnly: true });
 
     act(() => {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { Button } from "@/components/ui/button";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";

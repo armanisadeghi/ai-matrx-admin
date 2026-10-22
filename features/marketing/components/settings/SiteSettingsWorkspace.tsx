@@ -9,7 +9,7 @@ import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { webCopy } from "@/features/marketing/lib/copy-payloads";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { GovernedActionDialog } from "@/features/access-gate/components/GovernedActionDialog";
+import { GovernedActionDialog } from "@ai-matrx/sharing/access/react";
 import { fetchAccessDeniedContext } from "@/features/access-gate/service/accessDeniedContext";
 import { actionAuthority, isGovernedActionDenial } from "@ai-matrx/data/access";
 import { Input, ClampedNumberInput } from "@ai-matrx/design-system/controls";

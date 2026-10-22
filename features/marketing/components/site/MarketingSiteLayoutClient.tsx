@@ -4,7 +4,7 @@ import { useParams, usePathname } from "next/navigation";
 import { ExternalLink, ListTree, Loader2, ScanSearch } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";

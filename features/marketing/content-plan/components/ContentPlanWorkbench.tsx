@@ -16,7 +16,7 @@ import dynamic from "next/dynamic";
 import { useQueryClient } from "@tanstack/react-query";
 import { Group, Panel, type Layout } from "react-resizable-panels";
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import {
   buildGroomerPresetPayload,

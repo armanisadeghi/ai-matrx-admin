@@ -9,7 +9,7 @@ import {
 } from "./api/hooks";
 import { hydrateRatingDraft } from "./state/hydrateFromServer";
 import { CaPdCalculatorClient } from "./CaPdCalculatorClient";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";

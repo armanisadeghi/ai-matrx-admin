@@ -49,8 +49,7 @@ import {
   buildPlanNodeMenuSection,
   type PlanNodeMenuRow,
 } from "./plan-node-actions";
-import { UnresolvedEntityRef } from "@/features/access-gate/components/UnresolvedEntityRef";
-import { useAccessStates } from "@/features/access-gate/hooks/useAccessStates";
+import { UnresolvedEntityRef, useAccessStates } from "@ai-matrx/sharing/access/react";
 import { getKeywordPhrasesByIds } from "@/features/marketing/seo/keyword/data";
 import { useOpenKeywordWindow } from "@/features/overlays/definitions/keywordWindow.overlay";
 import { filterAndSortRows } from "@ai-matrx/design-system/data-table/filter-engine";

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ChevronLeft, RefreshCw, Loader2, AlertCircle, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@ai-matrx/design-system/controls';
-import { AccessGate } from '@/features/access-gate/components/AccessGate';
+import { AccessGate } from '@ai-matrx/sharing/access/react';
 import { useResearchApi } from '../../hooks/useResearchApi';
 import { useResearchTags, useResearchSynthesis } from '../../hooks/useResearchState';
 import { useResearchStream } from '../../hooks/useResearchStream';

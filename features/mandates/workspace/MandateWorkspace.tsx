@@ -103,7 +103,7 @@ import {
   type WorkspaceWorkflowVersionInfo,
 } from "./useMandateWorkspaceData";
 import { loadFailedFailure, readMandateAddress } from "../mandate-address";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useMandateHolder } from "@ai-matrx/chat/mandates/useMandateHolder";
 import { useCopyMandateWorkflow } from "../useCopyMandateWorkflow";
 import { MANDATE_WORKSPACE_SURFACE_NAME } from "@/features/surfaces/manifests/mandate-workspace.manifest";

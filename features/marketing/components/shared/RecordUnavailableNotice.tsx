@@ -20,7 +20,7 @@ import { useState } from "react";
 import Link from "@/components/navigation/AppLink";
 import { Building2, LifeBuoy, RotateCcw, ShieldAlert, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { OrganizationPickerPopover } from "@/features/organizations/components/OrganizationPickerPopover";
 import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import { marketingRoutes } from "@/features/marketing/lib/routes";

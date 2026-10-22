@@ -43,8 +43,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 
-import { AccessDeniedView } from "@/features/access-gate/components/AccessDenied";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessDeniedView, AccessGate } from "@ai-matrx/sharing/access/react";
 import { resolveAccessGateSlug } from "@/features/access-gate/service/accessDeniedContext";
 import type { AccessDeniedContext } from "@ai-matrx/data/access";
 import { isUuidShape } from "@ai-matrx/kit/uuid";

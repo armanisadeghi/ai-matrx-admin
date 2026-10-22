@@ -6,7 +6,7 @@
 // of the bare root 404.
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function ScopeUnavailable() {
   const params = useParams();

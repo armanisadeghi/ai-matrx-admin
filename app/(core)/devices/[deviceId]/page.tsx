@@ -2,7 +2,7 @@
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { Suspense } from "react";
 import { createClient } from "@/utils/supabase/server";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { DeviceConsole } from "@/features/files/devices/console/DeviceConsole";
 import { consoleDeviceVerdict, fetchConsoleDevice, type ConsoleDeviceVerdict } from "@/features/files/devices/console/devices-query";
 import { DeviceUnavailable } from "@/features/files/devices/console/DeviceUnavailable";

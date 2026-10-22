@@ -64,8 +64,7 @@ import {
   opensTheRecord,
 } from "@/features/item-presentation/registry";
 import { useOpenItemPresentation } from "@/features/item-presentation/useOpenItemPresentation";
-import { SettingRequestActionButtons } from "@/features/access-gate/components/SettingRequestActionButtons";
-import { ResourceActionRequestButtons } from "@/features/access-gate/components/ResourceActionRequestButtons";
+import { SettingRequestActionButtons, ResourceActionRequestButtons } from "@ai-matrx/sharing/access/react";
 import { isJsonObject } from "@/types/json";
 import { TutorialMessageCard } from "@/features/guided-tutorials/TutorialMessageCard";
 

@@ -18,7 +18,7 @@ import { toast } from "@/lib/toast";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { EntityModeHeader } from "@/features/shell/components/header/templates/EntityModeHeader";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import {
   deleteScheduledTask,
   fetchScheduledTask,

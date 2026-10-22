@@ -27,7 +27,7 @@ import {
 } from "@/features/marketing/lib/snapshot-content";
 import { parseStoredSeoMetrics } from "@/features/marketing/seo/serp/metrics";
 import type { PageSnapshot } from "@/features/marketing/types";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { NO_RAW_ROW_WINDOW } from "@/features/marketing/social/row-open";
 
 interface CompareField {

@@ -59,7 +59,8 @@ jest.mock("@ai-matrx/records-ui/helpers", () => ({
   recordsDataSource: () => ({ rpc: (...args: unknown[]) => whereIdOpens(...(args as [])) }),
 }));
 jest.mock("@ai-matrx/design-system", () => ({ Button: () => null }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({ AccessGate: () => null }));
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"), AccessGate: () => null }));
 jest.mock("@/features/sharing/components/TableTransferOffer", () => ({ TableTransferOffer: () => null }));
 jest.mock("@/features/sharing/outside/PendingTableInvitation", () => ({
   PendingTableInvitation: () => null,

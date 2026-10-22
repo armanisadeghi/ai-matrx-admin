@@ -12,7 +12,7 @@
  * column + wrapping rules as the inline tab (features/page-extraction/utils/columns).
  */
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import {
   useCallback,
   useEffect,

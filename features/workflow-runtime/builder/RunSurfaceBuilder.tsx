@@ -18,7 +18,7 @@ import { Loader2, MonitorPlay, Save } from "lucide-react";
 
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { recordUnavailableMessage } from "@/lib/records/recordUnavailable";

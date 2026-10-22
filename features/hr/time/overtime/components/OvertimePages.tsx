@@ -18,7 +18,7 @@ import { readOf } from "@ai-matrx/design-system";
 import { useRouter } from "next/navigation";
 
 import { useHrContext } from "@/features/hr/shared/useHrContext";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { hrTimeOvertimeHref, hrTimeOvertimeRequestHref } from "@/features/hr/routes";
 import { useMockCase } from "../../periods/components/PayPeriodsPage";
 import { useOvertimeEvaluation, useOvertimeQueue, useOvertimeRequest } from "../hooks/useOvertimeQueue";

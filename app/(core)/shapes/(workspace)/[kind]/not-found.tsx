@@ -6,7 +6,7 @@
 // deleted, someone else's, or never existed.
 
 import { useParams } from "next/navigation";
-import { SlugAccessGate } from "@/features/access-gate/components/SlugAccessGate";
+import { SlugAccessGate } from "@ai-matrx/sharing/access/react";
 
 const TOKENS = ["content_ir_kind"] as const;
 

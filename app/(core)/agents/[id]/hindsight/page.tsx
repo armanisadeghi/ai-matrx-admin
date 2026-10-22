@@ -6,7 +6,7 @@ import { getAgent } from "@/lib/agents/data";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import { ImprovementWorkspace } from "@/features/hindsight/workspace/ImprovementWorkspace";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default async function AgentHindsightRoute({
   params,

@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { coerceTrustEnvelope } from "@/features/education/trust/types";
 import { SourceCitations } from "@/features/education/trust/components/SourceCitations";
 import { VerifyAgainstSourceButton } from "@/features/education/trust/components/VerifyAgainstSourceButton";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { AskTutorPanel } from "@/features/education/tutor/components/AskTutorButton";
 import { assessmentStudyContext, missedQuestionTutorSeed } from "@/features/education/tutor/seeds";
 import type { TutorGroundingSeed } from "@/features/education/tutor/grounding";

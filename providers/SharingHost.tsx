@@ -16,7 +16,8 @@
  * bundle (the app's package.json declares `"sideEffects": false`).
  */
 
-import type { ComponentType } from "react";
+import { useEffect, type ComponentType } from "react";
+import { useRouter } from "next/navigation";
 import { configureSharing, type ShareServerCall, type ShareServerResult } from "@ai-matrx/sharing/core";
 import { configureShareSheetUi } from "@ai-matrx/sharing/react";
 import { InfoHint } from "@ai-matrx/design-system/controls";
@@ -50,7 +51,7 @@ import { useNavTree } from "@/features/agent-context/hooks/useNavTree";
 import { webVaultIdentity } from "@/features/secrets/webVaultIdentity";
 import { humanLines } from "@/features/marketing/lib/copy-payloads";
 import { ensureAccessEnv } from "@/features/access-gate/accessEnv";
-import { ensureAccessUiEnv } from "@/features/access-gate/accessUiEnv";
+import { ensureAccessUiEnv, registerAccessRouter } from "@/features/access-gate/accessUiEnv";
 
 /* eslint-disable-next-line @typescript-eslint/no-explicit-any -- the sheet's slots take loose props by design */
 type Slot = ComponentType<any>;
@@ -112,5 +113,8 @@ ensureSharingHost();
 
 export function SharingHost(): null {
   ensureSharingHost();
+  const router = useRouter();
+  // The access screens navigate with the app's router (set here: a router only exists in a component).
+  useEffect(() => registerAccessRouter(router), [router]);
   return null;
 }

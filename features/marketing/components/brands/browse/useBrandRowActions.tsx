@@ -13,7 +13,7 @@ import type { ItemMenuConfig } from "@ai-matrx/chat/ui/item-types";
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 import type { EntityListController, EntityRowActionsResult } from "@/lib/entity-list/config";
-import { useHideForMe } from "@/features/access-gate/hooks/useHiddenByMe";
+import { useHideForMe } from "@ai-matrx/sharing/access/react";
 import { useRestoreBrand } from "@/features/marketing/data/hooks";
 import { defineRowVerbs } from "@/lib/entity-list/rowVerbs";
 import { supabase } from "@/utils/supabase/client";

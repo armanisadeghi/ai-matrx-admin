@@ -14,7 +14,7 @@
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { EducationTutorClient } from "@/features/education/tutor/components/EducationTutorClient";
 

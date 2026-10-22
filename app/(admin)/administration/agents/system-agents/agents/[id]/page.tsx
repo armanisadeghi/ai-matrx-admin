@@ -4,7 +4,7 @@ import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader
 import { SystemAgentWriteTargets } from "@/features/agents/components/admin/SystemAgentWriteTargets";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export const metadata = { title: "View | System Agents" };
 

@@ -58,7 +58,7 @@ import type { EditorViewHandle } from "@ai-matrx/rich-content/editor/visual/Visu
 import { syncStudioSourceUrl } from "./lab/studio-url";
 import { loadStudioSource } from "./lab/content-sources";
 import { isRecordUnavailableError } from "@/lib/records/recordUnavailable";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import type { ContentSource } from "@ai-matrx/rich-content/rich-document/types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAdminLaneOpen, selectIsSuperAdmin } from "@/lib/redux/selectors/userSelectors";

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Loader2, SearchX } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTreeError, selectTreeStatus } from "@/features/scopes/redux/selectors/tree";

@@ -31,7 +31,7 @@ import { SettingsSelect } from "@ai-matrx/design-system/settings";
 import { SettingsNumberInput } from "@ai-matrx/design-system/settings";
 import { SettingsSwitch } from "@ai-matrx/design-system/settings";
 import { SettingAnchor } from "@/features/settings/doors/SettingAnchor";
-import { SettingAccessGate } from "@/features/access-gate/components/SettingAccessGate";
+import { SettingAccessGate } from "@ai-matrx/sharing/access/react";
 import { ORG_CHANGE_POLICY_SET_ACTION } from "@/features/messaging/actions/settingRequestActionRegistry";
 import {
     CHANGE_HANDLING_MODE_DESCRIPTIONS,

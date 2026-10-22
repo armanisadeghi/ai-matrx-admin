@@ -12,7 +12,7 @@ import Link, { useLinkStatus } from "next/link";
 import { CalendarClock, ClipboardCheck, Loader2 } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useEntityTitles } from "@/features/scopes/hooks/useEntityTitles";
 import { Button } from "@/components/ui/button";

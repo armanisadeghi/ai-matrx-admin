@@ -119,7 +119,8 @@ jest.mock("@/features/shell/components/header/RouteHeader", () => ({
 jest.mock("@ai-matrx/design-system/tap-target/buttons", () => ({
   ChevronLeftTapButton: () => null,
 }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: () => <div>access gate</div>,
 }));
 jest.mock("@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext", () => ({

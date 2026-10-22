@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MapPin, Loader2, ArrowLeft, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AccessGate } from '@/features/access-gate/components/AccessGate';
+import { AccessGate } from '@ai-matrx/sharing/access/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/utils/supabase/client';

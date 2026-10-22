@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "@/components/navigation/AppLink";
 import { AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/utils/supabase/client";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";

@@ -1,7 +1,7 @@
 // record-view: none — an immutable page capture (a ledger record) that takes no custom fields
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";

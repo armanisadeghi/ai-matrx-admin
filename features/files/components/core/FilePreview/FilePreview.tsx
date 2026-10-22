@@ -18,7 +18,7 @@ import { useFileAsset } from "@/features/files/hooks/useFileAsset";
 import { OrganizationRequiredNotice } from "@/features/organizations/components/OrganizationRequiredNotice";
 import { useFileBlob } from "@/features/files/hooks/useFileBlob";
 import { useEnsureCloudFile } from "@/features/files/hooks/useEnsureCloudFile";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useFileActions } from "@/features/files/components/core/FileActions/useFileActions";
 import { getPreviewCapability } from "@/features/files/utils/preview-capabilities";
 import { isBrowserRenderableImageMime } from "@/features/files/utils/file-types";

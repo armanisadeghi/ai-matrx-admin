@@ -10,7 +10,7 @@
 import { useRouter } from "next/navigation";
 import { Flame } from "lucide-react";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { StudyDeck } from "@/features/flashcards/components/study/StudyDeck";
 import { getVoiceTestForCard } from "@/features/flashcards/components/study/voiceTestExtra";

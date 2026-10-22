@@ -15,7 +15,7 @@
  * different brand still lands in the right place.
  */
 
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { MarketingSiteProvider } from "@/features/marketing/components/site/MarketingSiteContext";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";
 import { PageWorkspace } from "@/features/marketing/components/pages/PageWorkspace";

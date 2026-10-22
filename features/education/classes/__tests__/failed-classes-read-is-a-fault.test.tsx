@@ -30,7 +30,8 @@ jest.mock("@ai-matrx/design-system", () => ({
     </div>
   ),
 }));
-jest.mock("@/features/access-gate/components/AccessGate", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   AccessGate: ({ error, renderFault }: { error?: unknown; renderFault?: (e: unknown) => React.ReactNode }) =>
     error && classifyDataError(error) === "fault" && renderFault ? (
       <>{renderFault(error)}</>

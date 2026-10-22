@@ -10,7 +10,7 @@
 // answer is "someone else's".
 
 import { useParams } from "next/navigation";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 export default function DataTableUnavailable() {
   const params = useParams();

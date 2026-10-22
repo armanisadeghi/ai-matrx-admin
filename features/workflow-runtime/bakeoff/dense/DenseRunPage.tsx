@@ -25,7 +25,7 @@ import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import { toast } from "@/lib/toast";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 
 import { fetchWorkflowDefinition } from "../../surface/service";
 import { EMPTY_SERVED_INPUTS } from "../../served-form/ServedInputFields";

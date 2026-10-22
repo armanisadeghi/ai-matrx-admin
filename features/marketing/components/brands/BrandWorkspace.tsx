@@ -169,7 +169,7 @@ import type {
 } from "@/features/marketing/types";
 import { extractErrorMessage } from "@/utils/errors";
 import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/useEditTarget";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { ShareModal } from "@ai-matrx/sharing/react";
 import { DiscoverBrandButton, DiscoverBrandMenuItem } from "@/features/marketing/components/brands/DiscoverBrandButton";

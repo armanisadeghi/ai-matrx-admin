@@ -64,8 +64,7 @@ import {
 } from "@/lib/redux/selectors/userSelectors";
 import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
 import { EntityDoorControls } from "@ai-matrx/records-ui/entity-ref";
-import { UnresolvedEntityRef } from "@/features/access-gate/components/UnresolvedEntityRef";
-import { useAccessStates } from "@/features/access-gate/hooks/useAccessStates";
+import { UnresolvedEntityRef, useAccessStates } from "@ai-matrx/sharing/access/react";
 import { requestUpload } from "@/features/files/upload/uploadGuardOpeners";
 import { openFilePicker } from "@/features/files/components/pickers/cloudFilesPickerOpeners";
 import type { Visibility } from "@/features/files/types";

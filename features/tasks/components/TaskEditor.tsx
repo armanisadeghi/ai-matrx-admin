@@ -25,7 +25,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { selectSelectedTaskId } from "@/features/tasks/redux/taskUiSlice";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@ai-matrx/design-system/controls";

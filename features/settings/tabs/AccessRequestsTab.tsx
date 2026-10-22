@@ -8,7 +8,7 @@
 
 import { Suspense } from "react";
 import { SuspenseLoader } from "@ai-matrx/design-system";
-import { AccessRequestsSurface } from "@/features/access-gate/components/AccessRequestsSurface";
+import { AccessRequestsSurface } from "@ai-matrx/sharing/access/react";
 
 export default function AccessRequestsTab() {
   return (

@@ -50,7 +50,8 @@ jest.mock("@/components/ui/dialog", () => ({
 
 // Neither of these bears on the classification defect under test, and both
 // pull in Redux / live eligibility RPCs that would otherwise need a store.
-jest.mock("@/features/access-gate/components/RequestAccessPanel", () => ({
+jest.mock("@ai-matrx/sharing/access/react", () => ({
+  ...jest.requireActual("@ai-matrx/sharing/access/react"),
   RequestAccessPanel: () => null,
 }));
 
@@ -80,7 +81,8 @@ const fetchAccessDeniedContext = jest.fn(
     canRequest: false,
   }),
 );
-jest.mock("@/features/access-gate/service/accessDeniedContext", () => ({
+jest.mock("@ai-matrx/data/access", () => ({
+  ...jest.requireActual("@ai-matrx/data/access"),
   fetchAccessDeniedContext: (...args: [string, string, "access-question" | "fault"]) =>
     fetchAccessDeniedContext(...args),
 }));
@@ -89,6 +91,10 @@ import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import PartyPeek from "./PartyPeek";
 import { WithStoreReads } from "@/tests/helpers/WithStoreReads";
 import { AppPeekParts } from "@/components/official/peek/AppPeekParts";
+import { configureAccessUiForTests } from "@/tests/helpers/configureAccessUiForTests";
+
+// The access screens refuse to guess a sign-in link, a person or a toast: give them the web's own, as boot does.
+configureAccessUiForTests();
 
 async function mount(id: string) {
   const container = document.createElement("div");

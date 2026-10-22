@@ -3,7 +3,7 @@ import { AgentBuilderPage } from "@/features/agents/components/builder/AgentBuil
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import { AgentHydratorServer } from "@ai-matrx/chat/agents/route/AgentHydratorServer";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { BuilderProposalFrame } from "./_components/BuilderProposalFrame";
 
 /** The agent the owner named (2026-10-03). `?id=<agentId>` opens any other. */

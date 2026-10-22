@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { CmsPageService } from "@/features/cms/services/cmsService";
 import type { ClientPage } from "@/features/cms/types";
 import { Loader2 } from "lucide-react";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import PageEditor from "../../../../../../features/cms/components/PageEditor";
 import { useSiteContext } from "../../SiteLayoutClient";
 

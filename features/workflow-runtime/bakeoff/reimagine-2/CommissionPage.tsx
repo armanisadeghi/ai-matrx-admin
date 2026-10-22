@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { AccessGate } from "@ai-matrx/sharing/access/react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { CardLoading } from "@/components/matrx/LoadingComponents";
