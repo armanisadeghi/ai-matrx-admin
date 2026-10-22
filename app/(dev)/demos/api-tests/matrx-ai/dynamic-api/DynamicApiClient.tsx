@@ -54,6 +54,7 @@ import { useServerConfig } from "../_shared/useServerConfig";
 import { ServerBar } from "../_shared/ServerBar";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -466,9 +467,9 @@ export default function DynamicApiClient() {
   useEffect(() => {
     if (config.authToken) {
       setHeaders((prev) => {
-        const managed = new Set(["authorization", "x-organization-id"]);
+        const managed = new Set(["authorization", MATRX_HEADERS.organization.toLowerCase()]);
         const rest = prev.filter((h) => !managed.has(h.key.toLowerCase()));
-        const organizationId = config.authHeaders["X-Organization-Id"];
+        const organizationId = config.authHeaders[MATRX_HEADERS.organization];
         return [
           {
             key: "Authorization",
@@ -478,7 +479,7 @@ export default function DynamicApiClient() {
           ...(organizationId
             ? [
                 {
-                  key: "X-Organization-Id",
+                  key: MATRX_HEADERS.organization,
                   value: organizationId,
                   enabled: true,
                 },

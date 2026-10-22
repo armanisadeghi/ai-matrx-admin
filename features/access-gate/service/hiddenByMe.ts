@@ -17,99 +17,22 @@
  * `token` is the platform entity token (`web_brand`, `web_site`, …) — the same
  * string `iam.has_access` and the access gate use.
  */
+//
+// The implementation is `@ai-matrx/data/access` (one copy for every app); this file only makes sure
+// the app's client and sender are injected before it runs.
 
-import { createClient } from "@/utils/supabase/client";
-import { operationFailed } from "@/utils/errors";
+import "@/features/access-gate/accessEnv";
 
-export interface RemovalRights {
-  /** The caller can see the record at all. */
-  canView: boolean;
-  /** The caller may archive/delete it (the database will allow the write). */
-  canRemove: boolean;
-  /** The caller has hidden it for themselves. */
-  hidden: boolean;
-}
-
-function platformRpc() {
-  return createClient().schema("platform");
-}
-
-export async function fetchRemovalRights(
-  token: string,
-  id: string,
-): Promise<RemovalRights> {
-  const { data, error } = await platformRpc().rpc("record_removal_rights", {
-    p_type: token,
-    p_id: id,
-  });
-  if (error) throw operationFailed("check what you can do with this item", error);
-  const row = (data ?? {}) as Record<string, unknown>;
-  return {
-    canView: row.can_view === true,
-    canRemove: row.can_remove === true,
-    hidden: row.hidden === true,
-  };
-}
-
-export async function hideForMe(token: string, id: string, label?: string | null): Promise<void> {
-  const { error } = await platformRpc().rpc("hide_for_me", {
-    p_type: token,
-    p_id: id,
-    p_label: label ?? undefined,
-  });
-  if (error) throw operationFailed("hide this item", error);
-}
-
-export async function unhideForMe(token: string, id: string): Promise<void> {
-  const { error } = await platformRpc().rpc("unhide_for_me", {
-    p_type: token,
-    p_id: id,
-  });
-  if (error) throw operationFailed("show this item again", error);
-}
-
-export interface HiddenItem {
-  token: string;
-  id: string;
-  /** The name the person saw when they hid it (null for an older hide). */
-  label: string | null;
-  hiddenAt: string;
-}
-
-/** The caller's hidden records — one token, or every token when omitted. */
-export async function listHiddenItems(token?: string): Promise<HiddenItem[]> {
-  const { data, error } = await platformRpc().rpc("hidden_by_me", {
-    p_type: token ?? undefined,
-  });
-  if (error) throw operationFailed("load your hidden items", error);
-  return (data ?? []).map((row) => ({
-    token: row.entity_type,
-    id: row.entity_id,
-    label: row.label,
-    hiddenAt: row.hidden_at,
-  }));
-}
-
-/** The caller's hidden record ids for one token (a person hides few things). */
-export async function listHiddenByMe(token: string): Promise<string[]> {
-  return (await listHiddenItems(token)).map((item) => item.id);
-}
-
-/** Which slice of a list to show with respect to the person's hidden items. */
-export type HiddenView = "visible" | "hidden";
-
-/**
- * Narrow a PostgREST list query by the person's hidden ids: `visible` drops
- * them, `hidden` shows only them. Applied server-side so paging and counts
- * stay true.
- */
-export function applyHiddenView<
-  Q extends {
-    not(column: string, operator: string, value: unknown): Q;
-    in(column: string, values: readonly string[]): Q;
-  },
->(query: Q, hiddenIds: readonly string[], view: HiddenView, column = "id"): Q {
-  if (view === "hidden") return query.in(column, hiddenIds.length ? hiddenIds : ["00000000-0000-0000-0000-000000000000"]);
-  if (!hiddenIds.length) return query;
-  return query.not(column, "in", `(${hiddenIds.join(",")})`);
-}
+export {
+  applyHiddenView,
+  fetchRemovalRights,
+  hideForMe,
+  listHiddenByMe,
+  listHiddenItems,
+  unhideForMe,
+} from "@ai-matrx/data/access";
+export type {
+  HiddenItem,
+  HiddenView,
+  RemovalRights,
+} from "@ai-matrx/data/access";

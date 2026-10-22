@@ -13,6 +13,7 @@ import { ensureOrgIdServer } from "@/lib/organizations/ensureOrgId";
 import { isOrganizationRequiredServerError, organizationRequiredResponse } from "@ai-matrx/auth/organizations";
 import { normalizePhoneNumber } from "@/lib/sms/phoneUtils";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 /**
  * GET /api/sms/preferences
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
       .eq("user_id", user.id)
       .single();
 
-    if (error && error.code === "PGRST116") {
+    if (error && error.code === PG_CODES.pgrstNoRows) {
       // No preferences yet — return defaults
       return NextResponse.json({
         success: true,

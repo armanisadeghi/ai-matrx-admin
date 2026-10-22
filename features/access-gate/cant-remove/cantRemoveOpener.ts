@@ -7,7 +7,7 @@
  */
 
 import { requestOverlay } from "@/features/overlays/requestOverlay";
-import { isGovernedActionDenial } from "@/features/access-gate/lib/governedActionError";
+import { isGovernedActionDenial } from "@ai-matrx/data/access";
 import { fetchRemovalRights } from "@/features/access-gate/service/hiddenByMe";
 
 export interface CantRemoveRequest {

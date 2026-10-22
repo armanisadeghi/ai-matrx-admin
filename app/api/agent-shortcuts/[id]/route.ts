@@ -9,6 +9,7 @@ import {
 } from "../writable-fields";
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 export async function GET(
   _request: NextRequest,
@@ -125,7 +126,7 @@ export async function PATCH(
 
     if (error) {
       console.error("Error updating agent shortcut:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status = error.code === PG_CODES.insufficientPrivilege || error.code === PG_CODES.pgrstJwtInvalid ? 403 : 500;
       return NextResponse.json(
         { error: "Failed to update agent shortcut", details: error.message },
         { status },
@@ -182,7 +183,7 @@ export async function DELETE(
 
     if (error) {
       console.error("Error deleting agent shortcut:", error);
-      const status = error.code === "42501" || error.code === "PGRST301" ? 403 : 500;
+      const status = error.code === PG_CODES.insufficientPrivilege || error.code === PG_CODES.pgrstJwtInvalid ? 403 : 500;
       return NextResponse.json(
         { error: "Failed to delete agent shortcut", details: error.message },
         { status },

@@ -6,7 +6,7 @@
 // signed out (no session: anon is refused by design), a boot race (the session had not attached yet —
 // retried once by the provider), or no access. Anything else is a fault.
 
-import { classifyDataError } from "@/features/access-gate/classifyDataError";
+import { classifyDataError } from "@ai-matrx/data/access";
 import { createClient } from "@/utils/supabase/client";
 
 export type LoadAccess = "signed-out" | "no-access";

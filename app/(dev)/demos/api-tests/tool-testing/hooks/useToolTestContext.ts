@@ -7,6 +7,7 @@ import { selectOrganizationId } from '@/lib/redux/slices/appContextSlice';
 import { supabase } from '@/utils/supabase/client';
 import { operationFailed } from '@/utils/errors';
 import type { TestContext } from '@/features/tool-call-visualization/testing/types';
+import { MATRX_HEADERS } from '@ai-matrx/auth/credentials';
 
 const CONVERSATION_COOKIE_KEY = 'tool_test_conversation_id';
 
@@ -124,7 +125,7 @@ export function useToolTestContext(): UseToolTestContextReturn {
           'No organization is selected. Choose the organization you are working in from the avatar menu and try again.',
         );
       }
-      headers['X-Organization-Id'] = selectedOrganizationId;
+      headers[MATRX_HEADERS.organization] = selectedOrganizationId;
 
       const res = await fetch('/api/tool-testing/conversation', { method: 'POST', headers });
       if (!res.ok) {

@@ -16,7 +16,7 @@
 // Every other Save refusal (pick a holder, fix the map, …) is something the
 // viewer CAN fix, so it stays a sentence and the Save stays.
 
-import type { RequestAccessTarget } from "@/features/access-gate/service/requestAccess";
+import type { RequestAccessTarget } from "@ai-matrx/data/access";
 import type { DefaultHolderRungOffer } from "./default-holder-rung";
 
 export interface BindingAccessInput {

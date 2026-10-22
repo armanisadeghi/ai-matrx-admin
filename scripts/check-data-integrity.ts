@@ -27,6 +27,7 @@ import { runIntegrityChecks } from "../lib/integrity/runner";
 import { unwrapRows } from "../lib/integrity/unwrap";
 import type { FileProbe, IntegrityFinding } from "../lib/integrity/types";
 import { exitAfterDrain } from "./lib/exit-after-drain";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -116,7 +117,7 @@ function makeProbe(
         {
           headers: {
             Authorization: `Bearer ${jwt}`,
-            "X-Organization-Id": organizationId,
+            [MATRX_HEADERS.organization]: organizationId,
             Range: "bytes=0-0",
           },
         },

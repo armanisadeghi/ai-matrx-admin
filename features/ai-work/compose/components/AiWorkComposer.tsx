@@ -75,7 +75,7 @@ import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/i
 import { AgentTextarea } from "@ai-matrx/chat/agents/components/inputs/smart-input/AgentTextarea";
 import { useOpenLiveRunWindow } from "@/features/overlays/definitions/liveRunWindow.overlay";
 import { associationsService } from "@/features/scopes/service/associationsService";
-import { readTypedRefusal } from "@/features/access-gate/service/serverRefusal";
+import { readTypedRefusal } from "@ai-matrx/data/access";
 import { decideHomeAttachRetry } from "../homeAttach";
 import { createClient } from "@/utils/supabase/client";
 import { createAssignment } from "@/features/war-room/service/associations";

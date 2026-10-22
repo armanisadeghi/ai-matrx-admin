@@ -42,7 +42,7 @@
  * evidence of a race either.
  */
 
-import type { ServerRefusal } from "@/features/access-gate/service/serverRefusal";
+import type { ServerRefusal } from "@ai-matrx/data/access";
 
 /**
  * The ONE code `assoc_add`'s access refusals arrive as — the mapping lives in

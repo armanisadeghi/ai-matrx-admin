@@ -22,6 +22,7 @@ import { createAdminClient } from "@/utils/supabase/adminClient";
 import { forgetDomain } from "@/lib/custom-domains/lookup";
 import { statusFor, type DomainState } from "@/lib/custom-domains/dns-records";
 import { addDomain, checkDomain, isVercelConfigured, removeDomain, VercelUnavailable } from "@/lib/custom-domains/vercel";
+import { PG_CODES } from "@ai-matrx/kit/db-codes";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,7 @@ async function adminCheck(orgId: string, action: Action, host: string | null, do
     p_domain_id: domainId as string,
   });
   if (error) {
-    const status = error.code === "42501" ? 403 : 500;
+    const status = error.code === PG_CODES.insufficientPrivilege ? 403 : 500;
     return { refusal: NextResponse.json({ error: error.message }, { status }) } as const;
   }
   const check = data as unknown as AdminCheck;

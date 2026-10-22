@@ -66,6 +66,7 @@ import { requestRaw, newRequestId } from "@/lib/python-client";
 import { getUserMessage } from "@ai-matrx/api";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -209,7 +210,7 @@ export function CloudFilesDebugClient() {
         // when no organization is selected — this harness exists to show raw
         // server behavior, so the organization_required 400 then appears in
         // the log exactly as the wire returns it.
-        if (organizationId) headers["X-Organization-Id"] = organizationId;
+        if (organizationId) headers[MATRX_HEADERS.organization] = organizationId;
       }
       if (args.contentType) headers["Content-Type"] = args.contentType;
 
