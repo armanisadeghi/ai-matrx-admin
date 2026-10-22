@@ -55,7 +55,8 @@ export function HrFrameSidebar({ children }: { children: ReactNode }) {
   const inFrame = useFrameSidebarSlot();
   const [tabs, setTabs] = useState<readonly HrSectionTab[] | null>(null);
   const [publish] = useState<Publish>(
-    () => (next) => setTabs((prev) => (sameTabs(prev, next) ? prev : next)),
+    () => (next: readonly HrSectionTab[] | null) =>
+      setTabs((prev) => (sameTabs(prev, next) ? prev : next)),
   );
   return (
     <HrSectionTabsContext value={publish}>
