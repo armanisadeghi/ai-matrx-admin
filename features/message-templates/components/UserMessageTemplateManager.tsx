@@ -19,7 +19,6 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { PUBLISHED_TO_WEB_LABEL } from "@/lib/row-access";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
 import { Button } from "@/components/ui/button";
@@ -112,19 +111,54 @@ function TopBar({
   return (
     <div className="flex-shrink-0 px-3 pt-3 pb-2  border-b border-border/40">
       <div className="flex items-center gap-2 p-1.5 rounded-full ">
-        <SegmentedControl<ActiveTab>
-          aria-label="Template list"
-          value={activeTab}
-          onValueChange={onTabChange}
-          data={[
-            { value: "my", label: "Mine", count: myCount },
-            { value: "public", label: "Public", count: publicCount },
-          ]}
-          className="flex-shrink-0"
-        />
+        {/* Tab pills — nano glass for active, transparent for inactive */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={() => onTabChange("my")}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+              activeTab === "my"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:matrx-glass-thin-border",
+            )}
+          >
+            Mine
+            <span
+              className={cn(
+                "text-[10px] px-1 rounded-full",
+                activeTab === "my"
+                  ? "bg-primary-foreground/20 text-primary-foreground"
+                  : "text-muted-foreground",
+              )}
+            >
+              {myCount}
+            </span>
+          </button>
+          <button
+            onClick={() => onTabChange("public")}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+              activeTab === "public"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:matrx-glass-thin-border",
+            )}
+          >
+            Public
+            <span
+              className={cn(
+                "text-[10px] px-1 rounded-full",
+                activeTab === "public"
+                  ? "bg-primary-foreground/20 text-primary-foreground"
+                  : "text-muted-foreground",
+              )}
+            >
+              {publicCount}
+            </span>
+          </button>
+        </div>
 
-        {/* Search — a page control, solid card skin (glass only floats) */}
-        <div className="flex-1 flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-border bg-card min-w-0">
+        {/* Search — matrx-glass-thin-border per spec */}
+        <div className="flex-1 flex items-center gap-1.5 h-8 px-2.5 rounded-full matrx-glass-thin-border min-w-0">
           <Search className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
           <input
             type="text"
@@ -144,10 +178,10 @@ function TopBar({
           )}
         </div>
 
-        {/* Filter */}
+        {/* Filter — matrx-glass-thin-border per spec */}
         <button
           onClick={onFilterClick}
-          className="flex-shrink-0 relative h-8 w-8 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground active:opacity-70 transition-opacity"
+          className="flex-shrink-0 relative h-8 w-8 flex items-center justify-center rounded-full matrx-glass-thin-border text-muted-foreground active:opacity-70 transition-opacity"
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
           {activeFilterCount > 0 && (
@@ -160,7 +194,7 @@ function TopBar({
         {/* New — primary solid sits naturally on vibrancy */}
         <button
           onClick={onNewClick}
-          className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all"
+          className="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all"
         >
           <Plus className="h-4 w-4" />
         </button>

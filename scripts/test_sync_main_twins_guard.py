@@ -61,6 +61,14 @@ class TwinsGuard(unittest.TestCase):
         self.env = dict(os.environ)
         os.environ["PATH"] = bindir + os.pathsep + os.environ["PATH"]
         os.environ["LOCKFILE_TWINS_CHECKER"] = os.path.join(HERE, "check-matrx-packages.mjs")
+        # The adoption gate (368392b56e) judges the collapsed set with check-matrx-imports.mjs, which this
+        # scratch repo does not have: a stub stands in, passing unless the test plants a broken import.
+        self.imports_broken = os.path.join(self.tmp, "imports-broken")
+        stub = os.path.join(self.tmp, "check-matrx-imports.mjs")
+        with open(stub, "w") as f:
+            f.write("import { existsSync } from 'node:fs';\nif (existsSync(%r)) { console.log('[FAIL] @ai-matrx/meet imports a name design-system no longer ships'); process.exit(1); }\n"
+                    % self.imports_broken)
+        os.environ["LOCKFILE_TWINS_IMPORTS_CHECKER"] = stub
         self.cwd = os.getcwd()
         os.chdir(self.repo)
 
@@ -89,6 +97,14 @@ class TwinsGuard(unittest.TestCase):
         self.assertEqual(sh(self.repo, "git", "show", "HEAD:pnpm-lock.yaml"), lock("0.86.27", "0.86.27"))
         self.assertIn("twins guard", sh(self.repo, "git", "log", "-1", "--format=%s"))
         self.assertEqual(sh(self.repo, "git", "status", "--porcelain").strip(), "")
+
+    def test_remedy_that_breaks_a_package_import_is_rejected_and_lockfile_kept(self):
+        open(self.remedy, "w").close()
+        open(self.imports_broken, "w").close()
+        self.commit_lock(lock("0.86.26", "0.86.27"))
+        self.assertFalse(sm.guard_twins())
+        self.assertEqual(self.count(), 2)
+        self.assertEqual(sh(self.repo, "git", "show", "HEAD:pnpm-lock.yaml"), lock("0.86.26", "0.86.27"))
 
     def test_unremediable_twins_this_push_adds_are_reported_and_pushed(self):
         self.commit_lock(lock("0.86.26", "0.86.27"))

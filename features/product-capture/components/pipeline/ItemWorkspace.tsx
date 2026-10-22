@@ -54,10 +54,16 @@ const PRIMARY_ACTION: Partial<
 export function ItemWorkspace({
   itemId,
   onItemChanged,
+  onMovedToStage,
 }: {
   itemId: string;
   /** Stage/data changed — the host refreshes its stage lists/counts. */
   onItemChanged: () => void;
+  /**
+   * The item moved to another stage — the host follows it there instead of
+   * leaving the pane open over an empty "No items at this stage" list.
+   */
+  onMovedToStage?: (stage: PipelineStage) => void;
 }) {
   const ws = usePipelineItem(itemId);
   const { item } = ws;
@@ -105,6 +111,7 @@ export function ItemWorkspace({
   const move = async (to: PipelineStage) => {
     await ws.moveToStage(to);
     onItemChanged();
+    onMovedToStage?.(to);
   };
 
   const approveListing = async () => {

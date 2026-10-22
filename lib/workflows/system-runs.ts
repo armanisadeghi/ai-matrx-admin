@@ -16,6 +16,7 @@
 
 import type { paths } from "@ai-matrx/api/types";
 import { callApi } from "@/lib/api/call-api";
+import { describeDoorRefusal } from "@/lib/api/door-refusal";
 import type { AppDispatch } from "@/lib/redux/store";
 import { selectOrganizationIds } from "@/features/scopes/redux/selectors/tree";
 
@@ -151,7 +152,9 @@ export async function startSystemRun(
     result = await send();
   }
   if (isServerUpdatingRefusal(result.error)) throw new Error(SERVER_UPDATING_MESSAGE);
-  if (result.error) throw new Error(result.error.message || failure);
+  // A refusal says the server's own reason (its words, not "Invalid request. Please check your input"),
+  // or the caller's plain sentence when the server said nothing.
+  if (result.error) throw new Error(describeDoorRefusal(result.error, { fallback: failure }).message);
   const data = obj(result.data);
   const runId = typeof data.run_id === "string" ? data.run_id : "";
   if (!runId) throw new Error(failure);

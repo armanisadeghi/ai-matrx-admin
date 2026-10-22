@@ -152,6 +152,7 @@ export function PipelineWorkspace({
       key={selectedId}
       itemId={selectedId}
       onItemChanged={refreshAll}
+      onMovedToStage={setStage}
     />
   ) : (
     <p className="py-16 text-center text-sm text-muted-foreground">
