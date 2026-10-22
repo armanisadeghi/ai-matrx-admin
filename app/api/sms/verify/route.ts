@@ -6,6 +6,7 @@
  * (separate from Supabase auth phone login).
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
         // carries), and a request that names none is refused with the
         // caller's memberships before anything is spent or written.
         const actingOrganizationId =
-          request.headers.get("X-Organization-Id")?.trim() || undefined;
+          request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
         const organizationId = await ensureOrgIdServer(
           supabase,
           actingOrganizationId,

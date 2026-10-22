@@ -7,6 +7,7 @@
 //
 // Kept out of the route file so a CLI/cron caller could reuse the SQL runner too.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { spawn } from "node:child_process";
 import { requireSuperAdminDatabaseClient } from "@/features/administration/database-hub/require-super-admin-database-client";
 import type {
@@ -113,7 +114,7 @@ export function createDownloadProbe(
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          "X-Organization-Id": organizationId,
+          [MATRX_HEADERS.organization]: organizationId,
           // Cheap liveness probe — just the first byte.
           Range: "bytes=0-0",
         },

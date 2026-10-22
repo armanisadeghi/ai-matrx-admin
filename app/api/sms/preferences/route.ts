@@ -5,6 +5,7 @@
  * User SMS notification preferences.
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/adminClient";
@@ -282,7 +283,7 @@ export async function PUT(request: NextRequest) {
     // with none the request is REFUSED, before a single row is written, with
     // the caller's memberships attached so the person can choose and retry.
     const actingOrganizationId =
-      request.headers.get("X-Organization-Id")?.trim() || undefined;
+      request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
     const organizationId = await ensureOrgIdServer(supabase, actingOrganizationId);
 
     // 🚨 THIS IS AN ENROLLMENT DOOR TOO, SO IT GOES THROUGH THE ENROLLMENT DOOR.

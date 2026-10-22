@@ -21,6 +21,7 @@
 // seal-and-store cannot serve it. That is why `hr_duplicate_scan` reported its
 // `ssn_hmac` leg as `skipped` on every hire until the fingerprint call existed.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 /** `POST /hr/identity/{employeeId}/ssn` — what the intake can honestly answer. */
 export type HrSsnStoreOutcome =
   /**
@@ -84,7 +85,7 @@ function readText(source: Record<string, unknown>, key: string): string | null {
 function headersFor(organizationId: string): HeadersInit {
   return {
     "Content-Type": "application/json",
-    "X-Organization-Id": organizationId,
+    [MATRX_HEADERS.organization]: organizationId,
   };
 }
 

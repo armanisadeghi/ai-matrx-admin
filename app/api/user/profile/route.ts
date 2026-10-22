@@ -11,6 +11,7 @@
 // etc.) is owned by /api/user/form-profile/route.ts. This route is
 // intentionally limited to what drives the header avatar/name everywhere.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { UserAccountData, UserAccountPatch } from "@/features/user-profile/types";
@@ -228,7 +229,7 @@ export async function PATCH(request: NextRequest) {
       // `auth.updateUser` would have already saved the person's name and
       // avatar and then told them nothing was saved.
       const actingOrganizationId =
-        request.headers.get("X-Organization-Id")?.trim() || undefined;
+        request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
       const writeOrganizationId = await ensureOrgIdServer(
         supabase,
         actingOrganizationId,

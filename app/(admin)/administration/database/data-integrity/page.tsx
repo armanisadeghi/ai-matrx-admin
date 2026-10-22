@@ -9,6 +9,7 @@
 // with the findings sample. Read-only — checks never mutate data. The
 // /administration layout already gates the whole tree to super admins.
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
@@ -384,7 +385,7 @@ export default function DataIntegrityPage() {
           headers: {
             "Content-Type": "application/json",
             ...(activeOrganizationId
-              ? { "X-Organization-Id": activeOrganizationId }
+              ? { [MATRX_HEADERS.organization]: activeOrganizationId }
               : {}),
           },
           body: JSON.stringify(body),

@@ -1,3 +1,4 @@
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { readPersistenceTier } from "@/lib/sandbox/persistence-read";
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
   // The organization the caller SELECTED, stated on `X-Organization-Id`; with
   // none the request is refused with the caller's memberships attached.
   const actingOrganizationId =
-    request.headers.get("X-Organization-Id")?.trim() || undefined;
+    request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
   let organizationId: string;
   try {
     organizationId = await ensureOrgIdServer(supabase, actingOrganizationId);
@@ -100,7 +101,7 @@ export async function DELETE(request: NextRequest) {
   // The organization the caller SELECTED, stated on `X-Organization-Id`; with
   // none the request is refused with the caller's memberships attached.
   const actingOrganizationId =
-    request.headers.get("X-Organization-Id")?.trim() || undefined;
+    request.headers.get(MATRX_HEADERS.organization)?.trim() || undefined;
   let organizationId: string;
   try {
     organizationId = await ensureOrgIdServer(supabase, actingOrganizationId);

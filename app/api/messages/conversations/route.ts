@@ -15,6 +15,7 @@
  * Uses dm_ prefixed tables
  */
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
@@ -259,7 +260,7 @@ export async function POST(request: NextRequest) {
     // sender's own private workspace (DEFAULT-ORG-4, 2026-09-22). Every Matrx client sends
     // it (`applyOrganizationContextHeader`).
     const organizationId =
-      request.headers.get("X-Organization-Id")?.trim() ?? "";
+      request.headers.get(MATRX_HEADERS.organization)?.trim() ?? "";
 
     if (type === "direct" && participant_ids.length === 1) {
       const otherUserId = participant_ids[0];

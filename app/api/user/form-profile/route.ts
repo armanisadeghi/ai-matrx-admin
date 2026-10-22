@@ -12,6 +12,7 @@
 //
 // Companion route: /api/user/profile (auth metadata + users.profiles).
 
+import { MATRX_HEADERS } from "@ai-matrx/auth/credentials";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { Database, Json } from "@/types/database.types";
@@ -261,7 +262,7 @@ export async function PATCH(request: NextRequest) {
 
     const organizationId =
       existing?.organization_id ??
-      request.headers.get("X-Organization-Id")?.trim() ??
+      request.headers.get(MATRX_HEADERS.organization)?.trim() ??
       "";
     if (organizationId.length === 0) {
       return NextResponse.json(
