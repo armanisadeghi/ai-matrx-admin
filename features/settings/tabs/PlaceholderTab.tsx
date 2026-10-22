@@ -1,8 +1,8 @@
 "use client";
 
 import { PartyPopper } from "lucide-react";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 
 export default function PlaceholderTab() {
   return (

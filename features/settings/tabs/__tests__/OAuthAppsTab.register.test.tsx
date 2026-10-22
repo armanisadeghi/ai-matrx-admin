@@ -26,7 +26,8 @@ jest.mock("@/components/ui/button", () => ({
 }));
 jest.mock("@/components/ui/confirm-dialog", () => ({ ConfirmDialog: () => null }));
 jest.mock("@ai-matrx/design-system", () => ({ ErrorNotice: () => null }));
-jest.mock("@/components/official/settings/layout/SettingsSection", () => ({
+jest.mock("@ai-matrx/design-system/settings", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/settings"),
   SettingsSection: (p: { title?: string; action?: React.ReactNode; children?: React.ReactNode }) => (
     <section>
       {p.title}
@@ -34,12 +35,8 @@ jest.mock("@/components/official/settings/layout/SettingsSection", () => ({
       {p.children}
     </section>
   ),
-}));
-jest.mock("@/components/official/settings/layout/SettingsSubHeader", () => ({ SettingsSubHeader: () => null }));
-jest.mock("@/components/official/settings/layout/SettingsCallout", () => ({
+  SettingsSubHeader: () => null,
   SettingsCallout: (p: { children?: React.ReactNode }) => <div>{p.children}</div>,
-}));
-jest.mock("@/components/official/settings/SettingsRow", () => ({
   SettingsRow: (p: { children?: React.ReactNode; label?: string; meta?: React.ReactNode; description?: React.ReactNode }) => (
     <div>
       {p.label}
@@ -48,13 +45,9 @@ jest.mock("@/components/official/settings/SettingsRow", () => ({
       {p.children}
     </div>
   ),
-}));
-jest.mock("@/components/official/settings/primitives/SettingsTextInput", () => ({
   SettingsTextInput: (p: { label: string; value: string; onValueChange: (v: string) => void }) => (
     <input aria-label={p.label} value={p.value} onChange={(e) => p.onValueChange(e.target.value)} />
   ),
-}));
-jest.mock("@/components/official/settings/primitives/SettingsButton", () => ({
   SettingsButton: (p: { actionLabel: string; onClick: () => void }) => (
     <button type="button" onClick={p.onClick}>
       {p.actionLabel}

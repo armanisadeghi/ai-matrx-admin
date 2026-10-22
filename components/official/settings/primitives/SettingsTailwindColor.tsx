@@ -2,8 +2,8 @@
 
 import { useId } from "react";
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
-import { SettingsRow } from "../SettingsRow";
-import type { SettingsCommonProps } from "../types";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
+import type { SettingsCommonProps } from "@ai-matrx/design-system/settings";
 
 export type SettingsTailwindColorProps = SettingsCommonProps & {
   /** Tailwind color family name in lowercase: "blue", "red", "gray", etc. */

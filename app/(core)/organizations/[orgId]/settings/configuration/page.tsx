@@ -7,8 +7,8 @@ import { RecordPageHeader } from "@/features/shell/components/header/templates/R
 import { useResolvedOrganization, useUserRole } from "@/features/organizations/hooks";
 import { OrganizationAccessGate } from "@/features/organizations/components/OrganizationAccessGate";
 import { hrSettingsHref } from "@/features/hr/routes";
-import { SettingsDesignProvider } from "@/components/official/settings/SettingsDesignProvider";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsDesignProvider } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { UniversalSettingsProvider, useUniversalSettings } from "@/features/settings/universal/UniversalSettingsContext";
 import { UniversalSettingsRows } from "@/features/settings/universal/UniversalSettingsPane";

@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { Building2 } from "lucide-react";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
 import { useUserOrganizations } from "@/features/organizations/hooks";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";

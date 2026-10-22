@@ -16,11 +16,11 @@
 // (a tab component takes no props), so the same component serves the route,
 // the window and the mobile drawer.
 
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsNavigationRow } from "@/components/official/settings/SettingsNavigationRow";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsNavigationRow } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import type { ReactNode } from "react";
 import { KnobOverrideRow } from "@/lib/scoped-config/KnobOverrideRow";

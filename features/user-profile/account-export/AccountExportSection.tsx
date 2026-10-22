@@ -6,7 +6,7 @@ import { Spinner } from "@/components/ui/loaders/Spinner";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { InfoHint } from "@ai-matrx/design-system/controls";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { downloadBlob } from "@/utils/file-operations/utils";
 import { exportPersonalAccount } from "./service";
 

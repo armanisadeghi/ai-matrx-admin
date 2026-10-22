@@ -16,8 +16,8 @@ import { toast } from "@/lib/toast";
 import { ShieldCheck, Building2 } from "lucide-react";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import {
     CONTEXT_MENU_ENTITY_KEY,

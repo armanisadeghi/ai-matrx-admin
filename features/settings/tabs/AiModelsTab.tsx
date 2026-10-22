@@ -1,7 +1,7 @@
 "use client";
 
 import { Cpu } from "lucide-react";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 import AiModelsPreferences from "@/components/user-preferences/AiModelsPreferences";
 
 // One heading, then the list — no bordered card around the whole screen

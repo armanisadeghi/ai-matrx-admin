@@ -23,13 +23,13 @@ import {
     Lock,
     ShieldCheck,
 } from "lucide-react";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSegmented } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsNumberInput } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
 import { SettingAnchor } from "@/features/settings/doors/SettingAnchor";
 import { SettingAccessGate } from "@/features/access-gate/components/SettingAccessGate";
 import { ORG_CHANGE_POLICY_SET_ACTION } from "@/features/messaging/actions/settingRequestActionRegistry";

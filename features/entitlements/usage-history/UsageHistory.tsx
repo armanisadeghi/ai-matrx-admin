@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { formatPoints } from "@ai-matrx/kit/format";
 import { fetchPersonalUsageHistory } from "./service";
 import type { UsageHistoryActivity, UsageHistoryEntry, UsageHistoryPage, UsageHistoryQuery, UsageHistoryRange } from "./types";

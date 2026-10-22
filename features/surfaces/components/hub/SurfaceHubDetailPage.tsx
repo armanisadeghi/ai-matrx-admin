@@ -33,7 +33,7 @@ import { toast } from "@/lib/toast";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { cn } from "@/lib/utils";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { selectAgentById } from "@ai-matrx/chat/agents/redux/agent-definition/selectors";
 import { selectAllOrgs } from "@/features/agent-context/redux/organizationsSlice";

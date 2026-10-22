@@ -3,11 +3,11 @@
 import { useMemo } from "react";
 import { ShieldCheck, Lightbulb, DatabaseZap } from "lucide-react";
 import { toast } from "@/lib/toast";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
 import { settingDoorHref } from "../doors/settingDoorTarget";
 import { useAutoRagPreference } from "@/features/kg-suggestions/hooks/useAutoRagPreference";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";

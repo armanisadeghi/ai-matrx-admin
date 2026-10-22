@@ -2,8 +2,8 @@
 
 import { Link2 } from "lucide-react";
 import { OrganizationList } from "@/features/organizations/components/OrganizationList";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import { PreferencesLoadGate } from "@/components/read-state/PreferencesLoadGate";
 import { StartupOrganizationRow } from "@/features/organizations/components/StartupOrganizationRow";

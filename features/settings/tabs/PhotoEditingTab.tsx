@@ -1,8 +1,8 @@
 "use client";
 
 import { Camera } from "lucide-react";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 
 /**
  * Settings truth sweep (2026-09-25, lane ai-media-editor): this tab used to

@@ -1,64 +1,13 @@
 # Settings primitives
 
-Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/account/settings/FEATURE.md — read it before touching this feature in ANY repo.
+THE BLOCKS MOVED (2026-10-22): rows, sections, groups, controls and navigation now live in
+`@ai-matrx/design-system/settings` (source: `aidream/apps/shared/design-system/src/settings/`; the rules for
+using them: that folder's FEATURE.md). The app binds the package once in
+`features/settings/doors/settingsHost.tsx` (`configureSettings`).
 
-These local primitives are the shared presentation contract for settings rows,
-sections, controls, and settings navigation. Import the source component you
-need; do not add a barrel or a page-local substitute.
+Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/account/settings/FEATURE.md.
 
-## Composition
-
-- Wrap a settings route or overlay in **`SettingsDesignProvider`** with
-  `variant="compact"`. Embeddings that omit it retain the standard variant.
-- Use **`SettingsPage`** as the centered content canvas. The shell owns the
-  only scroll container.
-- Use **`SettingsGroup`** or `SettingsSection` for related rows. Their props
-  are identical; `SettingsGroup` is the named composition recipe.
-- Use **`SettingsNavigationRow`** for one destination. Pass `href` for native
-  link and modifier-click behavior, or `onNavigate` for an in-place action.
-  The two are deliberately exclusive.
-- Use **`SettingsFlatNavigation`** with **`settingsNavigationSections`** for
-  desktop and overlay settings menus. It renders optional muted headings and
-  aligned flat links; it never owns accordion state or recursive indentation.
-  Adjacent root leaves form one unheaded group in registry order. Separated
-  groups use stable IDs based on their first leaf, so React keys stay unique.
-- Use **`SettingsNavigationSearch`** for the visible search input. Callers own
-  query state and may supply exact-control results from their route adapter;
-  results include their destination location and must suppress a competing
-  no-results message. Both navigation primitives own their Tailwind structural
-  and semantic styling, so they remain correct outside a route shell. Its
-  `renderItem` callback returns one native `a` or `button` root; the primitive
-  supplies the compact row inset and active state through that direct child.
-
-## Row and control rules
-
-- Controls compose **`SettingsRow`**. Keep their flat public APIs; add a
-  variant here instead of styling a caller.
-- Compact descriptions remain one desktop line. The accessible `About <label>`
-  info icon exposes the full description and `helpText` on click; warnings and
-  errors always wrap.
-- Input ids use React `useId`; `SettingsRow` owns a separate stable anchor
-  from its nearest `SettingsSection` title and label. Use
-  `settingsControlSearchId(sectionTitle, label)` for an exact `?control=` link.
-- `scripts/generate-static-settings-control-index.ts` catalogs only registry
-  tabs and literal `Settings*` labels. Dynamic labels or group titles are
-  excluded rather than guessed; regenerate after an authored static control changes.
-- Every `SettingsRow` anchor is the named `settings` query container. **Wide
-  controls stack below their label until that row has 40rem available**; never
-  use a viewport breakpoint for a control inside a window or split pane.
-- Fixed-width controls are bounded by their row. Control/action groups wrap or
-  stack; labels, errors, status text and long values wrap rather than escape.
-  Action targets are at least 44px tall on touch layouts.
-- Selected control values must remain readable, not merely contained by clipping.
-  `SettingsSelect` retains its 128/176/256px width vocabulary and wraps values.
-  `SettingsModelPicker` uses the canonical model picker's `settings` trigger
-  variant; model and voice triggers share the design-system select styling.
-- Registry rows have one primary control and one labeled options button.
-  Source, default and confirmed reset belong in that popover, not a second
-  inline footer. Curated user rows omit implementation keys and audit notes.
-  Voice choice and preview share one searchable chooser with separate buttons;
-  previewing never selects or saves a voice.
-- A chooser's capped flex column reserves the actual search/status height for
-  its scrollable results. Do not subtract a guessed header allowance: the live
-  bottom-positioned one-result menu clipped a 36px row into 20px. Check both
-  natural placements, a single filtered result, and a short-window long list.
+Only the app-coupled controls stay in this folder, each composing the package's `SettingsRow`:
+`primitives/SettingsModelPicker` (Redux model catalog), `primitives/SettingsTextarea` and
+`primitives/SettingsProTextarea` (ProTextarea), `primitives/SettingsTailwindColor` (the app's color picker).
+Import every other block from `@ai-matrx/design-system/settings`.

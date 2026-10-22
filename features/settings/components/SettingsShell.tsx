@@ -17,13 +17,13 @@ import type { RootState } from "@/lib/redux/store";
 import { WindowPanel } from "@ai-matrx/summon/window";
 import { useOverlaySurfaceRenderAck } from "@ai-matrx/summon/window";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
-import { SettingsTree } from "@/components/official/settings/tree/SettingsTree";
-import { SettingsDrawerNav } from "@/components/official/settings/tree/SettingsDrawerNav";
+import { SettingsTree } from "@ai-matrx/design-system/settings";
+import { SettingsDrawerNav } from "@ai-matrx/design-system/settings";
 import { UniversalSettingsProvider } from "../universal/UniversalSettingsContext";
 import { useSettingsTree } from "../universal/useSettingsTree";
 import { SettingsTabHost } from "./SettingsTabHost";
 import { SettingsPresentationProvider } from "./SettingsPresentationContext";
-import { SettingsDesignProvider } from "@/components/official/settings/SettingsDesignProvider";
+import { SettingsDesignProvider } from "@ai-matrx/design-system/settings";
 
 export type SettingsShellProps = {
   /** Controls whether the shell is mounted. */

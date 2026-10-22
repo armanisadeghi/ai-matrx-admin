@@ -9,8 +9,8 @@
 import { CalendarClock } from "lucide-react";
 import { CalendarLinks, RecordsUiProvider } from "@/features/data-tables/records-ui-host/recordsUiLazy";
 
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { CALENDAR_FEED_PORT } from "@/features/calendar-feed/calendarFeedPort";
 import { RECORDS_NOTIFY } from "@/features/unified-data/recordsNotify";
 

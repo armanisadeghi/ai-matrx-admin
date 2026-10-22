@@ -2,8 +2,8 @@
 
 import { useId } from "react";
 import { ProTextarea } from "@/components/official/ProTextarea";
-import { SettingsRow } from "../SettingsRow";
-import type { SettingsCommonProps } from "../types";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
+import type { SettingsCommonProps } from "@ai-matrx/design-system/settings";
 
 export type SettingsProTextareaProps = SettingsCommonProps & {
   value: string;

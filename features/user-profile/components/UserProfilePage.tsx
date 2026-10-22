@@ -50,7 +50,7 @@ import type { ImageUploaderResult } from "@/components/official/ImageAssetUpload
 import { CloudFolders } from "@/features/files/utils/folder-conventions";
 import { useFileAsset } from "@/features/files/hooks/useFileAsset";
 import { toast } from "@/lib/toast";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";

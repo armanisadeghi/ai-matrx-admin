@@ -59,7 +59,8 @@ jest.mock("@/lib/redux/selectors/userSelectors", () => ({
   selectAdminFeature: () => true,
 }));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }), useSearchParams: () => new URLSearchParams() }));
-jest.mock("@/components/official/settings/SettingsDesignProvider", () => ({
+jest.mock("@ai-matrx/design-system/settings", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/settings"),
   SettingsDesignProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));

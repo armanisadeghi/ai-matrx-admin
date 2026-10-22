@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useId } from "react";
-import { SettingsRow } from "../SettingsRow";
-import type { SettingsCommonProps } from "../types";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
+import type { SettingsCommonProps } from "@ai-matrx/design-system/settings";
 import { ProTextarea } from "@/components/official/ProTextarea";
 
 export type SettingsTextareaProps = SettingsCommonProps & {

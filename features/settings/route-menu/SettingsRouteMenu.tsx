@@ -14,8 +14,8 @@ import {
   SettingsNavigationSearch,
   settingsNavigationSections,
   type SettingsNavigationItem,
-} from "@/components/official/settings/navigation/SettingsFlatNavigation";
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+} from "@ai-matrx/design-system/settings";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 import { useSettingsTree } from "@/features/settings/universal/useSettingsTree";
 import { useSettingsControlSearch } from "@/features/settings/hooks/useSettingsSearch";
 import {
