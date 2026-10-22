@@ -106,7 +106,7 @@ async function main(): Promise<number> {
     return STRICT ? 1 : 0;
   }
   const db = createClient(env.url, env.key, { auth: { persistSession: false, autoRefreshToken: false } });
-  const { data, error } = await db.rpc("execute_admin_query", { query: LIVE_QUERY });
+  const { data, error } = await db.schema("platform").rpc("execute_admin_query", { query: LIVE_QUERY });
   if (error) {
     console.error(`ERROR could not read pg_policy: ${error.message}`);
     return 2;

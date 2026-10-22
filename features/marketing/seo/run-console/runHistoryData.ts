@@ -32,13 +32,13 @@ import {
 import { readListRpc } from "@/lib/entity-list/readListRpc";
 
 export type RunHistoryEntry =
-  Database["public"]["Functions"]["admin_list_run_history"]["Returns"][number];
+  Database["ai"]["Functions"]["admin_list_run_history"]["Returns"][number];
 
 export type RunHistoryFacet =
-  Database["public"]["Functions"]["admin_run_history_facets"]["Returns"][number];
+  Database["ai"]["Functions"]["admin_run_history_facets"]["Returns"][number];
 
 export type RunAiCall =
-  Database["public"]["Functions"]["admin_list_run_ai_calls"]["Returns"][number];
+  Database["ai"]["Functions"]["admin_list_run_ai_calls"]["Returns"][number];
 
 /** Where the next page starts — the last row's full sort key. */
 export interface RunHistoryCursor {
@@ -64,7 +64,7 @@ export async function listRunHistoryPage(
   filters: RunHistoryFilters,
   cursor: RunHistoryCursor | null,
 ): Promise<RunHistoryPage> {
-  const { data, error } = await supabase.rpc("admin_list_run_history", {
+  const { data, error } = await supabase.schema("ai").rpc("admin_list_run_history", {
     p_cursor_at: cursor?.at,
     p_cursor_kind: cursor?.kind,
     p_cursor_id: cursor?.id,
@@ -95,7 +95,7 @@ export async function listRunHistoryFacets(
     p_kinds: filters.kind ? [filters.kind] : undefined,
     p_status_groups: filters.statuses.length ? filters.statuses : undefined,
     ...rangeArgs(filters),
-  }, { order: ["execution_kind", "task_id", "operation"] });
+  }, { schema: "ai", order: ["execution_kind", "task_id", "operation"] });
   if (error) throw pgErrorToError(error);
   return data ?? [];
 }
@@ -105,7 +105,7 @@ export async function listRunHistoryFacets(
 export async function getRunHistoryEntry(
   ref: SelectedRunRef,
 ): Promise<RunHistoryEntry | null> {
-  const { data, error } = await supabase.rpc("admin_list_run_history", {
+  const { data, error } = await supabase.schema("ai").rpc("admin_list_run_history", {
     p_kinds: [ref.kind],
     p_run_id: ref.id,
     p_activity: "all",
@@ -118,7 +118,7 @@ export async function listRunAiCalls(
   executionKind: string,
   executionId: string,
 ): Promise<RunAiCall[]> {
-  const { data, error } = await supabase.rpc("admin_list_run_ai_calls", {
+  const { data, error } = await supabase.schema("ai").rpc("admin_list_run_ai_calls", {
     p_execution_kind: executionKind,
     p_execution_id: executionId,
   });

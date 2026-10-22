@@ -52,7 +52,7 @@ async function main() {
     if (!own.ok) throw new Error(own.error.message);
     const page = await store.create({ parentId: null, title: "Grooming week of Oct 13", blocks: [dbBlock(own.data, "Appointments", false)] as never });
     pages.push(page.id);
-    await adoptPageDatabase(page.id, own.data, admin.db as never);
+    await adoptPageDatabase(page.id, own.data, admin.db.schema("platform") as never);
     const seeded = await admin.records.recordWrite({ table_id: own.data, data: { name: "Biscuit — full groom, Tue 10:00" } as never });
     check("admin makes a page, its inline database and a row", seeded.ok, seeded.ok ? "" : seeded.error.message);
 
@@ -64,7 +64,7 @@ async function main() {
     pages.push(linkedPage.id);
 
     for (const id of [page.id, linkedPage.id]) {
-      const { error } = await admin.db.rpc("share_resource_with_user", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId, p_permission_level: "editor" });
+      const { error } = await admin.db.schema("iam").rpc("share_resource_with_user", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId, p_permission_level: "editor" });
       check(`share ${id === page.id ? "the page" : "the linked-view page"} with test@test.com at Edit`, !error, error?.message ?? "");
     }
 
@@ -88,7 +88,7 @@ async function main() {
     const outsideRows = outsideRead.ok ? outsideRead.data.rows : [];
     check("a page that only links an outside table gives test@test.com none of it", !outsideRead.ok || outsideRows.length === 0, outsideRead.ok ? `${outsideRows.length} row(s)` : outsideRead.error.message);
 
-    const claim = await (second.db.rpc as never as (fn: string, a: object) => Promise<{ error: { message: string } | null }>)("assoc_link", {
+    const claim = await (second.db.schema("platform").rpc as never as (fn: string, a: object) => Promise<{ error: { message: string } | null }>)("assoc_link", {
       p_source_type: "document", p_source_id: linkedPage.id, p_target_type: "record", p_target_id: outside.data, p_role: "page_database", p_label: "page_database",
     });
     check("test@test.com cannot claim the outside table for a page shared at Edit", Boolean(claim.error), claim.error?.message ?? "claimed");
@@ -101,7 +101,7 @@ async function main() {
     check("restoring the page brings its database back", back.ok && back.data === null, back.ok ? "" : back.error.message);
   } finally {
     for (const id of pages) {
-      await admin.db.rpc("revoke_resource_access", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId });
+      await admin.db.schema("iam").rpc("revoke_resource_access", { p_resource_type: "document", p_resource_id: id, p_target_user_id: second.userId });
       await store.archive(id).catch(() => undefined);
     }
   }

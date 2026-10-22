@@ -51,7 +51,7 @@ export async function fetchInitiativeScopeCounts(
       p_org_id: listOrgParam(query),
       p_deep: query.deep,
       p_filters: query.filters,
-    }, { order: ["scope", "narrow_id"] }
+    }, { schema: "context", order: ["scope", "narrow_id"] }
   );
   if (error) throw error;
   const byKind: EntityScopeCounts["byKind"] = {};
@@ -70,7 +70,7 @@ export async function fetchInitiativeFacets(
     p_search: query.search || undefined,
     p_deep: query.deep,
     p_filters: query.filters,
-  }, { order: ["facet", "value"] });
+  }, { schema: "growth", order: ["facet", "value"] });
   if (error) throw error;
   const byKind: EntityFacets["byKind"] = {};
   for (const row of data ?? [])

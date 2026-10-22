@@ -108,7 +108,7 @@ async function resolveAgentUserId(
     // The canonical email→user resolver (same RPC the sharing UI uses).
     const lookupLabel = `public.lookup_user_by_email(${AGENT_SERVICE_ACCOUNT_EMAIL})`;
     const { data, error } = await withTransientRetry(lookupLabel, () =>
-      supabase.rpc("lookup_user_by_email", {
+      supabase.schema("users").rpc("lookup_user_by_email", {
         lookup_email: AGENT_SERVICE_ACCOUNT_EMAIL,
       }),
     );
@@ -429,7 +429,7 @@ export async function getTriageBatch(
     // batch can simply be asked for again.
     const { data, error } = await withTransientRetry(
       `public.get_triage_batch(${batchSize})`,
-      () => supabase.rpc("get_triage_batch", { p_batch_size: batchSize }),
+      () => supabase.schema("users").rpc("get_triage_batch", { p_batch_size: batchSize }),
     );
 
     if (error) {
@@ -457,7 +457,7 @@ export async function getWorkQueue(): Promise<ServiceResult<UserFeedback[]>> {
 
     const { data, error } = await withTransientRetry(
       "public.get_agent_work_queue()",
-      () => supabase.rpc("get_agent_work_queue"),
+      () => supabase.schema("agent").rpc("get_agent_work_queue"),
     );
 
     if (error) {
@@ -480,7 +480,7 @@ export async function getComments(
 
     const { data, error } = await withTransientRetry(
       `public.get_feedback_comments(${feedbackId})`,
-      () => supabase.rpc("get_feedback_comments", { p_feedback_id: feedbackId }),
+      () => supabase.schema("users").rpc("get_feedback_comments", { p_feedback_id: feedbackId }),
     );
 
     if (error) {
@@ -541,7 +541,7 @@ export async function triageItem(
     const { data, error } = await withTransientRetry(
       `public.triage_feedback_item(${feedbackId})`,
       () =>
-        supabase.rpc("triage_feedback_item", {
+        supabase.schema("users").rpc("triage_feedback_item", {
           p_id: feedbackId,
           p_ai_solution_proposal: triage.ai_solution_proposal,
           p_ai_suggested_priority: triage.ai_suggested_priority,
@@ -580,7 +580,7 @@ export async function addComment(
     const { data, error } = await withTransientRetry(
       `public.add_feedback_comment(${feedbackId})`,
       () =>
-        supabase.rpc("add_feedback_comment", {
+        supabase.schema("users").rpc("add_feedback_comment", {
           p_feedback_id: feedbackId,
           p_author_type: authorType,
           p_author_name: authorName,
@@ -617,7 +617,7 @@ export async function resolveWithTesting(
     const { data, error } = await withTransientRetry(
       `public.resolve_with_testing(${feedbackId})`,
       () =>
-        supabase.rpc("resolve_with_testing", {
+        supabase.schema("users").rpc("resolve_with_testing", {
           p_id: feedbackId,
           p_resolution_notes: resolutionNotes,
           p_testing_instructions: testingInstructions,
@@ -654,7 +654,7 @@ export async function setAdminDecision(
     const { data, error } = await withTransientRetry(
       `public.set_admin_decision(${feedbackId})`,
       () =>
-        supabase.rpc("set_admin_decision", {
+        supabase.schema("users").rpc("set_admin_decision", {
           p_id: feedbackId,
           p_decision: decision,
           p_direction: direction,

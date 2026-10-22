@@ -44,7 +44,7 @@ export default async function UnsubscribePage({
 }) {
   const { token } = await params;
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("outreach_unsubscribe_preview", {
+  const { data, error } = await supabase.schema("crm").rpc("outreach_unsubscribe_preview", {
     p_token: token,
   });
 

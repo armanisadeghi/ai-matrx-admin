@@ -16,7 +16,7 @@ export type GuardianLinkRow =
  * buckets these into "my students", "requests I sent", and "my consent inbox".
  */
 export type GuardianLinkView =
-  Database["public"]["Functions"]["guardian_list_links"]["Returns"][number];
+  Database["education"]["Functions"]["guardian_list_links"]["Returns"][number];
 
 /** The caller's role on a link. */
 export type GuardianRole = "guardian" | "student";

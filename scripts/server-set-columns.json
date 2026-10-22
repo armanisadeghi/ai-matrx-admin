@@ -6,11 +6,7 @@
     "confirmed_at"
   ],
   "docproc.page_extraction_jobs": [
-    "owner_id",
     "visibility"
-  ],
-  "docproc.processed_documents": [
-    "owner_id"
   ],
   "workbench.notes": [
     "home_scope_id"

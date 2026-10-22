@@ -199,7 +199,7 @@ export function useOrgAutoRagPreference(
         // CEILING and cannot touch `daily_auto_rag_cost_used_usd` or
         // `daily_auto_rag_window_start` — the live spend meter aidream writes, which
         // the base-table UPDATE grant let a browser reset for itself.
-        const { error: uErr } = await supabase.rpc("org_preferences_set", {
+        const { error: uErr } = await supabase.schema("iam").rpc("org_preferences_set", {
           p_organization_id: organizationId,
           p_patch: patch as never,
         });

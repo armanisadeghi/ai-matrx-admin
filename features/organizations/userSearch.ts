@@ -25,7 +25,7 @@ export async function searchUserByEmail(
 ): Promise<UserSearchResult> {
   const normalized = email.toLowerCase().trim();
   try {
-    const { data, error } = await supabase.rpc("lookup_user_by_email", {
+    const { data, error } = await supabase.schema("users").rpc("lookup_user_by_email", {
       lookup_email: normalized,
     });
 

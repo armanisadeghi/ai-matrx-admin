@@ -77,7 +77,7 @@ export async function fetchConversationScopeCounts(
     p_deep: query.deep,
     p_archived: query.archived,
     p_filters: filtersJson(query),
-  }, { order: ["scope", "narrow_id"] });
+  }, { schema: "chat", order: ["scope", "narrow_id"] });
 
   if (error) throw pgError(error);
 

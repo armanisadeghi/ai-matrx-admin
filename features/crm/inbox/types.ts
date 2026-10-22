@@ -13,7 +13,7 @@ import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 /** One row, exactly as crm_inbox_list_scoped returns it. */
 export type InboxRow =
-  Omit<Database["public"]["Functions"]["crm_inbox_list_scoped"]["Returns"][number], "total_count">;
+  Omit<Database["crm"]["Functions"]["crm_inbox_list_scoped"]["Returns"][number], "total_count">;
 
 /**
  * Mine + My Orgs, and deliberately no more.

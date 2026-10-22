@@ -25,7 +25,7 @@ export async function createAgentFromTemplate(
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Choose an organization for the new agent." };
   }
-  const { data, error } = await supabase.rpc("agx_create_agent_from_template", {
+  const { data, error } = await supabase.schema("agent").rpc("agx_create_agent_from_template", {
     p_template_id: templateId,
     p_organization_id: organizationId,
   });

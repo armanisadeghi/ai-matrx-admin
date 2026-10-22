@@ -116,7 +116,7 @@ export async function fetchBrowseScopeCounts(
     p_deep: query.deep,
     p_archived: query.archived,
     p_filters: filtersJson(query),
-  }, { order: ["scope", "narrow_id"] });
+  }, { schema: "agent", order: ["scope", "narrow_id"] });
 
   if (error) throw pgError(error);
 

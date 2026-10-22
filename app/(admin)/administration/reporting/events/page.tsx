@@ -118,7 +118,7 @@ export default function AdminEventsPage() {
     setFetching(true);
     try {
       const supabase = createClient();
-      const { data, error: rpcError } = await supabase.rpc(
+      const { data, error: rpcError } = await supabase.schema("platform").rpc(
         "admin_recent_activity",
         {
           p_limit: 200,

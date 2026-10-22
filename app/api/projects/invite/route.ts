@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: invitation, error: invitationError } = await supabase.rpc(
+    const { data: invitation, error: invitationError } = await supabase.schema("iam").rpc(
       "inv_get_managed",
       { p_invitation_id: invitationId },
     );

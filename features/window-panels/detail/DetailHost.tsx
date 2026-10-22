@@ -266,6 +266,7 @@ async function listHistory(
   signal: AbortSignal,
 ): Promise<DetailHistoryEntry[]> {
   const { data, error } = await supabase
+    .schema("platform")
     .rpc("version_list", { p_token: token, p_id: id, p_limit: 50 })
     .abortSignal(signal);
   if (error) throw new Error(error.message);

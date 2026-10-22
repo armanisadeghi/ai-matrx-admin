@@ -112,7 +112,7 @@ export async function createOrganization(
     // The organization and first owner membership are created in one database
     // transaction. The RPC derives the owner from auth.uid(); callers cannot
     // create an ownerless organization or name a different initial owner.
-    const { data: org, error: orgError } = await supabase.rpc("org_create", {
+    const { data: org, error: orgError } = await supabase.schema("iam").rpc("org_create", {
       p_name: name,
       p_abbreviation: abbreviation,
       p_slug: slug,
@@ -212,7 +212,7 @@ export async function updateOrganization(
     // `created_by` and `slug` are not reachable from a browser at all.
     // A refusal is now an ERROR with a sentence, not the zero-row no-op DD-048 had to
     // detect by asking for the row back.
-    const { data: row, error } = await supabase.rpc("org_update", {
+    const { data: row, error } = await supabase.schema("iam").rpc("org_update", {
       p_org_id: orgId,
       p_patch: updateData as never,
     });
@@ -482,7 +482,7 @@ export async function getMyOrganizationsByIds(ids: readonly string[]): Promise<O
  */
 export async function isSlugAvailable(slug: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc("check_org_slug_available", {
+    const { data, error } = await supabase.schema("iam").rpc("check_org_slug_available", {
       slug_to_check: slug,
     });
 
@@ -688,7 +688,7 @@ export async function transferOwnership(
   try {
     const currentUserId = requireUserId();
 
-    const { error } = await supabase.rpc("transfer_organization_ownership", {
+    const { error } = await supabase.schema("iam").rpc("transfer_organization_ownership", {
       org_id: orgId,
       current_owner_id: currentUserId,
       new_owner_id: newOwnerId,

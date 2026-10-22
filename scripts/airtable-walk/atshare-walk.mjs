@@ -60,11 +60,11 @@ try {
     await op.waitForSelector("[data-request-edit-access-said]", { timeout: 60000 });
     say("ROW2 outsider sees:", await op.locator("[data-request-edit-access-said]").innerText());
     // OWNER: the request is in the inbox; approve grants Edit.
-    const list = await sb.rpc("access_request_list", { p_box: "inbox" });
+    const list = await sb.schema("iam").rpc("access_request_list", { p_box: "inbox" });
     const mine = JSON.stringify(list.data ?? []).includes(table);
     say("ROW2 owner inbox holds the request:", mine, list.error?.message ?? "");
     const row = (Array.isArray(list.data) ? list.data : list.data?.requests ?? []).find((r) => JSON.stringify(r).includes(table));
-    const dec = await sb.rpc("access_request_decide", { p_request_id: row.id, p_decision: "grant", p_level: "editor", p_note: null });
+    const dec = await sb.schema("iam").rpc("access_request_decide", { p_request_id: row.id, p_decision: "grant", p_level: "editor", p_note: null });
     say("ROW2 decide(grant editor):", dec.error?.message ?? dec.data?.status);
     await op.reload({ waitUntil: "domcontentloaded" });
     await op.waitForSelector("[data-activity-feed]", { timeout: 240000 });

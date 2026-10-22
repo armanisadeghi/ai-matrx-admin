@@ -17,7 +17,7 @@ export async function GET() {
             return NextResponse.json({ conversations: [] });
         }
 
-        const { data, error } = await supabase.rpc('get_cx_conversations_shared_with_me');
+        const { data, error } = await supabase.schema('chat').rpc('get_cx_conversations_shared_with_me');
 
         if (error) {
             console.error('RPC get_cx_conversations_shared_with_me error:', error);

@@ -23,10 +23,11 @@ export default async function RelationshipsOverviewPage() {
   const supabase = await createClient();
 
   const [statusRes, problems] = await Promise.all([
-    supabase.rpc("admin_relationship_system_status"),
+    supabase.schema("platform").rpc("admin_relationship_system_status"),
     readAllRows<RelationshipProblem>(
       ({ from, to }) =>
         supabase
+          .schema("platform")
           .rpc("admin_relationship_problems", undefined, { count: "exact" })
           .order("severity")
           .order("edge_count", { ascending: false })

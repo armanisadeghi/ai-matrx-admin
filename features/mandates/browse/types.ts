@@ -73,7 +73,7 @@ export interface MandateListRow {
  * rather than as an undefined cell three components away.
  */
 type LiveListRow =
-  Database["public"]["Functions"]["mnd_list_scoped"]["Returns"][number];
+  Database["mandate"]["Functions"]["mnd_list_scoped"]["Returns"][number];
 type _RowMatchesLiveContract = LiveListRow extends MandateListRow ? true : never;
 const _ROW_MATCHES_LIVE_CONTRACT: _RowMatchesLiveContract = true;
 void _ROW_MATCHES_LIVE_CONTRACT;

@@ -106,7 +106,7 @@ function selfTest() {
   const frag = "do $f$\nbegin\n  insert into iam.organizations (id, name, slug)\n  values (v_org, 'Meridian Software', 'meridian-software-' || substr(v_org::text, 1, 8));\nend $f$;";
   expect("RED  a fragment included OUTSIDE a transaction", sqlFindings(inlineFragments("\\i scripts/campaign-tests/_x.sql\n", () => frag)).length, 1);
   expect("GREEN a fragment included inside begin; … rollback;", sqlFindings(inlineFragments("begin;\n\\i scripts/campaign-tests/_x.sql\nrollback;\n", () => frag)).length, 0);
-  expect("RED  a seeder calling org_create", jsFindings('const { data } = await client.rpc("org_create", { p_name: n, p_slug: s });').length, 1);
+  expect("RED  a seeder calling org_create", jsFindings('const { data } = await client.schema("iam").rpc("org_create", { p_name: n, p_slug: s });').length, 1);
   expect("GREEN a seeder calling fixtureOrg()", jsFindings("const { org } = await fixtureOrg(client, { name });").length, 0);
   console.log(bad ? `\nSELF-TEST FAILED: ${bad}` : "\nSELF-TEST PASSED");
   process.exit(bad ? 1 : 0);

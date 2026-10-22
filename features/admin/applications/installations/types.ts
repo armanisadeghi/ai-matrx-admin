@@ -7,4 +7,4 @@
 import type { Database } from "@/types/database.types";
 
 export type AppInstanceRow =
-  Database["public"]["Functions"]["admin_list_app_instances"]["Returns"][number];
+  Database["ops"]["Functions"]["admin_list_app_instances"]["Returns"][number];

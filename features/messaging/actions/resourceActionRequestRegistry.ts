@@ -38,7 +38,7 @@ async function deleteResource(context: {
   }
 
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("entity_soft_delete", {
+  const { data, error } = await supabase.schema("platform").rpc("entity_soft_delete", {
     p_token: context.resourceType,
     p_id: context.resourceId,
   });

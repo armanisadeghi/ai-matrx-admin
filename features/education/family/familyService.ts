@@ -39,7 +39,7 @@ export const familyService = {
     relationship?: string,
   ): Promise<StudyResult<GuardianConsentResult>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_grant", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_grant", {
         p_guardian_email: guardianEmail,
         ...(relationship ? { p_relationship: relationship } : {}),
       });
@@ -60,7 +60,7 @@ export const familyService = {
     relationship?: string,
   ): Promise<StudyResult<GuardianConsentResult>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_request_student", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_request_student", {
         p_student_email: studentEmail,
         ...(relationship ? { p_relationship: relationship } : {}),
       });
@@ -77,7 +77,7 @@ export const familyService = {
     approve: boolean,
   ): Promise<StudyResult<GuardianLinkRow>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_respond", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_respond", {
         p_guardian_user_id: guardianUserId,
         p_approve: approve,
       });
@@ -94,7 +94,7 @@ export const familyService = {
     studentUserId: string,
   ): Promise<StudyResult<true>> {
     try {
-      const { error } = await supabase.rpc("guardian_unlink", {
+      const { error } = await supabase.schema("education").rpc("guardian_unlink", {
         p_guardian_user_id: guardianUserId,
         p_student_user_id: studentUserId,
       });
@@ -108,7 +108,7 @@ export const familyService = {
   /** Every link the caller participates in (both roles), with counterpart identity. */
   async listLinks(): Promise<StudyResult<GuardianLinkView[]>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_list_links");
+      const { data, error } = await supabase.schema("education").rpc("guardian_list_links");
       if (error) return fail("listLinks", error);
       return { data: (data ?? []) as GuardianLinkView[], error: null };
     } catch (e) {
@@ -119,7 +119,7 @@ export const familyService = {
   /** Whether the caller currently has active guardian access to this student. */
   async canView(studentId: string): Promise<StudyResult<boolean>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_can_view", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_can_view", {
         p_student_id: studentId,
       });
       if (error) return fail("canView", error);
@@ -134,7 +134,7 @@ export const familyService = {
     studentId: string,
   ): Promise<StudyResult<ItemMasteryRow[]>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_student_mastery", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_student_mastery", {
         p_student_id: studentId,
       });
       if (error) return fail("studentMastery", error);
@@ -149,7 +149,7 @@ export const familyService = {
     since?: string,
   ): Promise<StudyResult<StudyAttemptRow[]>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_student_attempts", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_student_attempts", {
         p_student_id: studentId,
         ...(since ? { p_since: since } : {}),
       });
@@ -164,7 +164,7 @@ export const familyService = {
     studentId: string,
   ): Promise<StudyResult<StudySessionRow[]>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_student_sessions", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_student_sessions", {
         p_student_id: studentId,
       });
       if (error) return fail("studentSessions", error);
@@ -178,7 +178,7 @@ export const familyService = {
     studentId: string,
   ): Promise<StudyResult<StudyStreakRow | null>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_student_streak", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_student_streak", {
         p_student_id: studentId,
       });
       if (error) return fail("studentStreak", error);
@@ -193,7 +193,7 @@ export const familyService = {
     studentId: string,
   ): Promise<StudyResult<AssessmentResultRow[]>> {
     try {
-      const { data, error } = await supabase.rpc("guardian_student_gain", {
+      const { data, error } = await supabase.schema("education").rpc("guardian_student_gain", {
         p_student_id: studentId,
       });
       if (error) return fail("studentGain", error);
@@ -209,7 +209,7 @@ export const familyService = {
   ): Promise<StudyResult<Record<string, string | null>>> {
     if (cardIds.length === 0) return { data: {}, error: null };
     try {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.schema("education").rpc(
         "guardian_student_card_topics",
         { p_student_id: studentId, p_card_ids: cardIds },
       );

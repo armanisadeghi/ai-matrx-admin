@@ -25,7 +25,7 @@ export default async function GuardianStudentPage({
   const { studentId } = await params;
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("guardian_list_links");
+  const { data, error } = await supabase.schema("education").rpc("guardian_list_links");
   if (error) notFound();
 
   const link = (data ?? []).find(

@@ -15,7 +15,7 @@ export type CatalogEntryHistoryRow =
   Database["public"]["Tables"]["catalog_entries_history"]["Row"];
 
 export type CatalogUpsertArgs =
-  Database["public"]["Functions"]["admin_upsert_catalog_entry"]["Args"];
+  Database["ops"]["Functions"]["admin_upsert_catalog_entry"]["Args"];
 
 /** Prefill handed from “Add from link” to the entry editor. */
 export interface EntryPrefill {

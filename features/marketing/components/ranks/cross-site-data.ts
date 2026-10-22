@@ -139,7 +139,7 @@ export async function fetchCrossSiteRankCounts(
     p_search: query.search.trim() || undefined,
     p_org_id: listOrgParam(query),
     p_filters: query.filters,
-  }, { order: ["scope", "narrow_id"] });
+  }, { schema: "context", order: ["scope", "narrow_id"] });
   const data = assertData(response.data, response.error);
   const counts = scopeCountsFromRows(data, "Organization");
   return counts;
@@ -152,7 +152,7 @@ export async function fetchCrossSiteRankFacets(
     p_scope: query.scope.kind,
     p_org_id: listOrgParam(query),
     p_search: query.search.trim() || undefined,
-  }, { order: ["kind", "value"] });
+  }, { schema: "seo", order: ["kind", "value"] });
   const data = assertData(response.data, response.error);
   const byKind: EntityFacets["byKind"] = {};
   for (const row of data) {

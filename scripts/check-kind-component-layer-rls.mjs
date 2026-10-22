@@ -184,8 +184,8 @@ async function body({ fx, bUser, member }) {
       base,
       layer(client).upsert({ ...row({ organization_id: X, audience_user_id: aId, notes: `${who} upsert by id` }), id: mineId }, { onConflict: "id" }).select("id"),
     );
-    await unchanged(`1. ${who} cannot soft-delete A's user row (entity_soft_delete)`, base, client.rpc("entity_soft_delete", { p_token: TOKEN, p_id: mineId }));
-    await unchanged(`1. ${who} cannot restore A's user row (version_restore)`, base, client.rpc("version_restore", { p_token: TOKEN, p_id: mineId, p_version: 1 }));
+    await unchanged(`1. ${who} cannot soft-delete A's user row (entity_soft_delete)`, base, client.schema("platform").rpc("entity_soft_delete", { p_token: TOKEN, p_id: mineId }));
+    await unchanged(`1. ${who} cannot restore A's user row (version_restore)`, base, client.schema("platform").rpc("version_restore", { p_token: TOKEN, p_id: mineId, p_version: 1 }));
   }
 
   // ---- 5: never shared ---------------------------------------------------------------------
@@ -234,7 +234,7 @@ async function body({ fx, bUser, member }) {
   check("3. anon cannot read X's org row", anonOrg.rows.length === 0, anonOrg.error ? `refused: ${anonOrg.error.code}` : `${anonOrg.rows.length} row(s)`);
   const orgBase = await truth(orgId);
   await unchanged("2. plain member M cannot update X's org row", orgBase, layer(M).update({ notes: "member edit" }).eq("id", orgId).select("id"));
-  await unchanged("2. plain member M cannot soft-delete X's org row (entity_soft_delete)", orgBase, M.rpc("entity_soft_delete", { p_token: TOKEN, p_id: orgId }));
+  await unchanged("2. plain member M cannot soft-delete X's org row (entity_soft_delete)", orgBase, M.schema("platform").rpc("entity_soft_delete", { p_token: TOKEN, p_id: orgId }));
   const aUpd = await layer(A).update({ notes: "owner edit" }).eq("id", orgId).select("id, created_by");
   check("2. another admin of X (A, the owner) can update X's org row; author stays C", !aUpd.error && aUpd.data?.[0]?.created_by === cId, aUpd.error?.message);
   const move = await layer(C).update({ audience_organization_id: bOrgs[0] }).eq("id", orgId).select("id");
@@ -243,12 +243,12 @@ async function body({ fx, bUser, member }) {
   check("2. the audience of a user row cannot change", !!moveUser.error || (moveUser.data ?? []).length === 0, moveUser.error?.code);
 
   // ---- 1: undelete door, then delete (last: under a plant these succeed and would starve the rest) ----
-  const aSoft = await A.rpc("entity_soft_delete", { p_token: TOKEN, p_id: mineId });
+  const aSoft = await A.schema("platform").rpc("entity_soft_delete", { p_token: TOKEN, p_id: mineId });
   const trashed = await truth(mineId);
   check("1. A can soft-delete A's own user row (entity_soft_delete)", !aSoft.error && !!trashed?.deleted_at, aSoft.error?.message);
-  await unchanged("1. coworker admin C cannot undelete A's user row (entity_undelete)", trashed, C.rpc("entity_undelete", { p_token: TOKEN, p_id: mineId }));
-  await unchanged("1. plain member M cannot undelete A's user row (entity_undelete)", trashed, M.rpc("entity_undelete", { p_token: TOKEN, p_id: mineId }));
-  const aUndo = await A.rpc("entity_undelete", { p_token: TOKEN, p_id: mineId });
+  await unchanged("1. coworker admin C cannot undelete A's user row (entity_undelete)", trashed, C.schema("platform").rpc("entity_undelete", { p_token: TOKEN, p_id: mineId }));
+  await unchanged("1. plain member M cannot undelete A's user row (entity_undelete)", trashed, M.schema("platform").rpc("entity_undelete", { p_token: TOKEN, p_id: mineId }));
+  const aUndo = await A.schema("platform").rpc("entity_undelete", { p_token: TOKEN, p_id: mineId });
   const restored = await truth(mineId);
   check("1. A can undelete A's own user row (entity_undelete)", !aUndo.error && restored?.deleted_at === null, aUndo.error?.message);
   for (const [who, client] of [["coworker admin C", C], ["plain member M", M]]) {

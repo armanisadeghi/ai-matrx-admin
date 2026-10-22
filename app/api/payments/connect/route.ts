@@ -28,7 +28,7 @@ async function adminOf(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await getClaimsUser(supabase);
   if (!user) return { refusal: NextResponse.json({ error: "Sign in first." }, { status: 401 }) } as const;
-  const { data: isAdmin, error } = await supabase.rpc("is_org_admin", { p_org_id: organizationId });
+  const { data: isAdmin, error } = await supabase.schema("iam").rpc("is_org_admin", { p_org_id: organizationId });
   if (error) return { refusal: NextResponse.json({ error: error.message }, { status: 500 }) } as const;
   if (!isAdmin) {
     return { refusal: NextResponse.json({ error: "Only an admin of this organization can manage payments." }, { status: 403 }) } as const;

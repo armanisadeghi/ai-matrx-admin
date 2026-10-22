@@ -14,7 +14,7 @@ import { formatDurationSeconds } from "@ai-matrx/kit/format";
 
 /** One row, exactly as trx_list_scoped returns it. Never hand-mirrored. */
 export type TranscriptListRow =
-  Omit<Database["public"]["Functions"]["trx_list_scoped"]["Returns"][number], "total_count">;
+  Omit<Database["context"]["Functions"]["trx_list_scoped"]["Returns"][number], "total_count">;
 
 export type TranscriptListKind =
   | "transcript"

@@ -213,7 +213,7 @@ export async function createProjectFromJson(
     // Never write a null org — the SELECTED organization, or an honest refusal.
     const resolvedOrganizationId = await ensureOrgId(organizationId);
 
-    const { data, error } = await supabase.rpc("create_project_from_json", {
+    const { data, error } = await supabase.schema("projects").rpc("create_project_from_json", {
       p_payload: payload,
       p_organization_id: resolvedOrganizationId,
     });

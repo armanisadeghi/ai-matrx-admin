@@ -76,6 +76,7 @@ const CONTENT_TYPES = {
   sandbox: true,
   topical_map: true,
   kind_value: true,
+  visual_map: true,
 } as const satisfies Record<CanvasContentType, true>;
 
 function isCanvasContentType(type: string): type is CanvasContentType {

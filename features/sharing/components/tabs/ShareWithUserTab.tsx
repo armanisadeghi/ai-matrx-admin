@@ -123,7 +123,7 @@ const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** One exact email → the person, through `lookup_user_by_email`; null when no one has it. */
 async function lookupConnectionByEmail(typed: string): Promise<ConnectionUser | null> {
-  const { data } = await createClient().rpc("lookup_user_by_email", { lookup_email: typed });
+  const { data } = await createClient().schema("users").rpc("lookup_user_by_email", { lookup_email: typed });
   const row = (data as Array<{ user_id: string; user_email: string }> | null)?.[0];
   return row
     ? {
@@ -289,7 +289,7 @@ export function ShareWithUserTab({
         targetUserId = selectedContact.user_id;
       } else {
         const client = createClient();
-        const { data: lookupData, error: lookupError } = await client.rpc(
+        const { data: lookupData, error: lookupError } = await client.schema("users").rpc(
           "lookup_user_by_email",
           { lookup_email: trimmedEmail },
         );

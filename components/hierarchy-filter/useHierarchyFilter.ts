@@ -24,7 +24,7 @@ export function useHierarchyFilter(): UseHierarchyFilterReturn {
     setError(null);
 
     try {
-      const { data: result, error: rpcError } = await supabase.rpc('get_user_hierarchy');
+      const { data: result, error: rpcError } = await supabase.schema('projects').rpc('get_user_hierarchy');
 
       if (rpcError) throw operationFailed('load your organizations and projects', rpcError);
 

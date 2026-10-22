@@ -10,10 +10,13 @@ import { supabase } from "@/utils/supabase/client";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import type { RootState } from "@/lib/redux/store";
 
+/** The catalog reads that moved out of `public` (the `public` forwarders are a 72-hour box); every other one is still `public`. */
+const MOVED_CATALOG_RPC_SCHEMA: Readonly<Record<string, string>> = { ues_list: "users", ues_touch: "users" };
+
 export function webAgentCatalog(getState: () => RootState) {
   return {
     async catalogRpc(request: AgentCatalogRpcRequest): Promise<AgentCatalogRpcResult> {
-      let query = supabase.rpc(request.fn as never, (request.args ?? {}) as never, request.count ? { count: request.count } : undefined);
+      let query = supabase.schema((MOVED_CATALOG_RPC_SCHEMA[request.fn] ?? "public") as "public").rpc(request.fn as never, (request.args ?? {}) as never, request.count ? { count: request.count } : undefined);
       if (request.order) query = query.order(request.order.column, { ascending: request.order.ascending !== false }) as typeof query;
       if (request.range) query = query.range(request.range[0], request.range[1]) as typeof query;
       const { data, error, count } = await query;

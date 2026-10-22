@@ -277,7 +277,7 @@ export function CatalogKindTable({
     if (error) throw new Error(isConflictError(error) ? "Changed since load" : rpcErrorMessage(error));
   };
   const archiveOne = async (row: CatalogEntryRow) => {
-    const { error } = await createClient().rpc("admin_delete_catalog_entry", {
+    const { error } = await createClient().schema("ops").rpc("admin_delete_catalog_entry", {
       p_app: row.app,
       p_kind: row.kind,
       p_key: row.key,

@@ -53,12 +53,12 @@ const { org, fresh } = await fixtureOrg(reyes, {
   abbreviation: "CHV",
   settings: { test_fixture: true, fixture_marker: "standing:share-lane-2" },
 });
-const inv = !fresh ? null : must("inv_create", await reyes.rpc("inv_create", {
+const inv = !fresh ? null : must("inv_create", await reyes.schema("iam").rpc("inv_create", {
   p_target_type: "organization", p_target_id: org.id, p_email: "admin@admin.com", p_role: "admin",
   p_org_id: org.id, p_invited_user_id: null,
   p_expires_at: new Date(Date.now() + 7 * 864e5).toISOString(),
 }));
-if (inv) must("inv_accept", await owner.rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
+if (inv) must("inv_accept", await owner.schema("iam").rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
 
 const home = must("home", await reyes.schema("custom").rpc("record_write", {
   p_organization_id: org.id,
@@ -83,7 +83,7 @@ must("row", await reyes.schema("custom").rpc("record_write", {
 must("share_lane_set", await reyes.schema("custom").rpc("share_lane_set", {
   p_organization_id: org.id, p_subject_id: table, p_choice: "mine",
 }));
-must("transfer_organization_ownership", await reyes.rpc("transfer_organization_ownership", {
+must("transfer_organization_ownership", await reyes.schema("iam").rpc("transfer_organization_ownership", {
   org_id: org.id, current_owner_id: TEST_ID, new_owner_id: ADMIN_ID,
 }));
 console.log(JSON.stringify({ org: org.id, home: homeId, table }));

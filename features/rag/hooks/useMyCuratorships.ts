@@ -39,6 +39,7 @@ export const myCuratorshipsQueryKey = ["library", "my-curatorships"] as const;
 
 export async function fetchMyCuratorships(signal?: AbortSignal): Promise<Curatorship[]> {
   const response = await supabase
+    .schema("iam")
     .rpc("my_industry_curatorships")
     .abortSignal(signal ?? new AbortController().signal);
   const rows = assertData(response.data, response.error);

@@ -132,7 +132,7 @@ export async function loadOrCreateRun(
   // `public.checklist_run_start` does the read-then-insert INSIDE the database, so the
   // two-tab race is impossible rather than recoverable. `created_by` is stamped from
   // `auth.uid()` in the door, never sent from here.
-  const { data, error } = await createClient().rpc("checklist_run_start", {
+  const { data, error } = await createClient().schema("hr").rpc("checklist_run_start", {
     p_organization_id: scope.organizationId,
     p_checklist_key: checklistKey,
     p_target_key: scope.targetKey ?? "",

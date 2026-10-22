@@ -85,7 +85,7 @@ export async function saveExpertCall(
   // `public.masterwork_run_score` writes `expert_score` and `expert_verdict` and
   // cannot touch `status`, `result`, `error` or the heartbeat, which belong to the
   // run's own lifecycle in aidream.
-  const { error } = await supabase.rpc("masterwork_run_score", {
+  const { error } = await supabase.schema("ai").rpc("masterwork_run_score", {
     p_run_id: runId,
     p_expert_score: score,
     p_expert_verdict: why.trim() || undefined,

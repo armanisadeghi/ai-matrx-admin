@@ -22,7 +22,7 @@ export default async function RelationshipSharingPage({
   const supabase = await createClient();
 
   const [registryRes, policiesRes] = await Promise.all([
-    supabase.rpc("admin_shareable_registry_list"),
+    supabase.schema("iam").rpc("admin_shareable_registry_list"),
     supabase.rpc("admin_list_share_policies"),
   ]);
 

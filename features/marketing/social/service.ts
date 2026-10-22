@@ -633,7 +633,7 @@ export async function createWatchlist(args: {
 }
 
 export async function archiveWatchlist(id: string): Promise<void> {
-  const { error } = await supabase.rpc("saved_view_archive", {
+  const { error } = await supabase.schema("platform").rpc("saved_view_archive", {
     p_surface_key: WATCHLIST_SURFACE,
     p_id: id,
   });
@@ -1129,7 +1129,7 @@ export async function saveTrackedAdvertiser(args: {
 }
 
 export async function archiveTrackedAdvertiser(viewId: string): Promise<void> {
-  const { data, error } = await supabase.rpc("saved_view_archive", {
+  const { data, error } = await supabase.schema("platform").rpc("saved_view_archive", {
     p_surface_key: ADVERTISER_SURFACE,
     p_id: viewId,
   });

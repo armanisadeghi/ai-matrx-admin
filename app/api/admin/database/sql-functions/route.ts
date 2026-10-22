@@ -6,7 +6,7 @@ export async function GET() {
     const supabase = await createClient();
     
     // Call the RPC function to get database functions
-    const { data, error } = await supabase.rpc('get_database_functions');
+    const { data, error } = await supabase.schema('platform').rpc('get_database_functions');
     
     if (error) {
       throw error;

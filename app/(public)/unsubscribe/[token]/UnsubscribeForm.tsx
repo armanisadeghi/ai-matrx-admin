@@ -43,7 +43,7 @@ export function UnsubscribeForm({
       const supabase = createClient();
       const { data, error } = await guardedSave(
         () =>
-          supabase.rpc("outreach_unsubscribe", {
+          supabase.schema("crm").rpc("outreach_unsubscribe", {
             p_token: token,
             // The generated RPC args are optional, not nullable — omit rather than
             // widening the generated type.

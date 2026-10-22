@@ -34,7 +34,7 @@ export { deleteComment, editComment, notifyMentions, resolveComment } from "@/fe
 export { mentionedUserIds } from "@/features/rich-document/annotations/mentions";
 
 type Seam = (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }>;
-const seam = ((fn: string, args: Record<string, unknown>) => associationsDataSource.rpc(fn as never, args as never)) as unknown as Seam;
+const seam = ((fn: string, args: Record<string, unknown>) => associationsDataSource.schema("platform").rpc(fn as never, args as never)) as unknown as Seam;
 
 export interface AnchoredComment {
   id: string;

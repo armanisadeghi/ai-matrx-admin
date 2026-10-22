@@ -204,7 +204,7 @@ if (cmd === "list") {
     }
 
     const settings = { ...(before.settings ?? {}), test_fixture: CLASSIFICATION };
-    const { error: updErr } = await sb.rpc("org_update", { p_org_id: id, p_patch: { settings } });
+    const { error: updErr } = await sb.schema("iam").rpc("org_update", { p_org_id: id, p_patch: { settings } });
     if (updErr) throw new Error(`org_update refused ${id}: ${updErr.message}`);
     classified += 1;
 
@@ -262,7 +262,7 @@ if (cmd === "list") {
     const { test_fixture: classified } = org.settings ?? {};
     if (!classified) { // settings.test_fixture — the classification key
       const settings = { ...(org.settings ?? {}), test_fixture: SWEEP_CLASSIFICATION };
-      const { error: updErr } = await sb.rpc("org_update", { p_org_id: org.id, p_patch: { settings } });
+      const { error: updErr } = await sb.schema("iam").rpc("org_update", { p_org_id: org.id, p_patch: { settings } });
       if (updErr) throw new Error(`org_update refused ${org.id}: ${updErr.message}`);
       classified += 1;
     }
@@ -349,7 +349,7 @@ if (cmd === "list") {
       const { test_fixture: classified } = org.settings ?? {};
       if (!classified) {
         const settings = { ...(org.settings ?? {}), test_fixture: FIXTURE_CLASSIFICATION };
-        const { error: updErr } = await sb.rpc("org_update", { p_org_id: org.id, p_patch: { settings } });
+        const { error: updErr } = await sb.schema("iam").rpc("org_update", { p_org_id: org.id, p_patch: { settings } });
         if (updErr) throw new Error(`org_update refused ${org.id}: ${updErr.message}`);
         classified += 1;
       }

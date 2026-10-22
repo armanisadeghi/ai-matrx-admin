@@ -93,6 +93,7 @@ export async function POST(request: Request) {
     } else if (userIds && Array.isArray(userIds) && userIds.length > 0) {
       // Fetch emails by user IDs using RPC (securely accesses auth.users)
       const { data: users, error } = await adminSupabase
+        .schema("users")
         .rpc("get_user_emails_by_ids", { user_ids: userIds });
 
       if (error) {

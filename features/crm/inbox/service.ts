@@ -37,7 +37,7 @@ export async function fetchInboxListPage(
   query: EntityListQuery,
   sort: EntityListSort,
 ): Promise<EntityListPage<InboxRow>> {
-  const { data, error } = await supabase.rpc("crm_inbox_list_scoped", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_inbox_list_scoped", {
     p_scope: query.scope.kind,
     p_org_id: listOrgParam(query),
     p_search: query.search.trim() || undefined,
@@ -62,7 +62,7 @@ export async function fetchInboxScopeCounts(
     p_org_id: listOrgParam(query),
     p_deep: query.deep,
     p_filters: query.filters,
-  }, { order: ["scope", "narrow_id"] });
+  }, { schema: "crm", order: ["scope", "narrow_id"] });
 
   if (error) throw pgError(error);
 
@@ -78,7 +78,7 @@ export async function fetchInboxFacets(
     p_org_id: listOrgParam(query),
     p_search: query.search.trim() || undefined,
     p_deep: query.deep,
-  }, { order: ["kind", "value"] });
+  }, { schema: "crm", order: ["kind", "value"] });
 
   if (error) throw pgError(error);
 
@@ -108,7 +108,7 @@ export async function setInboxHandled(
   interactionId: string,
   handled: boolean,
 ): Promise<string | null> {
-  const { data, error } = await supabase.rpc("crm_inbox_set_handled", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_inbox_set_handled", {
     p_interaction_id: interactionId,
     p_handled: handled,
   });

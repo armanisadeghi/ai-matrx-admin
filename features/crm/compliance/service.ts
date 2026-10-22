@@ -34,7 +34,7 @@ export async function checkSendEligibility(params: {
   identityId?: string | null;
 }): Promise<EligibilityVerdict> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("crm_check_send_eligibility", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_check_send_eligibility", {
     p_medium_id: params.mediumId,
     p_list_id: params.listId ?? undefined,
     p_identity_id: params.identityId ?? undefined,
@@ -241,7 +241,7 @@ export async function resumeSendingIdentity(params: {
   note?: string;
 }): Promise<{ ok: boolean; error?: string; status?: string }> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("crm_resume_sending_identity", {
+  const { data, error } = await supabase.schema("crm").rpc("crm_resume_sending_identity", {
     p_identity_id: params.identityId,
     p_note: params.note ?? undefined,
   });

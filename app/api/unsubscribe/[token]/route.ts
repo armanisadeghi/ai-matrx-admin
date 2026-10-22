@@ -41,7 +41,7 @@ async function unsubscribe(
   reason: string,
 ): Promise<UnsubscribeResult> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("outreach_unsubscribe", {
+  const { data, error } = await supabase.schema("crm").rpc("outreach_unsubscribe", {
     p_token: token,
     // The generated RPC args are optional, not nullable — pass undefined to
     // omit rather than widening the generated type.

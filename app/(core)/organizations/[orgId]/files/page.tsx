@@ -24,7 +24,7 @@ const SELECT_COLS = "id, file_name, mime_type, size_bytes, updated_at";
 // that OrgResourceList expects.
 const makeFetchOwned =
   (userId: string) => async (orgId: string) => {
-    const res = await supabase.rpc("get_org_file_list", {
+    const res = await supabase.schema("files").rpc("get_org_file_list", {
       p_user_id: userId,
       p_org_id: orgId,
     });

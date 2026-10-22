@@ -26,7 +26,7 @@ interface UserSessionDataResponse {
 
 // Compile-time guard — breaks if the DB row shape changes.
 type _CheckUserSessionDataResponse =
-  UserSessionDataResponse extends DbRpcRow<"get_user_session_data"> ? true : false;
+  UserSessionDataResponse extends DbRpcRow<"get_user_session_data", "users"> ? true : false;
 declare const _userSessionDataResponseCheck: _CheckUserSessionDataResponse;
 true satisfies typeof _userSessionDataResponseCheck;
 
@@ -93,6 +93,7 @@ export async function getUserSessionData(
   userId: string,
 ): Promise<UserSessionData> {
   const { data, error } = await supabase
+    .schema("users")
     .rpc("get_user_session_data", { p_user_id: userId })
     .single();
 

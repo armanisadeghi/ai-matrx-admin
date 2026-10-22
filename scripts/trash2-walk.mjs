@@ -91,7 +91,7 @@ await archive(tester, "podcast", "pc_shows", tShow.id);
 check("test@test.com: their show archived", !!(await live(tester, "podcast", "pc_shows", tShow.id))?.deleted_at);
 
 // Personal Trash is the person's own: every row admin's /trash can list is hers or named to her.
-const { data: adminRows, error: alErr } = await admin.sb.rpc("trash_list", { p_kinds: null, p_limit: 1000, p_offset: 0 });
+const { data: adminRows, error: alErr } = await admin.sb.schema("platform").rpc("trash_list", { p_kinds: null, p_limit: 1000, p_offset: 0 });
 const foreign = (adminRows ?? []).filter((r) => !r.is_mine);
 check("admin: trash_list answers", !alErr, alErr?.message ?? `${adminRows?.length} rows`);
 check("admin: test@test.com's archived show is NOT in admin's personal Trash", !(adminRows ?? []).some((r) => r.id === tShow.id));
@@ -163,7 +163,7 @@ try {
   const tBack = await until("test show restored", async () => (await live(tester, "podcast", "pc_shows", tShow.id))?.deleted_at === null, 30000);
   await shot(page, "6-org-trash-after-restore");
   check("admin restored test@test.com's show from Organization Trash", !!tBack.v);
-  const { data: audit } = await admin.sb.rpc("org_admin_list_audit", { p_org_id: org.id, p_limit: 20 });
+  const { data: audit } = await admin.sb.schema("iam").rpc("org_admin_list_audit", { p_org_id: org.id, p_limit: 20 });
   check("organization audit row trash.restore names test@test.com's show",
     (audit ?? []).some((a) => a.action === "trash.restore" && a.target_user_id === tester.uid && a.detail?.id === tShow.id));
   // Read the way the bell reads it: the person's own inbox door.
@@ -182,7 +182,7 @@ try {
   const own = await until("test sees own show", async () => (await tp.getByText(testShowTitle, { exact: true }).count()) > 0, 90000);
   await shot(tp, "7-test-trash-own-items");
   check("test@test.com /trash lists their own archived show", !!own.v);
-  const { data: tRows } = await tester.sb.rpc("trash_list", { p_kinds: null, p_limit: 1000, p_offset: 0 });
+  const { data: tRows } = await tester.sb.schema("platform").rpc("trash_list", { p_kinds: null, p_limit: 1000, p_offset: 0 });
   const tForeign = (tRows ?? []).filter((r) => !r.is_mine);
   const { data: tGrants } = tForeign.length
     ? await tester.sb.schema("iam").from("permissions").select("resource_id").eq("granted_to_user_id", tester.uid).in("resource_id", tForeign.map((r) => r.id))
@@ -194,7 +194,7 @@ try {
   await until("settings rendered", async () => (await tp.getByText("General", { exact: false }).count()) > 0, 240000);
   await shot(tp, "8-test-org-settings-no-trash");
   check("Organization Trash is ABSENT for a plain member (no section)", (await tp.locator("section#trash").count()) === 0);
-  const { error: refusal } = await tester.sb.rpc("org_trash_list", { p_organization_id: org.id });
+  const { error: refusal } = await tester.sb.schema("platform").rpc("org_trash_list", { p_organization_id: org.id });
   check("the server refuses a plain member's org_trash_list (42501)", refusal?.code === "42501", refusal?.message ?? "no error");
   await tCtx.close();
 } catch (e) {

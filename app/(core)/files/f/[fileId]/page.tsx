@@ -54,7 +54,7 @@ export default async function CloudFileDetailPage({ params }: PageProps) {
   // enforce `can_read_library_document` server-side, so a non-entitled user
   // still gets nothing — this only rescues legitimately-entitled readers.
   if (!error) {
-    const { data: docId } = await supabase.rpc(
+    const { data: docId } = await supabase.schema("files").rpc(
       "readable_processed_doc_for_file",
       { p_file: fileId },
     );

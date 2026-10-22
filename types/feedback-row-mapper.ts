@@ -19,8 +19,8 @@ export type UserFeedbackRowLike =
   Database["users"]["Tables"]["user_feedback"]["Row"];
 
 export type FeedbackCommentRowLike =
-  | Database["public"]["Functions"]["get_feedback_comments"]["Returns"][number]
-  | Database["public"]["Functions"]["add_feedback_comment"]["Returns"];
+  | Database["users"]["Functions"]["get_feedback_comments"]["Returns"][number]
+  | Database["users"]["Functions"]["add_feedback_comment"]["Returns"];
 
 export type SystemAnnouncementRow =
   Database["users"]["Tables"]["system_announcements"]["Row"];

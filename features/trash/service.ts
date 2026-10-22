@@ -21,9 +21,9 @@ import { recordsDataSource } from "@ai-matrx/records-ui/data-source";
 import { restoreTableIn } from "@/features/unified-data/hub/doors";
 
 export type TrashItem =
-  Database["public"]["Functions"]["trash_list"]["Returns"][number];
+  Database["platform"]["Functions"]["trash_list"]["Returns"][number];
 export type TrashCount =
-  Database["public"]["Functions"]["trash_counts"]["Returns"][number];
+  Database["platform"]["Functions"]["trash_counts"]["Returns"][number];
 
 type VaultRecoveryUnsupportedReason =
   | "recovery_tracking_unavailable"
@@ -82,7 +82,7 @@ export async function listTrash(opts?: {
   limit?: number;
   offset?: number;
 }): Promise<TrashItem[]> {
-  const { data, error } = await supabase.rpc("trash_list", {
+  const { data, error } = await supabase.schema("platform").rpc("trash_list", {
     p_kinds: opts?.kinds,
     p_limit: Math.min(opts?.limit ?? TRASH_DEFAULT_PAGE, TRASH_DEFAULT_PAGE),
     p_offset: opts?.offset ?? 0,
@@ -93,7 +93,7 @@ export async function listTrash(opts?: {
 
 /** True per-kind totals — counted against the tables, not against a page. */
 export async function getTrashCounts(): Promise<TrashCount[]> {
-  const { data, error } = await supabase.rpc("trash_counts");
+  const { data, error } = await supabase.schema("platform").rpc("trash_counts");
   if (error) throw new Error(`Failed to load trash counts: ${error.message}`);
   return data ?? [];
 }
@@ -120,7 +120,7 @@ export async function restoreFromTrash(
   entityToken: string,
   id: string,
 ): Promise<void> {
-  const { data, error } = await supabase.rpc("entity_undelete", {
+  const { data, error } = await supabase.schema("platform").rpc("entity_undelete", {
     p_token: entityToken,
     p_id: id,
   });
@@ -153,7 +153,7 @@ export async function carryOnTableRestore(entityToken: string, organizationId: s
 // the Google Workspace admin-console restore — never mixed into anyone's personal Trash.
 
 export type OrgTrashItem =
-  Database["public"]["Functions"]["org_trash_list"]["Returns"][number];
+  Database["platform"]["Functions"]["org_trash_list"]["Returns"][number];
 
 /**
  * One merged page, newest first. Unlike `listTrash`, `limit`/`offset` apply to the MERGED list
@@ -166,7 +166,7 @@ export async function listOrgTrash(opts: {
   limit?: number;
   offset?: number;
 }): Promise<OrgTrashItem[]> {
-  const { data, error } = await supabase.rpc("org_trash_list", {
+  const { data, error } = await supabase.schema("platform").rpc("org_trash_list", {
     p_organization_id: opts.organizationId,
     p_kinds: opts.kinds,
     p_member: opts.memberId ?? undefined,
@@ -181,7 +181,7 @@ export async function getOrgTrashCounts(
   organizationId: string,
   memberId?: string | null,
 ): Promise<TrashCount[]> {
-  const { data, error } = await supabase.rpc("org_trash_counts", {
+  const { data, error } = await supabase.schema("platform").rpc("org_trash_counts", {
     p_organization_id: organizationId,
     p_member: memberId ?? undefined,
   });
@@ -223,7 +223,7 @@ export async function restoreFromOrgTrash(
 export async function previewVaultRecovery(
   itemId: string,
 ): Promise<VaultRecoveryPreview> {
-  const { data, error } = await supabase.rpc("vault_recovery_preview", {
+  const { data, error } = await supabase.schema("iam").rpc("vault_recovery_preview", {
     p_id: itemId,
   });
   if (error) throw new Error(`Could not review recovery: ${error.message}`);

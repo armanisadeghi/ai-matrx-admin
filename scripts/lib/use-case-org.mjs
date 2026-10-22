@@ -85,7 +85,7 @@ export async function fixtureOrg(client, spec) {
 
   const args = { p_name: name, p_slug: slug, p_description: description, p_settings: settings };
   if (abbreviation) args.p_abbreviation = abbreviation;
-  const { data, error } = await client.rpc("org_create", args);
+  const { data, error } = await client.schema("iam").rpc("org_create", args);
   if (error) {
     if (error.code === "23505") {
       throw new Error(

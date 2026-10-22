@@ -90,7 +90,7 @@ export async function createSchemaTemplate(
     });
     
     // Admin-only door (see the note above). Refuses a non-admin with a sentence.
-    const { data, error } = await supabase.rpc(ADMIN_CREATE_TEMPLATE_RPC, {
+    const { data, error } = await supabase.schema("platform").rpc(ADMIN_CREATE_TEMPLATE_RPC, {
       p_template_name: templateName,
       p_description: description || '',
       p_fields: normalizedFields,
@@ -171,7 +171,7 @@ export async function deleteSchemaTemplate(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Admin-only door (see the note above). Refuses a non-admin with a sentence.
-    const { error } = await supabase.rpc(ADMIN_DELETE_TEMPLATE_RPC, {
+    const { error } = await supabase.schema("platform").rpc(ADMIN_DELETE_TEMPLATE_RPC, {
       p_id: templateId,
     });
 
@@ -232,7 +232,7 @@ export async function updateSchemaTemplate(
     }
 
     // Admin-only door (see the note above). Refuses a non-admin with a sentence.
-    const { error } = await supabase.rpc(ADMIN_UPDATE_TEMPLATE_RPC, {
+    const { error } = await supabase.schema("platform").rpc(ADMIN_UPDATE_TEMPLATE_RPC, {
       p_id: templateId,
       p_template_name: updates.templateName ?? null,
       p_description: updates.description ?? null,

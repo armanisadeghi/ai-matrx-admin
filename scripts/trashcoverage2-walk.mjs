@@ -53,7 +53,7 @@ check("Harbor Dental Group resolved", !!ORG, ORG);
 const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
 const tag = Date.now().toString(36);
 const inTrash = async (kind, id) => {
-  const { data } = await sb.rpc("trash_list", { p_kinds: [kind], p_limit: 1000, p_offset: 0 });
+  const { data } = await sb.schema("platform").rpc("trash_list", { p_kinds: [kind], p_limit: 1000, p_offset: 0 });
   return (data ?? []).find((r) => r.id === id) ?? null;
 };
 const live = async (schema, table, id) => {

@@ -172,11 +172,11 @@ try {
     const LOSE = "da6c2c09-47df-46f2-9487-c7ad9504f1d9"; // Zack Kotzer Published August (the duplicate)
     const ZDOB = "1979-06-21";
     await seed(LOSE, { date_of_birth: ZDOB });
-    const mg = await admin.sb.rpc("crm_merge_parties", { p_winner: WIN, p_loser: LOSE, p_method: "manual", p_reason: "lane7conf_c guard: duplicate" });
+    const mg = await admin.sb.schema("crm").rpc("crm_merge_parties", { p_winner: WIN, p_loser: LOSE, p_method: "manual", p_reason: "lane7conf_c guard: duplicate" });
     const w = await admin.sb.rpc("crm_party_confidential_read", { p_party_ids: [WIN] });
     check("c5 merge carries the duplicate's date of birth to the survivor", !mg.error && w.data?.[0]?.date_of_birth === ZDOB, mg.error?.message ?? JSON.stringify(w.data));
     if (!mg.error) {
-      const um = await admin.sb.rpc("crm_unmerge_parties", { p_merge_id: mg.data });
+      const um = await admin.sb.schema("crm").rpc("crm_unmerge_parties", { p_merge_id: mg.data });
       const w2 = await admin.sb.rpc("crm_party_confidential_read", { p_party_ids: [WIN, LOSE] });
       const byId = Object.fromEntries((w2.data ?? []).map((e) => [e.party_id, e]));
       check("c5 unmerge takes it back from the survivor and the duplicate keeps it",
@@ -191,8 +191,8 @@ try {
     const PAY = "2b9bc444-b790-4674-a178-9b72817161ae"; // a pay_change request in Oak Street Studio
     // test@test.com joins Oak Street Studio as a plain member the way a person does (the owner invites,
     // she accepts), for this check only; the owner removes her again below.
-    const inv = await admin.sb.rpc("inv_create", { p_target_type: "organization", p_target_id: OAK, p_email: member.email, p_role: "member", p_org_id: OAK });
-    const join = inv.error ? inv : await member.sb.rpc("inv_accept", { p_token: inv.data?.token });
+    const inv = await admin.sb.schema("iam").rpc("inv_create", { p_target_type: "organization", p_target_id: OAK, p_email: member.email, p_role: "member", p_org_id: OAK });
+    const join = inv.error ? inv : await member.sb.schema("iam").rpc("inv_accept", { p_token: inv.data?.token });
     try {
       const mWf = await member.sb.schema("custom").rpc("entity_record_read", { p_organization_id: OAK, p_token: "hr_workflow_instance", p_record_id: PAY });
       const leakedWf = !!mWf.data?.columns?.payload;
@@ -200,10 +200,10 @@ try {
         join.error ? `join failed: ${join.error.message}` : leakedWf ? "payload returned" : `withheld (${mWf.error?.code ?? "no error"})`);
       const aWf = await admin.sb.schema("custom").rpc("entity_record_read", { p_organization_id: OAK, p_token: "hr_workflow_instance", p_record_id: PAY });
       check("d2 the HR owner still reads it", !!aWf.data?.columns?.payload, aWf.error?.message);
-      const inbox = await admin.sb.rpc("hr_wf_instance", { p_instance_id: PAY });
+      const inbox = await admin.sb.schema("hr").rpc("hr_wf_instance", { p_instance_id: PAY });
       check("d3 HR's own decision panel door still opens it", !inbox.error && !!inbox.data, inbox.error?.message);
     } finally {
-      const out = await admin.sb.rpc("org_admin_remove_member", { p_org_id: OAK, p_user_id: member.uid, p_reassign_to: null });
+      const out = await admin.sb.schema("iam").rpc("org_admin_remove_member", { p_org_id: OAK, p_user_id: member.uid, p_reassign_to: null });
       if (out.error) console.log(`cleanup: removing the member failed: ${out.error.message}`);
     }
   }

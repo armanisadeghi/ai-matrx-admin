@@ -74,7 +74,7 @@ export async function upsertHrPayGroup(
   // 2026-08-26: `types/database.types.ts` has zero occurrences), so the name is
   // passed the same way `features/hr/service.ts` passes it. The RETURN is narrowed
   // below by inspection, never by assertion.
-  const { data, error } = await supabase.rpc("hr_pay_group_upsert" as never, {
+  const { data, error } = await supabase.schema("hr").rpc("hr_pay_group_upsert" as never, {
     p_payload: payload,
   } as never);
 

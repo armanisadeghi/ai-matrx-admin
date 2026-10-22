@@ -258,7 +258,7 @@ async function main(): Promise<number> {
 
   let rows: PolicyRow[];
   try {
-    const { data, error } = await supabase.rpc("execute_admin_query", {
+    const { data, error } = await supabase.schema("platform").rpc("execute_admin_query", {
       query: LIVE_QUERY,
     });
     if (error) throw new Error(error.message);

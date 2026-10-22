@@ -1,7 +1,7 @@
 import type { Database } from "@/types/database.types";
 
 export type GetDatabaseFunctionsRow =
-  Database["public"]["Functions"]["get_database_functions"]["Returns"][number];
+  Database["platform"]["Functions"]["get_database_functions"]["Returns"][number];
 
 function narrowSecurityType(
   raw: string,

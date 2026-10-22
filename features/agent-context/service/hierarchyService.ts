@@ -356,7 +356,7 @@ export const hierarchyService = {
     slug: string;
     description?: string;
   }): Promise<HierarchyOrg> {
-    const { data: org, error } = await supabase.rpc("org_create", {
+    const { data: org, error } = await supabase.schema("iam").rpc("org_create", {
       p_name: data.name,
       p_slug: data.slug,
       p_description: data.description,
@@ -444,7 +444,7 @@ export const hierarchyService = {
     // THROUGH THE DOOR. `iam` is not a client-writable schema (DOORS-ONLY-3), and this
     // call used to pass `data` through UNFILTERED to a base-table update — the door reads
     // the seven keys it allows and ignores everything else.
-    const { error } = await supabase.rpc("org_update", {
+    const { error } = await supabase.schema("iam").rpc("org_update", {
       p_org_id: id,
       p_patch: data as never,
     });
@@ -586,7 +586,7 @@ export const hierarchyService = {
    * scopes service 2026-10-09, lane SCOPES-CLEANUP: the hierarchy is this service's domain.)
    */
   async fetchUserFullContext(signal: AbortSignal) {
-    return supabase.rpc("get_user_full_context").abortSignal(signal);
+    return supabase.schema("context").rpc("get_user_full_context").abortSignal(signal);
   },
 
   // ─── Move / reparent ──────────────────────────────────────────────

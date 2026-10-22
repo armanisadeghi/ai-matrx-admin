@@ -67,7 +67,7 @@ export const fetchAgentUsages = createAsyncThunk<
   dispatch(usagesPending({ scope, agentId }));
   try {
     const fn = scope === "admin" ? "agx_usage_scan_admin" : "agx_usage_scan";
-    const { data, error } = await supabase.rpc(fn, { p_agent_id: agentId });
+    const { data, error } = await supabase.schema("agent").rpc(fn, { p_agent_id: agentId });
     if (error) throw pgErrorToError(error);
     const { rows, aggregates } = toUsagesResult(agentId, (data ?? []) as Row[]);
     dispatch(usagesSucceeded({ scope, agentId, result: { agentId, rows, aggregates } }));
@@ -82,7 +82,7 @@ export const fetchUsageHistoryCounts = createAsyncThunk<
   { agentId: string },
   ThunkApi
 >("agentUsages/historyCounts", async ({ agentId }) => {
-  const { data, error } = await supabase.rpc("agx_usage_history_counts", {
+  const { data, error } = await supabase.schema("agent").rpc("agx_usage_history_counts", {
     p_agent_id: agentId,
   });
   if (error) throw pgErrorToError(error);
@@ -100,11 +100,11 @@ export const fetchAgentUsageReport = createAsyncThunk<
   dispatch(reportPending({ scope }));
   try {
     if (scope === "admin") {
-      const { data, error } = await supabase.rpc("agx_usage_report_admin");
+      const { data, error } = await supabase.schema("agent").rpc("agx_usage_report_admin");
       if (error) throw pgErrorToError(error);
       dispatch(reportSucceeded({ scope, adminRows: ((data ?? []) as Row[]).map(toReportAdminRow) }));
     } else {
-      const { data, error } = await supabase.rpc("agx_usage_report");
+      const { data, error } = await supabase.schema("agent").rpc("agx_usage_report");
       if (error) throw pgErrorToError(error);
       dispatch(reportSucceeded({ scope, rows: ((data ?? []) as Row[]).map(toReportRow) }));
     }
@@ -129,7 +129,7 @@ export const updateUsageToActive = createAsyncThunk<
   async ({ agentId, scope, usageType, usageId, mode = "repin_active" }, { dispatch }) => {
     dispatch(setRowMutation({ usageType, usageId, status: "updating" }));
     try {
-      const { data, error } = await supabase.rpc("agx_usage_update_to_active", {
+      const { data, error } = await supabase.schema("agent").rpc("agx_usage_update_to_active", {
         p_usage_type: usageType,
         p_usage_id: usageId,
         p_mode: mode,
@@ -168,7 +168,7 @@ export const updateAllUsagesToActive = createAsyncThunk<
 >("agentUsages/updateAll", async ({ agentId, scope, mode = "repin_active" }, { dispatch }) => {
   dispatch(bulkStarted({ scope, agentId }));
   try {
-    const { data, error } = await supabase.rpc("agx_usage_update_all_to_active", {
+    const { data, error } = await supabase.schema("agent").rpc("agx_usage_update_all_to_active", {
       p_agent_id: agentId,
       p_mode: mode,
     });

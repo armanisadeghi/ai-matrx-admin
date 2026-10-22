@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { installSheetCommentAnchors } from "@ai-matrx/office/sheets/comment-anchors";
-import { lockWorkbookSeat } from "../components/sheetSeatLock";
+import { currentSheetUnitId, lockWorkbookSeat } from "../components/sheetSeatLock";
 
 function seat() {
   const univer = new Univer({ locale: LocaleType.EN_US, logLevel: LogLevel.SILENT, locales: { [LocaleType.EN_US]: {} } });
@@ -35,6 +35,12 @@ function seat() {
 }
 
 describe("a Sheets seat without edit access", () => {
+  it("finds the open workbook through Univer's real instance service (the old method name crashed every commenter)", () => {
+    const s = seat();
+    expect(currentSheetUnitId(s.injector)).toBe("wb");
+    s.univer.dispose();
+  });
+
   it("before the lock a cell write lands (the defect: nothing stopped a commenter)", async () => {
     const s = seat();
     await s.write("typed");

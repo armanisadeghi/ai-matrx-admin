@@ -40,7 +40,7 @@ try {
       await visible(op, "[data-request-edit-access-send]").first().click();
       await visible(op, "[data-request-edit-access-said]").first().waitFor();
       say("REQUEST outsider sees:", await visible(op, "[data-request-edit-access-said]").first().innerText());
-      const list = await sb.rpc("access_request_list", { p_box: "inbox" });
+      const list = await sb.schema("iam").rpc("access_request_list", { p_box: "inbox" });
       const rows = Array.isArray(list.data) ? list.data : list.data?.requests ?? [];
       const row = rows.find((r) => JSON.stringify(r).includes(table));
       say("REQUEST inbox row names:", row ? `${row.entity_label} "${row.entity_title}"` : "NOT FOUND");

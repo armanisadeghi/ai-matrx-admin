@@ -19,7 +19,7 @@ import { resolveEntityDoors } from "@ai-matrx/records-ui/entity-doors";
 
 /** One row, exactly as crm_chasebox_items returns it. */
 export type ChaseboxRow =
-  Omit<Database["public"]["Functions"]["crm_chasebox_items"]["Returns"][number], "total_count">;
+  Omit<Database["crm"]["Functions"]["crm_chasebox_items"]["Returns"][number], "total_count">;
 
 export const CHASEBOX_QUEUES = [
   "fresh_replies",

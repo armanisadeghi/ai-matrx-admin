@@ -73,13 +73,31 @@ export interface ListRpcOptions<Row> {
   order: readonly [keyof Row & string, ...(keyof Row & string)[]];
   /** Defaults to the browser client's `public` schema. */
   client?: ListRpcClient;
+  /**
+   * The schema that owns the function (it moved out of `public`; the `public` forwarder is a 72-hour
+   * box). Names the browser client's `.schema(...)` handle, so the call addresses the owner directly.
+   * `platform.list_rpc_once` resolves `public` functions only, so a named schema reads through the
+   * paging path above until that function takes a schema.
+   */
+  schema?: string;
 }
 
 type PublicFunctions = Database["public"]["Functions"];
 type RowOf<F extends keyof PublicFunctions> = PublicFunctions[F]["Returns"] extends readonly (infer R)[]
   ? R
   : never;
+type SchemaRowOf<S extends Exclude<keyof Database, "__InternalSupabase">, F extends keyof Database[S]["Functions"]> =
+  Database[S]["Functions"][F] extends { Returns: readonly (infer R)[] } ? R : never;
 
+/** Typed: a function in the owner schema the generated types know. */
+export function readListRpc<
+  S extends Exclude<keyof Database, "public" | "__InternalSupabase"> & string,
+  F extends keyof Database[S]["Functions"] & string,
+>(
+  fn: F,
+  args: Database[S]["Functions"][F] extends { Args: infer A } ? A : never,
+  options: ListRpcOptions<SchemaRowOf<S, F>> & { schema: S },
+): Promise<ListRpcResult<SchemaRowOf<S, F>>>;
 /** Typed: a `public` function the generated types know. */
 export function readListRpc<F extends keyof PublicFunctions & string>(
   fn: F,
@@ -94,13 +112,18 @@ export function readListRpc<Row>(
 ): Promise<ListRpcResult<Row>>;
 export async function readListRpc<Row>(
   fn: string,
-  args: object,
+  args: unknown,
   options: ListRpcOptions<Row>,
 ): Promise<ListRpcResult<Row>> {
-  if (!options.client && ONCE_RPC_NAME.test(fn)) return readOnce<Row>(fn, args);
-  const client: ListRpcClient = options.client ?? (supabase as unknown as ListRpcClient);
+  const ownerSchema = options.schema && options.schema !== "public" ? options.schema : null;
+  if (!options.client && !ownerSchema && ONCE_RPC_NAME.test(fn)) return readOnce<Row>(fn, args as object);
+  const client: ListRpcClient =
+    options.client ??
+    (ownerSchema
+      ? (supabase as unknown as { schema(name: string): ListRpcClient }).schema(ownerSchema)
+      : (supabase as unknown as ListRpcClient));
   const page = (from: number, to: number, ordered: boolean): PageBuilder<Row> => {
-    let builder = client.rpc(fn, args, { count: "exact" }) as PageBuilder<Row>;
+    let builder = client.rpc(fn, args as object, { count: "exact" }) as PageBuilder<Row>;
     if (ordered) {
       for (const column of options.order) builder = builder.order(column, { ascending: true, nullsFirst: true });
     }

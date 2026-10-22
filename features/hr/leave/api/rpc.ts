@@ -68,7 +68,7 @@ export type HrLeaveRpcName =
   | "hr_leave_adjust";
 
 type HrLeaveRpcArgs<Rpc extends HrLeaveRpcName> =
-  Database["public"]["Functions"][Rpc]["Args"];
+  Database["hr"]["Functions"][Rpc]["Args"];
 
 /**
  * Keys whose VALUES are free-form or are evidence read back by their stored names, and so
@@ -189,7 +189,7 @@ export async function callHrLeaveRpc<Rpc extends HrLeaveRpcName>(
 ): Promise<HrResult<Record<string, unknown>>> {
   if (hrMockEnabled()) refuseMock(rpc, opts?.mockCase);
 
-  const query = supabase.rpc(rpc, args);
+  const query = supabase.schema("hr").rpc(rpc, args);
   let data: unknown;
   let error: PostgrestLikeError | null;
   try {

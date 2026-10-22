@@ -434,7 +434,7 @@ interface UntypedRpcClient {
 
 /** The client, seen through the untyped door above. `bind` is avoided: it re-instantiates the
  *  generated `Database` generic and trips TS2589 (excessively deep instantiation). */
-const rpcClient = supabase as unknown as UntypedRpcClient;
+const rpcClient = supabase.schema("hr") as unknown as UntypedRpcClient;
 
 /**
  * Call one `public.hr_*` RPC. Returns the unwrapped payload; throws {@link HrRpcError} on a typed
@@ -447,7 +447,7 @@ export async function callHrTimeRpc<T>(
 ): Promise<T> {
   if (hrMockEnabled()) return serveMock<T>(rpc, opts?.mockCase);
 
-  // `hr_*` wrappers live in `public`, which is exposed — see the header. Never point this client at `hr`.
+  // The `hr_*` doors live in `hr` (the `public` forwarders are a temporary box); this client is bound to `hr`.
   const query = rpcClient.rpc(rpc, args);
   const { data, error } = await (opts?.signal ? query.abortSignal(opts.signal) : query);
 

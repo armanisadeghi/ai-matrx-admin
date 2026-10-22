@@ -7,19 +7,19 @@
 import type { Database } from "@/types/database.types";
 
 export type RelationshipRule =
-  Database["public"]["Functions"]["admin_relationship_rules"]["Returns"][number];
+  Database["platform"]["Functions"]["admin_relationship_rules"]["Returns"][number];
 
 export type UnregisteredPair =
-  Database["public"]["Functions"]["admin_unregistered_pairs"]["Returns"][number];
+  Database["platform"]["Functions"]["admin_unregistered_pairs"]["Returns"][number];
 
 export type RelationshipSystemStatus =
-  Database["public"]["Functions"]["admin_relationship_system_status"]["Returns"][number];
+  Database["platform"]["Functions"]["admin_relationship_system_status"]["Returns"][number];
 
 export type ReachabilityContent =
-  Database["public"]["Functions"]["admin_reachability_contents"]["Returns"][number];
+  Database["platform"]["Functions"]["admin_reachability_contents"]["Returns"][number];
 
 export type ReachabilityContainer =
-  Database["public"]["Functions"]["admin_reachability_containers"]["Returns"][number];
+  Database["platform"]["Functions"]["admin_reachability_containers"]["Returns"][number];
 
 export type ExposureAuditRow =
   Database["public"]["Functions"]["admin_exposure_audit_rows"]["Returns"][number];
@@ -28,7 +28,7 @@ export type ExposureAuditSummary =
   Database["public"]["Functions"]["admin_exposure_audit_summary"]["Returns"][number];
 
 export type RelationshipProblem =
-  Database["public"]["Functions"]["admin_relationship_problems"]["Returns"][number];
+  Database["platform"]["Functions"]["admin_relationship_problems"]["Returns"][number];
 
 /** The drift categories emitted by admin_relationship_problems().kind. */
 export type ProblemKind =
@@ -45,10 +45,10 @@ export type ContainerSide = "none" | "source" | "target";
 // -- Shareable resource registry (public.shareable_resource_registry admin) --
 
 export type ShareableRegistryRow =
-  Database["public"]["Functions"]["admin_shareable_registry_list"]["Returns"][number];
+  Database["iam"]["Functions"]["admin_shareable_registry_list"]["Returns"][number];
 
 export type ShareableRegistryDefaults =
-  Database["public"]["Functions"]["admin_shareable_registry_defaults"]["Returns"][number];
+  Database["iam"]["Functions"]["admin_shareable_registry_defaults"]["Returns"][number];
 
 /** Link-policy view over the same registry table — contributes supports_public
  *  and the live physical column list the registry-list RPC doesn't return. */

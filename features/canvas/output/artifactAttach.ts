@@ -91,6 +91,7 @@ export const ARTIFACT_ATTACH: Record<CanvasContentType, ArtifactAttachDef> = {
   tasks: DATA,
   topical_map: DATA,
   kind_value: DATA,
+  visual_map: DATA,
 };
 
 const CONTENT_OPTION: Record<ContentForm, { label: string; hint: string }> = {

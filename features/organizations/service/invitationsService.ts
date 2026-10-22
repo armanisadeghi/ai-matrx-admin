@@ -88,7 +88,7 @@ interface InvCreateRow extends InvListRow {
   test_expires_at: string | null;
 }
 type _InvCreateCheck =
-  InvCreateRow extends DbRpcRow<"inv_create"> ? true : false;
+  InvCreateRow extends DbRpcRow<"inv_create", "iam"> ? true : false;
 declare const _invCreateCheck: _InvCreateCheck;
 true satisfies typeof _invCreateCheck;
 
@@ -149,7 +149,7 @@ export const invitationsService = {
   ): Promise<RecordsResult<{ invitations: Invitation[] }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("inv_list", {
+      const { data, error } = await supabase.schema("iam").rpc("inv_list", {
         p_target_type: targetType,
         p_target_id: targetId,
       });
@@ -175,7 +175,7 @@ export const invitationsService = {
   ): Promise<RecordsResult<{ invitation: Invitation | null }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("inv_get_by_token", {
+      const { data, error } = await supabase.schema("iam").rpc("inv_get_by_token", {
         p_token: token,
       });
       if (error) return { ok: false as const, error: mapThrownError(error, "invitationsService") };
@@ -195,7 +195,7 @@ export const invitationsService = {
   async forMe(): Promise<RecordsResult<{ invitations: Invitation[] }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("inv_for_me");
+      const { data, error } = await supabase.schema("iam").rpc("inv_for_me");
       if (error) return { ok: false as const, error: mapThrownError(error, "invitationsService") };
       const rows = (Array.isArray(data) ? data : []) as InvPartialRow[];
       return ok({ invitations: rows.map(toInvitation) });
@@ -225,7 +225,7 @@ export const invitationsService = {
   }): Promise<RecordsResult<{ invitation: Invitation }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("inv_create", {
+      const { data, error } = await supabase.schema("iam").rpc("inv_create", {
         p_target_type: args.targetType,
         p_target_id: args.targetId,
         p_email: args.email,
@@ -257,7 +257,7 @@ export const invitationsService = {
   ): Promise<RecordsResult<{ accepted: AcceptedInvitation }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("inv_accept", {
+      const { data, error } = await supabase.schema("iam").rpc("inv_accept", {
         p_token: token,
       });
       if (error) return { ok: false as const, error: mapThrownError(error, "invitationsService") };
@@ -287,7 +287,7 @@ export const invitationsService = {
   async revoke(invitationId: string): Promise<RecordsResult<null>> {
     try {
       requireUserId();
-      const { error } = await supabase.rpc("inv_revoke", {
+      const { error } = await supabase.schema("iam").rpc("inv_revoke", {
         p_invitation_id: invitationId,
       });
       if (error) return { ok: false as const, error: mapThrownError(error, "invitationsService") };
@@ -311,7 +311,7 @@ export const invitationsService = {
   ): Promise<RecordsResult<{ token: string }>> {
     try {
       requireUserId();
-      const { data, error } = await supabase.rpc("inv_resend", {
+      const { data, error } = await supabase.schema("iam").rpc("inv_resend", {
         p_invitation_id: invitationId,
         ...(expiresAt ? { p_expires_at: expiresAt } : {}),
       });

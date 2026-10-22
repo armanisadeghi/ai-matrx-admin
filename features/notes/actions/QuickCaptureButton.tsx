@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ai-matrx/design-system";
 import {
   Tooltip,
   TooltipContent,
@@ -16,9 +16,8 @@ import { openOverlay, mintInstanceId } from "@ai-matrx/summon/open";
 interface QuickCaptureButtonProps {
   defaultContent?: string;
   bucketTag?: string;
-  variant?: "primary" | "outline" | "quiet";
-  /** Glyph only (the label becomes the accessible name). */
-  iconOnly?: boolean;
+  variant?: "default" | "outline" | "ghost" | "secondary";
+  size?: "default" | "sm" | "lg" | "icon";
   label?: string;
   className?: string;
 }
@@ -30,8 +29,8 @@ interface QuickCaptureButtonProps {
 export function QuickCaptureButton({
   defaultContent = "",
   bucketTag,
-  variant = "primary",
-  iconOnly = false,
+  variant = "default",
+  size = "default",
   label = "Quick Note",
   className,
 }: QuickCaptureButtonProps) {
@@ -55,24 +54,15 @@ export function QuickCaptureButton({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          {iconOnly || !label ? (
-            <Button
-              variant={variant}
-              icon={<Plus />}
-              aria-label={label || "Quick note"}
-              onClick={handleClick}
-              className={className}
-            />
-          ) : (
-            <Button
-              variant={variant}
-              icon={<Plus />}
-              onClick={handleClick}
-              className={className}
-            >
-              {label}
-            </Button>
-          )}
+          <Button
+            variant={variant}
+            size={size}
+            onClick={handleClick}
+            className={className}
+          >
+            <Plus className="h-4 w-4" />
+            {size !== "icon" && label && <span className="ml-2">{label}</span>}
+          </Button>
         </TooltipTrigger>
         <TooltipContent>Create quick note</TooltipContent>
       </Tooltip>

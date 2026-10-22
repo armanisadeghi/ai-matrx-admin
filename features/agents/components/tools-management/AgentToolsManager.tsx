@@ -445,7 +445,7 @@ export function AgentToolsManager({ agentId }: AgentToolsManagerProps) {
     let active = true;
     setIsFetchingMetadata(true);
     const supabase = createClient();
-    supabase.rpc("get_tools_metadata").then(({ data, error }) => {
+    supabase.schema("tool").rpc("get_tools_metadata").then(({ data, error }) => {
       if (active && (!error || data)) {
         setFetchedMetadata(data as any);
         setMetadataError(null);
@@ -4101,6 +4101,7 @@ function ToolDetailPanel({ toolId }: { toolId: string }) {
     supabase
       // get_tool_detail signature changed in the 2026 refactor: now takes
       // (p_name_or_id text), accepting either a UUID or a tool name.
+      .schema("tool")
       .rpc("get_tool_detail", { p_name_or_id: toolId })
       .then(({ data, error }) => {
         if (active && data) {

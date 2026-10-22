@@ -65,13 +65,13 @@ const made = process.env.ORG ? null : await fixtureOrg(alex, {
   settings: { test_fixture: true, fixture_marker: "standing:share-lane" },
 });
 const org = process.env.ORG ? { id: process.env.ORG } : made.org;
-const inv = !made?.fresh ? null : must("inv_create", await alex.rpc("inv_create", {
+const inv = !made?.fresh ? null : must("inv_create", await alex.schema("iam").rpc("inv_create", {
   p_target_type: "organization", p_target_id: org.id, p_email: "admin@admin.com", p_role: "member",
   p_org_id: org.id, p_invited_user_id: null,
   p_expires_at: new Date(Date.now() + 7 * 864e5).toISOString(),
 }));
 if (!process.env.ORG)
-  if (inv) must("inv_accept", await morgan.rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
+  if (inv) must("inv_accept", await morgan.schema("iam").rpc("inv_accept", { p_token: inv.token, p_hr_half_handled: false }));
 
 // A Table lives somewhere: the garden's own home (a record in the kernel "Organization" table).
 const home = must("home", await alex.schema("custom").rpc("record_write", {

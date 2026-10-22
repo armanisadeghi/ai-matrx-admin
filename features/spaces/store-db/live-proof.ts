@@ -101,7 +101,7 @@ async function main() {
     check("restore brings the Space back", parentBack?.isArchived === false);
     check("restore brings the sub-Space back under it", childBack?.isArchived === false && childBack?.parentId === parent.id);
 
-    const { error: shareError } = await admin.db.rpc("share_resource_with_user", {
+    const { error: shareError } = await admin.db.schema("iam").rpc("share_resource_with_user", {
       p_resource_type: "document",
       p_resource_id: parent.id,
       p_target_user_id: second.userId,
@@ -120,7 +120,7 @@ async function main() {
     );
   } finally {
     if (made[0]) {
-      await admin.db.rpc("revoke_resource_access", { p_resource_type: "document", p_resource_id: made[0], p_target_user_id: second.userId });
+      await admin.db.schema("iam").rpc("revoke_resource_access", { p_resource_type: "document", p_resource_id: made[0], p_target_user_id: second.userId });
     }
     for (const id of made.reverse()) {
       const doc = await store.get(id).catch(() => null);

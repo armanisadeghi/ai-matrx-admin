@@ -50,7 +50,7 @@ export function useDashboardMetrics(): UseDashboardMetricsResult {
     enabled: Boolean(userId),
     staleTime: 60_000, // counts move slowly; don't re-hammer the RPC
     queryFn: async (): Promise<DashboardMetrics> => {
-      const { data, error } = await supabase.rpc("get_user_dashboard_metrics");
+      const { data, error } = await supabase.schema("billing").rpc("get_user_dashboard_metrics");
       if (error) throw error;
       return coerceMetrics(data);
     },

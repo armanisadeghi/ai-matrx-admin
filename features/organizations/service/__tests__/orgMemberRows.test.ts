@@ -5,7 +5,7 @@
  * roster change forgets the answer.
  */
 const rpc = jest.fn();
-jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({ rpc: (...a: unknown[]) => rpc(...a) }) }));
+jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({ schema: () => ({ rpc: (...a: unknown[]) => rpc(...a) }) }) }));
 jest.mock("@ai-matrx/data", () => ({ pgErrorToError: (e: { message: string }) => new Error(e.message) }));
 
 import {

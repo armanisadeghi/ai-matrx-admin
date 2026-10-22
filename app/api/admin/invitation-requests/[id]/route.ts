@@ -74,7 +74,7 @@ export async function PATCH(
 
     if (action === "approve") {
       // Generate invitation code
-      const { data: codeData, error: codeError } = await adminSupabase.rpc(
+      const { data: codeData, error: codeError } = await adminSupabase.schema("iam").rpc(
         "generate_invitation_code"
       );
 

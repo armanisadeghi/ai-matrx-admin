@@ -267,7 +267,7 @@ export async function fetchMandateFacets(
 ): Promise<EntityFacets> {
   const { data, error } = await readListRpc("mnd_list_facets", {
     ...(query.search.trim() ? { p_search: query.search.trim() } : {}),
-  }, { order: ["kind", "value"] });
+  }, { schema: "mandate", order: ["kind", "value"] });
   if (error) throw new Error(error.message);
   const byKind: EntityFacets["byKind"] = {};
   for (const row of data ?? []) {

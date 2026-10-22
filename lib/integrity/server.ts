@@ -24,7 +24,7 @@ import { createFiles } from "@ai-matrx/files";
 export async function createAdminSqlRunner(): Promise<SqlRunner> {
   const admin = await requireSuperAdminDatabaseClient();
   return async (query: string): Promise<IntegrityFinding[]> => {
-    const { data, error } = await admin.rpc("execute_admin_query", { query });
+    const { data, error } = await admin.schema("platform").rpc("execute_admin_query", { query });
     if (error) throw new Error(error.message);
     return unwrapRows(data);
   };

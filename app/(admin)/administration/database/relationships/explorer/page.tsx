@@ -13,7 +13,7 @@ export const metadata = {
 export default async function RelationshipExplorerPage() {
   const supabase = await createClient();
 
-  const { data: rules, error } = await supabase.rpc("admin_relationship_rules");
+  const { data: rules, error } = await supabase.schema("platform").rpc("admin_relationship_rules");
   if (error) {
     throw new Error(`Entity explorer failed to load: ${error.message}`);
   }

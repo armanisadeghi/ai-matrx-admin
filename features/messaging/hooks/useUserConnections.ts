@@ -64,7 +64,7 @@ interface OrgMemberRow {
   user_id: string;
 }
 type _CheckOrgMemberRow =
-  OrgMemberRow extends DbRpcRow<"get_organization_members_with_users">
+  OrgMemberRow extends DbRpcRow<"get_organization_members_with_users", "iam">
     ? true
     : false;
 declare const _orgMemberRow: _CheckOrgMemberRow;
@@ -75,7 +75,7 @@ interface LookupUserByEmailRow {
   user_email: string;
 }
 type _CheckLookupRow =
-  LookupUserByEmailRow extends DbRpcRow<"lookup_user_by_email"> ? true : false;
+  LookupUserByEmailRow extends DbRpcRow<"lookup_user_by_email", "users"> ? true : false;
 declare const _lookupRow: _CheckLookupRow;
 true satisfies typeof _lookupRow;
 
@@ -491,7 +491,7 @@ async function fetchOrgConnections(
         if (!invite.email) continue;
 
         // Try to find user by email using lookup
-        const { data: lookupResult } = await supabase.rpc("lookup_user_by_email", {
+        const { data: lookupResult } = await supabase.schema("users").rpc("lookup_user_by_email", {
           lookup_email: invite.email.toLowerCase(),
         });
 

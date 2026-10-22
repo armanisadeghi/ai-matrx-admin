@@ -51,7 +51,7 @@ check("Harbor Dental Group resolved", !!ORG, ORG);
 const HOME = process.env.WALK_ORG_HOME ?? "5588aafe-0fdd-4fa4-8ba4-8cbb2332cf74";
 
 const inTrash = async (kind, id) => {
-  const { data } = await sb.rpc("trash_list", { p_kinds: [kind], p_limit: 1000, p_offset: 0 });
+  const { data } = await sb.schema("platform").rpc("trash_list", { p_kinds: [kind], p_limit: 1000, p_offset: 0 });
   return (data ?? []).find((r) => r.id === id) ?? null;
 };
 

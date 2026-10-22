@@ -144,7 +144,7 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
   liveKey.current = key;
 
   const call = (offset: number, limit: number) =>
-    supabase.rpc("trx_list_scoped", {
+    supabase.schema("context").rpc("trx_list_scoped", {
       p_scope: scope,
       p_org_id: orgId ?? undefined,
       p_search: search || undefined,
@@ -188,7 +188,7 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
         p_org_id: orgId ?? undefined,
         p_search: undefined,
         p_deep: false,
-      }, { order: ["kind", "value"] });
+      }, { schema: "transcripts", order: ["kind", "value"] });
       if (cancelled) return;
       if (e) {
         setFacets(null);
@@ -210,7 +210,7 @@ export function useTranscriptList({ enabled, text, selection, orgId, sort, initi
         const scopes = (["mine", "shared", "public"] as const).map((sc) => ({ value: sc, count: -1 }));
         await Promise.all(
           scopes.map(async (sc) => {
-            const { data: r, error: re } = await supabase.rpc("trx_list_scoped", {
+            const { data: r, error: re } = await supabase.schema("context").rpc("trx_list_scoped", {
               p_scope: sc.value,
               p_org_id: orgId ?? undefined,
               p_filters: {},

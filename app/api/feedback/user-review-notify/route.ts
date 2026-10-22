@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const { error: markError } = await admin.rpc("mark_user_message_emailed", {
+    const { error: markError } = await admin.schema("users").rpc("mark_user_message_emailed", {
       p_message_id: storedMessage.id,
     });
     if (markError) {

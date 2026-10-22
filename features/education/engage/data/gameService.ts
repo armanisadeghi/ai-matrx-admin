@@ -113,7 +113,7 @@ export interface EngagementSnapshot {
   league_opted_in: boolean;
 }
 type _CheckEngagementSnapshot =
-  EngagementSnapshot extends DbRpcRow<"education_engagement_snapshot">
+  EngagementSnapshot extends DbRpcRow<"education_engagement_snapshot", "education">
     ? true
     : false;
 declare const _engagementSnapshotMatchesDb: _CheckEngagementSnapshot;
@@ -126,7 +126,7 @@ export const gameService = {
   ): Promise<EngageResult<EngagementSnapshot>> {
     try {
       const args = sessionId ? { p_session_id: sessionId } : {};
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.schema("education").rpc(
         "education_engagement_snapshot",
         args,
       );
@@ -184,7 +184,7 @@ export const gameService = {
     code: string,
   ): Promise<EngageResult<JoinableRoom | null>> {
     try {
-      const { data, error } = await supabase.rpc("game_room_by_code", {
+      const { data, error } = await supabase.schema("education").rpc("game_room_by_code", {
         p_code: code.trim(),
       });
       if (error) return fail("findRoomByCode", error);
@@ -207,7 +207,7 @@ export const gameService = {
     joinCode: string,
   ): Promise<EngageResult<StudySessionRow>> {
     try {
-      const { data, error } = await supabase.rpc("start_game_session", {
+      const { data, error } = await supabase.schema("education").rpc("start_game_session", {
         p_room_id: roomId,
         p_join_code: joinCode.trim(),
       });
@@ -295,7 +295,7 @@ export const gameService = {
     displayName: string,
   ): Promise<EngageResult<GameResultRow>> {
     try {
-      const { data, error } = await supabase.rpc("game_finalize_result", {
+      const { data, error } = await supabase.schema("education").rpc("game_finalize_result", {
         p_session_id: sessionId,
         p_display_name: displayName,
       });
@@ -312,7 +312,7 @@ export const gameService = {
     roomId: string,
   ): Promise<EngageResult<RoomPlayerResult[]>> {
     try {
-      const { data, error } = await supabase.rpc("game_room_players", {
+      const { data, error } = await supabase.schema("education").rpc("game_room_players", {
         p_room_id: roomId,
       });
       if (error) return fail("getRoomScoreboard", error);
@@ -404,7 +404,7 @@ export const gameService = {
       // org-filter: write-target writes into the organization the person is working in; no list reads it
       const orgId = await ensureOrgId(null);
       // org-filter: write-target writes into the organization the person is working in; no list reads it
-      const { data, error } = await supabase.rpc("league_set_opt_in", {
+      const { data, error } = await supabase.schema("education").rpc("league_set_opt_in", {
         p_opted_in: optedIn,
         p_display_name: displayName,
         p_organization_id: orgId,
@@ -419,7 +419,7 @@ export const gameService = {
   /** The current week's league leaderboard (cross-user via RPC). */
   async getLeaderboard(): Promise<EngageResult<LeagueEntry[]>> {
     try {
-      const { data, error } = await supabase.rpc("league_leaderboard", {
+      const { data, error } = await supabase.schema("education").rpc("league_leaderboard", {
         p_week_start: this.currentWeekStart(),
       });
       if (error) return fail("getLeaderboard", error);

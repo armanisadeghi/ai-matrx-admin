@@ -188,7 +188,7 @@ try {
     if (se) throw se;
     out.tag_removed = [];
     for (const s of scopes ?? []) {
-      const { error } = await sb.rpc("assoc_remove", {
+      const { error } = await sb.schema("platform").rpc("assoc_remove", {
         p_source_type: process.env.TAG_ENTITY_TOKEN ?? "processed_document",
         p_source_id: entityId,
         p_target_type: "tag",

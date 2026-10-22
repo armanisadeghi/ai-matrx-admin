@@ -98,7 +98,7 @@ export function cxMessageContentRewriter(messageId: string): PersistRewrite {
       };
     }
     let attempt = 0;
-    let { error } = await supabase.rpc("cx_message_set_content", {
+    let { error } = await supabase.schema("chat").rpc("cx_message_set_content", {
       p_message_id: messageId,
       p_new_content: rewritten,
     });
@@ -114,7 +114,7 @@ export function cxMessageContentRewriter(messageId: string): PersistRewrite {
       );
       await sleep(REWRITE_RETRY_DELAYS_MS[attempt]);
       attempt++;
-      ({ error } = await supabase.rpc("cx_message_set_content", {
+      ({ error } = await supabase.schema("chat").rpc("cx_message_set_content", {
         p_message_id: messageId,
         p_new_content: rewritten,
       }));

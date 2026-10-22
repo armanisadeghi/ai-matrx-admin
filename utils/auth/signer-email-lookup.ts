@@ -29,7 +29,7 @@ export async function lookupSignerEmail(hint: string | null): Promise<string | n
   if (!hint) return null;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("esign_peek_signer_email", { p_hint: hint });
+    const { data, error } = await supabase.schema("esign").rpc("esign_peek_signer_email", { p_hint: hint });
     if (error) {
       console.warn("esign_peek_signer_email failed; sign-up will render an empty email field:", error.message);
       return null;

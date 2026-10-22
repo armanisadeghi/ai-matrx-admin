@@ -14,7 +14,7 @@ export default async function ApplicationsInstallationsPage() {
   const supabase = await createClient();
 
   const [instanceResult, configResult] = await Promise.all([
-    supabase.rpc("admin_list_app_instances"),
+    supabase.schema("ops").rpc("admin_list_app_instances"),
     supabase
       .from("app_config")
       .select("app, min_supported_app_version")

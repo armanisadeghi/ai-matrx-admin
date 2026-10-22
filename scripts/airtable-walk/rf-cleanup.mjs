@@ -7,7 +7,7 @@ const m = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PU
 const { data: a } = await m.auth.signInWithPassword({ email: "test@test.com", password: env.AI_MEMBER_PASSWORD });
 for (const spec of process.argv.slice(2)) {
   const [table, rows] = spec.split(":");
-  for (const row of rows.split(",")) await sb.rpc("revoke_resource_access", { p_resource_type: "record", p_resource_id: row, p_target_user_id: a.user.id });
+  for (const row of rows.split(",")) await sb.schema("iam").rpc("revoke_resource_access", { p_resource_type: "record", p_resource_id: row, p_target_user_id: a.user.id });
   const r = await client.tableArchive({ table_id: table });
   console.log("archived", table, r.ok ? "ok" : JSON.stringify(r.error).slice(0, 160));
 }

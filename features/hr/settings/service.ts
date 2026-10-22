@@ -244,7 +244,7 @@ export async function fetchHrEmployerProfile(args: {
     row_count: number | null;
   }>
 > {
-  const { data, error } = await supabase.rpc("hr_confidential_list" as never, {
+  const { data, error } = await supabase.schema("hr").rpc("hr_confidential_list" as never, {
     p_token: "hr_employer_profile",
     p_filter: { organization_id: args.organizationId },
     p_limit: 2,

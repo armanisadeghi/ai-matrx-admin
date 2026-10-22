@@ -45,7 +45,7 @@ export const dataRightsService = {
   /** Download-ready JSON archive of the caller's entire study spine. */
   async exportStudyData(): Promise<StudyResult<StudyExportArchive>> {
     try {
-      const { data, error } = await supabase.rpc("edu_export_study_data");
+      const { data, error } = await supabase.schema("education").rpc("edu_export_study_data");
       if (error) return fail("exportStudyData", error);
       return { data: data as unknown as StudyExportArchive, error: null };
     } catch (e) {
@@ -63,7 +63,7 @@ export const dataRightsService = {
    */
   async logExport(): Promise<void> {
     try {
-      await supabase.rpc("edu_log_data_export");
+      await supabase.schema("education").rpc("edu_log_data_export");
     } catch {
       /* audit-only; never block the user's completed download */
     }
@@ -72,7 +72,7 @@ export const dataRightsService = {
   /** Soft-delete the whole study spine (reversible for 30 days). */
   async deleteStudyData(): Promise<StudyResult<StudyDeleteResult>> {
     try {
-      const { data, error } = await supabase.rpc("edu_delete_study_data");
+      const { data, error } = await supabase.schema("education").rpc("edu_delete_study_data");
       if (error) return fail("deleteStudyData", error);
       return { data: data as unknown as StudyDeleteResult, error: null };
     } catch (e) {
@@ -83,7 +83,7 @@ export const dataRightsService = {
   /** Restore the most recent delete, if still inside the window. */
   async restoreStudyData(): Promise<StudyResult<StudyRestoreResult>> {
     try {
-      const { data, error } = await supabase.rpc("edu_restore_study_data");
+      const { data, error } = await supabase.schema("education").rpc("edu_restore_study_data");
       if (error) return fail("restoreStudyData", error);
       return { data: data as unknown as StudyRestoreResult, error: null };
     } catch (e) {

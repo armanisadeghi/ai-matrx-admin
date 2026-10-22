@@ -137,10 +137,10 @@ async function loadOverview(
     `;
 
     const [tablesResult, columnsResult, fkResult, pkResult] = await Promise.all([
-        supabase.rpc("execute_admin_query", { query: tablesQuery }),
-        supabase.rpc("execute_admin_query", { query: columnsQuery }),
-        supabase.rpc("execute_admin_query", { query: foreignKeysQuery }),
-        supabase.rpc("execute_admin_query", { query: primaryKeysQuery }),
+        supabase.schema("platform").rpc("execute_admin_query", { query: tablesQuery }),
+        supabase.schema("platform").rpc("execute_admin_query", { query: columnsQuery }),
+        supabase.schema("platform").rpc("execute_admin_query", { query: foreignKeysQuery }),
+        supabase.schema("platform").rpc("execute_admin_query", { query: primaryKeysQuery }),
     ]);
 
     if (tablesResult.error) throw tablesResult.error;

@@ -47,7 +47,7 @@ const seatFor = async (email, password) => {
  */
 const anon = createClient(URL_, KEY, { auth: { persistSession: false } });
 const peek = async (token) => {
-  const { data, error } = await anon.rpc("portal_share_peek", { p_token: token });
+  const { data, error } = await anon.schema("iam").rpc("portal_share_peek", { p_token: token });
   if (error) throw new Error(`portal_share_peek refused: ${error.message}`);
   return data;
 };

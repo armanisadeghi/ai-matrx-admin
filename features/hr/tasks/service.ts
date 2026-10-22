@@ -63,7 +63,7 @@ export async function fetchHrInbox(
     options: { employmentId?: string | null; flowKey?: string | null; organizationId?: string | null; pageOffsets?: HrInboxPageOffsets } = {},
 ): Promise<HrEnvelope<HrInbox>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_inbox", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_inbox", {
         p_scope: scope,
         ...(options.employmentId ? { p_employment_id: options.employmentId } : {}),
         p_filters: { ...(options.flowKey ? { flow_key: options.flowKey } : {}), ...(options.organizationId ? { organization_id: options.organizationId } : {}), ...(options.pageOffsets ? { page_offsets: options.pageOffsets } : {}) },
@@ -77,7 +77,7 @@ export async function fetchHrInstance(
     instanceId: string,
 ): Promise<HrEnvelope<HrInstanceDetail>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_instance", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_instance", {
         p_instance_id: instanceId,
     });
     if (error) throw error;
@@ -96,7 +96,7 @@ export async function decideStep(
     payload: Record<string, unknown> = {},
 ): Promise<HrEnvelope<HrDecideResult>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_decide", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_decide", {
         p_step_id: stepId,
         p_decision: decision,
         ...(reason ? { p_reason: reason } : {}),
@@ -118,7 +118,7 @@ export async function bulkDecide(
     reason?: string | null,
 ): Promise<HrEnvelope<HrBulkResult>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_bulk_decide", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_bulk_decide", {
         p_step_ids: stepIds,
         p_decision: decision,
         ...(reason ? { p_reason: reason } : {}),
@@ -137,7 +137,7 @@ export async function escalateStep(
     reason?: string | null,
 ): Promise<HrEnvelope<HrEscalateResult>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_escalate", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_escalate", {
         p_step_id: stepId,
         ...(reason ? { p_reason: reason } : {}),
     });
@@ -151,7 +151,7 @@ export async function reassignStep(
     reason?: string | null,
 ): Promise<HrEnvelope<HrAck>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_reassign_step", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_reassign_step", {
         p_step_id: stepId,
         p_to_employment_id: toEmploymentId,
         ...(reason ? { p_reason: reason } : {}),
@@ -165,7 +165,7 @@ export async function withdrawInstance(
     reason?: string | null,
 ): Promise<HrEnvelope<HrAck>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_withdraw", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_withdraw", {
         p_instance_id: instanceId,
         ...(reason ? { p_reason: reason } : {}),
     });
@@ -178,7 +178,7 @@ export async function cancelInstance(
     reason?: string | null,
 ): Promise<HrEnvelope<HrAck>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_cancel", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_cancel", {
         p_instance_id: instanceId,
         ...(reason ? { p_reason: reason } : {}),
     });
@@ -197,7 +197,7 @@ export async function resolveFailure(
     note: string,
 ): Promise<HrEnvelope<HrFailureResolution>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_resolve_failure", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_resolve_failure", {
         p_failure_id: failureId,
         p_action: action,
         p_note: note,
@@ -212,7 +212,7 @@ export async function recordStepResult(
     verified = false,
 ): Promise<HrEnvelope<HrAck>> {
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("hr_wf_record_result", {
+    const { data, error } = await supabase.schema("hr").rpc("hr_wf_record_result", {
         p_step_id: stepId,
         p_result: result,
         p_verified: verified,

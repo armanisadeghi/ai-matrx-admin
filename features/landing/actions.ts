@@ -251,7 +251,7 @@ export async function markInvitationCodeUsed(
     const cleanCode = code.trim().toUpperCase().replace(/\s/g, '');
 
     // Use the helper function from the migration
-    const { data, error } = await supabase.rpc('mark_invitation_code_used', {
+    const { data, error } = await supabase.schema('iam').rpc('mark_invitation_code_used', {
       p_code: cleanCode,
       p_user_id: userId,
     });

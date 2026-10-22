@@ -139,9 +139,9 @@ try {
   } else {
     // The same two doors the page's kind filter and Restore button call, from the same seat.
     for (const [kind, token, id, name] of [["pc_show", "pc_show", show.id, "show"], ["canvas", "canvas_item", map.id, "map"]]) {
-      const { data: rows, error } = await sb.rpc("trash_list", { p_kinds: [kind], p_limit: 200, p_offset: 0 });
+      const { data: rows, error } = await sb.schema("platform").rpc("trash_list", { p_kinds: [kind], p_limit: 200, p_offset: 0 });
       check(`Trash door lists the archived ${name} (trash_list kind ${kind})`, !error && (rows ?? []).some((r) => r.id === id), error?.message ?? "");
-      const { data: ok, error: rErr } = await sb.rpc("entity_undelete", { p_token: token, p_id: id });
+      const { data: ok, error: rErr } = await sb.schema("platform").rpc("entity_undelete", { p_token: token, p_id: id });
       check(`Trash restore door brings the ${name} back (entity_undelete)`, !rErr && ok === true, rErr?.message ?? String(ok));
     }
   }

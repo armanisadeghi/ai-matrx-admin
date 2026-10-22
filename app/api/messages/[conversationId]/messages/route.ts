@@ -115,7 +115,7 @@ export async function GET(
     const senderInfoMap = new Map();
 
     for (const senderId of senderIds) {
-      const { data: userInfo } = await supabase.rpc("get_dm_user_info", {
+      const { data: userInfo } = await supabase.schema("chat").rpc("get_dm_user_info", {
         p_user_id: senderId,
       });
       if (userInfo && userInfo[0]) {
@@ -302,7 +302,7 @@ export async function POST(
     }
 
     // Fetch sender info
-    const { data: senderInfo } = await supabase.rpc("get_dm_user_info", {
+    const { data: senderInfo } = await supabase.schema("chat").rpc("get_dm_user_info", {
       p_user_id: userId,
     });
 

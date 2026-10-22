@@ -46,6 +46,7 @@ function load(type: FileEntityType, force = false): Promise<void> {
     // Filter on the server: the unfiltered list is every row a person has ever touched (thousands for a
     // busy account) and PostgREST's row cap would cut it before any workbook or document appears.
     const { data, error } = await createClient()
+      .schema("users")
       .rpc("ues_list", {})
       .eq("entity_type", type)
       .not("last_viewed_at", "is", null)
@@ -96,6 +97,7 @@ export function useRecordOpened(type: FileEntityType, id: string | null | undefi
     next.set(id, new Date().toISOString());
     emit(s, next);
     void createClient()
+      .schema("users")
       .rpc("ues_touch", { p_entity_type: type, p_entity_id: id })
       .then(({ error }) => {
         // A refused open (the record is not theirs to open) is not this hook's to announce — the

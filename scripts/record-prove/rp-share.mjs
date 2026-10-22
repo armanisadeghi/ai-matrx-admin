@@ -5,6 +5,6 @@ const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_P
 const { error } = await sb.auth.signInWithPassword({ email: process.env.AI_ADMIN_USERNAME, password: process.env.AI_ADMIN_PASSWORD });
 if (error) throw error;
 const r = level === "revoke"
-  ? await sb.rpc("revoke_resource_access", { p_resource_type: "record", p_resource_id: ROW, p_target_user_id: USER })
-  : await sb.rpc("share_resource_with_user", { p_resource_type: "record", p_resource_id: ROW, p_target_user_id: USER, p_permission_level: level });
+  ? await sb.schema("iam").rpc("revoke_resource_access", { p_resource_type: "record", p_resource_id: ROW, p_target_user_id: USER })
+  : await sb.schema("iam").rpc("share_resource_with_user", { p_resource_type: "record", p_resource_id: ROW, p_target_user_id: USER, p_permission_level: level });
 console.log(level, ROW, JSON.stringify(r.error ?? r.data).slice(0, 200));

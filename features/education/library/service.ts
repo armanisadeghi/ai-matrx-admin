@@ -40,7 +40,7 @@ export async function fetchEducationLibraryPage(
   query: EntityListQuery,
   sort: EntityListSort,
 ): Promise<EntityListPage<EducationLibraryRow>> {
-  const { data, error } = await supabase.rpc("edu_library_list_scoped", {
+  const { data, error } = await supabase.schema("education").rpc("edu_library_list_scoped", {
     p_scope: query.scope.kind,
     p_org_id: listOrgParam(query),
     p_search: query.search.trim() || undefined,
@@ -65,7 +65,7 @@ export async function fetchEducationLibraryCounts(
     p_search: query.search.trim() || undefined,
     p_filters: query.filters,
     p_org_id: listOrgParam(query),
-  }, { order: ["scope", "narrow_id"] });
+  }, { schema: "education", order: ["scope", "narrow_id"] });
   if (error) throw pgError(error);
   // THE ONE READER: every lane the server counts (All, My team, …) reaches its tab.
   return scopeCountsFromRows(data);
@@ -123,7 +123,7 @@ export async function suggestDeckEdit(
   resourceId: string,
   body: string,
 ): Promise<void> {
-  const { error } = await supabase.rpc("edu_suggest_edit", {
+  const { error } = await supabase.schema("education").rpc("edu_suggest_edit", {
     p_resource_id: resourceId,
     p_body: body,
     p_resource_type: "fc_set",
@@ -136,7 +136,7 @@ export async function resolveDeckSuggestion(
   id: string,
   status: "accepted" | "declined" | "open",
 ): Promise<void> {
-  const { error } = await supabase.rpc("edu_resolve_suggestion", {
+  const { error } = await supabase.schema("education").rpc("edu_resolve_suggestion", {
     p_id: id,
     p_status: status,
   });

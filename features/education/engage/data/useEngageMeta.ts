@@ -68,7 +68,7 @@ export function useStreak(): UseStreakResult {
   }, [userId]);
 
   const setRestWeekdays = async (weekdays: number[]): Promise<void> => {
-    const { data, error: rpcErr } = await supabase.rpc(
+    const { data, error: rpcErr } = await supabase.schema("education").rpc(
       "set_streak_rest_weekdays",
       { p_weekdays: weekdays },
     );

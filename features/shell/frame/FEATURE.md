@@ -232,8 +232,9 @@ Crumbs are data (`FrameCrumb`); the frame renders them.
 - Every level is included by default. A product may omit its top level when its sidebar
   already covers it (Chat has no "Chat" crumb).
 - The top level may show as its icon alone (`iconOnly`), like the Organizations home.
-- A level with `options` is switchable: a down chevron beside it lists its siblings, the
-  current one checked (`CRM-icon › People & Companies › Marisol ▾`). This is the org/scopes
+- Every level is a door (`CrumbDoor.tsx`; law: features/shell/FEATURE.md § EVERY CRUMB IS A DOOR):
+  a level with `options`, `loadOptions` or a `door` gets a down chevron opening a searchable list of
+  everything at its level, the current one checked (`CRM-icon ▾ › People & Companies ▾ › Marisol ▾`). This is the org/scopes
   breadcrumb's pattern (`features/scopes/components/pages/ScopeBreadcrumb.tsx`, same option
   shape); the crumb's text still goes to the level.
 - Chevrons appear nowhere else: the right-side icons ("…", the grid, notifications, account,
@@ -340,6 +341,11 @@ removes it on the first `requestAnimationFrame`; it is not a second mount.
 
 ## Change log
 
+- 2026-10-22 (every crumb is a door, Arman): crumbs above the page are always real links (`resolvePageTrail`
+  in `frame-host/framePageHeader.ts`; pageless levels never drawn); every level opens `CrumbDoor.tsx` —
+  products (icon), places (first level), siblings (records) — searchable, the products door opens new tabs
+  (the grid's rule); "…" lists the page's whole `actions` list on desktop too. Law: `features/shell/FEATURE.md`
+  § EVERY CRUMB IS A DOOR. Tests `__tests__/crumb-doors.test.tsx`, `breadcrumbs/__tests__/every-crumb-is-a-door.test.ts`.
 - 2026-10-22 (crawl class E, second left rail): `FrameSidebarColumn` (frameSidebarSlot.tsx) is the
   one-element door for a list-beside-detail page: the page writes its `<aside>` once; classic renders
   it as given, the frame on a desktop portals its children into the column (a phone keeps the page's

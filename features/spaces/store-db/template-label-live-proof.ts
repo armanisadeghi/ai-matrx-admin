@@ -41,18 +41,18 @@ async function main() {
     const catId = cat.data!.id;
 
     const templatesICanOpen = async (db: Db) => {
-      const { data, error } = await db.rpc("assoc_for_targets", { p_target_type: "category", p_target_ids: [catId] });
+      const { data, error } = await db.schema("platform").rpc("assoc_for_targets", { p_target_type: "category", p_target_ids: [catId] });
       if (error) throw new Error(error.message);
       return (data ?? []).filter((e) => e.source_type === "document" && e.label === "labeled").map((e) => e.source_id);
     };
 
     check("not a template at first", !(await templatesICanOpen(admin)).includes(made));
-    const set = await admin.rpc("assoc_link", { p_source_type: "document", p_source_id: made, p_target_type: "category", p_target_id: catId, p_role: ROLE, p_label: "labeled" });
+    const set = await admin.schema("platform").rpc("assoc_link", { p_source_type: "document", p_source_id: made, p_target_type: "category", p_target_id: catId, p_role: ROLE, p_label: "labeled" });
     check("set the label", !set.error, set.error?.message ?? "");
     const listed = await templatesICanOpen(admin);
     check("templates I can open (one read) lists it", listed.includes(made), `${listed.length} template(s)`);
     check("an outsider who cannot open it does not see it", !(await templatesICanOpen(second)).includes(made));
-    const unset = await admin.rpc("assoc_unlink", { p_source_type: "document", p_source_id: made, p_target_type: "category", p_target_id: catId, p_role: ROLE });
+    const unset = await admin.schema("platform").rpc("assoc_unlink", { p_source_type: "document", p_source_id: made, p_target_type: "category", p_target_id: catId, p_role: ROLE });
     check("unset the label", !unset.error, unset.error?.message ?? "");
     check("no longer listed", !(await templatesICanOpen(admin)).includes(made));
     const meta = await admin.schema("content").from("document").select("metadata").eq("id", made).single();

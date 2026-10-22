@@ -132,6 +132,17 @@ A page picks a template; it never hand-builds its top. Named options only — a 
 
 **Guard:** `pnpm check:page-top` (findings row `page-top`, `--self-test`): `raw-page-header` (a file outside the header module importing `PageHeader`) and `sentence-under-title` (the interface-text `page-description` scanner). Baseline `scripts/page-top/baseline.json` only shrinks (`--shrink`).
 
+## EVERY CRUMB IS A DOOR; "…" HOLDS EVERY ACTION OF ITS LEVEL (Arman, 2026-10-22)
+
+THE HOME of this rule (Arman verbatim: `common-docs/projects/app-frame/VISION.md` § 2026-10-22 — every crumb is a door). The trail is `[product icon ▾] › Level ▾ › Record ▾ ★ …`, continuing deeper the same way (`[icon] › Brands ▾ › Some Brand ▾ › Socials ▾ › Instagram`). Enforced on every route unless Arman exempts one in writing.
+
+1. **Every crumb above the page is a real link to a real page** ("I don't want fake things!!"). A level with no page of its own (`…/smart-add/validate`) is no crumb (`deriveTrail` reads `breadcrumbs/pageless-levels.generated.ts`, written from the route manifest by `pnpm route-manifest:generate`). A header kept in a LAYOUT links back to its own level (`useOwnAddress`; the frame adds the levels above and below it — `resolvePageTrail`). A declared level with no `href` borrows the derived one or is not drawn.
+2. **Every level is a door** (`frame/CrumbDoor.tsx`, contract `FrameCrumbDoor` in `frame/types.ts`): the product icon opens every product (new tab, the app grid's rule; the current product goes home here) + a search over every page (the Go-to index, lazy); the first level opens the product's first-tier places (its sidebar rows) + the same search; a record opens its sibling records (`record.siblings` / `entityOptions` from the list's own data source, capped, or `loadOptions`), searchable. The crumb's text stays a link. Frame first; the classic `CrumbTrailHeader` keeps its own sibling dropdown until it adopts `CrumbDoor`.
+3. **"…" holds every action of its level.** A page declares its actions ONCE (the template's `actions`, a record's `menu.items`); the line draws them as buttons and the frame's "…" lists all of them (`useDeclareFrameActions`). A header button passed through `right=` / `rightEnd=` / `PageHeaderRightPortal` bypasses that list — move it into `actions`.
+4. **URLs follow the hierarchy** (`/marketing/brands/<brand>/…`, never `/marketing/<brand>`); a moved page keeps its old URL as a permanent redirect (the 301 law).
+
+**Guards:** `pnpm check:crumb-doors` (`--self-test`, shrink-only census `scripts/crumb-doors/baseline.json`: `no-declared-trail`, `dead-crumb`, `record-without-siblings`, `button-outside-actions`; exempt only with `// crumb-doors-exempt: Arman <date> <quote>`) and `breadcrumbs/__tests__/every-crumb-is-a-door.test.ts` (every manifest route's derived trail: no crumb without a real page).
+
 ## RECORD HOST CHROME — a host that names a record, the record drops its own name (2026-10-22)
 
 One primitive, `features/shell/host-chrome/RecordHostChrome.tsx`. A host (Board tile today; window, peek) declares the record it holds (`{ token, id }` — for a tile, its type's `comments(source)`), that its bar NAMES it, that it OFFERS Open, and a title slot. A record's header for THAT record (matched by token + id, never by depth, so a task inside a hosted chat keeps its name) reads it:
@@ -172,6 +183,7 @@ seeded into the store, so the first frame is already theirs and a save re-render
 
 ## Change log
 
+- `2026-10-22` — claude: **Every crumb is a door; "…" holds every action** (section above). Dead crumbs fixed as a class: pageless levels dropped from derived trails (115 manifest trails linked a folder with no page), a template in a layout links back to its level (Smart Add brand on `/marketing/brands/smart-add/validate/<id>` was text), four declared org crumbs got their address. `CrumbDoor` (products / places / siblings, searchable); `EntityModeHeader` declares every action to the frame's "…". Guard `check:crumb-doors` (census 649).
 - `2026-10-22` — claude: **Host chrome round 2.** A hosted title field is text-sized (`host-chrome/SizedTitleInput`, same mirror technique as `NoteTitleField`/`EditorTitleField`; Task, Map and the Document tile use it) so the rest of a tile header still drags; the Map's save state rides beside its name (no bar row). Scope tile keeps its Context items door. ONE record menu: `components/official/RecordActionsMenu` now takes `hint`/`group`/`id` and a text trigger, and `RecordPageHeader` uses it (its private dropdown is gone). Meeting/Sandbox bars choose buttons by the action's `placement: "bar"` + `barTone` (never label text). `EditorDocumentHeader` hosted + Microsoft look draws the ribbon only. `BoardTile` passes a stable `onTitleClaim`. Guard extended in `host-chrome-contract.test.tsx`.
 - `2026-10-22` — claude: **Record host chrome** (section above): one primitive for "the host already names this record"; BoardTile provides it for every tile, `RecordPageHeader` and `EditorDocumentHeader` read it, `DesktopAction` exported from `EntityModeHeader` for its bar.
 

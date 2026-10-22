@@ -4,11 +4,20 @@
  * selecting a cell, scrolling, and the comment anchor (a Matrx mutation outside Univer's cell commands) keep working.
  * Univer's own "no permission" dialog stays off; the seat is told in our words (`seat-notices`).
  */
-import { ErrorService, IPermissionService } from "@univerjs/core";
+import { ErrorService, IPermissionService, IUniverInstanceService, UniverInstanceType, type Workbook } from "@univerjs/core";
 import { SheetPermissionCheckController, WorkbookEditablePermission } from "@univerjs/sheets";
 
 type Injector = { get<T>(token: unknown): T };
 type Sub = { unsubscribe(): void };
+
+/**
+ * The id of the workbook this seat is looking at. Univer 1.x names the lookup `getCurrentUnitOfType` (0.x called it
+ * `getCurrentUnitForType`; calling the old name crashed every commenter and viewer on open, 2026-10-22).
+ */
+export function currentSheetUnitId(injector: Injector): string | null {
+  const instances = injector.get<IUniverInstanceService>(IUniverInstanceService);
+  return instances.getCurrentUnitOfType<Workbook>(UniverInstanceType.UNIVER_SHEET)?.getUnitId() ?? null;
+}
 
 /** Sets the workbook's Edit permission point (adds it first when Univer has not yet). */
 export function setWorkbookEditable(injector: Injector, unitId: string, editable: boolean): void {

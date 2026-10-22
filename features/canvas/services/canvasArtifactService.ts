@@ -182,7 +182,7 @@ export const canvasArtifactService = {
       // Idempotent on (source_system, source_id, artifact_index), so a retry
       // after a momentary session gap lands the same row — never a duplicate.
       const { data, error } = await runWithSessionRetry(() =>
-        supabase.rpc("cx_canvas_upsert", {
+        supabase.schema("canvas").rpc("cx_canvas_upsert", {
           p_user_id: userId,
           p_message_id: input.messageId,
           p_artifact_index: input.artifactIndex,
@@ -243,7 +243,7 @@ export const canvasArtifactService = {
       const userId = requireUserId();
       // Same idempotent natural key as `upsert` — safe to run twice.
       const { data, error } = await runWithSessionRetry(() =>
-        supabase.rpc("cx_canvas_upsert_source", {
+        supabase.schema("canvas").rpc("cx_canvas_upsert_source", {
           p_user_id: userId,
           p_source_system: input.source.system,
           p_source_id: input.source.id,
@@ -287,7 +287,7 @@ export const canvasArtifactService = {
       // Safe to retry: the RPC resolves the actor before it inserts, so a
       // `not authenticated` refusal wrote nothing and cannot duplicate a version.
       const { data, error } = await runWithSessionRetry(() =>
-        supabase.rpc("cx_canvas_update_version", {
+        supabase.schema("canvas").rpc("cx_canvas_update_version", {
           p_user_id: userId,
           p_original_canvas_id: input.originalCanvasId,
           p_new_message_id: input.newMessageId,
@@ -368,7 +368,7 @@ export const canvasArtifactService = {
    */
   async getByMessage(messageId: string): Promise<CanvasArtifactRow[]> {
     try {
-      const { data, error } = await supabase.rpc("cx_canvas_get_by_message", {
+      const { data, error } = await supabase.schema("canvas").rpc("cx_canvas_get_by_message", {
         p_message_id: messageId,
       });
 
@@ -390,7 +390,7 @@ export const canvasArtifactService = {
     conversationId: string,
   ): Promise<CanvasArtifactRow[]> {
     try {
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.schema("canvas").rpc(
         "cx_canvas_get_conversation_latest",
         {
           p_conversation_id: conversationId,
@@ -519,7 +519,7 @@ export const canvasArtifactService = {
   }): Promise<CanvasArtifactRow | null> {
     try {
       const userId = requireUserId();
-      const { data, error } = await supabase.rpc(
+      const { data, error } = await supabase.schema("canvas").rpc(
         "cx_canvas_save_user_version",
         {
           p_user_id: userId,
@@ -584,7 +584,7 @@ export const canvasArtifactService = {
       // `not authenticated` refusal wrote nothing.
       const { data, error } = await runWithSessionRetry(() =>
         // org-filter: write-target writes into the organization the person is working in; no list reads it
-        supabase.rpc("cx_canvas_create_manual", {
+        supabase.schema("canvas").rpc("cx_canvas_create_manual", {
           p_user_id: userId,
           p_type: input.type,
           p_title: input.title,
@@ -835,7 +835,7 @@ export const canvasArtifactService = {
    * versions" apart from "the read failed" (RC-B12).
    */
   async readVersionHistory(canvasId: string): Promise<CanvasArtifactRow[]> {
-    const { data, error } = await supabase.rpc(
+    const { data, error } = await supabase.schema("canvas").rpc(
       "cx_canvas_get_version_history",
       {
         p_canvas_id: canvasId,

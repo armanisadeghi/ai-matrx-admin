@@ -96,7 +96,7 @@ export async function renamePersonalTableView(actor: TableViewActor, tableId: st
 
 /** Soft-delete one personal table view through the version-guarded archive door. */
 export async function archivePersonalTableView(actor: TableViewActor, tableId: string, view: PersonalTableView, signal: AbortSignal): Promise<void> {
-  const { data, error } = await supabase.rpc("saved_view_archive", {
+  const { data, error } = await supabase.schema("platform").rpc("saved_view_archive", {
     p_surface_key: surfaceKey(tableId), p_id: view.id, p_expected_version: view.version,
   }).abortSignal(signal).setHeader("Authorization", `Bearer ${actor.accessToken}`);
   if (error) throw error;
@@ -231,7 +231,7 @@ export async function updateSurfaceView(input: {
 
 /** Soft delete (`deleted_at`) through the archive door. */
 export async function archiveSurfaceView(input: { surfaceKey: string; id: string; expectedVersion?: number }): Promise<void> {
-  const { data, error } = await supabase.rpc("saved_view_archive", {
+  const { data, error } = await supabase.schema("platform").rpc("saved_view_archive", {
     p_surface_key: input.surfaceKey, p_id: input.id,
     ...(input.expectedVersion !== undefined ? { p_expected_version: input.expectedVersion } : {}),
   });

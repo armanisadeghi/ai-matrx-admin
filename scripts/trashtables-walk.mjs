@@ -93,7 +93,7 @@ async function archiveFromPage(label) {
   await shot(page, `${label}-2-archive-confirm`);
   await page.getByRole("button", { name: "Archive this table" }).first().click({ timeout: 30000 });
   const { v } = await until("table archived", async () => {
-    const { data } = await sb.rpc("trash_list", { p_kinds: ["table"], p_limit: 50, p_offset: 0 });
+    const { data } = await sb.schema("platform").rpc("trash_list", { p_kinds: ["table"], p_limit: 50, p_offset: 0 });
     return (data ?? []).some((r) => r.id === tableId);
   }, 90000);
   await shot(page, `${label}-3-after-archive`);

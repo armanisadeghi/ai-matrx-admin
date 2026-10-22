@@ -57,9 +57,13 @@ export type JsonToUnknown<T> = T;
  * this resolves to `unknown` — which is intentional.
  * Those RPCs have no DB-level schema to enforce.
  */
-export type DbRpcRow<F extends keyof Database["public"]["Functions"]> =
-  JsonToUnknown<
-    Database["public"]["Functions"][F]["Returns"] extends Array<infer Row>
+export type DbRpcRow<
+  F extends keyof Database[S]["Functions"],
+  S extends Exclude<keyof Database, "__InternalSupabase"> = "public",
+> = JsonToUnknown<
+  Database[S]["Functions"][F] extends { Returns: infer R }
+    ? [R] extends [Array<infer Row>]
       ? Row
-      : Database["public"]["Functions"][F]["Returns"]
-  >;
+      : R
+    : never
+>;

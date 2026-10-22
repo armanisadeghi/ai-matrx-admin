@@ -28,7 +28,7 @@ export function resetExcludedColumnsCache(): void {
 
 function loadExcluded(db: SupabaseClient): Promise<ExcludedMap> {
   if (!excludedLoad) {
-    excludedLoad = Promise.resolve(db.rpc("entity_client_excluded_columns"))
+    excludedLoad = Promise.resolve(db.schema("platform").rpc("entity_client_excluded_columns"))
       .then(({ data, error }) => {
         if (error || !Array.isArray(data)) throw new Error(error?.message ?? "no registry rows");
         const map: ExcludedMap = new Map();

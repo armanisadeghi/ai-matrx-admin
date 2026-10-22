@@ -38,7 +38,7 @@ export async function PATCH(
   } | null;
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_update", {
+  const { data, error } = await supabase.schema("iam").rpc("admin_update", {
     target_user_id: userId,
     target_level: body?.level ?? undefined,
     target_permissions: body?.permissions ?? undefined,
@@ -66,7 +66,7 @@ export async function DELETE(
 
   const { userId } = await params;
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("admin_revoke", {
+  const { data, error } = await supabase.schema("iam").rpc("admin_revoke", {
     target_user_id: userId,
   });
 

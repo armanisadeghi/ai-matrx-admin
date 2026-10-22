@@ -200,7 +200,7 @@ export function ReachabilityInspectorClient({
     setContainers(null);
     try {
       if (lookupMode === "contents") {
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.schema("platform").rpc(
           "admin_reachability_contents",
           { p_type: lookupType, p_id: id },
         );
@@ -213,7 +213,7 @@ export function ReachabilityInspectorClient({
           entityId: id,
         });
       } else {
-        const { data, error } = await supabase.rpc(
+        const { data, error } = await supabase.schema("platform").rpc(
           "admin_reachability_containers",
           { p_type: lookupType, p_id: id },
         );

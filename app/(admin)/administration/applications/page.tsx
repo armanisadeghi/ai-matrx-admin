@@ -21,7 +21,7 @@ export default async function ApplicationsOverviewPage() {
       .is("deleted_at", null)
       .order("app")
       .order("kind"),
-    supabase.rpc("admin_list_app_instances"),
+    supabase.schema("ops").rpc("admin_list_app_instances"),
   ]);
 
   if (configResult.error) {

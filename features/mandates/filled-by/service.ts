@@ -52,7 +52,7 @@ export async function attachFilledMandates<TRow>(
   if (rows.length === 0) return [];
   const ids = rows.map(idOf);
 
-  const { data, error } = await supabase.rpc("mnd_filled_by", {
+  const { data, error } = await supabase.schema("mandate").rpc("mnd_filled_by", {
     p_holder_type: holderType,
     p_holder_ids: ids,
     p_resolve_org_id: orgFilterId ?? undefined,

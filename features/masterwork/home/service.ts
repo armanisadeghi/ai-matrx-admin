@@ -425,7 +425,7 @@ async function fetchImprovementSummaries(): Promise<{
   summaries: Map<string, ImprovementSummaryRow>;
   error: string | null;
 }> {
-  const { data, error } = await supabase.rpc("masterwork_improvement_summary", {
+  const { data, error } = await supabase.schema("ai").rpc("masterwork_improvement_summary", {
     p_mandate_keys: [...MASTERWORK_MANDATE_KEYS],
   });
   if (error) {

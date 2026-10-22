@@ -78,7 +78,7 @@ export function transcriptOrgCounter(args: {
       p_search: undefined,
       p_deep: false,
       p_filters: args.filters,
-    }, { order: ["scope", "narrow_id"] });
+    }, { schema: "context", order: ["scope", "narrow_id"] });
     if (error) throw new Error(error.message);
     for (const row of (data ?? []) as { scope: string; narrow_id: string | null; total: number | string }[]) {
       if (row.scope === "orgs" && row.narrow_id) out.set(row.narrow_id, Number(row.total ?? 0));

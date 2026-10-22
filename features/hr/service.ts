@@ -242,7 +242,7 @@ async function callHrRaw(
   let data: unknown = null;
   let error: { code?: string; message?: string } | null = null;
   try {
-    ({ data, error } = (await supabase.rpc(fn as never, args as never)) as {
+    ({ data, error } = (await supabase.schema("hr").rpc(fn as never, args as never)) as {
       data: unknown;
       error: { code?: string; message?: string } | null;
     });

@@ -52,7 +52,7 @@ export async function fetchShapeScopeCounts(
     p_org_id: listOrgParam(query),
     p_deep: query.deep,
     p_filters: filtersJson(query),
-  }, { order: ["scope", "narrow_id"] });
+  }, { schema: "agent", order: ["scope", "narrow_id"] });
   if (error) throw pgError(error);
 
   const counts = scopeCountsFromRows(data ?? [], "Unnamed organization");

@@ -18,7 +18,7 @@ export default async function RelationshipRulesPage({
   const { edit } = await searchParams;
   const supabase = await createClient();
 
-  const { data: rules, error } = await supabase.rpc("admin_relationship_rules");
+  const { data: rules, error } = await supabase.schema("platform").rpc("admin_relationship_rules");
   if (error) {
     throw new Error(`Association rules failed to load: ${error.message}`);
   }

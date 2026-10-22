@@ -18,7 +18,7 @@ import { pgErrorToError } from "@ai-matrx/data";
 import type { Database } from "@/types/database.types";
 
 export type OrganizationMemberRow =
-  Database["public"]["Functions"]["get_organization_members_with_users"]["Returns"][number];
+  Database["iam"]["Functions"]["get_organization_members_with_users"]["Returns"][number];
 
 /** How long a settled roster is kept: for the tab (a change made here forgets it). */
 export const MEMBER_ROWS_TTL_MS = Number.POSITIVE_INFINITY;
@@ -31,7 +31,7 @@ interface CacheEntry {
 
 const cache = new Map<string, CacheEntry>();
 
-type RosterClient = Pick<ReturnType<typeof createClient>, "rpc">;
+type RosterClient = Pick<ReturnType<typeof createClient>, "schema">;
 
 export function readOrganizationMemberRows(
   orgId: string,
@@ -51,7 +51,7 @@ export function readOrganizationMemberRows(
   const db = client ?? createClient();
   const entry: CacheEntry = { at: now, settled: false, rows: Promise.resolve([]) };
   const rows = (async () => {
-    const { data, error } = await db.rpc("get_organization_members_with_users", {
+    const { data, error } = await db.schema("iam").rpc("get_organization_members_with_users", {
       p_org_id: orgId,
     });
     if (error) throw pgErrorToError(error);

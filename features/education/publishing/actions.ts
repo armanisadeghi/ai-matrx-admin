@@ -29,7 +29,7 @@ export async function saveLearnDocAction(
 ): Promise<LearnDocRecord> {
   await requireSuperAdmin();
   const sb = await createClient();
-  const { data, error } = await sb.rpc("edu_learn_doc_upsert", {
+  const { data, error } = await sb.schema("education").rpc("edu_learn_doc_upsert", {
     p_id: input.id ?? undefined,
     p_slug: input.slug,
     p_title: input.title,
@@ -75,7 +75,7 @@ export async function deleteLearnDocAction(id: string): Promise<void> {
 export async function listLearnDocsAdminAction(): Promise<LearnDocRecord[]> {
   await requireSuperAdmin();
   const sb = await createClient();
-  const { data, error } = await sb.rpc("edu_learn_doc_admin_list");
+  const { data, error } = await sb.schema("education").rpc("edu_learn_doc_admin_list");
   if (error) throw new Error(`List failed: ${error.message}`);
   return ((data ?? []) as LearnDocRow[]).map(mapRowToLearnDoc);
 }

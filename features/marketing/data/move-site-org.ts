@@ -59,7 +59,7 @@ export async function previewSiteOrganizationMove(
   siteId: string,
 ): Promise<SiteMovePreview> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("preview_site_organization_move", {
+  const { data, error } = await supabase.schema("platform").rpc("preview_site_organization_move", {
     p_site_id: siteId,
   });
   if (error) throw operationFailed("preview this site move", error);
@@ -84,7 +84,7 @@ export async function moveSiteToOrganization(
   input: MoveSiteInput,
 ): Promise<SiteMoveResult> {
   const supabase = createClient();
-  const { data, error } = await supabase.rpc("move_site_to_organization", {
+  const { data, error } = await supabase.schema("platform").rpc("move_site_to_organization", {
     p_site_id: input.siteId,
     p_target_organization_id: input.targetOrganizationId,
     // CONVERGE: C-6 — NOT a client-side CAS: `p_expected_version` is handed to a

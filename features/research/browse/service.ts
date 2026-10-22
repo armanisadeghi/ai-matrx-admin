@@ -80,7 +80,7 @@ export const researchTopicListService: EntityListService<ResearchTopicListRow> =
       p_org_id: listOrgParam(query),
       p_filters: query.filters,
       p_archived: query.archived,
-    }, { order: ["scope", "narrow_id"] });
+    }, { schema: "context", order: ["scope", "narrow_id"] });
     if (error) throw pgError(error);
     const counts = scopeCountsFromRows(data ?? [], "Organization");
     counts.narrow.orgs?.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
@@ -93,7 +93,7 @@ export const researchTopicListService: EntityListService<ResearchTopicListRow> =
       p_org_id: listOrgParam(query),
       p_search: query.search.trim() || undefined,
       p_archived: query.archived,
-    }, { order: ["kind", "value"] });
+    }, { schema: "research", order: ["kind", "value"] });
     if (error) throw pgError(error);
     const byKind: EntityFacets["byKind"] = {};
     for (const row of data ?? []) {

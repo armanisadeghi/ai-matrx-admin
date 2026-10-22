@@ -92,6 +92,8 @@ someone fixes it.
 
 Do not pass `parents` to `RecordPageHeader` or a `trail` literal to `CrumbTrailHeader` (`pnpm check:derived-breadcrumbs`). A list/module header mounts `<DerivedBreadcrumb />`; a record page passes only its record (`record={{ name }}`, or declare it with `useDeclareCurrentRecord({ token, id })` and the key, name column or short id is used). A wrong word for one route goes in `features/shell/breadcrumbs/trail-overrides.ts`. A layout that knows level names (Scopes) passes `records` to `useDerivedTrail`, never a trail.
 
+**Every crumb is a door; "…" holds every action.** Before shipping any header, read `features/shell/FEATURE.md` § EVERY CRUMB IS A DOOR and run `pnpm check:crumb-doors <your files>` — done = 0 new items: every crumb above the page links to a real page, a record passes its siblings, every header button sits in `actions`.
+
 ## Templates — reach for these FIRST
 
 Two drop-in templates in `features/shell/components/header/templates/` cover almost every route; consuming one is the default, hand-rolling is the exception:
@@ -130,6 +132,7 @@ Per-breakpoint content: `<PageHeader desktop={…} mobile={…} />`. Mobile neve
 
 ```bash
 pnpm check:page-headers            # faux-header markers (KNOWN NARROW — misses bg-background/* bars)
+pnpm check:crumb-doors             # dead crumbs, records with no sibling door, buttons outside `actions`, pages with no trail
 pnpm check:scroll-chain:strict     # all route pages/layouts + cross-component bounded-height chains
 grep -rln "calc(100dvh\|calc(100vh\|h-screen\|h-page" app/\(core\) --include="*.tsx"
 grep -rLn "PageHeader" <route dir>  # route family never injecting the header

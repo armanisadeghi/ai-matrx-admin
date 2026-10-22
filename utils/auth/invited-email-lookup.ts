@@ -27,7 +27,7 @@ export async function lookupInvitedEmail(
   if (!token) return null;
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("inv_peek_invited_email", {
+    const { data, error } = await supabase.schema("iam").rpc("inv_peek_invited_email", {
       p_token: token,
     });
     if (error) {
