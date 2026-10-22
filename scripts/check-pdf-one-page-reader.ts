@@ -3,14 +3,14 @@
  * check:pdf-one-page-reader — PDF PAGES ARE READ THROUGH ONE READER (PDF-PLAN U4).
  *
  * `files.pages` is the one authoritative PDF page map; the view
- * `public.pdf_unified_pages` (driven from it) is the only way PDF surfaces read
- * pages, and `features/pdf/data/pdfPages.ts` is the only module that queries
- * that view. A PDF surface that reads `docproc.processed_document_pages`
+ * `public.pdf_unified_pages` (driven from it), served by the RPC
+ * `pdf.pdf_pages`, is the only way PDF surfaces read pages, and
+ * `features/pdf/data/pdfPages.ts` is the only module that calls it. A PDF surface that reads `docproc.processed_document_pages`
  * directly misses unextracted pages, rotation, exclusion and current order.
  *
  * WHAT THIS FLAGS, under the scanned dirs (tests and `.d.ts` skipped): any
- * `.from("processed_document_pages")` or `.from("pdf_unified_pages")` in a file
- * that is not on ALLOWED below. Every allowed entry is printed on every run.
+ * `.from("processed_document_pages")`, `.from("pdf_unified_pages")` or
+ * `.rpc("pdf_pages")` in a file that is not on ALLOWED below. Every allowed entry is printed on every run.
  *
  *   pnpm check:pdf-one-page-reader
  *   pnpm check:pdf-one-page-reader --self-test   # proves the matcher flags and passes
@@ -26,8 +26,8 @@ const SKIP_DIRS = new Set(["node_modules", ".next", "__tests__", "__snapshots__"
 const ALLOWED: Array<{ prefix: string; tables: ReadonlySet<string>; why: string }> = [
   {
     prefix: "features/pdf/data/pdfPages.ts",
-    tables: new Set(["pdf_unified_pages"]),
-    why: "THE PDF page reader",
+    tables: new Set(["pdf_pages"]),
+    why: "THE PDF page reader (rpc pdf.pdf_pages)",
   },
   {
     prefix: "features/page-extraction/",
@@ -46,12 +46,12 @@ const ALLOWED: Array<{ prefix: string; tables: ReadonlySet<string>; why: string 
   },
 ];
 
-const FROM_RE = /\.from\(\s*["'](processed_document_pages|pdf_unified_pages)["']\s*\)/g;
+const FROM_RE = /\.(?:from\(\s*["'](processed_document_pages|pdf_unified_pages)["']\s*\)|rpc\(\s*["'](pdf_pages)["'])/g;
 
 export function findingsFor(path: string, text: string): string[] {
   const out: string[] = [];
   for (const m of text.matchAll(FROM_RE)) {
-    const table = m[1];
+    const table = m[1] ?? m[2];
     const ok = ALLOWED.some((a) => path.startsWith(a.prefix) && a.tables.has(table));
     if (!ok) {
       const line = text.slice(0, m.index ?? 0).split("\n").length;
@@ -82,7 +82,9 @@ function selfTest(): number {
     ["features/pdf/scanner/processing.ts", `db.from("processed_document_pages").select("id")`, 1],
     ["features/pdf-extractor/x.ts", `supabase.from('pdf_unified_pages').select()`, 1],
     ["features/files/y.tsx", `docprocDb(s).from( "processed_document_pages" )`, 1],
-    ["features/pdf/data/pdfPages.ts", `supabase.from("pdf_unified_pages").select()`, 0],
+    ["features/pdf/data/pdfPages.ts", `pdfDb(supabase).rpc("pdf_pages", args)`, 0],
+    ["features/pdf/data/pdfPages.ts", `supabase.from("pdf_unified_pages").select()`, 1],
+    ["features/files/z.ts", `pdfDb(supabase).rpc('pdf_pages', { p_file_id })`, 1],
     ["features/pdf/data/pdfPages.ts", `db.from("processed_document_pages")`, 1],
     ["features/page-extraction/hooks/useChunkPreview.ts", `db.from("processed_document_pages")`, 0],
     ["features/sources/api/processedDocumentPages.ts", `db.from("processed_document_pages")`, 0],
@@ -108,7 +110,7 @@ function main(): number {
   const findings: string[] = [];
   for (const f of files) {
     const text = readFileSync(f, "utf8");
-    if (!text.includes("processed_document_pages") && !text.includes("pdf_unified_pages")) continue;
+    if (!text.includes("processed_document_pages") && !text.includes("pdf_unified_pages") && !text.includes("pdf_pages")) continue;
     findings.push(...findingsFor(relative(ROOT, f), text));
   }
   for (const a of ALLOWED) console.log(`allowed  ${a.prefix}  (${[...a.tables].join(", ")}): ${a.why}`);

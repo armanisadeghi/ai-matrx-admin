@@ -104697,7 +104697,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      pdf_pages: {
+        Args: { p_file_id?: string; p_processed_document_id?: string }
+        Returns: Database["public"]["Views"]["pdf_unified_pages"]["Row"][]
+        SetofOptions: {
+          from: "*"
+          to: "pdf_unified_pages"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       [_ in never]: never

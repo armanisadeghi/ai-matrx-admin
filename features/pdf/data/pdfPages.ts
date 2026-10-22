@@ -1,7 +1,9 @@
 /**
- * THE PDF page reader (PDF-PLAN U4). Every PDF surface reads pages here, from
- * the view `public.pdf_unified_pages`, never from `docproc.processed_document_pages`
- * directly (guard: `pnpm check:pdf-one-page-reader`).
+ * THE PDF page reader (PDF-PLAN U4). Every PDF surface reads pages here, through
+ * `pdf.pdf_pages(p_file_id | p_processed_document_id)` — the rows of the view
+ * `public.pdf_unified_pages` behind ONE access check (the view read directly pays
+ * files.pages row security per row: 1.7-14 s measured) — never from
+ * `docproc.processed_document_pages` directly (guard: `pnpm check:pdf-one-page-reader`).
  *
  * The view is driven from `files.pages` — the one authoritative page map — so a
  * PDF read by file shows every live page in its current order, rotation and
@@ -15,6 +17,7 @@
 
 import { supabase } from "@/utils/supabase/client";
 import { docprocDb } from "@/utils/supabase/docprocDb";
+import { pdfDb } from "@/utils/supabase/pdfDb";
 import type { Database } from "@/types/database.types";
 
 type ViewRow = Database["public"]["Views"]["pdf_unified_pages"]["Row"];
@@ -88,13 +91,17 @@ function rowFromView(row: Partial<ViewRow>, i: number): PdfPageRow {
   };
 }
 
-function keyColumn(key: PdfPagesKey): ["file_id" | "processed_document_id", string] {
-  return "fileId" in key ? ["file_id", key.fileId] : ["processed_document_id", key.processedDocumentId];
+function rpcArgs(key: PdfPagesKey): { p_file_id: string } | { p_processed_document_id: string } {
+  return "fileId" in key ? { p_file_id: key.fileId } : { p_processed_document_id: key.processedDocumentId };
 }
 
 function keyString(key: PdfPagesKey): string {
-  const [col, id] = keyColumn(key);
-  return `${col}:${id}`;
+  return "fileId" in key ? `file_id:${key.fileId}` : `processed_document_id:${key.processedDocumentId}`;
+}
+
+/** The one call: rows come back ordered by page_index. */
+function pagesRpc(key: PdfPagesKey, options?: { count: "exact"; head: true }) {
+  return pdfDb(supabase).rpc("pdf_pages", rpcArgs(key), options);
 }
 
 /** A soft-deleted or archived processed document's pages never render. */
@@ -127,12 +134,7 @@ export async function fetchPdfPages(key: PdfPagesKey, userId: string | null): Pr
     if ("processedDocumentId" in key && !(await processedDocumentIsLive(key.processedDocumentId))) {
       return [];
     }
-    const [col, id] = keyColumn(key);
-    const { data, error } = await supabase
-      .from("pdf_unified_pages")
-      .select(COLUMNS)
-      .eq(col, id)
-      .order("page_index", { ascending: true });
+    const { data, error } = await pagesRpc(key).select(COLUMNS);
     if (error) throw error;
     return ((data ?? []) as Partial<ViewRow>[]).map(rowFromView);
   })()
@@ -161,8 +163,7 @@ export function invalidatePdfPages(key?: PdfPagesKey): void {
 
 /** Page count for a key; `cleanedOnly` counts pages the cleanup has written. */
 export async function countPdfPages(key: PdfPagesKey, opts: { cleanedOnly?: boolean } = {}): Promise<number> {
-  const [col, id] = keyColumn(key);
-  let query = supabase.from("pdf_unified_pages").select("file_page_id", { count: "exact", head: true }).eq(col, id);
+  let query = pagesRpc(key, { count: "exact", head: true }).select("file_page_id");
   // cleaned_text is NOT NULL (default ''): cleaned_char_count is 0 until the cleanup writes the page.
   if (opts.cleanedOnly) query = query.gt("cleaned_char_count", 0);
   const { count, error } = await query;
@@ -172,14 +173,7 @@ export async function countPdfPages(key: PdfPagesKey, opts: { cleanedOnly?: bool
 
 /** First page's extracted text, or null when there is none yet. */
 export async function fetchFirstPdfPageText(key: PdfPagesKey): Promise<string | null> {
-  const [col, id] = keyColumn(key);
-  const { data, error } = await supabase
-    .from("pdf_unified_pages")
-    .select("raw_text")
-    .eq(col, id)
-    .order("page_index", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await pagesRpc(key).select("raw_text").limit(1).maybeSingle();
   if (error) throw error;
   return data?.raw_text ?? null;
 }
