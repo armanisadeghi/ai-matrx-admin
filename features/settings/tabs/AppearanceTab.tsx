@@ -1,10 +1,10 @@
 "use client";
 
 import { LayoutTemplate, Palette, Sun } from "lucide-react";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { useActiveSettingsTabId } from "../components/SettingsTabHost";

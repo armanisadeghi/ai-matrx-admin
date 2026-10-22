@@ -13,6 +13,13 @@
  * an agent-turn door outside the execution system. Each allowed exception sits
  * in ALLOWED with its reason; an entry that no longer matches fails too.
  *
+ * Second rule — EVERY DATA PANE NAMES ITS TIER (Arman, 2026-10-22: "the exact data
+ * we got, not what we got and then played with"). In the Watch AI Data section
+ * (`features/ai-watch/data/`) a value is shown only through `<DataPane tier=…>`
+ * with a literal tier (raw | sent | passed | display), and no file there renders a
+ * value itself (`<pre>`, `JSON.stringify` in markup) — DataPane.tsx is the one
+ * place that does, and it must print the tier label.
+ *
  *   node scripts/check-ai-watch.mjs            # scan
  *   node scripts/check-ai-watch.mjs --self-test
  */
@@ -93,6 +100,43 @@ export function findRunDoorLiterals(src) {
   return hits;
 }
 
+/** The Data section: where a value on screen must say which tier it is. */
+const DATA_DIR = "features/ai-watch/data";
+const DATA_PANE_FILE = "DataPane.tsx";
+const TIER_VALUES = new Set(["raw", "sent", "passed", "display"]);
+
+/** Findings for one Data-section file: a pane without a literal tier, or a value rendered outside a pane. */
+export function findUntieredData(src, fileName) {
+  const code = stripComments(src);
+  const findings = [];
+  if (fileName === DATA_PANE_FILE) {
+    if (!/DATA_TIERS\[tier\]/.test(code)) findings.push("DataPane does not print its tier label (DATA_TIERS[tier])");
+    return findings;
+  }
+  const re = /<DataPane\b([^>]*?)\/?>/gs;
+  let m;
+  while ((m = re.exec(code))) {
+    const tier = /\btier="([a-z]+)"/.exec(m[1]);
+    if (!tier) findings.push("a <DataPane> without a literal tier=\"raw|sent|passed|display\"");
+    else if (!TIER_VALUES.has(tier[1])) findings.push(`a <DataPane> with an unknown tier "${tier[1]}"`);
+  }
+  if (/<pre\b/.test(code)) findings.push("renders a value in <pre> outside a DataPane");
+  if (/\{\s*JSON\.stringify\(/.test(code)) findings.push("renders JSON.stringify(...) in markup outside a DataPane");
+  return findings;
+}
+
+function scanData() {
+  const dir = path.join(ROOT, DATA_DIR);
+  if (!fs.existsSync(dir)) return [`${DATA_DIR} is missing — the Data section's tier guard has nothing to check`];
+  const findings = [];
+  for (const name of fs.readdirSync(dir).filter((n) => n.endsWith(".tsx"))) {
+    for (const f of findUntieredData(fs.readFileSync(path.join(dir, name), "utf8"), name)) {
+      findings.push(`${DATA_DIR}/${name}: ${f}`);
+    }
+  }
+  return findings;
+}
+
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -130,6 +174,7 @@ function scan() {
   for (const k of Object.keys(ALLOWED)) {
     if (!usedAllow.has(k)) findings.push(`ALLOWED entry no longer matches anything — remove it: ${k}`);
   }
+  findings.push(...scanData());
   return { files: files.length, findings };
 }
 
@@ -138,7 +183,19 @@ function selfTest() {
   const bad2 = "await requestRaw(`/ai/conversations/${id}`, { method: 'POST' });";
   const good = `dispatch(executeInstance({ conversationId })); // calls /ai/agents/{id} inside`;
   const other = `callApi({ path: "/ai/models", method: "GET" })`;
+  const untiered = `<DataPane title="Raw answer" size="3 chars" value={x} />`;
+  const tiered = `<DataPane tier="raw" title="Raw answer" size="3 chars" value={x} />`;
+  const wrongTier = `<DataPane tier="pretty" title="x" size="1" />`;
+  const bare = `return <pre>{JSON.stringify(value)}</pre>;`;
+  const dataOk =
+    findUntieredData(untiered, "Card.tsx").length === 1 &&
+    findUntieredData(tiered, "Card.tsx").length === 0 &&
+    findUntieredData(wrongTier, "Card.tsx").length === 1 &&
+    findUntieredData(bare, "Card.tsx").length === 2 &&
+    findUntieredData("<pre>{text}</pre>", "DataPane.tsx").length === 1 &&
+    findUntieredData("<span>{DATA_TIERS[tier]}</span><pre>{text}</pre>", "DataPane.tsx").length === 0;
   const ok =
+    dataOk &&
     findRunDoorLiterals(bad).length === 1 &&
     findRunDoorLiterals(bad2).length === 1 &&
     findRunDoorLiterals(good).length === 0 &&
@@ -147,7 +204,7 @@ function selfTest() {
     console.error("check:ai-watch self-test FAILED");
     process.exit(1);
   }
-  console.log("check:ai-watch self-test OK (flags direct run doors, ignores comments and non-run paths)");
+  console.log("check:ai-watch self-test OK (flags direct run doors and untiered data panes, ignores comments and non-run paths)");
 }
 
 if (process.argv.includes("--self-test")) {
@@ -157,8 +214,9 @@ if (process.argv.includes("--self-test")) {
   if (findings.length) {
     console.error(`check:ai-watch — ${findings.length} finding(s) over ${files} files:`);
     for (const f of findings) console.error(`  ${f}`);
-    console.error("Start runs through the execution system (or adoptForeignStream) so Watch AI can see them.");
+    console.error("Start runs through the execution system (or adoptForeignStream) so Watch AI can see them;");
+    console.error("show every Watch AI data value through <DataPane tier=\"raw|sent|passed|display\">.");
     process.exit(1);
   }
-  console.log(`check:ai-watch OK — ${files} files, every AI run starts on the watchable path.`);
+  console.log(`check:ai-watch OK — ${files} files, every AI run starts on the watchable path, every data pane names its tier.`);
 }

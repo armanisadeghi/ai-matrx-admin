@@ -14,8 +14,8 @@
 import { BarChart3, Building2, Gauge, UserRound } from "lucide-react";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 import { PlanUsagePanel } from "@/features/entitlements/components/PlanUsagePanel";
 import { SpendBudgetCard } from "@/features/entitlements/guardrails/SpendBudgetCard";
 import { MyUsageCard } from "@/features/entitlements/usage-gate/MyUsageCard";

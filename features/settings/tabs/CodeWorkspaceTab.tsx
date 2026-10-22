@@ -3,13 +3,13 @@
 import { displayId } from "@ai-matrx/design-system";
 import { useEffect, useMemo } from "react";
 import { Code, Filter, History, Layers } from "lucide-react";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsMultiSelect } from "@/components/official/settings/primitives/SettingsMultiSelect";
-import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsMultiSelect } from "@ai-matrx/design-system/settings";
+import { SettingsNumberInput } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSegmented } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {

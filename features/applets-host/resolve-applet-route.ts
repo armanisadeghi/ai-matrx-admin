@@ -17,16 +17,17 @@ import { DEFINITION_COLUMNS } from "@ai-matrx/applets/platform";
 
 import { readAppletIntro } from "@/features/marketing/applets/publicApplets.server";
 import type { AppletIntro } from "@/features/marketing/applets/types";
-import type { Database } from "@/types/database.types";
+import { appletHasContent } from "@/features/applets/types";
+import type { Database, Json } from "@/types/database.types";
 import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 import { createAdminClient } from "@/utils/supabase/adminClient";
 import { createClient } from "@/utils/supabase/server";
 
 /** The Applet `slug` (or, UUID-shaped, its id) names for THIS viewer (their own server client: row security decides). */
-export const resolveAppletRoute = cache(async (slug: string): Promise<{ id: string; slug: string; name: string; entry: string | null; created_by: string | null } | null> => {
+export const resolveAppletRoute = cache(async (slug: string): Promise<{ id: string; slug: string; name: string; entry: string | null; layout_config: Json | null; created_by: string | null } | null> => {
   const supabase = await createClient();
   const read = async (column: "slug" | "id") => {
-    const { data, error } = await supabase.schema("app").from("definition").select("id, slug, name, entry, created_by").eq(column, slug).is("deleted_at", null).maybeSingle();
+    const { data, error } = await supabase.schema("app").from("definition").select("id, slug, name, entry, layout_config, created_by").eq(column, slug).is("deleted_at", null).maybeSingle();
     if (error) throw new Error(`Could not read the Applet "${slug}": ${error.message}`);
     return data ?? null;
   };
@@ -106,7 +107,8 @@ export async function resolveAppletView(key: string, signedIn: boolean): Promise
   if (signedIn) {
     const applet = await resolveAppletRoute(key);
     if (!applet) return { kind: "missing" };
-    return applet.entry ? { kind: "run", id: applet.id, slug: applet.slug, guest: null } : { kind: "unbuilt", id: applet.id };
+    // Code or a declared stock layout runs; only a build with neither opens as its build.
+    return appletHasContent(applet) ? { kind: "run", id: applet.id, slug: applet.slug, guest: null } : { kind: "unbuilt", id: applet.id };
   }
   const guest = await readPublicApplet(key);
   if (guest) return { kind: "run", id: guest.id, slug: guest.slug, guest };

@@ -24,7 +24,7 @@ import { fromRow, type SavedRow } from "./fromSaved";
 import { focusFromEvidence, focusFromFact, type Answer, type BrandFact, type FocusItem } from "./queue";
 import { PROMOTED_TYPES, undoPromotion, type PromotedFindingType } from "../promote";
 import type { Persisted } from "./persist";
-import { logosLabel } from "./fold";
+import { logoLabel } from "./fold";
 
 export interface SavedAnswer {
   id: string;
@@ -155,8 +155,8 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
     } else {
       item = focusFromEvidence(one.item, kinds, ctx);
       out.items.push(one.item);
-      // A logo card settled several pictures: its copies come back with it, so the label and the "already answered"
-      // pictures match the live session's (MKT-139, MKT-140).
+      // A logo card settled one picture found at several addresses: its copies come back with it, so the "already
+      // answered" pictures match the live session's (MKT-139, MKT-140).
       if (item?.kind === "logo") {
         const copies = (copyRowsOf.get(r.id) ?? [])
           .map((c) => fromRow(c as SavedRow))
@@ -182,7 +182,7 @@ export async function loadSavedAnswers(brand: MarketingBrand, kinds: BrandRelati
       relationLabel: relationKey ? (kinds.find((k) => k.key === relationKey)?.label ?? relationKey) : null,
       value:
         item.kind === "logo"
-          ? logosLabel(item)
+          ? logoLabel(item)
           : item.kind === "account" && item.evidence?.handle
             ? item.evidence.handle.startsWith("@")
               ? item.evidence.handle

@@ -3,10 +3,10 @@
 import { Activity, Megaphone } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { PreferencesLoadGate } from "@/components/read-state/PreferencesLoadGate";
 
 export default function SystemTab() {

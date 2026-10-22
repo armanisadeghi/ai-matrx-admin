@@ -2,7 +2,7 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-10-13`
+**Last updated:** `2026-10-22`
 
 Product truth and the cross-repo contract live ONLY in
 `common-docs/systems/architecture/execution-runtime/AI-WATCH.md`. This file is the local map.
@@ -67,6 +67,24 @@ that ran), `mandate.definition.version` (changed-since-run hint); runs lists via
 values (provision leak fix, stage 2). The host wiring (`providers/ChatHostAdapter.tsx` `aiWatch: selectCanWatchAi`)
 lands with the package adoption.
 
+**Data — the three tiers (2026-10-22)** — `data/`: every step's exact data in labelled panes
+(`DataPane`, the ONE place a value is shown; tier + size in every title). Per tool call of the run
+(`RunDataSection`, `chat.tool_call` by `user_request_id`, read direct): **RAW** from the server's
+capture index `metadata.raw_capture` (inline bytes; a stored `run-captures` `.raw.gz` fetched on first
+open in the row's organization and gunzipped in the browser — `features/files/utils/gunzip.ts` — shown
+inline as JSON laid out or exact bytes, a very large answer showing its first `RAW_PREVIEW_CHARS` with
+the count and "Show all"; or "Not kept — why"; a row recorded before capture says so), a web read's **page as
+fetched** (`pages[].processed_document_id` → `docproc.processed_documents.original_file_id`), the
+**cut trail** (`cutLine`), **SENT TO MODEL** = the `tool_result` block with the call id in every later
+iteration's provider request (`sentToModel`: Anthropic, OpenAI Responses, chat-completions, Gemini),
+and **DISPLAY** = the tool's own renderer (`ToolCallVisualization` over the stored row). Non-AI
+workflow steps (`workflow.node_outcome` of the page's runs, `fetchRunSteps`) join the rail beside the
+AI calls (`rail-steps.ts`); a step opens `StepDataView`: RAW (its outside answers, e.g. Smart Add's
+ScrapeCreators bodies), **PASSED ON** (its output, value refs resolved) and DISPLAY
+(`AnswerValueView`). Pure rules: `data/raw-data.ts`. Who sees it: whoever can open the window — no
+added gating. The Goal section shows the output kind's schema from the kind registry
+(`useKindSchema`), the agent version's schema only when the run has no output kind.
+
 **Identity source** — `@ai-matrx/chat` ≥ 0.8.73: `ActiveRequest.serverRequestId` (header or the
 stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run` frame),
 `selectWatchableRuns` / `selectLiveWatchableRuns`.
@@ -78,6 +96,12 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 - `__tests__/watch-run-truth.test.ts` — recorded `context_analysis` frames of two turns of one
   conversation.
 - `__tests__/split-provider-request.test.ts` — every provider request shape.
+- `__tests__/raw-data-tiers.test.ts` — a recorded web read (`chat.tool_call` b8393cef) and its next
+  request's `tool_result`: SENT per provider shape, the capture index, the cut trail, page originals,
+  rail steps. Guard: `pnpm check:ai-watch` also fails a Data pane without a literal tier.
+- `__tests__/raw-stored-answer-decodes.test.ts` — the recorded ScrapeCreators Instagram profile answer
+  (151 KB) gzipped as the sink files it: decodes to the exact bytes, lays out as JSON, says how much of
+  a large answer is shown and expands to all of it.
 - `__tests__/continuation-turn-frame.test.ts` — the recorded `applets.build` fix round's frame.
 - Package: `every-request-creation-binds-its-identity.test.ts`, `watch-ai-identity-is-per-request.test.ts`
   (aidream `apps/shared/chat`); server: `aidream/services/mandates/tests/test_watch_frame.py`,
@@ -86,6 +110,15 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
 ---
 
 ## Change Log
+
+- **2026-10-22 (c)** — A stored raw answer (over 16 KB, kept as `.raw.gz`) shows decoded inline
+  instead of a door to a binary file preview; large answers show a counted first part and "Show all".
+
+- **2026-10-22 (b)** — The Watch AI and Workflow run windows are `ephemeral` (never restored on reload; the page's run ids still survive in `sessionStorage`). `callAgentStart` / `callConversationContinue` / `callConversationForkAndRun` (`lib/api/run-helpers.ts`) now adopt their stream, so the reply composer, debrief and assignment demo are watchable (`check:ai-watch` green).
+- **2026-10-22** — Raw data (phase 1): the Data section (RAW · SENT TO MODEL · DISPLAY per tool call,
+  RAW · PASSED ON · DISPLAY per non-AI workflow step, sizes and the cut trail), non-AI steps in the
+  rail, web reads link their stored page, the output kind schema comes from the kind registry. The
+  server snapshot door serves any run to an AI Watch viewer (no conversation-access check).
 
 - **2026-10-14 (c)** — ONE window: three Watch AI windows piled up on a new round (two per-call
   windows restored from the address, the front one an old classifier call). Every door now opens

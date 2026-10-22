@@ -2,7 +2,7 @@
 
 /**
  * The Applet record's parts, edited as the record (CONTRACTS §8):
- *   pages    [{ path, title, file }]
+ *   pages    [{ path, title, file, space? }] — a page draws a file, or shows a Space page (`space`)
  *   mandates [{ alias, key }]          — jobs, picked from the Applet catalogue's job list
  *   sources  [{ alias, table_id, organization_id } | { alias, entity }] — from the catalog
  *
@@ -18,7 +18,8 @@
 
 import { useEffect, useState } from "react";
 import { ProInput } from "@/components/official/ProInput";
-import { Plus, Trash2 } from "lucide-react";
+import { FileText, Plus, Trash2 } from "lucide-react";
+import { SpacePagePicker } from "@/features/spaces/embed/SpaceWidget";
 import {
   Button,
   EmptyState,
@@ -208,17 +209,27 @@ export function AppletPagesEditor({ app }: { app: AppletDefinition }) {
                 onChange={(e) => set(i, { title: e.target.value })}
                 wrapperClassName="min-w-32 flex-1"
               />
-              <Select
-                aria-label="File"
-                value={page.file}
-                options={
-                  fileOptions.some((o) => o.value === page.file) || !page.file
-                    ? fileOptions
-                    : [...fileOptions, { value: page.file, label: `${fileLabel(page.file, saved)} (missing)` }]
-                }
-                onValueChange={(file) => set(i, { file })}
-                className="w-44"
-              />
+              {page.space !== undefined ? (
+                // A Space page shown as this page: the Space look and editing kept (`AppletPage.space`).
+                <div className="w-44" data-applet-page-space={page.space || ""}>
+                  <SpacePagePicker
+                    value={page.space}
+                    onChange={(space, title) => set(i, { space, file: "", ...(page.title === "Space page" && title ? { title } : {}) })}
+                  />
+                </div>
+              ) : (
+                <Select
+                  aria-label="File"
+                  value={page.file}
+                  options={
+                    fileOptions.some((o) => o.value === page.file) || !page.file
+                      ? fileOptions
+                      : [...fileOptions, { value: page.file, label: `${fileLabel(page.file, saved)} (missing)` }]
+                  }
+                  onValueChange={(file) => set(i, { file })}
+                  className="w-44"
+                />
+              )}
               <Button
                 variant="quiet"
                 icon={<Trash2 />}
@@ -230,6 +241,7 @@ export function AppletPagesEditor({ app }: { app: AppletDefinition }) {
         </RowGroup>
       )}
       <div className="flex justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
           icon={<Plus />}
@@ -240,6 +252,15 @@ export function AppletPagesEditor({ app }: { app: AppletDefinition }) {
         >
           Add page
         </Button>
+        <Button
+          variant="outline"
+          icon={<FileText />}
+          onClick={() => setPages((prev) => [...prev, { path: "/space-page", title: "Space page", file: "", space: "" }])}
+          data-applet-add-space-page=""
+        >
+          Add a Space page
+        </Button>
+        </div>
         <SaveBar
           dirty={!same(pages, saved)}
           busy={busy}
@@ -252,12 +273,18 @@ export function AppletPagesEditor({ app }: { app: AppletDefinition }) {
               toast.error("Two pages share a path.");
               return;
             }
+            if (pages.some((p) => p.space === "")) {
+              toast.error("Choose the Space page to show.");
+              return;
+            }
             void save({
-              pages: pages.map((p): Json =>
-                p.parent
-                  ? { path: p.path.trim(), title: p.title, file: p.file, parent: p.parent }
-                  : { path: p.path.trim(), title: p.title, file: p.file },
-              ),
+              pages: pages.map((p): Json => ({
+                path: p.path.trim(),
+                title: p.title,
+                file: p.space ? "" : p.file,
+                ...(p.parent ? { parent: p.parent } : {}),
+                ...(p.space ? { space: p.space } : {}),
+              })),
             });
           }}
         />

@@ -1,6 +1,6 @@
 import { Scale } from "lucide-react";
 import { CONFIG_TAB_LABEL, buildConfigTreeNodes } from "@/features/settings/universal/configTree";
-import { settingsNavigationSections } from "./SettingsFlatNavigation";
+import { settingsNavigationSections } from "@ai-matrx/design-system/settings";
 
 // The desktop nav lists each Configuration domain through its Overview leaf.
 // That leaf carried no icon, so every domain row fell back to the same gear

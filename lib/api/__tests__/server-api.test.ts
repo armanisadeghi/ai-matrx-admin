@@ -46,9 +46,8 @@ jest.mock("@/lib/services/fingerprint-service", () => ({
 }));
 const ensureGuestIdentity = jest.fn(async (_o?: { fresh?: boolean }) => true);
 jest.mock("@/lib/guest/turnstile", () => ({
+  ...jest.requireActual("@/lib/guest/turnstile"),
   ensureGuestIdentity: (o?: { fresh?: boolean }) => ensureGuestIdentity(o),
-  isGuestChallengeRefusalBody: (body: unknown) =>
-    !!body && typeof body === "object" && (body as { error?: string }).error === "guest_challenge_failed",
 }));
 jest.mock("@/lib/diagnostics/capturePythonClientError", () => ({
   capturePythonClientError: jest.fn(),
@@ -240,6 +239,19 @@ describe("server-api signed-out visitors (parity with python-client)", () => {
     await expect(serverApi.call(GUEST_WRITE, { path: { id: "1" } })).resolves.toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(ensureGuestIdentity).toHaveBeenCalledWith({ fresh: true });
+  });
+});
+
+describe("server-api guest retry never resends a consumed stream", () => {
+  it("a stream-body write refused by the guest check is not sent twice", async () => {
+    accessToken = null;
+    fingerprintId = "fp-9";
+    cachedFingerprint = "fp-9";
+    selectedOrganizationId = null;
+    fetchMock.mockResolvedValue(jsonResponse({ error: "guest_challenge_failed" }, 403));
+    const body = new ReadableStream({ start: (c) => c.close() });
+    await serverApi.call({ ...WRITE, o: "optional", n: "test.stream-write" }, { path: { id: "1" }, body } as never).catch(() => undefined);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 

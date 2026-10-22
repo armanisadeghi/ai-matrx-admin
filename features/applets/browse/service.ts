@@ -38,6 +38,7 @@ import { pgErrorToError } from "@ai-matrx/data";
 import type { Database } from "@/types/database.types";
 import { isOpenEntry, readBuildRequests } from "@/features/applets-host/builder/build-session";
 import { appletState, type AppletState } from "@/features/applets/lib/applet-state";
+import { appletHasContent } from "@/features/applets/types";
 import { readMemberOrganizationRows } from "@/features/organizations/service/memberOrganizationRows";
 
 type DefinitionRow = Database["app"]["Tables"]["definition"]["Row"];
@@ -79,7 +80,7 @@ export interface AppletListRow {
 }
 
 const COLUMNS =
-  "id, slug, name, tagline, description, status, published_to_web, visibility, shown_to, organization_id, created_by, total_executions, last_execution_at, created_at, updated_at, deleted_at, metadata, entry";
+  "id, slug, name, tagline, description, status, published_to_web, visibility, shown_to, organization_id, created_by, total_executions, last_execution_at, created_at, updated_at, deleted_at, metadata, entry, layout_config";
 
 /** Where a row opens: its build while one runs or no app is saved yet, else the Applet's own page. */
 export function appletRowHref(row: Pick<AppletListRow, "id" | "build_open" | "unbuilt">): string {
@@ -139,7 +140,7 @@ export async function listApplets(archived: ArchivedFilter): Promise<AppletListR
     created_at: r.created_at,
     updated_at: r.updated_at,
     build_open: isOpenEntry(readBuildRequests(r.metadata).at(-1)),
-    unbuilt: !r.entry,
+    unbuilt: !appletHasContent(r),
     archived: r.deleted_at != null,
     deleted_at: r.deleted_at,
     state: appletState(r),

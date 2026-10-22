@@ -66,6 +66,8 @@ import { restoreFromTrash } from "@/features/trash/service";
 import {
   archivedExplanation,
   archivedHeadline,
+  archivedOrganizationExplanation,
+  archivedOrganizationHeadline,
   mayRestoreArchived,
 } from "@/features/access-gate/service/archivedWords";
 

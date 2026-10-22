@@ -29,7 +29,7 @@ import type {
   AccessRequestSummary,
   RequestedLevel,
 } from "@/features/access-gate/types";
-import { parsePermissionLevel } from "@/utils/permissions/levels";
+import { parsePermissionLevel } from "@ai-matrx/sharing/core";
 import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
 
 function rec(value: unknown): Record<string, unknown> | null {

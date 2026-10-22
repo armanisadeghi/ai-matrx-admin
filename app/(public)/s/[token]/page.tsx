@@ -1,0 +1,83 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
+import { NOT_INDEXED_ROBOTS } from "@/lib/seo/search-engine-indexed";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { cache } from "react";
+import { createClient } from "@/utils/supabase/server";
+import { resolveShareToken } from "@ai-matrx/sharing/core";
+import { withLiveShareContent } from "@/lib/collab/share-live";
+import { resolveShareLensMeta } from "@/features/sharing/lenses/metadata";
+import { GoogleOneTapMount } from "@/features/auth/one-tap/GoogleOneTapMount";
+import { SharedResourceView } from "./SharedResourceView";
+import { ShareLinkError } from "./ShareLinkError";
+
+// Public, anonymous share-link viewer. The token is the authorization; the
+// anon-callable `resolve_share_token` RPC returns the resource content with no
+// sign-in. One route renders any registered shareable resource type.
+export const dynamic = "force-dynamic";
+
+interface PageProps {
+  params: Promise<{ token: string }>;
+}
+
+// One resolve per request: generateMetadata and the page share it, so a view
+// counts once against a link's use limit (the RPC increments use_count).
+const resolve = cache(async (token: string) => {
+  const supabase = await createClient();
+  return resolveShareToken(token, supabase as never);
+});
+
+// The page body shows the CURRENT content of a co-edited document or workbook (the room folded to head), not only
+// its last save; link previews and unfurls (generateMetadata, the OG image) keep the last save.
+const resolveLive = cache(async (token: string) => withLiveShareContent(token, await resolve(token)));
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { token } = await params;
+  const result = await resolve(token);
+  if (!result.success) {
+    return { title: "Shared link", robots: NOT_INDEXED_ROBOTS };
+  }
+  const meta = resolveShareLensMeta(result);
+  return {
+    // The root layout's title template adds the brand.
+    title: meta.title,
+    description: meta.description,
+    robots: NOT_INDEXED_ROBOTS, // an Anyone link is NEVER indexed (access ladder)
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title,
+      description: meta.description,
+    },
+  };
+}
+
+export default async function SharedTokenPage({ params }: PageProps) {
+  const { token } = await params;
+  const result = await resolveLive(token);
+
+  // A shared SAVED VIEW has its own page; this generic viewer would only show its name.
+  if (result.error === "opens_elsewhere" && result.resourceType === "platform_saved_view") {
+    redirect(`/v/${token}`);
+  }
+
+  if (!result.success) {
+    return <ShareLinkError message={result.message} />;
+  }
+
+  const ownerOrganization = result.resource?.organization_id;
+  return (
+    <>
+      <SharedResourceView result={result} token={token} />
+      <GoogleOneTapMount
+        organizationId={typeof ownerOrganization === "string" ? ownerOrganization : null}
+      />
+    </>
+  );
+}

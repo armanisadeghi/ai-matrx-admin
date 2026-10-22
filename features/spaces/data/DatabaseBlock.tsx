@@ -19,6 +19,7 @@ import { spacesFormForAnswering } from "./form-actions";
 import { AutomationsPanel } from "./Automations";
 import { tableShapeChanged, useFields, useRecord, useRecordsClient, useTable, type Field } from "@ai-matrx/records/react";
 import {
+  AppWindow,
   ArrowDownUp,
   ArrowUpRight,
   BarChart3,
@@ -44,6 +45,8 @@ import {
 import { useContext, useEffect, useState, type ReactNode } from "react";
 
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { buildSeedHref, tableReference } from "@/features/applets-host/builder/build-seed";
+import { openOutbound } from "@ai-matrx/kit/outbound";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
 
@@ -838,6 +841,8 @@ function ViewSettings({
   const designer = useDatabaseDesigner();
   const client = useRecordsClient();
   const table = useTable(tableId);
+  const tableOrg = (table.data as { organization_id?: string } | null)?.organization_id ?? null;
+  const tableName = (table.data as { name?: string } | null)?.name ?? null;
   const [page, setPage] = useState<"main" | "layout" | "group" | "subgroup" | "limit" | "cardsize" | "x" | "yfield" | "props" | "newprop">("main");
   const chart = { ...DEFAULT_CHART, ...view.chart };
   const setChart = (p: Partial<ChartSettings>) => onView({ chart: { ...chart, ...p } });
@@ -919,6 +924,15 @@ function ViewSettings({
                 <MenuRow icon={<Database size={15} />} label="Show database title" end={<Switch checked={props.showTitle !== false} tabIndex={-1} aria-hidden />} onClick={() => editable && onBlock({ showTitle: props.showTitle === false })} />
                 {canShape ? (
                   <AutofillRows tableId={tableId} databaseName={props.title ?? "Database"} fields={fields} aiFields={props.aiFields ?? []} client={client} organizationId={(table.data as { organization_id?: string } | null)?.organization_id ?? null} onAiFields={(aiFields) => onBlock({ aiFields })} />
+                ) : null}
+                {canShape && tableOrg ? (
+                  // The one roof (2026-10-22): the ONE Applet builder, seeded with this table — the Applet reads and
+                  // writes these same records. A new tab, so the page stays as it is.
+                  <MenuRow
+                    icon={<AppWindow size={15} />}
+                    label="Build an Applet on this"
+                    onClick={() => openOutbound(buildSeedHref([tableReference({ tableId, organizationId: tableOrg, label: tableName || props.title || "Database" })]), "_blank", "noopener")}
+                  />
                 ) : null}
                 {canShape && designer.wired ? (
                   <MenuRow

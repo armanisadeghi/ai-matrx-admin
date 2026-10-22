@@ -47,6 +47,13 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
 
 ## Change log
 
+- `2026-10-22` — **One roof (lane ROOF).** (1) A published Site runs the `applet` block LIVE for every reader
+  (`editor/applet-block.tsx` → `AppletInPageLazy site`): a reader with no account on the guest lane (her saves are her own
+  records, kept at sign-up), a signed-in reader as herself; the static `AppletCard` is deleted. The Applet chunk still loads
+  only when the block nears the view. (2) A database's View settings menu offers **Build an Applet on this**
+  (`data/DatabaseBlock.tsx`): the ONE builder in a new tab, seeded with this table (`features/applets-host/builder/build-seed.ts`),
+  built in the table's organization. (3) `embed/SpaceWidget.tsx` (`SpaceWidgetBody`, `SpacePagePicker`) is also the door an
+  Applet uses to show a Space page as one of its pages (`AppletHostMount` `renderSpacePage`; the Pages editor's picker).
 - `2026-10-22` — A stored code language the picker does not list (`py`, `ts`, `elixir`) draws as its alias's key or
   Plain text instead of throwing BlockNote's "Language py is not supported." (`resolveCodeLanguage` in
   `editor/code-block.ts`; guard `__tests__/code-block-language.test.ts`). Lane Y, audit round 2 #1.

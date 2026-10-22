@@ -1,0 +1,680 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/sharing/components/ShareModal.tsx
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/sharing/components/ShareModal.tsx
+  Both grew from the same COMMON version: commit a264a7f716, 2026-10-22 10:41.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-22 11:38  ad34557822  collected by the sync; the edit itself happened at or before this time
+    2026-10-22 06:55  42fe2f283c  "Merge origin/main (sync-main): 0 auto-fixed, 0 docs/comments flagged, 1 held"
+  GITHUB:
+    2026-10-22 11:34  aaa2e3e50c  "sharing: the web runs the share sheet, share links, permission service, registry and "shown to" from @ai-matrx/sharing; app copies deleted"
+  GITHUB's latest change is 4h 39m AFTER LOCAL's latest change.
+
+SIZE: common version 640 lines, LOCAL 639 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 4 lines and removed 5 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 580fba04c621:'features/sharing/components/ShareModal.tsx') <(git show ffe6947b1aae:'features/sharing/components/ShareModal.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show ffe6947b1aae:'features/sharing/components/ShareModal.tsx'
+  GITHUB: git show 580fba04c621:'features/sharing/components/ShareModal.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+"use client";
+
+import { getActiveOrgId } from "@/lib/organizations/activeOrg";
+import { usePageCapture } from "@/components/agent-copy/page-capture/usePageCapture";
+import { dialogCapture } from "@/components/agent-copy/page-capture/pageCapture";
+import { PageCaptureButton } from "@/components/agent-copy/page-capture/PageCaptureButton";
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import {
+  Users,
+  Globe,
+  Mail,
+  Loader2,
+  CheckCircle,
+  KeyRound,
+  ShieldCheck,
+} from "lucide-react";
+import { useSharing, useIsOwner } from "@/utils/permissions/hooks";
+import { useGrantableLevels } from "../hooks/useGrantableLevels";
+import {
+  getShareableResource,
+  getResourceTypeLabel,
+  getResourceSharePath,
+} from "@/utils/permissions/registry";
+import type { ResourceType } from "@/utils/permissions/types";
+import { Skeleton } from "@ai-matrx/design-system";
+import { AlertTriangle, Lock } from "lucide-react";
+import { EntityRef } from "@ai-matrx/records-ui/entity-ref";
+import { PermissionsList } from "./PermissionsList";
+import { AccessSummaryPanel } from "./AccessSummaryPanel";
+import { ShareWithUserTab } from "./tabs/ShareWithUserTab";
+import { OutsideSharePanel } from "@/features/sharing/outside/OutsideSharePanel";
+import { shareWithOutsidePerson } from "@/features/sharing/outside/outsideShareService";
+import { WhoCouldSeeOn } from "./WhoCouldSeeOn";
+import { OrgAvailabilityNote } from "./OrgAvailabilityNote";
+import { WhoCanSeeThis } from "./WhoCanSeeThis";
+import { PublicAccessTab } from "./tabs/PublicAccessTab";
+import { SecureLinkPanel } from "@/features/sharing/secure/SecureLinkPanel";
+import { useToast } from "@/components/ui/use-toast";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+
+interface ShareModalProps {
+  /** The level picker's words: "notion" = Full access · Edit · Comment · View. */
+  levelWording?: "roles" | "notion";
+  isOpen: boolean;
+  onClose: () => void;
+  resourceType: ResourceType;
+  resourceId: string;
+  resourceName: string;
+  /**
+   * The organization this resource belongs to. Pass it whenever the caller knows: it scopes
+   * the contact picker to that organization's members (FIX-7B), and the share's in-app
+   * notification is filed there (ACCESS-FIX-18) — without it, a share from a page with no
+   * organization picked raised "Which workspace is this for?". It is NOT used for the grant —
+   * the store still resolves a record's organization off the row itself.
+   */
+  organizationId?: string;
+  /**
+   * What to CALL this thing on screen, when the caller knows better than the
+   * registry does. In the unified store a Table IS a `custom.record` row, so
+   * `resourceType="record"` is correct and the registry's label — "Record" —
+   * is the wrong noun for a table: the seventh-pass verdict read "Share
+   * Record" above a table's own name. Omit it and the registry's label stands.
+   */
+  resourceNoun?: string;
+  /**
+   * OPTIONAL override. Leave it out — the modal resolves ownership itself.
+   *
+   * Only pass this when the caller already holds an authoritative, resolved
+   * answer (e.g. it just created the row). Passing a stale or defaulted
+   * `false` is what renders this dialog as a dead, empty shell for a user who
+   * owns the record.
+   */
+  isOwner?: boolean;
+  /**
+   * SHARING WITH SOMEBODY OUTSIDE THE ORGANIZATION (lane SHARE-OUT, 21 September).
+   *
+   * Pass this when the subject is a TABLE in the unified record store and the
+   * caller knows which organization it belongs to. The Users tab then carries
+   * the outside lane: invite by email, "invited, not yet joined", resend and
+   * revoke. Leave it out and the dialog is exactly what it was — this is not a
+   * capability every resource type has, and a panel that could not work is a
+   * panel that must not be drawn.
+   *
+   * It is NOT a second share surface: the grant it produces is an ordinary
+   * `iam.permissions` row read by the same ladder, and the pending state is an
+   * `iam.invitations` row, the platform's one invitation primitive.
+   */
+  outsideShare?: { organizationId: string; tableId: string };
+}
+
+/**
+ * ShareModal - Main sharing interface
+ *
+ * Generic modal that works with ANY resource type.
+ * Provides tabs for sharing with people or making public. A share names a PERSON, never an
+ * organization (SHARE-PEOPLE-ONLY, 2026-09-25): the old Organizations tab is gone, and "Add
+ * everyone in <organization>" inside the People tab names each current member instead.
+ *
+ * This is the ONE sharing dialog in the app. Do not build a feature-specific
+ * variant — extend this one. It self-resolves ownership, so every call site is
+ * a three-prop drop-in.
+ *
+ * @example
+ * <ShareModal
+ *   isOpen={isOpen}
+ *   onClose={() => setIsOpen(false)}
+ *   resourceType="workflow"
+ *   resourceId={workflowId}
+ *   resourceName="My Workflow"
+ * />
+ */
+export function ShareModal({
+  levelWording = "roles",
+  isOpen,
+  onClose,
+  resourceType,
+  resourceId,
+  resourceName,
+  organizationId,
+  resourceNoun,
+  isOwner: isOwnerOverride,
+  outsideShare,
+}: ShareModalProps) {
+  const [activeTab, setActiveTab] = useState<
+    "users" | "public" | "secure" | "access"
+  >("users");
+  // How many people outside this organization are invited and have not joined.
+  // Reported UP by the panel that draws them, so the grant list's empty state
+  // cannot say "Not shared with anyone" over one of their rows (FIX-10C F13).
+  const [outsidePending, setOutsidePending] = useState(0);
+  const [emailingLink, setEmailingLink] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const { toast } = useToast();
+
+  const getShareUrl = (): string | null => {
+    const path = getResourceSharePath(resourceType, resourceId);
+    if (!path) return null;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    return `${baseUrl}${path}`;
+  };
+
+  // Email link to self
+  const handleEmailLink = async () => {
+    const shareUrl = getShareUrl();
+    if (!shareUrl) {
+      // Never email a link we can't build — a broken URL in someone's inbox is
+      // the worst dead end we can ship.
+      toast({
+        title: "No shareable link for this item yet",
+        description: `"${getResourceTypeLabel(resourceType)}" has no page to open. Sharing access still works; only the emailed link is unavailable.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setEmailingLink(true);
+    try {
+      const response = await fetch("/api/sharing/email-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resourceType: getResourceTypeLabel(resourceType),
+          resourceName,
+          shareUrl,
+          // object-org-exempt: the saved-link notice is filed with the shared object, else where the person works
+          organizationId: organizationId ?? getActiveOrgId(), // org-filter: write-target for the person's own saved-link notice
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEmailSent(true);
+        toast({
+          title: "Email sent",
+          description: "Link has been emailed to you",
+        });
+        setTimeout(() => setEmailSent(false), 3000);
+      } else {
+        toast({
+          title: "Failed to send email",
+          description: data.msg || "Please try again",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send email",
+        variant: "destructive",
+      });
+    } finally {
+      setEmailingLink(false);
+    }
+  };
+
+  // Ownership is resolved HERE, not trusted from a prop. Callers that pass a
+  // defaulted/stale `false` used to silently produce a dialog with no controls.
+  const {
+    isOwner: resolvedIsOwner,
+    loading: ownerLoading,
+    error: ownerError,
+  } = useIsOwner(resourceType, resourceId);
+
+  const hasOverride = typeof isOwnerOverride === "boolean";
+  const isOwner = hasOverride ? isOwnerOverride : resolvedIsOwner;
+  const resolvingOwner = !hasOverride && ownerLoading;
+
+  // The alchemy capture (lane ALCHEMY-BUTTON): while open, the dialog IS what the person sees.
+  usePageCapture(
+    () =>
+      dialogCapture({
+        title: `Share ${resourceName ?? resourceType}`,
+        route: typeof window !== "undefined" ? window.location.pathname : "",
+        dialog: "Share",
+        subject: { id: resourceId, name: resourceName ?? null },
+        selection: {
+          "Resource type": resourceType,
+          Organization: { id: organizationId ?? null, name: null },
+          Tab: activeTab,
+          "Outside sharing offered": outsideShare ? "yes" : "no",
+        },
+        errors: [ownerError ? `Ownership could not be read: ${String(ownerError)}` : null],
+        sections: [
+          {
+            id: "share-state",
+            title: "Share dialog state",
+            role: "data",
+            value: {
+              is_owner: isOwner,
+              resolving_owner: resolvingOwner,
+              outside_pending_invitations: outsidePending,
+              share_link: getResourceSharePath(resourceType, resourceId),
+              outside_share: outsideShare ?? null,
+            },
+          },
+        ],
+      }),
+    { enabled: isOpen },
+  );
+  // ONE-LADDER: Edit may share inside the organization, so the dialog opens for anyone the doors would
+  // let give at least one level, and offers only those levels (iam.may_grant_as, via the thin door).
+  const grantable = useGrantableLevels(resourceType, resourceId, isOpen);
+  const canShare = isOwner || grantable.maySharePeople;
+  const ownerUnknown = !hasOverride && !ownerLoading && ownerError !== null;
+
+  // A resource type missing from the registry can never share — say so loudly
+  // rather than rendering a dialog whose every control silently no-ops.
+  const registryEntry = resourceType
+    ? getShareableResource(resourceType)
+    : undefined;
+  const configError = !resourceId
+    ? "No resource id was supplied to the share dialog."
+    : !registryEntry
+      ? `"${resourceType}" is not a registered shareable resource. Add it to shareable_resource_registry.`
+      : null;
+
+  const {
+    permissions,
+    isPublic: resourceIsPublic,
+    shownTo,
+    childRecord,
+    setShownTo,
+    organizationDefault,
+    whoCanSee,
+    setWhoCanSee,
+    loading,
+    error,
+    shareWithUser,
+    makePublic,
+    revokeAccess,
+    updateLevel,
+    refresh,
+    homeOrganizationId,
+  } = useSharing(
+    resourceType,
+    resourceId,
+    isOpen && !configError,
+    resourceName,
+    // The object's organization, as the page that opened this resolved it — the share's
+    // notification is filed there and never asks which workspace this is for.
+    organizationId ?? null,
+  );
+
+  const contactsOrganizationId = organizationId ?? homeOrganizationId ?? undefined;
+
+  // Filter permissions by type for each tab
+  const userPermissions = permissions.filter((p) => p.grantedToUserId);
+  const publicPermission = permissions.find((p) => p.isPublic);
+
+  const resourceLabel = resourceNoun ?? getResourceTypeLabel(resourceType);
+
+  /**
+   * Shown instead of the grant forms when the caller cannot manage sharing.
+   * An empty area with no explanation reads as a broken dialog — say WHY.
+   */
+  const manageBlockedNotice = ownerUnknown ? (
+    <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/10 flex items-start gap-2">
+      <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-sm font-medium text-destructive">
+          Couldn&apos;t confirm whether you may change sharing on this{" "}
+          {resourceLabel.toLowerCase()}
+        </p>
+        <p className="text-xs text-destructive/80 mt-0.5">{ownerError} <ErrorAlchemyMenu error={ownerError} /></p>
+      </div>
+    </div>
+  ) : (
+    <div className="p-3 rounded-lg border bg-muted/30 flex items-start gap-2">
+      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+      <div>
+        <p className="text-sm font-medium">
+          You need Full access on this {resourceLabel.toLowerCase()} to change who can see it
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Deciding who else may is what Full access means (View &lt; Comment &lt;
+          Edit &lt; Full access). Ask whoever has it, or an owner of the organization. The Access
+          tab still shows you everyone who can reach this and why.
+        </p>
+      </div>
+    </div>
+  );
+
+  // The add form is for anyone who may give at least one level; below that the door's own sentence says why.
+  const shareBlockedNotice = grantable.loading ? null : (
+    <div className="p-3 rounded-lg border bg-muted/30 flex items-start gap-2">
+      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+      <p className="text-sm">
+        {grantable.error ?? grantable.levels.viewer ?? "You need Edit or Full access on this to share it."}
+      </p>
+    </div>
+  );
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90dvh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <div className="flex items-start justify-between gap-2 pr-10">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="flex items-center gap-1.5">
+                Share {resourceLabel}
+                <PageCaptureButton size="xs" />
+              </DialogTitle>
+              {/* THE DOOR LAW: the most-reused share surface in the app named
+                  the record and gave no way to reach it — while already
+                  computing its canonical path for the share URL. `ResourceType`
+                  IS the entity-token vocabulary (getResourceSharePath resolves
+                  through resolveEntityDoors), so EntityRef also gets the peek
+                  and the new tab. A null path falls through to `undefined`,
+                  which defers to the registry and correctly ends in no door for
+                  a type that genuinely has no route. */}
+              <DialogDescription asChild>
+                <div className="text-sm text-muted-foreground">
+                  <EntityRef
+                    token={resourceType}
+                    id={resourceId}
+                    name={resourceName}
+                    href={
+                      getResourceSharePath(resourceType, resourceId) ??
+                      undefined
+                    }
+                    showIcon={false}
+                  />
+                </div>
+              </DialogDescription>
+            </div>
+            <Button
+              icon={emailingLink ? (
+                <Loader2 className="animate-spin" />
+              ) : emailSent ? (
+                <CheckCircle className="text-green-500" />
+              ) : (
+                <Mail />
+              )}
+              variant="outline"
+              onClick={handleEmailLink}
+              disabled={emailingLink}
+              className="flex-shrink-0"
+            >
+              <span className="ml-1.5 hidden sm:inline">
+                {emailSent ? "Sent!" : "Email link"}
+              </span>
+            </Button>
+          </div>
+        </DialogHeader>
+
+        {/* Misconfigured call site — never render dead controls. */}
+        {configError && (
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 py-10 px-6 text-center">
+            <AlertTriangle className="h-8 w-8 text-destructive" />
+            <p className="text-sm font-medium">Sharing is unavailable</p>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              {configError}
+              <ErrorAlchemyMenu error={configError} />
+            </p>
+          </div>
+        )}
+
+        {/* Resolving ownership — show a skeleton, never the non-owner view. */}
+        {!configError && resolvingOwner && (
+          <div className="flex-1 space-y-3 py-4" aria-busy="true">
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        )}
+
+        {!configError && !resolvingOwner && (
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as typeof activeTab)}
+            className="flex-1 flex flex-col min-h-0"
+          >
+            {/* phone-ok: labels are hidden below sm, icon-only tabs on phone */}
+            <TabsList fill className="flex-shrink-0">
+              <TabsTrigger value="users">
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Users</span>
+                {userPermissions.length > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 rounded-full">
+                    {userPermissions.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="public">
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">Anyone link</span>
+                {publicPermission && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-green-500/10 rounded-full">
+                    •
+                  </span>
+                )}
+              </TabsTrigger>
+              {/* SECURE LINK — CODE REQUIRED (access ladder, secure delivery): the
+                  third way to share, for anything that must not travel in a plain
+                  link — a single-use link on one channel, a code on the other. */}
+              <TabsTrigger value="secure">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Secure link</span>
+              </TabsTrigger>
+              {/* WHO CAN SEE THIS, AND WHY. The three tabs above list the GRANTS
+                  this dialog writes; they are only one of the six ways access is
+                  actually conferred. `AccessSummaryPanel` is the canonical
+                  answer — owner, grant, organization default, and the container
+                  that carries it — and it belongs beside the controls that
+                  change them rather than on some other screen. */}
+              <TabsTrigger value="access">
+                <KeyRound className="w-4 h-4" />
+                <span className="hidden sm:inline">Access</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="dialog-scroll-clear-floating flex-1 mt-3 min-h-0 overflow-y-auto">
+              <TabsContent value="users" className="mt-0 space-y-3">
+                {/* WHO CAN SEE THIS (SHARE-LANE-CONTROL): the lane, above the people it limits. */}
+                <WhoCanSeeThis
+                  whoCanSee={whoCanSee}
+                  canChange={canShare}
+                  onChoose={setWhoCanSee}
+                  row={{
+                    resourceType,
+                    resourceId,
+                    shownTo,
+                    isPublic: resourceIsPublic,
+                    childRecord,
+                    // A whole Table is a `record` too and is never published to the web (no page
+                    // of its own; only its rows have one): no switch is drawn for it.
+                    ...(resourceType === "record" && resourceNoun === "Table"
+                      ? { publishable: false }
+                      : {}),
+                    onSetShownTo: setShownTo,
+                    onPublish: () => makePublic(),
+                    onStopPublishing: () => revokeAccess({ isPublic: true }),
+                  }}
+                />
+                {/* Current user permissions */}
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Current Access</h3>
+                  {/* Only the owner (and Admins) can read the grant list: an empty list in any
+                      other seat — an editor who may share included — is "cannot see", never
+                      "Not shared with anyone" (that seat itself holds a grant). */}
+                  {!isOwner && !loading && userPermissions.length === 0 ? (
+                    <p className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                      The list of people with access is visible to the owner and Admins.
+                    </p>
+                  ) : (
+                  <PermissionsList
+                    permissions={userPermissions}
+                    isOwner={isOwner}
+                    onUpdateLevel={updateLevel}
+                    onRevoke={revokeAccess}
+                    loading={loading}
+                    // The outside panel at the bottom of this same tab draws
+                    // invited-but-not-joined rows; without this the empty state
+                    // above them read "Not shared with anyone" (FIX-10C F13).
+                    alsoPending={{
+                      count: outsidePending,
+                      one: "person outside this organization",
+                      many: "people outside this organization",
+                    }}
+                  />
+                  )}
+                  <OrgAvailabilityNote
+                    permissions={permissions.filter(
+                      (p) => p.grantedToOrganizationId,
+                    )}
+                    organizationDefault={organizationDefault}
+                  />
+                </div>
+
+                {/* Add user form */}
+                {canShare ? (
+                  <ShareWithUserTab
+                    levelWording={levelWording}
+                    grantable={grantable}
+                    onShare={shareWithUser}
+                    onSuccess={refresh}
+                    resourceType={resourceType}
+                    resourceId={resourceId}
+                    // The people offered are the THING'S organization: the opener's answer, else the
+                    // row's own (never every organization the viewer is in — that sweep read one
+                    // roster per membership, one after another, and never finished for a member
+                    // of sixty organizations; PB-07, 2026-10-01).
+                    {...(contactsOrganizationId ? { organizationId: contactsOrganizationId } : {})}
+                    alreadySharedUserIds={userPermissions
+                      .map((p) => p.grantedToUserId)
+                      .filter((id): id is string => !!id)}
+                    // A custom TABLE: a listed member may sit outside the table's own
+                    // organization, so each one goes through the outside door, which grants an
+                    // existing account outright whether inside or out.
+                    {...(outsideShare
+                      ? {
+                          grantEveryonePerson: async (person, level) => {
+                            try {
+                              const answer = await shareWithOutsidePerson(
+                                outsideShare.organizationId,
+                                outsideShare.tableId,
+                                person.email,
+                                level,
+                              );
+                              return answer.granted
+                                ? { success: true, message: answer.say }
+                                : {
+                                    success: false,
+                                    error:
+                                      answer.say ||
+                                      "Invited, not yet given access",
+                                  };
+                            } catch (err: unknown) {
+                              return {
+                                success: false,
+                                error:
+                                  err instanceof Error
+                                    ? err.message
+                                    : "Not shared",
+                              };
+                            }
+                          },
+                        }
+                      : {})}
+                  />
+                ) : (
+                  shareBlockedNotice
+                )}
+
+                {/* THE ROUTE FROM THE REFUSAL TO THE REMEDY (lane SHARE-OUT).
+                    The people picker above offers this organization's members
+                    and nobody else, and the store refuses an outsider by name.
+                    This is where that refusal now leads: one section, drawn only
+                    for a table in the record store, showing exactly the controls
+                    the store says this person may use. It is shown to non-owners
+                    too — the panel itself says who can invite, which is more use
+                    than hiding the fact that the capability exists. */}
+                {outsideShare ? (
+                  <OutsideSharePanel
+                    organizationId={outsideShare.organizationId}
+                    tableId={outsideShare.tableId}
+                    tableName={resourceName}
+                    onPendingChange={setOutsidePending}
+                    onGranted={refresh}
+                  />
+                ) : null}
+              </TabsContent>
+
+              <TabsContent value="access" className="mt-0">
+                <AccessSummaryPanel
+                  entityType={resourceType as Parameters<typeof AccessSummaryPanel>[0]["entityType"]}
+                  entityId={resourceId}
+                  enabled={activeTab === "access"}
+                  refreshToken={permissions
+                    .map((p) => `${p.id}:${p.permissionLevel}`)
+                    .join("|")}
+                />
+                {resourceType === "record" && isOwner ? <WhoCouldSeeOn recordId={resourceId} /> : null}
+              </TabsContent>
+
+              <TabsContent value="secure" className="mt-0">
+                {isOwner ? (
+                  <SecureLinkPanel
+                    resourceType={resourceType}
+                    resourceId={resourceId}
+                    resourceName={resourceName}
+                  />
+                ) : (
+                  manageBlockedNotice
+                )}
+              </TabsContent>
+
+              <TabsContent value="public" className="mt-0">
+                <PublicAccessTab
+                  publicPermission={publicPermission}
+                  isOwner={isOwner}
+                  resourceType={resourceType}
+                  resourceId={resourceId}
+                  resourceName={resourceName}
+                />
+              </TabsContent>
+            </div>
+          </Tabs>
+        )}
+
+        {error && (
+          <div className="mt-3 p-2.5 bg-destructive/10 border border-destructive/20 rounded-md flex-shrink-0">
+            <p className="text-sm text-destructive">{error}</p>
+            <ErrorAlchemyMenu error={error} />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

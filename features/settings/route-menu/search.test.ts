@@ -1,4 +1,4 @@
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 import {
   findSettingsCategoryMatches,
   hasSettingsSearchResults,

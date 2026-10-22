@@ -11,7 +11,7 @@
 // existing URL translation (`routing.ts`: kebab ↔ camel) round-trips them.
 
 import { SlidersHorizontal } from "lucide-react";
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 import type { ScopedKnob } from "@/lib/scoped-config/types";
 import type { SettingsTabDef } from "../types";
 import UniversalSettingsPane from "./UniversalSettingsPane";

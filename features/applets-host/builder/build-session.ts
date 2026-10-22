@@ -17,7 +17,8 @@ import { asJsonObject, mergeJsonColumn } from "@ai-matrx/data/db";
 import { readBuildReferences, type BuildReference } from "./build-references";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database } from "@/types/database.types";
+import type { Database, Json } from "@/types/database.types";
+import { appletHasContent } from "@/features/applets/types";
 
 import type { BuilderApplet } from "./build-applet";
 
@@ -111,7 +112,7 @@ function withRequests(metadata: Record<string, unknown>, requests: BuildEntry[])
   return { ...metadata, build: { ...build, requests } };
 }
 
-export const RECORD_COLUMNS = "id, organization_id, slug, name, version, status, entry, metadata";
+export const RECORD_COLUMNS = "id, organization_id, slug, name, version, status, entry, layout_config, metadata";
 
 export type RecordRow = {
   id: string;
@@ -121,6 +122,7 @@ export type RecordRow = {
   version: number;
   status: string;
   entry: string | null;
+  layout_config?: Json | null;
   metadata: unknown;
 };
 
@@ -133,7 +135,7 @@ export function toRecord(row: RecordRow): BuildRecord {
     version: row.version,
     status: row.status,
     organizationId: row.organization_id,
-    hasContent: Boolean(row.entry),
+    hasContent: appletHasContent(row),
     requests: readBuildRequests(row.metadata),
     references: readBuildReferences(row.metadata),
   };

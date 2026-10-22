@@ -1,10 +1,10 @@
 "use client";
 
 import { Camera, Video } from "lucide-react";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
 import { settingDoorHref } from "../doors/settingDoorTarget";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 
 /**
  * This screen used to also offer video background, video filter, default

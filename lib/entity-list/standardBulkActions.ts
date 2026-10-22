@@ -37,7 +37,7 @@
 import { ArchiveRestore, House, Share2, Star, StarOff, Tag, Trash2 } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { supabase } from "@/utils/supabase/client";
-import { archiveRecord, carryOnTableRestore, restoreFromTrash } from "@/features/trash/service";
+import { archiveRecord, restoreFromTrash } from "@/features/trash/service";
 import { fileUnderTag } from "@/features/knowledge/hub/tags/tagApi";
 import { pickTag } from "@/features/knowledge/hub/tags/tagPickerOpener";
 import { isArchivedRow } from "./archivedRow";
@@ -46,11 +46,8 @@ import { pickHome } from "@/features/scopes/homes/homePickerOpener";
 import { resolveHomeScopeId, setHome } from "@/features/scopes/homes/setHome";
 import { shareWithPeople } from "@/features/sharing/bulk/shareWithPeopleOpener";
 import type { PermissionLevel, ShareActionResult } from "@ai-matrx/sharing/core";
-import { BulkNoneDoneError, copySkippedAction, skippedLine } from "./bulkSkipped";
-import { isCmsTrashToken } from "@/features/trash/cmsKinds";
 import {
   bulkCountLabel,
-  type BulkSkip,
   type EntityBulkAction,
   type EntityBulkActionResult,
   type EntityBulkSelection,
@@ -74,9 +71,8 @@ export interface PerRowOptions<TRow> {
 
 /**
  * Run `verb` on every selected id. Rows that succeed are counted; rows that
- * fail are named with their reason in one warning toast and STAY SELECTED
- * (`keepIds`). Throws only when NOTHING succeeded, so the shell keeps the
- * selection and says so.
+ * fail are named with their reason in one warning toast. Throws only when
+ * NOTHING succeeded, so the shell keeps the selection and says so.
  */
 export async function runPerRow<TRow>(
   selection: EntityBulkSelection<TRow>,
@@ -86,7 +82,7 @@ export async function runPerRow<TRow>(
 ): Promise<EntityBulkActionResult> {
   const rowsById = new Map(selection.rows.map((row) => [rowIdOf(row), row]));
   const succeeded: string[] = [];
-  const skipped: BulkSkip[] = [];
+  const skipped: { name: string; reason: string }[] = [];
 
   for (let i = 0; i < selection.ids.length; i += PER_ROW_CONCURRENCY) {
     const batch = selection.ids.slice(i, i + PER_ROW_CONCURRENCY);
@@ -110,7 +106,6 @@ export async function runPerRow<TRow>(
           ? outcome.reason.message
           : String(outcome.reason);
       skipped.push({
-        id,
         name: row && options.labelOf ? options.labelOf(row) : id,
         reason,
       });
@@ -122,37 +117,34 @@ export async function runPerRow<TRow>(
 
 /**
  * THE ONE OUTCOME SENTENCE for a verb that ran over a selection: succeeded rows
- * counted, skipped rows NAMED with their reason in one warning toast (five
- * inline, then "+N more" and Copy list). The skipped rows stay selected
- * (`keepIds`) and the done ones are unticked. Throws only when nothing
- * succeeded, so the shell keeps the selection and says so.
+ * counted, skipped rows NAMED with their reason in one warning toast. Throws
+ * only when nothing succeeded, so the shell keeps the selection and says so.
  * `runPerRow` ends here; a verb with its own batch door reports through it too.
  */
 export function reportPerRow(
   succeeded: string[],
-  skipped: BulkSkip[],
+  skipped: { name: string; reason: string }[],
   options: Pick<PerRowOptions<never>, "done" | "noun" | "removesRows">,
 ): EntityBulkActionResult {
-  const line = skippedLine(skipped);
+  const skippedLine = skipped
+    .slice(0, 5)
+    .map((s) => `${s.name}: ${s.reason}`)
+    .join(" · ");
+  const more = skipped.length > 5 ? ` · and ${skipped.length - 5} more` : "";
 
   if (succeeded.length === 0) {
-    throw new BulkNoneDoneError(
-      `None done. ${bulkCountLabel(skipped.length, options.noun)} skipped — ${line}`,
-      skipped,
+    throw new Error(
+      `None done. ${bulkCountLabel(skipped.length, options.noun)} skipped — ${skippedLine}${more}`,
     );
   }
   if (skipped.length > 0) {
-    const copy = copySkippedAction(skipped);
     toast.warning(`${bulkCountLabel(skipped.length, options.noun)} skipped`, {
-      description: line,
-      ...(copy ? { action: copy } : {}),
+      description: `${skippedLine}${more}`,
     });
   }
-  const keepIds = skipped.flatMap((s) => (s.id === undefined ? [] : [s.id]));
   return {
     message: `${options.done}: ${bulkCountLabel(succeeded.length, options.noun)}.`,
     ...(options.removesRows ? { removedIds: succeeded } : {}),
-    ...(keepIds.length ? { keepIds } : {}),
     refresh: true,
   };
 }
@@ -199,68 +191,30 @@ export function trashBulkAction<TRow>(args: {
 }
 
 /**
- * IS THIS ROW IN TRASH — read from what the Trash door itself writes. `archiveRecord` sets
- * `deleted_at` and `entity_undelete` clears it, so that column is the authority; `is_archived` /
- * `archived_at` are other lifecycles and never decide it. A row whose projection does not carry
- * `deleted_at` is UNKNOWN (null), never "not in Trash": the restore door answers for it.
+ * "Restore" — bring every selected archived (trashed) row back through the one
+ * restore door (`restoreFromTrash` → `entity_undelete`). A row that is not in
+ * Trash is skipped and named; a refusal (a taken name, no edit access) is
+ * named with the database's own sentence.
  */
-export function rowInTrash(row: unknown): boolean | null {
-  if (typeof row !== "object" || row === null) return null;
-  const r = row as Record<string, unknown>;
-  const key = "deleted_at" in r ? "deleted_at" : "deletedAt" in r ? "deletedAt" : null;
-  if (key === null) return null;
-  return r[key] !== null && r[key] !== undefined;
-}
-
-/**
- * "Restore" — bring every selected trashed row back through THE TRASH PAGE'S OWN DOOR for the
- * main database (`features/trash/sources.ts` → `mainTrashSource.restore`): `restoreFromTrash`
- * (`entity_undelete`) then `carryOnTableRestore`, which brings a custom Table's records, forms,
- * views and dashboards back pass by pass — without it a Table came back half-restored under a
- * green toast. Site content (CMS tokens) lives in another database and is restored from Trash
- * only; this says so by name.
- *
- * "In Trash" follows the VIEW first: in an archived-only view every row is in Trash by definition
- * (nothing is skipped on that axis); in an "all" view a row whose `deleted_at` is present and
- * empty is skipped as "Not in Trash"; a row that does not carry the column runs and the door
- * answers. A refusal (a taken name, no edit access) is named with the database's own sentence.
- */
-export function restoreBulkAction<TRow>(
-  args: BuiltInVerbArgs<TRow> & { archivedView?: ArchivedFilter },
-): EntityBulkAction<TRow> {
-  const trustView = args.archivedView === "archived";
-  const notInTrash = (row: TRow) => !trustView && rowInTrash(row) === false;
+export function restoreBulkAction<TRow>(args: BuiltInVerbArgs<TRow>): EntityBulkAction<TRow> {
   return {
     id: "restore",
     label: "Restore",
     icon: ArchiveRestore,
     disabledReason: (_count, selection) =>
-      selection.rows.length > 0 && selection.rows.length === selection.ids.length && selection.rows.every(notInTrash)
-        ? "None of these are in Trash"
-        : null,
-    run: (selection) => {
-      if (isCmsTrashToken(args.token)) {
-        throw new Error(`Restore site content from Trash — ${args.noun} records restore there.`);
-      }
-      return runPerRow(
+      selection.rows.length > 0 && !selection.rows.some(isArchivedRow) ? "None of these are in Trash" : null,
+    run: (selection) =>
+      runPerRow(
         selection,
-        async (id, row) => {
-          // The carry-on needs the Table's organization; without it nothing runs (never half).
-          const organizationId = rowString(row, "organization_id") ?? selection.filter.orgId;
-          if (args.token === "record" && !organizationId) throw new Error("Not loaded — restore it from Trash");
-          await restoreFromTrash(args.token, id);
-          // The Trash page's carry-on: a Table's records come back pass by pass.
-          await carryOnTableRestore(args.token, organizationId, id);
-        },
+        (id) => restoreFromTrash(args.token, id),
         {
           done: "Restored",
           noun: args.noun,
           labelOf: args.labelOf,
-          skipReason: (row) => (notInTrash(row) ? "Not in Trash" : (args.appliesTo?.(row) ?? null)),
+          skipReason: (row) => (isArchivedRow(row) ? (args.appliesTo?.(row) ?? null) : "Not in Trash"),
         },
         args.rowIdOf,
-      );
-    },
+      ),
   };
 }
 
@@ -550,7 +504,7 @@ export function standardBulkActionsFor<TRow>(args: {
     ...(on("tag") ? [tagBulkAction<TRow>(base)] : []),
     ...(on("move") ? [moveBulkAction<TRow>(base)] : []),
     ...(on("share") ? [shareBulkAction<TRow>(base)] : []),
-    ...(on("restore") && view !== "active" ? [restoreBulkAction<TRow>({ ...base, archivedView: view })] : []),
+    ...(on("restore") && view !== "active" ? [restoreBulkAction<TRow>(base)] : []),
     ...(on("trash") && view !== "archived" ? [trashBulkAction<TRow>(base)] : []),
   ];
 }

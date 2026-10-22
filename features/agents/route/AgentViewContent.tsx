@@ -75,7 +75,7 @@ import {
   AiToolRef,
 } from "@ai-matrx/chat/agents/components/identity-refs/AiIdentityRef";
 import { RichContent } from "@ai-matrx/rich-content/levels/RichContent";
-import { AccessSummaryPanel } from "@/features/sharing/components/AccessSummaryPanel";
+import { AccessSummaryPanel } from "@ai-matrx/sharing/react";
 import { CopyButtonsSlot } from "@ai-matrx/chat/host/ui-slots";
 import { agentDefinitionSummary } from "@ai-matrx/chat/agents/format";
 import { agentHref } from "@/features/agents/browse/agentPaths";

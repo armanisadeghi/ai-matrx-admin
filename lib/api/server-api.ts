@@ -56,7 +56,7 @@ import { resolveBaseUrl, resolveFilesBaseUrl, type RequestOptions } from "@/lib/
 import { getStore } from "@/lib/redux/store-singleton";
 import { selectAccessToken, selectFingerprintId } from "@/lib/redux/slices/userSlice";
 import { getCachedFingerprint } from "@/lib/services/fingerprint-service";
-import { ensureGuestIdentity, isGuestChallengeRefusalBody } from "@/lib/guest/turnstile";
+import { beforeGuestWrite, retriesAfterGuestRefusal } from "@/lib/guest/guest-rule";
 import { supabase } from "@/utils/supabase/client";
 import { startSessionTokenSync } from "@/lib/api/session-token-sync";
 import type { RootState } from "@/lib/redux/store";
@@ -258,16 +258,11 @@ export function serverCallHeaders(
   return headers;
 }
 
-function isWrite(op: OperationDescriptor): boolean {
-  const method = op.m.toUpperCase();
-  return method !== "GET" && method !== "HEAD";
-}
-
 async function prepare(op: OperationDescriptor, options?: CallOptions): Promise<CallOptions> {
   // Fetch-on-mount traffic races the active-organization bootstrap: wait for the answer, never guess.
   if (!options?.organizationId && hasSessionToken()) await waitForOrganizationAdmission();
   // A signed-out write may mint a visitor: make sure the visitor exists first (one human check per tab).
-  if (!hasSessionToken() && isWrite(op)) await ensureGuestIdentity();
+  await beforeGuestWrite(hasSessionToken(), op.m);
   const callerHeaders = Object.fromEntries(
     Object.entries(options?.headers ?? {}).filter(([h]) => h.toLowerCase() !== NO_ERROR_CAPTURE_HEADER),
   );
@@ -297,17 +292,22 @@ export function callOptionsFrom(opts: RequestOptions = {}): CallOptions {
  * A NEW visitor refused for want of a passing human check (403 guest_challenge_failed): run the
  * check fresh and send the request once more. Signed-in calls never see this refusal.
  */
-async function withGuestRetry<R>(op: OperationDescriptor, options: CallOptions | undefined, run: () => Promise<R>): Promise<R> {
+async function withGuestRetry<R>(
+  args: OperationArgs | undefined,
+  options: CallOptions | undefined,
+  run: () => Promise<R>,
+): Promise<R> {
   try {
     return await run();
   } catch (err) {
+    // A stream body was consumed by the first send and cannot be sent again.
+    const body = (args as { body?: unknown } | undefined)?.body;
+    const replayable = !(typeof ReadableStream !== "undefined" && body instanceof ReadableStream);
     if (
+      replayable &&
       err instanceof MatrxApiError &&
-      err.status === 403 &&
-      !hasSessionToken() &&
-      isGuestChallengeRefusalBody(err.serverDetail) &&
       !cancelledByCaller(options?.signal) &&
-      (await ensureGuestIdentity({ fresh: true }))
+      (await retriesAfterGuestRefusal(hasSessionToken(), err.status, () => err.serverDetail))
     ) {
       return run();
     }
@@ -320,14 +320,14 @@ export const serverApi: Api = {
   url: (op, args) => inner.url(op, args),
   async call<T>(op: OperationDescriptor, args?: OperationArgs, options?: CallOptions): Promise<T> {
     try {
-      return await withGuestRetry(op, options, async () => inner.call<T>(op, args, await prepare(op, options)));
+      return await withGuestRetry(args, options, async () => inner.call<T>(op, args, await prepare(op, options)));
     } catch (err) {
       return surfaceError(err, op, args, options);
     }
   },
   async send(op, args, options) {
     try {
-      return await withGuestRetry(op, options, async () => inner.send(op, args, await prepare(op, options)));
+      return await withGuestRetry(args, options, async () => inner.send(op, args, await prepare(op, options)));
     } catch (err) {
       return surfaceError(err, op, args, options);
     }

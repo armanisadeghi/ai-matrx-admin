@@ -1,0 +1,57 @@
+{
+ "_source": "SELECT 2026-10-22: chat.tool_call b8393cef-7ab6-4892-b4ce-c573a24fc9d9 and the tool_result block for its call id in chat.request_snapshot of user_request 2d75eab6 (iteration 1 carries none, iteration 2 carries it; Anthropic shape, cache_control kept). Shared with aidream packages/matrx-ai/tests/fixtures/raw_capture/web_read_tool_call.json.",
+ "tool_call": {
+  "id": "b8393cef-7ab6-4892-b4ce-c573a24fc9d9",
+  "call_id": "toolu_01L4LiS8WM9dNcak5ZZdwfyu",
+  "tool_name": "web",
+  "iteration": 1,
+  "output_chars": 3796,
+  "output": "{\"pages\": [{\"url\": \"https://www.durham.ca/news/posts/working-together-towards-a-circular-economy/\", \"content\": \"Working together towards a circular economy\\n- October 06, 2026\\n[This Week in Durham Stories](https://www.durham.ca/news/this-week-in-durham-stories/)\\n![Five images depicting clothing on a rack, a garden, packed lunches, computer parts, and a person pouring a smoothie, with text stating, “Circular Economy Month.”](https://media-003-ca.cdn.govstack.com/durham-ca/media/rtqla2hv/circular-economy-month-twid-stories-banner.png?width=475&height=181&format=webp \\\"Five images depicting clothing on a rack, a garden, packed lunches, computer parts, and a person pouring a smoothie, with text stating, “Circular Economy Month.”\\\")\\nCircular Economy Month\\nEvery year in October, we recognize Circular Economy Month to highlight the importance of reducing waste and making better use of our resources. A circular economy is a model that retains and recovers as much value as possible from resources by reusing, repairing, refurbishing, remanufacturing, or repurposing products and materials to maximize their value before they are recycled or thrown out.\\nFive material types have been identified as the priorities for reducing waste in Canada: Construction, Renovation, and Demolition, Textiles, Electronic and Critical Minerals, Packaging, and Food.\\nIn recognition of Circular Economy Month, residents and the Region give examples of how we are reducing the amount of waste from these materials.\\nConstruction waste\\nConstruction activities generate nearly one-third of all solid waste in Canada, producing over four million tonnes of waste each year.\\nUxbridge resident Melanie used wood from her home renovations for garden boxes, ensuring it did not go to waste. \\\"When we renovated our home, we had leftover wood, including some reclaimed wood, that could have gone to a waste management facility,” said Melanie. “Instead, we saved it for future projects. This year, we used some of it to build garden boxes and we're planning to make a family name sign this fall. Sustainability is important to me, and reusing materials not only reduces waste, but it also saves money.\\\"\\nThe Region is doing their part by piloting various technologies for cutting down on road construction waste, such as Hot in Place Recycling . With this process, the volume of aggregate materials, typically mined and trucked in for road construction, are significantly reduced, thereby lowering costs and reducing the environmental impact. No pavement waste was generated during the pilot, as all existing aggregates and asphalt cement were fully recovered and reused. This innovative project has been recognized with two awards—the Ontario Public Works Associations Award for Transportation Project of the Year in the less than $2M division and the 2025 Good Roads Municipal Paving Project of the Year Award.\\nTextiles\\nCanadians, on average, purchase 70 new articles of clothing a year, but only wear about 50 per cent of the clothes we own. Canadians throw out nearly 500 million kilograms (or about a billion pounds) of clothing and fabr\", \"offset\": 0, \"chars_returned\": 3000, \"total_chars\": 8728, \"has_more\": true, \"next_offset\": 3000, \"success\": true, \"truncation_notice\": \"Page content is paged and bounded. Call web action='read' again with the same url and next_offset as offset (optionally raise chars) to continue.\", \"processed_document_id\": \"ba167183-cd92-429b-acbc-41b5f6abef8a\", \"source_id\": \"6c662a98-a109-414a-b7c0-55dfb925aa6a\", \"kept\": false, \"notices\": [{\"code\": \"intelligence_deferred\", \"message\": \"Captured, not saved. Save it to keep it and have it processed and searchable by AI.\", \"remedy\": \"save_it_to_keep_it\"}]}], \"count\": 1, \"succeeded\": 1, \"failed\": 0, \"result_truncated\": false}",
+  "metadata": {
+   "turn_actor_user_id": "87a6e699-3622-4869-8843-d0867456c0dd"
+  }
+ },
+ "original_file_id": "e6a8505b-3adc-414c-98fb-5138ec50c567",
+ "snapshots": [
+  {
+   "id": "snap-iteration-1",
+   "iteration": 1,
+   "requestPayload": {
+    "model": "claude",
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "text",
+        "text": "Read the page"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "snap-iteration-2",
+   "iteration": 2,
+   "requestPayload": {
+    "model": "claude",
+    "messages": [
+     {
+      "role": "user",
+      "content": [
+       {
+        "type": "tool_result",
+        "content": "{\"pages\": [{\"url\": \"https://www.durham.ca/news/posts/working-together-towards-a-circular-economy/\", \"content\": \"Working together towards a circular economy\\n- October 06, 2026\\n[This Week in Durham Stories](https://www.durham.ca/news/this-week-in-durham-stories/)\\n![Five images depicting clothing on a rack, a garden, packed lunches, computer parts, and a person pouring a smoothie, with text stating, “Circular Economy Month.”](https://media-003-ca.cdn.govstack.com/durham-ca/media/rtqla2hv/circular-economy-month-twid-stories-banner.png?width=475&height=181&format=webp \\\"Five images depicting clothing on a rack, a garden, packed lunches, computer parts, and a person pouring a smoothie, with text stating, “Circular Economy Month.”\\\")\\nCircular Economy Month\\nEvery year in October, we recognize Circular Economy Month to highlight the importance of reducing waste and making better use of our resources. A circular economy is a model that retains and recovers as much value as possible from resources by reusing, repairing, refurbishing, remanufacturing, or repurposing products and materials to maximize their value before they are recycled or thrown out.\\nFive material types have been identified as the priorities for reducing waste in Canada: Construction, Renovation, and Demolition, Textiles, Electronic and Critical Minerals, Packaging, and Food.\\nIn recognition of Circular Economy Month, residents and the Region give examples of how we are reducing the amount of waste from these materials.\\nConstruction waste\\nConstruction activities generate nearly one-third of all solid waste in Canada, producing over four million tonnes of waste each year.\\nUxbridge resident Melanie used wood from her home renovations for garden boxes, ensuring it did not go to waste. \\\"When we renovated our home, we had leftover wood, including some reclaimed wood, that could have gone to a waste management facility,” said Melanie. “Instead, we saved it for future projects. This year, we used some of it to build garden boxes and we're planning to make a family name sign this fall. Sustainability is important to me, and reusing materials not only reduces waste, but it also saves money.\\\"\\nThe Region is doing their part by piloting various technologies for cutting down on road construction waste, such as Hot in Place Recycling . With this process, the volume of aggregate materials, typically mined and trucked in for road construction, are significantly reduced, thereby lowering costs and reducing the environmental impact. No pavement waste was generated during the pilot, as all existing aggregates and asphalt cement were fully recovered and reused. This innovative project has been recognized with two awards—the Ontario Public Works Associations Award for Transportation Project of the Year in the less than $2M division and the 2025 Good Roads Municipal Paving Project of the Year Award.\\nTextiles\\nCanadians, on average, purchase 70 new articles of clothing a year, but only wear about 50 per cent of the clothes we own. Canadians throw out nearly 500 million kilograms (or about a billion pounds) of clothing and fabr\", \"offset\": 0, \"chars_returned\": 3000, \"total_chars\": 8728, \"has_more\": true, \"next_offset\": 3000, \"success\": true, \"truncation_notice\": \"Page content is paged and bounded. Call web action='read' again with the same url and next_offset as offset (optionally raise chars) to continue.\", \"processed_document_id\": \"ba167183-cd92-429b-acbc-41b5f6abef8a\", \"source_id\": \"6c662a98-a109-414a-b7c0-55dfb925aa6a\", \"kept\": false, \"notices\": [{\"code\": \"intelligence_deferred\", \"message\": \"Captured, not saved. Save it to keep it and have it processed and searchable by AI.\", \"remedy\": \"save_it_to_keep_it\"}]}], \"count\": 1, \"succeeded\": 1, \"failed\": 0, \"result_truncated\": false}",
+        "tool_use_id": "toolu_01L4LiS8WM9dNcak5ZZdwfyu",
+        "cache_control": {
+         "type": "ephemeral"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -4,8 +4,8 @@
 //   - records-ui's "page built from tables" (`RecordsUiHost.applets`, a dashboard record whose
 //     `presentation.page_blocks` hold an `applet` block) — `APPLETS_PORT`;
 //   - a Space page's `applet` block (features/spaces/editor/applet-block.tsx) — the picker's list
-//     (`listPlaceableApplets`), the live Applet (`AppletInPageLazy`), the static card a published Site and
-//     the first paint draw (`AppletCardLazy`), the reads Markdown export uses (`readAppletCards`).
+//     (`listPlaceableApplets`), the live Applet (`AppletInPageLazy`, in the app and on a published Site alike),
+//     the reads Markdown export uses (`readAppletCards`).
 //
 // v7 APPS-ON-DATA item 3 (Arman's endgame, 2026-10-02) and the "one roof" first piece (2026-10-09): an
 // Applet placed inside a page, drawn by the ONE Applet host. Every read is the viewer's own (RLS is the
@@ -22,8 +22,6 @@ const AppletInPage = dynamic(() => import("./AppletInPage"), {
 /** The live Applet in a page, loaded on demand (the Applet host never rides the page's own chunk). */
 export const AppletInPageLazy = AppletInPage;
 
-/** The static Applet card (name, description, "Open this Applet"), loaded on demand. */
-export const AppletCardLazy = dynamic(() => import("./AppletCard"));
 
 /** Where an Applet lives on the web. The full address, so it opens the same from a Site, an export or a tab. */
 export const APPLET_WEB_ORIGIN = "https://www.aimatrx.com";

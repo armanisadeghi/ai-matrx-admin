@@ -48,7 +48,7 @@ Package mechanics: `aidream/apps/shared/applets/FEATURE.md`.
   `mountAppletAsync(record, host, HOST_SCOPE, { renderKind, renderRun, openRun })`.
 - `AppletHostMount` props: `basePath`, `preview` (held writes, in-memory pages), `files` (unsaved buffers laid over
   the saved files — the code workspace's preview), `embedded` (a Space block: pages navigate in place, writes live;
-  `features/applets/embed/AppletInPage.tsx` passes it). Always binds `renderDataPage` → `features/applets/embed/DataPage.tsx`
+  `features/applets/embed/AppletInPage.tsx` passes it). Always binds `renderDataPage` → `features/applets/embed/DataPage.tsx` and `renderSpacePage` → `features/spaces/embed/SpaceWidget.tsx` `SpaceWidgetBody`
   (`<DataPage id>` inside an Applet), and declares the record's `mandates` in the top Agents menu
   (`useDeclaredSurfaceMandates`, `does` = the job's described goal) — no chips on the page. `/applets/<slug>` mounts it.
 - `AppletForeignKind.tsx` — `renderKind` (`AppletKind`): a kind the app's registry routes renders through
@@ -129,6 +129,10 @@ the same account; log in claims the workspace (`lib/guest/session-handover.ts`, 
 The layout settles a pending claim on a signed-in load (`settlePendingGuestClaim`).
 
 ## Change Log
+
+- 2026-10-22 (lane LAYFIX): "Change with AI" on a layout Applet (every migrated one) threw "The builder's Applet has no App.tsx file". `readBuilderApplet` now shows a layout Applet as its one entry file (`builder/layout-source.ts`: `<FormLayout job="main" options={…} />` over the stored options; `BuilderApplet.layout` carries the stored layout). An answer that is still only a stock layout is read back statically (`builder/layout-code.ts`, babel tree, nothing runs) and saved to `layout_config` + `mandates` — it stays a layout; an answer that needs code is saved as code and `layout_config` is cleared. The builder card/preview shows a layout Applet (`appletHasContent`, not `entry`). A Space page inside an Applet reads through the Applet's own client (the guest client for a signed-out visitor): `SpaceWidgetBody`/`SpacesProvider`/`createLiveSpacesStore`/`createDatabaseSpacesStore` take an optional `client`. Tests: `builder/layout-builder.test.ts`, `features/spaces/state/live-store-client.test.ts`.
+
+- 2026-10-22 (lane ROOF, one roof): `renderSpacePage` → `SpaceWidgetBody` (Spaces' fence door; read-only for a visitor and in preview) — a page carrying `space` shows that Space page (`@ai-matrx/applets` `AppletPage.space`, `<SpacePage>`). The builder: a `table` reference (`build-seed.ts`: `tableReference`, `buildSeedHref` moved here so a Space page links to the builder without its runtime) — "Build an Applet on this" from a Space database; the catalog lists it first (`attachedTables`) and a new build runs in the table's organization (`ensureOrgId(tableOrg)`). `keepSpacePages`: a Space page she placed survives every build round. Same `applets.build` mandate and variables — no disclosure change. Guard: `builder/one-roof.test.ts`.
 
 - 2026-10-13 (lane L1): stock layouts. A record with no code and a `layout_config` mounts `@ai-matrx/applets` `StockLayout` through the same `mountAppletAsync` (no compile; same renderers: `AppletRunOutput`, `AppletWritingBox`). `builder/LayoutAppletStart.tsx` (`/applets/build/layout`): layout + job + options with a live in-memory preview (sample job, announced sample answer, no run spent); `builder/layout-applet.ts` writes the record; `build-references.ts` gains the `layout` reference, `buildSeedHref` / `readBuildSeed` (`AppletBuilder seed`). Guard: `builder/layout-start.test.ts`.
 

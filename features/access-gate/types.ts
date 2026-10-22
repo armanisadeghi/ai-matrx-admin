@@ -9,7 +9,7 @@
  */
 
 import type { JsonObject } from "@/types/json";
-import type { PermissionLevel } from "@/utils/permissions/types";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 
 /** What the platform actually knows about a failed read. */
 export type AccessGateStatus =

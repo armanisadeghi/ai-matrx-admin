@@ -10,11 +10,11 @@ import {
 import { AlertTriangle, Settings as SettingsIcon } from "lucide-react";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsBreadcrumb } from "@/components/official/settings/tree/SettingsBreadcrumb";
-import type { SettingsTreeNode } from "@/components/official/settings/tree/types";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsBreadcrumb } from "@ai-matrx/design-system/settings";
+import type { SettingsTreeNode } from "@ai-matrx/design-system/settings";
 import type { SettingsTabDef } from "../types";
-import { SettingsPage } from "@/components/official/settings/SettingsPage";
+import { SettingsPage } from "@ai-matrx/design-system/settings";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 type SettingsTabHostProps = {

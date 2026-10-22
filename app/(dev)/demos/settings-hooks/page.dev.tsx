@@ -3,15 +3,15 @@
 import { useSelector } from "react-redux";
 import { Hammer, ShieldCheck, Palette, Brain, Search } from "lucide-react";
 import type { RootState } from "@/lib/redux/store";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
-import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSlider } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
+import { SettingsSegmented } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
 import {
   useSetting,
   useSettingPersistence,

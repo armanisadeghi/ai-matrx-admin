@@ -20,7 +20,10 @@ jest.mock("@/features/kg-suggestions/hooks/useAutoRagPreference", () => ({
 }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
 jest.mock("@/lib/errors/toastWriteFailure", () => ({ toastWriteFailure: jest.fn() }));
-jest.mock("@/components/official/settings/primitives/SettingsLink", () => ({ SettingsLink: () => null }));
+jest.mock("@ai-matrx/design-system/settings", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/settings"),
+  SettingsLink: () => null,
+}));
 jest.mock("../../doors/settingDoorTarget", () => ({ settingDoorHref: () => "/x" }));
 
 // eslint-disable-next-line import/first -- after the mocks

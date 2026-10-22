@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { readAppletCatalogue, readJobInputs } from "@ai-matrx/applets/catalogue";
 import type { HeldWrite } from "@ai-matrx/applets/preview";
+import type { AppletLayout } from "@ai-matrx/applets";
+import { appletHasContent } from "@/features/applets/types";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 import { useHeadlessAgentJson } from "@ai-matrx/chat/agents/hooks/useHeadlessAgentJson";
 import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
@@ -68,7 +70,7 @@ import { typedAnswerBody } from "./typed-answer";
 import { createIntelligencePort } from "@ai-matrx/agents/intelligence";
 import { createMatrxTransport } from "@/lib/api/matrx-transport";
 import { BuildAttachments } from "./BuildAttachments";
-import { attachedJobKeys, attachmentsContext, readBuildSeed, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
+import { attachedJobKeys, attachedTableIds, attachedTableOrganization, attachmentsContext, readBuildSeed, referenceResources, withReference, withoutReference, type BuildReference } from "./build-references";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
@@ -207,12 +209,12 @@ export function AppletBuilder({
         const record = await readBuildRecord(client, id);
         const current = record.hasContent ? await readBuilderApplet(client, id) : null;
         const org = current?.organizationId ?? record.organizationId;
-        const catalogue = await readAppletCatalogue(client, { organizationId: org, request: entry.text, attachedJobs: attachedJobKeys(record.references), describe: describeJob });
-        const [{ appletImportProblems }, { checkBuildAnswer }] = await Promise.all([import("@ai-matrx/applets/frame"), import("./check-build-answer")]);
+        const catalogue = await readAppletCatalogue(client, { organizationId: org, request: entry.text, attachedJobs: attachedJobKeys(record.references), attachedTables: attachedTableIds(record.references), describe: describeJob });
+        const [{ appletImportProblems }, { checkBuildAnswer }, { layoutFromAnswer }] = await Promise.all([import("@ai-matrx/applets/frame"), import("./check-build-answer"), import("./layout-code")]);
         // What each job really takes (F1): a form that fills a job with names it does not declare is refused.
         const jobInputs = await readJobInputs(client, jobKeysOf(catalogue, current?.applet ?? null, value), { describe: describeJob });
         const answer = checkBuildAnswer(value, coerceBuildAnswer(value), { organizationId: org, tables: catalogue.tables, importProblems: appletImportProblems, jobInputs });
-        await finish(id, entry, answer, current?.applet ?? null, org);
+        await finish(id, entry, answer, current?.applet ?? null, org, current?.applet.layout ? layoutFromAnswer(answer.applet, current.applet) : null);
       } catch (err) {
         await failed(id, entry, err);
         // A run rejoined after a refresh is refused exactly like a live one: it goes to the fix round too
@@ -253,13 +255,14 @@ export function AppletBuilder({
 
   // The saved app as the card and the preview show it (null while a new build has no app yet).
   const loadSaved = async (id: string, note: string) => {
-    const { data, error } = await createClient().schema("app").from("definition").select(`${SAVED_APPLET_COLUMNS}, sources, entry`).eq("id", id).maybeSingle();
+    const { data, error } = await createClient().schema("app").from("definition").select(`${SAVED_APPLET_COLUMNS}, sources, entry, layout_config`).eq("id", id).maybeSingle();
     if (error || !data) {
       setPhase({ kind: "failed", why: error?.message ?? "That app is not there, or it has not been shared with you." });
       return;
     }
-    const { sources, entry, ...row } = data;
-    if (!entry) return;
+    const { sources, entry, layout_config, ...row } = data;
+    // A layout Applet has no code and is saved all the same: its card and preview show (the host mounts the layout).
+    if (!appletHasContent({ entry, layout_config })) return;
     const list = (Array.isArray(sources) ? sources : []) as unknown as BuilderSource[];
     setSaved({ ...row, note, toMake: tablesToMake({ sources: list }), bound: boundTableIds({ sources: list }), made: [] });
   };
@@ -296,14 +299,14 @@ export function AppletBuilder({
   }, [outcomeKey]);
 
   /** Save an answer exactly once (the claim), then show it. Shared by a live run and a rejoined one. */
-  const finish = async (id: string, entry: BuildEntry, answer: BuildAnswer, current: BuilderApplet | null, org: string) => {
+  const finish = async (id: string, entry: BuildEntry, answer: BuildAnswer, current: BuilderApplet | null, org: string, layout: AppletLayout | null = null) => {
     const client = createClient();
     if (!(await session.claim(id, entry.id))) {
       // Another tab saved this answer first: show what it saved.
       await session.refresh(id);
       return;
     }
-    const result = await saveBuiltApplet(client, { organizationId: org, appletId: id, current, answer, request: entry.text, conversationId: entry.conversation_id });
+    const result = await saveBuiltApplet(client, { organizationId: org, appletId: id, current, answer, request: entry.text, conversationId: entry.conversation_id, layout });
     await session.settle(id, entry.id, { state: "saved", version: result.content_version, note: answer.note });
     shown.current = `${id}|${entry.id}:saved`;
     closeRunWindow();
@@ -358,7 +361,10 @@ export function AppletBuilder({
     let started: { id: string; entry: BuildEntry } | null = null;
     try {
       // A new app needs an organization: with none set, the picker asks and THIS build continues with the pick.
-    const org = appletId || retry ? null : (organizationId ?? (await whenOrgReady(() => ensureOrgId(null)))); // org-filter: default-for-new a new applet is created in the selected organization
+      // Started from one of her tables ("Build an Applet on this database"): the build runs in THAT table's
+      // organization (acting on that record), so the catalog offers the table and the Applet can bind it.
+      const tableOrg = attachedTableOrganization(pendingRefs);
+    const org = appletId || retry ? null : tableOrg ? await ensureOrgId(tableOrg) : (organizationId ?? (await whenOrgReady(() => ensureOrgId(null)))); // org-filter: default-for-new a new applet is created in the selected organization
       // The request is written BEFORE anything runs — a new app is born here and the address becomes its own.
       // An automatic fix round is claimed instead: exactly one tab runs it, every other tab follows that run.
       let begun: { record: BuildRecord; entry: BuildEntry };
@@ -385,10 +391,10 @@ export function AppletBuilder({
       const runOrg = current?.organizationId ?? record.organizationId;
       // What she attached: its material rides THE attach path every round, its jobs the catalog.
       const refs = record.references;
-      const catalogue = await readAppletCatalogue(client, { organizationId: runOrg, request, attachedJobs: attachedJobKeys(refs), describe: describeJob });
+      const catalogue = await readAppletCatalogue(client, { organizationId: runOrg, request, attachedJobs: attachedJobKeys(refs), attachedTables: attachedTableIds(refs), describe: describeJob });
       // The frame (already the preview's) answers which names each module really exports; the checks read
       // the code's syntax tree, so both load here, on demand — never with the builder's first screen.
-      const [{ appletImportProblems }, { checkBuildAnswer }] = await Promise.all([import("@ai-matrx/applets/frame"), import("./check-build-answer")]);
+      const [{ appletImportProblems }, { checkBuildAnswer }, { layoutFromAnswer }] = await Promise.all([import("@ai-matrx/applets/frame"), import("./check-build-answer"), import("./layout-code")]);
       stepTo("Starting the builder");
       let attached: Promise<void> = Promise.resolve();
       const jobInputs = await readJobInputs(client, jobKeysOf(catalogue, current?.applet ?? null, null), { describe: describeJob });
@@ -450,7 +456,8 @@ export function AppletBuilder({
         });
       }
       await attached;
-      await finish(record.id, entry, answer, current?.applet ?? null, runOrg);
+      // A layout Applet whose answer is still only a stock layout stays a layout (./layout-code.ts).
+      await finish(record.id, entry, answer, current?.applet ?? null, runOrg, current?.applet.layout ? layoutFromAnswer(answer.applet, current.applet) : null);
     } catch (err) {
       if (started) await failed(started.id, started.entry, err);
       else setPhase({ kind: "failed", why: err instanceof Error ? err.message : String(err) });

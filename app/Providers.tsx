@@ -73,6 +73,7 @@ import { RecoveryNudge } from "@/features/request-recovery/components/RecoveryNu
 // association cache had. Heavy port bindings (WindowPanel, FilePickerWindow)
 // are behind their own lazy edges inside the host — this import stays light.
 import { AssociationsHost } from "@/features/scopes/host/AssociationsHost";
+import { SharingHost } from "@/providers/SharingHost";
 import { DetailHost } from "@/features/window-panels/detail/DetailHost";
 
 // THE ONE `@ai-matrx/agents/catalog` mount — the agent picker and every piece
@@ -177,6 +178,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
         <ChatHostAdapter>
         <ChatSurfaceRegistrations />
         <AssociationsHost>
+          <SharingHost />
           <DetailHost>
             <AgentCatalogHost>
             <ModelCatalogHost>

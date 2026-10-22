@@ -1,12 +1,12 @@
 "use client";
 
 import { Database, Monitor, RefreshCw, ShieldCheck } from "lucide-react";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
 import { useSetting } from "../hooks/useSetting";
 import type { ServerEnvironment } from "@/lib/redux/preferences/adminPreferencesSlice";
 import { useDesktopInstances } from "@/hooks/use-desktop-instances";

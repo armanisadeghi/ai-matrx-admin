@@ -20,13 +20,16 @@ import type { SuggestContext, WebChoice } from "../webKinds";
 import { buildQueue, coreGaps, decisionFor, gapFacts, gapNoneLabel, isGapKey, mergeFacts, type Answer, type BrandFact, type CoreGap, type FocusItem } from "./queue";
 import { persistAnswer, type Persisted } from "./persist";
 import { reportAnswerNotSaved } from "./notSaved";
-import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logosLabel, type KnownOnBrand } from "./fold";
+import { answeredKeysOf, EMPTY_KNOWN, foldQueue, logoImagesOf, logoLabel, type KnownOnBrand } from "./fold";
+import { useLogoGroups } from "../logoGroups";
 import { loadSavedFindings } from "./fromSaved";
 import type { UnconfirmedHome } from "./unconfirmed";
 import { loadSavedAnswers, type SavedAnswers } from "./savedAnswers";
 import { emptyAnswers, useRunMemory } from "../runMemory";
 import { ValidateStage, type AnsweredEntry, type AnswerOptions } from "./ValidateStage";
 import { RetractionDialog } from "@/features/marketing/components/brands/RetractionDialog";
+
+const NOTHING_SEPARATED: ReadonlySet<string> = new Set();
 
 interface Saved extends AnsweredEntry {
   persisted: Persisted | null;
@@ -140,7 +143,22 @@ export function SmartAddValidate({
   const raw = buildQueue({ items: allItems, facts: allFacts, decisions, webChoices, answered: answeredKeys, later, broken, kinds, ctx, gaps: gapFacts(gaps.filter((g) => !given(g))) });
   // A logo picture already answered (this visit or an earlier one) or saved as the brand's logo is never asked again,
   // whichever key a later round finds it under (MKT-139).
-  const answeredLogoImages = [...answered.map((a) => a.item), ...(past?.entries ?? []).map((e) => e.item)].filter((i) => i.kind === "logo").flatMap(logoImagesOf);
+  const answeredLogos = [...answered.map((a) => a.item), ...(past?.entries ?? []).map((e) => e.item)]
+    .filter((i) => i.kind === "logo")
+    .flatMap((i) => [i, ...(i.folded ?? [])]);
+  // One mark found at several image addresses is one card: the server's near-identical groups say which (logoGroups.tsx).
+  // Different pictures are always different cards — never a batch of logos answered at once (Arman, 2026-10-22). The
+  // answered pictures ride along so a near-identical copy of one already answered is not asked again either.
+  const answeredLogoKeys = new Set(answeredLogos.map((i) => i.key));
+  const pictureGroups = useLogoGroups(
+    [...raw.filter((q) => q.kind === "logo" && !answeredLogoKeys.has(q.key)), ...answeredLogos].flatMap((q) => (q.evidence ? [q.evidence] : [])),
+    NOTHING_SEPARATED,
+  );
+  const samePicture = new Map(pictureGroups.flatMap((g) => (g.members.length > 1 ? g.members.map((m) => [m.key, g.id] as const) : [])));
+  const answeredLogoImages = [
+    ...answeredLogos.flatMap(logoImagesOf),
+    ...pictureGroups.filter((g) => g.members.some((m) => answeredLogoKeys.has(m.key))).flatMap((g) => g.members.map((m) => m.image_url ?? m.value)),
+  ];
   const known: KnownOnBrand = {
     ...(saved?.known ?? EMPTY_KNOWN),
     names: [...(saved?.known.names ?? []), brand.name],
@@ -148,7 +166,7 @@ export function SmartAddValidate({
   };
   // The brand's own accounts / websites no person confirmed: asked as ordinary cards, answered naming the existing home.
   const homeOf = new Map((saved?.unconfirmed ?? []).map((u) => [u.item.key, u]));
-  const folded = foldQueue({ queue: raw, known, later, reopened, unconfirmed: new Set(homeOf.keys()) });
+  const folded = foldQueue({ queue: raw, known, later, reopened, unconfirmed: new Set(homeOf.keys()), samePicture });
   // The card in focus stays in focus: a finding arriving live never jumps in front of it.
   const pinned = useRef<string | null>(null);
   const pinnedAt = folded.findIndex((q) => q.key === pinned.current);
@@ -176,7 +194,7 @@ export function SmartAddValidate({
       item,
       answer,
       relationLabel,
-      value: opts.value?.trim() || (isGapKey(item.key) ? gapNoneLabel(item) : item.kind === "logo" ? logosLabel(item) : item.kind === "web" ? (item.title ?? item.value) : item.value),
+      value: opts.value?.trim() || (isGapKey(item.key) ? gapNoneLabel(item) : item.kind === "logo" ? logoLabel(item) : item.kind === "web" ? (item.title ?? item.value) : item.value),
       state: "saving",
       error: null,
       persisted: null,
@@ -210,31 +228,12 @@ export function SmartAddValidate({
   };
 
   const pctx = { organizationId, getBrand: () => brandRef.current, setBrand, kinds };
-  // A set card: every value answered at once — Yes keeps the values left on (the rest are Wrong), No marks all Wrong.
   const persistCard = async (item: FocusItem, answer: Answer, opts: AnswerOptions): Promise<Persisted> => {
     const home = homeOf.get(item.key);
     if (home && (answer === "ours" || answer === "not_us")) {
       return persistAnswer(pctx, item, answer, { ...opts, created: { propertyId: home.propertyId, siteId: home.siteId, existing: true } });
     }
-    if (!item.members?.length) return persistAnswer(pctx, item, answer, opts);
-    const off = new Set(opts.off ?? []);
-    const done: Persisted[] = [];
-    try {
-      for (const m of item.members) {
-        const each: Answer = answer === "correct" ? (off.has(m.key) ? "wrong" : "correct") : answer;
-        done.push(await persistAnswer(pctx, m, each));
-      }
-    } catch (error) {
-      for (const p of [...done].reverse()) await p.undo().catch(() => undefined);
-      throw error;
-    }
-    return {
-      discoveredId: done[0]?.discoveredId ?? null,
-      homes: done.flatMap((p) => p.homes),
-      undo: async () => {
-        for (const p of [...done].reverse()) await p.undo();
-      },
-    };
+    return persistAnswer(pctx, item, answer, opts);
   };
 
   const release = (item: FocusItem) => {

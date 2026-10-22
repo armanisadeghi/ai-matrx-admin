@@ -2,7 +2,7 @@
 
 import { useModelRecords } from "@ai-matrx/chat/agents/identity/model-catalog";
 import { useId } from "react";
-import { SettingsRow } from "../SettingsRow";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { useModels } from "@/features/ai-models/hooks/useModels";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/features/ai-models/redux/platformDefaultModel";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/redux/store";
-import type { SettingsCommonProps } from "../types";
+import type { SettingsCommonProps } from "@ai-matrx/design-system/settings";
 
 type Scope = "all" | "active" | "inactive";
 

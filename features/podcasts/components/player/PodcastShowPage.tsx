@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { PcShow, PcEpisode } from "../../types";
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). THE UNIT LAW: the unit is in the name.

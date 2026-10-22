@@ -25,10 +25,10 @@
 import { useEffect, useRef } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import type { SettingsTabDef } from "../types";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsRow } from "@/components/official/settings/SettingsRow";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import type { ScopedKnob } from "@/lib/scoped-config/types";
 import { useSetting, useSettingReset } from "../hooks/useSetting";

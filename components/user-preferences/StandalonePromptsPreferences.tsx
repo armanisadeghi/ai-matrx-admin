@@ -3,14 +3,14 @@
 import React from "react";
 import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
 import { settingDoorHref } from "@/features/settings/doors/settingDoorTarget";
 import { CHAT_DEFAULT_MODEL_KNOB } from "@/features/ai-models/preferredChatModel";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSlider } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
 import { useSetting } from "@/features/settings/hooks/useSetting";
 import type { ThinkingMode } from "@/lib/redux/preferences/userPreferencesSlice";
 

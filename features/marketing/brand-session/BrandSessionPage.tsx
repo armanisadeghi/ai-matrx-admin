@@ -14,7 +14,7 @@
 import { useRouter } from "next/navigation";
 import { SwipeDeck } from "@ai-matrx/design-system/swipe-deck";
 import { Button, EmptyState, RegionSkeleton } from "@ai-matrx/design-system/controls";
-import { CircleAlert, Layers, PartyPopper } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 
 import { useBrand } from "@/features/marketing/data/hooks";
 import { useLiveBrand } from "@/features/marketing/components/brands/useLiveBrand";
@@ -30,7 +30,7 @@ export const BRAND_SESSION_SURFACE = "matrx-user/marketing-brand-session";
 function SessionDeck({ brand }: { brand: MarketingBrand }) {
   const router = useRouter();
   useLiveBrand(brand.id);
-  const { binding, snapshot, proposeForCurrent, empty, deckProps } = useBrandSessionDeck(brand);
+  const { binding, snapshot, proposeForCurrent, deckProps } = useBrandSessionDeck(brand);
   const back = () => router.push(marketingRoutes.brand(marketingSeg(brand)));
 
   const handlers = {
@@ -48,40 +48,26 @@ function SessionDeck({ brand }: { brand: MarketingBrand }) {
 
   return (
     <BrandRoomSurface surfaceName={BRAND_SESSION_SURFACE} buildScope={buildScope} handlers={handlers}>
-      {empty ? (
-        <div className="flex h-full items-center justify-center p-6">
-          <EmptyState
-            icon={<Layers />}
-            title="Nothing to decide"
-            line="Discover proposes candidates for this brand"
-            action={<Button variant="primary" onClick={back}>Back to brand</Button>}
-          />
-        </div>
-      ) : (
-        <SwipeDeck
-          binding={binding}
-          layout="fullscreen"
-          // Each card carries its own key, which would also draw its answers as rows under the text; the four edges
-          // already are the answers, and the screen holds only the thing being asked about.
-          choicesOnCard={false}
-          categoryRows={deckProps.categoryRows}
-          pickOne={deckProps.pickOne}
-          pickAnswer={deckProps.pickAnswer}
-          groupLabels={deckProps.groupLabels}
-          onExit={back}
-          tourKey="matrx.brand-session.tour"
-          renderEnd={() => (
-            <div className="flex h-full items-center justify-center p-6">
-              <EmptyState
-                icon={<PartyPopper />}
-                title="All decided"
-                line={`${snapshot.counts.answered} of ${snapshot.counts.total} answered`}
-                action={<Button variant="primary" onClick={back}>Back to brand</Button>}
-              />
-            </div>
-          )}
-        />
-      )}
+      <SwipeDeck
+        binding={binding}
+        layout="fullscreen"
+        // Each card carries its own key, which would also draw its answers as rows under the text; the four edges
+        // already are the answers, and the screen holds only the thing being asked about.
+        choicesOnCard={false}
+        categoryRows={deckProps.categoryRows}
+        pickOne={deckProps.pickOne}
+        pickAnswer={deckProps.pickAnswer}
+        groupLabels={deckProps.groupLabels}
+        onExit={back}
+        tourKey="matrx.brand-session.tour"
+        // The deck's own finish and empty screens; the page only adds its way back.
+        endActions={<Button variant="primary" onClick={back}>Back to brand</Button>}
+        empty={{
+          title: "Nothing to decide",
+          line: "Discover proposes candidates for this brand",
+          action: <Button variant="primary" onClick={back}>Back to brand</Button>,
+        }}
+      />
     </BrandRoomSurface>
   );
 }

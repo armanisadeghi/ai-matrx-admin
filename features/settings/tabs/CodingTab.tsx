@@ -1,9 +1,9 @@
 "use client";
 
 import { Code } from "lucide-react";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 import { SettingDoor } from "@/features/settings/doors/SettingDoor";
 
 /**

@@ -14,10 +14,10 @@
 // member of the organization — never a home for secrets.
 
 import { KeyRound, Server } from "lucide-react";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
 import { SuspenseLoader } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import type { ScopedKnob } from "@/lib/scoped-config/types";

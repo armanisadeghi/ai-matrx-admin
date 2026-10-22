@@ -15,29 +15,29 @@ import {
   Database,
   Settings,
 } from "lucide-react";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSlider } from "@/components/official/settings/primitives/SettingsSlider";
-import { SettingsNumberInput } from "@/components/official/settings/primitives/SettingsNumberInput";
-import { SettingsTextInput } from "@/components/official/settings/primitives/SettingsTextInput";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSlider } from "@ai-matrx/design-system/settings";
+import { SettingsNumberInput } from "@ai-matrx/design-system/settings";
+import { SettingsTextInput } from "@ai-matrx/design-system/settings";
 import { SettingsTextarea } from "@/components/official/settings/primitives/SettingsTextarea";
-import { SettingsRadioGroup } from "@/components/official/settings/primitives/SettingsRadioGroup";
-import { SettingsCheckbox } from "@/components/official/settings/primitives/SettingsCheckbox";
-import { SettingsSegmented } from "@/components/official/settings/primitives/SettingsSegmented";
-import { SettingsColorPicker } from "@/components/official/settings/primitives/SettingsColorPicker";
-import { SettingsMultiSelect } from "@/components/official/settings/primitives/SettingsMultiSelect";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsLink } from "@/components/official/settings/primitives/SettingsLink";
+import { SettingsRadioGroup } from "@ai-matrx/design-system/settings";
+import { SettingsCheckbox } from "@ai-matrx/design-system/settings";
+import { SettingsSegmented } from "@ai-matrx/design-system/settings";
+import { SettingsColorPicker } from "@ai-matrx/design-system/settings";
+import { SettingsMultiSelect } from "@ai-matrx/design-system/settings";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsLink } from "@ai-matrx/design-system/settings";
 import {
   SettingsKeybinding,
   type KeybindingValue,
-} from "@/components/official/settings/primitives/SettingsKeybinding";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
-import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
-import { SettingsGrid } from "@/components/official/settings/layout/SettingsGrid";
-import { SettingsReadOnlyValue } from "@/components/official/settings/layout/SettingsReadOnlyValue";
-import { SettingsDesignProvider } from "@/components/official/settings/SettingsDesignProvider";
+} from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
+import { SettingsCallout } from "@ai-matrx/design-system/settings";
+import { SettingsGrid } from "@ai-matrx/design-system/settings";
+import { SettingsReadOnlyValue } from "@ai-matrx/design-system/settings";
+import { SettingsDesignProvider } from "@ai-matrx/design-system/settings";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 

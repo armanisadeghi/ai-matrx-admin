@@ -47,7 +47,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Skeleton } from "@ai-matrx/design-system";
 import { toast } from "@/lib/toast";
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import { MeetingGuests } from "@/features/meet/components/manage/MeetingGuests";
 import { describeRecurrence } from "@/features/meet/lib/recurrence";
 import {

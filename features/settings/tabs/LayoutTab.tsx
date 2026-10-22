@@ -3,11 +3,11 @@
 // Settings › Appearance › Layout (custom-experience): the doors to the layout editors, the Standard view
 // switch, and where sign-in lands. The editors themselves are one window (shellLayoutEditorWindow).
 import { LayoutTemplate, PanelLeft, PanelTop, Smartphone } from "lucide-react";
-import { SettingsButton } from "@/components/official/settings/primitives/SettingsButton";
-import { SettingsSelect } from "@/components/official/settings/primitives/SettingsSelect";
-import { SettingsSwitch } from "@/components/official/settings/primitives/SettingsSwitch";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
-import { SettingsSubHeader } from "@/components/official/settings/layout/SettingsSubHeader";
+import { SettingsButton } from "@ai-matrx/design-system/settings";
+import { SettingsSelect } from "@ai-matrx/design-system/settings";
+import { SettingsSwitch } from "@ai-matrx/design-system/settings";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
+import { SettingsSubHeader } from "@ai-matrx/design-system/settings";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { toast } from "@/lib/toast";
@@ -110,7 +110,8 @@ export function landingOptions(entries: readonly { key: string; title: string; o
     { value: DEFAULT_LANDING, label: "Dashboard" },
     ...entries.map((e) =>
       e.owner === "org"
-        ? { value: `${ORG_LANDING_PREFIX}${e.key}`, label: e.title, description: "Organization" }
+        ? // A native option shows no description, so the tag is part of the visible label.
+          { value: `${ORG_LANDING_PREFIX}${e.key}`, label: `${e.title} · Organization` }
         : { value: e.key, label: e.title },
     ),
   ];

@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { DateField } from "@ai-matrx/design-system/controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { formatSpendUsd } from "@/components/cost/formatAdminCost";
 import {
   fetchMyCostBreakdown,

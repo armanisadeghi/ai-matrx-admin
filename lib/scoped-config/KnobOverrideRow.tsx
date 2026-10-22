@@ -54,7 +54,7 @@ import {
   type KnobWriteDoor,
 } from "./service";
 import { setFeatureKnob } from "@/features/admin/limits/service";
-import { SettingsRow } from "@/components/official/settings/SettingsRow";
+import { SettingsRow } from "@ai-matrx/design-system/settings";
 import {
   Select,
   SelectContent,

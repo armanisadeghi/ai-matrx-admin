@@ -171,7 +171,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { useFocusEditTarget, useIsEditTarget } from "@/features/marketing/lib/useEditTarget";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
+import { ShareModal } from "@ai-matrx/sharing/react";
 import { DiscoverBrandButton, DiscoverBrandMenuItem } from "@/features/marketing/components/brands/DiscoverBrandButton";
 import { useLiveBrand } from "@/features/marketing/components/brands/useLiveBrand";
 import {

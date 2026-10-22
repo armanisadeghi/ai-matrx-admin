@@ -15,5 +15,7 @@ export const workflowRunWindowOverlay = defineOverlay<WorkflowRunWindowDefinitio
     restoreDefaults: {},
     windowId: "workflow-run-window",
     mobile: "card",
+    // Never restored after a reload: it follows one live run.
+    ephemeral: true,
   },
 });

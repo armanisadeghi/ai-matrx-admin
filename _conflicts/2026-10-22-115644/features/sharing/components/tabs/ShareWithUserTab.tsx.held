@@ -1,0 +1,764 @@
+matrx-auto-git-conflict-file-work-delete-this-when-resolved
+
+HELD CONFLICT, written by scripts/sync-main.py
+File:      features/sharing/components/tabs/ShareWithUserTab.tsx
+Why held:  deleted on one side, changed on the other
+GITHUB's version is live in the repo at the path above. LOCAL's version is at the bottom
+of this file, below the FACTS.
+Done with it: the final code is in the live file, this .held file is deleted, and its line
+in _conflicts/README.md is deleted. The list of open items is _conflicts/README.md.
+
+FACTS (computed by sync-main from git)
+
+THE TWO VERSIONS
+  LOCAL  = the version that was on this Mac. It is saved below, in this .held file.
+  GITHUB = the version from GitHub. It is LIVE in the repo right now, at features/sharing/components/tabs/ShareWithUserTab.tsx
+  Both grew from the same COMMON version: commit a264a7f716, 2026-10-22 10:41.
+
+WHEN EACH SIDE CHANGED THIS FILE (newest first)
+  LOCAL:
+    2026-10-22 12:18  (uncommitted edit; the time the file was last saved on this Mac)
+    2026-10-22 12:33  e4791fdaa3  collected by the sync; the edit itself happened at or before this time
+    2026-10-22 11:38  ad34557822  collected by the sync; the edit itself happened at or before this time
+  GITHUB:
+    2026-10-22 11:34  aaa2e3e50c  "sharing: the web runs the share sheet, share links, permission service, registry and "shown to" from @ai-matrx/sharing; app copies deleted"
+  LOCAL's latest change is 43m AFTER GITHUB's latest change.
+
+SIZE: common version 721 lines, LOCAL 722 lines, GITHUB 0 lines
+
+WHAT EACH SIDE DID, compared with the common version
+  LOCAL added 5 lines and removed 4 lines.
+  GITHUB deleted the whole file.
+
+CODE ONE SIDE HAS THAT THE OTHER DOES NOT
+
+COMPARE THEM (the labels are correct; '-' lines are GITHUB, '+' lines are LOCAL):
+  diff -u --label 'GITHUB (live)' --label 'LOCAL (held)' <(git show 580fba04c621:'features/sharing/components/tabs/ShareWithUserTab.tsx') <(git show ffe6947b1aae:'features/sharing/components/tabs/ShareWithUserTab.tsx')
+
+RECOVER EITHER VERSION FOREVER (works even after this .held file is deleted):
+  LOCAL : git show ffe6947b1aae:'features/sharing/components/tabs/ShareWithUserTab.tsx'
+  GITHUB: git show 580fba04c621:'features/sharing/components/tabs/ShareWithUserTab.tsx'
+
+---------------- LOCAL VERSION BELOW ----------------
+"use client";
+
+import React, { useState, useMemo, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Loader2,
+  UserPlus,
+  CheckCircle,
+  XCircle,
+  Users,
+  MessageSquare,
+  Building2,
+  Mail,
+} from "lucide-react";
+import type {
+  PermissionLevel,
+  ResourceType,
+  ShareActionResult,
+} from "@/utils/permissions/types";
+import {
+  PERMISSION_LEVEL_HINTS,
+  PERMISSION_LEVEL_LABELS,
+  PERMISSION_LEVEL_SHORT_LABELS,
+  PERMISSION_LEVELS,
+} from "@/utils/permissions/levels";
+import { PermissionLevelDescription } from "../PermissionBadge";
+import type { GrantableLevels } from "../../hooks/useGrantableLevels";
+import { createClient } from "@/utils/supabase/client";
+import {
+  useUserConnections,
+  type ConnectionUser,
+} from "@/features/messaging/hooks/useUserConnections";
+import { CopyButtons } from "@/components/agent-copy/CopyButtons";
+import {
+  sharingLocation,
+  type SharingCopyContext,
+} from "@/features/sharing/format";
+import { UserSearchField } from "@/features/user-search/UserSearchField";
+import type { UserSearchCandidate } from "@/features/user-search/types";
+// THE package initials formatter (`@ai-matrx/kit/format`, census H1
+// 2026-09-07). Recorded display decision: a multi-part name takes FIRST +
+// LAST, so "Ana Maria Rivera" is AR — this surface previously printed AM.
+// A caller with no name passes the email, whose single token yields its
+// first character: exactly what these copies did by hand.
+import { getInitials } from "@ai-matrx/kit/format";
+import {
+  AddEveryoneInOrg,
+  type OrgMemberPerson,
+} from "../AddEveryoneInOrg";
+import { ConnectionsReadNotice } from "@/features/messaging/components/ConnectionsReadNotice";
+
+interface ShareWithUserTabProps {
+  onShare: (
+    userId: string,
+    level: PermissionLevel,
+  ) => Promise<ShareActionResult>;
+  onSuccess: () => void;
+  resourceType: ResourceType;
+  resourceId: string;
+  /**
+   * THE ORGANIZATION THIS THING BELONGS TO (FIX-7B). With it, the contact list is that
+   * organization's members and nobody else. Without it the list is every organization the
+   * viewer belongs to, which is what a brand-new organization's share dialog looked like when
+   * the seventh pass found it offering "people from all over the database".
+   */
+  organizationId?: string;
+  /** Identity + the page's leading KPIs, mirrored into the failure payload. */
+  copy?: SharingCopyContext;
+  /**
+   * "ADD EVERYONE IN <ORGANIZATION>" (SHARE-PEOPLE-ONLY). How ONE listed member is granted.
+   * Omitted → `onShare(person.userId, level)`, the same door as the form above. A record-store
+   * table passes the outside door here, because its members may sit outside the table's own
+   * organization.
+   */
+  grantEveryonePerson?: (
+    person: OrgMemberPerson,
+    level: PermissionLevel,
+  ) => Promise<ShareActionResult>;
+  /** People who already hold a grant; "Add everyone" shows them and skips them. */
+  alreadySharedUserIds?: string[];
+  /**
+   * "notion": the level picker reads the ladder's sentence labels, highest first — Full access · Edit ·
+   * Comment · View (Spaces copies Notion's Share menu). Default: the role words.
+   */
+  levelWording?: "roles" | "notion";
+  /**
+   * The levels the doors will accept from THIS person (iam.may_grant_as). A level with a reason is shown
+   * disabled with that reason; omitted, every level is offered and the door answers (as before).
+   */
+  grantable?: GrantableLevels;
+}
+
+type StatusType = "idle" | "loading" | "success" | "error";
+
+interface Status {
+  type: StatusType;
+  message: string;
+}
+
+const SOURCE_ICONS: Record<ConnectionUser["source"], typeof Users> = {
+  conversation: MessageSquare,
+  organization: Building2,
+  invitation: Mail,
+};
+
+const SOURCE_LABELS: Record<ConnectionUser["source"], string> = {
+  conversation: "Contact",
+  organization: "Organization",
+  invitation: "Invited",
+};
+
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** One exact email → the person, through `lookup_user_by_email`; null when no one has it. */
+async function lookupConnectionByEmail(typed: string): Promise<ConnectionUser | null> {
+  const { data } = await createClient().schema("users").rpc("lookup_user_by_email", { lookup_email: typed });
+  const row = (data as Array<{ user_id: string; user_email: string }> | null)?.[0];
+  return row
+    ? {
+        user_id: row.user_id,
+        email: row.user_email,
+        display_name: row.user_email.split("@", 1)[0] ?? null,
+        avatar_url: null,
+        source: "invitation",
+        sourceDetails: "Found by email",
+      }
+    : null;
+}
+
+function candidateOf(connection: ConnectionUser, foundByEmail: boolean): UserSearchCandidate {
+  return {
+    id: connection.user_id,
+    email: connection.email,
+    displayName: connection.display_name,
+    avatarUrl: connection.avatar_url,
+    phone: null,
+    adminLevel: null,
+    organizations:
+      connection.source === "organization" && connection.sourceDetails ? [connection.sourceDetails] : [],
+    source: foundByEmail ? "Found by email" : SOURCE_LABELS[connection.source],
+    createdAt: null,
+    lastSignInAt: null,
+  };
+}
+
+
+
+/**
+ * ShareWithUserTab - Form to share with a specific user.
+ * Shows the user's contacts from conversations, organizations, and invitations
+ * for quick selection, with a manual email input fallback.
+ */
+export function ShareWithUserTab({
+  levelWording = "roles",
+  grantable,
+  onShare,
+  onSuccess,
+  resourceType,
+  resourceId,
+  organizationId,
+  copy,
+  grantEveryonePerson,
+  alreadySharedUserIds,
+}: ShareWithUserTabProps) {
+  const [email, setEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [permissionLevel, setPermissionLevel] =
+    useState<PermissionLevel>("viewer");
+  /** The reason a level may not be given by this person, or null when they may (or nothing is known yet). */
+  const whyNotLevel = (level: PermissionLevel): string | null => {
+    const why = grantable?.levels[level];
+    return typeof why === "string" ? why : null;
+  };
+  const chosenWhy = whyNotLevel(permissionLevel);
+  const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
+  const [selectedContact, setSelectedContact] = useState<ConnectionUser | null>(
+    null,
+  );
+
+  // Scoped: this dialog is about ONE thing, in ONE organization, and the people it offers are
+  // the people in that organization. Past conversations are not folded in — a conversation is
+  // bounded by no organization (FIX-7B).
+  const {
+    connections,
+    isLoading: connectionsLoading,
+    error: connectionsError,
+    partialFailures: connectionsPartial,
+    refresh: refreshConnections,
+  } = useUserConnections(organizationId ? { organizationId } : {});
+
+  const filteredConnections = useMemo(() => {
+    if (!searchQuery.trim()) return connections;
+    const q = searchQuery.toLowerCase();
+    return connections.filter(
+      (c) =>
+        (c.display_name && c.display_name.toLowerCase().includes(q)) ||
+        (c.email && c.email.toLowerCase().includes(q)),
+    );
+  }, [connections, searchQuery]);
+
+  // THE SEARCH FINDS ANY PERSON, NOT ONLY THIS ORGANIZATION'S ROSTER. The contact list above is
+  // scoped to the thing's organization (FIX-7B), but sharing with someone outside it is a real
+  // path (typed email → lookup_user_by_email). The magnifier used to search the roster alone, so
+  // an existing person outside it found "nothing" while typing their email worked. A full email
+  // typed in the field is now resolved by the same lookup and offered as a candidate.
+  const [looked, setLooked] = useState<ConnectionUser | null>(null);
+  /** An exact email, resolved now: the search window takes a snapshot, so Enter must not outrun the debounce. */
+  const resolveTypedEmail = async (query: string): Promise<UserSearchCandidate[]> => {
+    const typed = query.trim().toLowerCase();
+    if (!EMAIL_SHAPE.test(typed)) return [];
+    const found = connections.find((c) => c.email?.toLowerCase() === typed) ?? (await lookupConnectionByEmail(typed));
+    return found ? [candidateOf(found, true)] : [];
+  };
+  useEffect(() => {
+    const typed = email.trim().toLowerCase();
+    if (!EMAIL_SHAPE.test(typed)) {
+      setLooked(null);
+      return;
+    }
+    if (connections.some((c) => c.email?.toLowerCase() === typed)) {
+      setLooked(null);
+      return;
+    }
+    let stale = false;
+    const handle = setTimeout(async () => {
+      const found = await lookupConnectionByEmail(typed);
+      if (stale) return;
+      setLooked(found);
+    }, 300);
+    return () => {
+      stale = true;
+      clearTimeout(handle);
+    };
+  }, [email, connections]);
+
+  const searchableConnections = useMemo(
+    () => (looked ? [...connections, looked] : connections),
+    [connections, looked],
+  );
+
+  const userSearchCandidates: UserSearchCandidate[] = searchableConnections.map((connection) =>
+    candidateOf(connection, connection === looked),
+  );
+
+  const resetStatus = () => {
+    setStatus({ type: "idle", message: "" });
+  };
+
+  const selectContact = (contact: ConnectionUser) => {
+    setSelectedContact(contact);
+    setEmail(contact.email || "");
+    setSearchQuery("");
+    if (status.type === "error") resetStatus();
+  };
+
+  const clearContact = () => {
+    setSelectedContact(null);
+    setEmail("");
+  };
+
+  const handleShare = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      setStatus({
+        type: "error",
+        message: "Please enter a valid email address",
+      });
+      return;
+    }
+
+    setStatus({ type: "loading", message: "Looking up user..." });
+
+    try {
+      // Resolve userId — use selected contact to skip the lookup RPC when possible
+      let targetUserId: string | null = null;
+
+      if (selectedContact && selectedContact.email === trimmedEmail) {
+        targetUserId = selectedContact.user_id;
+      } else {
+        const client = createClient();
+        const { data: lookupData, error: lookupError } = await client.schema("users").rpc(
+          "lookup_user_by_email",
+          { lookup_email: trimmedEmail },
+        );
+
+        if (lookupError) {
+          setStatus({
+            type: "error",
+            message: `Lookup failed: ${lookupError.message}`,
+          });
+          return;
+        }
+
+        const userData = Array.isArray(lookupData) ? lookupData[0] : lookupData;
+
+        if ((!userData || !userData.user_id) && !grantEveryonePerson) {
+          setStatus({
+            type: "error",
+            message: `No user found with email "${trimmedEmail}". They may need to create an account first.`,
+          });
+          return;
+        }
+
+        targetUserId = userData?.user_id ?? null;
+      }
+
+      setStatus({ type: "loading", message: "Sharing with user..." });
+
+      // Delegate to the onShare prop — this calls shareWithUser() in the service,
+      // which validates ownership via the share_resource_with_user RPC and sends
+      // the notification email. Never call the RPC directly from the UI layer.
+      // A custom TABLE hands its outside door here (`grantEveryonePerson`): it grants an existing
+      // account outright, inside the organization or out, and invites an address with no account.
+      // So an address outside the organization is offered the outside share in this same box,
+      // never refused with "That person is not in this organization".
+      const result = grantEveryonePerson
+        ? await grantEveryonePerson(
+            { userId: targetUserId ?? "", email: trimmedEmail, name: trimmedEmail.split("@", 1)[0] ?? trimmedEmail },
+            permissionLevel,
+          )
+        : await onShare(targetUserId as string, permissionLevel);
+      const errorMsg = result?.error;
+
+      if (!errorMsg) {
+        setStatus({
+          type: "success",
+          // THE CONFIRMATION LIVES HERE, IN THE DIALOG THAT DID IT (law 4: a sentence with an
+          // inline home is not also toasted). It used to ride a legacy Radix toast, and on a
+          // table page the organization gate's pick closed this dialog before anyone read it
+          // (VERIFIER-18 H4) — the dialog now stays open, saying it worked.
+          message: `Shared with ${trimmedEmail}. They can open it now.`,
+        });
+        setEmail("");
+        setSelectedContact(null);
+        setPermissionLevel("viewer");
+
+
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
+      } else {
+        setStatus({ type: "error", message: errorMsg });
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      setStatus({ type: "error", message: `Unexpected error: ${message}` });
+    }
+  };
+
+  const isLoading = status.type === "loading";
+
+  return (
+    <div className="space-y-2.5 p-3 bg-muted/30 rounded-lg border">
+      <div>
+        <h3 className="text-sm font-medium mb-1">Share with User</h3>
+        <p className="text-xs text-muted-foreground">
+          Select a contact or enter an email address
+        </p>
+      </div>
+
+      {/* STATUS MESSAGE */}
+      {status.type !== "idle" && (
+        <div
+          className={`p-2 rounded-md flex items-start gap-2 text-xs ${
+            status.type === "loading"
+              ? "bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20"
+              : status.type === "success"
+                ? "bg-green-500/10 text-green-700 dark:text-green-300 border border-green-500/20"
+                : "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20"
+          }`}
+        >
+          {status.type === "loading" && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0 mt-0.5" />
+          )}
+          {status.type === "success" && (
+            <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          )}
+          {status.type === "error" && (
+            <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          )}
+          <span className="flex-1">{status.message}</span>
+          {status.type === "error" && (
+            <>
+              {/*
+               * THE FAILURE IS THE PAYLOAD. "No user found with email X — they
+               * may need to create an account first" is exactly the sentence a
+               * user hands an agent, and it is only actionable together with
+               * the LIVE form state that produced it: the address they typed,
+               * the contact they picked, the level they chose. Built inside the
+               * click handler so it reads the current inputs, never a stale
+               * render.
+               */}
+              <CopyButtons
+                size="xs"
+                label="Share failure"
+                human={() =>
+                  [
+                    "Sharing with a user failed.",
+                    `Error shown: ${status.message}`,
+                    `Email entered: ${email.trim() || "(empty)"}`,
+                    `Contact selected: ${
+                      selectedContact
+                        ? `${selectedContact.display_name ?? selectedContact.email} (${selectedContact.source})`
+                        : "none"
+                    }`,
+                    `Permission level chosen: ${permissionLevel}`,
+                    `Resource: ${resourceType}:${resourceId}`,
+                  ].join("\n")
+                }
+                json={() => ({
+                  error: status.message,
+                  email: email.trim(),
+                  selected_contact: selectedContact,
+                  permission_level: permissionLevel,
+                  resource_type: resourceType,
+                  resource_id: resourceId,
+                })}
+                agent={() => ({
+                  kind: "share-with-user-failure",
+                  location: sharingLocation(copy?.surface ?? "Share with user"),
+                  description:
+                    "A share-with-user attempt that failed, with the error sentence on screen and the live form state that produced it.",
+                  data: {
+                    rendered_error: status.message,
+                    form_state: {
+                      email_entered: email.trim(),
+                      selected_contact: selectedContact,
+                      permission_level: permissionLevel,
+                      contacts_available: connections.length,
+                    },
+                    resource: {
+                      type: resourceType,
+                      id: resourceId,
+                      name: copy?.resourceName ?? null,
+                    },
+                    kpis: copy?.kpis ?? null,
+                  },
+                  attributes: {
+                    ...(copy?.kpis ?? {}),
+                    resource_type: resourceType,
+                    resource_id: resourceId,
+                    state: "error",
+                    permission_level: permissionLevel,
+                  },
+                })}
+              />
+              <button
+                onClick={resetStatus}
+                className="text-xs underline hover:no-underline flex-shrink-0"
+              >
+                Dismiss
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-2.5">
+        {/* CONTACTS LIST */}
+        {!selectedContact && (
+          <div className="space-y-1.5">
+            <Label className="text-xs flex items-center gap-1.5">
+              <Users className="w-3 h-3" />
+              Your Contacts
+            </Label>
+            {connectionsLoading ? (
+              <div className="flex items-center justify-center py-4 text-xs text-muted-foreground">
+                <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                Loading contacts...
+              </div>
+            ) : connectionsError && connections.length === 0 ? (
+              <ConnectionsReadNotice
+                error={connectionsError}
+                partialFailures={connectionsPartial}
+                hasRows={false}
+                onRetry={() => void refreshConnections()}
+              />
+            ) : connections.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-2 text-center">
+                No contacts found. Enter an email below.
+              </p>
+            ) : (
+              <>
+                <ConnectionsReadNotice
+                  error={connectionsError}
+                  partialFailures={connectionsPartial}
+                  hasRows
+                  onRetry={() => void refreshConnections()}
+                />
+                {connections.length > 5 && (
+                  <div>
+                    <UserSearchField
+                      placeholder="Search contacts..."
+                      value={searchQuery}
+                      onValueChange={setSearchQuery}
+                      onUserSelect={(user) => {
+                        const contact = searchableConnections.find(
+                          (candidate) => candidate.user_id === user.id,
+                        );
+                        if (contact) selectContact(contact);
+                      }}
+                      candidates={userSearchCandidates}
+                      title="Search your contacts"
+                      disabled={isLoading}
+                      className="w-full"
+                      inputClassName="h-8 text-xs"
+                    />
+                  </div>
+                )}
+                <ScrollArea className="max-h-36 rounded-md border bg-background">
+                  <div className="p-1">
+                    {filteredConnections.length === 0 ? (
+                      <p className="text-xs text-muted-foreground py-2 text-center">
+                        No matching contacts
+                      </p>
+                    ) : (
+                      filteredConnections.map((contact) => {
+                        const SourceIcon = SOURCE_ICONS[contact.source];
+                        return (
+                          <button
+                            key={contact.user_id}
+                            onClick={() => selectContact(contact)}
+                            disabled={isLoading}
+                            className="w-full flex items-center gap-2 p-1.5 rounded-md hover:bg-accent/50 transition-colors text-left disabled:opacity-50"
+                          >
+                            <Avatar className="w-6 h-6 flex-shrink-0">
+                              <AvatarImage
+                                src={contact.avatar_url || undefined}
+                              />
+                              <AvatarFallback className="text-[10px] bg-primary/10 text-primary-ink">
+                                {getInitials(contact.display_name ?? contact.email)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate">
+                                {contact.display_name ||
+                                  contact.email ||
+                                  "Unknown"}
+                              </p>
+                              {contact.display_name && contact.email && (
+                                <p className="text-[10px] text-muted-foreground truncate">
+                                  {contact.email}
+                                </p>
+                              )}
+                            </div>
+                            <span className="flex items-center gap-1 text-[10px] text-muted-foreground flex-shrink-0">
+                              <SourceIcon className="w-3 h-3" />
+                              {SOURCE_LABELS[contact.source]}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* SELECTED CONTACT CHIP */}
+        {selectedContact && (
+          <div className="flex items-center gap-2 p-2 rounded-md bg-primary/5 border border-primary/20">
+            <Avatar className="w-6 h-6 flex-shrink-0">
+              <AvatarImage src={selectedContact.avatar_url || undefined} />
+              <AvatarFallback className="text-[10px] bg-primary/10 text-primary-ink">
+                {getInitials(
+                  selectedContact.display_name ?? selectedContact.email,
+                )}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium truncate">
+                {selectedContact.display_name || selectedContact.email}
+              </p>
+              {selectedContact.display_name && selectedContact.email && (
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {selectedContact.email}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={clearContact}
+              disabled={isLoading}
+              className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* MANUAL EMAIL INPUT */}
+        {!selectedContact && (
+          <div className="space-y-1.5">
+            <Label htmlFor="user-email" className="text-xs">
+              Or enter email manually
+            </Label>
+            <UserSearchField
+              id="user-email"
+              placeholder="user@example.com"
+              value={email}
+              onValueChange={(value) => {
+                setEmail(value);
+                if (status.type === "error") resetStatus();
+              }}
+              onUserSelect={(user) => {
+                const contact = searchableConnections.find(
+                  (candidate) => candidate.user_id === user.id,
+                );
+                if (contact) selectContact(contact);
+              }}
+              candidates={userSearchCandidates}
+              resolveCandidates={resolveTypedEmail}
+              title="Choose a user to share with"
+              inputType="email"
+              disabled={isLoading}
+              inputClassName="h-9"
+            />
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="user-permission" className="text-xs">
+            Permission Level
+          </Label>
+          <Select
+            value={permissionLevel}
+            onValueChange={(value) =>
+              setPermissionLevel(value as PermissionLevel)
+            }
+            disabled={isLoading}
+          >
+            <SelectTrigger id="user-permission">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {levelWording === "notion"
+                ? [...PERMISSION_LEVELS].reverse().map((level) => (
+                    <SelectItem key={level} value={level} disabled={whyNotLevel(level) !== null} title={whyNotLevel(level) ?? PERMISSION_LEVEL_HINTS[level]}>
+                      {PERMISSION_LEVEL_LABELS[level]}
+                    </SelectItem>
+                  ))
+                : (
+                  <>
+              <SelectItem value="viewer" disabled={whyNotLevel("viewer") !== null} title={whyNotLevel("viewer") ?? PERMISSION_LEVEL_HINTS.viewer}>{PERMISSION_LEVEL_SHORT_LABELS.viewer}</SelectItem>
+              {/* VIS-17b: `commenter` is the FOURTH rung of the one ladder — it has been in
+                  `public.permission_level` since G0 and every policy and RPC accepts it, and
+                  this picker was the one place a person could not choose it (lane SHARE,
+                  2026-09-19). A ladder with a rung nobody can reach is not one ladder. */}
+              <SelectItem value="commenter" disabled={whyNotLevel("commenter") !== null} title={whyNotLevel("commenter") ?? PERMISSION_LEVEL_HINTS.commenter}>{PERMISSION_LEVEL_SHORT_LABELS.commenter}</SelectItem>
+              <SelectItem value="editor" disabled={whyNotLevel("editor") !== null} title={whyNotLevel("editor") ?? PERMISSION_LEVEL_HINTS.editor}>{PERMISSION_LEVEL_SHORT_LABELS.editor}</SelectItem>
+              {/* THE SCOPE-QUALIFIED ADMIN RULE (access/DECISIONS.md 2026-09-10): the heading
+                  above is "Permission Level", which names no item, so the bare "Admin" is
+                  qualified here. */}
+              <SelectItem value="admin" disabled={whyNotLevel("admin") !== null} title={whyNotLevel("admin") ?? PERMISSION_LEVEL_HINTS.admin}>{PERMISSION_LEVEL_SHORT_LABELS.admin}</SelectItem>
+                  </>
+                )}
+            </SelectContent>
+          </Select>
+          <PermissionLevelDescription level={permissionLevel} />
+          {/* Full access (and anything else this person may not give) is disabled above; one line says why. */}
+          {chosenWhy ? <p className="text-xs text-muted-foreground">{chosenWhy}</p> : null}
+          {!chosenWhy && whyNotLevel("admin") ? (
+            <p className="text-xs text-muted-foreground" data-share-level-reason="">
+              {whyNotLevel("admin")}
+            </p>
+          ) : null}
+          {grantable?.outside ? (
+            <p className="text-xs text-muted-foreground" data-share-outside-reason="">
+              {grantable.outside}
+            </p>
+          ) : null}
+        </div>
+
+        <Button
+          variant="primary"
+          onClick={handleShare}
+          disabled={isLoading || !email.trim() || chosenWhy !== null}
+          className="w-full"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              {status.message || "Processing..."}
+            </>
+          ) : (
+            <>
+              <UserPlus className="w-4 h-4 mr-2" />
+              Share with User
+            </>
+          )}
+        </Button>
+
+        {/* SHARE-PEOPLE-ONLY: the whole-team convenience, as people. Replaces the old
+            "Share with Organization" tab, which granted an organization. */}
+        <AddEveryoneInOrg
+          level={permissionLevel}
+          whyNotLevel={whyNotLevel}
+          grantPerson={
+            grantEveryonePerson ??
+            ((person, level) => onShare(person.userId, level))
+          }
+          alreadySharedUserIds={alreadySharedUserIds ?? []}
+          onDone={onSuccess}
+          {...(organizationId ? { defaultOrgId: organizationId } : {})}
+        />
+      </div>
+    </div>
+  );
+}

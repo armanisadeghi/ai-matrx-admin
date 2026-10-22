@@ -18,7 +18,7 @@
  */
 
 import type { JsonObject } from "@/types/json";
-import type { PermissionLevel } from "@/utils/permissions/levels";
+import type { PermissionLevel } from "@ai-matrx/sharing/core";
 
 // ============================================
 // Actionable messages — this app's kinds

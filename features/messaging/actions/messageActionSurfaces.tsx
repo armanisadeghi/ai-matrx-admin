@@ -50,7 +50,7 @@ import type {
   ResourceSharedActionPayload,
   TaskReminderActionPayload,
 } from "@/features/messaging/types";
-import { getResourceSharePath } from "@/utils/permissions/registry";
+import { getResourceSharePath } from "@ai-matrx/sharing/core";
 import { getResourceIcon } from "@/features/sharing/resourceIcons";
 import {
   EntityCard,

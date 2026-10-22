@@ -67,7 +67,7 @@ export function buildAppletBundle(app: AppletBundleSource, activeView?: string):
       xmlText("tagline", app.tagline),
       xmlText("description", app.description, { max: APP_BUNDLE_DESCRIPTION_MAX_CHARS }),
       xmlList("pages", appletPages(app), (p) =>
-        xmlElement("page", { path: p.path, title: p.title, file: p.file, parent: p.parent ?? null }),
+        xmlElement("page", { path: p.path, title: p.title, file: p.file, parent: p.parent ?? null, space: p.space ?? null }),
       ),
       xmlList("jobs", appletJobs(app), (j) => xmlElement("job", { alias: j.alias, key: j.key })),
       xmlList("sources", appletSources(app), (s) =>

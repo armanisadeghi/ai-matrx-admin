@@ -65,7 +65,7 @@ import {
   resolveEntityToken,
   tryGetEntityInfo,
 } from "@/features/scopes/registry/entityRegistry";
-import { getShareableResource, type ResourceType } from "@/utils/permissions/registry";
+import { getShareableResource, type ResourceType } from "@ai-matrx/sharing/core";
 import { useOpenContextAssignment } from "@/features/overlays/definitions/contextAssignment.overlay";
 import { useOpenShareModal } from "@/features/overlays/definitions/shareModal.overlay";
 import {

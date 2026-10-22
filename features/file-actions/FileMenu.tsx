@@ -17,8 +17,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ShareModal } from "@/features/sharing/components/ShareModal";
-import type { ResourceType } from "@/utils/permissions/types";
+import { ShareModal } from "@ai-matrx/sharing/react";
+import type { ResourceType } from "@ai-matrx/sharing/core";
 import {
   GoogleLinkMenuItems,
   useGoogleLink,

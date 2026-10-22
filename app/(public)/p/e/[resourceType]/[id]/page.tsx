@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import { getShareableResource } from "@/utils/permissions/registry";
-import { PUBLIC_LANE_TYPES } from "@/utils/permissions/publicLane";
+import { getShareableResource } from "@ai-matrx/sharing/core";
+import { PUBLIC_LANE_TYPES } from "@ai-matrx/sharing/core";
 import { isFullUuid } from "@/utils/supabase-search";
 import { loadPublicResource } from "../../loadPublicResource";
 import {

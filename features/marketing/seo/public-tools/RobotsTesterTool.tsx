@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useShare } from "@/features/sharing/hooks/useShare";
+import { useShare } from "@ai-matrx/sharing/react";
 import { useSeoCommandRun } from "@/features/marketing/seo/durable-run/useSeoCommandRun";
 import { cn } from "@/lib/utils";
 import type { components } from "@ai-matrx/api/types";

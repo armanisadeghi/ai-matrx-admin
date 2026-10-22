@@ -30,6 +30,7 @@ import { archiveAppletFromPageSentence } from "@/features/applets/lib/applet-sta
 import { useChangeByTalkingDisclosure } from "@/features/applets/route/useChangeByTalkingDisclosure";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import {
+  appletDeclaresLayout,
   appletJobs,
   appletPages,
   appletSources,
@@ -423,7 +424,7 @@ export function AppletSettingsContent({ appId }: AppletSettingsContentProps) {
               data={[
                 { value: "details", label: "Details" },
                 // A layout Applet (no code) shows its stock layout (CONTRACTS v2.12).
-                ...(hasStockLayout(app.layout_config) ? [{ value: "layout", label: "Layout" }] : []),
+                ...(appletDeclaresLayout(app.layout_config) ? [{ value: "layout", label: "Layout" }] : []),
                 { value: "pages", label: "Pages" },
                 { value: "jobs", label: "AI jobs" },
                 { value: "sources", label: "Data" },
@@ -833,6 +834,3 @@ function FieldRow({ label, busy, dirty, onSave, children }: FieldRowProps) {
   );
 }
 
-function hasStockLayout(value: unknown): boolean {
-  return typeof value === "object" && value !== null && !Array.isArray(value) && typeof (value as { kind?: unknown }).kind === "string";
-}

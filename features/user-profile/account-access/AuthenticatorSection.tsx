@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, InfoHint } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
-import { SettingsSection } from "@/components/official/settings/layout/SettingsSection";
+import { SettingsSection } from "@ai-matrx/design-system/settings";
 import { createClient } from "@/utils/supabase/client";
 import { authenticatorError, enrollAuthenticator, generateRecoveryCodes, readAuthenticators, removeAuthenticator, verifyAuthenticator, verifyRecoveryCode, type AuthenticatorSetup, type AuthenticatorState } from "./mfa";
 

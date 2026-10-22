@@ -215,7 +215,7 @@ export function useCanvasItems(initialFilters?: CanvasItemFilters) {
     // Canonical share-link lane (platform.share_links) — canvas_item is
     // link-shareable in the registry; the old bespoke canvas_items.share_token
     // mint was cut 2026-08-12 (it produced URLs that 404'd).
-    const { createShareLink } = await import('@/utils/permissions/shareLinks');
+    const { createShareLink } = await import('@ai-matrx/sharing/core');
     const result = await createShareLink({
       resourceType: 'canvas_item',
       resourceId: id,

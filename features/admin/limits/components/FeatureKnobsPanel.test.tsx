@@ -31,7 +31,10 @@ jest.mock("@/features/settings/universal/UniversalSettingsPane", () => ({
     <ul>{rows.map((row) => <li key={row.full_key}>{row.full_key}</li>)}</ul>
   ),
 }));
-jest.mock("@/components/official/settings/SettingsDesignProvider", () => ({ SettingsDesignProvider: ({ children }: { children: React.ReactNode }) => children }));
+jest.mock("@ai-matrx/design-system/settings", () => ({
+  ...jest.requireActual("@ai-matrx/design-system/settings"),
+  SettingsDesignProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 import { FeatureKnobsPanel } from "./FeatureKnobsPanel";
 
