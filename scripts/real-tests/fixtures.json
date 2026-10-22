@@ -8,8 +8,8 @@
  "not_in_manifest": [
   "PB-04/PB-06 second organization admin's Workspace itself (only its fixture rows are listed)",
   "test@test.com seat (a person, not a fixture)",
-  "UI-QUICK 2026-10-19: spare column 'Dock lane' e55d5573-9a7e-4586-8492-3237b7065df5 on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built",
-  "UI-QUICK 2026-10-22: Dock lane (Q-23 spare column, text) was changed to Choice while finding the live path and could not be changed back; the field was removed and recreated as a Text column of the same name (new field id, key dock_lane); reset recipe after Q-23: column menu > Column settings > Remove this field, then + (Actions header) > name Dock lane, Text > Create column",
+  "UI-QUICK 2026-10-19: spare column 'Dock lane' 8fbcbed8-4dcc-4fda-9144-22e7fed9af4a (current; the 2026-10-19 field e55d5573-9a7e-4586-8492-3237b7065df5 was removed) on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built",
+  "UI-QUICK 2026-10-22: Dock lane (Q-23 spare column, text) was changed to Choice while finding the live path and could not be changed back; the field was removed and recreated as a Text column of the same name (new field id 8fbcbed8-4dcc-4fda-9144-22e7fed9af4a, key dock_lane_2, type text, no choice list, options_table_id empty; read back 2026-10-22 through custom.applicable_fields); reset recipe after Q-23: column menu > Column settings > Remove this field, then + (Actions header) > name Dock lane, Text > Create column",
   "UI-QUICK 2026-10-22: shortcut f0bdf085-7cf3-47db-bfb1-394ce843a9b0 (Q-06, Q-24) relabelled 'Compass Hub lookup (inline)' because admin's other organization holds a second shortcut labelled 'Hub lookup'; read back after reload"
  ],
  "playbooks": {
