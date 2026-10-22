@@ -546,6 +546,15 @@ export function automationSwitchReason(rights: { known: boolean; level: unknown;
   return rights.level === null ? "You don't have access" : NEEDS_EDIT_ACCESS;
 }
 
+/**
+ * CD-AUTO-11: the closed switch's reason, SAID on the panel — a disabled switch fires no click and its hover title is
+ * invisible to a person who just pressed it. Nothing while the access is still being read.
+ */
+export function SwitchClosedNote({ reason }: { reason: string | null }) {
+  if (!reason || reason === "Checking your access…") return null;
+  return <p className="type-secondary text-muted-foreground" data-testid="spaces-automation-switch-why">On/off: {reason}</p>;
+}
+
 function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: string; organizationId: string | null; fields: Field[] }) {
   const say = useSay();
   const client = useRecordsClient();
@@ -1003,6 +1012,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
         <>
           {/* read-gate-exempt: problem returns above; the list only exists after the read answered */}
           {list.length === 0 ? <p className="type-secondary text-muted-foreground">No automations</p> : null}
+          {list.length > 0 ? <SwitchClosedNote reason={switchReason} /> : null}
           {list.map((a) => (
             <div key={a.id} className="flex flex-col gap-1" data-testid="spaces-automation-row" data-archived={a.archived_at ? "true" : undefined}>
               <div className="flex items-center gap-2">
