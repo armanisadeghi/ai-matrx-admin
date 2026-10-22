@@ -16,7 +16,7 @@ import { EntityChartBlock, RecordsMount, TablePage } from "@/features/data-table
 import type { ChartKind, EntityColumn, EntityRow } from "@ai-matrx/records-ui";
 import type { RecordsConfig } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
-import { ArrowDownUp, ArrowUpRight, Database, Kanban, PieChart, List, ListFilter, Maximize2, PanelRight, Plus, Search, SlidersHorizontal, Square, Table2, X } from "lucide-react";
+import { ArrowDownUp, ArrowUpRight, Database, GalleryHorizontalEnd, Kanban, PieChart, List, ListFilter, Maximize2, PanelRight, Plus, Search, SlidersHorizontal, Square, Table2, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
@@ -29,7 +29,7 @@ import { toast } from "@/lib/toast";
 
 import { FieldList, MenuRow, NewButton, SidePeek, ViewerSaveBar, ViewerSortButton, ViewTab, filtersDiffer, shownFilters, shownSorts, type FilterChoice, type SortChoice } from "./menu-parts";
 import { BUILT_IN_SOURCES, newViewId, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
-import { ENTITY_PAGE, entityDefaultGroup, entityRowsArgs, entityShownColumns, seededEntityFirst } from "./first-reads";
+import { entityDefaultGroup, entityRowsArgs, entityShownColumns, seededEntityFirst } from "./first-reads";
 import { BlockRecordsSeed, useBlockSeedAnswers } from "../page/space-seed-context";
 import { formatCount } from "@ai-matrx/kit/format";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
@@ -37,19 +37,21 @@ import { useStructureEdit } from "../page/structure";
 import { useParams } from "next/navigation";
 
 import { writeNewEntityRow } from "./entity-row-add";
+import { entityCardColumns, entityPageSize, entitySettingsFor } from "./entity-views";
+import { CARD_SIZES, LOAD_LIMITS, blockPageSize, type CardSize } from "./view-spec";
 
 /** The layouts a built-in source draws today. */
 const ENTITY_LAYOUTS: Array<{ id: SpaceViewLayout; label: string; icon: typeof Table2 }> = [
   { id: "grid", label: "Table", icon: Table2 },
   { id: "kanban", label: "Board", icon: Kanban },
+  { id: "gallery", label: "Gallery", icon: GalleryHorizontalEnd },
+  { id: "list", label: "List", icon: List },
   { id: "chart", label: "Chart", icon: PieChart },
 ];
 
 /** Spaces' chart types as records-ui's chart kinds (Notion's vertical bar = a column chart). */
 const CHART_KIND: Record<string, ChartKind> = { donut: "donut", bar: "column", hbar: "bar", line: "line" };
 
-/** Rows per read: the first page, and each "Load more" asks only the NEXT page (offset = rows held). */
-const PAGE = ENTITY_PAGE;
 /** How long a read may go unanswered before it is asked again (once), then named. */
 const STALL_MS = 15000;
 
@@ -93,11 +95,13 @@ function useEntityRows(token: string, view: SpaceDbView, search: string) {
   const [tick, setTick] = useState(0);
   const where = JSON.stringify(view.filters ?? {});
   const sortKey = JSON.stringify(view.sorts?.[0] ?? null);
-  const question = `${token}|${where}|${sortKey}|${search}`;
+  // Notion's "Load limit": the view's own first page and "Load more" size (CD-VIEW-11), else 50.
+  const pageSize = entityPageSize(view);
+  const question = `${token}|${where}|${sortKey}|${search}|${pageSize}`;
   // Round 36: the server's answers for this first question (this block's seed), drawn without asking again.
   const answers = useBlockSeedAnswers();
   const [seeded] = useState(() => {
-    const first = seededEntityFirst(answers, token, view.filters ?? {}, view.sorts?.[0] ?? null, search, PAGE);
+    const first = seededEntityFirst(answers, token, view.filters ?? {}, view.sorts?.[0] ?? null, search, pageSize);
     return first ? (first as EntityFirstRead) : null;
   });
   const seededFor = useRef<string | null>(seeded ? question : null);
@@ -108,12 +112,12 @@ function useEntityRows(token: string, view: SpaceDbView, search: string) {
   // rows forever: past STALL_MS the read is asked once more, then the block says so with Try again.
   const [stalls, setStalls] = useState(0);
   // How many rows a re-read asks for (after a write, Try again): what is held, so nothing loaded vanishes.
-  const held = useRef(PAGE);
+  const held = useRef(pageSize);
   const [loadingMore, setLoadingMore] = useState(false);
   const asked = useRef("");
   useEffect(() => {
     // A new question (filter, sort, source) starts again at one page; a re-read keeps what is held.
-    if (asked.current !== question) held.current = PAGE;
+    if (asked.current !== question) held.current = pageSize;
     asked.current = question;
     // The server already answered this question (the first one): nothing to ask until a re-read.
     if (seededFor.current === question && tick === 0 && stalls === 0) return;
@@ -145,7 +149,7 @@ function useEntityRows(token: string, view: SpaceDbView, search: string) {
       cancelled = true;
       clearTimeout(stall);
     };
-  }, [client, token, where, sortKey, search, tick, stalls, question]);
+  }, [client, token, where, sortKey, search, tick, stalls, question, pageSize]);
 
   const reload = () => {
     setStalls(0);
@@ -161,7 +165,7 @@ function useEntityRows(token: string, view: SpaceDbView, search: string) {
     const filters = JSON.parse(where) as Record<string, unknown>;
     const sort = JSON.parse(sortKey) as { field: string; direction: "asc" | "desc" } | null;
     try {
-      const page = await client.drillRows(entityRowsArgs(token, filters, sort, search, PAGE, rows.length));
+      const page = await client.drillRows(entityRowsArgs(token, filters, sort, search, pageSize, rows.length));
       if (!page.ok) {
         toast.error(sentence(page.error, "More rows could not be read."));
         return;
@@ -170,7 +174,7 @@ function useEntityRows(token: string, view: SpaceDbView, search: string) {
       setState((s) => {
         const seen = new Set(s.rows.map((r) => r.id));
         const merged = [...s.rows, ...next.filter((r) => !seen.has(r.id))];
-        held.current = Math.max(PAGE, merged.length);
+        held.current = Math.max(pageSize, merged.length);
         return { ...s, rows: merged, total: Number(page.data.total ?? s.total) };
       });
     } catch (thrown) {
@@ -494,13 +498,48 @@ function EntityBody({ token, entity, view, onOpen, search, onNew }: { token: str
     // records-ui's board over the source: lanes per stage / status, cards move between them.
     return (
       <div className="spaces-db-body">
-        <TablePage source={{ kind: "entity", token }} presentation="embedded" layout="board" groupBy={view.groupField ?? choice?.api_name} onOpenRecord={onOpen} searchOverride={search || null} searchBox={false} />
+        <TablePage source={{ kind: "entity", token }} presentation="embedded" layout="board" groupBy={view.groupField ?? choice?.api_name} onOpenRecord={onOpen} searchOverride={search || null} searchBox={false} {...(blockPageSize(view) ? { pageSize: blockPageSize(view) } : {})} />
       </div>
     );
   }
+  const cards = view.layout === "gallery" || view.layout === "list" ? entityCardColumns(entity.columns, view.hiddenFields ?? [], title) : [];
   return (
     <div ref={bodyRef} className="spaces-db-body spaces-entity-body" data-pending={entity.pending || undefined} data-held={heldHeight !== null || undefined} style={heldHeight !== null ? { minHeight: heldHeight } : undefined}>
-      {(
+      {view.layout === "gallery" ? (
+        // Notion's gallery over a built-in module: one card per row (title, then the view's shown properties),
+        // tiles of a fixed width per card size, so nothing reflows as values land.
+        <ul key={entity.answered} className="spaces-entity-gallery" data-size={view.cardSize ?? "medium"} data-testid="spaces-entity-gallery">
+          {entity.loading && !entity.rows.length
+            ? Array.from({ length: 4 }, (_, i) => <li key={i} className="spaces-entity-card spaces-entity-card-wait" aria-hidden />)
+            : entity.rows.map((row) => (
+                <li key={String(row.id)} className="min-w-0">
+                  <button type="button" className="spaces-entity-card spaces-entity-tile" onClick={() => onOpen(String(row.id))}>
+                    <span className="spaces-entity-cardtitle">{title ? valueText(title, row[title.api_name]) || "Untitled" : "Untitled"}</span>
+                    {cards.map((c) => (
+                      <span key={c.api_name} className="spaces-entity-cardline"><Cell c={c} v={row[c.api_name]} /></span>
+                    ))}
+                  </button>
+                </li>
+              ))}
+        </ul>
+      ) : view.layout === "list" ? (
+        // Notion's list: one line per row, its title then the shown properties to the right.
+        <ul key={entity.answered} className="spaces-entity-list" data-testid="spaces-entity-list">
+          {entity.loading && !entity.rows.length ? Array.from({ length: 4 }, (_, i) => <li key={i} className="spaces-entity-listrow spaces-entity-card-wait" aria-hidden />) : null}
+          {entity.rows.map((row) => (
+            <li key={String(row.id)}>
+              <button type="button" className="spaces-entity-listrow" onClick={() => onOpen(String(row.id))}>
+                <span className="spaces-entity-cardtitle">{title ? valueText(title, row[title.api_name]) || "Untitled" : "Untitled"}</span>
+                <span className="spaces-entity-listprops">
+                  {cards.map((c) => (
+                    <span key={c.api_name} className="spaces-entity-listprop"><Cell c={c} v={row[c.api_name]} /></span>
+                  ))}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
         <MatrxDataTable<EntityRow>
           // A new answer is new rows (never the old rows sliding into new places — a layout shift).
           key={entity.answered}
@@ -536,6 +575,7 @@ function EntityBody({ token, entity, view, onOpen, search, onNew }: { token: str
           emptyState={{ title: "No rows" } as never}
         />
       )}
+      {(view.layout === "gallery" || view.layout === "list") && !entity.loading && !entity.rows.length ? <div className="spaces-db-note">No rows</div> : null}
       <div className="spaces-entity-foot">
       {onNew ? (
         <button type="button" className="spaces-db-newrow" onClick={onNew}>
@@ -667,7 +707,8 @@ function EntitySettings({
   onBlock: (p: Partial<DatabaseBlockProps>) => void;
   editable: boolean;
 }) {
-  const [page, setPage] = useState<"main" | "layout" | "group" | "props">("main");
+  const [page, setPage] = useState<"main" | "layout" | "group" | "props" | "cardsize" | "limit">("main");
+  const offers = entitySettingsFor(view.layout);
   const hidden = view.hiddenFields ?? [];
   const groupCol = columns.find((c) => c.api_name === view.groupField) ?? columns.find((c) => c.type === "choice");
   return (
@@ -684,6 +725,8 @@ function EntitySettings({
             <MenuRow icon={<Table2 size={15} />} label="Layout" end={<span className="type-secondary text-muted-foreground">{ENTITY_LAYOUTS.find((l) => l.id === view.layout)?.label ?? "Table"}</span>} onClick={() => editable && setPage("layout")} />
             <MenuRow icon={<List size={15} />} label="Properties" end={<span className="text-xs text-muted-foreground">{columns.length - hidden.filter((k) => columns.some((c) => c.api_name === k)).length} shown</span>} onClick={() => setPage("props")} />
             {view.layout === "kanban" ? <MenuRow icon={<Kanban size={15} />} label="Group" end={<span className="type-secondary text-muted-foreground">{groupCol?.name ?? "None"}</span>} onClick={() => editable && setPage("group")} /> : null}
+            {offers.cardSize ? <MenuRow icon={<Square size={15} />} label="Card size" end={<span className="type-secondary text-muted-foreground">{SIZE_WORDS[view.cardSize ?? "medium"]}</span>} onClick={() => editable && setPage("cardsize")} /> : null}
+            {offers.loadLimit ? <MenuRow icon={<List size={15} />} label="Load limit" end={<span className="type-secondary text-muted-foreground">{blockPageSize(view) ? `${blockPageSize(view)} rows` : "Default"}</span>} onClick={() => editable && setPage("limit")} /> : null}
             <div className="px-2 pt-2 pb-1 type-secondary text-muted-foreground">Open pages in</div>
             {([
               ["side", "Side peek", PanelRight],
@@ -722,11 +765,16 @@ function EntitySettings({
               );
             })
           : null}
+        {page === "cardsize" ? CARD_SIZES.map((s) => <MenuRow key={s} label={SIZE_WORDS[s]} active={(view.cardSize ?? "medium") === s} onClick={() => (onView({ cardSize: s }), setPage("main"))} />) : null}
+        {page === "limit" ? LOAD_LIMITS.map((n) => <MenuRow key={n} label={`${n} rows`} active={blockPageSize(view) === n} onClick={() => (onView({ loadLimit: n }), setPage("main"))} />) : null}
         {page === "group" ? <FieldList fields={asFields(columns.filter((c) => c.type === "choice"))} value={groupCol?.api_name} onPick={(k) => (onView({ groupField: k }), setPage("main"))} /> : null}
       </PopoverContent>
     </Popover>
   );
 }
+
+/** Notion's card size words. */
+const SIZE_WORDS: Record<CardSize, string> = { small: "Small", medium: "Medium", large: "Large" };
 
 /** A row of a built-in module, opened as Notion opens a database page: its properties, editable where the module allows. */
 function EntityPeek({ entity, rowId, as, editable, onClose }: { entity: Entity; rowId: string; as: "side" | "center" | "page"; editable: boolean; onClose: () => void }) {
